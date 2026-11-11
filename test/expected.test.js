@@ -124,5 +124,26 @@ test('expected.json : contraste, occurrences et niveaux WCAG cohérents', () => 
     const belowAAA = (p.ratio < 7 ? normal : 0) + (p.ratio < 4.5 ? p.nLarge : 0);
     assert.equal(p.belowAA, belowAA, `${p.text}/${p.bg} belowAA`);
     assert.equal(p.belowAAA, belowAAA, `${p.text}/${p.bg} belowAAA`);
+    const u = p.uncertain?.value ?? 0;
+    assert.ok(u <= p.n, `${p.text}/${p.bg} : uncertain ≤ n`);
+    assert.equal(p.flag === '[V]', u > 0, `${p.text}/${p.bg} : [V] si et seulement si une occurrence est incertaine`);
+    if (p.uncertain) {
+      const r = Object.values(p.uncertain.reasons).reduce((/** @type {number} */ t, /** @type {any} */ x) => t + x, 0);
+      assert.ok(r >= u, `${p.text}/${p.bg} : chaque occurrence incertaine a au moins une raison`);
+    }
   }
+});
+
+test('expected.json : clés v1 des tailles rendues = Math.round des valeurs exactes', () => {
+  const f = expected.rendered.fontSizes;
+  /** @type {Record<string, number>} */
+  const fromExact = {};
+  for (const [k, v] of Object.entries(f.values)) {
+    const key = `${Math.round(parseFloat(k))}px`;
+    fromExact[key] = (fromExact[key] ?? 0) + /** @type {any} */ (v).value;
+  }
+  /** @type {Record<string, number>} */
+  const listed = {};
+  for (const [k, v] of Object.entries(f.v1Keys)) if (k !== '$comment') listed[k] = /** @type {any} */ (v).value;
+  assert.deepEqual(listed, fromExact);
 });

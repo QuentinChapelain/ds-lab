@@ -23,5 +23,4 @@ test('serveurs de fixtures : deux origines, substitution de l’origine distante
   assert.equal((await fetch(`${s.remoteOrigin}/../index.html`)).status, 404);
 });
 
-test.todo('audit de bout en bout : déclaré (lot 3)');
 test.todo('audit de bout en bout : rendu et contraste (lot 4)');

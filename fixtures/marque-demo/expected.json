@@ -38,7 +38,7 @@
       "R8. Contexte d'une valeur rendue : clé (famille, valeur, propriété, rôle) → compte, compte par page, jusqu'à 3 sélecteurs courts distincts (balise#id, sinon balise.classe1.classe2, sinon balise).",
       "R9. Rôle : attribut role d'abord, puis balise. bouton (button, input button/submit/reset, role=button) ; lien (a[href], role=link) ; champ (input, select, textarea, role textbox/combobox/checkbox/radio/switch/searchbox) ; titre (h1–h6, role=heading) ; image (img, svg, picture, video, canvas, role=img) ; texte (porteur de texte d'aucune catégorie précédente) ; conteneur (le reste).",
       "R10. Clés de valeur comme au déclaré (D6–D13) ; les valeurs calculées sont déjà en px.",
-      "R11. Contraste : pour chaque porteur de texte, fond effectif = background-color en remontant depuis l'élément lui-même jusqu'à html, fusion alpha des fonds semi-transparents rencontrés jusqu'au premier fond opaque, blanc si aucun. Couleur de texte transparente fusionnée sur ce fond. opacity des éléments ignorée (limite connue). Ratio WCAG 2.1. Grand texte : ≥ 24 px, ou ≥ 18,66 px en graisse ≥ 700. Paires agrégées par (texte, fond).",
+      "R11. Contraste : pour chaque porteur de texte, fond effectif = background-color en remontant depuis l'élément lui-même jusqu'à html, fusion alpha des fonds semi-transparents rencontrés jusqu'au premier fond opaque, blanc si aucun. Couleur de texte transparente fusionnée sur ce fond. opacity n'entre pas dans le calcul, mais une occurrence est marquée [V] si l'élément lui-même ou l'un de ses ancêtres a une opacity < 1, ou si une background-image se trouve sur l'élément ou un ancêtre plus proche que le fond opaque retenu ; une paire est marquée [V] dès qu'une de ses occurrences l'est (champ uncertain, absent = 0). Ratio WCAG 2.1. Grand texte : ≥ 24 px, ou ≥ 18,66 px en graisse ≥ 700. Paires agrégées par (texte, fond).",
       "R12. Comparaison des ratios à ± 0,01 près."
     ]
   },
@@ -63,7 +63,7 @@
       "opaque": { "value": 12, "how": "clés à 6 chiffres ci-dessous" },
       "opaqueOnce": { "value": 10, "how": "opaques à 1 occurrence : toutes sauf #ffffff (4) et #2b4c7e (2)" },
       "translucent": { "value": 2, "how": "#1f2a4433 et #00000026" },
-      "notColors": { "value": 9, "how": "var() non comptées : theme.css l.26, l.27, l.43 ; composants.css l.6, l.14, l.38, l.42, l.50, l.67" },
+      "varReferences": { "value": 9, "how": "déclarations de propriétés de couleur (color, background*, border*, box-shadow…) dont la valeur passe par var(), non comptées comme couleurs : theme.css l.26, l.27, l.43 ; composants.css l.6, l.14, l.38, l.42, l.50, l.67 (clé renommée depuis notColors au lot 3, valeur inchangée)" },
       "values": {
         "#ffffff": { "value": 4, "how": "composants.css l.5 (.entete background-color), l.13 (.bouton color), l.40 (.champ background-color) ; remote.css l.5 (.pied color)" },
         "#2b4c7e": { "value": 2, "how": "theme.css l.5 (--orbe-bleu) ; composants.css l.15 (.bouton border)" },
@@ -402,6 +402,14 @@
         "13.5px": { "value": 2, "how": "span.badge ×2 : .75em × 18 (parent div.carte à 18 px)" },
         "14px": { "value": 2, "how": "p.note et p.note::before" },
         "15.75px": { "value": 2, "how": "p et a du pied : .875rem × 18" }
+      },
+      "v1Keys": {
+        "$comment": "Clé compatible v1 : Math.round(px) + 'px', comme rendered.sizes de l'outil v1 (Math.round arrondit 0,5 vers le haut).",
+        "18px": { "value": 7, "how": "18px ×7, inchangé" },
+        "54px": { "value": 2, "how": "54px ×2, inchangé" },
+        "23px": { "value": 1, "how": "22.5px ×1 → Math.round(22.5) = 23" },
+        "14px": { "value": 4, "how": "13.5px ×2 → Math.round(13.5) = 14, plus 14px ×2" },
+        "16px": { "value": 2, "how": "15.75px ×2 → Math.round(15.75) = 16" }
       }
     },
 
@@ -576,7 +584,9 @@
         "how": "label dans div.carte (fond contrast.cardBackground) ; node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#1f2a44','#cecdcd'))\" → 8.9879…",
         "verify": { "culori": "wcagContrast", "args": ["#1f2a44", "#cecdcd"] } },
       { "text": "#c8553d", "bg": "#cecdcd", "ratio": 2.7451, "n": 3, "nLarge": 0, "belowAA": 3, "belowAAA": 3, "selectors": ["span.badge.etiquette", "span.badge.badge--inactif", "p.note::before"],
-        "how": "span.badge ×2 (13,5 px gras : pas grand texte) et p.note::before (14 px) ; < 4,5 → sous AA ; opacity du badge inactif ignorée (R11) ; node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#c8553d','#cecdcd'))\" → 2.74505… (arrondi 2.7451)",
+        "flag": "[V]",
+        "uncertain": { "value": 1, "how": "span.badge.badge--inactif a opacity: .6 (composants.css l.56) : contraste réel plus faible que calculé (R11)", "reasons": { "opacity": 1, "backgroundImage": 0 } },
+        "how": "span.badge ×2 (13,5 px gras : pas grand texte) et p.note::before (14 px) ; < 4,5 → sous AA ; opacity du badge inactif hors calcul, occurrence marquée [V] (R11) ; node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#c8553d','#cecdcd'))\" → 2.74505… (arrondi 2.7451)",
         "verify": { "culori": "wcagContrast", "args": ["#c8553d", "#cecdcd"] } },
       { "text": "#9a9a9a", "bg": "#cecdcd", "ratio": 1.7739, "n": 1, "nLarge": 0, "belowAA": 1, "belowAAA": 1, "selectors": ["p.note"],
         "how": "p.note (14 px) ; node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#9a9a9a','#cecdcd'))\" → 1.7739…",
