@@ -135,6 +135,27 @@ export function renderReport(audit) {
       .map((g) => `\`${g.rep}\` ← ${g.members.filter((/** @type {string} */ m) => m !== g.rep).map((/** @type {string} */ m) => `\`${m}\``).join(', ')} (×${g.n})`)
       .join(' ; ') || '—';
   push(`- Groupes ΔE 5 du déclaré : ${groups(D.colors.groupsDE5)}. [F]`);
+  const tg = rendered.textGreys;
+  if (tg) {
+    const list = Object.entries(tg.values).map(([k, v]) => `\`${k}\` ×${/** @type {any} */ (v).count}`).join(' · ') || '—';
+    push(
+      `- Gris de texte (couleurs rendues employées au moins une fois en color sur un porteur de texte, chroma OKLab √(a² + b²) < 0,02, transparence comprise ; blanc à part) : ${tg.distinct} — ${list}. Blanc #ffffff en couleur de texte : ${tg.white} occurrence(s). [F]`,
+    );
+    const dark = Object.entries(tg.values).filter(([, v]) => /** @type {any} */ (v).onDark > 0);
+    push(
+      `- Gris de texte sur fond sombre (contraste avec le fond effectif supérieur au contraste avec le blanc : textes inversés) : ${
+        dark.length
+          ? dark
+              .map(([k, v]) => {
+                const x = /** @type {any} */ (v);
+                const bgs = Object.entries(x.darkBackgrounds).sort((a, b) => /** @type {number} */ (b[1]) - /** @type {number} */ (a[1])).slice(0, 3).map(([bg]) => `\`${bg}\``).join(', ');
+                return `\`${k}\` ${x.onDark}/${x.count} (fonds ${bgs})`;
+              })
+              .join(' · ')
+          : 'aucun'
+      }. [F]`,
+    );
+  }
   push();
   push(
     table(
@@ -222,7 +243,7 @@ export function renderReport(audit) {
       declared.sheets.map((/** @type {any} */ s) => [
         s.id,
         s.source,
-        s.href ?? (s.inline ? '<style>' : 'feuille construite'),
+        s.href ?? (s.inline ? '<style>' : s.constructed ? 'feuille construite' : '<style> ajouté par JS'),
         s.pages.length,
         (s.bytes / 1024).toFixed(1),
         s.rules,

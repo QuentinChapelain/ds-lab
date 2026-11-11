@@ -55,3 +55,46 @@ test('trace : cascade normale, !important, attribut style, navigateur', () => {
   const disabled = { matchedCSSRules: [rule('regular', '.x', [{ name: 'color', value: 'red' }]), rule('regular', '.y', [{ name: 'color', value: 'x', parsedOk: false }])] };
   assert.equal(winner(disabled, 'color')?.rule.selectorList.text, '.x', 'déclaration invalide ignorée');
 });
+
+test('textGreys : chroma < 0,02 en color seulement, transparence comprise, blanc à part', async () => {
+  const { textGreys } = await import('../src/rendered/aggregate.js');
+  const ctx = (/** @type {string} */ property, /** @type {number} */ count) => ({ property, count });
+  const g = textGreys({
+    '#212121': { contexts: [ctx('color', 3), ctx('background-color', 9)] },
+    '#00000042': { contexts: [ctx('color', 2)] },
+    '#808080': { contexts: [ctx('background-color', 5)] },
+    '#1f2a44': { contexts: [ctx('color', 4)] },
+    '#ffffff': { contexts: [ctx('color', 6), ctx('background-color', 1)] },
+  });
+  assert.deepEqual(Object.keys(g.values), ['#212121', '#00000042']);
+  assert.equal(g.values['#212121'].count, 3, 'seules les occurrences en color comptent');
+  assert.deepEqual([g.total, g.distinct, g.white], [5, 2, 6]);
+});
+
+test('R14 : gris de texte sur fond sombre (contraste avec le fond > contraste avec le blanc)', async () => {
+  const { createRenderedAggregator } = await import('../src/rendered/aggregate.js');
+  const props = (/** @type {string} */ color) => ({
+    color, 'font-family': 'x', 'font-size': '16px', 'font-weight': '400', 'line-height': 'normal', 'letter-spacing': 'normal',
+    'background-color': 'rgba(0, 0, 0, 0)', opacity: '1',
+  });
+  const agg = createRenderedAggregator();
+  agg.addPage({
+    url: 'https://a.test/',
+    iframes: 0,
+    excluded: 0,
+    records: [
+      rec({ bg: 'rgb(255, 255, 255)' }), // html
+      rec({ parent: 0 }), // body
+      rec({ parent: 1, bg: 'rgb(32, 32, 32)' }), // bandeau sombre
+      rec({ parent: 2, tag: 'p', selector: 'p', role: 'texte', text: true, props: props('rgb(218, 218, 218)') }), // gris clair sur sombre
+      rec({ parent: 1, tag: 'p', selector: 'p', role: 'texte', text: true, props: props('rgb(218, 218, 218)') }), // même gris sur blanc
+      rec({ parent: 1, tag: 'p', selector: 'p', role: 'texte', text: true, props: props('rgb(97, 97, 97)') }), // gris foncé sur blanc
+    ],
+  });
+  const g = agg.result().textGreys;
+  assert.equal(g.values['#dadada'].count, 2);
+  assert.equal(g.values['#dadada'].onDark, 1);
+  assert.deepEqual(g.values['#dadada'].darkBackgrounds, { '#202020': 1 });
+  assert.equal(g.values['#616161'].onDark, 0);
+  assert.equal(g.onDark, 1);
+});

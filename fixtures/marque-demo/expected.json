@@ -561,6 +561,21 @@
       }
     },
 
+    "textGreys": {
+      "$comment": "R13 (ajoutée avant le code) : gris de texte = couleurs rendues utilisées au moins une fois comme color sur un porteur de texte, dont la chroma OKLab √(a² + b²) < 0,02, transparence comprise (chroma calculée sur les canaux, alpha ignoré). Le blanc opaque #ffffff est exclu de la liste et compté à part (white).",
+      "distinct": { "value": 1, "how": "couleurs de texte rendues : #2b4c7e, #1f2a44, #ffffff, #c8553d, #9a9a9a, #30548a, #f0c987 ; chromas par node --input-type=module -e \"import {oklab} from 'culori'; const o=oklab('#1f2a44'); console.log(Math.hypot(o.a,o.b))\" (et de même pour chaque couleur) → 0.0925, 0.0503, 0, 0.1522, 0, 0.0984, 0.0946 ; seules #ffffff et #9a9a9a sont < 0,02, et #ffffff est traité à part" },
+      "total": { "value": 1, "how": "occurrences en color des gris de texte : #9a9a9a ×1" },
+      "values": {
+        "#9a9a9a": { "value": 1, "how": "p.note, seule occurrence en color" }
+      },
+      "white": { "value": 2, "how": "#ffffff en color sur a.bouton et sur le p du pied (rendered.colors.values.#ffffff.contexts)" },
+      "onDark": {
+        "$comment": "R14 (ajoutée avant le code) : une occurrence de gris de texte est « sur fond sombre » si son contraste avec son fond effectif dépasse son contraste avec le blanc (texte inversé). Couleur de texte transparente : fusionnée sur chacun des deux fonds avant le calcul.",
+        "value": 0,
+        "how": "#9a9a9a sur #cecdcd (p.note) : node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#9a9a9a','#cecdcd'))\" → 1.77390… ; sur blanc : node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#9a9a9a','#ffffff'))\" → 2.81393… ; 1,77 < 2,81, donc pas sur fond sombre"
+      }
+    },
+
     "iframes": {
       "byPage": {
         "/": { "value": 0, "how": "index.html ne contient aucune iframe" },

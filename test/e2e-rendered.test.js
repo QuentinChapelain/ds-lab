@@ -90,7 +90,7 @@ test('iframes comptées par page', () => {
   assert.equal(cadresIframes, E.iframes.pageCadres.value);
 });
 
-for (const family of Object.keys(E).filter((k) => E[k]?.values)) {
+for (const family of Object.keys(E).filter((k) => E[k]?.values && k !== 'textGreys')) {
   test(`rendu ${family} : valeurs et total`, () => {
     const got = /** @type {any} */ (R.families)[family];
     assert.ok(got, family);
@@ -127,6 +127,15 @@ for (const family of Object.keys(E).filter((k) => E[k]?.values)) {
     }
   });
 }
+
+test('gris de texte (R13) : liste, total et blanc à part', () => {
+  const g = /** @type {any} */ (R).textGreys;
+  assert.deepEqual(Object.fromEntries(Object.entries(g.values).map(([k, v]) => [k, /** @type {any} */ (v).count])), expectedCounts(E.textGreys.values));
+  assert.equal(g.distinct, E.textGreys.distinct.value);
+  assert.equal(g.total, E.textGreys.total.value);
+  assert.equal(g.white, E.textGreys.white.value);
+  assert.equal(g.onDark, E.textGreys.onDark.value, 'R14 : gris sur fond sombre');
+});
 
 test('rendu fontFamilies : écritures calculées', () => {
   for (const [key, v] of Object.entries(E.fontFamilies.values)) {

@@ -131,6 +131,38 @@ export const V1_DIFFERENCES = [
     effet: 'comparable grâce à la clé v1',
     tag: '[F]',
   },
+  {
+    n: 16,
+    point: 'Hexadécimal à alpha nul',
+    v1: '#0000 ou #00000000 compté comme couleur (seul rgba(…, 0) est écarté)',
+    outil: 'exclu, comme transparent (D7)',
+    effet: 'une couleur distincte de plus en v1 par écriture de ce type',
+    tag: '[F]',
+  },
+  {
+    n: 17,
+    point: 'Mots-clés globaux',
+    v1: 'inherit, initial… comptés comme tailles de police déclarées',
+    outil: 'exclus de toutes les familles (D4)',
+    effet: 'moins de tailles distinctes',
+    tag: '[F]',
+  },
+  {
+    n: 18,
+    point: '<style> ajoutés par JavaScript',
+    v1: 'sans adresse, donc étiquetés inline',
+    outil: 'étiquetés injecté ; seuls les <style> du HTML d’origine sont inline',
+    effet: 'aucun sur les comptes, seulement sur la répartition par source',
+    tag: '[F]',
+  },
+  {
+    n: 19,
+    point: 'Écriture des valeurs non normalisables',
+    v1: 'sérialisée par le CSSOM (.5em → 0.5em, décimales arrondies)',
+    outil: 'gardée telle qu’écrite',
+    effet: 'clés différentes pour une même valeur ; comptes inchangés',
+    tag: '[F]',
+  },
 ];
 
 export const V1_SAME =

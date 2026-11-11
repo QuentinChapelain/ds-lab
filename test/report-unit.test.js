@@ -94,8 +94,8 @@ test('stampOf : horodatage local à la minute', () => {
 });
 
 test('écarts v1 et limites : contenu convenu', () => {
-  assert.equal(V1_DIFFERENCES.length, 15);
-  assert.deepEqual(V1_DIFFERENCES.map((d) => d.n), Array.from({ length: 15 }, (_, i) => i + 1));
+  assert.equal(V1_DIFFERENCES.length, 19);
+  assert.deepEqual(V1_DIFFERENCES.map((d) => d.n), Array.from({ length: 19 }, (_, i) => i + 1));
   const alpha = V1_DIFFERENCES.find((d) => /alpha/i.test(d.point));
   assert.equal(alpha?.effet, 'effet sur les chiffres de l’étape 1 à mesurer');
   assert.ok(!V1_DIFFERENCES.some((d) => /hidden/.test(d.point + d.v1)), 'écart « bordure hidden » retiré');

@@ -98,7 +98,8 @@ export async function loadSources({ path, cwd = process.cwd() } = {}) {
 /**
  * @typedef {object} SheetRef
  * @property {string} [href]       URL de la feuille, absente pour un `<style>` ou une feuille construite.
- * @property {boolean} [inline]    Vrai pour un `<style>` (ou un attribut style).
+ * @property {boolean} [inline]    Vrai pour un `<style>` du HTML d'origine. Une feuille sans URL
+ *   qui n'est pas inline (feuille construite ou <style> ajouté par JavaScript) est « injecté ».
  */
 
 /**

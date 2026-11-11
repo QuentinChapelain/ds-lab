@@ -6,9 +6,10 @@
  * OKLab depuis sRGB, ΔE = distance euclidienne × 100, regroupement glouton
  * des couleurs triées par fréquence décroissante.
  */
-import { parse, toGamut, displayable, formatHex, formatHex8 } from 'culori';
+import { parse, toGamut, displayable, converter, formatHex, formatHex8 } from 'culori';
 
 const toRgbGamut = toGamut('rgb', 'oklch');
+const toRgb = converter('rgb');
 
 /**
  * @typedef {object} NormalizedColor
@@ -30,8 +31,10 @@ export function normalizeColor(input) {
   if (!parsed) return null;
   const alpha = parsed.alpha ?? 1;
   if (alpha === 0) return null;
-  const inGamut = toRgbGamut(parsed);
+  // Conversion directe si la couleur est déjà dans sRGB : passer par OKLCH (toGamut)
+  // décale certains canaux à 0 d'une unité (#e0c000 → #e0c001).
   const outOfGamut = !displayable(parsed);
+  const inGamut = outOfGamut ? toRgbGamut(parsed) : toRgb(parsed);
   const rounded8 = formatHex8(inGamut);
   const a255 = parseInt(rounded8.slice(7, 9), 16);
   if (a255 === 0) return null;

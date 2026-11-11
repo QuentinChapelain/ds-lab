@@ -7,6 +7,7 @@
 import {
   normalizeColor,
   isOpaque,
+  toLab,
   cluster,
   blend,
   contrastRatio,
@@ -43,6 +44,50 @@ export const RENDERED_FAMILIES = /** @type {const} */ ([
 ]);
 
 const MAX_SELECTORS = 3;
+
+/** R13 : seuil de chroma OKLab √(a² + b²) des gris de texte. */
+export const GREY_CHROMA = 0.02;
+
+/**
+ * R13 : gris de texte = couleurs rendues employées au moins une fois en color
+ * (porteur de texte), de chroma OKLab < 0,02, transparence comprise ; le blanc
+ * opaque est compté à part.
+ * R14 : `onDark` = occurrences dont le contraste avec le fond effectif dépasse
+ * le contraste avec le blanc (texte inversé), relevées au calcul du contraste.
+ * @param {Record<string, { contexts: { property: string, count: number }[] }>} colorValues
+ * @param {Record<string, { onDark: number, backgrounds: Record<string, number> }>} [darkByText]
+ *   par couleur de texte (avant fusion alpha) : occurrences sur fond sombre et leurs fonds
+ */
+export function textGreys(colorValues, darkByText = {}) {
+  /** @type {Record<string, { count: number, chroma: number, onDark: number, darkBackgrounds: Record<string, number> }>} */
+  const values = {};
+  let white = 0;
+  for (const [hex, v] of Object.entries(colorValues)) {
+    const n = v.contexts.filter((c) => c.property === 'color').reduce((t, c) => t + c.count, 0);
+    if (!n) continue;
+    if (hex === '#ffffff') {
+      white = n;
+      continue;
+    }
+    const [, a, b] = toLab(hex);
+    const chroma = Math.hypot(a, b);
+    if (chroma < GREY_CHROMA)
+      values[hex] = {
+        count: n,
+        chroma: Math.round(chroma * 10000) / 10000,
+        onDark: darkByText[hex]?.onDark ?? 0,
+        darkBackgrounds: darkByText[hex]?.backgrounds ?? {},
+      };
+  }
+  const sorted = Object.fromEntries(Object.entries(values).sort((x, y) => y[1].count - x[1].count));
+  return {
+    total: Object.values(values).reduce((t, v) => t + v.count, 0),
+    distinct: Object.keys(values).length,
+    values: sorted,
+    white,
+    onDark: Object.values(values).reduce((t, v) => t + v.onDark, 0),
+  };
+}
 const SIDES = ['top', 'right', 'bottom', 'left'];
 const CORNERS = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
 
@@ -165,6 +210,9 @@ export function createRenderedAggregator() {
   const byPage = {};
   const roles = new Set();
   let unmeasuredContrast = 0;
+  /** R14 : par couleur de texte (avant fusion), occurrences sur fond sombre et leurs fonds. */
+  /** @type {Record<string, { onDark: number, backgrounds: Record<string, number> }>} */
+  const darkByText = {};
 
   /**
    * @param {PageCollection} pc
@@ -281,6 +329,12 @@ export function createRenderedAggregator() {
     const eff = effectiveBackground(pc.records, index);
     const text = isOpaque(fg.hex) ? fg.hex : blend(fg.hex, eff.bg);
     const ratio = contrastRatio(text, eff.bg);
+    const onWhite = isOpaque(fg.hex) ? fg.hex : blend(fg.hex, '#ffffff');
+    if (ratio > contrastRatio(onWhite, '#ffffff')) {
+      const d = (darkByText[fg.hex] ??= { onDark: 0, backgrounds: {} });
+      d.onDark++;
+      d.backgrounds[eff.bg] = (d.backgrounds[eff.bg] ?? 0) + 1;
+    }
     const large = isLargeText(parseFloat(p['font-size']), parseFloat(p['font-weight']));
     const lv = wcagLevels(ratio, large);
     const key = `${text}|${eff.bg}`;
@@ -344,6 +398,7 @@ export function createRenderedAggregator() {
         },
         fontSizes: { ...families.fontSizes, v1Keys: v1FontSizes },
       },
+      textGreys: textGreys(families.colors.values, darkByText),
       contrast: {
         pairs: pairList,
         occurrences: pairList.reduce((t, p) => t + p.n, 0),

@@ -34,6 +34,27 @@ test('normalizeColor : transparent, currentcolor, var() et texte libre → null'
   }
 });
 
+test('normalizeColor : un hexadécimal sRGB ressort identique (non-régression #e0c000 → #e0c001)', () => {
+  // Cas qui échouaient quand toute couleur passait par OKLCH pour la mise au gamut.
+  for (const [input, hex] of [['#e0c000', '#e0c000'], ['#00ff80', '#00ff80'], ['#00c0c0', '#00c0c0'], ['#ff0', '#ffff00'], ['#0ff', '#00ffff'], ['orange', '#ffa500']]) {
+    assert.equal(normalizeColor(input)?.hex, hex, input);
+  }
+  const h = (/** @type {number} */ n) => n.toString(16).padStart(2, '0');
+  const bad = [];
+  for (const r of [0, 255]) for (const g of [0, 1, 128, 254, 255]) for (const b of [0, 1, 128, 254, 255]) {
+    const hex = `#${h(r)}${h(g)}${h(b)}`;
+    if (normalizeColor(hex)?.hex !== hex) bad.push(hex);
+  }
+  let seed = 7;
+  const rand = () => ((seed = (seed * 1103515245 + 12345) % 2 ** 31) % 256);
+  for (let i = 0; i < 2000; i++) {
+    const hex = `#${h(rand())}${h(rand())}${h(rand())}`;
+    if (normalizeColor(hex)?.hex !== hex) bad.push(hex);
+    if (normalizeColor(`rgb(${parseInt(hex.slice(1, 3), 16)} ${parseInt(hex.slice(3, 5), 16)} ${parseInt(hex.slice(5, 7), 16)})`)?.hex !== hex) bad.push(`rgb ${hex}`);
+  }
+  assert.deepEqual(bad, []);
+});
+
 test('normalizeColor : couleur hors sRGB ramenée dans le gamut et signalée', () => {
   const c = normalizeColor('oklch(0.7 0.3 30)');
   assert.ok(c);
