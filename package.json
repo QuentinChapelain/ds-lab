@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Laboratoire de design system multi-marque : audit CSS déclaré et rendu",
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=22"
