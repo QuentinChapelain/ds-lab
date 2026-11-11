@@ -10,6 +10,7 @@ import {
   toLab,
   cluster,
   clusterComplete,
+  withOpacity,
   blend,
   contrastRatio,
   isLargeText,
@@ -281,6 +282,11 @@ export function createRenderedAggregator() {
   function addPage(pc) {
     const page = pc.url;
     const stats = (byPage[page] = { elements: 0, pseudoElements: 0, excluded: pc.excluded, textBearing: 0, iframes: pc.iframes });
+    if (pc.thirdParty) {
+      third.elements += pc.thirdParty.elements;
+      for (const [sel, n] of Object.entries(pc.thirdParty.selectors)) third.selectors[sel] = (third.selectors[sel] ?? 0) + n;
+      for (const sel of pc.thirdParty.invalid) third.invalid.add(sel);
+    }
     /** @type {{ family: string, value: string, context: Context }[]} */
     const created = [];
     pc.records.forEach((rec, index) => {
@@ -368,6 +374,25 @@ export function createRenderedAggregator() {
   /** @type {Map<string, { count: number, ctx: Map<string, { state: string, property: string, role: string, count: number, selectors: string[] }> }>} */
   const stateColors = new Map();
   const stateStats = { sampled: 0, capped: false, candidates: 0 };
+  /** R17 : éléments tiers écartés. */
+  const third = { elements: 0, selectors: /** @type {Record<string, number>} */ ({}), invalid: /** @type {Set<string>} */ (new Set()) };
+
+  /**
+   * Couleurs peintes par un élément testé et par ses pseudo-éléments (R15 bis).
+   * @param {import('../browser/states.js').StateSnapshot} snap
+   * @param {boolean} text
+   * @param {string} selector
+   */
+  const snapshotColors = (snap, text, selector) => {
+    const out = paintedColors(snap.el, text).map((c) => ({ hex: c.hex, property: c.property, selector }));
+    for (const [name, p] of Object.entries(snap.pseudo ?? {})) {
+      for (const c of paintedColors(p.props, p.text)) {
+        const hex = withOpacity(c.hex, p.opacity);
+        if (hex) out.push({ hex, property: c.property, selector: selector + name });
+      }
+    }
+    return out;
+  };
 
   /**
    * @param {import('../browser/states.js').StateCollection} sc
@@ -377,11 +402,11 @@ export function createRenderedAggregator() {
     stateStats.candidates += sc.candidates;
     if (sc.capped) stateStats.capped = true;
     for (const smp of sc.samples) {
-      const rest = new Set(paintedColors(smp.rest, smp.text).map((c) => c.hex));
-      for (const [state, props] of Object.entries(smp.states)) {
+      const rest = new Set(snapshotColors(smp.rest, smp.text, smp.selector).map((c) => c.hex));
+      for (const [state, snap] of Object.entries(smp.states)) {
         /** @type {Set<string>} */
         const seen = new Set();
-        for (const c of paintedColors(props, smp.text)) {
+        for (const c of snapshotColors(snap, smp.text, smp.selector)) {
           const k = `${c.hex}\n${c.property}`;
           if (rest.has(c.hex) || seen.has(k)) continue;
           seen.add(k);
@@ -392,7 +417,7 @@ export function createRenderedAggregator() {
           let x = v.ctx.get(ck);
           if (!x) v.ctx.set(ck, (x = { state, property: c.property, role: smp.role, count: 0, selectors: [] }));
           x.count++;
-          if (x.selectors.length < MAX_SELECTORS && !x.selectors.includes(smp.selector)) x.selectors.push(smp.selector);
+          if (x.selectors.length < MAX_SELECTORS && !x.selectors.includes(c.selector)) x.selectors.push(c.selector);
         }
       }
     }
@@ -421,7 +446,8 @@ export function createRenderedAggregator() {
       d.backgrounds[eff.bg] = (d.backgrounds[eff.bg] ?? 0) + 1;
     }
     const large = isLargeText(parseFloat(p['font-size']), parseFloat(p['font-weight']));
-    const lv = wcagLevels(ratio, large);
+    // R11 ter : une icône se juge au seuil des éléments graphiques (3:1), sans niveau AAA.
+    const lv = rec.icon ? { AA: ratio >= 3, AAA: true } : wcagLevels(ratio, large);
     const key = `${text}|${eff.bg}`;
     let pair = pairs.get(key);
     if (!pair) {
@@ -430,6 +456,7 @@ export function createRenderedAggregator() {
         bg: eff.bg,
         ratio: Math.round(ratio * 10000) / 10000,
         n: 0,
+        nIcon: 0,
         nLarge: 0,
         belowAA: 0,
         belowAAA: 0,
@@ -441,7 +468,8 @@ export function createRenderedAggregator() {
       pairs.set(key, pair);
     }
     pair.n++;
-    if (large) pair.nLarge++;
+    if (rec.icon) pair.nIcon++;
+    else if (large) pair.nLarge++;
     if (!lv.AA) pair.belowAA++;
     if (!lv.AAA) pair.belowAAA++;
     if (eff.opacity || eff.backgroundImage || rec.overlap) {
@@ -487,6 +515,11 @@ export function createRenderedAggregator() {
         fontSizes: { ...families.fontSizes, v1Keys: v1FontSizes },
       },
       textGreys: textGreys(families.colors.values, darkByText),
+      thirdParty: {
+        elements: third.elements,
+        selectors: Object.fromEntries(Object.entries(third.selectors).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)).slice(0, 40)),
+        invalid: [...third.invalid],
+      },
       states: {
         ...stateStats,
         colors: Object.fromEntries(

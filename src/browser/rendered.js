@@ -16,6 +16,7 @@
  * @property {string} [tag]
  * @property {string} [pseudo]        '::before', '::after' ou '::placeholder'
  * @property {boolean} [textOnly]     pseudo-élément ::placeholder : propriétés typographiques seulement (R3 bis)
+ * @property {boolean} [icon]         pseudo-élément dont le content est un glyphe de police d'icônes (R11 ter)
  * @property {boolean} [overlap]      porteur de texte dont le centre tombe sur un peintre hors de sa lignée (R11 bis)
  * @property {string} [selector]
  * @property {string} [role]
@@ -29,10 +30,14 @@
  * @property {RenderedRecord[]} records
  * @property {number} iframes
  * @property {number} excluded
+ * @property {{ elements: number, selectors: Record<string, number>, invalid: string[] }} [thirdParty]  éléments tiers écartés (R17)
  */
 
-/* Exécutée dans la page : aucune référence extérieure. */
-export function collectInPage() {
+/**
+ * Exécutée dans la page : aucune référence extérieure.
+ * @param {string[]} [thirdSelectors]  sélecteurs CSS des composants tiers à écarter (R17)
+ */
+export function collectInPage(thirdSelectors = []) {
   const TEXT_PROPS = [
     'color',
     'font-family',
@@ -77,6 +82,38 @@ export function collectInPage() {
   const elements = [];
   let iframes = 0;
   let excluded = 0;
+  const thirdParty = { elements: 0, selectors: /** @type {Record<string, number>} */ ({}), invalid: /** @type {string[]} */ ([]) };
+  /** @type {string[]} */
+  const validThird = [];
+  for (const sel of thirdSelectors) {
+    try {
+      document.querySelector(sel);
+      validThird.push(sel);
+    } catch {
+      thirdParty.invalid.push(sel);
+    }
+  }
+  /** @param {Element} el */
+  const isThird = (el) => validThird.some((sel) => el.matches(sel));
+  /** R11 ter : chaînes d'un content, toutes en zone à usage privé. @param {string} content */
+  const iconGlyph = (content) => {
+    const chars = [...[...content.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((m) => m[1]).join('').replace(/\s/g, '')];
+    return chars.length > 0 && chars.every((ch) => {
+      const c = ch.codePointAt(0) ?? 0;
+      return (c >= 0xe000 && c <= 0xf8ff) || c >= 0xf0000;
+    });
+  };
+  /**
+   * Pseudo-élément ::before ou ::after tel qu'il est peint, ou null (R2, R1 bis).
+   * @param {Element} el @param {string} pseudo
+   */
+  const pseudoOf = (el, pseudo) => {
+    const ps = getComputedStyle(el, pseudo);
+    const content = ps.content;
+    if (!content || content === 'none' || content === 'normal' || ps.display === 'none' || ps.visibility === 'hidden') return null;
+    const text = [...content.matchAll(/"((?:[^"\\]|\\.)*)"/g)].some((m) => m[1].trim() !== '');
+    return { ps, text, icon: text && iconGlyph(content), opacity: parseFloat(ps.opacity) };
+  };
 
   /** @param {Element} el */
   const directText = (el) => {
@@ -156,15 +193,24 @@ export function collectInPage() {
    * @param {Element} el
    * @param {number} parent
    * @param {boolean} inBody  el est un descendant de body
+   * @param {boolean} faded   un ancêtre a une opacity de 0 (R1 bis)
+   * @param {boolean} third   un ancêtre est un composant tiers (R17)
    */
-  const visit = (el, parent, inBody) => {
+  const visit = (el, parent, inBody, faded, third) => {
     const idx = records.length;
     const cs = getComputedStyle(el);
     const tag = el.tagName.toUpperCase();
     if (tag === 'IFRAME' || tag === 'FRAME') iframes++;
-    const visible = el.getClientRects().length > 0 && cs.visibility !== 'hidden';
-    const retained = inBody && visible;
+    const isFaded = faded || parseFloat(cs.opacity) === 0;
+    const isThirdParty = third || (inBody && isThird(el));
+    const visible = el.getClientRects().length > 0 && cs.visibility !== 'hidden' && !isFaded;
+    const retained = inBody && visible && !isThirdParty;
     if (inBody && !visible && !META.has(tag)) excluded++;
+    if (inBody && visible && isThirdParty) {
+      thirdParty.elements++;
+      const sel = selectorOf(el);
+      thirdParty.selectors[sel] = (thirdParty.selectors[sel] ?? 0) + 1;
+    }
     /** @type {any} */
     const rec = { parent, retained, bg: cs.backgroundColor, bgImage: cs.backgroundImage !== 'none', opacity: cs.opacity };
     const field = retained ? fieldText(el) : { value: false, placeholder: false };
@@ -204,10 +250,9 @@ export function collectInPage() {
     }
     if (retained) {
       for (const pseudo of ['::before', '::after']) {
-        const ps = getComputedStyle(el, pseudo);
-        const content = ps.content;
-        if (!content || content === 'none' || content === 'normal' || ps.display === 'none' || ps.visibility === 'hidden') continue;
-        const text = [...content.matchAll(/"((?:[^"\\]|\\.)*)"/g)].some((m) => m[1].trim() !== '');
+        const found = pseudoOf(el, pseudo);
+        if (!found || found.opacity === 0) continue;
+        const { ps, text } = found;
         records.push({
           parent: idx,
           retained: true,
@@ -219,6 +264,7 @@ export function collectInPage() {
           selector: rec.selector + pseudo,
           role: rec.role,
           text,
+          icon: found.icon,
           props: propsOf(ps, text),
         });
         elements.push(el);
@@ -226,11 +272,11 @@ export function collectInPage() {
     }
     if (tag === 'HEAD') return;
     const childInBody = inBody || el === body;
-    for (const child of el.children) visit(child, idx, childInBody);
-    if (el.shadowRoot) for (const child of el.shadowRoot.children) visit(child, idx, childInBody);
+    for (const child of el.children) visit(child, idx, childInBody, isFaded, isThirdParty);
+    if (el.shadowRoot) for (const child of el.shadowRoot.children) visit(child, idx, childInBody, isFaded, isThirdParty);
   };
 
-  visit(document.documentElement, -1, false);
+  visit(document.documentElement, -1, false, false, false);
 
   // R11 bis : porteurs de texte dont le centre tombe sur un peintre hors de leur lignée.
   /** @type {{ el: Element, rect: DOMRect }[]} */
@@ -264,16 +310,25 @@ export function collectInPage() {
   // et lecture des propriétés d'un élément dans son état courant.
   Object.defineProperty(window, '__dsAuditElements', { value: elements, configurable: true });
   Object.defineProperty(window, '__dsAuditProps', {
-    value: (/** @type {number} */ i, /** @type {boolean} */ text) => propsOf(getComputedStyle(elements[i]), text, elements[i]),
+    value: (/** @type {number} */ i, /** @type {boolean} */ text) => {
+      /** @type {Record<string, { props: Record<string, string>, text: boolean, opacity: number }>} */
+      const pseudo = {};
+      for (const name of ['::before', '::after']) {
+        const found = pseudoOf(elements[i], name);
+        if (found) pseudo[name] = { props: propsOf(found.ps, found.text), text: found.text, opacity: found.opacity };
+      }
+      return { el: propsOf(getComputedStyle(elements[i]), text, elements[i]), pseudo };
+    },
     configurable: true,
   });
-  return { url: location.href, records, iframes, excluded };
+  return { url: location.href, records, iframes, excluded, thirdParty };
 }
 
 /**
  * @param {import('playwright-core').Page} page
+ * @param {{ thirdParty?: string[] }} [opts]
  * @returns {Promise<PageCollection>}
  */
-export async function collectRendered(page) {
-  return /** @type {PageCollection} */ (await page.evaluate(collectInPage));
+export async function collectRendered(page, { thirdParty = [] } = {}) {
+  return /** @type {PageCollection} */ (await page.evaluate(collectInPage, thirdParty));
 }

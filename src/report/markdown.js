@@ -117,7 +117,7 @@ export function renderReport(audit) {
   );
   push();
   push(
-    `Propriétés personnalisées déclarées : ${declared.customProperties} ; éléments rendus : ${rendered.elements}, pseudo-éléments : ${rendered.pseudoElements}, exclus (invisibles) : ${rendered.excluded}. [F]`,
+    `Propriétés personnalisées déclarées : ${declared.customProperties} ; éléments rendus : ${rendered.elements}, pseudo-éléments : ${rendered.pseudoElements}, exclus (invisibles ou à opacity 0) : ${rendered.excluded}${rendered.thirdParty ? `, tiers écartés : ${rendered.thirdParty.elements}` : ''}. [F]`,
   );
 
   // --- Couleurs
@@ -221,6 +221,23 @@ export function renderReport(audit) {
           p.selectors.join(', '),
         ]),
       ),
+    );
+  }
+
+  const iconN = pairs.reduce((/** @type {number} */ t, /** @type {any} */ p) => t + (p.nIcon ?? 0), 0);
+  if (iconN) {
+    push();
+    push(`Dont ${iconN} icône(s) de police d’icônes, jugées au seuil des éléments graphiques (3:1, WCAG 2.1 critère 1.4.11). [F]`);
+  }
+
+  // --- Tiers
+  const T = rendered.thirdParty;
+  if (T && T.elements) {
+    push();
+    push('## Composants tiers écartés');
+    push();
+    push(
+      `${T.elements} éléments écartés du rendu par les sélecteurs thirdParty du fichier de sources : ${Object.entries(T.selectors).slice(0, 15).map(([s, n]) => `\`${s}\` ×${n}`).join(' · ')}. La liste des sélecteurs est un choix de l’auditeur. [H]`,
     );
   }
 

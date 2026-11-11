@@ -187,10 +187,18 @@ export const V1_DIFFERENCES = [
     effet: 'aucun sur les familles ; le glouton reste la base de comparaison avec la v1',
     tag: '[F]',
   },
+  {
+    n: 23,
+    point: 'Éléments écartés du rendu',
+    v1: 'tout élément qui a un rectangle et que visibility ne masque pas',
+    outil: 'en moins : les éléments à opacity 0 ou sous un ancêtre à opacity 0 (R1 bis), et les composants tiers désignés dans le fichier de sources (R17)',
+    effet: 'moins d’éléments et de couleurs rendus ; le nombre d’éléments ne se compare plus à celui de la v1',
+    tag: '[F]',
+  },
 ];
 
 export const V1_SAME =
-  'Identiques à la v1 [F] : seuils ΔE stricts à 2 et 5 en OKLab × 100, regroupement glouton par fréquence (groupsDE2, groupsDE5), couleurs opaques seules dans les groupes, arrondi au centième des tailles déclarées, rootPx mesuré, règle de visibilité.';
+  'Identiques à la v1 [F] : seuils ΔE stricts à 2 et 5 en OKLab × 100, regroupement glouton par fréquence (groupsDE2, groupsDE5), couleurs opaques seules dans les groupes, arrondi au centième des tailles déclarées, rootPx mesuré.';
 
 /**
  * Limites connues, toujours rappelées dans le rapport.
@@ -202,11 +210,11 @@ export const LIMITS = [
     tag: '[F]',
   },
   {
-    text: 'États : hover, focus et active sont forcés sur un élément par couple (rôle, sélecteur court), 60 au plus par page, et lus sur l’élément lui-même (pas sur ses enfants ni ses pseudo-éléments). Les états d’erreur, de sélection et de désactivation ne peuvent pas être forcés.',
+    text: 'États : hover, focus et active sont forcés sur un élément par couple (rôle, sélecteur court), 60 au plus par page, et lus sur l’élément et ses pseudo-éléments ::before et ::after (pas sur ses enfants). Les états d’erreur, de sélection et de désactivation ne peuvent pas être forcés.',
     tag: '[F]',
   },
   {
-    text: 'Un élément est « rendu » s’il a un rectangle et n’est pas en visibility: hidden : un élément hors écran, à opacity 0 ou masqué par clip est compté.',
+    text: 'Un élément est « rendu » s’il a un rectangle, n’est pas en visibility: hidden et n’est pas à opacity 0 : un élément hors écran ou masqué par clip est encore compté.',
     tag: '[F]',
   },
   {
@@ -215,6 +223,10 @@ export const LIMITS = [
   },
   {
     text: 'Le déclaré compte tout jeton couleur de toute déclaration ; le rendu compte les couleurs de texte, de fond, de bordure, de contour, d’ombre, de soulignement, de dégradé et de SVG. Les images, les polices d’icônes en couleur et les canvas échappent aux deux.',
+    tag: '[F]',
+  },
+  {
+    text: 'Contraste : seules les icônes en police d’icônes (pseudo-élément en zone à usage privé) sont jugées à 3:1 ; une icône SVG ou image n’est pas mesurée.',
     tag: '[F]',
   },
   { text: 'Seuil de chroma des gris de texte (0,02) : choisi sur une seule plateforme.', tag: '[H]' },

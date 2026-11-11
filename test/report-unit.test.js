@@ -94,9 +94,9 @@ test('stampOf : horodatage local à la minute', () => {
 });
 
 test('écarts v1 et limites : contenu convenu', () => {
-  // 19 écarts à la séance 1, plus 3 après la relecture du 11/11/2026 (couleurs peintes, champs, états et regroupement).
-  assert.equal(V1_DIFFERENCES.length, 22);
-  assert.deepEqual(V1_DIFFERENCES.map((d) => d.n), Array.from({ length: 22 }, (_, i) => i + 1));
+  // 19 écarts à la séance 1, plus 4 après la relecture du 11/11/2026 (couleurs peintes, champs, états et regroupement, éléments écartés).
+  assert.equal(V1_DIFFERENCES.length, 23);
+  assert.deepEqual(V1_DIFFERENCES.map((d) => d.n), Array.from({ length: 23 }, (_, i) => i + 1));
   const alpha = V1_DIFFERENCES.find((d) => /alpha/i.test(d.point));
   assert.equal(alpha?.effet, 'effet sur les chiffres de l’étape 1 à mesurer');
   assert.ok(!V1_DIFFERENCES.some((d) => /hidden/.test(d.point + d.v1)), 'écart « bordure hidden » retiré');

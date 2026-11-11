@@ -10,14 +10,14 @@ import { collectStates } from '../browser/states.js';
 /**
  * @param {import('playwright-core').Page} page
  * @param {ReturnType<typeof import('./aggregate.js').createRenderedAggregator>} aggregator
- * @param {{ trace?: boolean, states?: boolean, sources?: import('../lib/sources.js').CompiledSources | null,
+ * @param {{ trace?: boolean, states?: boolean, thirdParty?: string[], sources?: import('../lib/sources.js').CompiledSources | null,
  *   also?: ReturnType<typeof import('./aggregate.js').createRenderedAggregator>[] }} [opts]
  *   `also` : agrégats supplémentaires alimentés par le même relevé (ex. agrégat de la page seule)
  *   `states` : force hover, focus et active sur un échantillon d'éléments interactifs (R15)
  * @returns {Promise<{ url: string, iframes: number, traced: number, stateSamples: number }>}
  */
-export async function measureRendered(page, aggregator, { trace = false, states = false, sources = null, also = [] } = {}) {
-  const pc = await collectRendered(page);
+export async function measureRendered(page, aggregator, { trace = false, states = false, thirdParty = [], sources = null, also = [] } = {}) {
+  const pc = await collectRendered(page, { thirdParty });
   const created = aggregator.addPage(pc);
   for (const a of also) a.addPage(pc);
   let traced = 0;

@@ -145,9 +145,10 @@ export function renderHtml(audit) {
         .filter(([, n]) => n)
         .map(([k]) => ({ opacity: 'opacité', backgroundImage: 'image de fond', overlap: 'posé sur une image ou un bloc' })[k] ?? k)
         .join(', ');
+      const onlyIcons = p.nIcon > 0 && p.nIcon === p.n;
       return `<div class="pair">
-  <div class="sample" style="background:${bg};color:${fg}">Aa Texte</div>
-  <div class="meta"><div><b>${p.ratio.toFixed(2)} : 1</b> <span class="badge ${fail ? 'ko' : 'ok'}">${fail ? `sous AA ×${p.belowAA}` : 'AA'}</span>${p.flag ? ` <span class="badge v">à vérifier : ${esc(reasons)}</span>` : ''}</div>
+  <div class="sample" style="background:${bg};color:${fg}">${onlyIcons ? '★ icône' : 'Aa Texte'}</div>
+  <div class="meta"><div><b>${p.ratio.toFixed(2)} : 1</b> <span class="badge ${fail ? 'ko' : 'ok'}">${fail ? `sous le seuil ×${p.belowAA}` : onlyIcons ? '3:1 atteint' : 'AA'}</span>${p.nIcon ? ` <em class="tag">${onlyIcons ? 'icône, seuil 3:1' : `dont ${p.nIcon} icône(s), seuil 3:1`}</em>` : ''}${p.flag ? ` <span class="badge v">à vérifier : ${esc(reasons)}</span>` : ''}</div>
   <div class="hexes"><code>${esc(p.text)}</code> sur <code>${esc(p.bg)}</code> · ×${p.n}</div>
   <div class="examples">${selectorList(p.selectors)}</div></div>
 </div>`;
@@ -292,6 +293,7 @@ ${stat(colors.distinct - (colors.distinctWithoutPseudo ?? colors.distinct), 'de 
 ${stat(S.onlyInStates.length, 'de plus, au survol, au focus ou à l’appui')}
 ${stat(groups.length + translucent.length, 'groupes de couleurs proches')}
 ${stat(declared.families.colors.distinct, 'couleurs déclarées dans le CSS')}
+${rendered.thirdParty?.elements ? stat(rendered.thirdParty.elements, 'éléments tiers écartés') : ''}
 </div>
 
 <h2>Couleurs affichées</h2>
@@ -304,7 +306,7 @@ ${translucent.length ? `<h3>Couleurs avec transparence</h3><section class="group
 ${stateRows ? `<section class="group">${stateRows}</section>` : `<p class="lede">${meta.states === false ? 'États non mesurés (option --no-states).' : 'Aucune couleur propre à un état sur l’échantillon.'}</p>`}
 
 <h2>Texte sur fond</h2>
-<p class="lede">Chaque paire est montrée dans ses vraies couleurs, de la moins lisible à la plus lisible${rendered.contrast.pairs.length > pairs.length ? ` (${pairs.length} premières sur ${rendered.contrast.pairs.length})` : ''}. « À vérifier » : le fond calculé n’est peut-être pas celui qu’on voit.</p>
+<p class="lede">Chaque paire est montrée dans ses vraies couleurs, de la moins lisible à la plus lisible${rendered.contrast.pairs.length > pairs.length ? ` (${pairs.length} premières sur ${rendered.contrast.pairs.length})` : ''}. « À vérifier » : le fond calculé n’est peut-être pas celui qu’on voit. Le texte se juge à 4,5:1 (3:1 s’il est grand), une icône à 3:1.</p>
 <div class="grid">
 ${pairHtml}
 </div>

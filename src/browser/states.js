@@ -22,8 +22,10 @@ export const MAX_STATE_SAMPLES = 60;
  * @property {string} role
  * @property {string} selector
  * @property {boolean} text
- * @property {Record<string, string>} rest
- * @property {Record<string, Record<string, string>>} states  par état : propriétés calculées
+ * @property {StateSnapshot} rest
+ * @property {Record<string, StateSnapshot>} states  par état
+ * @typedef {{ el: Record<string, string>, pseudo: Record<string, { props: Record<string, string>, text: boolean, opacity: number }> }} StateSnapshot
+ *   propriétés calculées de l'élément et de ses ::before / ::after (R15 bis)
  * @typedef {{ samples: StateSample[], candidates: number, capped: boolean }} StateCollection
  */
 
@@ -56,7 +58,7 @@ export async function collectStates(page, pc, { max = MAX_STATE_SAMPLES } = {}) 
   const cdp = await page.context().newCDPSession(page);
   /** @param {number} i @param {boolean} text */
   const read = (i, text) =>
-    /** @type {Promise<Record<string, string>>} */ (
+    /** @type {Promise<StateSnapshot>} */ (
       page.evaluate(([idx, t]) => /** @type {any} */ (window).__dsAuditProps(idx, t), /** @type {[number, boolean]} */ ([i, text]))
     );
   /** @type {StateSample[]} */
@@ -84,7 +86,7 @@ export async function collectStates(page, pc, { max = MAX_STATE_SAMPLES } = {}) 
       }
       if (!nodeId) continue;
       const rest = await read(s.index, s.text);
-      /** @type {Record<string, Record<string, string>>} */
+      /** @type {Record<string, StateSnapshot>} */
       const states = {};
       for (const [state, classes] of Object.entries(STATES)) {
         await cdp.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: [...classes] });

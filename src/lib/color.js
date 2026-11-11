@@ -202,6 +202,21 @@ export function hexToRgba(hex) {
   };
 }
 
+/**
+ * Couleur vue à travers une opacity d'élément : alpha multiplié (R15 bis).
+ * @param {string} hex
+ * @param {number} opacity  0 à 1
+ * @returns {string | null} null si plus rien n'est peint
+ */
+export function withOpacity(hex, opacity) {
+  if (!(opacity > 0)) return null;
+  if (opacity >= 1) return hex;
+  const { a } = hexToRgba(hex);
+  const a255 = Math.round(a * opacity * 255);
+  if (a255 === 0) return null;
+  return hex.slice(0, 7) + (a255 === 255 ? '' : a255.toString(16).padStart(2, '0'));
+}
+
 /** @param {number} v */
 const hex2 = (v) => Math.round(Math.min(255, Math.max(0, v))).toString(16).padStart(2, '0');
 

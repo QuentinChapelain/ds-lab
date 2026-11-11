@@ -121,7 +121,7 @@ export async function runAudit(opts) {
           meta.sheets = sheets.length;
           for (const t of sw) warnings.push({ text: `${url} : ${t}`, tag: '[F]' });
           const pageAgg = v1Code ? createRenderedAggregator() : null;
-          const r = await measureRendered(page, agg, { trace, states, sources, also: pageAgg ? [pageAgg] : [] });
+          const r = await measureRendered(page, agg, { trace, states, thirdParty: sources?.thirdParty ?? [], sources, also: pageAgg ? [pageAgg] : [] });
           meta.iframes = r.iframes;
           meta.traced = r.traced;
           meta.stateSamples = r.stateSamples;
@@ -156,6 +156,7 @@ export async function runAudit(opts) {
       if (sourcesWarning) warnings.unshift({ text: sourcesWarning, tag: '[F]' });
       warnings.push(...pageWarnings(pages));
       for (const t of declared.warnings) warnings.push({ text: t, tag: '[F]' });
+      for (const sel of rendered.thirdParty.invalid) warnings.push({ text: `sources : sélecteur thirdParty invalide, ignoré : ${sel}`, tag: '[F]' });
 
       const stamp = stampOf(now);
       const audit = {

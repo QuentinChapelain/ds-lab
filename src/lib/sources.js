@@ -21,9 +21,10 @@ export const RESERVED = Object.freeze({
 
 /**
  * @typedef {{ label: string, match: string } | { label: string, regex: string }} SourceRule
- * @typedef {{ rules: SourceRule[], default?: string }} SourcesConfig
+ * @typedef {{ rules: SourceRule[], default?: string, thirdParty?: string[] }} SourcesConfig
+ *   thirdParty : sélecteurs CSS des composants tiers à écarter du rendu (R17)
  * @typedef {{ label: string, test: (href: string) => boolean }} CompiledRule
- * @typedef {{ rules: CompiledRule[], default: string | null }} CompiledSources
+ * @typedef {{ rules: CompiledRule[], default: string | null, thirdParty: string[] }} CompiledSources
  */
 
 /**
@@ -59,7 +60,10 @@ export function compileSources(config) {
   if (cfg.default !== undefined && (typeof cfg.default !== 'string' || !cfg.default.trim())) {
     throw new Error('sources : "default" doit être une chaîne non vide');
   }
-  return { rules, default: cfg.default ?? null };
+  if (cfg.thirdParty !== undefined && (!Array.isArray(cfg.thirdParty) || cfg.thirdParty.some((/** @type {unknown} */ x) => typeof x !== 'string' || !x.trim()))) {
+    throw new Error('sources : "thirdParty" doit être une liste de sélecteurs CSS non vides');
+  }
+  return { rules, default: cfg.default ?? null, thirdParty: cfg.thirdParty ?? [] };
 }
 
 /**
