@@ -1,0 +1,19 @@
+{
+  "name": "ds-lab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Laboratoire de design system multi-marque : audit CSS déclaré et rendu",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@projectwallace/css-analyzer": "9.9.7",
+    "culori": "4.0.2",
+    "playwright-core": "1.59.1",
+    "postcss": "8.5.32"
+  }
+}
