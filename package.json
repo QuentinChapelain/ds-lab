@@ -10,6 +10,7 @@
   },
   "scripts": {
     "audit": "node src/cli/audit.js",
+    "login": "node src/cli/login.js",
     "test": "node --test \"test/**/*.test.js\""
   },
   "dependencies": {
