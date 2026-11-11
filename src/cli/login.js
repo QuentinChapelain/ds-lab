@@ -53,6 +53,31 @@ export async function saveState(file, state) {
   await rename(tmp, file);
 }
 
+/**
+ * État de session lu sans rien ouvrir ni recharger : les cookies du contexte et
+ * le localStorage de la page principale. context.storageState() n'est pas
+ * utilisé ici : pour lire le localStorage de chaque origine (cadres compris),
+ * il ouvre des pages internes et y navigue, ce qui, répété toutes les deux
+ * secondes, fait clignoter un onglet et gêne la connexion.
+ * @param {import('playwright-core').BrowserContext} context
+ * @param {import('playwright-core').Page} page
+ */
+export async function readState(context, page) {
+  const cookies = await context.cookies();
+  /** @type {{ origin: string, localStorage: { name: string, value: string }[] }[]} */
+  let origins = [];
+  try {
+    const main = await page.evaluate(() => ({
+      origin: location.origin,
+      localStorage: Object.keys(localStorage).map((name) => ({ name, value: localStorage.getItem(name) ?? '' })),
+    }));
+    if (/^https?:/.test(main.origin) && main.localStorage.length) origins = [main];
+  } catch {
+    /* page en cours de navigation : cookies seuls pour ce passage */
+  }
+  return { cookies, origins };
+}
+
 async function main() {
   let parsed;
   try {
@@ -78,7 +103,7 @@ async function main() {
   browser.on('disconnected', () => (open = false));
   while (open) {
     try {
-      await saveState(parsed.file, await context.storageState());
+      await saveState(parsed.file, await readState(context, page));
       saves++;
     } catch {
       break;
