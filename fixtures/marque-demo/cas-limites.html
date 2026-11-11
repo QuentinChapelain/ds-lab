@@ -33,6 +33,11 @@
     .survol:hover::before { opacity: .5; }
     .survol:focus-visible { outline: 3px solid #f0a500; }
     .tiers-bouton { color: #d400a6; }
+    .lien-icone { color: #0b6e4f; text-decoration: none; }
+    .lien-icone:focus-visible { outline: 3px solid #f0a500; }
+    .trait { fill: none; stroke: currentColor; }
+    .attente { width: 40px; height: 40px; background-color: #7d5ba6; }
+    .photo { display: block; width: 40px; height: 40px; }
   </style>
 </head>
 <body>
@@ -54,6 +59,8 @@
   <i class="icone" aria-hidden="true"></i>
   <p class="fantome">Fantôme</p>
   <a class="survol" href="#survol">Survol</a>
+  <a class="lien-icone" href="#icone"><svg width="20" height="20" aria-hidden="true"><path class="trait" d="M2 10h16"/></svg>Icône</a>
+  <div class="attente"><img class="photo" alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></div>
   <div class="tiers-bandeau"><button class="tiers-bouton">Accepter</button></div>
 </body>
 </html>

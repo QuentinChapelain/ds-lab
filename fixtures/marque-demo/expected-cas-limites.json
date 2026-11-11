@@ -10,15 +10,16 @@
     "R1 bis. Un élément dont l'opacity vaut 0, ou dont un ancêtre a une opacity de 0, n'est pas retenu (compté dans excluded) ; de même un pseudo-élément à opacity 0. Écart avec la v1, qui les comptait.",
     "R11 ter. Icône : pseudo-élément dont le content ne contient que des caractères de zone à usage privé (police d'icônes). Son contraste se juge au seuil des éléments graphiques (WCAG 2.1, 1.4.11) : AA à partir de 3:1, pas de niveau AAA. La paire porte nIcon.",
     "R15 bis. États : les pseudo-éléments ::before et ::after de l'élément testé sont lus aussi. La couleur d'un pseudo-élément est multipliée par sa propre opacity (un voile currentColor à opacity .5 donne la couleur à 50 %) ; à opacity 0 il ne peint rien. Le sélecteur rapporté est suivi de ::before ou ::after.",
-    "R17. Tiers : les éléments qui correspondent à l'un des sélecteurs CSS de la clé thirdParty du fichier de sources (ou qui en descendent) ne sont ni retenus ni testés ; ils sont comptés dans rendered.thirdParty, avec leurs sélecteurs courts. Ici : .tiers-bandeau."
+    "R17. Tiers : les éléments qui correspondent à l'un des sélecteurs CSS de la clé thirdParty du fichier de sources (ou qui en descendent) ne sont ni retenus ni testés ; ils sont comptés dans rendered.thirdParty, avec leurs sélecteurs courts. Ici : .tiers-bandeau.",
+    "R18. Interface ou contenu : une occurrence de couleur est du « contenu » dans deux cas. (a) fill ou stroke d'une forme SVG dont la valeur diffère de la color calculée de cette forme : une icône dessinée en currentColor suit la couleur du texte et reste de l'interface, une illustration ou un graphique porte ses propres couleurs. (b) background-color d'une boîte d'image : élément sans texte direct dont tous les enfants sont des médias (img, picture, video, canvas) ou des éléments à background-image url(), ou qui porte lui-même une background-image url(). Chaque valeur porte content = nombre de ses occurrences de contenu ; distinctInterface = nombre de valeurs dont au moins une occurrence est de l'interface. Les familles comptent toujours tout ; la page visuelle montre l'interface d'abord et le contenu à part."
   ],
   "pseudoElements": {
     "value": 2,
     "how": "input#ville::placeholder et i.icone::before ; a.survol::before est à opacity 0 au repos, donc non retenu (R1 bis)"
   },
   "textBearing": {
-    "value": 12,
-    "how": "les 10 de la première version (input#nom, input#ville::placeholder, select#pays, div.trois-bords, div.relief, div.degrade, a.action, p.sur-image, span.pose, p.normal) + i.icone::before + a.survol ; p.fantome (opacity 0) et button.tiers-bouton (tiers) sont exclus"
+    "value": 13,
+    "how": "les 10 de la première version (input#nom, input#ville::placeholder, select#pays, div.trois-bords, div.relief, div.degrade, a.action, p.sur-image, span.pose, p.normal) + i.icone::before + a.survol ; p.fantome (opacity 0) et button.tiers-bouton (tiers) sont exclus ; plus a.lien-icone"
   },
   "colors": {
     "present": [
@@ -187,8 +188,8 @@
   },
   "states": {
     "sampled": {
-      "value": 6,
-      "how": "input#nom, input#ville, select#pays, input#accord (champs), a.action et a.survol (liens) ; button.tiers-bouton est écarté (R17)"
+      "value": 7,
+      "how": "input#nom, input#ville, select#pays, input#accord (champs), a.action et a.survol (liens) ; button.tiers-bouton est écarté (R17) ; plus a.lien-icone"
     },
     "action": [
       {
@@ -211,8 +212,8 @@
       }
     ],
     "focusCount": {
-      "value": 6,
-      "how": "#f0a500 en outline-color à l'état focus : a.action, a.survol et les 4 champs"
+      "value": 7,
+      "how": "#f0a500 en outline-color à l'état focus : a.action, a.survol, a.lien-icone et les 4 champs"
     },
     "onlyInStates": {
       "value": [
@@ -431,6 +432,36 @@
         "div.tiers-bandeau"
       ],
       "how": "sélecteurs courts des éléments écartés"
+    }
+  },
+  "content": {
+    "contentOnly": {
+      "value": [
+        "#7d5ba6",
+        "#c8553d"
+      ],
+      "how": "#7d5ba6 : fond de div.attente, boîte d'image (son seul enfant est img.photo) ; #c8553d : fill de circle.rond, différent de sa color (#1f2a44, héritée de body). distinct − distinctInterface = 2 (R18)"
+    },
+    "mixed": {
+      "value": {
+        "#2b4c7e": 1
+      },
+      "how": "#2b4c7e : stroke de circle.rond (contenu, ×1) et fond de a.action (interface, ×1)"
+    },
+    "interface": {
+      "value": {
+        "#0b6e4f": 0
+      },
+      "how": "#0b6e4f : color de a.lien-icone et stroke de path.trait en currentColor (égal à la color de la forme) : aucune occurrence de contenu"
+    },
+    "iconStroke": {
+      "value": "#0b6e4f",
+      "property": "stroke",
+      "role": "image",
+      "selectors": [
+        "path.trait"
+      ],
+      "how": "l'icône en currentColor est bien relevée, comme interface"
     }
   }
 }

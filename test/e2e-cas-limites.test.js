@@ -114,3 +114,14 @@ test('éléments tiers écartés et éléments à opacity 0 exclus (R17, R1 bis)
       for (const c of /** @type {any} */ (v).contexts)
         for (const sel of c.selectors) assert.ok(!/fantome|tiers-/.test(sel), `${sel} ne doit pas être rendu`);
 });
+
+test('interface ou contenu : SVG hors currentColor et fonds de boîtes d’image (R18)', () => {
+  const C = R.families.colors;
+  const contentOnly = Object.entries(C.values).filter(([, v]) => /** @type {any} */ (v).content === /** @type {any} */ (v).count).map(([k]) => k);
+  assert.deepEqual(contentOnly.sort(), E.content.contentOnly.value);
+  assert.equal(C.distinct - C.distinctInterface, E.content.contentOnly.value.length);
+  for (const [hex, n] of Object.entries({ ...E.content.mixed.value, ...E.content.interface.value })) assert.equal(C.values[hex].content, n, hex);
+  const i = E.content.iconStroke;
+  assert.deepEqual(context('colors', i.value, i.property, i.role)?.selectors, i.selectors);
+  assert.ok(C.groupsInterfaceDE5.every((/** @type {any} */ g) => g.members.every((/** @type {string} */ m) => !E.content.contentOnly.value.includes(m))));
+});
