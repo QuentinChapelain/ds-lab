@@ -30,7 +30,7 @@ before(async () => {
   const page = await context.newPage();
   await gotoAndSettle(page, `${servers.origin}/cas-limites.html`, { waitMs: 100 });
   const agg = createRenderedAggregator();
-  await measureRendered(page, agg, { states: true });
+  await measureRendered(page, agg, { states: true, thirdParty: E.conditions.thirdParty });
   R = agg.result();
   await page.close();
 });
@@ -85,6 +85,9 @@ test('états forcés : hover, focus, active (R15)', () => {
   const focus = S.colors['#f0a500'].contexts.filter((/** @type {any} */ x) => x.state === 'focus' && x.property === 'outline-color');
   assert.equal(focus.reduce((/** @type {number} */ t, /** @type {any} */ x) => t + x.count, 0), E.states.focusCount.value);
   assert.deepEqual([...S.onlyInStates].sort(), E.states.onlyInStates.value);
+  const v = E.states.survol;
+  const voile = S.colors[v.value]?.contexts.find((/** @type {any} */ x) => x.state === v.state && x.property === v.property && x.selectors.includes(v.selector));
+  assert.ok(voile, `voile ${v.value} sur ${v.selector} absent (R15 bis)`);
 });
 
 test('contraste : texte posé sur un peintre marqué [V] overlap, témoins non marqués (R11 bis)', () => {
@@ -94,8 +97,20 @@ test('contraste : texte posé sur un peintre marqué [V] overlap, témoins non m
     assert.ok(got, `paire ${label} absente`);
     assert.ok(Math.abs(got.ratio - want.ratio) <= 0.01, `${label} ratio ${got.ratio}`);
     assert.equal(got.n, want.n, `${label} n`);
+    assert.equal(got.belowAA, want.belowAA, `${label} sous AA`);
+    assert.equal(got.nIcon, want.nIcon, `${label} icônes`);
     assert.equal(got.uncertain.reasons.overlap, want.overlap, `${label} overlap`);
     assert.equal(got.flag, want.flag, `${label} [V]`);
     assert.deepEqual(got.selectors, want.selectors, `${label} sélecteurs`);
   }
+});
+
+test('éléments tiers écartés et éléments à opacity 0 exclus (R17, R1 bis)', () => {
+  assert.equal(R.thirdParty.elements, E.thirdParty.elements.value);
+  assert.deepEqual(Object.keys(R.thirdParty.selectors).sort(), E.thirdParty.selectors.value);
+  assert.ok(R.excluded >= E.excludedOpacity.value.length);
+  for (const f of Object.values(R.families))
+    for (const v of Object.values(/** @type {any} */ (f).values))
+      for (const c of /** @type {any} */ (v).contexts)
+        for (const sel of c.selectors) assert.ok(!/fantome|tiers-/.test(sel), `${sel} ne doit pas être rendu`);
 });

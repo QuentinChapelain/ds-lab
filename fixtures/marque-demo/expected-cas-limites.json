@@ -1,92 +1,436 @@
 {
   "$comment": "Attendus de fixtures/marque-demo/cas-limites.html (page hors conditions.pages, comme cadres.html). Écrits à la main à partir du HTML, dans un commit séparé et antérieur au code qui les satisfait. Origine : relecture externe du 11/11/2026 (cas que l'outil ne voyait pas). Contrastes et ΔE calculés avec culori 4.0.2, commande dans how. En cas d'écart : corriger l'outil, ou ce fichier avec une justification écrite, jamais le recaler sur la sortie.",
-
   "conventions": [
     "R3 bis. Champs porteurs de texte : input (sauf hidden, checkbox, radio, range, color, file, image) et textarea dont la valeur n'est pas vide ; select dont l'option choisie a un texte. Si la valeur est vide et l'attribut placeholder non vide, c'est le pseudo-élément ::placeholder qui porte le texte (compté dans pseudoElements, rôle du champ, sélecteur suivi de ::placeholder, propriétés typographiques et background-color seulement).",
     "R6 bis (remplace R6). Couleur de bordure : une occurrence par couleur distincte parmi les côtés visibles (épaisseur > 0, style différent de none) ; propriété = longhand du premier côté qui la porte. Une bordure uniforme compte donc toujours une fois, sur border-top-color.",
     "R5 bis. Couleurs peintes relevées en plus de color, background-color et bordure : outline-color (si outline-style n'est pas none et outline-width > 0) ; couleur de chaque ombre de box-shadow (propriété box-shadow) ; text-decoration-color sur un porteur de texte si text-decoration-line n'est pas none et si elle diffère de color ; chaque couleur d'un dégradé de background-image (propriété background-image) ; fill et stroke des formes SVG (path, circle, rect, ellipse, line, polyline, polygon, text, use) quand ils ne valent pas none. Rôle d'une forme SVG : image.",
     "R11 bis. Contraste, raison d'incertitude supplémentaire « overlap » : le centre du rectangle du porteur de texte tombe dans le rectangle d'un peintre qui n'est ni son ancêtre ni son descendant. Peintres : img, video, canvas, svg, et tout élément en position absolute ou fixed qui a une background-color non transparente ou une background-image. L'ordre d'empilement n'est pas calculé : la paire est marquée [V], son ratio n'est pas corrigé.",
     "R15. États : pour un échantillon d'éléments interactifs (rôles bouton, lien, champ ; un élément par couple rôle + sélecteur court ; 60 au plus par page), les états hover, focus (focus et focus-visible) et active sont forcés un par un par le protocole DevTools, transitions et animations coupées. Les couleurs peintes (R5 bis, R6 bis, color, background-color) de l'élément lui-même sont relevées ; seules celles absentes de son état de repos comptent. Elles sont rapportées à part (rendered.states) et n'entrent pas dans les familles. onlyInStates : couleurs d'état absentes de toutes les couleurs rendues au repos.",
-    "R16. Ventilation : chaque valeur rendue porte pseudo = nombre de ses occurrences venues d'un pseudo-élément ; distinctWithoutPseudo = nombre de valeurs dont au moins une occurrence vient d'un élément."
+    "R16. Ventilation : chaque valeur rendue porte pseudo = nombre de ses occurrences venues d'un pseudo-élément ; distinctWithoutPseudo = nombre de valeurs dont au moins une occurrence vient d'un élément.",
+    "R1 bis. Un élément dont l'opacity vaut 0, ou dont un ancêtre a une opacity de 0, n'est pas retenu (compté dans excluded) ; de même un pseudo-élément à opacity 0. Écart avec la v1, qui les comptait.",
+    "R11 ter. Icône : pseudo-élément dont le content ne contient que des caractères de zone à usage privé (police d'icônes). Son contraste se juge au seuil des éléments graphiques (WCAG 2.1, 1.4.11) : AA à partir de 3:1, pas de niveau AAA. La paire porte nIcon.",
+    "R15 bis. États : les pseudo-éléments ::before et ::after de l'élément testé sont lus aussi. La couleur d'un pseudo-élément est multipliée par sa propre opacity (un voile currentColor à opacity .5 donne la couleur à 50 %) ; à opacity 0 il ne peint rien. Le sélecteur rapporté est suivi de ::before ou ::after.",
+    "R17. Tiers : les éléments qui correspondent à l'un des sélecteurs CSS de la clé thirdParty du fichier de sources (ou qui en descendent) ne sont ni retenus ni testés ; ils sont comptés dans rendered.thirdParty, avec leurs sélecteurs courts. Ici : .tiers-bandeau."
   ],
-
-  "pseudoElements": { "value": 1, "how": "input#ville::placeholder (valeur vide, placeholder « Ville ») ; input#nom a une valeur, donc pas de placeholder affiché" },
-
-  "textBearing": {
-    "value": 10,
-    "how": "input#nom (valeur « Ada »), input#ville::placeholder, select#pays (option « France »), div.trois-bords, div.relief, div.degrade, a.action, p.sur-image, span.pose, p.normal ; input#ville lui-même (valeur vide) et la case à cocher ne portent pas de texte"
+  "pseudoElements": {
+    "value": 2,
+    "how": "input#ville::placeholder et i.icone::before ; a.survol::before est à opacity 0 au repos, donc non retenu (R1 bis)"
   },
-
+  "textBearing": {
+    "value": 12,
+    "how": "les 10 de la première version (input#nom, input#ville::placeholder, select#pays, div.trois-bords, div.relief, div.degrade, a.action, p.sur-image, span.pose, p.normal) + i.icone::before + a.survol ; p.fantome (opacity 0) et button.tiers-bouton (tiers) sont exclus"
+  },
   "colors": {
     "present": [
-      { "value": "#7a1f1f", "property": "color", "role": "champ", "count": 1, "selectors": ["input#nom"], "how": ".champ-a, l.10" },
-      { "value": "#8a8f98", "property": "color", "role": "champ", "count": 1, "selectors": ["input#ville::placeholder"], "how": ".champ-b::placeholder, l.12" },
-      { "value": "#14532d", "property": "color", "role": "champ", "count": 1, "selectors": ["select#pays"], "how": ".liste, l.13" },
-      { "value": "#111111", "property": "border-top-color", "role": "texte", "count": 1, "selectors": ["div.trois-bords"], "how": "l.14 : haut et gauche ont la même couleur, comptée une fois sur le premier côté (R6 bis)" },
-      { "value": "#b00020", "property": "border-bottom-color", "role": "texte", "count": 1, "selectors": ["div.trois-bords"], "how": "l.14 : seconde couleur distincte (R6 bis)" },
-      { "value": "#123456", "property": "box-shadow", "role": "texte", "count": 1, "selectors": ["div.relief"], "how": "l.15 (R5 bis)" },
-      { "value": "#654321", "property": "outline-color", "role": "texte", "count": 1, "selectors": ["div.relief"], "how": "l.15 (R5 bis)" },
-      { "value": "#abcdef", "property": "text-decoration-color", "role": "texte", "count": 1, "selectors": ["div.relief"], "how": "l.15, différente de color #1f2a44 (R5 bis)" },
-      { "value": "#fedcba", "property": "background-image", "role": "texte", "count": 1, "selectors": ["div.degrade"], "how": "l.16, premier arrêt du dégradé" },
-      { "value": "#0fedcb", "property": "background-image", "role": "texte", "count": 1, "selectors": ["div.degrade"], "how": "l.16, second arrêt du dégradé" },
-      { "value": "#c8553d", "property": "fill", "role": "image", "count": 1, "selectors": ["circle.rond"], "how": "l.27" },
-      { "value": "#2b4c7e", "property": "stroke", "role": "image", "count": 1, "selectors": ["circle.rond"], "how": "l.27 ; #2b4c7e est aussi le fond de a.action" }
+      {
+        "value": "#7a1f1f",
+        "property": "color",
+        "role": "champ",
+        "count": 1,
+        "selectors": [
+          "input#nom"
+        ],
+        "how": ".champ-a, l.10"
+      },
+      {
+        "value": "#8a8f98",
+        "property": "color",
+        "role": "champ",
+        "count": 1,
+        "selectors": [
+          "input#ville::placeholder"
+        ],
+        "how": ".champ-b::placeholder, l.12"
+      },
+      {
+        "value": "#14532d",
+        "property": "color",
+        "role": "champ",
+        "count": 1,
+        "selectors": [
+          "select#pays"
+        ],
+        "how": ".liste, l.13"
+      },
+      {
+        "value": "#111111",
+        "property": "border-top-color",
+        "role": "texte",
+        "count": 1,
+        "selectors": [
+          "div.trois-bords"
+        ],
+        "how": "l.14 : haut et gauche ont la même couleur, comptée une fois sur le premier côté (R6 bis)"
+      },
+      {
+        "value": "#b00020",
+        "property": "border-bottom-color",
+        "role": "texte",
+        "count": 1,
+        "selectors": [
+          "div.trois-bords"
+        ],
+        "how": "l.14 : seconde couleur distincte (R6 bis)"
+      },
+      {
+        "value": "#123456",
+        "property": "box-shadow",
+        "role": "texte",
+        "count": 1,
+        "selectors": [
+          "div.relief"
+        ],
+        "how": "l.15 (R5 bis)"
+      },
+      {
+        "value": "#654321",
+        "property": "outline-color",
+        "role": "texte",
+        "count": 1,
+        "selectors": [
+          "div.relief"
+        ],
+        "how": "l.15 (R5 bis)"
+      },
+      {
+        "value": "#abcdef",
+        "property": "text-decoration-color",
+        "role": "texte",
+        "count": 1,
+        "selectors": [
+          "div.relief"
+        ],
+        "how": "l.15, différente de color #1f2a44 (R5 bis)"
+      },
+      {
+        "value": "#fedcba",
+        "property": "background-image",
+        "role": "texte",
+        "count": 1,
+        "selectors": [
+          "div.degrade"
+        ],
+        "how": "l.16, premier arrêt du dégradé"
+      },
+      {
+        "value": "#0fedcb",
+        "property": "background-image",
+        "role": "texte",
+        "count": 1,
+        "selectors": [
+          "div.degrade"
+        ],
+        "how": "l.16, second arrêt du dégradé"
+      },
+      {
+        "value": "#c8553d",
+        "property": "fill",
+        "role": "image",
+        "count": 1,
+        "selectors": [
+          "circle.rond"
+        ],
+        "how": "l.27"
+      },
+      {
+        "value": "#2b4c7e",
+        "property": "stroke",
+        "role": "image",
+        "count": 1,
+        "selectors": [
+          "circle.rond"
+        ],
+        "how": "l.27 ; #2b4c7e est aussi le fond de a.action"
+      }
     ],
-    "absentAtRest": { "value": ["#1b3355", "#f0a500", "#10203a"], "how": "l.18–20 et l.9 : couleurs de hover, focus-visible et active, jamais peintes au repos" },
-    "pseudoOnly": { "value": ["#8a8f98"], "how": "seule couleur dont toutes les occurrences viennent d'un pseudo-élément : distinct − distinctWithoutPseudo = 1 (R16)" }
+    "absentAtRest": {
+      "value": [
+        "#1b3355",
+        "#f0a500",
+        "#10203a",
+        "#00aa55",
+        "#d400a6"
+      ],
+      "how": "couleurs de hover, focus-visible et active ; #00aa55 est sur p.fantome (opacity 0, R1 bis) ; #d400a6 est sur button.tiers-bouton (tiers, R17)"
+    },
+    "pseudoOnly": {
+      "value": [
+        "#8a8f98"
+      ],
+      "how": "seule couleur dont toutes les occurrences viennent d'un pseudo-élément : distinct − distinctWithoutPseudo = 1 (R16)"
+    }
   },
-
   "fontSizes": {
     "present": [
-      { "value": "13px", "role": "champ", "how": "input#nom, l.10" },
-      { "value": "15px", "role": "champ", "how": "input#ville::placeholder, hérite de .champ-b l.11" },
-      { "value": "17px", "role": "champ", "how": "select#pays, l.13" }
+      {
+        "value": "13px",
+        "role": "champ",
+        "how": "input#nom, l.10"
+      },
+      {
+        "value": "15px",
+        "role": "champ",
+        "how": "input#ville::placeholder, hérite de .champ-b l.11"
+      },
+      {
+        "value": "17px",
+        "role": "champ",
+        "how": "select#pays, l.13"
+      }
     ],
-    "pseudoOnly": { "value": ["15px"], "how": "15 px n'est porté que par le placeholder" }
+    "pseudoOnly": {
+      "value": [
+        "15px"
+      ],
+      "how": "15 px n'est porté que par le placeholder"
+    }
   },
-
   "states": {
-    "sampled": { "value": 5, "how": "input#nom, input#ville, select#pays, input#accord (champs) et a.action (lien)" },
+    "sampled": {
+      "value": 6,
+      "how": "input#nom, input#ville, select#pays, input#accord (champs), a.action et a.survol (liens) ; button.tiers-bouton est écarté (R17)"
+    },
     "action": [
-      { "state": "hover", "value": "#1b3355", "property": "background-color", "how": "l.18" },
-      { "state": "focus", "value": "#f0a500", "property": "outline-color", "how": "l.19" },
-      { "state": "active", "value": "#10203a", "property": "background-color", "how": "l.20" }
+      {
+        "state": "hover",
+        "value": "#1b3355",
+        "property": "background-color",
+        "how": "l.18"
+      },
+      {
+        "state": "focus",
+        "value": "#f0a500",
+        "property": "outline-color",
+        "how": "l.19"
+      },
+      {
+        "state": "active",
+        "value": "#10203a",
+        "property": "background-color",
+        "how": "l.20"
+      }
     ],
-    "focusCount": { "value": 5, "how": "#f0a500 en outline-color à l'état focus : a.action (l.19) et les 4 champs (l.9)" },
-    "onlyInStates": { "value": ["#10203a", "#1b3355", "#f0a500"], "how": "aucune de ces trois couleurs n'est rendue au repos" }
+    "focusCount": {
+      "value": 6,
+      "how": "#f0a500 en outline-color à l'état focus : a.action, a.survol et les 4 champs"
+    },
+    "onlyInStates": {
+      "value": [
+        "#10203a",
+        "#1b3355",
+        "#5b2a8680",
+        "#f0a500"
+      ],
+      "how": "les trois couleurs de a.action et des champs, plus le voile de a.survol"
+    },
+    "survol": {
+      "state": "hover",
+      "value": "#5b2a8680",
+      "property": "background-color",
+      "selector": "a.survol::before",
+      "how": "voile currentColor (#5b2a86) à opacity .5 : alpha 0,5 × 255 = 127,5, arrondi à 128 = 0x80 (R15 bis) ; au repos le voile est à opacity 0 et ne peint rien"
+    }
   },
-
   "contrast": {
     "pairs": [
-      { "text": "#ffffff", "bg": "#ffffff", "ratio": 1, "n": 1, "flag": "[V]", "overlap": 1, "selectors": ["p.sur-image"], "how": "le fond effectif par ancêtres est blanc (body) alors que le texte est peint sur img.fond : ratio faux, donc marqué [V] (R11 bis)" },
-      { "text": "#f5f5f5", "bg": "#ffffff", "ratio": 1.0902, "n": 1, "flag": "[V]", "overlap": 1, "selectors": ["span.pose"], "how": "peint sur div.pave (absolute, fond noir), qui n'est pas son ancêtre ; culori wcagContrast('#f5f5f5','#ffffff') → 1.09023…" },
-      { "text": "#33415c", "bg": "#ffffff", "ratio": 10.2368, "n": 1, "flag": null, "overlap": 0, "selectors": ["p.normal"], "how": "témoin : aucun peintre dessous ; culori wcagContrast('#33415c','#ffffff') → 10.23680…" },
-      { "text": "#7a1f1f", "bg": "#ffffff", "ratio": 10.2775, "n": 1, "flag": null, "overlap": 0, "selectors": ["input#nom"], "how": "texte du champ sur son fond (l.8) ; culori → 10.27751…" },
-      { "text": "#8a8f98", "bg": "#ffffff", "ratio": 3.2492, "n": 1, "flag": null, "overlap": 0, "selectors": ["input#ville::placeholder"], "how": "texte d'indice sur le fond du champ ; culori → 3.24924… ; sous AA" },
-      { "text": "#ffffff", "bg": "#2b4c7e", "ratio": 8.6144, "n": 1, "flag": null, "overlap": 0, "selectors": ["a.action"], "how": "culori wcagContrast('#ffffff','#2b4c7e') → 8.61444…" }
+      {
+        "text": "#ffffff",
+        "bg": "#ffffff",
+        "ratio": 1,
+        "n": 1,
+        "flag": "[V]",
+        "overlap": 1,
+        "selectors": [
+          "p.sur-image"
+        ],
+        "how": "le fond effectif par ancêtres est blanc (body) alors que le texte est peint sur img.fond : ratio faux, donc marqué [V] (R11 bis)",
+        "belowAA": 1,
+        "nIcon": 0
+      },
+      {
+        "text": "#f5f5f5",
+        "bg": "#ffffff",
+        "ratio": 1.0902,
+        "n": 1,
+        "flag": "[V]",
+        "overlap": 1,
+        "selectors": [
+          "span.pose"
+        ],
+        "how": "peint sur div.pave (absolute, fond noir), qui n'est pas son ancêtre ; culori wcagContrast('#f5f5f5','#ffffff') → 1.09023…",
+        "belowAA": 1,
+        "nIcon": 0
+      },
+      {
+        "text": "#33415c",
+        "bg": "#ffffff",
+        "ratio": 10.2368,
+        "n": 1,
+        "flag": null,
+        "overlap": 0,
+        "selectors": [
+          "p.normal"
+        ],
+        "how": "témoin : aucun peintre dessous ; culori wcagContrast('#33415c','#ffffff') → 10.23680…",
+        "belowAA": 0,
+        "nIcon": 0
+      },
+      {
+        "text": "#7a1f1f",
+        "bg": "#ffffff",
+        "ratio": 10.2775,
+        "n": 1,
+        "flag": null,
+        "overlap": 0,
+        "selectors": [
+          "input#nom"
+        ],
+        "how": "texte du champ sur son fond (l.8) ; culori → 10.27751…",
+        "belowAA": 0,
+        "nIcon": 0
+      },
+      {
+        "text": "#8a8f98",
+        "bg": "#ffffff",
+        "ratio": 3.2492,
+        "n": 2,
+        "flag": null,
+        "overlap": 0,
+        "selectors": [
+          "input#ville::placeholder",
+          "i.icone::before"
+        ],
+        "how": "texte d'indice (3,25 < 4,5 : sous AA) et icône i.icone::before de la même couleur (3,25 ≥ 3 : conforme au seuil des éléments graphiques, R11 ter) ; culori → 3.24924…",
+        "belowAA": 1,
+        "nIcon": 1
+      },
+      {
+        "text": "#ffffff",
+        "bg": "#2b4c7e",
+        "ratio": 8.6144,
+        "n": 1,
+        "flag": null,
+        "overlap": 0,
+        "selectors": [
+          "a.action"
+        ],
+        "how": "culori wcagContrast('#ffffff','#2b4c7e') → 8.61444…",
+        "belowAA": 0,
+        "nIcon": 0
+      }
     ]
   },
-
   "unit": {
     "clusterComplete": {
       "$comment": "Regroupement à liaison complète : deux groupes fusionnent tant que la plus grande distance entre leurs membres reste < seuil ; à chaque pas, la paire de groupes la plus proche (à égalité, ordre des hexadécimaux). Le résultat ne dépend pas des fréquences ; la représentante est le membre le plus fréquent (à égalité, le premier hexadécimal). ΔE culori differenceEuclidean('oklab') × 100 : #cccccc–#dadada 4.3147, #dadada–#e5e5e5 3.3536, #cccccc–#e5e5e5 7.6684.",
-      "colors": [{ "hex": "#dadada", "n": 465 }, { "hex": "#e5e5e5", "n": 279 }, { "hex": "#cccccc", "n": 100 }],
-      "greedyDE5": { "value": 1, "how": "glouton : #dadada, la plus fréquente, absorbe les deux autres (4,31 et 3,35 < 5) alors qu'elles sont à 7,67 l'une de l'autre" },
+      "colors": [
+        {
+          "hex": "#dadada",
+          "n": 465
+        },
+        {
+          "hex": "#e5e5e5",
+          "n": 279
+        },
+        {
+          "hex": "#cccccc",
+          "n": 100
+        }
+      ],
+      "greedyDE5": {
+        "value": 1,
+        "how": "glouton : #dadada, la plus fréquente, absorbe les deux autres (4,31 et 3,35 < 5) alors qu'elles sont à 7,67 l'une de l'autre"
+      },
       "completeDE5": {
         "value": 2,
         "groups": [
-          { "rep": "#dadada", "members": ["#dadada", "#e5e5e5"], "n": 744, "diameter": 3.3536 },
-          { "rep": "#cccccc", "members": ["#cccccc"], "n": 100, "diameter": 0 }
+          {
+            "rep": "#dadada",
+            "members": [
+              "#dadada",
+              "#e5e5e5"
+            ],
+            "n": 744,
+            "diameter": 3.3536
+          },
+          {
+            "rep": "#cccccc",
+            "members": [
+              "#cccccc"
+            ],
+            "n": 100,
+            "diameter": 0
+          }
         ],
         "how": "paire la plus proche d'abord : #dadada–#e5e5e5 (3,35) ; #cccccc ne peut pas rejoindre ce groupe (7,67 ≥ 5 avec #e5e5e5)"
       }
     },
-    "largeText": { "how": "14 pt = 14 × 96 / 72 = 18,666… px : 18,66 px gras n'est pas un grand texte, 18,67 px gras l'est", "cases": [[18.66, 700, false], [18.67, 700, true], [24, 400, true], [23.99, 400, false]] },
+    "largeText": {
+      "how": "14 pt = 14 × 96 / 72 = 18,666… px : 18,66 px gras n'est pas un grand texte, 18,67 px gras l'est",
+      "cases": [
+        [
+          18.66,
+          700,
+          false
+        ],
+        [
+          18.67,
+          700,
+          true
+        ],
+        [
+          24,
+          400,
+          true
+        ],
+        [
+          23.99,
+          400,
+          false
+        ]
+      ]
+    },
     "fontFace": {
       "css": "@font-face { font-family: \"Orbe Sans\"; font-weight: 700; src: local(Arial); } body { font-family: \"Orbe Sans\", Arial; font-weight: 400; }",
-      "fontFamiliesTotal": { "value": 1, "how": "body seulement ; le descripteur de @font-face n'est pas une valeur d'usage" },
-      "fontWeights": { "value": { "400": 1 }, "how": "idem" },
-      "fontFaces": { "value": 1, "how": "une règle @font-face, comptée à part" }
+      "fontFamiliesTotal": {
+        "value": 1,
+        "how": "body seulement ; le descripteur de @font-face n'est pas une valeur d'usage"
+      },
+      "fontWeights": {
+        "value": {
+          "400": 1
+        },
+        "how": "idem"
+      },
+      "fontFaces": {
+        "value": 1,
+        "how": "une règle @font-face, comptée à part"
+      }
+    }
+  },
+  "conditions": {
+    "thirdParty": [
+      ".tiers-bandeau"
+    ],
+    "how": "sélecteur passé au relevé par le test, comme le ferait local/sources.json"
+  },
+  "excludedOpacity": {
+    "value": [
+      "p.fantome"
+    ],
+    "how": "opacity: 0 : compté dans excluded, plus dans le rendu (R1 bis)"
+  },
+  "thirdParty": {
+    "elements": {
+      "value": 2,
+      "how": "div.tiers-bandeau et button.tiers-bouton"
+    },
+    "selectors": {
+      "value": [
+        "button.tiers-bouton",
+        "div.tiers-bandeau"
+      ],
+      "how": "sélecteurs courts des éléments écartés"
     }
   }
 }
