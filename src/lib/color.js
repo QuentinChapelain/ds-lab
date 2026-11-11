@@ -119,6 +119,76 @@ export function cluster(colors, threshold) {
 }
 
 /**
+ * @typedef {ColorCluster & { diameter: number }} CompleteCluster
+ *   diameter : plus grand ΔE entre deux membres du groupe (0 pour un groupe d'une couleur).
+ */
+
+/**
+ * Regroupement à liaison complète : deux groupes ne fusionnent que si TOUTES
+ * leurs couleurs sont à ΔE < seuil les unes des autres. À chaque pas, la paire
+ * de groupes la plus proche fusionne (à égalité, ordre des hexadécimaux).
+ * Contrairement au regroupement glouton de v1, le résultat ne dépend ni des
+ * fréquences ni de l'ordre d'entrée, et le diamètre d'un groupe reste sous le
+ * seuil. Les fréquences ne servent qu'à choisir la représentante.
+ * Les couleurs non opaques sont ignorées.
+ * @param {ColorCount[]} colors
+ * @param {number} threshold
+ * @returns {CompleteCluster[]} triés par occurrences décroissantes
+ */
+export function clusterComplete(colors, threshold) {
+  /** @type {Map<string, number>} */
+  const counts = new Map();
+  for (const c of colors) if (isOpaque(c.hex)) counts.set(c.hex, (counts.get(c.hex) ?? 0) + c.n);
+  const hexes = [...counts.keys()].sort();
+  const n = hexes.length;
+  const labs = hexes.map(toLab);
+  // dist[i][j] : distance de liaison complète entre les groupes i et j (i, j = indices de groupes vivants).
+  /** @type {Float64Array[]} */
+  const dist = hexes.map((_, i) => Float64Array.from(hexes, (_, j) => (i === j ? 0 : deltaE(labs[i], labs[j]))));
+  /** @type {(number[] | null)[]} */
+  const groups = hexes.map((_, i) => [i]);
+  const diameter = new Float64Array(n);
+  for (;;) {
+    let bi = -1;
+    let bj = -1;
+    let best = threshold;
+    for (let i = 0; i < n; i++) {
+      if (!groups[i]) continue;
+      for (let j = i + 1; j < n; j++) {
+        if (groups[j] && dist[i][j] < best) {
+          best = dist[i][j];
+          bi = i;
+          bj = j;
+        }
+      }
+    }
+    if (bi < 0) break;
+    /** @type {number[]} */ (groups[bi]).push(.../** @type {number[]} */ (groups[bj]));
+    groups[bj] = null;
+    diameter[bi] = best;
+    for (let k = 0; k < n; k++) {
+      if (!groups[k] || k === bi) continue;
+      const d = Math.max(dist[bi][k], dist[bj][k]);
+      dist[bi][k] = d;
+      dist[k][bi] = d;
+    }
+  }
+  /** @type {CompleteCluster[]} */
+  const out = [];
+  groups.forEach((g, i) => {
+    if (!g) return;
+    const members = g.map((k) => hexes[k]).sort((a, b) => /** @type {number} */ (counts.get(b)) - /** @type {number} */ (counts.get(a)) || (a < b ? -1 : 1));
+    out.push({
+      rep: members[0],
+      members,
+      n: members.reduce((t, h) => t + /** @type {number} */ (counts.get(h)), 0),
+      diameter: Math.round(diameter[i] * 10000) / 10000,
+    });
+  });
+  return out.sort((a, b) => b.n - a.n || (a.rep < b.rep ? -1 : 1));
+}
+
+/**
  * @param {string} hex `#rrggbb` ou `#rrggbbaa`
  * @returns {{ r: number, g: number, b: number, a: number }} canaux 0–255, alpha 0–1
  */
@@ -178,12 +248,12 @@ export function contrastRatio(a, b) {
 }
 
 /**
- * « Grand texte » WCAG 2.1 : ≥ 18 pt (24 px), ou ≥ 14 pt (18,66 px) en gras (≥ 700).
+ * « Grand texte » WCAG 2.1 : ≥ 18 pt (24 px), ou ≥ 14 pt (18,666… px) en gras (≥ 700).
  * @param {number} fontSizePx
  * @param {number} fontWeight
  */
 export function isLargeText(fontSizePx, fontWeight) {
-  return fontSizePx >= 24 || (fontSizePx >= 18.66 && fontWeight >= 700);
+  return fontSizePx >= 24 || (fontSizePx >= (14 * 96) / 72 && fontWeight >= 700);
 }
 
 /**

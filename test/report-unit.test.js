@@ -94,11 +94,33 @@ test('stampOf : horodatage local à la minute', () => {
 });
 
 test('écarts v1 et limites : contenu convenu', () => {
-  assert.equal(V1_DIFFERENCES.length, 19);
-  assert.deepEqual(V1_DIFFERENCES.map((d) => d.n), Array.from({ length: 19 }, (_, i) => i + 1));
+  // 19 écarts à la séance 1, plus 3 après la relecture du 11/11/2026 (couleurs peintes, champs, états et regroupement).
+  assert.equal(V1_DIFFERENCES.length, 22);
+  assert.deepEqual(V1_DIFFERENCES.map((d) => d.n), Array.from({ length: 22 }, (_, i) => i + 1));
   const alpha = V1_DIFFERENCES.find((d) => /alpha/i.test(d.point));
   assert.equal(alpha?.effet, 'effet sur les chiffres de l’étape 1 à mesurer');
   assert.ok(!V1_DIFFERENCES.some((d) => /hidden/.test(d.point + d.v1)), 'écart « bordure hidden » retiré');
   const limits = LIMITS.map((l) => l.text).join('\n');
-  for (const re of [/opacity/, /<slot>/, /pseudo-éléments ne sont pas tracés/, /iframes/, /rootPx/]) assert.match(limits, re);
+  for (const re of [/opacity/, /<slot>/, /pseudo-éléments ne sont pas tracés/, /iframes/, /rootPx/, /une seule fenêtre/, /États/, /overlap/]) assert.match(limits, re);
+});
+
+test('rapport.html : une chaîne venue de la page est échappée, une valeur douteuse n’entre pas dans un style', async () => {
+  const { renderHtml } = await import('../src/report/html.js');
+  const { createRenderedAggregator } = await import('../src/rendered/aggregate.js');
+  const agg = createRenderedAggregator();
+  const base = { parent: -1, retained: false, bg: 'rgb(255, 255, 255)', bgImage: false, opacity: '1' };
+  const props = { color: 'rgb(34, 34, 34)', 'font-family': 'Arial', 'font-size': '16px', 'font-weight': '400', 'line-height': 'normal', 'letter-spacing': 'normal', 'background-color': 'rgba(0, 0, 0, 0)', 'box-shadow': 'none', opacity: '1', display: 'block' };
+  agg.addPage({ url: 'http://x/', iframes: 0, excluded: 0, records: [base, { ...base, parent: 0, retained: true, bg: 'rgba(0, 0, 0, 0)', tag: 'p', selector: 'p.<script>alert(1)</script>', role: 'texte', text: true, props }] });
+  const rendered = agg.result();
+  rendered.families.shadows.values['0 0 0 red;background:url(x)'] = /** @type {any} */ ({ count: 1, contexts: [] });
+  const html = renderHtml({
+    meta: { host: 'x', stamp: 's', viewport: { width: 1, height: 1 }, storageState: null, states: true },
+    pages: [{}],
+    rendered,
+    declared: { families: { colors: { distinct: 1 } } },
+  });
+  assert.ok(!html.includes('<script>alert(1)</script>'));
+  assert.ok(html.includes('p.&lt;script&gt;'));
+  assert.ok(!html.includes('style="box-shadow:0 0 0 red;background:url(x)"'));
+  assert.match(html, /#222222/);
 });

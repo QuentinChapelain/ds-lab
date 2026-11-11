@@ -1,12 +1,13 @@
 // @ts-check
 /**
  * Écriture des sorties : local/audits/<hôte>/<AAAA-MM-JJTHHMM>/
- * audit.json, rapport.md et, avec --v1-script, v1.json.
+ * audit.json, rapport.md, rapport.html et, avec --v1-script, v1.json.
  */
 import { mkdir, writeFile, access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { hostDirName } from '../lib/addresses.js';
 import { renderReport } from './markdown.js';
+import { renderHtml } from './html.js';
 
 /**
  * Horodatage local, à la minute : 2026-11-11T1530.
@@ -44,12 +45,13 @@ export async function freeOutputDir(root, host, stamp) {
  */
 export async function writeAuditFiles(dir, audit, v1Raw) {
   await mkdir(dir, { recursive: true });
-  const files = [join(dir, 'audit.json'), join(dir, 'rapport.md')];
+  const files = [join(dir, 'audit.json'), join(dir, 'rapport.md'), join(dir, 'rapport.html')];
   await writeFile(files[0], JSON.stringify(audit, null, 2) + '\n');
   await writeFile(files[1], renderReport(audit));
+  await writeFile(files[2], renderHtml(audit));
   if (v1Raw) {
     files.push(join(dir, 'v1.json'));
-    await writeFile(files[2], JSON.stringify(v1Raw, null, 2) + '\n');
+    await writeFile(files[3], JSON.stringify(v1Raw, null, 2) + '\n');
   }
   return files;
 }

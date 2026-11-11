@@ -16,9 +16,12 @@ const USAGE = `Usage : npm run audit -- <adresse> [<adresse ou chemin relatif>�
 Options :
   --storage-state <fichier>  session enregistrée par npm run login (.auth/<nom>.json)
   --sources <fichier>        motifs d'attribution des feuilles (défaut : local/sources.json)
-  --viewport <LxH>           fenêtre (défaut : 1366x900)
+  --viewport <LxH>           fenêtre (défaut : 1366x900) ; un audit mesure une seule fenêtre :
+                             relancer avec --viewport 390x844 pour la mise en page mobile
   --wait-ms <ms>             délai après load et networkidle (défaut : ${DEFAULT_WAIT_MS})
   --trace-rendered           feuille de la règle gagnante pour chaque contexte rendu (plus lent)
+  --no-states                ne pas forcer hover, focus et active sur les éléments interactifs
+                             (par défaut : un élément par rôle et sélecteur, 60 au plus par page)
   --v1-script <fichier.md>   exécute le script v1 (bloc js) sur chaque page et compare
   --out <dossier>            racine des sorties (défaut : local/audits)
   -h, --help                 cette aide`;
@@ -36,6 +39,7 @@ export function parseAuditArgs(argv) {
       viewport: { type: 'string', default: '1366x900' },
       'wait-ms': { type: 'string', default: String(DEFAULT_WAIT_MS) },
       'trace-rendered': { type: 'boolean', default: false },
+      'no-states': { type: 'boolean', default: false },
       'v1-script': { type: 'string' },
       out: { type: 'string', default: 'local/audits' },
       help: { type: 'boolean', short: 'h', default: false },
@@ -56,6 +60,7 @@ export function parseAuditArgs(argv) {
       viewport: { width: Number(vp[1]), height: Number(vp[2]) },
       waitMs,
       trace: !!values['trace-rendered'],
+      states: !values['no-states'],
       v1ScriptPath: values['v1-script'],
       outRoot: String(values.out),
     },

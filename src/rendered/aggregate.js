@@ -9,6 +9,7 @@ import {
   isOpaque,
   toLab,
   cluster,
+  clusterComplete,
   blend,
   contrastRatio,
   isLargeText,
@@ -59,14 +60,18 @@ export const GREY_CHROMA = 0.02;
  *   par couleur de texte (avant fusion alpha) : occurrences sur fond sombre et leurs fonds
  */
 export function textGreys(colorValues, darkByText = {}) {
-  /** @type {Record<string, { count: number, chroma: number, onDark: number, darkBackgrounds: Record<string, number> }>} */
+  /** @type {Record<string, { count: number, pseudo: number, chroma: number, onDark: number, darkBackgrounds: Record<string, number> }>} */
   const values = {};
   let white = 0;
+  let whitePseudo = 0;
   for (const [hex, v] of Object.entries(colorValues)) {
-    const n = v.contexts.filter((c) => c.property === 'color').reduce((t, c) => t + c.count, 0);
+    const asText = v.contexts.filter((c) => c.property === 'color');
+    const n = asText.reduce((t, c) => t + c.count, 0);
+    const pseudo = asText.reduce((t, c) => t + (/** @type {any} */ (c).pseudo ?? 0), 0);
     if (!n) continue;
     if (hex === '#ffffff') {
       white = n;
+      whitePseudo = pseudo;
       continue;
     }
     const [, a, b] = toLab(hex);
@@ -74,6 +79,7 @@ export function textGreys(colorValues, darkByText = {}) {
     if (chroma < GREY_CHROMA)
       values[hex] = {
         count: n,
+        pseudo,
         chroma: Math.round(chroma * 10000) / 10000,
         onDark: darkByText[hex]?.onDark ?? 0,
         darkBackgrounds: darkByText[hex]?.backgrounds ?? {},
@@ -83,8 +89,10 @@ export function textGreys(colorValues, darkByText = {}) {
   return {
     total: Object.values(values).reduce((t, v) => t + v.count, 0),
     distinct: Object.keys(values).length,
+    distinctWithoutPseudo: Object.values(values).filter((v) => v.count > v.pseudo).length,
     values: sorted,
     white,
+    whiteWithoutPseudo: white - whitePseudo,
     onDark: Object.values(values).reduce((t, v) => t + v.onDark, 0),
   };
 }
@@ -99,6 +107,7 @@ const CORNERS = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
  * @property {string} property
  * @property {string} role
  * @property {number} count
+ * @property {number} pseudo   occurrences venues d'un pseudo-élément (R16)
  * @property {Record<string, number>} pages
  * @property {string[]} selectors
  * @property {Record<string, number>} tags
@@ -106,6 +115,7 @@ const CORNERS = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
  * @property {object} [trace]
  * @typedef {object} RenderedValue
  * @property {number} count
+ * @property {number} pseudo   occurrences venues d'un pseudo-élément (R16)
  * @property {boolean} normalizable
  * @property {Record<string, number>} originals
  * @property {Context[]} contexts
@@ -131,21 +141,23 @@ function createCollector() {
       if (!k.normalizable) nonNormalizable++;
       let v = values.get(k.key);
       if (!v) {
-        v = { count: 0, normalizable: k.normalizable, originals: {}, contexts: [], ctx: new Map() };
+        v = { count: 0, pseudo: 0, normalizable: k.normalizable, originals: {}, contexts: [], ctx: new Map() };
         values.set(k.key, v);
       }
       v.count++;
+      if (rec.pseudo) v.pseudo++;
       v.originals[raw] = (v.originals[raw] ?? 0) + 1;
       const role = rec.role ?? 'conteneur';
       const ck = `${property}\n${role}`;
       let c = v.ctx.get(ck);
       let created = false;
       if (!c) {
-        c = { property, role, count: 0, pages: {}, selectors: [], tags: {}, sample: { page, index, pseudo: !!rec.pseudo } };
+        c = { property, role, count: 0, pseudo: 0, pages: {}, selectors: [], tags: {}, sample: { page, index, pseudo: !!rec.pseudo } };
         v.ctx.set(ck, c);
         created = true;
       }
       c.count++;
+      if (rec.pseudo) c.pseudo++;
       c.pages[page] = (c.pages[page] ?? 0) + 1;
       const sel = rec.selector ?? '';
       if (c.selectors.length < MAX_SELECTORS && !c.selectors.includes(sel)) c.selectors.push(sel);
@@ -158,6 +170,7 @@ function createCollector() {
       return {
         total,
         distinct: values.size,
+        distinctWithoutPseudo: [...values.values()].filter((v) => v.count > v.pseudo).length,
         nonNormalizable,
         values: Object.fromEntries(
           sorted.map(([key, { ctx, ...v }]) => [key, { ...v, contexts: [...ctx.values()].sort((a, b) => b.count - a.count) }]),
@@ -165,6 +178,53 @@ function createCollector() {
       };
     },
   };
+}
+
+/** Jetons de couleur d'une valeur calculée (ombre, dégradé). */
+const COLOR_TOKEN = /(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([^()]*\)|#[0-9a-f]{3,8}\b/gi;
+
+/**
+ * Couleurs peintes par un élément, d'après ses propriétés calculées (R4, R5, R5 bis, R6 bis).
+ * Sert au repos comme aux états forcés (R15).
+ * @param {Record<string, string>} p   propriétés relevées par collectInPage
+ * @param {boolean} text               porteur de texte
+ * @returns {{ hex: string, raw: string, property: string }[]} dans l'ordre : texte, bordures, contour, ombres, fond, dégradé, SVG
+ */
+export function paintedColors(p, text) {
+  /** @type {{ hex: string, raw: string, property: string }[]} */
+  const out = [];
+  /** @param {string | undefined} raw @param {string} property */
+  const push = (raw, property) => {
+    if (!raw) return null;
+    const c = normalizeColor(raw);
+    if (c) out.push({ hex: c.hex, raw, property });
+    return c?.hex ?? null;
+  };
+  if (text) {
+    const color = push(p['color'], 'color');
+    const line = p['text-decoration-line'];
+    if (line && line !== 'none') {
+      const deco = normalizeColor(p['text-decoration-color'] ?? '');
+      if (deco && deco.hex !== color) out.push({ hex: deco.hex, raw: p['text-decoration-color'], property: 'text-decoration-color' });
+    }
+  }
+  // R6 bis : une occurrence par couleur distincte parmi les côtés visibles.
+  /** @type {Set<string>} */
+  const borders = new Set();
+  for (const s of SIDES) {
+    if (p[`border-${s}-style`] === 'none' || !(parseFloat(p[`border-${s}-width`]) > 0)) continue;
+    const c = normalizeColor(p[`border-${s}-color`] ?? '');
+    if (!c || borders.has(c.hex)) continue;
+    borders.add(c.hex);
+    out.push({ hex: c.hex, raw: p[`border-${s}-color`], property: `border-${s}-color` });
+  }
+  if (p['outline-style'] && p['outline-style'] !== 'none' && parseFloat(p['outline-width']) > 0) push(p['outline-color'], 'outline-color');
+  if (p['box-shadow'] && p['box-shadow'] !== 'none') for (const m of p['box-shadow'].match(COLOR_TOKEN) ?? []) push(m, 'box-shadow');
+  push(p['background-color'], 'background-color');
+  if (p['background-image']) for (const m of p['background-image'].match(COLOR_TOKEN) ?? []) push(m, 'background-image');
+  if (p['fill'] && p['fill'] !== 'none') push(p['fill'], 'fill');
+  if (p['stroke'] && p['stroke'] !== 'none') push(p['stroke'], 'stroke');
+  return out;
 }
 
 /**
@@ -236,15 +296,10 @@ export function createRenderedAggregator() {
         const c = fam[f].add(k, raw, property, rec, page, index);
         if (c) created.push({ family: f, value: k.key, context: c });
       };
-      /** @param {string} raw */
-      const color = (raw, /** @type {string} */ property) => {
-        const c = normalizeColor(raw);
-        if (c) add('colors', { key: c.hex, normalizable: true }, raw, property);
-      };
+      for (const c of paintedColors(p, !!rec.text)) add('colors', { key: c.hex, normalizable: true }, c.raw, c.property);
 
       if (rec.text) {
         stats.textBearing++;
-        color(p['color'], 'color');
         add('fontFamilies', fontFamilyKey(p['font-family']), p['font-family'], 'font-family');
         const fs = lengthKey(p['font-size'], 16);
         add('fontSizes', fs, p['font-size'], 'font-size');
@@ -256,6 +311,8 @@ export function createRenderedAggregator() {
           add('letterSpacings', lengthKey(p['letter-spacing'], 16), p['letter-spacing'], 'letter-spacing');
         addContrast(pc, index, page);
       }
+      // R3 bis : un ::placeholder n'a que sa typographie et son fond.
+      if (rec.textOnly) return;
 
       for (const s of SIDES) {
         const m = p[`margin-${s}`];
@@ -266,16 +323,11 @@ export function createRenderedAggregator() {
       if (/\b(flex|grid)\b/.test(p['display'] ?? '')) {
         for (const g of ['row-gap', 'column-gap']) if (p[g] && p[g] !== 'normal') add('gaps', lengthKey(p[g], 16), p[g], g);
       }
-      let borderColorDone = false;
       for (const s of SIDES) {
         const w = p[`border-${s}-width`];
         const st = p[`border-${s}-style`];
         if (st === 'none' || !(parseFloat(w) > 0)) continue;
         add('borderWidths', lengthKey(w, 16), w, `border-${s}-width`);
-        if (!borderColorDone) {
-          color(p[`border-${s}-color`], `border-${s}-color`);
-          borderColorDone = true;
-        }
       }
       for (const c of CORNERS) {
         const r = p[`border-${c}-radius`];
@@ -285,7 +337,6 @@ export function createRenderedAggregator() {
       }
       if (p['box-shadow'] && p['box-shadow'] !== 'none') add('shadows', shadowKey(p['box-shadow'], 16), p['box-shadow'], 'box-shadow');
       if (p['opacity'] && p['opacity'] !== '1') add('opacities', opacityKey(p['opacity']), p['opacity'], 'opacity');
-      color(p['background-color'], 'background-color');
 
       // R7 : chaque élément de liste, courbe seulement si sa durée est > 0.
       const td = splitCommas(p['transition-duration'] ?? '');
@@ -311,6 +362,40 @@ export function createRenderedAggregator() {
       });
     });
     return created;
+  }
+
+  /** R15 : couleurs qui n'apparaissent qu'à un état forcé, par couleur puis par (état, propriété, rôle). */
+  /** @type {Map<string, { count: number, ctx: Map<string, { state: string, property: string, role: string, count: number, selectors: string[] }> }>} */
+  const stateColors = new Map();
+  const stateStats = { sampled: 0, capped: false, candidates: 0 };
+
+  /**
+   * @param {import('../browser/states.js').StateCollection} sc
+   */
+  function addStates(sc) {
+    stateStats.sampled += sc.samples.length;
+    stateStats.candidates += sc.candidates;
+    if (sc.capped) stateStats.capped = true;
+    for (const smp of sc.samples) {
+      const rest = new Set(paintedColors(smp.rest, smp.text).map((c) => c.hex));
+      for (const [state, props] of Object.entries(smp.states)) {
+        /** @type {Set<string>} */
+        const seen = new Set();
+        for (const c of paintedColors(props, smp.text)) {
+          const k = `${c.hex}\n${c.property}`;
+          if (rest.has(c.hex) || seen.has(k)) continue;
+          seen.add(k);
+          let v = stateColors.get(c.hex);
+          if (!v) stateColors.set(c.hex, (v = { count: 0, ctx: new Map() }));
+          v.count++;
+          const ck = `${state}\n${c.property}\n${smp.role}`;
+          let x = v.ctx.get(ck);
+          if (!x) v.ctx.set(ck, (x = { state, property: c.property, role: smp.role, count: 0, selectors: [] }));
+          x.count++;
+          if (x.selectors.length < MAX_SELECTORS && !x.selectors.includes(smp.selector)) x.selectors.push(smp.selector);
+        }
+      }
+    }
   }
 
   /**
@@ -348,7 +433,7 @@ export function createRenderedAggregator() {
         nLarge: 0,
         belowAA: 0,
         belowAAA: 0,
-        uncertain: { value: 0, reasons: { opacity: 0, backgroundImage: 0 } },
+        uncertain: { value: 0, reasons: { opacity: 0, backgroundImage: 0, overlap: 0 } },
         selectors: [],
         roles: {},
         pages: {},
@@ -359,10 +444,11 @@ export function createRenderedAggregator() {
     if (large) pair.nLarge++;
     if (!lv.AA) pair.belowAA++;
     if (!lv.AAA) pair.belowAAA++;
-    if (eff.opacity || eff.backgroundImage) {
+    if (eff.opacity || eff.backgroundImage || rec.overlap) {
       pair.uncertain.value++;
       if (eff.opacity) pair.uncertain.reasons.opacity++;
       if (eff.backgroundImage) pair.uncertain.reasons.backgroundImage++;
+      if (rec.overlap) pair.uncertain.reasons.overlap++;
     }
     if (pair.selectors.length < MAX_SELECTORS && !pair.selectors.includes(rec.selector)) pair.selectors.push(rec.selector);
     const role = rec.role ?? 'texte';
@@ -395,10 +481,24 @@ export function createRenderedAggregator() {
           translucent: colorCounts.length - opaque.length,
           groupsDE2: cluster(colorCounts, 2),
           groupsDE5: cluster(colorCounts, 5),
+          groupsCompleteDE2: clusterComplete(colorCounts, 2),
+          groupsCompleteDE5: clusterComplete(colorCounts, 5),
         },
         fontSizes: { ...families.fontSizes, v1Keys: v1FontSizes },
       },
       textGreys: textGreys(families.colors.values, darkByText),
+      states: {
+        ...stateStats,
+        colors: Object.fromEntries(
+          [...stateColors.entries()]
+            .sort((a, b) => b[1].count - a[1].count || (a[0] < b[0] ? -1 : 1))
+            .map(([hex, v]) => [
+              hex,
+              { count: v.count, newToRender: !(hex in families.colors.values), contexts: [...v.ctx.values()].sort((a, b) => b.count - a.count) },
+            ]),
+        ),
+        onlyInStates: [...stateColors.keys()].filter((hex) => !(hex in families.colors.values)).sort(),
+      },
       contrast: {
         pairs: pairList,
         occurrences: pairList.reduce((t, p) => t + p.n, 0),
@@ -407,5 +507,5 @@ export function createRenderedAggregator() {
     };
   }
 
-  return { addPage, result };
+  return { addPage, addStates, result };
 }

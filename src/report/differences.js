@@ -163,16 +163,61 @@ export const V1_DIFFERENCES = [
     effet: 'clés différentes pour une même valeur ; comptes inchangés',
     tag: '[F]',
   },
+  {
+    n: 20,
+    point: 'Couleurs rendues',
+    v1: 'color, background-color et la bordure du premier côté visible',
+    outil: 'en plus : une occurrence par couleur de bordure distincte, contour, ombres, soulignement, dégradés, fill et stroke des formes SVG (R5 bis, R6 bis)',
+    effet: 'plus de couleurs rendues ; le rapport déclaré / rendu compare enfin des propriétés proches',
+    tag: '[F]',
+  },
+  {
+    n: 21,
+    point: 'Texte des champs',
+    v1: 'un champ sans nœud texte n’est pas porteur de texte',
+    outil: 'valeur d’un input, d’un textarea ou d’un select, et ::placeholder d’un champ vide (R3 bis)',
+    effet: 'plus de couleurs de texte, de tailles et de paires de contraste',
+    tag: '[F]',
+  },
+  {
+    n: 22,
+    point: 'États et regroupement',
+    v1: 'état de repos seulement ; regroupement glouton par fréquence',
+    outil: 'hover, focus et active forcés sur un échantillon, rapportés à part (R15) ; regroupement à liaison complète en plus du glouton',
+    effet: 'aucun sur les familles ; le glouton reste la base de comparaison avec la v1',
+    tag: '[F]',
+  },
 ];
 
 export const V1_SAME =
-  'Identiques à la v1 [F] : seuils ΔE stricts à 2 et 5 en OKLab × 100, regroupement glouton par fréquence, couleurs opaques seules dans les groupes, arrondi au centième des tailles déclarées, rootPx mesuré, règle de visibilité, porteur de texte, couleur de bordure du premier côté.';
+  'Identiques à la v1 [F] : seuils ΔE stricts à 2 et 5 en OKLab × 100, regroupement glouton par fréquence (groupsDE2, groupsDE5), couleurs opaques seules dans les groupes, arrondi au centième des tailles déclarées, rootPx mesuré, règle de visibilité.';
 
 /**
  * Limites connues, toujours rappelées dans le rapport.
  * @type {{ text: string, tag: string }[]}
  */
 export const LIMITS = [
+  {
+    text: 'Le rendu est celui d’une seule fenêtre (option --viewport) : la mise en page mobile demande un second audit. Les contenus qui n’existent qu’après une action (menu ouvert, modale, notification, message d’erreur) ne sont pas mesurés.',
+    tag: '[F]',
+  },
+  {
+    text: 'États : hover, focus et active sont forcés sur un élément par couple (rôle, sélecteur court), 60 au plus par page, et lus sur l’élément lui-même (pas sur ses enfants ni ses pseudo-éléments). Les états d’erreur, de sélection et de désactivation ne peuvent pas être forcés.',
+    tag: '[F]',
+  },
+  {
+    text: 'Un élément est « rendu » s’il a un rectangle et n’est pas en visibility: hidden : un élément hors écran, à opacity 0 ou masqué par clip est compté.',
+    tag: '[F]',
+  },
+  {
+    text: 'Contraste : un texte dont le centre tombe sur une image ou sur un élément positionné hors de sa lignée est marqué [V] (overlap) ; son ratio n’est pas corrigé et l’ordre d’empilement n’est pas calculé.',
+    tag: '[F]',
+  },
+  {
+    text: 'Le déclaré compte tout jeton couleur de toute déclaration ; le rendu compte les couleurs de texte, de fond, de bordure, de contour, d’ombre, de soulignement, de dégradé et de SVG. Les images, les polices d’icônes en couleur et les canvas échappent aux deux.',
+    tag: '[F]',
+  },
+  { text: 'Seuil de chroma des gris de texte (0,02) : choisi sur une seule plateforme.', tag: '[H]' },
   { text: 'Les iframes sont comptées par page mais ni leurs feuilles ni leur rendu ne sont parcourus.', tag: '[F]' },
   { text: 'Le déclaré convertit les rem avec la rootPx de la première page.', tag: '[F]' },
   { text: 'Les déclarations invalides sont comptées au déclaré, puisque le texte des feuilles est lu tel quel.', tag: '[F]' },

@@ -66,7 +66,7 @@ export function renderReport(audit) {
   push();
   push(
     `Outil ${audit.tool.version}, Chromium ${meta.browser}, fenêtre ${meta.viewport.width}×${meta.viewport.height}, attente : load + networkidle (${meta.networkIdleTimeoutMs / 1000} s max) + ${meta.waitMs} ms. ` +
-      `Session : ${meta.storageState ?? 'aucune'}. Sources : ${meta.sources ?? 'attribution par origine'}. Trace du rendu : ${meta.traceRendered ? 'oui' : 'non'}.`,
+      `Session : ${meta.storageState ?? 'aucune'}. Sources : ${meta.sources ?? 'attribution par origine'}. Trace du rendu : ${meta.traceRendered ? 'oui' : 'non'}. États forcés : ${meta.states === false ? 'non' : 'oui'}.`,
   );
   push();
   push('Les chiffres des tableaux sont mesurés [F], sauf mention contraire.');
@@ -135,6 +135,18 @@ export function renderReport(audit) {
       .map((g) => `\`${g.rep}\` ← ${g.members.filter((/** @type {string} */ m) => m !== g.rep).map((/** @type {string} */ m) => `\`${m}\``).join(', ')} (×${g.n})`)
       .join(' ; ') || '—';
   push(`- Groupes ΔE 5 du déclaré : ${groups(D.colors.groupsDE5)}. [F]`);
+  if (R.colors.distinctWithoutPseudo !== undefined) {
+    push(
+      `- Rendu hors pseudo-éléments : ${R.colors.distinctWithoutPseudo} couleurs (${R.colors.distinct} avec), ${R.fontSizes.distinctWithoutPseudo} tailles de police (${R.fontSizes.distinct} avec). [F]`,
+    );
+  }
+  if (D.colors.groupsCompleteDE5) {
+    const maxD = (/** @type {any[]} */ gs) => Math.max(0, ...gs.map((g) => g.diameter)).toFixed(2);
+    push(
+      `- Regroupement à liaison complète (toutes les couleurs d’un groupe à moins du seuil les unes des autres ; indépendant des fréquences) : déclaré ${D.colors.groupsCompleteDE2.length} groupes à ΔE 2, ${D.colors.groupsCompleteDE5.length} à ΔE 5 (diamètre maximal ${maxD(D.colors.groupsCompleteDE5)}) ; rendu ${R.colors.groupsCompleteDE2.length} et ${R.colors.groupsCompleteDE5.length}. Les groupes gloutons ci-dessus restent la base de comparaison avec la v1 ; leur nombre dépend de l’ordre des fréquences. [F]`,
+    );
+  }
+  if (declared.fontFaces) push(`- Règles @font-face : ${declared.fontFaces.total}, comptées à part des polices et des graisses déclarées. [F]`);
   const tg = rendered.textGreys;
   if (tg) {
     const list = Object.entries(tg.values).map(([k, v]) => `\`${k}\` ×${/** @type {any} */ (v).count}`).join(' · ') || '—';
@@ -210,6 +222,29 @@ export function renderReport(audit) {
         ]),
       ),
     );
+  }
+
+  // --- États
+  const S = rendered.states;
+  if (S && meta.states !== false) {
+    push();
+    push('## États (hover, focus, active)');
+    push();
+    push(
+      `${S.sampled} éléments interactifs testés sur ${S.candidates} couples (rôle, sélecteur)${S.capped ? ', échantillon plafonné' : ''}. Couleurs qu’un élément n’a pas au repos : ${Object.keys(S.colors).length}, dont ${S.onlyInStates.length} absentes de tout le rendu au repos. [F]`,
+    );
+    const rows = Object.entries(S.colors).slice(0, 30);
+    if (rows.length) {
+      push();
+      push(
+        table(
+          ['Couleur', 'Absente au repos', 'État', 'Propriété', 'Rôle', 'Occ.', 'Exemples'],
+          rows.flatMap(([hex, v]) =>
+            /** @type {any} */ (v).contexts.map((/** @type {any} */ c) => [`\`${hex}\``, /** @type {any} */ (v).newToRender ? 'oui' : 'non', c.state, c.property, c.role, c.count, c.selectors.join(', ')]),
+          ),
+        ),
+      );
+    }
   }
 
   // --- Trace

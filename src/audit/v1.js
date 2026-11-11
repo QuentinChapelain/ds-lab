@@ -101,8 +101,9 @@ export function compareV1(v1, ours) {
     ['Déclaré : tailles de police distinctes', v1?.declared?.sizes, d.fontSizes.distinct, '1, 5–10'],
     ['Déclaré : couleurs distinctes par source', fmtSources(v1?.declared?.bySource), fmtSources(bySource), '2–7'],
     ['Rendu : éléments', v1?.rendered?.elements, ours.elements, '13 (shadow DOM ouverts parcourus ici)'],
-    ['Rendu : couleurs distinctes', v1?.rendered?.colors, r.colors.distinct, '13, 14'],
-    ['Rendu : tailles (clé v1, 20 premières)', v1?.rendered?.sizes, v1Top(r.fontSizes.v1Keys, 20), '13 (pseudo-éléments comptés ici), 15'],
+    ['Rendu : couleurs distinctes', v1?.rendered?.colors, r.colors.distinct, '13, 14, 20, 21'],
+    ['Rendu : couleurs distinctes hors pseudo-éléments', v1?.rendered?.colors, r.colors.distinctWithoutPseudo, '14, 20, 21'],
+    ['Rendu : tailles (clé v1, 20 premières)', v1?.rendered?.sizes, v1Top(r.fontSizes.v1Keys, 20), '13 (pseudo-éléments comptés ici), 15, 21'],
   ];
   return rows.map(([mesure, a, b, ecarts]) => ({
     mesure,

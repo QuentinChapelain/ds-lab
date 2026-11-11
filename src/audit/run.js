@@ -26,6 +26,7 @@ const PKG = JSON.parse(await readFile(new URL('../../package.json', import.meta.
  * @property {{ width: number, height: number }} [viewport]
  * @property {number} [waitMs]
  * @property {boolean} [trace]          --trace-rendered
+ * @property {boolean} [states]         états forcés hover, focus, active (défaut : oui ; --no-states pour les couper)
  * @property {string} [v1ScriptPath]
  * @property {string} [outRoot]        défaut : local/audits
  * @property {Date} [now]
@@ -73,6 +74,7 @@ export async function runAudit(opts) {
     viewport = { width: 1366, height: 900 },
     waitMs = DEFAULT_WAIT_MS,
     trace = false,
+    states = true,
     v1ScriptPath,
     outRoot = 'local/audits',
     now = new Date(),
@@ -119,9 +121,10 @@ export async function runAudit(opts) {
           meta.sheets = sheets.length;
           for (const t of sw) warnings.push({ text: `${url} : ${t}`, tag: '[F]' });
           const pageAgg = v1Code ? createRenderedAggregator() : null;
-          const r = await measureRendered(page, agg, { trace, sources, also: pageAgg ? [pageAgg] : [] });
+          const r = await measureRendered(page, agg, { trace, states, sources, also: pageAgg ? [pageAgg] : [] });
           meta.iframes = r.iframes;
           meta.traced = r.traced;
+          meta.stateSamples = r.stateSamples;
           perPage.push({ pageUrl: nav.finalUrl, sheets });
           if (v1Code && pageAgg) {
             const v1 = await runV1(page, v1Code);
@@ -166,6 +169,7 @@ export async function runAudit(opts) {
           waitMs,
           networkIdleTimeoutMs: NETWORK_IDLE_TIMEOUT_MS,
           traceRendered: trace,
+          states,
           storageState: storageState ? basename(storageState) : null,
           sources: sourcesFile ? relative(process.cwd(), sourcesFile) || sourcesFile : null,
           v1Script: v1ScriptPath ? basename(v1ScriptPath) : null,

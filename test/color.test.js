@@ -131,8 +131,10 @@ test('contraste WCAG 2.1 : valeurs de référence', () => {
 test('grand texte et niveaux AA / AAA', () => {
   assert.equal(isLargeText(24, 400), true);
   assert.equal(isLargeText(23.9, 400), false);
-  assert.equal(isLargeText(18.66, 700), true);
-  assert.equal(isLargeText(18.66, 600), false);
+  // 14 pt = 18,666… px : 18,66 px n'y est pas (corrigé après la relecture du 11/11/2026).
+  assert.equal(isLargeText(18.67, 700), true);
+  assert.equal(isLargeText(18.66, 700), false);
+  assert.equal(isLargeText(18.67, 600), false);
   assert.deepEqual(wcagLevels(4.48, false), { AA: false, AAA: false });
   assert.deepEqual(wcagLevels(4.48, true), { AA: true, AAA: false });
   assert.deepEqual(wcagLevels(7, false), { AA: true, AAA: true });

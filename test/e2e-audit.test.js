@@ -49,7 +49,7 @@ test('sorties : local/audits/<hôte>/<AAAA-MM-JJTHHMM>/ avec audit.json, rapport
   assert.equal(first.length, 1);
   const host = new URL(servers.origin).host.replace(':', '_');
   assert.equal(first[0].dir, join(out, host, '2026-11-11T1530'));
-  assert.deepEqual((await readdir(first[0].dir)).sort(), ['audit.json', 'rapport.md', 'v1.json']);
+  assert.deepEqual((await readdir(first[0].dir)).sort(), ['audit.json', 'rapport.html', 'rapport.md', 'v1.json']);
 });
 
 test('audit.json : chiffres clés conformes à expected.json', () => {

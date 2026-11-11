@@ -13,7 +13,7 @@
 import { createHash } from 'node:crypto';
 import { analyze } from '@projectwallace/css-analyzer';
 import postcss from 'postcss';
-import { normalizeColor, isOpaque, cluster } from '../lib/color.js';
+import { normalizeColor, isOpaque, cluster, clusterComplete } from '../lib/color.js';
 import { splitSpaces } from '../lib/units.js';
 import { attributeSource } from '../lib/sources.js';
 import {
@@ -173,6 +173,8 @@ export function analyzeDeclared(sheets, { rootPx, sources }) {
   let varReferences = 0;
   let mediaOther = 0;
   let outOfGamut = 0;
+  /** Règles @font-face : descripteurs comptés à part, hors des familles d'usage. */
+  const fontFaces = { total: 0, families: /** @type {Record<string, number>} */ ({}) };
   /** @type {Record<string, { distinct: Set<string>, occurrences: number }>} */
   const colorsBySource = {};
   /** @type {string[]} */
@@ -219,6 +221,23 @@ export function analyzeDeclared(sheets, { rootPx, sources }) {
       for (const [raw, locs] of Object.entries(part.uniqueWithLocations ?? {})) for (const l of locs) fn(raw, l.line);
     };
 
+    // Descripteurs font-family des @font-face de cette feuille : Wallace les mêle aux
+    // valeurs d'usage ; on en retire autant d'occurrences, à clé égale.
+    /** @type {Record<string, number>} */
+    const faceFamilies = {};
+    try {
+      postcss.parse(s.text).walkAtRules(/^font-face$/i, (rule) => {
+        fontFaces.total++;
+        rule.walkDecls(/^font-family$/i, (decl) => {
+          const key = fontFamilyKey(decl.value).key;
+          faceFamilies[key] = (faceFamilies[key] ?? 0) + 1;
+          fontFaces.families[key] = (fontFaces.families[key] ?? 0) + 1;
+        });
+      });
+    } catch {
+      /* erreur d'analyse signalée plus bas, au passage PostCSS */
+    }
+
     if (w) {
     each(w.colors, (raw, line) => {
       const c = normalizeColor(raw);
@@ -230,7 +249,13 @@ export function analyzeDeclared(sheets, { rootPx, sources }) {
       b.occurrences++;
     });
     each(w.fontFamilies, (raw, line) => {
-      if (!isGlobalKeyword(raw)) fam.fontFamilies.add(fontFamilyKey(raw), at(raw, line));
+      if (isGlobalKeyword(raw)) return;
+      const k = fontFamilyKey(raw);
+      if (faceFamilies[k.key] > 0) {
+        faceFamilies[k.key]--;
+        return;
+      }
+      fam.fontFamilies.add(k, at(raw, line));
     });
     each(w.fontSizes, (raw, line) => {
       if (!isGlobalKeyword(raw)) fam.fontSizes.add(lengthOrKeywordKey(raw, rootPx), at(raw, line));
@@ -287,6 +312,8 @@ export function analyzeDeclared(sheets, { rootPx, sources }) {
         return;
       }
       if (isGlobalKeyword(value)) return;
+      const parentRule = /** @type {any} */ (decl.parent);
+      if (parentRule?.type === 'atrule' && /^font-face$/i.test(parentRule.name)) return;
       if (COLOR_PROPERTY.test(prop) && /var\(/i.test(value)) varReferences++;
 
       /** @param {keyof typeof fam} f @param {{ key: string, normalizable: boolean }} k @param {string} raw */
@@ -330,6 +357,8 @@ export function analyzeDeclared(sheets, { rootPx, sources }) {
     ),
     groupsDE2: cluster(colorCounts, 2),
     groupsDE5: cluster(colorCounts, 5),
+    groupsCompleteDE2: clusterComplete(colorCounts, 2),
+    groupsCompleteDE5: clusterComplete(colorCounts, 5),
   };
 
   return {
@@ -351,6 +380,7 @@ export function analyzeDeclared(sheets, { rootPx, sources }) {
       parseError,
     })),
     customProperties,
+    fontFaces,
     families: { ...families, colors, breakpoints: { ...families.breakpoints, mediaOther } },
     warnings,
   };
