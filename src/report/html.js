@@ -81,8 +81,13 @@ const selectorList = (selectors) => selectors.map((s) => `<code>${esc(s)}</code>
  */
 function swatch(hex, v) {
   const h = safeHex(hex);
+  // R18 : la pastille d'interface ne montre que les usages d'interface.
+  const contexts = v.contexts
+    .map((/** @type {any} */ c) => ({ ...c, count: c.count - (c.content ?? 0) }))
+    .filter((/** @type {any} */ c) => c.count > 0);
+  v = { ...v, count: v.count - (v.content ?? 0), contexts };
   const examples = [...new Set(v.contexts.flatMap((/** @type {any} */ c) => c.selectors))].slice(0, 4);
-  const iconOnly = v.pseudo > 0 && v.pseudo === v.count;
+  const iconOnly = v.pseudo > 0 && v.pseudo >= v.count;
   return `<div class="swatch">
   <div class="chip${isOpaque(h) ? '' : ' damier'}"><span style="background:${h};color:${inkOn(h)}">${esc(hex)}</span></div>
   <div class="meta"><div class="count">×${v.count}${iconOnly ? ' <em class="tag">pseudo-élément seulement</em>' : v.pseudo ? ` <em class="tag">dont ${v.pseudo} en pseudo-élément</em>` : ''}</div>
@@ -103,10 +108,19 @@ export function renderHtml(audit) {
   const out = [];
   const push = (/** @type {string} */ s) => out.push(s);
 
-  // --- Couleurs rendues, par groupe (liaison complète, ΔE < 5).
-  const groups = colors.groupsCompleteDE5 ?? [];
-  const translucent = Object.keys(colors.values).filter((h) => !isOpaque(h));
+  // --- Couleurs d'interface, par groupe (liaison complète, ΔE < 5), puis rares, puis contenu (R18).
+  const RARE = 2;
+  const uses = (/** @type {string} */ h) => colors.values[h].count - (colors.values[h].content ?? 0);
+  const groups = colors.groupsInterfaceDE5 ?? colors.groupsCompleteDE5 ?? [];
+  const isRare = (/** @type {any} */ g) => g.n <= RARE;
+  const translucentAll = Object.keys(colors.values).filter((h) => !isOpaque(h) && uses(h) > 0);
+  const translucent = translucentAll.filter((h) => uses(h) > RARE);
+  const rare = [...groups.filter(isRare).flatMap((/** @type {any} */ g) => g.members), ...translucentAll.filter((h) => uses(h) <= RARE)];
+  const contentColors = Object.entries(colors.values)
+    .filter(([, v]) => (/** @type {any} */ (v).content ?? 0) > 0)
+    .sort((a, b) => /** @type {any} */ (b[1]).content - /** @type {any} */ (a[1]).content);
   const groupHtml = groups
+    .filter((/** @type {any} */ g) => !isRare(g))
     .map((/** @type {any} */ g) => {
       const members = g.members.map((/** @type {string} */ m) => swatch(m, colors.values[m])).join('');
       const head =
@@ -116,6 +130,21 @@ export function renderHtml(audit) {
       return `<section class="group${g.members.length > 1 ? ' multi' : ''}">${head}${members}</section>`;
     })
     .join('\n');
+  const mini = (/** @type {string} */ hex, /** @type {number} */ n, /** @type {string} */ note) => {
+    const h = safeHex(hex);
+    return `<span class="mini${isOpaque(h) ? '' : ' damier'}" title="${esc(note)}"><span style="background:${h};color:${inkOn(h)}">${esc(hex)} ×${n}</span></span>`;
+  };
+  const rareHtml = rare
+    .map((h) => mini(h, uses(h), [...new Set(colors.values[h].contexts.flatMap((/** @type {any} */ c) => c.selectors))].slice(0, 3).join(' ')))
+    .join('');
+  const contentHtml = contentColors
+    .map(([hex, v]) => {
+      const x = /** @type {any} */ (v);
+      const kinds = [...new Set(x.contexts.filter((/** @type {any} */ c) => c.content > 0).map((/** @type {any} */ c) => (c.property === 'background-color' ? 'fond d’image' : 'SVG')))].join(', ');
+      return mini(hex, x.content, kinds);
+    })
+    .join('');
+  const interfaceCount = colors.distinctInterface ?? colors.distinct;
 
   // --- États.
   const S = rendered.states ?? { sampled: 0, colors: {}, onlyInStates: [] };
@@ -257,6 +286,11 @@ export function renderHtml(audit) {
   .count { font-weight:600; }
   .usage { display:inline-block; margin:2px 10px 2px 0; font-size:13px; }
   .examples { margin-top:4px; display:flex; flex-wrap:wrap; gap:4px; }
+  .minis { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 0; }
+  .mini { display:inline-block; border-radius:6px; overflow:hidden; border:1px solid rgba(0,0,0,.12); }
+  .mini.damier { background:repeating-conic-gradient(#d8dbe0 0% 25%, #ffffff 0% 50%) 0 0 / 14px 14px; }
+  .mini span { display:block; padding:10px 8px 4px; font:11px/1 ui-monospace, Menlo, monospace; }
+  details { margin:12px 0 0; } summary { cursor:pointer; font-weight:600; font-size:14px; }
   .tag { font-style:normal; font-weight:400; font-size:12px; color:var(--v); background:#fdf3d7; border-radius:4px; padding:1px 6px; }
   .tag.fort { color:#fff; background:var(--ko); }
   .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(330px, 1fr)); gap:12px; }
@@ -288,18 +322,24 @@ export function renderHtml(audit) {
 <p class="lede">${esc(meta.stamp)} · ${pages.length} page(s) · fenêtre ${meta.viewport.width} × ${meta.viewport.height} · session : ${esc(meta.storageState ?? 'aucune')}. Tout ce qui suit est mesuré dans le navigateur, sauf la ligne « déclarées ».</p>
 <div class="stats">
 ${stat(rendered.elements, 'éléments affichés')}
-${stat(colors.distinctWithoutPseudo ?? colors.distinct, 'couleurs affichées')}
-${stat(colors.distinct - (colors.distinctWithoutPseudo ?? colors.distinct), 'de plus, en pseudo-éléments')}
+${stat(interfaceCount, 'couleurs d’interface')}
+${stat(interfaceCount - rare.length, `dont utilisées plus de ${RARE} fois`)}
+${stat(groups.filter((/** @type {any} */ g) => !isRare(g)).length + translucent.length, 'groupes, une fois les proches réunies')}
 ${stat(S.onlyInStates.length, 'de plus, au survol, au focus ou à l’appui')}
-${stat(groups.length + translucent.length, 'groupes de couleurs proches')}
+${stat(contentColors.length, 'couleurs vues dans du contenu, à part')}
 ${stat(declared.families.colors.distinct, 'couleurs déclarées dans le CSS')}
 ${rendered.thirdParty?.elements ? stat(rendered.thirdParty.elements, 'éléments tiers écartés') : ''}
 </div>
 
-<h2>Couleurs affichées</h2>
-<p class="lede">Chaque pastille est une couleur réellement peinte au repos, avec ce qu’elle colore et sur quels éléments. Les couleurs encadrées ensemble sont proches à l’œil (toutes à moins de ΔE 5 les unes des autres) : ce sont les candidates à la fusion.</p>
+<h2>Couleurs de l’interface</h2>
+<p class="lede">Texte, fonds, bordures, contours, ombres et icônes qui suivent la couleur du texte, au repos, utilisés plus de ${RARE} fois. Les couleurs encadrées ensemble sont proches à l’œil (toutes à moins de ΔE 5 les unes des autres) : ce sont les candidates à la fusion.</p>
 ${groupHtml}
 ${translucent.length ? `<h3>Couleurs avec transparence</h3><section class="group">${translucent.map((h) => swatch(h, colors.values[h])).join('')}</section>` : ''}
+${rareHtml ? `<details><summary>${rare.length} couleur(s) d’interface rares, utilisées ${RARE} fois au plus</summary><p class="lede">Souvent un cas particulier ou une erreur. Survole une pastille pour voir où elle apparaît.</p><div class="minis">${rareHtml}</div></details>` : ''}
+
+<h2>Couleurs de contenu</h2>
+<p class="lede">Elles ne font pas partie du système : couleurs propres d’un SVG (illustration, graphique, logo) et fonds d’attente derrière une image. Une icône SVG qui suit la couleur du texte reste comptée dans l’interface. Le tri est automatique : à vérifier à l’œil [H].</p>
+${contentHtml ? `<div class="minis">${contentHtml}</div>` : '<p class="lede">Aucune.</p>'}
 
 <h2>Couleurs d’état</h2>
 <p class="lede">${S.sampled} élément(s) interactif(s) testé(s) au survol, au focus et à l’appui${S.capped ? ' (échantillon plafonné : tous les éléments n’ont pas été testés)' : ''}. Ne sont listées que les couleurs qu’un élément n’avait pas au repos. Un contour sombre au focus sur beaucoup d’éléments est en général l’anneau par défaut du navigateur : le site n’a pas défini le sien.</p>

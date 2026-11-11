@@ -16,6 +16,7 @@
  * @property {string} [tag]
  * @property {string} [pseudo]        '::before', '::after' ou '::placeholder'
  * @property {boolean} [textOnly]     pseudo-élément ::placeholder : propriétés typographiques seulement (R3 bis)
+ * @property {boolean} [imageBox]     boîte d'image : son fond est du contenu, pas de l'interface (R18)
  * @property {boolean} [icon]         pseudo-élément dont le content est un glyphe de police d'icônes (R11 ter)
  * @property {boolean} [overlap]      porteur de texte dont le centre tombe sur un peintre hors de sa lignée (R11 bis)
  * @property {string} [selector]
@@ -75,6 +76,7 @@ export function collectInPage(thirdSelectors = []) {
   const SVG_SHAPES = new Set(['path', 'circle', 'rect', 'ellipse', 'line', 'polyline', 'polygon', 'text', 'use']);
   const NO_TEXT_INPUT = new Set(['hidden', 'checkbox', 'radio', 'range', 'color', 'file', 'image']);
   const PAINTER_TAGS = new Set(['img', 'video', 'canvas', 'svg']);
+  const MEDIA_TAGS = new Set(['IMG', 'PICTURE', 'VIDEO', 'CANVAS']);
   const body = document.body;
   /** @type {any[]} */
   const records = [];
@@ -185,6 +187,8 @@ export function collectInPage(thirdSelectors = []) {
     if (el && SVG_SHAPES.has(el.tagName.toLowerCase()) && /** @type {any} */ (el).ownerSVGElement) {
       p['fill'] = cs.getPropertyValue('fill');
       p['stroke'] = cs.getPropertyValue('stroke');
+      // R18 : une forme en currentColor suit la couleur du texte (icône d'interface).
+      p['svg-color'] = cs.getPropertyValue('color');
     }
     return p;
   };
@@ -221,6 +225,12 @@ export function collectInPage(thirdSelectors = []) {
       rec.role = roleOf(el, text);
       rec.text = text;
       rec.props = propsOf(cs, text, el);
+      // R18 : boîte d'image = fond d'attente d'un média, sans texte propre.
+      if (!text) {
+        const isMedia = (/** @type {Element} */ c) =>
+          MEDIA_TAGS.has(c.tagName) || getComputedStyle(c).backgroundImage.includes('url(');
+        if (cs.backgroundImage.includes('url(') || (el.children.length > 0 && [...el.children].every(isMedia))) rec.imageBox = true;
+      }
     }
     records.push(rec);
     elements.push(el);

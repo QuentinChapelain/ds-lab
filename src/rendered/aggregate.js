@@ -109,6 +109,7 @@ const CORNERS = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
  * @property {string} role
  * @property {number} count
  * @property {number} pseudo   occurrences venues d'un pseudo-élément (R16)
+ * @property {number} content  occurrences de contenu et non d'interface (R18)
  * @property {Record<string, number>} pages
  * @property {string[]} selectors
  * @property {Record<string, number>} tags
@@ -117,6 +118,7 @@ const CORNERS = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
  * @typedef {object} RenderedValue
  * @property {number} count
  * @property {number} pseudo   occurrences venues d'un pseudo-élément (R16)
+ * @property {number} content  occurrences de contenu et non d'interface (R18)
  * @property {boolean} normalizable
  * @property {Record<string, number>} originals
  * @property {Context[]} contexts
@@ -135,30 +137,33 @@ function createCollector() {
      * @param {RenderedRecord} rec
      * @param {string} page
      * @param {number} index
+     * @param {boolean} [content]  occurrence de contenu (R18)
      * @returns {Context | null} le contexte s'il vient d'être créé
      */
-    add(k, raw, property, rec, page, index) {
+    add(k, raw, property, rec, page, index, content = false) {
       total++;
       if (!k.normalizable) nonNormalizable++;
       let v = values.get(k.key);
       if (!v) {
-        v = { count: 0, pseudo: 0, normalizable: k.normalizable, originals: {}, contexts: [], ctx: new Map() };
+        v = { count: 0, pseudo: 0, content: 0, normalizable: k.normalizable, originals: {}, contexts: [], ctx: new Map() };
         values.set(k.key, v);
       }
       v.count++;
       if (rec.pseudo) v.pseudo++;
+      if (content) v.content++;
       v.originals[raw] = (v.originals[raw] ?? 0) + 1;
       const role = rec.role ?? 'conteneur';
       const ck = `${property}\n${role}`;
       let c = v.ctx.get(ck);
       let created = false;
       if (!c) {
-        c = { property, role, count: 0, pseudo: 0, pages: {}, selectors: [], tags: {}, sample: { page, index, pseudo: !!rec.pseudo } };
+        c = { property, role, count: 0, pseudo: 0, content: 0, pages: {}, selectors: [], tags: {}, sample: { page, index, pseudo: !!rec.pseudo } };
         v.ctx.set(ck, c);
         created = true;
       }
       c.count++;
       if (rec.pseudo) c.pseudo++;
+      if (content) c.content++;
       c.pages[page] = (c.pages[page] ?? 0) + 1;
       const sel = rec.selector ?? '';
       if (c.selectors.length < MAX_SELECTORS && !c.selectors.includes(sel)) c.selectors.push(sel);
@@ -172,6 +177,7 @@ function createCollector() {
         total,
         distinct: values.size,
         distinctWithoutPseudo: [...values.values()].filter((v) => v.count > v.pseudo).length,
+        distinctInterface: [...values.values()].filter((v) => v.count > v.content).length,
         nonNormalizable,
         values: Object.fromEntries(
           sorted.map(([key, { ctx, ...v }]) => [key, { ...v, contexts: [...ctx.values()].sort((a, b) => b.count - a.count) }]),
@@ -189,16 +195,18 @@ const COLOR_TOKEN = /(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([^()]*\)|#[0
  * Sert au repos comme aux états forcés (R15).
  * @param {Record<string, string>} p   propriétés relevées par collectInPage
  * @param {boolean} text               porteur de texte
- * @returns {{ hex: string, raw: string, property: string }[]} dans l'ordre : texte, bordures, contour, ombres, fond, dégradé, SVG
+ * @param {{ imageBox?: boolean }} [opts]  imageBox : le fond de l'élément est celui d'une boîte d'image (R18)
+ * @returns {{ hex: string, raw: string, property: string, content?: boolean }[]} dans l'ordre : texte, bordures,
+ *   contour, ombres, fond, dégradé, SVG ; content = occurrence de contenu et non d'interface (R18)
  */
-export function paintedColors(p, text) {
-  /** @type {{ hex: string, raw: string, property: string }[]} */
+export function paintedColors(p, text, { imageBox = false } = {}) {
+  /** @type {{ hex: string, raw: string, property: string, content?: boolean }[]} */
   const out = [];
-  /** @param {string | undefined} raw @param {string} property */
-  const push = (raw, property) => {
+  /** @param {string | undefined} raw @param {string} property @param {boolean} [content] */
+  const push = (raw, property, content = false) => {
     if (!raw) return null;
     const c = normalizeColor(raw);
-    if (c) out.push({ hex: c.hex, raw, property });
+    if (c) out.push(content ? { hex: c.hex, raw, property, content: true } : { hex: c.hex, raw, property });
     return c?.hex ?? null;
   };
   if (text) {
@@ -221,10 +229,15 @@ export function paintedColors(p, text) {
   }
   if (p['outline-style'] && p['outline-style'] !== 'none' && parseFloat(p['outline-width']) > 0) push(p['outline-color'], 'outline-color');
   if (p['box-shadow'] && p['box-shadow'] !== 'none') for (const m of p['box-shadow'].match(COLOR_TOKEN) ?? []) push(m, 'box-shadow');
-  push(p['background-color'], 'background-color');
+  push(p['background-color'], 'background-color', imageBox);
   if (p['background-image']) for (const m of p['background-image'].match(COLOR_TOKEN) ?? []) push(m, 'background-image');
-  if (p['fill'] && p['fill'] !== 'none') push(p['fill'], 'fill');
-  if (p['stroke'] && p['stroke'] !== 'none') push(p['stroke'], 'stroke');
+  // R18 : fill et stroke sont de l'interface s'ils suivent la color de la forme (currentColor).
+  const own = p['svg-color'] ? normalizeColor(p['svg-color'])?.hex : undefined;
+  for (const k of ['fill', 'stroke']) {
+    if (!p[k] || p[k] === 'none') continue;
+    const c = normalizeColor(p[k]);
+    if (c) push(p[k], k, c.hex !== own);
+  }
   return out;
 }
 
@@ -297,12 +310,13 @@ export function createRenderedAggregator() {
         stats.elements++;
         roles.add(rec.role);
       }
-      /** @param {string} f @param {{ key: string, normalizable: boolean }} k @param {string} raw @param {string} property */
-      const add = (f, k, raw, property) => {
-        const c = fam[f].add(k, raw, property, rec, page, index);
+      /** @param {string} f @param {{ key: string, normalizable: boolean }} k @param {string} raw @param {string} property @param {boolean} [content] */
+      const add = (f, k, raw, property, content = false) => {
+        const c = fam[f].add(k, raw, property, rec, page, index, content);
         if (c) created.push({ family: f, value: k.key, context: c });
       };
-      for (const c of paintedColors(p, !!rec.text)) add('colors', { key: c.hex, normalizable: true }, c.raw, c.property);
+      for (const c of paintedColors(p, !!rec.text, { imageBox: !!rec.imageBox }))
+        add('colors', { key: c.hex, normalizable: true }, c.raw, c.property, !!c.content);
 
       if (rec.text) {
         stats.textBearing++;
@@ -511,6 +525,13 @@ export function createRenderedAggregator() {
           groupsDE5: cluster(colorCounts, 5),
           groupsCompleteDE2: clusterComplete(colorCounts, 2),
           groupsCompleteDE5: clusterComplete(colorCounts, 5),
+          // R18 : mêmes groupes sur les seules occurrences d'interface.
+          groupsInterfaceDE5: clusterComplete(
+            Object.entries(families.colors.values)
+              .map(([hex, v]) => ({ hex, n: v.count - v.content }))
+              .filter((c) => c.n > 0),
+            5,
+          ),
         },
         fontSizes: { ...families.fontSizes, v1Keys: v1FontSizes },
       },

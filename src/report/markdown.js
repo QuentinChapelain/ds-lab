@@ -140,6 +140,12 @@ export function renderReport(audit) {
       `- Rendu hors pseudo-éléments : ${R.colors.distinctWithoutPseudo} couleurs (${R.colors.distinct} avec), ${R.fontSizes.distinctWithoutPseudo} tailles de police (${R.fontSizes.distinct} avec). [F]`,
     );
   }
+  if (R.colors.distinctInterface !== undefined) {
+    const rare = Object.values(R.colors.values).filter((/** @type {any} */ v) => v.count - v.content > 0 && v.count - v.content <= 2).length;
+    push(
+      `- Rendu, interface seulement : ${R.colors.distinctInterface} couleurs, dont ${rare} utilisées 2 fois au plus ; ${R.colors.groupsInterfaceDE5.length} groupes à ΔE 5. Couleurs de contenu (SVG hors currentColor, fonds de boîtes d’image) : ${R.colors.distinct - R.colors.distinctInterface}. Le tri est une règle automatique (voir Limites). [F]`,
+    );
+  }
   if (D.colors.groupsCompleteDE5) {
     const maxD = (/** @type {any[]} */ gs) => Math.max(0, ...gs.map((g) => g.diameter)).toFixed(2);
     push(

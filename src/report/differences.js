@@ -229,6 +229,10 @@ export const LIMITS = [
     text: 'Contraste : seules les icônes en police d’icônes (pseudo-élément en zone à usage privé) sont jugées à 3:1 ; une icône SVG ou image n’est pas mesurée.',
     tag: '[F]',
   },
+  {
+    text: 'Interface ou contenu : une couleur est classée « contenu » si elle vient d’un SVG qui ne suit pas la couleur du texte, ou du fond d’une boîte d’image. Une image de fond, un avatar coloré en CSS ou un composant de graphique en HTML ne sont pas reconnus.',
+    tag: '[H]',
+  },
   { text: 'Seuil de chroma des gris de texte (0,02) : choisi sur une seule plateforme.', tag: '[H]' },
   { text: 'Les iframes sont comptées par page mais ni leurs feuilles ni leur rendu ne sont parcourus.', tag: '[F]' },
   { text: 'Le déclaré convertit les rem avec la rootPx de la première page.', tag: '[F]' },
