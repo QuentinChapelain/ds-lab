@@ -1,0 +1,173 @@
+/* Orbe Café : feuille récente (la carte). Racine à 16 px.
+   Pièges du lot E : voir fixtures/marque-demo/expected-desordre.json. */
+
+body {
+  font-size: 1rem;
+  color: #1f2a44;
+  background-color: #faf6ef;
+}
+
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1200px);
+  justify-content: center;
+}
+
+/* En-tête de la carte : 27 px (E7) */
+.bandeau {
+  padding: 27px 32px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2dccf;
+}
+
+.bandeau h1 {
+  font-size: 32px;
+  line-height: 1.2;
+  margin-bottom: 18px; /* E7 */
+}
+
+.chapo {
+  font-size: 18px;
+  color: #666666; /* C6 */
+}
+
+.carte-contenu {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 32px;
+  align-items: start;
+  padding: 32px;
+}
+
+.categorie {
+  margin-bottom: 24px; /* E1 : espace entre sections */
+}
+
+.categorie-titre,
+.horaires h2 {
+  font-size: 20px; /* T5 */
+  line-height: 1.3;
+  margin-bottom: 16px;
+}
+
+.produits {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.produit {
+  padding: 24px; /* E1 : marge intérieure de carte */
+  background-color: #ffffff;
+  border: 1px solid #e2dccf;
+  border-radius: 12px;
+}
+
+.produit-ligne {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.produit-nom {
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.prix {
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.prix-barre {
+  font-size: 14px;
+  text-decoration: line-through;
+}
+
+.prix-promo {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f0c987; /* C19 : sable en texte sur blanc */
+}
+
+.produit-desc {
+  font-size: 14px;
+  color: #9a9a9a; /* C2 */
+  margin-bottom: 15px; /* E2 */
+}
+
+.etiquette-nouveau,
+.etiquette-promo {
+  display: inline-block;
+  vertical-align: middle;
+  padding: 4px 8px;
+  margin-left: 6px; /* E3 */
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 9999px;
+}
+
+.etiquette-nouveau {
+  color: #ffffff;
+  background-color: #d0563f; /* C18 */
+}
+
+.etiquette-promo {
+  color: #1f2a44;
+  background-color: #f0c987;
+}
+
+.horaires {
+  padding: 24px; /* E1 */
+  background-color: #f7f3ec; /* C8 */
+  border-radius: 12px;
+}
+
+.horaires p {
+  margin-bottom: 8px;
+}
+
+.horaires .jour {
+  font-weight: 700;
+}
+
+.pied-carte {
+  padding: 0 32px 32px;
+}
+
+.note-allergenes {
+  font-size: 14px;
+  color: #757575; /* C5 : sur le crème */
+  margin-bottom: 8px;
+}
+
+.lien-discret {
+  font-size: 14px;
+  color: #30548a; /* C13 */
+}
+
+.actions-carte {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.bouton {
+  display: inline-block;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #2b4c7e;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.bouton:hover {
+  background-color: #24426f; /* C14 : seulement au survol */
+}

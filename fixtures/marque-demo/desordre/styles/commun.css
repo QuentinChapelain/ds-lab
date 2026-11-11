@@ -1,0 +1,81 @@
+/* Orbe Café : en-tête et pied de page communs aux pages en désordre.
+   En px seulement (les trois pages n'ont pas la même racine), sur la cible. */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: "Orbe Sans", Arial, sans-serif;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+img {
+  display: block;
+}
+
+.entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2dccf;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #1f2a44;
+  text-decoration: none;
+}
+
+.navigation {
+  display: flex;
+  gap: 24px;
+}
+
+.navigation a {
+  font-size: 16px;
+  color: #2b4c7e;
+  text-decoration: none;
+}
+
+.navigation a[aria-current="page"] {
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.pied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32px;
+  background-color: #2c4d7f;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.pied-liens {
+  display: flex;
+  gap: 24px;
+}
+
+.pied a {
+  color: #ffffff;
+}

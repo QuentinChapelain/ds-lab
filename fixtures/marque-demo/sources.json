@@ -1,9 +1,15 @@
 {
-  "$comment": "Sources de la page de démonstration (marque fictive Orbe Café), utilisées par les tests.",
+  "$comment": "Sources de la page de démonstration (marque fictive Orbe Café), utilisées par les tests. thirdParty : bandeau de cookies fictif des pages desordre/ (R17).",
   "rules": [
     { "label": "theme", "match": "/styles/theme.css" },
     { "label": "composants", "match": "/styles/composants.css" },
-    { "label": "distant", "match": "/styles/remote.css" }
+    { "label": "distant", "match": "/styles/remote.css" },
+    { "label": "commun", "match": "/desordre/styles/commun.css" },
+    { "label": "recente", "match": "/desordre/styles/recente.css" },
+    { "label": "bibliotheque", "match": "/desordre/styles/bibliotheque.css" },
+    { "label": "ancienne", "match": "/desordre/styles/ancienne.css" },
+    { "label": "tiers-cookies", "match": "/styles/cookies.css" }
   ],
-  "default": "autre"
+  "default": "autre",
+  "thirdParty": [".tiers-cookies"]
 }
