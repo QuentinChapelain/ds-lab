@@ -559,6 +559,37 @@
         "ease": { "value": 1, "how": "a.bouton" },
         "ease-in-out": { "value": 2, "how": "span.badge ×2" }
       }
+    },
+
+    "iframes": {
+      "byPage": {
+        "/": { "value": 0, "how": "index.html ne contient aucune iframe" },
+        "/page-2.html": { "value": 0, "how": "page-2.html ne contient aucune iframe" }
+      },
+      "pageCadres": { "value": 2, "how": "cadres.html (page de test hors marque, pas dans conditions.pages) : une iframe srcdoc et une iframe about:blank" }
+    },
+
+    "trace": {
+      "$comment": "Option --trace-rendered, désactivée par défaut. T1 : pour chaque clé de contexte (famille, valeur, propriété, rôle), un seul élément est tracé : le premier rencontré dans l'ordre du DOM de la première page où la clé apparaît. T2 : règle gagnante = déclarations !important d'abord, puis normales ; feuilles d'auteur avant celles du navigateur ; parmi les règles qui correspondent, la dernière dans l'ordre de cascade ; raccourcis acceptés pour leurs longhands. T3 : si l'élément n'a aucune règle pour la propriété et qu'elle s'hérite, on remonte les ancêtres (inherited = true). T4 : origin = feuille | attribut style | navigateur | initiale ; pour une feuille, source = étiquette de sources.json. T5 : un pseudo-élément n'est pas tracé (origin = non tracé).",
+      "checks": [
+        { "family": "colors", "value": "#2b4c7e", "property": "color", "role": "lien", "element": "a.logo", "origin": "feuille", "source": "theme", "selector": "a", "inherited": false, "how": "theme.css l.42–43 a { color: var(--orbe-bleu) } ; la règle du navigateur pour les liens perd face à l'auteur" },
+        { "family": "colors", "value": "#2b4c7e", "property": "background-color", "role": "bouton", "element": "a.bouton", "origin": "feuille", "source": "composants", "selector": ".bouton", "inherited": false, "how": "composants.css l.14" },
+        { "family": "colors", "value": "#2b4c7e", "property": "border-top-color", "role": "bouton", "element": "a.bouton", "origin": "feuille", "source": "composants", "selector": ".bouton", "inherited": false, "how": "composants.css l.15, raccourci border (T2)" },
+        { "family": "colors", "value": "#1f2a44", "property": "color", "role": "titre", "element": "h1", "origin": "feuille", "source": "theme", "selector": "body", "inherited": true, "how": "aucune règle color sur h1, section, main ; hérité de body, theme.css l.26 (T3)" },
+        { "family": "colors", "value": "#ffffff", "property": "color", "role": "texte", "element": "p (pied)", "origin": "feuille", "source": "distant", "selector": ".pied", "inherited": true, "how": "hérité de footer.pied, remote.css l.5 ; feuille d'une autre origine" },
+        { "family": "colors", "value": "#2c4d7f", "property": "background-color", "role": "conteneur", "element": "footer.pied", "origin": "feuille", "source": "distant", "selector": ".pied", "inherited": false, "how": "remote.css l.6" },
+        { "family": "colors", "value": "#c8553d", "property": "color", "role": "texte", "element": "span.badge.etiquette", "origin": "feuille", "source": "composants", "selector": ".badge", "inherited": false, "how": "composants.css l.50 ; le span vient avant p.note::before dans l'ordre du DOM (T1)" },
+        { "family": "fontSizes", "value": "22.5px", "property": "font-size", "role": "texte", "element": "p.accroche", "origin": "feuille", "source": "inline", "selector": ".hero .accroche", "inherited": false, "how": "<style> de index.html l.10" },
+        { "family": "fontSizes", "value": "54px", "property": "font-size", "role": "titre", "element": "h1", "origin": "feuille", "source": "theme", "selector": "h1", "inherited": false, "how": "theme.css l.49, dans @media (min-width: 1024px) : gagne sur l.31 (2.5rem), venue plus tôt" },
+        { "family": "fontWeights", "value": "400", "property": "font-weight", "role": "lien", "element": "a.logo", "origin": "initiale", "source": null, "selector": null, "inherited": false, "how": "aucune règle font-weight sur a.logo ni sur ses ancêtres, ni côté navigateur : valeur initiale (normal = 400)" },
+        { "family": "fontWeights", "value": "700", "property": "font-weight", "role": "texte", "element": "span.badge.etiquette", "origin": "feuille", "source": "composants", "selector": ".badge", "inherited": false, "how": "composants.css l.49 (bold)" },
+        { "family": "lineHeights", "value": "27px", "property": "line-height", "role": "lien", "element": "a.logo", "origin": "feuille", "source": "theme", "selector": "body", "inherited": true, "how": "hérité de body, theme.css l.25 (1.5)" },
+        { "family": "letterSpacings", "value": "1px", "property": "letter-spacing", "role": "texte", "element": "span.badge.etiquette", "origin": "feuille", "source": "injecté", "selector": ".etiquette", "inherited": false, "how": "feuille construite, index.html l.16" },
+        { "family": "margins", "value": "16px", "property": "margin-bottom", "role": "texte", "element": "p.accroche", "origin": "feuille", "source": "theme", "selector": "p", "inherited": false, "how": "theme.css l.39 ; la règle * l.13 (margin: 0) perd, spécificité plus faible" },
+        { "family": "paddings", "value": "24px", "property": "padding-top", "role": "conteneur", "element": "section.hero", "origin": "feuille", "source": "inline", "selector": ".hero", "inherited": false, "how": "<style> de index.html l.12, dans @media (min-width: 480px)" },
+        { "family": "borderWidths", "value": "1px", "property": "border-bottom-width", "role": "conteneur", "element": "header.entete", "origin": "feuille", "source": "composants", "selector": ".entete", "inherited": false, "how": "composants.css l.6, raccourci border-bottom" },
+        { "family": "radii", "value": "50%", "property": "border-top-left-radius", "role": "image", "element": "img.vignette", "origin": "feuille", "source": "composants", "selector": ".vignette", "inherited": false, "how": "composants.css l.33, raccourci border-radius" }
+      ]
     }
   },
 

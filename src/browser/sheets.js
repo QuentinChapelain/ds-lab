@@ -15,15 +15,18 @@
  * @property {string} text            Texte de la feuille.
  * @property {number} startLine       Ligne (base 0) du début du texte dans le document, pour un <style>.
  * @property {'cdp' | 'requête'} via  Moyen d'obtention du texte.
+ * @property {string} styleSheetId   Identifiant CDP, valable dans la session qui l'a obtenu.
  */
 
 /**
  * @param {import('playwright-core').Page} page  page déjà chargée
- * @param {{ settleMs?: number }} [opts]
+ * @param {{ settleMs?: number, cdp?: import('playwright-core').CDPSession }} [opts]
+ *   `cdp` : session à réutiliser (laissée ouverte, CSS et DOM activés) ; sinon une session
+ *   est ouverte puis fermée.
  * @returns {Promise<{ sheets: CollectedSheet[], rootPx: number, warnings: string[] }>}
  */
-export async function collectSheets(page, { settleMs = 150 } = {}) {
-  const cdp = await page.context().newCDPSession(page);
+export async function collectSheets(page, { settleMs = 150, cdp: given } = {}) {
+  const cdp = given ?? (await page.context().newCDPSession(page));
   /** @type {any[]} */
   const headers = [];
   let last = Date.now();
@@ -69,11 +72,11 @@ export async function collectSheets(page, { settleMs = 150 } = {}) {
         if (text === null) warnings.push(`feuille illisible ${href ?? h.styleSheetId} (${/** @type {Error} */ (e).message})`);
       }
       if (text === null) continue;
-      sheets.push({ href, inline, constructed, text, startLine: inline ? h.startLine ?? 0 : 0, via });
+      sheets.push({ href, inline, constructed, text, startLine: inline ? h.startLine ?? 0 : 0, via, styleSheetId: h.styleSheetId });
     }
     const rootPx = await page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize));
     return { sheets, rootPx, warnings };
   } finally {
-    await cdp.detach().catch(() => {});
+    if (!given) await cdp.detach().catch(() => {});
   }
 }
