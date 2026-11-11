@@ -38,8 +38,11 @@
       "R8. Contexte d'une valeur rendue : clé (famille, valeur, propriété, rôle) → compte, compte par page, jusqu'à 3 sélecteurs courts distincts (balise#id, sinon balise.classe1.classe2, sinon balise).",
       "R9. Rôle : attribut role d'abord, puis balise. bouton (button, input button/submit/reset, role=button) ; lien (a[href], role=link) ; champ (input, select, textarea, role textbox/combobox/checkbox/radio/switch/searchbox) ; titre (h1–h6, role=heading) ; image (img, svg, picture, video, canvas, role=img) ; texte (porteur de texte d'aucune catégorie précédente) ; conteneur (le reste).",
       "R10. Clés de valeur comme au déclaré (D6–D13) ; les valeurs calculées sont déjà en px.",
-      "R11. Contraste : pour chaque porteur de texte, fond effectif = background-color en remontant depuis l'élément lui-même jusqu'à html, fusion alpha des fonds semi-transparents rencontrés jusqu'au premier fond opaque, blanc si aucun. Couleur de texte transparente fusionnée sur ce fond. opacity n'entre pas dans le calcul, mais une occurrence est marquée [V] si l'élément lui-même ou l'un de ses ancêtres a une opacity < 1, ou si une background-image se trouve sur l'élément ou un ancêtre plus proche que le fond opaque retenu ; une paire est marquée [V] dès qu'une de ses occurrences l'est (champ uncertain, absent = 0). Ratio WCAG 2.1. Grand texte : ≥ 24 px, ou ≥ 18,66 px en graisse ≥ 700. Paires agrégées par (texte, fond).",
-      "R12. Comparaison des ratios à ± 0,01 près."
+      "R11. Contraste : pour chaque porteur de texte, fond effectif = background-color en remontant depuis l'élément lui-même jusqu'à html, fusion alpha des fonds semi-transparents rencontrés jusqu'au premier fond opaque, blanc si aucun. Couleur de texte transparente fusionnée sur ce fond. opacity n'entre pas dans le calcul, mais une occurrence est marquée [V] si l'élément lui-même ou l'un de ses ancêtres a une opacity < 1, ou si une background-image se trouve sur l'élément ou un ancêtre plus proche que le fond opaque retenu ; une paire est marquée [V] dès qu'une de ses occurrences l'est (champ uncertain, absent = 0). Ratio WCAG 2.1. Grand texte : ≥ 24 px, ou ≥ 14 pt (18,666… px) en graisse ≥ 700. Paires agrégées par (texte, fond).",
+      "R12. Comparaison des ratios à ± 0,01 près.",
+      "R13. Gris de texte : voir rendered.textGreys (seuil de chroma 0,02 [H], à valider sur une seconde plateforme).",
+      "R14. Gris de texte sur fond sombre : voir rendered.textGreys.onDark.",
+      "R3 bis, R5 bis, R6 bis (remplace R6), R11 bis, R15, R16 : ajoutées après la relecture externe du 11/11/2026, écrites dans expected-cas-limites.json. Sur les deux pages de cette démonstration, seule R5 bis change un chiffre (couleur de l'ombre de div.carte)."
     ]
   },
 
@@ -300,8 +303,8 @@
     },
 
     "colors": {
-      "total": { "value": 24, "how": "somme des contextes ci-dessous" },
-      "distinct": { "value": 10, "how": "9 opaques + #1f2a4433" },
+      "total": { "value": 25, "how": "somme des contextes ci-dessous (24 avant R5 bis, plus la couleur de l'ombre de div.carte)" },
+      "distinct": { "value": 11, "how": "9 opaques + #1f2a4433 + #00000026 (R5 bis, relecture du 11/11/2026)" },
       "opaque": { "value": 9, "how": "#2b4c7e, #1f2a44, #ffffff, #c8553d, #e2dccf, #9a9a9a, #30548a, #f0c987, #2c4d7f" },
       "values": {
         "#2b4c7e": {
@@ -365,6 +368,10 @@
         "#1f2a4433": {
           "value": 1, "how": "composants.css l.22 ; hexadécimal : voir declared.colors.values.#1f2a4433",
           "contexts": [ { "property": "background-color", "role": "conteneur", "count": { "value": 1, "how": "div.carte" }, "pages": { "/": 1 }, "selectors": ["div.carte"] } ]
+        },
+        "#00000026": {
+          "value": 1, "how": "composants.css l.24, couleur de l'ombre de div.carte, relevée depuis R5 bis ; hexadécimal : voir declared.colors.values.#00000026",
+          "contexts": [ { "property": "box-shadow", "role": "conteneur", "count": { "value": 1, "how": "div.carte" }, "pages": { "/": 1 }, "selectors": ["div.carte"] } ]
         }
       },
       "groupsDE2": {
@@ -631,7 +638,7 @@
         "verify": { "culori": "wcagContrast", "args": ["#1f2a44", "#cecdcd"] } },
       { "text": "#c8553d", "bg": "#cecdcd", "ratio": 2.7451, "n": 3, "nLarge": 0, "belowAA": 3, "belowAAA": 3, "selectors": ["span.badge.etiquette", "span.badge.badge--inactif", "p.note::before"],
         "flag": "[V]",
-        "uncertain": { "value": 1, "how": "span.badge.badge--inactif a opacity: .6 (composants.css l.56) : contraste réel plus faible que calculé (R11)", "reasons": { "opacity": 1, "backgroundImage": 0 } },
+        "uncertain": { "value": 1, "how": "span.badge.badge--inactif a opacity: .6 (composants.css l.56) : contraste réel plus faible que calculé (R11)", "reasons": { "opacity": 1, "backgroundImage": 0, "overlap": 0 } },
         "how": "span.badge ×2 (13,5 px gras : pas grand texte) et p.note::before (14 px) ; < 4,5 → sous AA ; opacity du badge inactif hors calcul, occurrence marquée [V] (R11) ; node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#c8553d','#cecdcd'))\" → 2.74505… (arrondi 2.7451)",
         "verify": { "culori": "wcagContrast", "args": ["#c8553d", "#cecdcd"] } },
       { "text": "#9a9a9a", "bg": "#cecdcd", "ratio": 1.7739, "n": 1, "nLarge": 0, "belowAA": 1, "belowAAA": 1, "selectors": ["p.note"],
