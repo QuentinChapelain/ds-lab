@@ -9,6 +9,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "audit": "node src/cli/audit.js",
     "test": "node --test \"test/**/*.test.js\""
   },
   "dependencies": {

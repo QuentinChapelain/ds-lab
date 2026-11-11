@@ -9,12 +9,15 @@ import { traceSamples } from '../browser/trace.js';
 /**
  * @param {import('playwright-core').Page} page
  * @param {ReturnType<typeof import('./aggregate.js').createRenderedAggregator>} aggregator
- * @param {{ trace?: boolean, sources?: import('../lib/sources.js').CompiledSources | null }} [opts]
+ * @param {{ trace?: boolean, sources?: import('../lib/sources.js').CompiledSources | null,
+ *   also?: ReturnType<typeof import('./aggregate.js').createRenderedAggregator>[] }} [opts]
+ *   `also` : agrégats supplémentaires alimentés par le même relevé (ex. agrégat de la page seule)
  * @returns {Promise<{ url: string, iframes: number, traced: number }>}
  */
-export async function measureRendered(page, aggregator, { trace = false, sources = null } = {}) {
+export async function measureRendered(page, aggregator, { trace = false, sources = null, also = [] } = {}) {
   const pc = await collectRendered(page);
   const created = aggregator.addPage(pc);
+  for (const a of also) a.addPage(pc);
   let traced = 0;
   if (trace && created.length) {
     const results = await traceSamples(
