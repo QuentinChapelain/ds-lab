@@ -17,7 +17,7 @@ import { gotoAndSettle, DEFAULT_WAIT_MS } from '../browser/navigate.js';
 import { createRenderedAggregator } from '../rendered/aggregate.js';
 import { measureRendered } from '../rendered/run.js';
 import { propose, mapping } from '../reduce/propose.js';
-import { simulatePage } from '../browser/simulate.js';
+import { simulatePage, installLive } from '../browser/simulate.js';
 import { renderReview } from '../report/review.js';
 import { stampOf, freeOutputDir } from '../report/json.js';
 
@@ -28,6 +28,8 @@ const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cibl
   --storage-state <fichier>  session enregistrée par npm run login
   --sources <fichier>        fichier de sources (pour thirdParty ; défaut : local/sources.json)
   --viewport <LxH>           fenêtre (défaut : 1366x900)
+  --live                     après la revue, ouvre la première adresse dans une fenêtre avec une barre
+                             avant / après et un interrupteur par famille ; fermer la fenêtre pour finir
   --out <dossier>            racine des sorties (défaut : local/reductions)
   -h, --help                 cette aide
 
@@ -45,13 +47,14 @@ const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cibl
  * @property {{ width: number, height: number }} [viewport]
  * @property {number} [waitMs]
  * @property {string} [outRoot]
+ * @property {boolean} [live]
  * @property {Date} [now]
  * @property {(msg: string) => void} [log]
  */
 
 /**
  * @param {ReduceOptions} opts
- * @returns {Promise<{ host: string, dir: string, files: string[], table: ReturnType<typeof propose> }[]>}
+ * @returns {Promise<{ host: string, dir: string, files: string[], table: ReturnType<typeof propose>, map: Record<string, Record<string, string>>, first: string }[]>}
  */
 export async function runReduce(opts) {
   const { viewport = { width: 1366, height: 900 }, waitMs = DEFAULT_WAIT_MS, outRoot = 'local/reductions', now = new Date(), log = () => {} } = opts;
@@ -99,10 +102,28 @@ export async function runReduce(opts) {
       const files = [join(dir, 'table.json'), join(dir, 'revue.html')];
       await writeFile(files[0], JSON.stringify({ host, stamp, viewport, target, decisions, table, pages: pages.map((p) => ({ url: p.url, elements: p.elements, operations: p.operations })) }, null, 2) + '\n');
       await writeFile(files[1], renderReview(table, pages, { host, stamp, target: opts.targetPath.split('/').pop() ?? '', decisions }));
-      results.push({ host, dir, files, table });
+      results.push({ host, dir, files, table, map, first: hostUrls[0] });
     }
   } finally {
     await browser.close();
+  }
+  if (opts.live && results.length) {
+    // Fenêtre visible, sur la première adresse. Aucune boucle : on attend la fermeture.
+    const { map, first } = results[0];
+    log(`fenêtre ouverte sur ${first} : barre avant / après en bas de page ; fermer la fenêtre pour finir`);
+    const headed = await chromium.launch({ headless: false });
+    try {
+      const context = await headed.newContext({ viewport: null, storageState: opts.storageState ?? undefined });
+      await installLive(context, map);
+      const page = await context.newPage();
+      await page.goto(first, { waitUntil: 'load', timeout: 60000 }).catch(() => {});
+      await new Promise((done) => {
+        page.on('close', done);
+        headed.on('disconnected', done);
+      });
+    } finally {
+      await headed.close().catch(() => {});
+    }
   }
   return results;
 }
@@ -119,6 +140,7 @@ export function parseReduceArgs(argv) {
       sources: { type: 'string' },
       viewport: { type: 'string', default: '1366x900' },
       out: { type: 'string', default: 'local/reductions' },
+      live: { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h', default: false },
     },
   });
@@ -137,6 +159,7 @@ export function parseReduceArgs(argv) {
       sourcesPath: values.sources,
       viewport: { width: Number(vp[1]), height: Number(vp[2]) },
       outRoot: String(values.out),
+      live: !!values.live,
     },
   };
 }
