@@ -1,0 +1,9 @@
+{
+  "$comment": "Sources de la page de démonstration (marque fictive Orbe Café), utilisées par les tests.",
+  "rules": [
+    { "label": "theme", "match": "/styles/theme.css" },
+    { "label": "composants", "match": "/styles/composants.css" },
+    { "label": "distant", "match": "/styles/remote.css" }
+  ],
+  "default": "autre"
+}
