@@ -1,0 +1,685 @@
+{
+  "$comment": "Attendu du lot B sur les trois pages en désordre de la marque fictive Orbe Café (desordre/carte.html, desordre/compte.html, desordre/gestion.html), mesurées sur fixtures/marque-demo/cible-valise.json. Écrit à la main avant tout code du lot B, dans un commit séparé. Il décrit la table et la simulation après le lot B : le test le garde en attente (todo) d'ici là. Règles : R1, R2, R3 et R6 ci-dessous ; R4, R5, R7 et R8 par référence à fixtures/marque-demo/expected-pieges.json ; R9 ajoutée. expected-desordre.json (lot E, cible.json) reste l'attendu de l'outil actuel. En cas d'écart entre l'outil et ce fichier : ne corriger ni l'un ni l'autre, signaler l'écart.",
+  "how": "ΔE = 100 × distance euclidienne OKLab ; contraste WCAG 2.1. Calculés avec culori 4.0.2 : node --input-type=module -e \"import { differenceEuclidean, wcagContrast } from 'culori'; console.log(100 * differenceEuclidean('oklab')(a, b), wcagContrast(a, b))\". « nearest » = valeur la plus proche de toute la valise, toutes échelles confondues (R4, R9). Valeurs arrondies à 4 décimales.",
+  "conditions": {
+    "pages": [
+      "/desordre/carte.html",
+      "/desordre/compte.html",
+      "/desordre/gestion.html"
+    ],
+    "target": "fixtures/marque-demo/cible-valise.json",
+    "sources": "fixtures/marque-demo/sources.json",
+    "thirdParty": [
+      ".tiers-cookies"
+    ],
+    "viewport": {
+      "width": 1366,
+      "height": 900
+    },
+    "thresholds": "auto ≤ 1 px ou ΔE ≤ 2 ; proche ≤ 15 % ou ΔE ≤ 5 ; décision au-delà"
+  },
+  "rules": {
+    "R1": "L’usage choisit la tranche (texte 11-12, bordure 6-8, fond de page ou de conteneur 1-5, fond de bouton ou d’étiquette portant un texte 9-10). La proximité choisit le pas, dans l’échelle de la valeur la plus proche de toute la valise.",
+    "R2": "Une ligne auto ou proche qui fait passer une paire sous son seuil devient une décision.",
+    "R3": "Une ligne par valeur × usage.",
+    "R4-R5-R7-R8": "Voir fixtures/marque-demo/expected-pieges.json, clé « rules ».",
+    "R6": "Les éléments tiers sont exclus de la simulation.",
+    "R9": "« correction » : une ligne dont la paire la plus défavorable échoue avant (4,5:1 pour un texte ou le fond qui le porte, 3:1 pour la bordure d'un champ) et passe après, et dont la cible appartient à la même échelle que la valeur la plus proche de toute la valise. Elle est appliquée par défaut, comme auto, listée à part dans la table et annulable par une décision.",
+    "source": "R1, R2, R3 et R6 : rapport de la séance 2b, § 6."
+  },
+  "colors": [
+    {
+      "id": "C1",
+      "rows": [
+        {
+          "value": "#999999",
+          "usage": "texte",
+          "page": "compte",
+          "property": "color",
+          "detail": "texte d'aide sous un champ",
+          "target": "neutre-11",
+          "new": "#6d675b",
+          "class": "correction",
+          "deltaE": 16.8454,
+          "nearest": {
+            "name": "neutre-8",
+            "deltaE": 3.5575
+          },
+          "contrast": {
+            "bg": "#ffffff",
+            "before": 2.849,
+            "after": 5.6129
+          }
+        },
+        {
+          "value": "#999999",
+          "usage": "bordure",
+          "page": "gestion",
+          "property": "border-bottom-color",
+          "detail": "bordure des cellules du tableau",
+          "target": "neutre-8",
+          "new": "#958f84",
+          "class": "proche",
+          "deltaE": 3.5575
+        }
+      ],
+      "teaches": "Une valeur, deux usages : deux lignes (R3)."
+    },
+    {
+      "id": "C2",
+      "rows": [
+        {
+          "value": "#9a9a9a",
+          "usage": "texte",
+          "page": "carte",
+          "property": "color",
+          "detail": "description de produit",
+          "target": "neutre-11",
+          "new": "#6d675b",
+          "class": "correction",
+          "deltaE": 17.1701,
+          "nearest": {
+            "name": "neutre-8",
+            "deltaE": 3.8455
+          },
+          "contrast": {
+            "bg": "#ffffff",
+            "before": 2.8139,
+            "after": 5.6129
+          }
+        },
+        {
+          "value": "#9e9e9e",
+          "usage": "texte",
+          "page": "compte",
+          "property": "color",
+          "detail": "texte secondaire de la liste de commandes",
+          "target": "neutre-11",
+          "new": "#6d675b",
+          "class": "correction",
+          "deltaE": 18.4658,
+          "nearest": {
+            "name": "neutre-8",
+            "deltaE": 5.0414
+          },
+          "contrast": {
+            "bg": "#ffffff",
+            "before": 2.6792,
+            "after": 5.6129
+          }
+        }
+      ]
+    },
+    {
+      "id": "C3",
+      "rows": [
+        {
+          "value": "#808080",
+          "usage": "texte",
+          "page": "gestion",
+          "property": "color",
+          "detail": "métadonnées",
+          "target": "neutre-11",
+          "new": "#6d675b",
+          "class": "correction",
+          "deltaE": 8.6508,
+          "nearest": {
+            "name": "neutre-9",
+            "deltaE": 2.4388
+          },
+          "contrast": {
+            "bg": "#ffffff",
+            "before": 3.9494,
+            "after": 5.6129
+          }
+        }
+      ]
+    },
+    {
+      "id": "C4",
+      "rows": [
+        {
+          "value": "#777777",
+          "usage": "texte",
+          "page": "gestion",
+          "property": "color",
+          "detail": "texte courant secondaire (légende)",
+          "target": "neutre-11",
+          "new": "#6d675b",
+          "class": "correction",
+          "deltaE": 5.7152,
+          "nearest": {
+            "name": "neutre-10",
+            "deltaE": 1.8176
+          },
+          "contrast": {
+            "bg": "#ffffff",
+            "before": 4.4781,
+            "after": 5.6129
+          }
+        }
+      ]
+    },
+    {
+      "id": "C4-C5",
+      "rows": [
+        {
+          "value": "#757575",
+          "usage": "texte",
+          "pages": [
+            "compte",
+            "carte"
+          ],
+          "property": "color",
+          "detail": "dates (compte, sur blanc) ; note d'allergènes (carte, sur crème)",
+          "target": "neutre-11",
+          "new": "#6d675b",
+          "class": "correction",
+          "deltaE": 5.0779,
+          "nearest": {
+            "name": "neutre-10",
+            "deltaE": 2.0141
+          },
+          "contrast": {
+            "worstPair": {
+              "before": {
+                "bg": "#faf6ef",
+                "ratio": 4.277
+              },
+              "after": {
+                "bg": "#f8f8f7",
+                "bgName": "neutre-2",
+                "ratio": 5.2818
+              },
+              "how": "Le fond crème #faf6ef est lui-même rangé en auto (neutre-2) : la paire après simulation se mesure sur neutre-2."
+            },
+            "other": {
+              "bg": "#ffffff",
+              "before": 4.6075,
+              "after": 5.6129
+            }
+          }
+        }
+      ],
+      "teaches": "La ligne se juge sur sa paire la plus défavorable : sur blanc, #757575 passe déjà."
+    },
+    {
+      "id": "C6",
+      "rows": [
+        {
+          "value": "#666666",
+          "usage": "texte",
+          "page": "carte",
+          "property": "color",
+          "detail": "sous-titre",
+          "target": "neutre-11",
+          "new": "#6d675b",
+          "class": "proche",
+          "deltaE": 2.059,
+          "contrast": {
+            "bg": "#ffffff",
+            "before": 5.7418
+          }
+        },
+        {
+          "value": "#616161",
+          "usage": "texte",
+          "page": "compte",
+          "property": "color",
+          "detail": "libellés de formulaire",
+          "target": "neutre-11",
+          "new": "#6d675b",
+          "class": "proche",
+          "deltaE": 3.0444,
+          "contrast": {
+            "bg": "#ffffff",
+            "before": 6.1933
+          }
+        },
+        {
+          "value": "#595959",
+          "usage": "texte",
+          "page": "gestion",
+          "property": "color",
+          "detail": "libellés du résumé",
+          "target": "neutre-11",
+          "new": "#6d675b",
+          "class": "décision",
+          "deltaE": 5.5362,
+          "contrast": {
+            "bg": "#ffffff",
+            "before": 7.0047
+          }
+        }
+      ],
+      "teaches": "Pas de correction : ces textes passent déjà, la classe suit le ΔE."
+    },
+    {
+      "id": "C7",
+      "rows": [
+        {
+          "value": "#333333",
+          "usage": "texte",
+          "page": "gestion",
+          "property": "color",
+          "detail": "texte principal",
+          "target": "neutre-12",
+          "new": "#363026",
+          "class": "proche",
+          "deltaE": 2.1081
+        },
+        {
+          "value": "#2d2d2d",
+          "usage": "texte",
+          "page": "gestion",
+          "property": "color",
+          "detail": "cellules du tableau",
+          "target": "neutre-12",
+          "new": "#363026",
+          "class": "proche",
+          "deltaE": 2.4444
+        },
+        {
+          "value": "#1f2a44",
+          "usage": "texte",
+          "pages": [
+            "carte",
+            "compte",
+            "gestion"
+          ],
+          "property": "color",
+          "detail": "texte principal, logo, étiquettes et pastilles (ancienne encre de cible.json)",
+          "target": "bleu-12",
+          "new": "#103060",
+          "class": "décision",
+          "deltaE": 5.16,
+          "applied": false,
+          "why": "R5"
+        }
+      ]
+    },
+    {
+      "id": "C8",
+      "rows": [
+        {
+          "value": "#f2f2f2",
+          "usage": "fond",
+          "page": "gestion",
+          "property": "background-color",
+          "detail": "fond d’en-tête du tableau",
+          "target": "neutre-3",
+          "new": "#f3f2f1",
+          "class": "auto",
+          "deltaE": 0.1784
+        },
+        {
+          "value": "#f6f5f6",
+          "usage": "fond",
+          "page": "gestion",
+          "property": "background-color",
+          "detail": "lignes alternées du tableau",
+          "target": "neutre-2",
+          "new": "#f8f8f7",
+          "class": "auto",
+          "deltaE": 0.8165
+        },
+        {
+          "value": "#f7f3ec",
+          "usage": "fond",
+          "page": "carte",
+          "property": "background-color",
+          "detail": "fond de l’encart des horaires",
+          "target": "neutre-3",
+          "new": "#f3f2f1",
+          "class": "auto",
+          "deltaE": 0.9339
+        }
+      ]
+    },
+    {
+      "id": "C9",
+      "rows": [
+        {
+          "value": "#eeeeee",
+          "usage": "fond",
+          "page": "gestion",
+          "property": "background-color",
+          "detail": "fond de la barre de filtres",
+          "target": "neutre-4",
+          "new": "#ecebe9",
+          "class": "auto",
+          "deltaE": 0.93
+        }
+      ]
+    },
+    {
+      "id": "C10",
+      "rows": [
+        {
+          "value": "#dadada",
+          "usage": "bordure",
+          "page": "gestion",
+          "property": "border-top-color",
+          "detail": "bordure des boutons de filtre",
+          "target": "neutre-6",
+          "new": "#d8d6d2",
+          "class": "auto",
+          "deltaE": 1.3212
+        },
+        {
+          "value": "#e5e5e5",
+          "usage": "bordure",
+          "page": "compte",
+          "property": "border-top-color",
+          "detail": "bordure de la carte de profil",
+          "target": "neutre-6",
+          "new": "#d8d6d2",
+          "class": "proche",
+          "deltaE": 4.575
+        }
+      ]
+    },
+    {
+      "id": "C11",
+      "rows": [
+        {
+          "value": "#cccccc",
+          "usage": "bordure de champ",
+          "page": "compte",
+          "property": "border-top-color",
+          "detail": "bordure de champ",
+          "target": "neutre-8",
+          "new": "#958f84",
+          "class": "correction",
+          "deltaE": 19.403,
+          "nearest": {
+            "name": "neutre-6",
+            "deltaE": 3.1859
+          },
+          "contrastGraphic": {
+            "bg": "#ffffff",
+            "before": 1.6059,
+            "after": 3.211
+          }
+        }
+      ],
+      "teaches": "R9 vaut aussi pour la bordure d'un champ, au seuil de 3:1."
+    },
+    {
+      "id": "C12",
+      "rows": [
+        {
+          "value": "#2c4d7f",
+          "usage": "fond",
+          "pages": [
+            "carte",
+            "compte",
+            "gestion"
+          ],
+          "property": "background-color",
+          "detail": "fond du pied de page",
+          "target": "bleu-9",
+          "new": "#2b4c7e",
+          "class": "auto",
+          "deltaE": 0.3541
+        }
+      ]
+    },
+    {
+      "id": "C13",
+      "rows": [
+        {
+          "value": "#30548a",
+          "usage": "lien",
+          "page": "carte",
+          "property": "color",
+          "detail": "lien discret",
+          "target": "bleu-11",
+          "new": "#4c6994",
+          "class": "décision",
+          "deltaE": 7.3812,
+          "applied": false,
+          "why": "R5",
+          "contrast": {
+            "bg": "#ffffff",
+            "before": 7.6065,
+            "after": 5.5917
+          }
+        }
+      ]
+    },
+    {
+      "id": "C14",
+      "rows": [
+        {
+          "value": "#24426f",
+          "usage": "fond de bouton",
+          "page": "carte",
+          "property": "background-color",
+          "state": "hover",
+          "detail": "survol du bouton Commander",
+          "class": "absent",
+          "known": "Écart connu, hors lot B : l’état survol n’est pas lu.",
+          "ifRead": {
+            "target": "bleu-10",
+            "new": "#27487a",
+            "class": "proche",
+            "deltaE": 2.4565
+          }
+        }
+      ]
+    },
+    {
+      "id": "C15",
+      "rows": [
+        {
+          "value": "#2196f3",
+          "usage": "lien",
+          "page": "compte",
+          "property": "color",
+          "detail": "liens (bleu par défaut de bibliothèque)",
+          "target": null,
+          "class": "hors table",
+          "reason": "aucune échelle (R4)",
+          "nearest": {
+            "name": "bleu-8",
+            "deltaE": 11.4672
+          },
+          "applied": false,
+          "contrast": {
+            "bg": "#ffffff",
+            "before": 3.1243,
+            "after": 3.1243
+          }
+        }
+      ]
+    },
+    {
+      "id": "C16",
+      "rows": [
+        {
+          "value": "#4990e2",
+          "usage": "fond de bouton",
+          "page": "gestion",
+          "property": "background-color",
+          "detail": "bouton d'action, texte blanc",
+          "target": "bleu-9",
+          "new": "#2b4c7e",
+          "class": "correction",
+          "deltaE": 23.4056,
+          "nearest": {
+            "name": "bleu-8",
+            "deltaE": 8.7545
+          },
+          "contrast": {
+            "text": "#ffffff",
+            "before": 3.2963,
+            "after": 8.6144
+          }
+        }
+      ],
+      "teaches": "R9 vaut aussi pour le fond qui porte un texte."
+    },
+    {
+      "id": "C17",
+      "rows": [
+        {
+          "value": "#ef5c56",
+          "usage": "texte",
+          "page": "compte",
+          "property": "color",
+          "detail": "message d'erreur",
+          "target": "erreur-11",
+          "new": "#cb1d2a",
+          "class": "correction",
+          "deltaE": 12.6211,
+          "nearest": {
+            "name": "erreur-8",
+            "deltaE": 2.4261
+          },
+          "contrast": {
+            "bg": "#ffffff",
+            "before": 3.3147,
+            "after": 5.6023
+          }
+        }
+      ]
+    },
+    {
+      "id": "C18",
+      "rows": [
+        {
+          "value": "#c4513a",
+          "usage": "fond d'étiquette",
+          "page": "compte",
+          "property": "background-color",
+          "detail": "étiquette « nouveau », texte blanc",
+          "target": "terre-9",
+          "new": "#c8553d",
+          "class": "décision",
+          "reason": "R2 : passe avant, échoue après",
+          "deltaE": 1.2101,
+          "applied": false,
+          "contrast": {
+            "text": "#ffffff",
+            "before": 4.5799,
+            "after": 4.3544
+          }
+        },
+        {
+          "value": "#d0563f",
+          "usage": "fond d'étiquette",
+          "page": "carte",
+          "property": "background-color",
+          "detail": "étiquette « nouveau », texte blanc",
+          "target": "terre-9",
+          "new": "#c8553d",
+          "class": "décision",
+          "reason": "texte posé sur terre : utiliser onSolid",
+          "deltaE": 1.5888,
+          "applied": false,
+          "contrast": {
+            "text": "#ffffff",
+            "before": 4.1299,
+            "after": 4.3544
+          }
+        }
+      ],
+      "teaches": "Un ΔE d'auto ne suffit pas : le contraste du texte porté décide."
+    },
+    {
+      "id": "C19",
+      "rows": [
+        {
+          "value": "#f0c987",
+          "usage": "texte",
+          "page": "carte",
+          "property": "color",
+          "detail": "prix promo en texte sur blanc",
+          "target": "sable-11",
+          "new": "#85611d",
+          "class": "correction",
+          "deltaE": 33.7486,
+          "nearest": {
+            "name": "sable-9",
+            "deltaE": 0
+          },
+          "contrast": {
+            "bg": "#ffffff",
+            "before": 1.566,
+            "after": 5.6377
+          }
+        }
+      ],
+      "teaches": "Le pas 9 exact en texte : l'usage choisit le pas 11 de la même échelle."
+    },
+    {
+      "id": "#faf6ef",
+      "rows": [
+        {
+          "value": "#faf6ef",
+          "usage": "fond de page",
+          "page": "carte",
+          "property": "background-color",
+          "detail": "fond de la page (ancienne crème de cible.json)",
+          "target": "neutre-2",
+          "new": "#f8f8f7",
+          "class": "auto",
+          "deltaE": 1.0114
+        }
+      ]
+    },
+    {
+      "id": "#e2dccf",
+      "rows": [
+        {
+          "value": "#e2dccf",
+          "usage": "bordure",
+          "pages": [
+            "carte",
+            "compte",
+            "gestion"
+          ],
+          "property": "border-bottom-color, border-top-color",
+          "detail": "bordures d’en-tête, de bandeau et de carte produit (ancien bord de cible.json)",
+          "target": "neutre-6",
+          "new": "#d8d6d2",
+          "class": "proche",
+          "deltaE": 2.3027
+        },
+        {
+          "value": "#e2dccf",
+          "usage": "fond",
+          "page": "gestion",
+          "property": "background-color",
+          "detail": "fond de pastille « payée »",
+          "target": "neutre-5",
+          "new": "#e3e2df",
+          "class": "proche",
+          "deltaE": 2.2401
+        }
+      ],
+      "teaches": "Une valeur, deux usages : deux lignes (R3)."
+    },
+    {
+      "id": "C20",
+      "class": "contenu",
+      "expect": "Inchangé par rapport au lot E : voir expected-desordre.json, C20."
+    },
+    {
+      "id": "C21",
+      "class": "tiers",
+      "expect": "Inchangé par rapport au lot E : voir expected-desordre.json, C21."
+    }
+  ],
+  "criteria": {
+    "$comment": "Après simulation : auto et corrections appliquées, aucune décision.",
+    "a": {
+      "text": "Les seules paires de texte sous 4,5:1 sont celles de #2196f3 et du blanc sur #d0563f.",
+      "status": "hypothèse : si l'outil en trouve d'autres, les lister sans corriger"
+    },
+    "b": "Le bandeau tiers est identique avant et après.",
+    "c": "Aucune ligne d'espacement négative ou au-delà de 64 px n'est rangée.",
+    "d": "Aucune ligne hors pièges."
+  }
+}
