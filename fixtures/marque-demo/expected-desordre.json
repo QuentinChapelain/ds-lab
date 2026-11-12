@@ -284,7 +284,7 @@
   "fontSizes": [
     {
       "id": "T1",
-      "values": [{ "value": "12px", "new": "14px", "class": "proche", "how": "14 % : écart de 2 px rapporté à la cible (14)" }],
+      "values": [{ "value": "12px", "new": "14px", "class": "décision", "how": "16,7 % : écart de 2 px rapporté à l’ancienne valeur (12), au-delà de 15 %", "corrected": "11/11/2026 : l’attendu avait tort, pas l’outil (rapport séance 2b, § 3)" }],
       "uses": [{ "page": "gestion", "usage": "tout le tableau" }],
       "teaches": "La classe mesure l'écart, pas l'impact : +2 px sur tout le tableau change sa densité."
     },

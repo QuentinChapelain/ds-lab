@@ -1,0 +1,336 @@
+{
+  "$comment": "Valise d'Orbe Café (séance 2b, 11/11/2026). Échelles de 12 pas : 1-2 fonds, 3-5 fonds de composants, 6-8 bordures, 9-10 pleins, 11-12 texte. Pas 9 = couleur source exacte. Autres pas générés par contraste visé contre le blanc avec @adobe/leonardo-contrast-colors (hors dépôt). Paires vérifiées en WCAG 2.1. onSolid = couleur du texte posé sur le pas 9 (hors table). Dimensions génériques.",
+  "onSolid": {
+    "neutre": "#201d17",
+    "bleu": "#ffffff",
+    "terre": "#220000",
+    "sable": "#4a2900",
+    "erreur": "#ffffff",
+    "succes": "#001005"
+  },
+  "radii": [
+    0,
+    2,
+    4,
+    8,
+    12,
+    9999
+  ],
+  "spacing": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    24,
+    32,
+    48,
+    64
+  ],
+  "fontSizes": [
+    12,
+    14,
+    16,
+    18,
+    20,
+    24,
+    30,
+    36,
+    48,
+    60
+  ],
+  "colors": [
+    {
+      "name": "blanc",
+      "value": "#ffffff"
+    },
+    {
+      "name": "neutre-1",
+      "value": "#fbfbfb"
+    },
+    {
+      "name": "neutre-2",
+      "value": "#f8f8f7"
+    },
+    {
+      "name": "neutre-3",
+      "value": "#f3f2f1"
+    },
+    {
+      "name": "neutre-4",
+      "value": "#ecebe9"
+    },
+    {
+      "name": "neutre-5",
+      "value": "#e3e2df"
+    },
+    {
+      "name": "neutre-6",
+      "value": "#d8d6d2"
+    },
+    {
+      "name": "neutre-7",
+      "value": "#bfbbb5"
+    },
+    {
+      "name": "neutre-8",
+      "value": "#958f84"
+    },
+    {
+      "name": "neutre-9",
+      "value": "#8a8478"
+    },
+    {
+      "name": "neutre-10",
+      "value": "#7d776c"
+    },
+    {
+      "name": "neutre-11",
+      "value": "#6d675b"
+    },
+    {
+      "name": "neutre-12",
+      "value": "#363026"
+    },
+    {
+      "name": "bleu-1",
+      "value": "#fdfdfe"
+    },
+    {
+      "name": "bleu-2",
+      "value": "#f8f9fb"
+    },
+    {
+      "name": "bleu-3",
+      "value": "#f1f3f7"
+    },
+    {
+      "name": "bleu-4",
+      "value": "#e8ecf2"
+    },
+    {
+      "name": "bleu-5",
+      "value": "#dce2eb"
+    },
+    {
+      "name": "bleu-6",
+      "value": "#ced7e4"
+    },
+    {
+      "name": "bleu-7",
+      "value": "#afbdd1"
+    },
+    {
+      "name": "bleu-8",
+      "value": "#7b91b2"
+    },
+    {
+      "name": "bleu-9",
+      "value": "#2b4c7e"
+    },
+    {
+      "name": "bleu-10",
+      "value": "#27487a"
+    },
+    {
+      "name": "bleu-11",
+      "value": "#4c6994"
+    },
+    {
+      "name": "bleu-12",
+      "value": "#103060"
+    },
+    {
+      "name": "terre-1",
+      "value": "#fefcfb"
+    },
+    {
+      "name": "terre-2",
+      "value": "#fef8f7"
+    },
+    {
+      "name": "terre-3",
+      "value": "#fcf1ef"
+    },
+    {
+      "name": "terre-4",
+      "value": "#fae6e1"
+    },
+    {
+      "name": "terre-5",
+      "value": "#f7ddd6"
+    },
+    {
+      "name": "terre-6",
+      "value": "#f4cec5"
+    },
+    {
+      "name": "terre-7",
+      "value": "#eaad9e"
+    },
+    {
+      "name": "terre-8",
+      "value": "#d57560"
+    },
+    {
+      "name": "terre-9",
+      "value": "#c8553d"
+    },
+    {
+      "name": "terre-10",
+      "value": "#ba4834"
+    },
+    {
+      "name": "terre-11",
+      "value": "#b3422b"
+    },
+    {
+      "name": "terre-12",
+      "value": "#6a0000"
+    },
+    {
+      "name": "sable-1",
+      "value": "#fefbf7"
+    },
+    {
+      "name": "sable-2",
+      "value": "#fef9f3"
+    },
+    {
+      "name": "sable-3",
+      "value": "#fcf2e2"
+    },
+    {
+      "name": "sable-4",
+      "value": "#f9e8cd"
+    },
+    {
+      "name": "sable-5",
+      "value": "#f6dfb8"
+    },
+    {
+      "name": "sable-6",
+      "value": "#f2d199"
+    },
+    {
+      "name": "sable-7",
+      "value": "#dcb674"
+    },
+    {
+      "name": "sable-8",
+      "value": "#af8a49"
+    },
+    {
+      "name": "sable-9",
+      "value": "#f0c987"
+    },
+    {
+      "name": "sable-10",
+      "value": "#d7b173"
+    },
+    {
+      "name": "sable-11",
+      "value": "#85611d"
+    },
+    {
+      "name": "sable-12",
+      "value": "#4a2900"
+    },
+    {
+      "name": "erreur-1",
+      "value": "#fffaf9"
+    },
+    {
+      "name": "erreur-2",
+      "value": "#fff7f7"
+    },
+    {
+      "name": "erreur-3",
+      "value": "#fff0ee"
+    },
+    {
+      "name": "erreur-4",
+      "value": "#ffe6e3"
+    },
+    {
+      "name": "erreur-5",
+      "value": "#fed9d6"
+    },
+    {
+      "name": "erreur-6",
+      "value": "#fccac6"
+    },
+    {
+      "name": "erreur-7",
+      "value": "#f7a7a0"
+    },
+    {
+      "name": "erreur-8",
+      "value": "#e76862"
+    },
+    {
+      "name": "erreur-9",
+      "value": "#d93036"
+    },
+    {
+      "name": "erreur-10",
+      "value": "#c8292e"
+    },
+    {
+      "name": "erreur-11",
+      "value": "#cb1d2a"
+    },
+    {
+      "name": "erreur-12",
+      "value": "#6a0000"
+    },
+    {
+      "name": "succes-1",
+      "value": "#fafcfb"
+    },
+    {
+      "name": "succes-2",
+      "value": "#f4f9f6"
+    },
+    {
+      "name": "succes-3",
+      "value": "#ecf4ef"
+    },
+    {
+      "name": "succes-4",
+      "value": "#e2eee6"
+    },
+    {
+      "name": "succes-5",
+      "value": "#d4e7db"
+    },
+    {
+      "name": "succes-6",
+      "value": "#c2dccc"
+    },
+    {
+      "name": "succes-7",
+      "value": "#9bc6ad"
+    },
+    {
+      "name": "succes-8",
+      "value": "#529f76"
+    },
+    {
+      "name": "succes-9",
+      "value": "#1f8a5b"
+    },
+    {
+      "name": "succes-10",
+      "value": "#1a7e50"
+    },
+    {
+      "name": "succes-11",
+      "value": "#00774a"
+    },
+    {
+      "name": "succes-12",
+      "value": "#003a12"
+    }
+  ]
+}
