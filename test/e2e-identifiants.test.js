@@ -144,8 +144,12 @@ test('R-2 : pour chaque ligne, le même identifiant et le même titre dans table
   // Consigne : chaque remplacement commence par l'identifiant et le titre.
   const steps = run.md.split('\n').filter((l) => /^[1-9]\d*\. /.test(l));
   assert.ok(steps.length > 0);
-  const byText = new Set([...ids(run.json.table).values()].map((x) => `${x.id} ${x.title} — `));
+  const byText = new Set([...ids(run.json.table).values()].map((x) => `${x.id} ${x.title}. `));
   for (const l of steps) assert.ok([...byText].some((t) => l.slice(l.indexOf(' ') + 1).startsWith(t)), l);
+  // Ne touche pas : chaque décision en attente, avec son identifiant et son titre.
+  const pending = [...ids(run.json.table).entries()].filter(([key]) => run.json.table.families[key.split('|')[0]].rows.some((/** @type {any} */ r) => r.id === ids(run.json.table).get(key)?.id && r.class === 'décision'));
+  assert.ok(pending.length > 0);
+  for (const [, x] of pending) assert.ok(run.md.includes(`- ${x.id} ${x.title}. Pas encore choisie par le designer : ne l'applique pas`), `${x.id} absente de « Ne touche pas »`);
 });
 
 test('R-2 : barre --live, choisir une ligne n’applique que cette ligne ; « Toutes » revient au mode par familles', async () => {

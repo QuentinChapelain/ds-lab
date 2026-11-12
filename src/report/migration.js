@@ -294,7 +294,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     remaining: [...remaining.values()],
     thirdParty: table.thirdParty ?? [],
   };
-  const agent = agentBrief(data, { applied, refused, outOfTable });
+  const agent = agentBrief(data, { applied, pending, refused, outOfTable });
   return { data: { ...data, agent }, markdown: renderMarkdown(data, { applied, pending, refused, outOfTable }) + '\n' + agent.markdown };
 }
 
@@ -411,7 +411,7 @@ const cssVar = (token) => `var(--${token.replace(/\./g, '-')})`;
 
 /**
  * Lot M : « Consigne pour un agent », à l'impératif, copiable telle quelle.
- * @param {any} d @param {{ applied: any[], refused: any[], outOfTable: any[] }} s
+ * @param {any} d @param {{ applied: any[], pending: any[], refused: any[], outOfTable: any[] }} s
  */
 function agentBrief(d, s) {
   const m = d.meta;
@@ -429,7 +429,7 @@ function agentBrief(d, s) {
   );
   s.applied.forEach((r, i) => {
     lines.push(
-      `${i + 1}. ${r.id} ${r.title} — Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage} : remplace ${r.value} par ${write(r)}${r.status === 'décidée' ? ' [décidée]' : ''}. Sélecteurs : ${r.selectors.join(', ') || '—'}. Point de départ : ${r.origin}. Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`,
+      `${i + 1}. ${r.id} ${r.title}. Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage} : remplace ${r.value} par ${write(r)}${r.status === 'décidée' ? ' [décidée]' : ''}. Sélecteurs : ${r.selectors.join(', ') || '—'}. Point de départ : ${r.origin}. Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`,
     );
   });
   lines.push('');
@@ -447,6 +447,8 @@ function agentBrief(d, s) {
   lines.push('NE TOUCHE PAS');
   for (const r of s.outOfTable) lines.push(`- Hors table : ${r.value} (${r.usage}), ${r.reason}.`);
   for (const r of s.refused) lines.push(`- Refusée : ${r.value} (${r.usage}), le designer garde la valeur.`);
+  // Lot R, R-2 : décisions en attente, avec leur identifiant et leur titre.
+  for (const r of s.pending) lines.push(`- ${r.id} ${r.title}. Pas encore choisie par le designer : ne l'applique pas (${r.value}, ${r.usage}). Sélecteurs : ${r.selectors.join(', ') || '—'}.`);
   for (const sel of d.thirdParty) lines.push(`- Composant tiers : ${sel} et tout ce qu'il contient.`);
   lines.push('- Toute valeur absente de cette consigne.');
   lines.push('');
