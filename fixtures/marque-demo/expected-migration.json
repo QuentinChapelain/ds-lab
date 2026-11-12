@@ -21,8 +21,8 @@
   "desordre": {
     "table": { "rows": 87, "unchanged": 34 },
     "sections": {
-      "applied": { "total": 42, "colors": 25, "spacing": 7, "fontSizes": 7, "radii": 3 },
-      "pending": { "total": 10, "colors": 5, "spacing": 4, "radii": 1 },
+      "applied": { "total": 41, "colors": 25, "spacing": 7, "fontSizes": 6, "radii": 3, "corrected": "12/11/2026 : lot R, seuil de 2 px pour les tailles de texte" },
+      "pending": { "total": 11, "colors": 5, "spacing": 4, "fontSizes": 1, "radii": 1, "corrected": "12/11/2026 : lot R, seuil de 2 px pour les tailles de texte" },
       "outOfTable": { "total": 1, "rows": [{ "family": "colors", "value": "#2196f3", "reason": "aucune échelle (R4)" }] }
     },
     "tokens": [

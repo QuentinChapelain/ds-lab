@@ -162,11 +162,13 @@ test('pièges : L1, un lien sans soulignement dans un paragraphe', () => {
   assert.ok(pieges.md.includes('### Liens sans soulignement dans un paragraphe : 1'));
 });
 
-test('décisions (passage 2c) : les 10 lignes décidées passent dans « Appliqué », plus aucune en attente', () => {
+test('décisions (passage 2c) : les 10 lignes décidées passent dans « Appliqué » ; une seule en attente, la taille 40px née du lot R', () => {
   const n = Object.keys(decidee.decisions).length;
   assert.equal(n, 10, 'décisions lues');
   assert.equal(decidee.data.decided, n);
-  assert.equal(decidee.data.sections.pending.total, 0, 'en attente');
+  assert.equal(decidee.data.sections.pending.total, 1, 'en attente');
+  const pending = decidee.data.rows.filter((/** @type {any} */ r) => r.status === 'en attente');
+  assert.deepEqual(pending.map((/** @type {any} */ r) => `${r.family}|${r.value}`), ['fontSizes|40px'], 'seule la taille de texte 40px est en attente');
   assert.equal(decidee.data.sections.applied.total, E.desordre.sections.applied.total + n, 'appliqué');
   assert.equal(decidee.data.sections.refused.total, 0, 'refusée');
   for (const [key, value] of Object.entries(decidee.decisions)) {
@@ -179,7 +181,7 @@ test('décisions (passage 2c) : les 10 lignes décidées passent dans « Appliqu
   const ink = decidee.data.rows.find((/** @type {any} */ r) => r.value === '#1f2a44' && r.usage === 'texte');
   assert.equal(ink.token, 'couleur.bleu.12', 'jeton de la valeur choisie');
   assert.ok(decidee.md.includes('| décision, décidée |'), 'mention « décidée » dans la table');
-  assert.ok(decidee.md.includes('## Décisions en attente : 0'));
+  assert.ok(decidee.md.includes('## Décisions en attente : 1'));
 });
 
 test('décisions : une ligne refusée va dans « Refusée, laissée telle quelle »', () => {

@@ -58,6 +58,14 @@ test('tailles de police', () => {
   assert.deepEqual([row('fontSizes', '11px').class, row('fontSizes', '11px').new], ['décision', '14px'], 'Δ 3 px, 27 %');
 });
 
+test('lot R : une taille de texte n’est proche qu’à 2 px au plus, même sous 15 %', () => {
+  const t = propose({ families: { fontSizes: fam({ '30px': 1, '29.99px': 1 }) } }, { fontSizes: target.fontSizes });
+  /** @param {string} old */
+  const r = (old) => t.families.fontSizes.rows.find((/** @type {any} */ x) => x.old === old);
+  assert.deepEqual([r('30px').class, r('30px').new, r('30px').delta], ['proche', '32px', 2], 'Δ 2 px, 6,25 %');
+  assert.deepEqual([r('29.99px').class, r('29.99px').new, r('29.99px').delta], ['décision', '32px', 2.01], 'Δ 2,01 px, 6,7 %');
+});
+
 test('couleurs : ΔE OKLab × 100 vers la cible, transparentes hors table', () => {
   assert.deepEqual([row('colors', '#2b4c7e').class, row('colors', '#2b4c7e').name], ['inchangé', 'bleu']);
   assert.deepEqual([row('colors', '#2c4d7f').class, row('colors', '#2c4d7f').new], ['auto', '#2b4c7e'], 'ΔE 0,35');

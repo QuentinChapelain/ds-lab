@@ -9,6 +9,7 @@
  *   inchangé   déjà sur la cible ;
  *   auto       écart invisible (≤ 1 px, ou ΔE ≤ 2) : appliqué sans revue ;
  *   proche     écart faible (≤ 15 % pour une dimension, ΔE ≤ 5) : à valider par lot ;
+ *              lot R : pour une taille de texte, il faut aussi ≤ 2 px ;
  *   décision   au-delà : trois candidats, le designer tranche ;
  *   hors table valeur non convertible (%, em…) ou couleur transparente.
  * Les seuils sont des hypothèses de départ, à régler à l'œil. [H]
@@ -43,7 +44,7 @@ export const ALL_CLASSES = /** @type {const} */ (['décision', 'correction', 'pr
 /** R5 : classes appliquées sans réponse du designer. */
 export const APPLIED = new Set(['correction', 'proche', 'auto', 'inchangé']);
 
-export const THRESHOLDS = { autoPx: 1, nearRatio: 0.15, autoDeltaE: 2, nearDeltaE: 5, pillPx: 500 };
+export const THRESHOLDS = { autoPx: 1, nearRatio: 0.15, nearTextPx: 2, autoDeltaE: 2, nearDeltaE: 5, pillPx: 500 };
 
 /** Lot B : seuils des règles R4 et R7. */
 export const RULES = { noScaleDeltaE: 10, layoutMaxPx: 64 };
@@ -142,13 +143,13 @@ const ordered = (rows) =>
 /**
  * @param {Map<string, { count: number, properties: Set<string>, selectors: string[] }>} values
  * @param {number[]} scale
- * @param {{ pill?: boolean }} [opts]
+ * @param {{ pill?: boolean, nearPx?: number }} [opts]
  * @returns {Row[]}
  */
-function dimensionRows(values, scale, { pill = false } = {}) {
+function dimensionRows(values, scale, { pill = false, nearPx = Infinity } = {}) {
   /** @type {Row[]} */
   const rows = [];
-  for (const [old, v] of values) rows.push(dimensionRow({ old, count: v.count, properties: [...v.properties], selectors: v.selectors }, scale, { pill }));
+  for (const [old, v] of values) rows.push(dimensionRow({ old, count: v.count, properties: [...v.properties], selectors: v.selectors }, scale, { pill, nearPx }));
   return ordered(rows);
 }
 
@@ -156,10 +157,11 @@ function dimensionRows(values, scale, { pill = false } = {}) {
  * Une ligne de dimension : la valeur rangée sur l'échelle.
  * @param {{ old: string, count: number, properties: string[], selectors: string[] }} base
  * @param {number[]} scale
- * @param {{ pill?: boolean, forcePill?: boolean }} [opts]  forcePill : l'élément dessine une pilule (R7)
+ * @param {{ pill?: boolean, forcePill?: boolean, nearPx?: number }} [opts]  forcePill : l'élément dessine une pilule (R7) ;
+ *   nearPx : écart absolu au-delà duquel la ligne n'est plus proche (lot R, tailles de texte)
  * @returns {Row}
  */
-function dimensionRow(base, scale, { pill = false, forcePill = false } = {}) {
+function dimensionRow(base, scale, { pill = false, forcePill = false, nearPx = Infinity } = {}) {
   const steps = [...scale].sort((a, b) => a - b);
   const old = base.old;
   const n = px(old);
@@ -180,7 +182,7 @@ function dimensionRow(base, scale, { pill = false, forcePill = false } = {}) {
     .slice(0, 3);
   const best = candidates[0];
   const ratio = n === 0 ? (best.delta === 0 ? 0 : 1) : best.delta / Math.abs(n);
-  const cls = best.delta === 0 ? 'inchangé' : best.delta <= THRESHOLDS.autoPx ? 'auto' : ratio <= THRESHOLDS.nearRatio ? 'proche' : 'décision';
+  const cls = best.delta === 0 ? 'inchangé' : best.delta <= THRESHOLDS.autoPx ? 'auto' : ratio <= THRESHOLDS.nearRatio && best.delta <= nearPx ? 'proche' : 'décision';
   return { ...base, new: best.value, class: cls, delta: best.delta, candidates };
 }
 
@@ -467,7 +469,7 @@ export function propose(rendered, target) {
   const u = rendered.usages;
   if (target.radii) put('radii', u ? radiusUsageRows(u.radii, target.radii) : dimensionRows(gather(rendered, ['radii']), target.radii, { pill: true }));
   if (target.spacing) put('spacing', u ? spacingUsageRows(u.spacing, target.spacing) : dimensionRows(gather(rendered, ['margins', 'paddings', 'gaps']), target.spacing));
-  if (target.fontSizes) put('fontSizes', dimensionRows(gather(rendered, ['fontSizes']), target.fontSizes));
+  if (target.fontSizes) put('fontSizes', dimensionRows(gather(rendered, ['fontSizes']), target.fontSizes, { nearPx: THRESHOLDS.nearTextPx }));
   if (target.colors) put('colors', u ? colorUsageRows(u, target.colors) : colorRows(gather(rendered, ['colors']), target.colors));
   return { thresholds: THRESHOLDS, rules: RULES, families };
 }
