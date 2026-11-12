@@ -8,7 +8,11 @@
     "viewport": { "width": 1366, "height": 900 }
   },
   "format": {
-    "table": "Une ligne par valeur × usage : valeur, usage, jeton DTCG (chemin exact de tokens/orbe-cafe/primitives.tokens.json, ou « jeton absent »), classe, origine CSS (fichier:ligne de la règle si connue), éléments.",
+    "table": {
+      "text": "Une ligne par valeur × usage, qui commence par l’identifiant et le titre de la ligne (« esp-17 Marge basse · champ « Nom » et 4 autres ») : valeur, usage, jeton DTCG (chemin exact de tokens/orbe-cafe/primitives.tokens.json, ou « jeton absent »), classe, origine CSS (fichier:ligne de la règle si connue), éléments. Les tables Appliqué et Décisions en attente gardent les sélecteurs en dernière colonne ; chaque remplacement de la consigne commence aussi par l’identifiant et le titre.",
+      "was": "Une ligne par valeur × usage : valeur, usage, jeton DTCG (chemin exact de tokens/orbe-cafe/primitives.tokens.json, ou « jeton absent »), classe, origine CSS (fichier:ligne de la règle si connue), éléments.",
+      "corrected": "12/11/2026 : lot R, R-2, identifiant et titre communs à toutes les sorties"
+    },
     "sections": ["Appliqué (auto, proche, correction)", "Décisions en attente", "Hors table, avec motif"],
     "exceptions": [
       "Liens sans soulignement dans un paragraphe",

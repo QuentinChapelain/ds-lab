@@ -60,6 +60,13 @@ const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cibl
  * @param {ReduceOptions} opts
  * @returns {Promise<{ host: string, dir: string, files: string[], table: ReturnType<typeof propose>, map: Record<string, any>, first: string, migration: ReturnType<typeof buildMigration>['data'] }[]>}
  */
+/**
+ * Lot R, R-2 : identifiant et titre de chaque ligne de la table, pour la barre --live.
+ * @param {ReturnType<typeof propose>} table
+ */
+export const linesOf = (table) =>
+  Object.entries(table.families).flatMap(([family, f]) => f.rows.filter((r) => r.id).map((r) => ({ key: rowKey(family, r), id: /** @type {string} */ (r.id), title: r.title ?? '' })));
+
 /** Lot R : vignettes des autres éléments touchés par une décision, au plus. */
 const THUMBS = 3;
 /** Lot R : classes dont les lignes reçoivent des captures par version (5c : avant et après hors décision). */
@@ -201,7 +208,7 @@ export async function runReduce(opts) {
     const headed = await chromium.launch({ headless: false });
     try {
       const context = await headed.newContext({ viewport: null, storageState: opts.storageState ?? undefined });
-      await installLive(context, map);
+      await installLive(context, map, { lines: linesOf(results[0].table) });
       const page = await context.newPage();
       await page.goto(first, { waitUntil: 'load', timeout: 60000 }).catch(() => {});
       await new Promise((done) => {

@@ -224,8 +224,11 @@ export function showInPage(o) {
  * Exécutée dans la page : barre « avant / après » du mode --live, dans un
  * shadow root (marqué data-ds-lab, que le relevé ignore). Feuille construite :
  * pas de <style> en ligne, donc pas de conflit avec une CSP stricte.
+ * Lot R, R-2 : liste « Une ligne » (identifiant et titre des lignes présentes sur la page) ;
+ * en choisir une n'applique que cette ligne, « Toutes » revient au mode par familles.
+ * @param {{ key: string, id: string, title: string }[]} [lines]
  */
-export function toolbarInPage() {
+export function toolbarInPage(lines = []) {
   const LABELS = /** @type {Record<string, string>} */ ({ colors: 'Couleurs', spacing: 'Espacements', fontSizes: 'Tailles', radii: 'Rayons' });
   const sim = /** @type {any} */ (window).__dsSim;
   if (!sim) return false;
@@ -243,6 +246,7 @@ export function toolbarInPage() {
     label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; color: #e6e8ec; }
     small { color: #9aa1ad; }
     .relire { background: #2b2f38; color: #fff; }
+    select { font: inherit; max-width: 360px; background: #2b2f38; color: #fff; border: 0; border-radius: 6px; padding: 5px 8px; }
   `);
   root.adoptedStyleSheets = [sheet];
   const barre = document.createElement('div');
@@ -272,6 +276,23 @@ export function toolbarInPage() {
     label.append(box, LABELS[family] ?? family, small);
     barre.appendChild(label);
   }
+  // Une ligne : les lignes de la table que cette page touche, dans l'ordre des identifiants.
+  const known = new Set(sim.changes.map((/** @type {any} */ c) => c.key));
+  const here = lines.filter((l) => known.has(l.key)).sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const pick = document.createElement('label');
+  const select = document.createElement('select');
+  const all = document.createElement('option');
+  all.value = '';
+  all.textContent = 'Toutes';
+  select.appendChild(all);
+  for (const l of here) {
+    const o = document.createElement('option');
+    o.value = l.key;
+    o.textContent = `${l.id} ${l.title}`;
+    select.appendChild(o);
+  }
+  pick.append('Une ligne', select);
+  barre.appendChild(pick);
   const relire = document.createElement('button');
   relire.type = 'button';
   relire.className = 'relire';
@@ -281,7 +302,11 @@ export function toolbarInPage() {
   let on = true;
   const refresh = () => {
     const families = Object.entries(boxes).filter(([, b]) => b.checked).map(([f]) => f);
-    /** @type {any} */ (window).__dsSim.show({ on, families });
+    const only = select.value;
+    if (only) /** @type {any} */ (window).__dsSim.show({ on, keys: [only] });
+    else /** @type {any} */ (window).__dsSim.show({ on, families });
+    for (const b of Object.values(boxes)) b.disabled = !!only;
+    host.setAttribute('data-ligne', only);
     buttons['Avant'].setAttribute('aria-pressed', String(!on));
     buttons['Après'].setAttribute('aria-pressed', String(on));
     host.setAttribute('data-etat', on ? 'apres' : 'avant');
@@ -289,6 +314,7 @@ export function toolbarInPage() {
   buttons['Avant'].addEventListener('click', () => { on = false; refresh(); });
   buttons['Après'].addEventListener('click', () => { on = true; refresh(); });
   for (const b of Object.values(boxes)) b.addEventListener('change', refresh);
+  select.addEventListener('change', refresh);
   relire.addEventListener('click', () => /** @type {any} */ (window).__dsLive?.());
   document.documentElement.appendChild(host);
   refresh();
@@ -301,16 +327,18 @@ export function toolbarInPage() {
  * (pas par une balise), donc une CSP du site ne le bloque pas.
  * @param {import('playwright-core').BrowserContext} context
  * @param {Record<string, Record<string, string>>} map
- * @param {{ delayMs?: number }} [opts]
+ * @param {{ delayMs?: number, lines?: { key: string, id: string, title: string }[] }} [opts]
+ *   lines : identifiant et titre de chaque ligne de la table (R-2), pour la liste « Une ligne »
  */
-export async function installLive(context, map, { delayMs = 800 } = {}) {
+export async function installLive(context, map, { delayMs = 800, lines = [] } = {}) {
   await context.addInitScript({
     content: `(() => {
   if (window.top !== window) return;
   const scan = ${scanInPage.toString()};
   const toolbar = ${toolbarInPage.toString()};
   const map = ${JSON.stringify(map)};
-  window.__dsLive = () => { scan(map); return toolbar(); };
+  const lines = ${JSON.stringify(lines).replace(/</g, '\\u003c')};
+  window.__dsLive = () => { scan(map); return toolbar(lines); };
   window.addEventListener('load', () => setTimeout(window.__dsLive, ${Number(delayMs)}));
 })();`,
   });

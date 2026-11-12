@@ -95,6 +95,10 @@ export function indexTokens(tokens) {
 
 /** @param {unknown} s */
 const cell = (s) => String(s ?? '').replace(/\|/g, '\\|').replace(/\n/g, ' ');
+/** Lot R, R-2 : identifiant et titre d'une ligne, en tête de cellule. @param {{ id: string, title: string }} r */
+const line = (r) => cell(`${r.id} ${r.title}`.trim());
+/** Lot R, R-2 : sélecteurs d'exemple, gardés en détail. @param {{ selectors: string[] }} r */
+const selectorsOf = (r) => r.selectors.map((x) => `\`${cell(x)}\``).join(', ') || '—';
 /** @param {number} n */
 const fr = (n) => String(n).replace('.', ',');
 
@@ -190,6 +194,8 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
       const next = status === 'décidée' ? /** @type {string} */ (d) : status === 'appliquée' || status === 'en attente' ? r.new : status === 'inchangé' ? r.old : null;
       const name = status === 'décidée' ? (family === 'colors' ? valiseName(/** @type {string} */ (d)) : null) : isOut(r.class) ? null : r.name ?? null;
       rows.push({
+        id: r.id ?? '',
+        title: r.title ?? '',
         family,
         value: r.old,
         usage: r.usage ?? (family === 'fontSizes' ? 'taille du texte' : (r.usages ?? []).join(', ')),
@@ -312,36 +318,37 @@ function renderMarkdown(d, s) {
   }
   L.push(`| Inchangé | ${d.unchanged} | | | | |`, '');
 
-  L.push('## Table', '', '| famille | valeur | usage | jeton | classe | origine CSS | éléments |', '|---|---|---|---|---|---|---|');
+  L.push('## Table', '', 'Chaque ligne commence par son identifiant et son titre, les mêmes que dans table.json, revue.html et la barre --live.', '');
+  L.push('| ligne | famille | valeur | usage | jeton | classe | origine CSS | éléments |', '|---|---|---|---|---|---|---|---|');
   for (const r of d.rows)
-    L.push(`| ${FAMILY_LABELS[r.family] ?? r.family} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${r.token === '—' || r.token === 'jeton absent' ? r.token : `\`${r.token}\``} | ${cell(classLabel(r))} | ${cell(r.origin)} | ${r.elements} |`);
+    L.push(`| ${line(r)} | ${FAMILY_LABELS[r.family] ?? r.family} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${r.token === '—' || r.token === 'jeton absent' ? r.token : `\`${r.token}\``} | ${cell(classLabel(r))} | ${cell(r.origin)} | ${r.elements} |`);
   L.push('');
 
   L.push(`## Appliqué (auto, proche, correction, décidée) : ${s.applied.length}`, '', 'La table pose ces remplacements. Une correction (R9) répare un contraste ; elle reste annulable. Une ligne « décidée » porte la valeur choisie par le designer.', '');
-  L.push('| famille | valeur | usage | → jeton | valeur cible | classe | motif |', '|---|---|---|---|---|---|---|');
+  L.push('| ligne | famille | valeur | usage | → jeton | valeur cible | classe | motif | sélecteurs |', '|---|---|---|---|---|---|---|---|---|');
   for (const r of s.applied)
     L.push(
-      `| ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${r.token === 'jeton absent' ? r.token : `\`${r.token}\``} | \`${cell(r.new)}\` | ${cell(classLabel(r))} | ${r.status === 'décidée' ? 'décidée' : cell(r.reason ?? '')}${r.contrast && r.status !== 'décidée' ? ` contraste ${fr(r.contrast.before)} → ${fr(r.contrast.after)}` : ''} |`,
+      `| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${r.token === 'jeton absent' ? r.token : `\`${r.token}\``} | \`${cell(r.new)}\` | ${cell(classLabel(r))} | ${r.status === 'décidée' ? 'décidée' : cell(r.reason ?? '')}${r.contrast && r.status !== 'décidée' ? ` contraste ${fr(r.contrast.before)} → ${fr(r.contrast.after)}` : ''} | ${selectorsOf(r)} |`,
     );
   L.push('');
 
   L.push(`## Décisions en attente : ${s.pending.length}`, '', 'Rien n’est appliqué tant que le designer n’a pas répondu (R5). Les candidats sont rangés du plus proche au plus loin.', '');
-  L.push('| famille | valeur | usage | proposé | candidats | motif |', '|---|---|---|---|---|---|');
+  L.push('| ligne | famille | valeur | usage | proposé | candidats | motif | sélecteurs |', '|---|---|---|---|---|---|---|---|');
   for (const r of s.pending)
     L.push(
-      `| ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${r.token === 'jeton absent' ? r.token : `\`${r.token}\``} (\`${cell(r.new)}\`) | ${r.candidates.map((/** @type {any} */ c) => `\`${cell(c.value)}\` (${fr(c.delta)})`).join(', ')} | ${cell(r.reason ?? 'écart au-delà des seuils')}${r.contrast ? ` contraste ${fr(r.contrast.before)} → ${fr(r.contrast.after)} si appliquée` : ''} |`,
+      `| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${r.token === 'jeton absent' ? r.token : `\`${r.token}\``} (\`${cell(r.new)}\`) | ${r.candidates.map((/** @type {any} */ c) => `\`${cell(c.value)}\` (${fr(c.delta)})`).join(', ')} | ${cell(r.reason ?? 'écart au-delà des seuils')}${r.contrast ? ` contraste ${fr(r.contrast.before)} → ${fr(r.contrast.after)} si appliquée` : ''} | ${selectorsOf(r)} |`,
     );
   L.push('');
 
   L.push(`## Refusée, laissée telle quelle : ${s.refused.length}`, '', 'Le designer a refusé le changement : la valeur reste.', '');
-  L.push('| famille | valeur | usage | proposé | classe | éléments |', '|---|---|---|---|---|---|');
-  for (const r of s.refused) L.push(`| ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${r.candidates[0] ? `\`${cell(r.candidates[0].value)}\`` : '—'} | ${cell(r.class)} | ${r.elements} |`);
-  if (!s.refused.length) L.push('| — | | | | | |');
+  L.push('| ligne | famille | valeur | usage | proposé | classe | éléments |', '|---|---|---|---|---|---|---|');
+  for (const r of s.refused) L.push(`| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${r.candidates[0] ? `\`${cell(r.candidates[0].value)}\`` : '—'} | ${cell(r.class)} | ${r.elements} |`);
+  if (!s.refused.length) L.push('| — | | | | | | |');
   L.push('');
 
   L.push(`## Hors table : ${s.outOfTable.length}`, '', 'Laissées telles quelles, avec leur motif.', '');
-  L.push('| famille | valeur | usage | motif | éléments |', '|---|---|---|---|---|');
-  for (const r of s.outOfTable) L.push(`| ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.reason)} | ${r.elements} |`);
+  L.push('| ligne | famille | valeur | usage | motif | éléments |', '|---|---|---|---|---|---|');
+  for (const r of s.outOfTable) L.push(`| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.reason)} | ${r.elements} |`);
   L.push('');
 
   const e = d.exceptions;
@@ -422,7 +429,7 @@ function agentBrief(d, s) {
   );
   s.applied.forEach((r, i) => {
     lines.push(
-      `${i + 1}. Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage} : remplace ${r.value} par ${write(r)}${r.status === 'décidée' ? ' [décidée]' : ''}. Sélecteurs : ${r.selectors.join(', ') || '—'}. Point de départ : ${r.origin}. Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`,
+      `${i + 1}. ${r.id} ${r.title} — Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage} : remplace ${r.value} par ${write(r)}${r.status === 'décidée' ? ' [décidée]' : ''}. Sélecteurs : ${r.selectors.join(', ') || '—'}. Point de départ : ${r.origin}. Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`,
     );
   });
   lines.push('');
