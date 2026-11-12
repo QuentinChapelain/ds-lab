@@ -136,8 +136,9 @@ export function renderReview(table, pages, meta) {
               ? ` <span class="ctr">contraste ${String(r.contrast.before).replace('.', ',')} → ${String(r.contrast.after).replace('.', ',')} (seuil ${String(r.contrast.threshold).replace('.', ',')})</span>`
               : '';
             const motif = r.reason || r.contrast ? `<p class="motif">${r.reason ? `Motif : ${esc(r.reason)}.` : ''}${contrast}</p>` : '';
+            const head = r.id ? `<p class="titre"><b class="id">${esc(r.id)}</b> ${esc(r.title ?? '')}</p>\n  ` : '';
             return `<article class="row c-${isOut(cls) ? 'hors' : esc(cls)}" data-key="${esc(key)}">
-  <header>${glyph(family, r.old)}<code>${esc(r.old)}</code>${arrow}${usage}${what}<span class="n">×${r.count}${r.delta ? ` · écart ${r.delta}` : ''}</span></header>
+  ${head}<header>${glyph(family, r.old)}<code>${esc(r.old)}</code>${arrow}${usage}${what}<span class="n">×${r.count}${r.delta ? ` · écart ${r.delta}` : ''}</span></header>
   ${motif}<div class="sel">${r.selectors.map((x) => `<code>${esc(x)}</code>`).join(' ')}</div>
   ${pick}${shots}
 </article>`;
@@ -185,6 +186,7 @@ ${byClass}
   .motif { margin:6px 0 0; font-size:14px; } .ctr { color:var(--soft); font-variant-numeric:tabular-nums; } .row.c-proche { border-left-color:#2563eb; } .row.c-auto { border-left-color:#6b7280; }
   .row.refuse { opacity:.55; }
   .row header { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .titre { margin:0 0 6px; font-weight:600; } .titre .id { font:600 12px/1.4 ui-monospace, Menlo, monospace; color:var(--soft); margin-right:6px; }
   .arrow { color:var(--soft); margin:0 4px; }
   .sel { margin:6px 0 0; display:flex; gap:4px; flex-wrap:wrap; }
   .g { display:inline-block; vertical-align:middle; }

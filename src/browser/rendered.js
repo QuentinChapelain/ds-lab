@@ -21,6 +21,9 @@
  * @property {boolean} [overlap]      porteur de texte dont le centre tombe sur un peintre hors de sa lignée (R11 bis)
  * @property {string} [selector]
  * @property {string} [role]
+ * @property {string} [label]        lot R : texte visible de l'élément (libellé d'un champ, titre d'un bloc), 31 caractères au plus (R-1)
+ * @property {{ n: number, items: { role: string, tag: string, label: string, display: string, bg: string }[] }} [gapChildren]
+ *   lot R : conteneur flex ou grid, ses enfants visibles et les deux premiers (titre d'une gouttière, R-1)
  * @property {boolean} [text]         porteur de texte (R3, R2)
  * @property {Record<string, string>} [props]
  * @property {[number, number]} [box]       largeur et hauteur de la boîte (lot B, pilule R7)
@@ -144,6 +147,27 @@ export function collectInPage(thirdSelectors = []) {
       return { value: !!o && (o.textContent ?? '').trim() !== '', placeholder: false };
     }
     return { value: false, placeholder: false };
+  };
+  /**
+   * Lot R (R-1) : texte visible d'un élément, espaces resserrés, coupé à 31 caractères
+   * (le titre le coupe à 30 et sait ainsi qu'il a coupé). Un champ donne son libellé
+   * (label associé, puis aria-label, puis texte d'indice), jamais sa valeur saisie ;
+   * un bloc, son premier titre visible (h1 à h6), sinon la première ligne de son texte.
+   * @param {Element} el @param {string} role  rôle donné par roleOf
+   */
+  const labelOf = (el, role) => {
+    const anyEl = /** @type {any} */ (el);
+    const clean = (/** @type {any} */ s) => String(s ?? '').replace(/\s+/g, ' ').trim();
+    let s = '';
+    if (role === 'champ') {
+      const labels = [...(anyEl.labels ?? [])].map((/** @type {any} */ l) => clean(l.innerText)).filter(Boolean);
+      s = labels[0] || clean(el.getAttribute('aria-label')) || clean(el.getAttribute('placeholder'));
+    } else if (role === 'conteneur') {
+      const h = [...el.querySelectorAll('h1, h2, h3, h4, h5, h6')].find((x) => x.getClientRects().length > 0);
+      const heading = h ? clean(/** @type {any} */ (h).innerText) : '';
+      s = heading || (String(anyEl.innerText ?? '').split('\n').map(clean).find(Boolean) ?? '');
+    } else s = clean(anyEl.innerText ?? el.textContent);
+    return s.slice(0, 31);
   };
   /** @param {Element} el @param {boolean} text */
   const roleOf = (el, text) => {
@@ -276,6 +300,19 @@ export function collectInPage(thirdSelectors = []) {
       rec.tag = el.tagName.toLowerCase();
       rec.selector = selectorOf(el);
       rec.role = roleOf(el, text);
+      rec.label = labelOf(el, rec.role);
+      if (/\b(flex|grid)\b/.test(cs.display)) {
+        const kids = [...el.children].filter((c) => !META.has(c.tagName) && c.getClientRects().length > 0);
+        if (kids.length >= 2)
+          rec.gapChildren = {
+            n: kids.length,
+            items: kids.slice(0, 2).map((c) => {
+              const role = roleOf(c, directText(c) || fieldText(c).value);
+              const ccs = getComputedStyle(c);
+              return { role, tag: c.tagName.toLowerCase(), label: labelOf(c, role), display: ccs.display, bg: ccs.backgroundColor };
+            }),
+          };
+      }
       rec.text = text;
       rec.props = propsOf(cs, text, el);
       // Lot B : dimensions de la boîte (pilule, R7) et côtés en marge auto (R7).
@@ -313,6 +350,7 @@ export function collectInPage(thirdSelectors = []) {
         textOnly: true,
         selector: rec.selector + '::placeholder',
         role: rec.role,
+        label: rec.label,
         text: true,
         props,
       });
@@ -333,6 +371,7 @@ export function collectInPage(thirdSelectors = []) {
           pseudo,
           selector: rec.selector + pseudo,
           role: rec.role,
+          label: rec.label,
           text,
           icon: found.icon,
           props: propsOf(ps, text),

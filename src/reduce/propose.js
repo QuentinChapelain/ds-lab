@@ -30,6 +30,13 @@
  *       un texte posé dessus est une décision ;
  *   R9  correction : la paire la plus défavorable échoue avant et passe après, cible
  *       dans l'échelle de la valeur la plus proche ; appliquée par défaut, annulable.
+ *
+ * Lot R, R-1 : chaque ligne reçoit un identifiant (coul-, esp-, arr-, tail- et un numéro
+ * sur deux chiffres, par famille, rangé par occurrences décroissantes, puis valeur, puis
+ * usage, indépendant de la classe) et un titre en clair : « propriété · élément « texte
+ * visible » et n autres (rôles) ». L'élément de référence est le premier, dans l'ordre des
+ * pages, du rôle le plus fréquent parmi les éléments touchés ; les rôles des autres suivent,
+ * trois au plus, quand ils sont mélangés.
  */
 import { toLab, deltaE, isOpaque, contrastRatio, relativeLuminance } from '../lib/color.js';
 
@@ -77,6 +84,8 @@ export const isOut = (cls) => cls.startsWith('hors table');
  * @property {{ value: string, name?: string, delta: number }[]} candidates
  * @property {string[]} properties   familles ou propriétés d'origine
  * @property {string[]} selectors    exemples
+ * @property {string} [id]           lot R : identifiant stable de la ligne (R-1)
+ * @property {string} [title]        lot R : titre en clair (R-1)
  */
 
 /** @param {string} key  « 12px » */
@@ -94,7 +103,7 @@ const round2 = (n) => Math.round(n * 100) / 100;
  * @param {string[]} families
  */
 function gather(rendered, families) {
-  /** @type {Map<string, { count: number, properties: Set<string>, selectors: string[] }>} */
+  /** @type {Map<string, { count: number, properties: Set<string>, selectors: string[], kinds?: Record<string, Kind> }>} */
   const out = new Map();
   for (const f of families) {
     for (const [key, v] of Object.entries(rendered.families[f]?.values ?? {})) {
@@ -105,6 +114,7 @@ function gather(rendered, families) {
       if (n <= 0) continue;
       const e = out.get(k) ?? { count: 0, properties: new Set(), selectors: [] };
       e.count += n;
+      e.kinds = mergeKinds(e.kinds, x.kinds);
       e.properties.add(f);
       for (const c of x.contexts ?? []) for (const s of c.selectors ?? []) if (e.selectors.length < 4 && !e.selectors.includes(s)) e.selectors.push(s);
       out.set(k, e);
@@ -149,7 +159,7 @@ const ordered = (rows) =>
 function dimensionRows(values, scale, { pill = false, nearPx = Infinity } = {}) {
   /** @type {Row[]} */
   const rows = [];
-  for (const [old, v] of values) rows.push(dimensionRow({ old, count: v.count, properties: [...v.properties], selectors: v.selectors }, scale, { pill, nearPx }));
+  for (const [old, v] of values) rows.push(dimensionRow({ old, count: v.count, properties: [...v.properties], selectors: v.selectors, kinds: v.kinds }, scale, { pill, nearPx }));
   return ordered(rows);
 }
 
@@ -205,7 +215,7 @@ function spacingUsageRows(usages, scale) {
   const rows = [];
   for (const [old, byUsage] of Object.entries(usages)) {
     for (const { usage, e, n } of usageEntries(byUsage)) {
-      const base = { old, count: n, properties: e.properties, selectors: e.selectors, usage, usages: [usage] };
+      const base = { old, count: n, properties: e.properties, selectors: e.selectors, usage, usages: [usage], kinds: e.kinds };
       const v = px(old);
       if (v !== null && (v < 0 || v > RULES.layoutMaxPx)) {
         rows.push({ ...base, new: null, class: OUT.layout, delta: null, candidates: [], reason: v < 0 ? 'espacement négatif (R7)' : `espacement supérieur à ${RULES.layoutMaxPx} px (R7)` });
@@ -227,7 +237,7 @@ function radiusUsageRows(usages, scale) {
   const rows = [];
   for (const [old, byUsage] of Object.entries(usages)) {
     for (const { usage, e, n } of usageEntries(byUsage)) {
-      const base = { old, count: n, properties: e.properties, selectors: e.selectors, usage, usages: [usage] };
+      const base = { old, count: n, properties: e.properties, selectors: e.selectors, usage, usages: [usage], kinds: e.kinds };
       rows.push(dimensionRow(base, scale, { forcePill: usage === 'pilule' }));
     }
   }
@@ -269,8 +279,9 @@ function colorUsageRows(usages, targets) {
     const selectors = [...new Set(entries.flatMap((x) => x.e.selectors))].slice(0, 4);
     const count = entries.reduce((t, x) => t + x.n, 0);
     const labels = [...new Set(entries.map((x) => USAGE_LABEL[x.usage] ?? x.usage))];
+    const kinds = entries.reduce((/** @type {Record<string, Kind> | undefined} */ a, x) => mergeKinds(a, x.e.kinds), undefined);
     if (!isOpaque(old)) {
-      rows.push({ old, count, properties, selectors, usages: labels, new: null, class: 'hors table', delta: null, candidates: [] });
+      rows.push({ old, count, properties, selectors, usages: labels, kinds, new: null, class: 'hors table', delta: null, candidates: [] });
       continue;
     }
     const lab = toLab(old);
@@ -278,7 +289,7 @@ function colorUsageRows(usages, targets) {
     const nearest = all[0];
     if (nearest.delta > RULES.noScaleDeltaE) {
       rows.push({
-        old, count, properties, selectors, usages: labels, new: null, class: OUT.scale, delta: nearest.delta, candidates: candidatesOf(all),
+        old, count, properties, selectors, usages: labels, kinds, new: null, class: OUT.scale, delta: nearest.delta, candidates: candidatesOf(all),
         reason: `ΔE ${nearest.delta} à la valeur la plus proche de la valise (${nearest.t.name}) : aucune échelle (R4)`,
       });
       continue;
@@ -290,7 +301,7 @@ function colorUsageRows(usages, targets) {
       const cands = sorted(lab, pool);
       const exact = T.find((t) => t.value === old);
       /** @type {any} */
-      const row = { old, count: n, properties: e.properties, selectors: e.selectors, usage, usages: [USAGE_LABEL[usage] ?? usage], candidates: candidatesOf(cands), _cands: cands, _nearest: nearest, _exact: exact };
+      const row = { old, count: n, properties: e.properties, selectors: e.selectors, usage, usages: [USAGE_LABEL[usage] ?? usage], kinds: e.kinds, candidates: candidatesOf(cands), _cands: cands, _nearest: nearest, _exact: exact };
       if (range) row.slice = usage;
       if (e.field) row.field = e.field;
       if (darkLum !== null && (usage === 'fond' || usage === 'plein') && relativeLuminance(old) < darkLum) {
@@ -436,7 +447,7 @@ function colorRows(values, targets) {
   /** @type {Row[]} */
   const rows = [];
   for (const [old, v] of values) {
-    const base = { old, count: v.count, properties: [...v.properties], selectors: v.selectors };
+    const base = { old, count: v.count, properties: [...v.properties], selectors: v.selectors, kinds: v.kinds };
     if (!isOpaque(old)) {
       rows.push({ ...base, new: null, class: 'hors table', delta: null, candidates: [] });
       continue;
@@ -455,6 +466,121 @@ function colorRows(values, targets) {
 }
 
 /**
+ * @typedef {import('../rendered/aggregate.js').First} First
+ * @typedef {import('../rendered/aggregate.js').Kind} Kind
+ */
+/** Lot R (R-1) : le plus tôt de deux premiers éléments, dans l'ordre [page, relevé]. @param {First | undefined} a @param {First | undefined} b */
+const earliest = (a, b) => (!a ? b : !b ? a : b.order[0] < a.order[0] || (b.order[0] === a.order[0] && b.order[1] < a.order[1]) ? b : a);
+/**
+ * Lot R (R-1) : réunit deux relevés de sortes (comptes additionnés, premier le plus tôt).
+ * @param {Record<string, Kind> | undefined} a @param {Record<string, Kind> | undefined} b
+ */
+function mergeKinds(a, b) {
+  if (!b) return a;
+  /** @type {Record<string, Kind>} */
+  const out = { ...(a ?? {}) };
+  for (const [k, v] of Object.entries(b)) out[k] = out[k] ? { n: out[k].n + v.n, first: /** @type {First} */ (earliest(out[k].first, v.first)) } : v;
+  return out;
+}
+
+/** Lot R (R-1) : préfixe d'identifiant par famille. */
+export const ID_PREFIX = /** @type {Record<string, string>} */ ({ colors: 'coul', spacing: 'esp', radii: 'arr', fontSizes: 'tail' });
+/** Lot R (R-1) : propriété en clair, par famille puis par usage. */
+const PROPERTY_LABEL = /** @type {Record<string, Record<string, string>>} */ ({
+  colors: { texte: 'Couleur du texte', bordure: 'Couleur de bordure', fond: 'Fond', plein: 'Fond', autre: 'Couleur', '': 'Couleur' },
+  spacing: { marge: 'Marge', retrait: 'Retrait intérieur', gouttière: 'Espace entre éléments', '': 'Espacement' },
+  radii: { '': 'Arrondi' },
+  fontSizes: { '': 'Taille du texte' },
+});
+/** Lot R (R-1) : marge sur un seul côté. */
+const MARGIN_SIDE = /** @type {Record<string, string>} */ ({ 'margin-top': 'Marge haute', 'margin-bottom': 'Marge basse', 'margin-left': 'Marge gauche', 'margin-right': 'Marge droite' });
+/** Lot R (R-1) : nom français du rôle relevé par src/browser/rendered.js (roleOf), et son pluriel. */
+const ROLE_LABEL = /** @type {Record<string, string>} */ ({ bouton: 'bouton', lien: 'lien', champ: 'champ', titre: 'titre', image: 'image', texte: 'texte', conteneur: 'bloc' });
+/** Texte visible coupé à 30 caractères ; trois rôles au plus après « n autres ». */
+export const TITLE_TEXT_MAX = 30;
+const TITLE_ROLES_MAX = 3;
+
+/**
+ * Lot R (R-1) : nom de l'élément, d'après son rôle. html et body sont la page ; un texte
+ * ou un bloc en ligne, à fond opaque, au texte de 20 caractères au plus, est une étiquette.
+ */
+const elementName = (/** @type {{ role: string, tag: string, chip: boolean }} */ f) =>
+  f.tag === 'html' || f.tag === 'body' ? 'page' : f.chip && (f.role === 'texte' || f.role === 'conteneur') ? 'étiquette' : ROLE_LABEL[f.role] ?? 'bloc';
+
+/** Lot R (R-1) : texte visible coupé à 30 caractères. @param {string} raw */
+const cut = (raw) => (raw.length > TITLE_TEXT_MAX ? `${raw.slice(0, TITLE_TEXT_MAX).trimEnd()}…` : raw);
+
+/**
+ * Lot R (R-1) : titre en clair d'une ligne.
+ * @param {string} family @param {Row & { kinds?: Record<string, Kind> }} r
+ */
+export function rowTitle(family, r) {
+  const labels = PROPERTY_LABEL[family] ?? { '': family };
+  const usage = r.usage ?? (r.usages?.length === 1 ? r.usages[0] : '');
+  let property = labels[usage] ?? labels[''] ?? family;
+  if (family === 'spacing' && usage === 'marge' && r.properties?.length === 1 && MARGIN_SIDE[r.properties[0]]) property = MARGIN_SIDE[r.properties[0]];
+  // Sortes réunies par nom : compte et premier élément de chaque nom.
+  /** @type {Map<string, { n: number, first: First }>} */
+  const byName = new Map();
+  for (const k of Object.values(r.kinds ?? {})) {
+    const name = elementName(k.first);
+    const g = byName.get(name);
+    byName.set(name, g ? { n: g.n + k.n, first: /** @type {First} */ (earliest(g.first, k.first)) } : { n: k.n, first: k.first });
+  }
+  /** @param {[string, { n: number, first: First }]} a @param {[string, { n: number, first: First }]} b */
+  const rank = (a, b) => b[1].n - a[1].n || (earliest(a[1].first, b[1].first) === a[1].first ? -1 : 1);
+  const groups = [...byName.entries()].sort(rank);
+  if (!groups.length) return property;
+  const [refName, ref] = groups[0];
+  const text = cut(ref.first.label ?? '');
+  const total = groups.reduce((t, [, g]) => t + g.n, 0);
+  const others = total - 1;
+  // Gouttière : les enfants que l'espace sépare, et non le bloc ; les autres blocs suivent entre parenthèses.
+  const kids = family === 'spacing' && usage === 'gouttière' ? ref.first.children : undefined;
+  if (kids) {
+    const names = [...new Set(kids.items.map(elementName))];
+    const kind = names.length === 1 ? (kids.n > 1 ? `${names[0]}s` : names[0]) : 'éléments';
+    const quoted = kids.items.map((c) => cut(c.label)).filter(Boolean).map((t) => `« ${t} »`);
+    const more = kids.n - kids.items.length;
+    const rest = others ? ` (et ${others} ${others === 1 ? 'autre bloc' : 'autres blocs'})` : '';
+    return `${property} · ${kids.n} ${kind}${quoted.length ? ` ${quoted.join(', ')}` : ''}${more ? ` et ${more} ${more === 1 ? 'autre' : 'autres'}` : ''}${rest}`;
+  }
+  let tail = others ? ` et ${others} ${others === 1 ? 'autre' : 'autres'}` : '';
+  if (others && groups.length > 1) {
+    const rest = groups
+      .map(([name, g]) => /** @type {[string, number]} */ ([name, name === refName ? g.n - 1 : g.n]))
+      .filter(([, n]) => n > 0)
+      .slice(0, TITLE_ROLES_MAX)
+      .map(([name, n]) => (n > 1 ? `${name}s` : name));
+    tail += ` (${rest.join(', ')})`;
+  }
+  return `${property} · ${text ? `${refName} « ${text} »` : refName}${tail}`;
+}
+
+/** @param {string} a @param {string} b */
+const byValue = (a, b) => {
+  const x = px(a);
+  const y = px(b);
+  if (x !== null && y !== null && x !== y) return x - y;
+  return a < b ? -1 : a > b ? 1 : 0;
+};
+
+/**
+ * Lot R (R-1) : identifiant et titre de chaque ligne d'une famille ; retire les sortes
+ * d'éléments, qui ne servent qu'au titre.
+ * @param {string} family @param {(Row & { kinds?: Record<string, Kind> })[]} rows
+ */
+function identify(family, rows) {
+  const prefix = ID_PREFIX[family] ?? family;
+  const order = [...rows].sort((a, b) => b.count - a.count || byValue(a.old, b.old) || ((a.usage ?? '') < (b.usage ?? '') ? -1 : (a.usage ?? '') > (b.usage ?? '') ? 1 : 0));
+  order.forEach((r, i) => {
+    r.id = `${prefix}-${String(i + 1).padStart(2, '0')}`;
+    r.title = rowTitle(family, r);
+    delete r.kinds;
+  });
+}
+
+/**
  * @param {any} rendered  audit.rendered
  * @param {Target} target
  */
@@ -463,6 +589,7 @@ export function propose(rendered, target) {
   const families = {};
   /** @param {string} name @param {Row[]} rows */
   const put = (name, rows) => {
+    identify(name, rows);
     families[name] = { rows, summary: summarize(rows) };
   };
   // Lot B : avec le relevé par usage, une ligne par valeur × usage et les règles R1 à R9.

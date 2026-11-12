@@ -123,7 +123,51 @@ const CORNERS = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
  * @property {boolean} normalizable
  * @property {Record<string, number>} originals
  * @property {Context[]} contexts
+ * @property {Record<string, Kind>} [kinds]  lot R : éléments d'interface touchés, par sorte (rôle, balise, étiquette possible), avec le premier de chacune (R-1)
+ * @property {number} [elements]  lot R : éléments d'interface touchés (un pseudo-élément compte pour son élément)
+ * @typedef {{ role: string, tag: string, label: string, chip: boolean }} Child
+ * @typedef {{ order: [number, number], role: string, tag: string, label: string, chip: boolean, children?: { n: number, items: Child[] } }} First
+ * @typedef {{ n: number, first: First }} Kind
  */
+
+/** Lot R (R-1) : texte d'une étiquette possible, 20 caractères au plus. */
+export const CHIP_TEXT_MAX = 20;
+
+/**
+ * Lot R (R-1) : élément touché, compté une fois (un pseudo-élément compte pour son élément),
+ * rangé par sorte avec le premier de chacune dans l'ordre [page, relevé]. Étiquette possible :
+ * élément en ligne, fond opaque à lui, texte de 20 caractères au plus ; le nom est donné au titre.
+ * @param {{ kinds?: Record<string, Kind>, _els?: Set<string> }} x @param {RenderedRecord} rec @param {number} pageNo @param {number} index
+ */
+function touch(x, rec, pageNo, index) {
+  const el = rec.pseudo ? rec.parent : index;
+  const id = `${pageNo}:${el}`;
+  const els = (x._els ??= new Set());
+  if (els.has(id)) return;
+  els.add(id);
+  const role = rec.role ?? 'conteneur';
+  const tag = rec.tag ?? '';
+  const label = rec.label ?? '';
+  const chip = chipOf(rec.props?.display, rec.bg, label);
+  const kinds = (x.kinds ??= {});
+  const key = `${role}|${tag}|${chip ? 'étiquette' : ''}`;
+  /** @type {First} */
+  const first = { order: [pageNo, el], role, tag, label, chip };
+  if (rec.gapChildren)
+    first.children = { n: rec.gapChildren.n, items: rec.gapChildren.items.map((c) => ({ role: c.role, tag: c.tag, label: c.label, chip: chipOf(c.display, c.bg, c.label) })) };
+  const k = (kinds[key] ??= { n: 0, first });
+  k.n++;
+}
+/**
+ * Lot R (R-1) : étiquette possible, en ligne, à fond opaque, au texte court.
+ * @param {string | undefined} display @param {string | undefined} bgRaw @param {string} label
+ */
+function chipOf(display, bgRaw, label) {
+  const bg = normalizeColor(bgRaw ?? '');
+  return String(display ?? '').startsWith('inline') && !!bg && isOpaque(bg.hex) && label.length > 0 && label.length <= CHIP_TEXT_MAX;
+}
+/** @param {{ _els?: Set<string> }} x */
+const elementsOf = (x) => x._els?.size ?? 0;
 
 function createCollector() {
   /** @type {Map<string, RenderedValue & { ctx: Map<string, Context> }>} */
@@ -139,9 +183,10 @@ function createCollector() {
      * @param {string} page
      * @param {number} index
      * @param {boolean} [content]  occurrence de contenu (R18)
+     * @param {number} [pageNo]  rang de la page (lot R, R-1)
      * @returns {Context | null} le contexte s'il vient d'être créé
      */
-    add(k, raw, property, rec, page, index, content = false) {
+    add(k, raw, property, rec, page, index, content = false, pageNo = 0) {
       total++;
       if (!k.normalizable) nonNormalizable++;
       let v = values.get(k.key);
@@ -152,6 +197,7 @@ function createCollector() {
       v.count++;
       if (rec.pseudo) v.pseudo++;
       if (content) v.content++;
+      else touch(/** @type {any} */ (v), rec, pageNo, index);
       v.originals[raw] = (v.originals[raw] ?? 0) + 1;
       const role = rec.role ?? 'conteneur';
       const ck = `${property}\n${role}`;
@@ -181,7 +227,10 @@ function createCollector() {
         distinctInterface: [...values.values()].filter((v) => v.count > v.content).length,
         nonNormalizable,
         values: Object.fromEntries(
-          sorted.map(([key, { ctx, ...v }]) => [key, { ...v, contexts: [...ctx.values()].sort((a, b) => b.count - a.count) }]),
+          sorted.map(([key, { ctx, ...v }]) => {
+            const { _els, ...rest } = /** @type {any} */ (v);
+            return [key, { ...rest, elements: elementsOf(v), contexts: [...ctx.values()].sort((a, b) => b.count - a.count) }];
+          }),
         ),
       };
     },
@@ -350,6 +399,8 @@ export function createRenderedAggregator() {
   const byPage = {};
   const roles = new Set();
   let unmeasuredContrast = 0;
+  /** Lot R : rang de la page en cours (ordre des adresses). */
+  let pageNo = -1;
   /**
    * Lot B : occurrences par valeur et par usage (R3), hors marges auto (R7),
    * et paires de contraste rattachées aux lignes (R2, R8, R9).
@@ -366,7 +417,7 @@ export function createRenderedAggregator() {
    * @param {string} family @param {string} value @param {string} usage @param {RenderedRecord} rec
    * @param {string} page @param {string} property @param {{ content?: boolean, field?: boolean }} [o]
    */
-  const addUsage = (family, value, usage, rec, page, property, { content = false, field = false } = {}) => {
+  const addUsage = (family, value, usage, rec, page, property, { content = false, field = false, index = -1 } = {}) => {
     const byValue = usageFam[family];
     let u = byValue.get(value);
     if (!u) byValue.set(value, (u = new Map()));
@@ -374,6 +425,7 @@ export function createRenderedAggregator() {
     if (!e) u.set(usage, (e = { count: 0, content: 0, field: 0, properties: new Set(), selectors: [], pages: {} }));
     e.count++;
     if (content) e.content++;
+    else touch(e, rec, pageNo, index);
     if (field) e.field++;
     e.properties.add(property);
     const sel = rec.selector ?? '';
@@ -390,6 +442,7 @@ export function createRenderedAggregator() {
    */
   function addPage(pc) {
     const page = pc.url;
+    pageNo++;
     const stats = (byPage[page] = { elements: 0, pseudoElements: 0, excluded: pc.excluded, textBearing: 0, iframes: pc.iframes });
     if (pc.thirdParty) {
       third.elements += pc.thirdParty.elements;
@@ -404,8 +457,8 @@ export function createRenderedAggregator() {
       if (rec.retained || (rec.parent !== -1 && rec.parent !== 0)) return;
       const c = normalizeColor(rec.bg);
       if (!c || !isOpaque(c.hex)) return;
-      const root = { ...rec, selector: rec.parent === -1 ? 'html' : 'body' };
-      addUsage('colors', c.hex, plein.has(index) ? 'plein' : 'fond', root, page, 'background-color');
+      const root = { ...rec, selector: rec.parent === -1 ? 'html' : 'body', tag: rec.parent === -1 ? 'html' : 'body' };
+      addUsage('colors', c.hex, plein.has(index) ? 'plein' : 'fond', root, page, 'background-color', { index });
     });
     pc.records.forEach((rec, index) => {
       if (!rec.retained || !rec.props) return;
@@ -417,7 +470,7 @@ export function createRenderedAggregator() {
       }
       /** @param {string} f @param {{ key: string, normalizable: boolean }} k @param {string} raw @param {string} property @param {boolean} [content] */
       const add = (f, k, raw, property, content = false) => {
-        const c = fam[f].add(k, raw, property, rec, page, index, content);
+        const c = fam[f].add(k, raw, property, rec, page, index, content, pageNo);
         if (c) created.push({ family: f, value: k.key, context: c });
       };
       if (rec.proseLink && !rec.pseudo) {
@@ -437,7 +490,7 @@ export function createRenderedAggregator() {
         if (rec.pseudo) continue;
         const usage = colorUsage(c.property, plein.has(index));
         const field = usage === 'bordure' && rec.role === 'champ';
-        addUsage('colors', c.hex, usage, rec, page, c.property, { content: !!c.content, field });
+        addUsage('colors', c.hex, usage, rec, page, c.property, { content: !!c.content, field, index });
         if (field && !c.content && isOpaque(c.hex)) {
           // R9 : bordure de champ contre le fond qui l'entoure (3:1).
           const eff = effectiveBackground(pc.records, rec.parent);
@@ -471,13 +524,13 @@ export function createRenderedAggregator() {
         if (m && m !== '0px') {
           const k = lengthKey(m, 16);
           add('margins', k, m, `margin-${s}`);
-          if (!rec.pseudo && !rec.autoMargins?.includes(s)) addUsage('spacing', k.key, SPACING_USAGE.margins, rec, page, `margin-${s}`);
+          if (!rec.pseudo && !rec.autoMargins?.includes(s)) addUsage('spacing', k.key, SPACING_USAGE.margins, rec, page, `margin-${s}`, { index });
         }
         const pd = p[`padding-${s}`];
         if (pd && pd !== '0px') {
           const k = lengthKey(pd, 16);
           add('paddings', k, pd, `padding-${s}`);
-          if (!rec.pseudo) addUsage('spacing', k.key, SPACING_USAGE.paddings, rec, page, `padding-${s}`);
+          if (!rec.pseudo) addUsage('spacing', k.key, SPACING_USAGE.paddings, rec, page, `padding-${s}`, { index });
         }
       }
       if (/\b(flex|grid)\b/.test(p['display'] ?? '')) {
@@ -485,7 +538,7 @@ export function createRenderedAggregator() {
           if (p[g] && p[g] !== 'normal') {
             const k = lengthKey(p[g], 16);
             add('gaps', k, p[g], g);
-            if (!rec.pseudo) addUsage('spacing', k.key, SPACING_USAGE.gaps, rec, page, g);
+            if (!rec.pseudo) addUsage('spacing', k.key, SPACING_USAGE.gaps, rec, page, g, { index });
           }
       }
       for (const s of SIDES) {
@@ -499,7 +552,7 @@ export function createRenderedAggregator() {
         if (!r || r === '0px') continue;
         const parts = splitSpaces(r).map((x) => lengthKey(x, 16));
         add('radii', { key: parts.map((x) => x.key).join(' '), normalizable: parts.every((x) => x.normalizable) }, r, `border-${c}-radius`);
-        if (!rec.pseudo) addUsage('radii', parts[0].key, radiusUsage(parts[0].key, rec.box), rec, page, `border-${c}-radius`);
+        if (!rec.pseudo) addUsage('radii', parts[0].key, radiusUsage(parts[0].key, rec.box), rec, page, `border-${c}-radius`, { index });
       }
       if (p['box-shadow'] && p['box-shadow'] !== 'none') add('shadows', shadowKey(p['box-shadow'], 16), p['box-shadow'], 'box-shadow');
       if (p['opacity'] && p['opacity'] !== '1') add('opacities', opacityKey(p['opacity']), p['opacity'], 'opacity');
@@ -716,7 +769,7 @@ export function createRenderedAggregator() {
             Object.fromEntries(
               [...byValue.entries()].map(([value, u]) => [
                 value,
-                Object.fromEntries([...u.entries()].map(([usage, e]) => [usage, { ...e, properties: [...e.properties] }])),
+                Object.fromEntries([...u.entries()].map(([usage, { _els, ...e }]) => [usage, { ...e, elements: _els?.size ?? 0, properties: [...e.properties] }])),
               ]),
             ),
           ]),
