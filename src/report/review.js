@@ -93,13 +93,15 @@ const short = (family, v) => {
 /** @param {number} n */
 const fr = (n) => String(Math.round(n * 100) / 100).replace('.', ',');
 /** Lot R : nom de jeton d'un pas de dimension (les couleurs gardent le nom de la valise). */
-const TOKEN_PREFIX = /** @type {Record<string, string>} */ ({ spacing: 'espace', radii: 'arrondi', fontSizes: 'taille' });
+const TOKEN_PREFIX = /** @type {Record<string, string>} */ ({ spacing: 'espace', radii: 'rayon', fontSizes: 'taille-texte' });
 /** Lot R : nom du pas d'une version, « terre-9 » ou « espace.8 ». @param {string} family @param {{ value: string, name?: string }} c */
 const stepName = (family, c) => c.name ?? (num(c.value) !== null && TOKEN_PREFIX[family] ? `${TOKEN_PREFIX[family]}.${num(c.value)}` : '');
 /** @param {number} n @param {number} d */
 const pct = (n, d) => `${((100 * n) / d).toFixed(3)}%`;
 /** Plus petit cadre affiché sans agrandissement (R-8) : en deçà, l'image est montrée à 2×. */
 const SMALL_FRAME = 200;
+/** Largeur maximale d'une vignette. */
+const THUMB_MAX = 240;
 
 /**
  * Lot R : zones d'espace d'une version, découpées au cadre ; cote au milieu de la partie
@@ -132,6 +134,12 @@ function contrastLine(usage, c) {
   return `<small>${fr(c.ratio)} · ${pass ? 'passe' : 'sous'} le seuil de ${fr(c.threshold)}</small><small>${esc(other)}</small>`;
 }
 
+/** Lot R : « Ce choix s'applique à n éléments ». @param {any} r */
+function portee(r) {
+  const n = r.capture?.elements ?? r.count;
+  return `<p class="portee">Ce choix s’applique à ${n} ${n === 1 ? 'élément' : 'éléments'}</p>`;
+}
+
 /**
  * Lot R : carte de décision. Sélecteur de versions (actuelle, puis chaque candidat), une seule
  * image (la version affichée) avec sa zone d'espace, et « Choisir cette version ». Afficher
@@ -157,8 +165,22 @@ function decisionCard(family, r) {
         .map((/** @type {any} */ v, /** @type {number} */ i) => `<div class="ver" data-v="${i}"${i ? ' hidden' : ''}>${img(v.shot.png)}${zones(v.shot, v.space ?? [])}</div>`)
         .join('')}</div>`
     : '';
+  // Une vignette par autre élément touché, 3 au plus, à la taille CSS de son cadre plafonnée à 240 px ;
+  // chacune suit la version affichée.
+  const others = r.capture?.others ?? [];
+  const more = (r.capture?.elements ?? 0) - 1 - others.length;
+  const thumbs = others.length
+    ? `<div class="vignettes">${others
+        .map(
+          (/** @type {any} */ o) =>
+            `<div class="vig" style="width:${Math.min(o.clip.width, THUMB_MAX)}px;aspect-ratio:${o.clip.width} / ${o.clip.height}">${o.versions
+              .map((/** @type {any} */ v, /** @type {number} */ i) => `<div class="ver" data-v="${i}"${i ? ' hidden' : ''}>${img(v.shot.png)}${zones(v.shot, v.space ?? [])}</div>`)
+              .join('')}</div>`,
+        )
+        .join('')}${more > 0 ? `<span class="encore">et ${more} ${more === 1 ? 'autre' : 'autres'}</span>` : ''}</div>`
+    : '';
   return `<div class="versions" role="group" aria-label="Versions">${buttons}</div>
-  ${view}
+  ${view}${thumbs}
   <div class="trancher"><button type="button" class="retenir">Choisir cette version</button></div>`;
 }
 
@@ -212,8 +234,8 @@ export function renderReview(table, pages, meta) {
             const head = r.id ? `<p class="titre"><b class="id">${esc(r.id)}</b> ${esc(r.title ?? '')}${choice}</p>\n  ` : '';
             const decision = cls === 'décision';
             return `<article class="row c-${isOut(cls) ? 'hors' : esc(cls)}${decision ? ' decision a-trancher' : ''}" data-key="${esc(key)}"${decision ? ' tabindex="0"' : ''}>
-  ${head}<header>${glyph(family, r.old)}<code>${esc(r.old)}</code>${arrow}${usage}${what}<span class="n">×${r.count}${r.delta ? ` · écart ${r.delta}` : ''}</span></header>
-  ${motif}<div class="sel">${r.selectors.map((x) => `<code>${esc(x)}</code>`).join(' ')}</div>
+  ${head}<header>${glyph(family, r.old)}<code>${esc(r.old)}</code>${arrow}${usage}${what}${cls === 'décision' ? '' : `<span class="n">×${r.count}${r.delta ? ` · écart ${r.delta}` : ''}</span>`}</header>
+  ${motif}${cls === 'décision' ? portee(r) : `<div class="sel">${r.selectors.map((x) => `<code>${esc(x)}</code>`).join(' ')}</div>`}
   ${pick}${shots}
 </article>`;
           })
@@ -300,6 +322,11 @@ ${byClass}
   .zone { position:absolute; min-width:1px; min-height:1px; background:repeating-linear-gradient(45deg, rgba(226,87,43,.55) 0 2px, rgba(226,87,43,.12) 2px 5px); outline:1px solid #e2572b; pointer-events:none; }
   .cote { position:absolute; transform:translate(-50%, -50%); background:#e2572b; color:#fff; font:600 11px/1 ui-monospace, Menlo, monospace; padding:2px 4px; border-radius:3px; white-space:nowrap; pointer-events:none; }
   body.sans-reperes .zone, body.sans-reperes .cote { display:none; }
+  .portee { margin:6px 0 0; font-size:14px; color:var(--soft); }
+  .vignettes { display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px; margin-top:8px; }
+  .vig { display:grid; position:relative; max-width:100%; border:1px solid var(--line); border-radius:6px; overflow:hidden; background:#fff; }
+  .vig .ver { grid-area:1 / 1; position:relative; line-height:0; } .vig .ver[hidden] { display:none; } .vig img { display:block; width:100%; height:auto; }
+  .encore { font-size:13px; color:var(--soft); padding-bottom:4px; }
   .trancher { display:flex; align-items:center; gap:10px; margin-top:10px; }
   .retenir { font:inherit; font-size:14px; font-weight:600; border:0; border-radius:6px; padding:7px 14px; cursor:pointer; background:#16181d; color:#fff; }
   .barre { position:fixed; left:0; right:0; bottom:0; background:#16181d; color:#fff; padding:10px 24px; display:flex; gap:16px; align-items:center; justify-content:center; font-size:14px; }
@@ -335,7 +362,7 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
     i = Math.max(0, Math.min(vs.length - 1, i));
     row.setAttribute('data-vue', String(i));
     vs.forEach(function (b, j) { b.setAttribute('aria-pressed', String(j === i)); });
-    row.querySelectorAll('.vue .ver').forEach(function (f) { f.hidden = Number(f.getAttribute('data-v')) !== i; });
+    row.querySelectorAll('.vue .ver, .vig .ver').forEach(function (f) { f.hidden = Number(f.getAttribute('data-v')) !== i; });
   }
   function retain(row, i, imposed) {
     var vs = versionsOf(row);

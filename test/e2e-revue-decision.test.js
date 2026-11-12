@@ -74,6 +74,10 @@ test('revue : chaque décision est « Pas encore choisie », une image affichée
       const c = card(page, row.id);
       assert.ok(await c.evaluate((el) => el.classList.contains('a-trancher')), `${row.id} : à trancher`);
       assert.equal(await c.locator('.choix').textContent(), 'Pas encore choisie');
+      const n = row.capture.elements;
+      assert.equal(await c.locator('.portee').textContent(), `Ce choix s’applique à ${n} ${n === 1 ? 'élément' : 'éléments'}`);
+      const more = n - 1 - row.capture.others.length;
+      assert.equal(await c.locator('.encore').count(), more > 0 ? 1 : 0, `${row.id} : « et n autres »`);
       assert.equal(await c.locator('.versions .v[data-v="0"] .nom').textContent().then((t) => t?.includes('la choisir garde la valeur')), true, `${row.id} : aide de l’actuelle`);
       assert.equal(await c.locator('.versions .v').count(), row.capture.versions.length, `${row.id} : versions`);
       assert.equal(await c.locator('.vue .ver:not([hidden])').count(), 1, `${row.id} : une seule image affichée`);
@@ -103,6 +107,12 @@ test('revue : parcourir les versions sans choisir laisse l’export vide', async
       for (let i = 0; i < n; i++) await page.keyboard.press('ArrowRight');
       assert.equal(await c.getAttribute('data-vue'), String(n - 1), `${row.id} : ← → parcourent les versions`);
       assert.equal(await c.locator(`.vue .ver[data-v="${n - 1}"]`).isVisible(), true);
+      // Les vignettes suivent la version affichée.
+      const vigs = row.capture.others.length;
+      assert.equal(await c.locator('.vig').count(), vigs, `${row.id} : vignettes`);
+      assert.equal(await c.locator(`.vig .ver[data-v="${n - 1}"]:not([hidden])`).count(), vigs, `${row.id} : vignettes à la version affichée`);
+      assert.equal(await c.locator('.vig .ver:not([hidden])').count(), vigs);
+      for (const w of await c.locator('.vig').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().width))) assert.ok(w <= 240.5, `${row.id} : vignette de ${w} px`);
       await page.keyboard.press('ArrowLeft');
     }
     assert.deepEqual(await exported(page), {});

@@ -681,9 +681,11 @@ export function frameOf(probes, d) {
  * @param {import('playwright-core').Page} page  page d'origine déjà chargée
  * @param {{ key: string, family: string, usage?: string, mapKey: string, old: string, candidates: { value: string, name?: string }[] }} d
  * @param {string[]} thirdParty
+ * @param {{ index?: number, compact?: boolean }} [opts]  index : élément imposé (vignette d'un autre élément touché) ;
+ *   compact : cadre réduit à l'élément et à son voisin direct (ou aux enfants d'une gouttière), sans libellé ni champ du voisin
  * @returns {Promise<DecisionCapture | null>} null si la ligne ne touche rien sur cette page
  */
-export async function captureDecision(page, d, thirdParty = []) {
+export async function captureDecision(page, d, thirdParty = [], { index, compact = false } = {}) {
   const versions = [{ label: 'actuelle', value: d.old }, ...d.candidates.map((c, n) => ({ label: `candidat ${n + 1}`, value: c.value, name: c.name }))];
   /** @param {string} value @param {number} [i] */
   const pose = async (value, i) => {
@@ -692,7 +694,7 @@ export async function captureDecision(page, d, thirdParty = []) {
     return page.evaluate(versionInPage, { key: d.key, i, family: d.family, usage: d.usage });
   };
   // Premier passage : l'élément et son contexte sous chaque version, pour un cadre commun.
-  const first = await pose(versions[0].value);
+  const first = await pose(versions[0].value, index);
   if (!first) {
     await page.evaluate(showInPage, { on: false });
     return null;
@@ -703,7 +705,8 @@ export async function captureDecision(page, d, thirdParty = []) {
     if (p) probes.push(p);
   }
   await page.evaluate(showInPage, { on: false });
-  const clip = frameOf(probes, d);
+  const DIRECT = new Set(['voisin', 'bord du parent', 'enfant']);
+  const clip = frameOf(compact ? probes.map((p) => ({ ...p, around: p.around.filter((a) => DIRECT.has(a.kind)) })) : probes, d);
   const scale = await page.evaluate(() => window.devicePixelRatio);
   // Second passage : capture de chaque version dans ce cadre, puis valeur calculée et contexte.
   /** @type {DecisionVersion[]} */
@@ -734,4 +737,44 @@ export async function captureDecision(page, d, thirdParty = []) {
   }
   await page.evaluate(showInPage, { on: false });
   return { page: page.url(), element: { tag: first.tag, index: first.i }, clip, versions: out };
+}
+
+/**
+ * Lot R : exécutée dans la page, après scanInPage. Éléments touchés par une ligne, dans l'ordre
+ * de la page, avec un repère lisible (balise, id, deux classes) et leur texte visible (40 caractères ;
+ * pour un champ, son libellé).
+ * @param {{ key: string }} o
+ */
+export function touchedInPage({ key }) {
+  const sim = /** @type {any} */ (window).__dsSim;
+  const seen = new Set();
+  /** @type {{ index: number, selector: string, text: string }[]} */
+  const out = [];
+  for (const op of sim.ops) {
+    if (op.key !== key || seen.has(op.i)) continue;
+    seen.add(op.i);
+    const el = sim.els[op.i];
+    const t = el.tagName.toLowerCase();
+    const cls = [...el.classList].slice(0, 2);
+    const selector = el.id ? `${t}#${el.id}` : cls.length ? `${t}.${cls.join('.')}` : t;
+    const field = t === 'input' || t === 'textarea' || t === 'select';
+    // Un champ : son libellé (label associé, puis aria-label, puis texte d'indice), jamais sa valeur.
+    const label = field ? [...(el.labels ?? [])].map((/** @type {any} */ l) => l.innerText).find((/** @type {string} */ x) => x && x.trim()) : null;
+    const text = String(field ? label ?? el.getAttribute('aria-label') ?? el.getAttribute('placeholder') ?? '' : el.innerText ?? '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    out.push({ index: op.i, selector, text });
+  }
+  return out;
+}
+
+/**
+ * Lot R : éléments touchés par une décision sur une page déjà chargée (version actuelle posée).
+ * @param {import('playwright-core').Page} page
+ * @param {{ key: string, family: string, mapKey: string, old: string }} d
+ * @param {string[]} thirdParty
+ */
+export async function touchedElements(page, d, thirdParty = []) {
+  await page.evaluate(scanInPage, { [d.family]: { [d.mapKey]: d.old }, thirdParty });
+  const list = await page.evaluate(touchedInPage, { key: d.key });
+  await page.evaluate(showInPage, { on: false });
+  return list;
 }

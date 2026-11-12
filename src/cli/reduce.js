@@ -17,7 +17,7 @@ import { gotoAndSettle, DEFAULT_WAIT_MS } from '../browser/navigate.js';
 import { createRenderedAggregator } from '../rendered/aggregate.js';
 import { measureRendered } from '../rendered/run.js';
 import { propose, mapping, rowKey } from '../reduce/propose.js';
-import { simulatePage, installLive, captureDecision, FRAME } from '../browser/simulate.js';
+import { simulatePage, installLive, captureDecision, touchedElements, FRAME } from '../browser/simulate.js';
 import { renderReview } from '../report/review.js';
 import { buildMigration } from '../report/migration.js';
 import { stampOf, freeOutputDir } from '../report/json.js';
@@ -60,6 +60,9 @@ const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cibl
  * @param {ReduceOptions} opts
  * @returns {Promise<{ host: string, dir: string, files: string[], table: ReturnType<typeof propose>, map: Record<string, any>, first: string, migration: ReturnType<typeof buildMigration>['data'] }[]>}
  */
+/** Lot R : vignettes des autres éléments touchés par une décision, au plus. */
+const THUMBS = 3;
+
 export async function runReduce(opts) {
   const { viewport = { width: 1366, height: 900 }, waitMs = DEFAULT_WAIT_MS, outRoot = 'local/reductions', now = new Date(), log = () => {} } = opts;
   const target = JSON.parse(await readFile(opts.targetPath, 'utf8'));
@@ -103,28 +106,42 @@ export async function runReduce(opts) {
           await page.close().catch(() => {});
         }
       }
-      // Lot R, R-3 : une capture par version de chaque décision, sur la page d'origine.
+      // Lot R, R-3 : une capture par version de chaque décision, sur la page d'origine ; puis une
+      // vignette par autre élément touché (3 au plus), et le relevé de tous les éléments touchés.
       const pending = Object.entries(table.families).flatMap(([family, f]) =>
-        f.rows.filter((r) => r.class === 'décision').map((r) => ({ family, r })),
+        f.rows.filter((r) => r.class === 'décision').map((r) => ({ family, r, others: /** @type {any[]} */ ([]), touched: /** @type {any[]} */ ([]) })),
       );
       // R-8 : captures des versions en densité 2, dans un contexte à part (les pages entières restent en densité 1).
       const sharp = pending.length ? await browser.newContext({ viewport, storageState: opts.storageState ?? undefined, deviceScaleFactor: FRAME.scale }) : null;
-      for (const url of hostUrls) {
-        if (!sharp || pending.every((x) => x.r.capture)) break;
+      for (const url of sharp ? hostUrls : []) {
         log(`versions → ${url}`);
-        const page = await sharp.newPage();
+        const page = await /** @type {any} */ (sharp).newPage();
         try {
           await gotoAndSettle(page, url, { waitMs });
-          for (const { family, r } of pending) {
-            if (r.capture) continue;
+          for (const x of pending) {
+            const { family, r } = x;
             const d = { key: rowKey(family, r), family, usage: r.usage, mapKey: r.usage ? `${r.old}|${r.usage}` : r.old, old: r.old, candidates: r.candidates };
-            const c = await captureDecision(page, d, table.thirdParty);
-            if (c) r.capture = c;
+            const here = await touchedElements(page, d, table.thirdParty);
+            if (!here.length) continue;
+            for (const t of here) x.touched.push({ page: url, selector: t.selector, text: t.text });
+            let rest = here.map((t) => t.index);
+            if (!r.capture) {
+              const c = await captureDecision(page, d, table.thirdParty);
+              if (!c) continue;
+              r.capture = c;
+              rest = rest.filter((i) => i !== c.element.index);
+            }
+            for (const i of rest) {
+              if (x.others.length >= THUMBS) break;
+              const c = await captureDecision(page, d, table.thirdParty, { index: i, compact: true });
+              if (c) x.others.push(c);
+            }
           }
         } finally {
           await page.close().catch(() => {});
         }
       }
+      for (const { r, others, touched } of pending) if (r.capture) Object.assign(r.capture, { elements: touched.length, touched, others });
       await sharp?.close();
       await context.close();
       const stamp = stampOf(now);

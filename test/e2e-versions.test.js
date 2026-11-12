@@ -113,3 +113,31 @@ test('R-8 : la zone d’espace a la largeur ou la hauteur de la valeur de la ver
       }
     }
 });
+
+test('R-3 : pour chaque version, la valeur calculée de chaque élément en vignette est celle de la version', () => {
+  let seen = 0;
+  for (const r of decisions) {
+    const { others, elements } = r.capture;
+    assert.ok(others.length <= 3, `${r.id} : ${others.length} vignettes`);
+    assert.ok(elements >= 1 + others.length, `${r.id} : ${elements} éléments pour ${others.length} vignettes`);
+    assert.equal(others.length, Math.min(3, elements - 1), `${r.id} : vignettes`);
+    for (const o of others) {
+      assert.notEqual(o.element.index === r.capture.element.index && o.page === r.capture.page, true, `${r.id} : vignette de l’élément principal`);
+      assert.deepEqual(o.versions.map((/** @type {any} */ v) => v.value), r.capture.versions.map((/** @type {any} */ v) => v.value), `${r.id} : mêmes versions`);
+      // Cadre réduit : l'élément et son voisin direct, sans libellé ni champ du voisin.
+      const c = o.clip;
+      const box = o.versions[0].shot.box;
+      for (const v of o.versions)
+        for (const a of v.around.filter((/** @type {any} */ x) => x.kind === 'voisin' || x.kind === 'enfant'))
+          assert.ok(a.rect.x >= c.x - 0.5 && a.rect.y >= c.y - 0.5 && a.rect.x + a.rect.width <= c.x + c.width + 0.5 && a.rect.y + a.rect.height <= c.y + c.height + 0.5 || c.height === 400, `${r.id} vignette : voisin hors cadre`);
+      assert.ok(box.x >= 0 && box.y >= 0, `${r.id} vignette : élément dans le cadre`);
+      for (const v of o.versions) {
+        const measured = Object.entries(v.measured);
+        assert.ok(measured.length > 0, `${r.id} vignette ${v.label} : aucune propriété mesurée`);
+        for (const [prop, value] of measured) assert.equal(value, v.value, `${r.id} vignette ${o.element.tag} ${v.label} : ${prop}`);
+        seen++;
+      }
+    }
+  }
+  assert.ok(seen > 0);
+});
