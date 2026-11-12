@@ -351,7 +351,7 @@
     },
     {
       "id": "R5",
-      "values": [{ "value": "50%", "new": null, "class": "hors table" }],
+      "values": [{ "value": "50%", "new": null, "class": "hors table", "afterB": { "class": "auto", "new": "9999px", "rule": "R7", "corrected": "12/11/2026 : R7 étendue, un rayon en pourcentage de 50 % ou plus est une pilule" } }],
       "uses": [
         { "page": "compte", "usage": "avatars" },
         { "page": "gestion", "usage": "avatars" }

@@ -207,6 +207,23 @@
         "rows": [{ "family": "colors", "value": "#5aa0e6", "new": "#7b91b2", "name": "bleu-8", "class": "correction", "slice": "bordure", "applied": true, "contrastGraphic": { "bg": "#ffffff", "before": 2.7611, "after": 3.2134 } }],
         "corrected": "12/11/2026 : R9 créée après cet attendu"
       }
+    },
+    {
+      "id": "L1",
+      "title": "lien sans soulignement dans un paragraphe",
+      "construction": "Lien bleu-11 (#4c6994), sans soulignement, dans un paragraphe en neutre-12 (#363026) sur blanc.",
+      "values": [{ "value": "#4c6994", "property": "color", "elements": 1, "contrast": { "text": "#4c6994", "neighbor": "#363026", "ratio": 2.3361 } }],
+      "today": {
+        "text": "bleu-11 est une valeur de la valise et passe sur blanc (5,59) : ligne inchangée, rien ne signale le lien.",
+        "rows": [{ "family": "colors", "value": "#4c6994", "new": "#4c6994", "name": "bleu-11", "deltaE": 0, "class": "inchangé", "applied": false }]
+      },
+      "afterM": {
+        "text": "1 exception « lien sans soulignement dans un paragraphe » dans migration.md, contraste 2,34 avec le texte voisin.",
+        "rule": "lot M",
+        "exceptions": { "liensSansSoulignement": 1 },
+        "neighborRatio": 2.3361
+      },
+      "added": "12/11/2026 : piège du lot M, ajouté avant la page"
     }
   ],
   "omitted": [

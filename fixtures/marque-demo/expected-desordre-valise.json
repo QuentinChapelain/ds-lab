@@ -711,5 +711,26 @@
     "b": "Le bandeau tiers est identique avant et après.",
     "c": "Aucune ligne d'espacement négative ou au-delà de 64 px n'est rangée.",
     "d": "Aucune ligne hors pièges."
-  }
+  },
+  "radii": [
+    {
+      "id": "R5",
+      "rows": [
+        {
+          "value": "50%",
+          "usage": "pilule",
+          "pages": [
+            "compte",
+            "gestion"
+          ],
+          "property": "border-*-radius",
+          "detail": "avatars",
+          "target": "rayon.pilule",
+          "new": "9999px",
+          "class": "auto",
+          "corrected": "12/11/2026 : R7 étendue, un rayon en pourcentage de 50 % ou plus est une pilule (hors table auparavant)"
+        }
+      ]
+    }
+  ]
 }

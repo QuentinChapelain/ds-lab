@@ -1,0 +1,72 @@
+{
+  "$comment": "Attendus du lot M : migration.md, écrit par reduce à chaque réduction, lu par le développeur sans l'outil. Écrits à la main avant le code. Les chiffres des pages en désordre sont un instantané de la table du lot B (reduce du 12/11/2026, ~/Desktop/Alumnforce-code/seance-2c/127.0.0.1_57877/2026-11-12T1331/table.json), corrigé par R7 étendue (un rayon de 50 % ou plus est une pilule). En cas d'écart entre l'outil et ce fichier : ne corriger ni l'un ni l'autre, signaler l'écart.",
+  "conditions": {
+    "pages": ["/desordre/carte.html", "/desordre/compte.html", "/desordre/gestion.html"],
+    "target": "fixtures/marque-demo/cible-valise.json",
+    "tokens": "tokens/orbe-cafe/primitives.tokens.json",
+    "sources": "fixtures/marque-demo/sources.json",
+    "viewport": { "width": 1366, "height": 900 }
+  },
+  "format": {
+    "table": "Une ligne par valeur × usage : valeur, usage, jeton DTCG (chemin exact de tokens/orbe-cafe/primitives.tokens.json, ou « jeton absent »), classe, origine CSS (fichier:ligne de la règle si connue), éléments.",
+    "sections": ["Appliqué (auto, proche, correction)", "Décisions en attente", "Hors table, avec motif"],
+    "exceptions": [
+      "Liens sans soulignement dans un paragraphe",
+      "Texte sur terre à poser en onSolid",
+      "États non lus",
+      "Élément injecté après le chargement",
+      "Égalité tranchée en silence"
+    ]
+  },
+  "desordre": {
+    "table": { "rows": 87, "unchanged": 34 },
+    "sections": {
+      "applied": { "total": 42, "colors": 25, "spacing": 7, "fontSizes": 7, "radii": 3 },
+      "pending": { "total": 10, "colors": 5, "spacing": 4, "radii": 1 },
+      "outOfTable": { "total": 1, "rows": [{ "family": "colors", "value": "#2196f3", "reason": "aucune échelle (R4)" }] }
+    },
+    "tokens": [
+      { "family": "colors", "value": "#999999", "usage": "texte", "token": "couleur.neutre.11" },
+      { "family": "colors", "value": "#999999", "usage": "bordure", "token": "couleur.neutre.8" },
+      { "family": "colors", "value": "#4990e2", "usage": "plein", "token": "couleur.bleu.9" },
+      { "family": "spacing", "value": "15px", "usage": "marge", "token": "espace.16" },
+      { "family": "fontSizes", "value": "13.5px", "token": "taille-texte.14" },
+      { "family": "radii", "value": "50%", "usage": "pilule", "token": "rayon.pilule" },
+      { "family": "radii", "value": "3px", "usage": "rayon", "token": "rayon.2" }
+    ],
+    "origins": [
+      { "family": "colors", "value": "#9a9a9a", "usage": "texte", "origin": "recente.css:96" },
+      { "family": "colors", "value": "#2196f3", "origin": "bibliotheque.css:123" }
+    ],
+    "exceptions": {
+      "ununderlinedLinks": { "count": 0 },
+      "onSolid": {
+        "count": 2,
+        "pairs": [
+          { "text": "#ffffff", "bg": "#d0563f", "scale": "terre", "onSolid": "#220000" },
+          { "text": "#ffffff", "bg": "#c8553d", "scale": "terre", "onSolid": "#220000" }
+        ]
+      },
+      "unreadStates": {
+        "count": 2,
+        "values": [
+          { "value": "#24426f", "state": "hover", "property": "background-color" },
+          { "value": "#005fcc", "state": "focus", "property": "outline-color", "note": "anneau de focus par défaut du navigateur" }
+        ]
+      },
+      "injected": { "count": null, "note": "limite connue : non détecté, signalé sans compte" },
+      "silentTies": {
+        "count": 2,
+        "rows": [
+          { "family": "spacing", "value": "14px", "usage": "marge", "tie": ["12px", "16px"], "class": "proche", "new": "12px", "id": "E5" },
+          { "family": "radii", "value": "3px", "usage": "rayon", "tie": ["2px", "4px"], "class": "auto", "new": "2px" }
+        ]
+      }
+    }
+  },
+  "pieges": {
+    "exceptions": {
+      "ununderlinedLinks": { "count": 1, "id": "L1", "value": "#4c6994", "neighbor": "#363026", "ratio": 2.3361 }
+    }
+  }
+}
