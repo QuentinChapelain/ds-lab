@@ -75,7 +75,8 @@ test('migration.md : table, trois sections et cinq exceptions nommées', () => {
     assert.ok(desordre.md.includes(h), h);
   for (const h of ['Liens sans soulignement dans un paragraphe', 'onSolid', 'États non lus', 'Élément injecté après le chargement', 'Égalités tranchées en silence'])
     assert.ok(desordre.md.includes(`### ${h}`) || desordre.md.includes(h), h);
-  assert.ok(desordre.md.includes('| famille | valeur | usage | jeton | classe | origine CSS | éléments |'));
+  // Lot P, étape 3 : relation et motif sur chaque ligne de la table.
+  assert.ok(desordre.md.includes('| famille | valeur | usage | jeton | classe | relation | motif | origine CSS | éléments |'));
 });
 
 test(`désordre : ${E.desordre.table.rows} lignes valeur × usage, dont ${E.desordre.table.unchanged} inchangées`, () => {

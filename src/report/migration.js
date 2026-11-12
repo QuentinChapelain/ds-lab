@@ -7,7 +7,7 @@
  * renvoyées avec le texte, pour les tests.
  */
 import { basename } from 'node:path';
-import { APPLIED, isOut, SLICES, decisionFor } from '../reduce/propose.js';
+import { APPLIED, isOut, SLICES, decisionFor, WHERE_TO_FIX } from '../reduce/propose.js';
 import { contrastRatio, isOpaque, toLab, deltaE } from '../lib/color.js';
 
 /** Groupes de jetons de dimension, par famille de la table. */
@@ -103,6 +103,20 @@ const selectorsOf = (r) => (r.selectors.map((x) => `\`${cell(x)}\``).join(', ') 
 const cutNote = (r) => (r.selectorsCut ? ' (liste coupée au relevé, d’autres éléments sont touchés)' : '');
 /** @param {number} n */
 const fr = (n) => String(n).replace('.', ',');
+/** Liste en clair, comptes entre parenthèses quand il y en a plusieurs. @param {{ text: string, n: number }[]} list */
+const listed = (list) => (list.length > 1 ? list.map((x) => `${x.text} (${x.n})`).join(', ') : list[0]?.text ?? '');
+/**
+ * Lot P, étape 3 : relation d'une marge en une cellule : relation, formules, signal, où corriger.
+ * « — » pour une ligne sans relation.
+ * @param {{ scope?: string | null, relations?: { text: string, n: number }[], signals?: { text: string, n: number }[] }} r
+ */
+export function relationCell(r) {
+  if (!r.scope) return '—';
+  const where = WHERE_TO_FIX[r.scope];
+  const parts = r.scope === 'inconnue' ? ['relation inconnue'] : [r.scope, listed(r.relations ?? [])];
+  parts.push(listed(r.signals ?? []), r.scope === 'inconnue' ? where : `à corriger ${where}`);
+  return parts.filter(Boolean).join(' · ');
+}
 
 /**
  * Valeur après la table (avec décisions) pour une couleur et un usage.
@@ -198,6 +212,8 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
         family,
         value: r.old,
         usage: r.usage ?? (family === 'fontSizes' ? 'taille du texte' : (r.usages ?? []).join(', ')),
+        scope: r.scope ?? null,
+        relation: relationCell(r),
         token: token(family, next, family === 'colors' ? { name, pleinScales: r.usage === 'texte' ? pleinScalesOf(r.old) : new Set() } : undefined),
         new: next,
         status,
@@ -292,7 +308,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     },
     unchanged: rows.filter((r) => r.status === 'inchangé').length,
     decided: rows.filter((r) => r.status === 'décidée').length,
-    exceptions: { links, onSolid, states, injected: null, ties, outOfSlice },
+    exceptions: { links, onSolid, states, injected: null, ties, outOfSlice, messages: rendered.usages?.messages ?? [] },
     remaining: [...remaining.values()],
     thirdParty: table.thirdParty ?? [],
   };
@@ -321,36 +337,37 @@ function renderMarkdown(d, s) {
   L.push(`| Inchangé | ${d.unchanged} | | | | |`, '');
 
   L.push('## Table', '', 'Chaque ligne commence par son identifiant et son titre, les mêmes que dans table.json, revue.html et la barre --live.', '');
-  L.push('| ligne | famille | valeur | usage | jeton | classe | origine CSS | éléments |', '|---|---|---|---|---|---|---|---|');
+  L.push('« Relation » dit, pour une marge, ce qu’elle sépare (dans le composant, entre composants, ou inconnue), le signal qui l’établit et où la corriger ; « motif », pourquoi la ligne est classée ainsi.', '');
+  L.push('| ligne | famille | valeur | usage | jeton | classe | relation | motif | origine CSS | éléments |', '|---|---|---|---|---|---|---|---|---|---|');
   for (const r of d.rows)
-    L.push(`| ${line(r)} | ${FAMILY_LABELS[r.family] ?? r.family} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${r.token === '—' || r.token === 'jeton absent' ? r.token : `\`${r.token}\``} | ${cell(classLabel(r))} | ${cell(r.origin)} | ${r.elements} |`);
+    L.push(`| ${line(r)} | ${FAMILY_LABELS[r.family] ?? r.family} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${r.token === '—' || r.token === 'jeton absent' ? r.token : `\`${r.token}\``} | ${cell(classLabel(r))} | ${cell(r.relation)} | ${cell(r.reason ?? '—')} | ${cell(r.origin)} | ${r.elements} |`);
   L.push('');
 
   L.push(`## Appliqué (auto, proche, correction, décidée) : ${s.applied.length}`, '', 'La table pose ces remplacements. Une correction (R9) répare un contraste ; elle reste annulable. Une ligne « décidée » porte la valeur choisie par le designer.', '');
-  L.push('| ligne | famille | valeur | usage | → jeton | valeur cible | classe | motif | sélecteurs |', '|---|---|---|---|---|---|---|---|---|');
+  L.push('| ligne | famille | valeur | usage | relation | → jeton | valeur cible | classe | motif | sélecteurs |', '|---|---|---|---|---|---|---|---|---|---|');
   for (const r of s.applied)
     L.push(
-      `| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${r.token === 'jeton absent' ? r.token : `\`${r.token}\``} | \`${cell(r.new)}\` | ${cell(classLabel(r))} | ${r.status === 'décidée' ? 'décidée' : cell(r.reason ?? '')}${r.contrast && r.status !== 'décidée' ? ` contraste ${fr(r.contrast.before)} → ${fr(r.contrast.after)}` : ''} | ${selectorsOf(r)} |`,
+      `| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.relation)} | ${r.token === 'jeton absent' ? r.token : `\`${r.token}\``} | \`${cell(r.new)}\` | ${cell(classLabel(r))} | ${r.status === 'décidée' ? 'décidée' : cell(r.reason ?? '')}${r.contrast && r.status !== 'décidée' ? ` contraste ${fr(r.contrast.before)} → ${fr(r.contrast.after)}` : ''} | ${selectorsOf(r)} |`,
     );
   L.push('');
 
   L.push(`## Décisions en attente : ${s.pending.length}`, '', 'Rien n’est appliqué tant que le designer n’a pas répondu (R5). Les candidats sont rangés du plus proche au plus loin.', '');
-  L.push('| ligne | famille | valeur | usage | proposé | candidats | motif | sélecteurs |', '|---|---|---|---|---|---|---|---|');
+  L.push('| ligne | famille | valeur | usage | relation | proposé | candidats | motif | sélecteurs |', '|---|---|---|---|---|---|---|---|---|');
   for (const r of s.pending)
     L.push(
-      `| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${r.token === 'jeton absent' ? r.token : `\`${r.token}\``} (\`${cell(r.new)}\`) | ${r.candidates.map((/** @type {any} */ c) => `\`${cell(c.value)}\` (${fr(c.delta)})`).join(', ')} | ${cell(r.reason ?? 'écart au-delà des seuils')}${r.contrast ? ` contraste ${fr(r.contrast.before)} → ${fr(r.contrast.after)} si appliquée` : ''} | ${selectorsOf(r)} |`,
+      `| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.relation)} | ${r.token === 'jeton absent' ? r.token : `\`${r.token}\``} (\`${cell(r.new)}\`) | ${r.candidates.map((/** @type {any} */ c) => `\`${cell(c.value)}\` (${fr(c.delta)})`).join(', ')} | ${cell(r.reason ?? 'écart au-delà des seuils')}${r.contrast ? ` contraste ${fr(r.contrast.before)} → ${fr(r.contrast.after)} si appliquée` : ''} | ${selectorsOf(r)} |`,
     );
   L.push('');
 
   L.push(`## Refusée, laissée telle quelle : ${s.refused.length}`, '', 'Le designer a refusé le changement : la valeur reste.', '');
-  L.push('| ligne | famille | valeur | usage | proposé | classe | éléments |', '|---|---|---|---|---|---|---|');
-  for (const r of s.refused) L.push(`| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${r.candidates[0] ? `\`${cell(r.candidates[0].value)}\`` : '—'} | ${cell(r.class)} | ${r.elements} |`);
-  if (!s.refused.length) L.push('| — | | | | | | |');
+  L.push('| ligne | famille | valeur | usage | relation | proposé | classe | motif | éléments |', '|---|---|---|---|---|---|---|---|---|');
+  for (const r of s.refused) L.push(`| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.relation)} | ${r.candidates[0] ? `\`${cell(r.candidates[0].value)}\`` : '—'} | ${cell(r.class)} | ${cell(r.reason ?? '—')} | ${r.elements} |`);
+  if (!s.refused.length) L.push('| — | | | | | | | | |');
   L.push('');
 
   L.push(`## Hors table : ${s.outOfTable.length}`, '', 'Laissées telles quelles, avec leur motif.', '');
-  L.push('| ligne | famille | valeur | usage | motif | éléments |', '|---|---|---|---|---|---|');
-  for (const r of s.outOfTable) L.push(`| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.reason)} | ${r.elements} |`);
+  L.push('| ligne | famille | valeur | usage | relation | motif | éléments |', '|---|---|---|---|---|---|---|');
+  for (const r of s.outOfTable) L.push(`| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.relation)} | ${cell(r.reason)} | ${r.elements} |`);
   L.push('');
 
   const e = d.exceptions;
@@ -359,6 +376,11 @@ function renderMarkdown(d, s) {
   L.push('Un lien posé dans du texte courant sans soulignement ne se distingue que par sa couleur : WCAG demande alors 3:1 avec le texte voisin et un autre signal au survol et au focus.', '');
   for (const l of e.links) L.push(`- \`${l.color}\` dans un texte \`${l.neighbor}\` : ${fr(l.ratio)}:1 (${l.n} lien(s) : ${l.selectors.map((/** @type {string} */ x) => `\`${x}\``).join(', ')}).`);
   if (!e.links.length) L.push('- Aucun.');
+  L.push('');
+  L.push(`### Messages non reliés à leur champ : ${e.messages.length}`, '');
+  L.push('Un message (aide, erreur) rattaché à son champ par la seule position n’est pas annoncé par un lecteur d’écran avec le champ : relier le message par aria-describedby (id du message dans l’attribut du champ).', '');
+  for (const x of e.messages) L.push(`- \`${cell(x.message)}\` sous le champ \`${cell(x.field)}\`.`);
+  if (!e.messages.length) L.push('- Aucun.');
   L.push('');
   L.push(`### Texte sur un plein à poser en onSolid : ${e.onSolid.length}`, '');
   L.push('Après la table, ces textes restent sous leur seuil sur un fond de pas 9-10. Ni la table ni R9 ne les corrigent (zone morte) : poser la couleur onSolid de l’échelle.', '');
@@ -408,6 +430,9 @@ function propertyOf(family, props) {
   return [...out].join(', ');
 }
 
+/** Lot P, étape 3 : relation d'une marge dans la consigne. @param {any} r */
+const relationOf = (r) => (r.scope ? ` Relation : ${r.relation}.` : '');
+
 /** Variable CSS d'un jeton DTCG (points en tirets). @param {string} token */
 const cssVar = (token) => `var(--${token.replace(/\./g, '-')})`;
 
@@ -431,7 +456,7 @@ function agentBrief(d, s) {
   );
   s.applied.forEach((r, i) => {
     lines.push(
-      `${i + 1}. ${r.id} ${r.title}. Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage} : remplace ${r.value} par ${write(r)}${r.status === 'décidée' ? ' [décidée]' : ''}. Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}. Point de départ : ${r.origin}. Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`,
+      `${i + 1}. ${r.id} ${r.title}. Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage} : remplace ${r.value} par ${write(r)}${r.status === 'décidée' ? ' [décidée]' : ''}.${relationOf(r)}${r.reason && r.status !== 'décidée' ? ` Motif : ${r.reason}.` : ''} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}. Point de départ : ${r.origin}. Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`,
     );
   });
   lines.push('');
@@ -445,12 +470,16 @@ function agentBrief(d, s) {
   lines.push('CHANGE AUSSI');
   const links = d.exceptions.links;
   lines.push(`- Souligne tout lien posé dans du texte courant : ${links.length} trouvé${links.length > 1 ? 's' : ''} ici${links.length ? ` (${links.flatMap((/** @type {any} */ l) => l.selectors).join(', ')})` : ''}.`);
+  const msgs = d.exceptions.messages;
+  lines.push(
+    `- Relie chaque message à son champ par aria-describedby (id du message dans l’attribut aria-describedby du champ) : ${msgs.length} trouvé${msgs.length > 1 ? 's' : ''} ici${msgs.length ? ` (${msgs.map((/** @type {any} */ x) => `${x.message} → ${x.field}`).join(', ')})` : ''}.`,
+  );
   lines.push('');
   lines.push('NE TOUCHE PAS');
   for (const r of s.outOfTable) lines.push(`- Hors table : ${r.value} (${r.usage}), ${r.reason}.`);
   for (const r of s.refused) lines.push(`- Refusée : ${r.value} (${r.usage}), le designer garde la valeur.`);
   // Lot R, R-2 : décisions en attente, avec leur identifiant et leur titre.
-  for (const r of s.pending) lines.push(`- ${r.id} ${r.title}. Pas encore choisie par le designer : ne l'applique pas (${r.value}, ${r.usage}). Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}.`);
+  for (const r of s.pending) lines.push(`- ${r.id} ${r.title}. Pas encore choisie par le designer : ne l'applique pas (${r.value}, ${r.usage}).${relationOf(r)}${r.reason ? ` Motif : ${r.reason}.` : ''} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}.`);
   for (const sel of d.thirdParty) lines.push(`- Composant tiers : ${sel} et tout ce qu'il contient.`);
   lines.push('- Toute valeur absente de cette consigne.');
   lines.push('');

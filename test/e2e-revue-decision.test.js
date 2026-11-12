@@ -14,7 +14,7 @@ import { pathToFileURL } from 'node:url';
 import { wcagContrast } from 'culori';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
 import { runReduce } from '../src/cli/reduce.js';
-import { rowKey } from '../src/reduce/propose.js';
+import { rowKey, decisionFor } from '../src/reduce/propose.js';
 import { renderReview } from '../src/report/review.js';
 import { writeFile } from 'node:fs/promises';
 
@@ -342,7 +342,8 @@ test('revue : la remise à zéro écarte aussi les décisions venues de --decisi
     const page = await context.newPage();
     await page.goto(revueFichier);
     const total = [...byId.values()].filter((x) => x.row.class === 'décision').length;
-    const fromFile = Object.keys(fileDecisions).filter((k) => [...byId.values()].some((x) => x.key === k && x.row.class === 'décision')).length;
+    // Lot P, étape 3 : un choix du fichier sans relation vaut pour chaque ligne coupée (10 px et 6 px en marge).
+    const fromFile = [...byId.values()].filter((x) => x.row.class === 'décision' && decisionFor(fileDecisions, x.family, x.row) !== undefined).length;
     assert.ok(fromFile > 0);
     assert.equal(await bilan(page), `${fromFile} / ${total} choisies`, 'décisions du fichier relues');
     assert.equal(await page.locator('#ecartees').isVisible(), false);

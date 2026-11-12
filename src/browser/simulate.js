@@ -108,12 +108,14 @@ export function scanInPage(map) {
         return !!t && (t === b || b.contains(t));
       }),
     );
+  // Étape 3 : un enfant qui est (et non seulement qui contient) un bouton, un lien ou une liste écarte le conteneur.
+  const BLOCKERS = 'button,a[href],ul,ol,table,section,article,nav,form,fieldset';
   /** @param {Element | null} p */
   const fieldBox = (p) =>
     !!p &&
     p.querySelectorAll(CTRL).length === 1 &&
     !p.querySelector(HEADINGS) &&
-    [...p.children].every((c) => hasCtrl(c) || c.tagName === 'LABEL' || !c.querySelector('button,a[href],ul,ol,table,section,article,nav,form,fieldset'));
+    [...p.children].every((c) => hasCtrl(c) || c.tagName === 'LABEL' || !(c.matches(BLOCKERS) || c.querySelector(BLOCKERS)));
   /** @param {Element} t */
   const fieldOf = (t) => {
     for (let x = t.previousElementSibling; x; x = x.previousElementSibling) {

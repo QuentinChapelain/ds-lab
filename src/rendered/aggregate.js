@@ -409,6 +409,8 @@ export function createRenderedAggregator() {
   const usageFam = { colors: new Map(), spacing: new Map(), radii: new Map() };
   /** Lot P (P3) : paires contrôlées de toutes les pages. @type {any[]} */
   const proximity = [];
+  /** Lot P, étape 3 : messages non reliés à leur champ par aria-describedby. @type {Map<string, { message: string, field: string, n: number, pages: string[] }>} */
+  const messages = new Map();
   /** @type {Map<string, { text: string, bg: string, bgUsage: string, threshold: number, n: number }>} */
   const usagePairs = new Map();
   /** @type {Map<string, { border: string, bg: string, bgUsage: string, threshold: number, n: number }>} */
@@ -419,7 +421,7 @@ export function createRenderedAggregator() {
    * @param {string} family @param {string} value @param {string} usage @param {RenderedRecord} rec
    * @param {string} page @param {string} property @param {{ content?: boolean, field?: boolean }} [o]
    */
-  const addUsage = (family, value, usage, rec, page, property, { content = false, field = false, index = -1, scope = /** @type {string | undefined} */ (undefined) } = {}) => {
+  const addUsage = (family, value, usage, rec, page, property, { content = false, field = false, index = -1, scope = /** @type {string | undefined} */ (undefined), relation = /** @type {any} */ (undefined) } = {}) => {
     const byValue = usageFam[family];
     let u = byValue.get(value);
     if (!u) byValue.set(value, (u = new Map()));
@@ -435,6 +437,15 @@ export function createRenderedAggregator() {
     const sel = rec.selector ?? '';
     if (e.selectors.length < 4 && !e.selectors.includes(sel)) e.selectors.push(sel);
     e.pages[page] = (e.pages[page] ?? 0) + 1;
+    // Lot P, étape 3 : rôles de l'élément et de son voisin (« champ>message »), et signal de la relation.
+    if (relation) {
+      const roles = /** @type {Record<string, number>} */ ((e.relations ??= {}));
+      const rk = `${relation.role ?? ''}>${relation.neighborRole ?? ''}`;
+      roles[rk] = (roles[rk] ?? 0) + 1;
+      const signals = /** @type {Record<string, number>} */ ((e.signals ??= {}));
+      const sk = relation.detail ?? relation.signal ?? (relation.scope === 'inconnue' ? 'aucun voisin' : 'aucun lien');
+      signals[sk] = (signals[sk] ?? 0) + 1;
+    }
   };
   /** R14 : par couleur de texte (avant fusion), occurrences sur fond sombre et leurs fonds. */
   /** @type {Record<string, { onDark: number, backgrounds: Record<string, number> }>} */
@@ -452,7 +463,15 @@ export function createRenderedAggregator() {
     for (const x of pc.proximity ?? []) {
       /** @param {any} sp */
       const keyed = (sp) => ({ ...sp, parts: sp.parts.map((/** @type {string} */ m) => lengthKey(m, 16).key) });
-      proximity.push({ page, elements: x.elements, in: keyed(x.in), out: keyed(x.out) });
+      proximity.push({ page, elements: x.elements, ...(x.roles ? { roles: x.roles, facing: x.facing, toward: x.toward } : {}), in: keyed(x.in), out: keyed(x.out) });
+    }
+    // Lot P, étape 3 : messages non reliés à leur champ, une entrée par message et champ.
+    for (const m of pc.messages ?? []) {
+      const k = `${m.message}|${m.field}`;
+      const x = messages.get(k) ?? { message: m.message, field: m.field, n: 0, pages: [] };
+      x.n++;
+      if (!x.pages.includes(page)) x.pages.push(page);
+      messages.set(k, x);
     }
     if (pc.thirdParty) {
       third.elements += pc.thirdParty.elements;
@@ -534,7 +553,7 @@ export function createRenderedAggregator() {
         if (m && m !== '0px') {
           const k = lengthKey(m, 16);
           add('margins', k, m, `margin-${s}`);
-          if (!rec.pseudo && !rec.autoMargins?.includes(s)) addUsage('spacing', k.key, SPACING_USAGE.margins, rec, page, `margin-${s}`, { index, scope: rec.margins?.[s]?.scope });
+          if (!rec.pseudo && !rec.autoMargins?.includes(s)) addUsage('spacing', k.key, SPACING_USAGE.margins, rec, page, `margin-${s}`, { index, scope: rec.margins?.[s]?.scope, relation: rec.margins?.[s] });
         }
         const pd = p[`padding-${s}`];
         if (pd && pd !== '0px') {
@@ -788,6 +807,7 @@ export function createRenderedAggregator() {
         borderPairs: [...borderPairs.values()],
         links: [...proseLinks.values()],
         proximity,
+        messages: [...messages.values()],
       },
       contrast: {
         pairs: pairList,

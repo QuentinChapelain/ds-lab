@@ -77,6 +77,8 @@ export const isOut = (cls) => cls.startsWith('hors table');
  * @property {string} [usage]        lot B : usage de la ligne (R3)
  * @property {string} [scope]        lot P : relation d'une marge (« dans le composant », « entre composants », « inconnue »)
  * @property {{ before: { in: number, out: number }, after?: { in: number, out: number }, signal?: string }} [control]
+ * @property {{ text: string, n: number }[]} [relations]  lot P, étape 3 : relations en clair (« champ vers son message »), la plus fréquente d'abord
+ * @property {{ text: string, n: number }[]} [signals]    lot P, étape 3 : signaux de la relation (« relié par for », « aucun lien »)
  *   lot P (P3) : espaces de la paire mise en défaut (dans le composant, entre composants), avant et après les décisions
  * @property {string[]} [usages]     lot B : usages couverts (une ligne hors table « aucune échelle » les regroupe)
  * @property {string} [slice]        lot B : tranche de la valise (R1)
@@ -220,7 +222,12 @@ function spacingUsageRows(usages, scale, proximity = []) {
     for (const { usage: slot, e, n } of usageEntries(byUsage)) {
       // Lot P : une marge porte sa relation (scope) ; l'entrée est rangée sous « usage|relation ».
       const usage = e.usage ?? slot;
-      const base = { old, count: n, properties: e.properties, selectors: e.selectors, usage, usages: [usage], ...(e.scope ? { scope: e.scope } : {}), kinds: e.kinds };
+      const base = {
+        old, count: n, properties: e.properties, selectors: e.selectors, usage, usages: [usage],
+        ...(e.scope ? { scope: e.scope } : {}),
+        ...(e.relations ? { relations: relationsOf(e.scope, e.relations), signals: counted(e.signals ?? {}) } : {}),
+        kinds: e.kinds,
+      };
       const v = px(old);
       if (v !== null && (v < 0 || v > RULES.layoutMaxPx)) {
         rows.push({ ...base, new: null, class: OUT.layout, delta: null, candidates: [], reason: v < 0 ? 'espacement négatif (R7)' : `espacement supérieur à ${RULES.layoutMaxPx} px (R7)` });
@@ -231,6 +238,41 @@ function spacingUsageRows(usages, scale, proximity = []) {
   }
   proximityControl(rows, proximity);
   return ordered(rows);
+}
+
+/** Lot P, étape 3 : où corriger une marge, d'après sa relation. */
+export const WHERE_TO_FIX = /** @type {Record<string, string>} */ ({ 'dans le composant': 'dans le composant', 'entre composants': 'dans la page', inconnue: 'à vérifier' });
+
+/** Lot P, étape 3 : libellé, champ et message forment un champ ; titre et bloc restent eux-mêmes. @param {string} role */
+const groupOf = (role) => (role === 'libellé' || role === 'champ' || role === 'message' ? 'champ' : role || 'bloc');
+
+/**
+ * Lot P, étape 3 : relation d'une marge en clair, d'après le rôle de l'élément et celui de son voisin.
+ * Dans le composant : « champ vers son message » ; entre composants : « entre champs », « entre champ et bloc ».
+ * @param {string} scope @param {string} role @param {string} neighbor
+ */
+export function relationPhrase(scope, role, neighbor) {
+  if (scope === 'dans le composant') return role && neighbor && role !== neighbor ? `${role} vers son ${neighbor}` : 'dans le champ';
+  if (scope === 'entre composants') {
+    const [a, b] = [groupOf(role), groupOf(neighbor)];
+    return a === b ? `entre ${a}s` : `entre ${a} et ${b}`;
+  }
+  return 'relation inconnue';
+}
+
+/** Comptes rangés du plus fréquent au moins fréquent, puis par ordre alphabétique. @param {Record<string, number>} m */
+const counted = (m) => Object.entries(m).map(([text, n]) => ({ text, n })).sort((a, b) => b.n - a.n || (a.text < b.text ? -1 : a.text > b.text ? 1 : 0));
+
+/** Relations d'une ligne de marge, en clair. @param {string | undefined} scope @param {Record<string, number>} roles */
+function relationsOf(scope, roles) {
+  /** @type {Record<string, number>} */
+  const m = {};
+  for (const [k, n] of Object.entries(roles)) {
+    const [role, neighbor] = k.split('>');
+    const text = relationPhrase(scope ?? '', role, neighbor);
+    m[text] = (m[text] ?? 0) + n;
+  }
+  return counted(m);
 }
 
 /** Lot P, P3 : motif d'une ligne mise en défaut par le contrôle de proximité. */
@@ -560,6 +602,12 @@ export function rowTitle(family, r) {
   const usage = r.usage ?? (r.usages?.length === 1 ? r.usages[0] : '');
   let property = labels[usage] ?? labels[''] ?? family;
   if (family === 'spacing' && usage === 'marge' && r.properties?.length === 1 && MARGIN_SIDE[r.properties[0]]) property = MARGIN_SIDE[r.properties[0]];
+  // Lot P, étape 3 : une marge dont la relation est connue est nommée par elle, la plus fréquente d'abord ;
+  // une relation inconnue garde le titre par éléments (elle est dite dans le détail et dans migration.md).
+  if (family === 'spacing' && usage === 'marge' && r.scope && r.scope !== 'inconnue') {
+    const rel = r.relations?.[0]?.text;
+    if (rel) return `${property} · ${rel}`;
+  }
   // Sortes réunies par nom : compte et premier élément de chaque nom.
   /** @type {Map<string, { n: number, first: First }>} */
   const byName = new Map();

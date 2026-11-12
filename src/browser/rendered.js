@@ -29,7 +29,7 @@
  * @property {[number, number]} [box]       largeur et hauteur de la boîte (lot B, pilule R7)
  * @property {string[]} [autoMargins]     côtés dont la marge est auto (lot B, R7)
  * @property {{ neighbor: string }} [proseLink]  lien sans soulignement dans du texte courant, couleur du texte voisin (lot M)
- * @property {Record<string, { scope: string, signal: string | null, detail?: string, neighbor: string | null, visiblePx: number | null }>} [margins]
+ * @property {Record<string, { scope: string, signal: string | null, detail?: string, neighbor: string | null, visiblePx: number | null, role?: string, neighborRole?: string }>} [margins]
  *   lot P : par côté de marge non nulle, relation avec le voisin de ce côté (« dans le composant »,
  *   « entre composants », ou « inconnue » sans élément voisin), signal, voisin et espace visible
  */
@@ -42,11 +42,13 @@
  * @property {number} excluded
  * @property {{ elements: number, selectors: Record<string, number>, invalid: string[] }} [thirdParty]  éléments tiers écartés (R17)
  * @property {Proximity[]} [proximity]  lot P (P3) : paires contrôlées, espace dans le composant face à l'espace entre composants
+ * @property {{ message: string, field: string }[]} [messages]  lot P, étape 3 : messages non reliés à leur champ par aria-describedby
  */
 /**
  * @typedef {{ scope: string, gapPx: number, mode: 'max' | 'sum', extra: number, parts: string[] }} Space
  *   mode : marges fusionnées (la plus grande) ou additionnées ; extra : reste mesuré (gouttière) ; parts : marges non nulles
- * @typedef {{ elements: string[], in: Space, out: Space }} Proximity
+ * @typedef {{ elements: string[], roles?: string[], facing?: number, toward?: string, in: Space, out: Space }} Proximity
+ *   roles : rôle de chaque élément ; facing : élément de la paire (0 ou 1) qui fait face au voisin ; toward : voisin suivant ou précédent
  */
 
 /**
@@ -512,12 +514,14 @@ export function collectInPage(thirdSelectors = []) {
         return !!t && (t === b || b.contains(t));
       }),
     );
+  // Étape 3 : un enfant qui est (et non seulement qui contient) un bouton, un lien ou une liste écarte le conteneur.
+  const BLOCKERS = 'button,a[href],ul,ol,table,section,article,nav,form,fieldset';
   /** Conteneur de champ : un seul contrôle, aucun titre, rien d'autre que libellé, contrôle et texte. @param {Element | null} p */
   const fieldBox = (p) =>
     !!p &&
     p.querySelectorAll(CTRL).length === 1 &&
     !p.querySelector(HEADINGS) &&
-    [...p.children].every((c) => hasCtrl(c) || c.tagName === 'LABEL' || !c.querySelector('button,a[href],ul,ol,table,section,article,nav,form,fieldset'));
+    [...p.children].every((c) => hasCtrl(c) || c.tagName === 'LABEL' || !(c.matches(BLOCKERS) || c.querySelector(BLOCKERS)));
   /** Contrôle dont le texte t est le message, d'après la position : précédé du contrôle, sans titre ni contrôle entre. @param {Element} t */
   const fieldOf = (t) => {
     for (let x = t.previousElementSibling; x; x = x.previousElementSibling) {
@@ -544,6 +548,28 @@ export function collectInPage(thirdSelectors = []) {
     if ((fa && (fa === b || fa === fb)) || (fb && fb === a)) return { scope: IN, signal: 'déduit de la position' };
     return { scope: OUT, signal: null };
   };
+  /** Contrôle dont le texte t est le message : position, même conteneur de champ, ou aria-describedby. @param {Element} t */
+  const controlOfMessage = (t) => {
+    if (!isText(t)) return null;
+    const byPos = fieldOf(t);
+    if (byPos) return byPos;
+    const p = t.parentElement;
+    if (fieldBox(p) && !hasCtrl(t)) return /** @type {Element} */ (p).querySelector(CTRL);
+    return null;
+  };
+  /** @param {Element} t */
+  const describedBy = (t) => !!t.id && !!document.querySelector(`[aria-describedby~="${CSS.escape(t.id)}"]`);
+  /**
+   * Étape 3 : rôle d'un élément pour dire la relation en clair : libellé, champ (contrôle ou
+   * conteneur de champ), titre, message (texte rattaché à un contrôle), bloc sinon.
+   * @param {Element} e
+   */
+  const placeOf = (e) =>
+    e.matches('label') ? 'libellé'
+    : e.matches(CTRL) || fieldBox(e) ? 'champ'
+    : e.matches(HEADINGS) ? 'titre'
+    : isText(e) && (controlOfMessage(e) || describedBy(e)) ? 'message'
+    : 'bloc';
   /** @type {Map<Element, number>} */
   const indexOf = new Map();
   records.forEach((r, i) => {
@@ -561,11 +587,11 @@ export function collectInPage(thirdSelectors = []) {
       if (!marginOf(el, side)) continue;
       const nb = nearOf(el, side);
       if (!nb) {
-        (r.margins ??= {})[side] = { scope: 'inconnue', signal: null, neighbor: null, visiblePx: null };
+        (r.margins ??= {})[side] = { scope: 'inconnue', signal: null, neighbor: null, visiblePx: null, role: placeOf(el) };
         continue;
       }
       const rel = relationOf(el, nb.el);
-      (r.margins ??= {})[side] = { ...rel, neighbor: selectorOf(nb.el), visiblePx: nb.gap };
+      (r.margins ??= {})[side] = { ...rel, neighbor: selectorOf(nb.el), visiblePx: nb.gap, role: placeOf(el), neighborRole: placeOf(nb.el) };
       if (rel.scope !== IN) continue;
       const id = [indexOf.get(el), indexOf.get(nb.el)].sort().join(':');
       if (seenPairs.has(id)) continue;
@@ -596,11 +622,26 @@ export function collectInPage(thirdSelectors = []) {
       if (!y || relationOf(/** @type {Element} */ (z), y.el).scope !== OUT) continue;
       proximity.push({
         elements: [selectorOf(a), selectorOf(b), selectorOf(y.el)],
+        // Étape 3 : rôles, élément de la paire qui fait face au voisin, et sens (suivant, précédent).
+        roles: [placeOf(a), placeOf(b), placeOf(y.el)],
+        facing: z === a ? 0 : 1,
+        toward: away === 'bottom' || away === 'right' ? 'suivant' : 'précédent',
         in: { scope: IN, ...spaceOf(a, b, side, gap) },
         out: { scope: OUT, ...spaceOf(/** @type {Element} */ (z), y.el, /** @type {string} */ (away), y.gap) },
       });
     }
   }
+
+  // Étape 3 : messages rattachés à leur champ par la seule position ou le conteneur, sans aria-describedby.
+  /** @type {{ message: string, field: string }[]} */
+  const messages = [];
+  records.forEach((r, i) => {
+    if (!r.retained || r.pseudo) return;
+    const t = elements[i];
+    const c = controlOfMessage(t);
+    if (!c || points(c, t, 'aria-describedby')) return;
+    messages.push({ message: selectorOf(t), field: selectorOf(c) });
+  });
 
   // Gardés pour --trace-rendered et pour les états (R15) : élément de chaque relevé, par indice,
   // et lecture des propriétés d'un élément dans son état courant.
@@ -617,7 +658,7 @@ export function collectInPage(thirdSelectors = []) {
     },
     configurable: true,
   });
-  return { url: location.href, records, iframes, excluded, thirdParty, proximity };
+  return { url: location.href, records, iframes, excluded, thirdParty, proximity, messages };
 }
 
 /**

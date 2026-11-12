@@ -145,5 +145,128 @@
   },
   "notCovered": [
     "Fusion parent-enfant quand le parent a lui-même une marge non nulle, et marge basse d'un dernier enfant."
-  ]
+  ],
+  "etape3": {
+    "added": "12/11/2026, étape 3 (revue et migration.md) : attendus écrits à la main avant le code, d’après la consigne : titre qui dit la relation, détail qui dit le signal et le lieu de correction, ancien choix sans relation appliqué dans la revue, contrôle qui suit les choix, relation et motif dans migration.md, messages à relier par aria-describedby.",
+    "phrases": {
+      "rule": "Rôle de l’élément et de son voisin : libellé (label), champ (contrôle, ou conteneur de champ), titre, message (texte rattaché à un contrôle : position, même conteneur ou aria-describedby), bloc sinon. Dans le composant : « <rôle> vers son <rôle du voisin> ». Entre composants : libellé, champ et message comptent comme « champ » ; « entre <groupe>s » si les deux groupes sont égaux, sinon « entre <groupe> et <groupe> ». Inconnue : titre par éléments, sans « relation inconnue » (dite dans le détail et dans migration.md). Le titre prend la relation la plus fréquente de la ligne.",
+      "where": {
+        "dans le composant": "dans le composant",
+        "entre composants": "dans la page",
+        "inconnue": "à vérifier"
+      },
+      "signalOut": "aucun lien",
+      "signalUnknown": "aucun voisin"
+    },
+    "px": {
+      "titles": [
+        {
+          "value": "12px",
+          "scope": "dans le composant",
+          "title": "Marge haute · message vers son champ"
+        },
+        {
+          "value": "12px",
+          "scope": "entre composants",
+          "title": "Marge haute · entre champs"
+        },
+        {
+          "value": "10px",
+          "scope": "entre composants",
+          "title": "Marge basse · entre champ et bloc"
+        }
+      ],
+      "messages": [
+        {
+          "message": "p#px1-message",
+          "field": "input#px1-nom"
+        },
+        {
+          "message": "p#px4-aide-carte",
+          "field": "input#px4-carte"
+        },
+        {
+          "message": "p#px5-aide",
+          "field": "input#px5-tel"
+        },
+        {
+          "message": "p#px6-message",
+          "field": "input#px6-mot"
+        }
+      ],
+      "messagesNote": "PX2 et PX7 sont reliés par aria-describedby ; PX3 (paragraphe après un titre) et PX8 (note seule) ne sont pas des messages."
+    },
+    "orbe": {
+      "conditions": "Pages de test/e2e-desordre-valise.test.js (desordre/carte, compte, gestion), cible-valise.json.",
+      "rows": [
+        {
+          "value": "10px",
+          "scope": "dans le composant",
+          "title": "Marge basse · champ vers son message",
+          "signals": "déduit de la position (2)",
+          "where": "dans le composant"
+        },
+        {
+          "value": "10px",
+          "scope": "entre composants",
+          "title": "Marge basse · entre champs",
+          "signals": "aucun lien (3)",
+          "where": "dans la page"
+        },
+        {
+          "value": "4px",
+          "scope": "dans le composant",
+          "title": "Marge basse · libellé vers son champ",
+          "signals": "relié par for (3)",
+          "where": "dans le composant"
+        },
+        {
+          "value": "6px",
+          "scope": "inconnue",
+          "titleStart": "Marge gauche · étiquette « Nouveau »", "titleNote": "12/11/2026 : « relation inconnue » retirée des titres à la demande du designer ; elle reste dans le détail et dans migration.md.",
+          "signals": "aucun voisin (4)",
+          "where": "à vérifier"
+        }
+      ],
+      "control": {
+        "rule": "Les deux cartes de 10 px disent, en clair, l’espace du message à son champ et au libellé suivant, recalculé à chaque choix (une décision sans choix garde l’ancienne valeur).",
+        "initial": "En l’état, le message est à 10 px de son champ et à 10 px du libellé suivant : même distance, on ne voit pas à quel champ il appartient.",
+        "same": {
+          "in": "8px",
+          "out": "8px",
+          "text": "Avec ces choix, le message est à 8 px de son champ et à 8 px du libellé suivant : même distance, on ne voit pas à quel champ il appartient."
+        },
+        "inverted": {
+          "in": "12px",
+          "out": "8px",
+          "text": "Avec ces choix, le message est à 12 px de son champ et à 8 px du libellé suivant : il est plus près du libellé suivant que de son champ."
+        },
+        "restored": {
+          "in": "4px",
+          "out": "12px",
+          "text": "Avec ces choix, le message est à 4 px de son champ et à 12 px du libellé suivant : on voit à quel champ il appartient."
+        }
+      },
+      "oldChoice": {
+        "file": "decisions-passage-2c.json",
+        "rule": "« spacing|10px|marge »: « 12px », écrit avant la coupure, vaut pour les deux lignes : les deux cartes affichent « Choisie : 12 px », l’export les écrit sous leurs clés avec relation, et le contrôle dit que la distance reste égale.",
+        "choix": "Choisie : 12 px",
+        "export": {
+          "spacing|10px|marge|dans le composant": "12px",
+          "spacing|10px|marge|entre composants": "12px",
+          "spacing|6px|marge|inconnue": "4px"
+        },
+        "control": "Avec ces choix, le message est à 12 px de son champ et à 12 px du libellé suivant : même distance, on ne voit pas à quel champ il appartient."
+      },
+      "migration": {
+        "tableColumns": "| ligne | famille | valeur | usage | jeton | classe | relation | motif | origine CSS | éléments |",
+        "relationCells": {
+          "dans le composant": "dans le composant · champ vers son message · déduit de la position · à corriger dans le composant",
+          "entre composants": "entre composants · entre champs (2), entre champ et bloc (1) · aucun lien · à corriger dans la page"
+        },
+        "motif": "le message est aussi loin de son champ que du champ suivant : on ne voit pas à quel champ il appartient",
+        "changeAussi": "- Relie chaque message à son champ par aria-describedby (id du message dans l’attribut aria-describedby du champ) : 2 trouvés ici (p.erreur → input#courriel, p.aide → input#telephone)."
+      }
+    }
+  }
 }

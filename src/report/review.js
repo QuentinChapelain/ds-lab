@@ -6,7 +6,7 @@
  * reduce relit au tour suivant (--decisions). Un seul fichier, sans dépendance.
  * Toute chaîne venue de la page auditée est échappée.
  */
-import { ALL_CLASSES, OUT, rowKey, isOut } from '../reduce/propose.js';
+import { ALL_CLASSES, OUT, rowKey, isOut, decisionFor, APPLIED, WHERE_TO_FIX } from '../reduce/propose.js';
 
 /** @param {unknown} s */
 const esc = (s) =>
@@ -229,6 +229,23 @@ export function plainReason(reason) {
   return { text: reason, rule };
 }
 
+/** Lot P, étape 3 : où corriger, en clair, d'après la relation de la marge. */
+const WHERE_TEXT = /** @type {Record<string, string>} */ ({
+  'dans le composant': 'dans le composant : la marge relie deux parties du même composant ; corrige-la dans la feuille du composant, pas dans la page',
+  'entre composants': 'dans la page : la marge sépare deux composants ; corrige-la dans la mise en page qui les assemble (conteneur, gouttière), pas dans le composant',
+  inconnue: 'à vérifier : aucun élément voisin de ce côté (texte seul, ou marge fusionnée avec le parent) ; regarde la page avant de corriger',
+});
+
+/** @param {{ text: string, n: number }[]} list */
+const withCounts = (list) => list.map((x) => `${x.text} (${x.n})`).join(', ');
+
+/** Lot P, étape 3 : relation, signal et lieu de correction d'une marge. @param {any} r */
+function relationDetail(r) {
+  if (!r.scope) return '';
+  const rel = r.scope === 'inconnue' ? 'relation inconnue' : `${r.scope}${r.relations?.length ? ` · ${withCounts(r.relations)}` : ''}`;
+  return `<dt>Relation</dt><dd>${esc(rel)}</dd>${r.signals?.length ? `<dt>Signal</dt><dd>${esc(withCounts(r.signals))}</dd>` : ''}<dt>Où corriger</dt><dd>${esc(WHERE_TEXT[r.scope] ?? WHERE_TO_FIX[r.scope] ?? '')}</dd>`;
+}
+
 /**
  * Lot R : « Détail » d'une carte, fermé par défaut, en bas de la carte : motif en clair,
  * contrastes chiffrés, usages, sélecteurs, clé technique. Le contraste « après » est celui de
@@ -248,10 +265,43 @@ function detail(family, r, key, cls) {
   const cut = more > 0 ? `<i>et ${more} ${more === 1 ? 'autre' : 'autres'}</i>` : !full && all.length >= 3 && r.count > all.length ? '<i>et d’autres (liste coupée au relevé)</i>' : '';
   return `<details class="detail"><summary>Détail</summary><dl>
     ${motif ? `<dt>Motif</dt><dd>${esc(motif.text)}${motif.rule ? ` <i>(règle ${esc(motif.rule)})</i>` : ''}</dd>` : ''}
-    ${ctr}<dt>Usages</dt><dd>${r.count}${gap}</dd>
+    ${relationDetail(r)}${ctr}<dt>Usages</dt><dd>${r.count}${gap}</dd>
     <dt>Sélecteurs</dt><dd>${sel.map((/** @type {string} */ x) => `<code>${esc(x)}</code>`).join(' ')}${cut}</dd>
     <dt>Clé technique</dt><dd><code>${esc(key)}</code></dd>
   </dl></details>`;
+}
+
+/**
+ * Lot P, étape 3 : paires contrôlées (P3) pour la revue, dédoublonnées. Chaque marge porte la clé
+ * de sa ligne, sa valeur actuelle et la proposition appliquée par défaut. Seules les paires dont
+ * une ligne se choisit (décision, proche, d'office, correction) sont gardées ; `before` : la
+ * hiérarchie était déjà égale ou inversée avant la revue.
+ * @param {any} table
+ */
+function controlPairs(table) {
+  const rows = table.families?.spacing?.rows ?? [];
+  /** @param {string} old @param {string} scope */
+  const rowOf = (old, scope) => rows.find((/** @type {any} */ r) => r.old === old && r.usage === 'marge' && r.scope === scope);
+  /** @param {any} sp */
+  const side = (sp) => ({
+    mode: sp.mode,
+    extra: sp.extra,
+    parts: sp.parts.map((/** @type {string} */ old) => {
+      const r = rowOf(old, sp.scope);
+      return { key: r ? rowKey('spacing', r) : null, old, applied: r && APPLIED.has(r.class) && r.new ? r.new : null, choice: !!r && ['décision', 'proche', 'auto', 'correction'].includes(r.class) };
+    }),
+  });
+  /** @type {Map<string, any>} */
+  const out = new Map();
+  for (const x of table.proximity ?? []) {
+    if (!x.roles) continue;
+    const p = { roles: x.roles, facing: x.facing, toward: x.toward, before: x.in.gapPx >= x.out.gapPx, in: side(x.in), out: side(x.out) };
+    if (![...p.in.parts, ...p.out.parts].some((q) => q.choice)) continue;
+    for (const q of [...p.in.parts, ...p.out.parts]) delete q.choice;
+    const k = JSON.stringify(p);
+    if (!out.has(k)) out.set(k, p);
+  }
+  return [...out.values()];
 }
 
 /**
@@ -260,6 +310,19 @@ function detail(family, r, key, cls) {
  * @param {{ host: string, stamp: string, target: string, decisions: Record<string, string | false> }} meta
  */
 export function renderReview(table, pages, meta) {
+  // Lot P, étape 3 : un choix enregistré sans relation (ou sans usage) vaut pour les lignes qui en sont issues ;
+  // il est rangé sous la clé de chaque ligne, que l'export reprend.
+  /** @type {Record<string, string | false>} */
+  const previous = { ...meta.decisions };
+  for (const [family, f] of Object.entries(table.families))
+    for (const r of f.rows) {
+      const k = rowKey(family, r);
+      const d = decisionFor(meta.decisions, family, r);
+      if (!(k in previous) && d !== undefined) previous[k] = d;
+    }
+  const pairs = controlPairs(table);
+  /** @type {Set<string>} */
+  const paired = new Set(pairs.flatMap((x) => [...x.in.parts, ...x.out.parts].map((q) => q.key).filter((k) => k !== null)));
   /** @type {Map<string, Set<string>>} */
   const props = new Map();
   for (const p of pages)
@@ -301,6 +364,7 @@ export function renderReview(table, pages, meta) {
   ${head}
   <header>${glyph(family, r.old)}<code>${esc(r.old)}</code>${arrow}${usage}${what}</header>
   ${decision || r.capture ? portee(r) : ''}
+  ${paired.has(key) ? '<p class="controle" aria-live="polite" hidden></p>' : ''}
   ${pick}${shots}
   ${detail(family, r, key, cls)}
 </article>`;
@@ -392,6 +456,10 @@ ${byClass}
   .cote.bout { font-size:9px; padding:1px 3px; border-radius:2px; } .cote.bout.droite { transform:translate(-100%, -50%); } .cote.bout.bas { transform:translate(-50%, -100%); }
   body.sans-reperes .zone, body.sans-reperes .cote { display:none; }
   .portee { margin:6px 0 0; font-size:14px; color:var(--soft); }
+  .controle { margin:8px 0 0; display:flex; flex-direction:column; gap:4px; font-size:14px; }
+  .controle span { border-radius:6px; padding:6px 10px; }
+  .controle .alerte { background:#fff4e5; color:#7a3a00; border:1px solid #f0b46b; }
+  .controle .ok { background:#eaf6ee; color:#17603a; border:1px solid #9fd0b0; }
   .vignettes { display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px; margin-top:8px; }
   .vig { display:grid; position:relative; max-width:100%; border:1px solid var(--line); border-radius:6px; overflow:hidden; background:#fff; }
   .vig .ver { grid-area:1 / 1; position:relative; line-height:0; } .vig .ver[hidden] { display:none; } .vig img { display:block; width:100%; height:auto; }
@@ -421,7 +489,9 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
 (function () {
   // Mémoire propre à chaque réduction : hôte et horodatage.
   var KEY = 'ds-lab-revue:' + ${JSON.stringify(meta.host)} + ':' + ${JSON.stringify(meta.stamp)};
-  var previous = ${JSON.stringify(meta.decisions).replace(/</g, '\\u003c')};
+  var previous = ${JSON.stringify(previous).replace(/</g, '\\u003c')};
+  // Lot P, étape 3 : paires contrôlées (P3), recalculées à chaque choix.
+  var PAIRS = ${JSON.stringify(pairs).replace(/</g, '\\u003c')};
   // Décisions venues de --decisions : écartées par une remise à zéro, jusqu'à la prochaine réduction.
   var FILE_KEY = KEY + ':fichier';
   var discarded = false;
@@ -488,8 +558,56 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
     });
     return out;
   }
+  // Lot P, étape 3 : valeur d'une marge avec les choix de la revue. Décision : la version choisie,
+  // l'ancienne sans choix ; ligne appliquée : la proposition, l'ancienne si elle est refusée.
+  function byKey(k) { return rows().filter(function (r) { return r.getAttribute('data-key') === k; })[0] || null; }
+  function valueOf(part) {
+    var row = part.key ? byKey(part.key) : null;
+    if (!row) return { v: part.old, chosen: false };
+    if (row.classList.contains('decision')) {
+      var r = row.getAttribute('data-retenu');
+      if (r !== null) return { v: r === '0' ? part.old : versionsOf(row)[Number(r)].getAttribute('data-value'), chosen: true };
+      if (row.hasAttribute('data-impose')) return { v: row.getAttribute('data-impose'), chosen: true };
+      return { v: part.old, chosen: false };
+    }
+    var box = row.querySelector('input[type=checkbox]');
+    if (box && !box.checked) return { v: part.old, chosen: true };
+    return { v: part.applied || part.old, chosen: false };
+  }
+  function spaceOf(sp) {
+    var chosen = false;
+    var vs = sp.parts.map(function (p) { var x = valueOf(p); chosen = chosen || x.chosen; return parseFloat(x.v) || 0; });
+    var v = sp.mode === 'max' ? Math.max.apply(null, [0].concat(vs)) : vs.reduce(function (a, b) { return a + b; }, 0);
+    return { px: Math.round((v + sp.extra) * 100) / 100, chosen: chosen };
+  }
+  function fr(n) { return String(n).replace('.', ','); }
+  function control() {
+    var lines = {};
+    PAIRS.forEach(function (x) {
+      var a = spaceOf(x.in), b = spaceOf(x.out);
+      if (a.px < b.px && !x.before) return;
+      var me = x.roles[x.facing], own = x.roles[1 - x.facing], next = x.roles[2] + ' ' + x.toward;
+      var verdict = a.px < b.px ? 'on voit à quel ' + own + ' il appartient'
+        : a.px === b.px ? 'même distance, on ne voit pas à quel ' + own + ' il appartient'
+        : 'il est plus près du ' + next + ' que de son ' + own;
+      var text = (a.chosen || b.chosen ? 'Avec ces choix' : 'En l’état') + ', le ' + me + ' est à ' + fr(a.px) + ' px de son ' + own + ' et à ' + fr(b.px) + ' px du ' + next + ' : ' + verdict + '.';
+      x.in.parts.concat(x.out.parts).forEach(function (p) {
+        if (!p.key) return;
+        var l = (lines[p.key] = lines[p.key] || []);
+        if (!l.some(function (y) { return y.text === text; })) l.push({ text: text, ok: a.px < b.px });
+      });
+    });
+    rows().forEach(function (row) {
+      var box = row.querySelector('.controle'); if (!box) return;
+      var l = lines[row.getAttribute('data-key')] || [];
+      box.hidden = !l.length;
+      box.innerHTML = '';
+      l.forEach(function (y) { var s = document.createElement('span'); s.className = y.ok ? 'ok' : 'alerte'; s.textContent = y.text; box.appendChild(s); });
+    });
+  }
   function refresh(save) {
     state = collect();
+    control();
     if (save !== false) try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
     var total = document.querySelectorAll('.row.decision').length;
     var open = document.querySelectorAll('.row.a-trancher').length;
