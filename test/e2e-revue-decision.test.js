@@ -177,3 +177,26 @@ test('revue : sous chaque version de couleur, le contraste le plus faible et son
     await context.close();
   }
 });
+
+test('revue : dans une vignette, la cote est réduite et posée au bout de la bande, à droite', async () => {
+  const { context, page } = await open();
+  try {
+    const c = card(page, 'esp-17');
+    const pairs = await c.locator('.vig .ver:not([hidden])').evaluateAll((vers) =>
+      vers.map((v) => {
+        const z = /** @type {Element} */ (v.querySelector('.zone')).getBoundingClientRect();
+        const k = /** @type {Element} */ (v.querySelector('.cote'));
+        const r = k.getBoundingClientRect();
+        return { zoneRight: z.right, coteRight: r.right, zoneMid: z.top + z.height / 2, coteMid: r.top + r.height / 2, size: parseFloat(getComputedStyle(k).fontSize) };
+      }),
+    );
+    assert.ok(pairs.length > 0);
+    for (const p of pairs) {
+      assert.ok(Math.abs(p.coteRight - p.zoneRight) <= 1, `cote à ${p.coteRight}, bande jusqu’à ${p.zoneRight}`);
+      assert.ok(Math.abs(p.coteMid - p.zoneMid) <= 1, 'cote centrée sur la bande');
+      assert.ok(p.size < 11, `cote de ${p.size} px`);
+    }
+  } finally {
+    await context.close();
+  }
+});

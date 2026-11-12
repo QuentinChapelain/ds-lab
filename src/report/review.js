@@ -105,10 +105,13 @@ const THUMB_MAX = 240;
 
 /**
  * Lot R : zones d'espace d'une version, découpées au cadre ; cote au milieu de la partie
- * visible, toujours dans l'image. Masquées avec la case « repères ».
+ * visible, toujours dans l'image. Masquées avec la case « repères ». Dans une vignette (end),
+ * cote réduite et posée au bout de la bande : à droite d'une bande horizontale, en bas d'une
+ * bande verticale, pour ne pas couvrir le texte.
  * @param {{ width: number, height: number }} shot @param {{ px: number, rect: { x: number, y: number, width: number, height: number } }[]} space
+ * @param {{ end?: boolean }} [opts]
  */
-function zones(shot, space) {
+function zones(shot, space, { end = false } = {}) {
   return space
     .map((z) => {
       const x = Math.max(0, z.rect.x);
@@ -116,9 +119,16 @@ function zones(shot, space) {
       const w = Math.min(shot.width, z.rect.x + z.rect.width) - x;
       const h = Math.min(shot.height, z.rect.y + z.rect.height) - y;
       if (w < 0 || h < 0 || x > shot.width || y > shot.height) return '';
+      const box = `<span class="zone" style="left:${pct(x, shot.width)};top:${pct(y, shot.height)};width:${pct(w, shot.width)};height:${pct(h, shot.height)}"></span>`;
+      if (end) {
+        const across = w >= h;
+        const ex = across ? x + w : x + w / 2;
+        const ey = across ? y + h / 2 : y + h;
+        return `${box}<span class="cote bout ${across ? 'droite' : 'bas'}" style="left:${pct(ex, shot.width)};top:${pct(ey, shot.height)}">${fr(z.px)} px</span>`;
+      }
       const cx = Math.min(Math.max(x + w / 2, 26), shot.width - 26);
       const cy = Math.min(Math.max(y + h / 2, 9), shot.height - 9);
-      return `<span class="zone" style="left:${pct(x, shot.width)};top:${pct(y, shot.height)};width:${pct(w, shot.width)};height:${pct(h, shot.height)}"></span><span class="cote" style="left:${pct(cx, shot.width)};top:${pct(cy, shot.height)}">${fr(z.px)} px</span>`;
+      return `${box}<span class="cote" style="left:${pct(cx, shot.width)};top:${pct(cy, shot.height)}">${fr(z.px)} px</span>`;
     })
     .join('');
 }
@@ -174,7 +184,7 @@ function decisionCard(family, r) {
         .map(
           (/** @type {any} */ o) =>
             `<div class="vig" style="width:${Math.min(o.clip.width, THUMB_MAX)}px;aspect-ratio:${o.clip.width} / ${o.clip.height}">${o.versions
-              .map((/** @type {any} */ v, /** @type {number} */ i) => `<div class="ver" data-v="${i}"${i ? ' hidden' : ''}>${img(v.shot.png)}${zones(v.shot, v.space ?? [])}</div>`)
+              .map((/** @type {any} */ v, /** @type {number} */ i) => `<div class="ver" data-v="${i}"${i ? ' hidden' : ''}>${img(v.shot.png)}${zones(v.shot, v.space ?? [], { end: true })}</div>`)
               .join('')}</div>`,
         )
         .join('')}${more > 0 ? `<span class="encore">et ${more} ${more === 1 ? 'autre' : 'autres'}</span>` : ''}</div>`
@@ -321,6 +331,7 @@ ${byClass}
   .vue img { display:block; width:100%; height:auto; }
   .zone { position:absolute; min-width:1px; min-height:1px; background:repeating-linear-gradient(45deg, rgba(226,87,43,.55) 0 2px, rgba(226,87,43,.12) 2px 5px); outline:1px solid #e2572b; pointer-events:none; }
   .cote { position:absolute; transform:translate(-50%, -50%); background:#e2572b; color:#fff; font:600 11px/1 ui-monospace, Menlo, monospace; padding:2px 4px; border-radius:3px; white-space:nowrap; pointer-events:none; }
+  .cote.bout { font-size:9px; padding:1px 3px; border-radius:2px; } .cote.bout.droite { transform:translate(-100%, -50%); } .cote.bout.bas { transform:translate(-50%, -100%); }
   body.sans-reperes .zone, body.sans-reperes .cote { display:none; }
   .portee { margin:6px 0 0; font-size:14px; color:var(--soft); }
   .vignettes { display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px; margin-top:8px; }
