@@ -17,7 +17,7 @@ import { gotoAndSettle, DEFAULT_WAIT_MS } from '../browser/navigate.js';
 import { createRenderedAggregator } from '../rendered/aggregate.js';
 import { measureRendered } from '../rendered/run.js';
 import { propose, mapping, rowKey } from '../reduce/propose.js';
-import { simulatePage, installLive, captureDecision } from '../browser/simulate.js';
+import { simulatePage, installLive, captureDecision, FRAME } from '../browser/simulate.js';
 import { renderReview } from '../report/review.js';
 import { buildMigration } from '../report/migration.js';
 import { stampOf, freeOutputDir } from '../report/json.js';
@@ -107,10 +107,12 @@ export async function runReduce(opts) {
       const pending = Object.entries(table.families).flatMap(([family, f]) =>
         f.rows.filter((r) => r.class === 'décision').map((r) => ({ family, r })),
       );
+      // R-8 : captures des versions en densité 2, dans un contexte à part (les pages entières restent en densité 1).
+      const sharp = pending.length ? await browser.newContext({ viewport, storageState: opts.storageState ?? undefined, deviceScaleFactor: FRAME.scale }) : null;
       for (const url of hostUrls) {
-        if (pending.every((x) => x.r.capture)) break;
+        if (!sharp || pending.every((x) => x.r.capture)) break;
         log(`versions → ${url}`);
-        const page = await context.newPage();
+        const page = await sharp.newPage();
         try {
           await gotoAndSettle(page, url, { waitMs });
           for (const { family, r } of pending) {
@@ -123,6 +125,7 @@ export async function runReduce(opts) {
           await page.close().catch(() => {});
         }
       }
+      await sharp?.close();
       await context.close();
       const stamp = stampOf(now);
       const dir = await freeOutputDir(outRoot, host, stamp);

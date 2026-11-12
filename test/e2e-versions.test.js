@@ -4,7 +4,8 @@
  * sur la réduction des trois pages en désordre avec la valise. Chaque version ne change que
  * sa ligne ; la valeur calculée de l'élément est celle de la version ; toutes les versions
  * d'une décision ont le même cadre et la même taille d'image ; ce cadre contient le contexte
- * de la règle R-9 (voisin du côté de la marge, libellé d'un champ, enfants d'une gouttière).
+ * de la règle R-9 (voisin du côté de la marge, libellé d'un champ, enfants d'une gouttière) ;
+ * images en densité 2 et zone d'espace de chaque version à la mesure de sa valeur (R-8).
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -70,7 +71,8 @@ test('R-3 : les versions d’une même décision ont le même cadre et la même 
     const { clip } = r.capture;
     for (const v of r.capture.versions) {
       assert.deepEqual([v.shot.width, v.shot.height], [clip.width, clip.height], `${r.id} ${v.label} : cadre`);
-      assert.deepEqual(pngSize(v.shot.png), { width: clip.width, height: clip.height }, `${r.id} ${v.label} : image`);
+      assert.equal(v.shot.scale, 2, `${r.id} ${v.label} : densité`);
+      assert.deepEqual(pngSize(v.shot.png), { width: clip.width * 2, height: clip.height * 2 }, `${r.id} ${v.label} : image en densité 2`);
     }
   }
 });
@@ -95,4 +97,19 @@ test('R-9 : sous chaque version, le cadre contient le rectangle du voisin (libel
       }
   }
   assert.ok(kinds.has('voisin') && kinds.has('enfant') && kinds.has('libellé'), `contextes vus : ${[...kinds].join(', ')}`);
+});
+
+test('R-8 : la zone d’espace a la largeur ou la hauteur de la valeur de la version, à 1 px près', () => {
+  const spacing = decisions.filter((r) => r.id.startsWith('esp-'));
+  assert.ok(spacing.length > 0);
+  for (const r of spacing)
+    for (const v of r.capture.versions) {
+      assert.ok(v.space.length > 0, `${r.id} ${v.label} : aucune zone`);
+      const want = parseFloat(v.value);
+      for (const z of v.space) {
+        const ok = Math.abs(z.rect.width - want) <= 1 || Math.abs(z.rect.height - want) <= 1;
+        assert.ok(ok, `${r.id} ${v.label} ${z.side ?? z.axis} : ${z.rect.width} × ${z.rect.height}, attendu ${want} px`);
+        assert.ok(Math.abs(z.px - want) <= 1, `${r.id} ${v.label} : cote ${z.px}`);
+      }
+    }
 });

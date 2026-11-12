@@ -491,18 +491,65 @@ export function versionInPage({ key, i, family, usage }) {
   if (family === 'spacing' && usage === 'gouttière') for (const c of [...el.children].filter(visible).slice(0, 2)) around.push({ kind: 'enfant', rect: rectOf(c) });
   const label = [...(/** @type {any} */ (el).labels ?? [])].find(visible);
   if (label) around.push({ kind: 'libellé', rect: rectOf(label) });
+  // R-8 : zone d'espace, en coordonnées de page. Marge : bande hors de l'élément, du côté touché ;
+  // retrait : bande à l'intérieur de la bordure, côté par côté ; gouttière : bande entre les deux enfants.
+  /** @type {{ side?: string, axis?: string, px: number, rect: { x: number, y: number, width: number, height: number } }[]} */
+  const space = [];
+  const num = (/** @type {string} */ p) => parseFloat(cs.getPropertyValue(p)) || 0;
+  const r2 = (/** @type {number} */ n) => Math.round(n * 100) / 100;
+  if (family === 'spacing' && usage === 'marge')
+    for (const p of props) {
+      const side = p.replace('margin-', '');
+      const m = num(p);
+      const rect =
+        side === 'bottom' ? { x: er.x, y: er.y + er.height, width: er.width, height: m }
+        : side === 'top' ? { x: er.x, y: er.y - m, width: er.width, height: m }
+        : side === 'left' ? { x: er.x - m, y: er.y, width: m, height: er.height }
+        : { x: er.x + er.width, y: er.y, width: m, height: er.height };
+      space.push({ side, px: r2(m), rect });
+    }
+  if (family === 'spacing' && usage === 'retrait') {
+    const [bt, br, bb, bl] = ['top', 'right', 'bottom', 'left'].map((x) => num(`border-${x}-width`));
+    const inner = { x: er.x + bl, y: er.y + bt, width: er.width - bl - br, height: er.height - bt - bb };
+    for (const p of props) {
+      const side = p.replace('padding-', '');
+      const v = num(p);
+      const rect =
+        side === 'top' ? { x: inner.x, y: inner.y, width: inner.width, height: v }
+        : side === 'bottom' ? { x: inner.x, y: inner.y + inner.height - v, width: inner.width, height: v }
+        : side === 'left' ? { x: inner.x, y: inner.y, width: v, height: inner.height }
+        : { x: inner.x + inner.width - v, y: inner.y, width: v, height: inner.height };
+      space.push({ side, px: r2(v), rect });
+    }
+  }
+  if (family === 'spacing' && usage === 'gouttière') {
+    const kids = around.filter((a) => a.kind === 'enfant').map((a) => a.rect);
+    if (kids.length === 2) {
+      const [a, b] = kids;
+      const top = Math.min(a.y, b.y);
+      const left = Math.min(a.x, b.x);
+      if (b.x >= a.x + a.width - 0.5)
+        space.push({ axis: 'colonne', px: r2(b.x - (a.x + a.width)), rect: { x: a.x + a.width, y: top, width: b.x - (a.x + a.width), height: Math.max(a.y + a.height, b.y + b.height) - top } });
+      else if (b.y >= a.y + a.height - 0.5)
+        space.push({ axis: 'rangée', px: r2(b.y - (a.y + a.height)), rect: { x: left, y: a.y + a.height, width: Math.max(a.x + a.width, b.x + b.width) - left, height: b.y - (a.y + a.height) } });
+    }
+  }
   return {
     i: index,
     tag: el.tagName.toLowerCase(),
     values: Object.fromEntries(props.map((p) => [p, norm(cs.getPropertyValue(p))])),
     rect: er,
     around,
+    space,
     doc: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight },
   };
 }
 
-/** R-9 : marge autour du cadre, hauteur maximale. */
-export const FRAME = { pad: 16, maxHeight: 400 };
+/** @param {number} n */
+const r2 = (n) => Math.round(n * 100) / 100;
+
+/** R-9 : marge autour du cadre, hauteur maximale ; R-8 : largeur d'un retrait large, densité des captures. */
+export const FRAME = { pad: 16, maxHeight: 400, wideRetrait: 600, scale: 2 };
 
 /**
  * @typedef {{ x: number, y: number, width: number, height: number }} Rect
@@ -512,7 +559,10 @@ export const FRAME = { pad: 16, maxHeight: 400 };
  * @property {string} [name]    nom du pas de la cible
  * @property {Record<string, string>} measured  valeur calculée de l'élément, par propriété touchée
  * @property {{ kind: string, side?: string, rect: Rect }[]} around  contexte du cadre (R-9), en coordonnées de page
- * @property {Shot} shot        même cadre et même taille pour toutes les versions d'une décision
+ * @property {{ side?: string, axis?: string, px: number, rect: Rect }[]} space  zone d'espace (R-8), dans la capture,
+ *   en px CSS : bande de marge, de retrait (côté par côté) ou de gouttière ; px : son épaisseur
+ * @property {Shot & { scale: number }} shot  même cadre et même taille pour toutes les versions d'une décision ;
+ *   width et height en px CSS, l'image en densité scale
  * @typedef {{ page: string, element: { tag: string, index: number }, clip: Rect, versions: DecisionVersion[] }} DecisionCapture
  */
 
@@ -522,7 +572,8 @@ export const FRAME = { pad: 16, maxHeight: 400 };
  * document le plus petit. Au-delà de 400 px de haut, une fenêtre de 400 px : pour un retrait,
  * ancrée en haut de l'élément, ou en bas si seul le retrait bas change ; sinon centrée sur ce
  * qui change (le bord de l'élément du côté de la marge, le milieu entre les deux enfants, à
- * défaut le centre de l'élément).
+ * défaut le centre de l'élément). R-8 : un retrait sur un élément de plus de 600 px de large
+ * a une fenêtre de 600 px de large, ancrée à gauche, ou à droite si seul le retrait droit change.
  * @param {{ rect: Rect, values: Record<string, string>, around: { kind: string, side?: string, rect: Rect }[], doc: { width: number, height: number } }[]} probes
  * @param {{ usage?: string, family: string }} d
  * @returns {Rect}
@@ -536,14 +587,25 @@ export function frameOf(probes, d) {
   });
   const docW = Math.min(...probes.map((p) => p.doc.width));
   const docH = Math.min(...probes.map((p) => p.doc.height));
-  const x0 = Math.max(0, Math.floor(Math.min(...rects.map((r) => r.x)) - FRAME.pad));
-  const x1 = Math.min(docW, Math.ceil(Math.max(...rects.map((r) => r.x + r.width)) + FRAME.pad));
+  let x0 = Math.max(0, Math.floor(Math.min(...rects.map((r) => r.x)) - FRAME.pad));
+  let x1 = Math.min(docW, Math.ceil(Math.max(...rects.map((r) => r.x + r.width)) + FRAME.pad));
+  const retrait = d.family === 'spacing' && d.usage === 'retrait';
+  const sides = Object.keys(probes[0].values).map((k) => k.replace('padding-', ''));
+  if (retrait && probes[0].rect.width > FRAME.wideRetrait) {
+    const p = probes[0];
+    if (sides.length === 1 && sides[0] === 'right') {
+      x1 = Math.min(docW, Math.ceil(p.rect.x + p.rect.width) + FRAME.pad);
+      x0 = Math.max(0, x1 - FRAME.wideRetrait);
+    } else {
+      x0 = Math.max(0, Math.floor(p.rect.x) - FRAME.pad);
+      x1 = Math.min(docW, x0 + FRAME.wideRetrait);
+    }
+  }
   let y0 = Math.max(0, Math.floor(Math.min(...rects.map((r) => r.y)) - FRAME.pad));
   let y1 = Math.min(docH, Math.ceil(Math.max(...rects.map((r) => r.y + r.height)) + FRAME.pad));
-  if (y1 - y0 > FRAME.maxHeight && d.family === 'spacing' && d.usage === 'retrait') {
+  if (y1 - y0 > FRAME.maxHeight && retrait) {
     // Retrait : coin haut-gauche de l'élément, ou le côté touché s'il n'y en a qu'un.
     const p = probes[0];
-    const sides = Object.keys(p.values).map((k) => k.replace('padding-', ''));
     if (sides.length === 1 && sides[0] === 'bottom') {
       y1 = Math.min(y1, Math.ceil(p.rect.y + p.rect.height) + FRAME.pad);
       y0 = y1 - FRAME.maxHeight;
@@ -571,6 +633,7 @@ export function frameOf(probes, d) {
  * Lot R, R-3 : une capture par version de chaque décision (actuelle, puis chaque candidat).
  * Base : la page d'origine ; chaque version ne change que cette ligne. Un élément par
  * décision, le premier trouvé dans l'ordre des pages ; même cadre pour toutes les versions (R-9).
+ * La page vient d'un contexte en densité FRAME.scale (R-8) : l'image a scale × la taille du cadre.
  * @param {import('playwright-core').Page} page  page d'origine déjà chargée
  * @param {{ key: string, family: string, usage?: string, mapKey: string, old: string, candidates: { value: string, name?: string }[] }} d
  * @param {string[]} thirdParty
@@ -597,6 +660,7 @@ export async function captureDecision(page, d, thirdParty = []) {
   }
   await page.evaluate(showInPage, { on: false });
   const clip = frameOf(probes, d);
+  const scale = await page.evaluate(() => window.devicePixelRatio);
   // Second passage : capture de chaque version dans ce cadre, puis valeur calculée et contexte.
   /** @type {DecisionVersion[]} */
   const out = [];
@@ -605,16 +669,20 @@ export async function captureDecision(page, d, thirdParty = []) {
     const buf = await page.screenshot({ fullPage: true, clip, animations: 'disabled' });
     const m = await page.evaluate(versionInPage, { key: d.key, i: first.i, family: d.family, usage: d.usage });
     const r = m?.rect ?? first.rect;
+    /** @param {Rect} q */
+    const rel = (q) => ({ x: r2(q.x - clip.x), y: r2(q.y - clip.y), width: r2(q.width), height: r2(q.height) });
     out.push({
       label: v.label,
       value: v.value,
       ...(v.name ? { name: v.name } : {}),
       measured: m?.values ?? {},
       around: m?.around ?? [],
+      space: (m?.space ?? []).map((z) => ({ ...z, rect: rel(z.rect) })),
       shot: {
         png: buf.toString('base64'),
         width: clip.width,
         height: clip.height,
+        scale,
         box: { x: Math.round(r.x - clip.x), y: Math.round(r.y - clip.y), width: Math.round(r.width), height: Math.round(r.height) },
       },
     });
