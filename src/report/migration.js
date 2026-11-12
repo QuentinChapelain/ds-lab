@@ -228,11 +228,19 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     const scale = scaleOf(bg);
     if (ratio >= p.threshold || !scale || !onSolidMap[scale]) continue;
     const seen = (rendered.contrast?.pairs ?? []).find((/** @type {any} */ x) => x.text === p.text && x.bg === p.bg);
-    onSolid.push({
-      text, bg, before: { text: p.text, bg: p.bg }, ratio: Math.round(ratio * 10000) / 10000, threshold: p.threshold, scale, onSolid: onSolidMap[scale], n: p.n,
-      selectors: seen?.selectors ?? [],
-      token: idx?.find('colors', onSolidMap[scale], { pleinScales: new Set([scale]) }) ?? null,
-    });
+    // Une entrée par paire après la table : plusieurs fonds d'origine peuvent aller au même pas.
+    let o = onSolid.find((x) => x.text === text && x.bg === bg);
+    if (!o) {
+      o = {
+        text, bg, before: { text: p.text, bg: p.bg }, befores: [], ratio: Math.round(ratio * 10000) / 10000, threshold: p.threshold, scale, onSolid: onSolidMap[scale], n: 0,
+        selectors: [],
+        token: idx?.find('colors', onSolidMap[scale], { pleinScales: new Set([scale]) }) ?? null,
+      };
+      onSolid.push(o);
+    }
+    o.n += p.n;
+    if (!o.befores.some((/** @type {any} */ b) => b.bg === p.bg && b.text === p.text)) o.befores.push({ text: p.text, bg: p.bg });
+    for (const sel of seen?.selectors ?? []) if (!o.selectors.includes(sel)) o.selectors.push(sel);
   }
   // Paires encore sous leur seuil une fois la table posée, hors celles que le couplage onSolid répare.
   /** @type {Map<string, { text: string, bg: string, ratio: number, threshold: number, n: number }>} */
@@ -418,7 +426,7 @@ function agentBrief(d, s) {
   lines.push(`COUPLAGES (${d.exceptions.onSolid.length})`);
   for (const p of d.exceptions.onSolid)
     lines.push(
-      `- Le texte posé sur un plein ${p.scale} devient ${p.onSolid} (onSolid${p.token ? `, ${cssVar(p.token)}` : ''}) : texte ${p.text} sur ${p.bg}, aujourd'hui ${String(p.ratio).replace('.', ',')}:1. Sélecteurs : ${p.selectors.join(', ') || '—'}.`,
+      `- Le texte posé sur un plein ${p.scale} devient ${p.onSolid} (onSolid${p.token ? `, ${cssVar(p.token)}` : ''}) : texte ${p.text} sur ${p.bg} après la table (fonds d'origine ${p.befores.map((/** @type {any} */ b) => b.bg).join(', ')}), ${String(p.ratio).replace('.', ',')}:1. Sélecteurs : ${p.selectors.join(', ') || '—'}.`,
     );
   if (!d.exceptions.onSolid.length) lines.push('- Aucun.');
   lines.push('');
@@ -431,7 +439,7 @@ function agentBrief(d, s) {
   lines.push('SIGNALE SANS MODIFIER');
   for (const x of d.exceptions.outOfSlice) lines.push(`- Valeur hors de sa tranche : ${x.value} (${x.name}) en ${x.usage}, ${x.elements} élément(s), tranche attendue ${x.expected} : ${x.selectors.join(', ')}.`);
   for (const l of d.exceptions.links) lines.push(`- Lien sans soulignement dans un paragraphe : ${l.color} dans un texte ${l.neighbor} (${String(l.ratio).replace('.', ',')}:1) : ${l.selectors.join(', ')}.`);
-  for (const st of d.exceptions.states) lines.push(`- État non lu : ${st.value} (${st.contexts.map((/** @type {any} */ c) => `${c.state} ${c.property}`).join(', ')}).`);
+  for (const st of d.exceptions.states) lines.push(`- État non lu : ${st.value} (${[...new Set(st.contexts.map((/** @type {any} */ c) => `${c.state} ${c.property}`))].join(', ')}).`);
   for (const r of d.exceptions.ties) lines.push(`- Égalité tranchée en silence : ${r.value} (${r.usage}) entre ${r.tie[0]} et ${r.tie[1]}, rangée vers ${r.new}.`);
   lines.push("- Élément injecté après le chargement : non mesuré ; signale-le si tu en trouves.");
   lines.push('');
