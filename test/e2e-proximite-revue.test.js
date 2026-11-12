@@ -60,9 +60,10 @@ after(async () => {
   await servers?.close();
 });
 
-/** @param {any} table @param {string} value @param {string} scope */
+/** @param {any} table @param {string} value @param {string | null} scope */
 const margin = (table, value, scope) => {
-  const r = table.families.spacing.rows.find((/** @type {any} */ x) => x.old === value && x.usage === 'marge' && x.scope === scope);
+  // Lot P-fin : scope null pour une ligne non coupée.
+  const r = table.families.spacing.rows.find((/** @type {any} */ x) => x.old === value && x.usage === 'marge' && (x.scope ?? null) === scope);
   assert.ok(r, `marge ${value} « ${scope} » absente`);
   return r;
 };
@@ -89,10 +90,14 @@ test('titre : la relation de la marge, pas ses éléments (Orbe Café et pièges
     if (w.title) assert.equal(r.title, w.title, `${w.value} « ${w.scope} »`);
     else assert.ok(r.title.startsWith(w.titleStart), `${w.value} « ${w.scope} » : ${r.title}`);
   }
-  for (const w of E.px.titles) assert.equal(margin(px.table, w.value, w.scope).title, w.title, `PX ${w.value} « ${w.scope} »`);
+  for (const w of E.px.titles) {
+    const t = margin(px.table, w.value, w.scope).title;
+    if (w.title) assert.equal(t, w.title, `PX ${w.value} « ${w.scope} »`);
+    else assert.ok(t.startsWith(w.titleStart), `PX ${w.value} : ${t}`);
+  }
   // « relation inconnue » n'est dite que dans le détail et dans migration.md.
   for (const t of [orbe.table, px.table]) for (const r of t.families.spacing.rows) assert.ok(!r.title.includes('relation inconnue'), r.title);
-  const unknown = margin(orbe.table, '6px', 'inconnue');
+  const unknown = margin(orbe.table, '6px', null);
   assert.ok(orbe.md.split('\n').find((l) => l.startsWith(`| ${unknown.id} `) && l.includes('| espacements |'))?.includes('| relation inconnue · aucun voisin · à vérifier |'), 'migration.md : 6 px');
 });
 
@@ -116,7 +121,7 @@ test('revue : le détail dit la relation, le signal et où corriger (composant o
     for (const w of E.orbe.rows) {
       const c = card(page, margin(orbe.table, w.value, w.scope));
       await c.locator('.detail summary').click();
-      assert.ok((await dd(c, 'Relation'))?.startsWith(w.scope === 'inconnue' ? 'relation inconnue' : w.scope), `${w.value} « ${w.scope} » : relation`);
+      assert.ok((await dd(c, 'Relation'))?.startsWith(w.relation ?? w.scope), `${w.value} « ${w.scope} » : relation`);
       assert.equal(await dd(c, 'Signal'), w.signals, `${w.value} « ${w.scope} » : signal`);
       assert.ok((await dd(c, 'Où corriger'))?.startsWith(w.where), `${w.value} « ${w.scope} » : où corriger`);
     }

@@ -1,8 +1,8 @@
-/* Orbe Café : page des pièges de proximité du lot P (PX1 à PX8). Constructions :
+/* Orbe Café : page des pièges de proximité du lot P (PX1 à PX9). Constructions :
    voir fixtures/marque-demo/expected-proximite.json. Toute valeur est une valeur de
    fixtures/marque-demo/cible-valise.json, sauf la marge basse de 10 px de .aide (PX5).
    En px seulement. Tout est en display: block, pour que les marges verticales fusionnent,
-   sauf la rangée flex de PX7. */
+   sauf les rangées flex de PX7 et PX9. */
 
 *,
 *::before,
@@ -136,6 +136,43 @@ input {
 
 .note {
   margin-top: 8px;
+}
+
+/* PX9 : paginateur en rangée flex sans gouttière ; le « / » est un nœud texte entre le champ et le total. */
+.pagination {
+  display: flex;
+  align-items: center;
+}
+
+.page-precedente,
+.page-suivante {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #6d675b; /* neutre-11 */
+  color: #363026; /* neutre-12 */
+  text-decoration: none;
+}
+
+.page-precedente {
+  margin-right: 8px;
+}
+
+.page-suivante {
+  margin-left: 8px;
+}
+
+.page-champ {
+  width: 32px;
+  padding: 4px;
+  border: 1px solid #6d675b; /* neutre-11 */
+  margin: 0 4px;
+}
+
+.page-total {
+  margin: 0 4px;
 }
 
 .bouton {

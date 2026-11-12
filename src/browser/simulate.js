@@ -116,11 +116,22 @@ export function scanInPage(map) {
     p.querySelectorAll(CTRL).length === 1 &&
     !p.querySelector(HEADINGS) &&
     [...p.children].every((c) => hasCtrl(c) || c.tagName === 'LABEL' || !(c.matches(BLOCKERS) || c.querySelector(BLOCKERS)));
+  /**
+   * Lot P-fin : un texte non vide (nœud texte) entre deux frères, comme le « / » d'un paginateur :
+   * la relation est alors inconnue. @param {Element} a @param {Element} b
+   */
+  const textBetween = (a, b) => {
+    if (a.parentNode !== b.parentNode) return false;
+    const [first, last] = a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? [a, b] : [b, a];
+    for (let n = first.nextSibling; n && n !== last; n = n.nextSibling) if (n.nodeType === Node.TEXT_NODE && (n.textContent ?? '').trim()) return true;
+    return false;
+  };
   /** @param {Element} t */
   const fieldOf = (t) => {
     for (let x = t.previousElementSibling; x; x = x.previousElementSibling) {
       if (!inFlow(x)) continue;
-      if (x.matches(CTRL)) return x;
+      // Lot P-fin : un texte sous le contrôle seulement, jamais à gauche ni à droite.
+      if (x.matches(CTRL)) return t.getBoundingClientRect().top >= x.getBoundingClientRect().bottom - 0.5 ? x : null;
       if (!isText(x)) return null;
     }
     return null;
@@ -128,7 +139,7 @@ export function scanInPage(map) {
   /** @param {Element} el @param {string} side */
   const scopeOf = (el, side) => {
     const b = nearOf(el, side);
-    if (!b) return 'inconnue';
+    if (!b || textBetween(el, b)) return 'inconnue';
     if (points(el, b, 'for') || points(b, el, 'for') || points(el, b, 'aria-describedby') || points(b, el, 'aria-describedby')) return 'dans le composant';
     if (fieldBox(el.parentElement)) {
       const [c, o] = hasCtrl(el) ? [el, b] : [b, el];
@@ -140,6 +151,12 @@ export function scanInPage(map) {
     return 'entre composants';
   };
   const spacingMap = map.spacing ?? {};
+  // Lot P-fin : valeurs × usage coupées par relation, données (split) ou lues dans les clés « ancien|usage|relation ».
+  const splitSet = new Set(Array.isArray(map.split) ? map.split : []);
+  for (const k of Object.keys(spacingMap)) {
+    const parts = k.split('|');
+    if (parts.length === 3) splitSet.add(`${parts[0]}|${parts[1]}`);
+  }
   /** Une marge de cette valeur figure dans la table (sous « ancien », « ancien|marge » ou « ancien|marge|relation »). @param {string} old */
   const marginListed = (old) => old in spacingMap || Object.keys(spacingMap).some((k) => k === `${old}|marge` || k.startsWith(`${old}|marge|`));
   // Pleins : éléments dont le fond opaque porte un texte plus clair que lui (R1).
@@ -192,7 +209,9 @@ export function scanInPage(map) {
   const consider = (i, family, prop, old, usage, scope) => {
     const next = old ? (usage ? (scope ? map[family]?.[`${old}|${usage}|${scope}`] : undefined) ?? map[family]?.[`${old}|${usage}`] ?? map[family]?.[old] : map[family]?.[old]) : undefined;
     if (!old || !next) return;
-    const key = usage ? `${family}|${old}|${usage}${scope ? `|${scope}` : ''}` : `${family}|${old}`;
+    // Lot P-fin : la relation n'entre dans la clé que pour une valeur coupée, comme dans la table.
+    const cut = !!scope && splitSet.has(`${old}|${usage}`);
+    const key = usage ? `${family}|${old}|${usage}${cut ? `|${scope}` : ''}` : `${family}|${old}`;
     const style = /** @type {HTMLElement} */ (els[i]).style;
     ops.push({ i, prop, value: next, family, key, prev: style?.getPropertyValue(prop) ?? '', prevPriority: style?.getPropertyPriority(prop) ?? '' });
     let c = changes.get(key);

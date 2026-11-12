@@ -16,7 +16,7 @@ import { loadSources } from '../lib/sources.js';
 import { gotoAndSettle, DEFAULT_WAIT_MS } from '../browser/navigate.js';
 import { createRenderedAggregator } from '../rendered/aggregate.js';
 import { measureRendered } from '../rendered/run.js';
-import { propose, mapping, rowKey, controlAfter } from '../reduce/propose.js';
+import { propose, mapping, rowKey, controlAfter, splitOf } from '../reduce/propose.js';
 import { simulatePage, installLive, captureDecision, touchedElements, FRAME } from '../browser/simulate.js';
 import { renderReview } from '../report/review.js';
 import { buildMigration } from '../report/migration.js';
@@ -113,7 +113,7 @@ export async function runReduce(opts) {
         try {
           await gotoAndSettle(page, url, { waitMs });
           // Lot R, 5c : les captures par ligne viennent du passage des versions ; ici, pages entières seulement.
-          pages.push(await simulatePage(page, map, { maxCropped: 0 }));
+          pages.push(await simulatePage(page, { ...map, split: splitOf(table) }, { maxCropped: 0 }));
         } finally {
           await page.close().catch(() => {});
         }
@@ -210,7 +210,7 @@ export async function runReduce(opts) {
     const headed = await chromium.launch({ headless: false });
     try {
       const context = await headed.newContext({ viewport: null, storageState: opts.storageState ?? undefined });
-      await installLive(context, map, { lines: linesOf(results[0].table) });
+      await installLive(context, { ...map, split: splitOf(results[0].table) }, { lines: linesOf(results[0].table) });
       const page = await context.newPage();
       await page.goto(first, { waitUntil: 'load', timeout: 60000 }).catch(() => {});
       await new Promise((done) => {

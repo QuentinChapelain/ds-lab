@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot P (proximité), étape 1 : pièges PX1 à PX8 sur la page
+ * Lot P (proximité), étape 1 : pièges PX1 à PX8 (PX9 au lot P-fin) sur la page
  * fixtures/marque-demo/proximite/proximite.html de la marque fictive, comparés à
  * fixtures/marque-demo/expected-proximite.json, écrit avant le code et jamais recalé.
  *   construction  la page est bien celle décrite (marges calculées et espace visible
@@ -47,6 +47,8 @@ let records;
 let geometry;
 /** @type {any} */
 let table;
+/** @type {any} */
+let migration;
 /** Même page, relue avec un choix enregistré sans relation. @type {{ table: any, map: any }} */
 const old = { table: null, map: null };
 
@@ -77,6 +79,7 @@ before(async () => {
     now: new Date(2026, 10, 12, 12, 0),
   });
   table = r.table;
+  migration = r.migration;
   const dir = await mkdtemp(join(tmpdir(), 'ds-lab-proximite-'));
   const decisionsPath = join(dir, 'decisions.json');
   await writeFile(decisionsPath, JSON.stringify(E.oldDecision.decisions));
@@ -104,7 +107,8 @@ test('construction : marges calculées et espace visible conformes aux attendus 
     const g = geometry[i];
     assert.equal(g.missing, undefined, `${m.id} : ${g.missing} absent de la page`);
     near(g.computed, m.computedPx, `${m.id} ${m.element} marge ${m.side} calculée`);
-    near(g.gap, m.construction?.gapPx ?? m.visiblePx, `${m.id} ${m.element} espace visible côté ${m.side}`);
+    if (m.construction?.gapMorePx !== undefined) assert.ok(g.gap > m.construction.gapMorePx + PX, `${m.id} ${m.element} : un texte élargit l'espace côté ${m.side} (${g.gap} px)`);
+    else near(g.gap, m.construction?.gapPx ?? m.visiblePx, `${m.id} ${m.element} espace visible côté ${m.side}`);
   });
 });
 
@@ -135,11 +139,25 @@ function checkTable(trap) {
   for (const want of t.rows ?? []) {
     const what = `${trap.id} ${want.value} « ${want.scope} »`;
     const rows = table.families[want.family].rows.filter((/** @type {any} */ r) => r.old === want.value && isMargin(r));
-    const r = rows.find((/** @type {any} */ x) => x.scope === want.scope);
+    // Lot P-fin : une ligne non coupée n'a pas de relation (scope null dans l'attendu).
+    const r = rows.find((/** @type {any} */ x) => (x.scope ?? null) === want.scope);
     assert.ok(r, `${what} : pas de ligne de marge (portées : ${rows.map((/** @type {any} */ x) => x.scope ?? 'aucune').join(', ') || 'aucune ligne'})`);
     assert.equal(r.class, want.class, `${what} : classe`);
     if ('new' in want) assert.equal(r.new, want.new, `${what} : cible`);
     if ('reason' in want) assert.equal(r.reason ?? null, want.reason, `${what} : motif`);
+  }
+  // Lot P-fin : ni relation « dans le composant », ni avertissement, ni message à relier pour les éléments du piège.
+  if (t.noInsideFor) {
+    const inside = records.filter((r) => r.selector?.includes(t.noInsideFor) && Object.values(r.margins ?? {}).some((/** @type {any} */ m) => m.scope === 'dans le composant'));
+    assert.deepEqual(inside.map((r) => r.selector), [], `${trap.id} : relation « dans le composant »`);
+  }
+  if (t.noWarningFor) {
+    const warned = (table.proximity ?? []).filter((/** @type {any} */ x) => x.elements.some((/** @type {string} */ e) => e.includes(t.noWarningFor)));
+    assert.deepEqual(warned.map((/** @type {any} */ x) => x.elements.join(', ')), [], `${trap.id} : avertissement de proximité`);
+  }
+  if (t.noMessageFor) {
+    const linked = (migration.exceptions.messages ?? []).filter((/** @type {any} */ m) => m.message.includes(t.noMessageFor) || m.field.includes(t.noMessageFor));
+    assert.deepEqual(linked.map((/** @type {any} */ m) => `${m.message} → ${m.field}`), [], `${trap.id} : message à relier`);
   }
   const decisions = table.families.spacing.rows.filter((/** @type {any} */ r) => isMargin(r) && (t.noDecisionOn ?? []).includes(r.old) && r.class === 'décision');
   assert.deepEqual(decisions.map((/** @type {any} */ r) => `${r.old} ${r.scope ?? ''}`), [], `${trap.id} : décision sur une marge de ${t.noDecisionOn?.join(' ou ')}`);

@@ -67,7 +67,7 @@
         "text": "Aucune décision : 4 < 16, les deux valeurs sont dans la valise.",
         "rows": [
           { "family": "spacing", "value": "4px", "scope": "dans le composant", "class": "inchangé" },
-          { "family": "spacing", "value": "16px", "scope": "entre composants", "class": "inchangé" }
+          { "family": "spacing", "value": "16px", "scope": null, "class": "inchangé", "note": "13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : aucune marge de 16 px n'est dans le composant, une seule ligne" }
         ],
         "noDecisionOn": ["4px", "16px"]
       }
@@ -84,7 +84,7 @@
       "table": {
         "text": "La ligne 10px garde sa classe d'avant le lot P (décision vers 8, ex aequo 8/12, relevée le 12/11/2026 sur cette page) ; seul l'espace contrôlé change (16 au lieu de 10). Pas de motif P3 : 4 < 16.",
         "rows": [
-          { "family": "spacing", "value": "10px", "scope": "entre composants", "class": "décision", "new": "8px", "reason": null }
+          { "family": "spacing", "value": "10px", "scope": null, "class": "décision", "new": "8px", "reason": null, "note": "13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : aucune marge de 10 px n'est dans le composant, une seule ligne" }
         ]
       }
     },
@@ -98,9 +98,10 @@
       ],
       "table": {
         "text": "12 = 12 : les deux lignes 12px deviennent des décisions, avec le motif P3.",
+        "reasonNote": "13/11/2026, lot P-fin : le motif nomme la page et les éléments de la paire en faute (champ, message, voisin).",
         "rows": [
-          { "family": "spacing", "value": "12px", "scope": "dans le composant", "class": "décision", "reason": "le message est aussi loin de son champ que du champ suivant : on ne voit pas à quel champ il appartient" },
-          { "family": "spacing", "value": "12px", "scope": "entre composants", "class": "décision", "reason": "le message est aussi loin de son champ que du champ suivant : on ne voit pas à quel champ il appartient" }
+          { "family": "spacing", "value": "12px", "scope": "dans le composant", "class": "décision", "reason": "le message est aussi loin de son champ que du champ suivant : on ne voit pas à quel champ il appartient (page /proximite/proximite.html : input#px6-mot, p#px6-message, label#px6-libelle-signature)" },
+          { "family": "spacing", "value": "12px", "scope": "entre composants", "class": "décision", "reason": "le message est aussi loin de son champ que du champ suivant : on ne voit pas à quel champ il appartient (page /proximite/proximite.html : input#px6-mot, p#px6-message, label#px6-libelle-signature)" }
         ]
       }
     },
@@ -128,8 +129,33 @@
       "table": {
         "text": "Relation inconnue : aucun contrôle, aucune décision, pas de motif.",
         "rows": [
-          { "family": "spacing", "value": "8px", "scope": "inconnue", "class": "inchangé", "reason": null }
+          { "family": "spacing", "value": "8px", "scope": null, "class": "inchangé", "reason": null, "note": "13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : aucune marge de 8 px n'est dans le composant, une seule ligne" }
         ]
+      }
+    },
+    {
+      "id": "PX9",
+      "added": "13/11/2026, lot P-fin, étape 2 : copie fictive du paginateur de la plateforme A ; attendu écrit avant la correction.",
+      "title": "paginateur : lien, champ, « / », total dans un span, lien",
+      "construction": "Rangée flex sans gouttière : a (marge droite 8), input (marges 4 et 4), nœud texte « / », span « 11 » (marges 4 et 4), a (marge gauche 8). Le span est à droite du champ, pas dessous ; le « / » est du contenu entre les deux.",
+      "rules": [
+        "« déduit de la position » ne vaut que pour un texte sous un contrôle, jamais à gauche ni à droite.",
+        "Un texte non vide entre l'élément et son voisin rend la relation « inconnue » : aucun contrôle, aucun message à relier."
+      ],
+      "margins": [
+        { "element": "a#px9-precedente", "side": "right", "computedPx": 8, "visiblePx": 12, "neighbor": "input#px9-page", "scope": "entre composants", "signal": null },
+        { "element": "input#px9-page", "side": "left", "computedPx": 4, "visiblePx": 12, "neighbor": "a#px9-precedente", "scope": "entre composants", "signal": null },
+        { "element": "input#px9-page", "side": "right", "computedPx": 4, "visiblePx": null, "neighbor": null, "scope": "inconnue", "signal": null, "detail": "texte entre l’élément et son voisin", "construction": { "from": "span#px9-total", "gapMorePx": 8 } },
+        { "element": "span#px9-total", "side": "left", "computedPx": 4, "visiblePx": null, "neighbor": null, "scope": "inconnue", "signal": null, "detail": "texte entre l’élément et son voisin", "construction": { "from": "input#px9-page", "gapMorePx": 8 } },
+        { "element": "span#px9-total", "side": "right", "computedPx": 4, "visiblePx": 12, "neighbor": "a#px9-suivante", "scope": "entre composants", "signal": null },
+        { "element": "a#px9-suivante", "side": "left", "computedPx": 8, "visiblePx": 12, "neighbor": "span#px9-total", "scope": "entre composants", "signal": null }
+      ],
+      "table": {
+        "text": "Aucune relation « dans le composant », aucun avertissement de proximité, aucun message à relier ; aucune décision sur 4 ou 8 px.",
+        "noDecisionOn": ["4px", "8px"],
+        "noInsideFor": "#px9-",
+        "noWarningFor": "#px9-",
+        "noMessageFor": "#px9-"
       }
     }
   ],
@@ -172,8 +198,9 @@
         },
         {
           "value": "10px",
-          "scope": "entre composants",
-          "title": "Marge basse · entre champ et bloc"
+          "scope": null,
+          "titleStart": "Marge basse · texte « Utilisé seulement",
+          "note": "13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : ligne non coupée, titrée par ses éléments"
         }
       ],
       "messages": [
@@ -222,8 +249,9 @@
         },
         {
           "value": "6px",
-          "scope": "inconnue",
-          "titleStart": "Marge gauche · étiquette « Nouveau »", "titleNote": "12/11/2026 : « relation inconnue » retirée des titres à la demande du designer ; elle reste dans le détail et dans migration.md.",
+          "scope": null,
+          "titleStart": "Marge gauche · étiquette « Nouveau »", "titleNote": "12/11/2026 : « relation inconnue » retirée des titres à la demande du designer ; elle reste dans le détail et dans migration.md. 13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : ligne non coupée.",
+          "relation": "relation inconnue (4)",
           "signals": "aucun voisin (4)",
           "where": "à vérifier"
         }
@@ -254,8 +282,9 @@
         "export": {
           "spacing|10px|marge|dans le composant": "12px",
           "spacing|10px|marge|entre composants": "12px",
-          "spacing|6px|marge|inconnue": "4px"
+          "spacing|6px|marge": "4px"
         },
+        "exportNote": "13/11/2026 : lot P-fin, la marge de 6 px n'est plus coupée (aucune ligne dans le composant) : sa clé n'a pas de relation.",
         "control": "Avec ces choix, le message est à 12 px de son champ et à 12 px du libellé suivant : même distance, on ne voit pas à quel champ il appartient."
       },
       "migration": {
@@ -264,7 +293,8 @@
           "dans le composant": "dans le composant · champ vers son message · déduit de la position · à corriger dans le composant",
           "entre composants": "entre composants · entre champs (2), entre champ et bloc (1) · aucun lien · à corriger dans la page"
         },
-        "motif": "le message est aussi loin de son champ que du champ suivant : on ne voit pas à quel champ il appartient",
+        "motifNote": "13/11/2026, lot P-fin : le motif nomme la page et les éléments de la paire en faute.",
+        "motif": "le message est aussi loin de son champ que du champ suivant : on ne voit pas à quel champ il appartient (page /desordre/compte.html : input#courriel, p.erreur, label.libelle)",
         "changeAussi": "- Relie chaque message à son champ par aria-describedby (id du message dans l’attribut aria-describedby du champ) : 2 trouvés ici (p.erreur → input#courriel, p.aide → input#telephone)."
       }
     }

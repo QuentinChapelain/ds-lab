@@ -108,9 +108,16 @@ const listed = (list) => (list.length > 1 ? list.map((x) => `${x.text} (${x.n})`
 /**
  * Lot P, étape 3 : relation d'une marge en une cellule : relation, formules, signal, où corriger.
  * « — » pour une ligne sans relation.
- * @param {{ scope?: string | null, relations?: { text: string, n: number }[], signals?: { text: string, n: number }[] }} r
+ * @param {{ scope?: string | null, relations?: { text: string, n: number }[], signals?: { text: string, n: number }[], scopes?: { text: string, n: number }[] }} r
  */
 export function relationCell(r) {
+  // Lot P-fin : marge non coupée, relations réunies.
+  if (!r.scope && r.scopes?.length) {
+    const one = r.scopes.length === 1 ? r.scopes[0].text : null;
+    const rel = one ? (one === 'inconnue' ? 'relation inconnue' : one) : r.scopes.map((x) => `${x.text === 'inconnue' ? 'relation inconnue' : x.text} (${x.n})`).join(', ');
+    const where = one ? (one === 'inconnue' ? WHERE_TO_FIX[one] : `à corriger ${WHERE_TO_FIX[one]}`) : 'à vérifier élément par élément';
+    return [rel, listed(r.signals ?? []), where].filter(Boolean).join(' · ');
+  }
   if (!r.scope) return '—';
   const where = WHERE_TO_FIX[r.scope];
   const parts = r.scope === 'inconnue' ? ['relation inconnue'] : [r.scope, listed(r.relations ?? [])];
@@ -431,7 +438,7 @@ function propertyOf(family, props) {
 }
 
 /** Lot P, étape 3 : relation d'une marge dans la consigne. @param {any} r */
-const relationOf = (r) => (r.scope ? ` Relation : ${r.relation}.` : '');
+const relationOf = (r) => (r.relation && r.relation !== '—' ? ` Relation : ${r.relation}.` : '');
 
 /** Variable CSS d'un jeton DTCG (points en tirets). @param {string} token */
 const cssVar = (token) => `var(--${token.replace(/\./g, '-')})`;

@@ -79,6 +79,7 @@ export const isOut = (cls) => cls.startsWith('hors table');
  * @property {{ before: { in: number, out: number }, after?: { in: number, out: number }, signal?: string }} [control]
  * @property {{ text: string, n: number }[]} [relations]  lot P, étape 3 : relations en clair (« champ vers son message »), la plus fréquente d'abord
  * @property {{ text: string, n: number }[]} [signals]    lot P, étape 3 : signaux de la relation (« relié par for », « aucun lien »)
+ * @property {{ text: string, n: number }[]} [scopes]     lot P-fin : relations réunies d'une marge non coupée
  *   lot P (P3) : espaces de la paire mise en défaut (dans le composant, entre composants), avant et après les décisions
  * @property {string[]} [usages]     lot B : usages couverts (une ligne hors table « aucune échelle » les regroupe)
  * @property {string} [slice]        lot B : tranche de la valise (R1)
@@ -219,13 +220,14 @@ function spacingUsageRows(usages, scale, proximity = []) {
   /** @type {Row[]} */
   const rows = [];
   for (const [old, byUsage] of Object.entries(usages)) {
-    for (const { usage: slot, e, n } of usageEntries(byUsage)) {
+    for (const { usage: slot, e, n } of cutByRelation(usageEntries(byUsage))) {
       // Lot P : une marge porte sa relation (scope) ; l'entrée est rangée sous « usage|relation ».
       const usage = e.usage ?? slot;
       const base = {
         old, count: n, properties: e.properties, selectors: e.selectors, usage, usages: [usage],
         ...(e.scope ? { scope: e.scope } : {}),
-        ...(e.relations ? { relations: relationsOf(e.scope, e.relations), signals: counted(e.signals ?? {}) } : {}),
+        ...(e.scope && e.relations ? { relations: relationsOf(e.scope, e.relations), signals: counted(e.signals ?? {}) } : {}),
+        ...(e.scopes ? { scopes: counted(e.scopes), signals: counted(e.signals ?? {}) } : {}),
         kinds: e.kinds,
       };
       const v = px(old);
@@ -238,6 +240,48 @@ function spacingUsageRows(usages, scale, proximity = []) {
   }
   proximityControl(rows, proximity);
   return ordered(rows);
+}
+
+/**
+ * Lot P-fin : une valeur × usage n'est coupée par relation que si l'une de ses lignes est
+ * « dans le composant ». Sinon ses entrées sont réunies en une seule ligne, sans relation,
+ * titrée par ses éléments comme avant P ; les relations réunies restent comptées (scopes, signaux).
+ * @param {{ usage: string, e: any, n: number }[]} entries
+ */
+function cutByRelation(entries) {
+  /** @type {Map<string, { usage: string, e: any, n: number }[]>} */
+  const byUsage = new Map();
+  for (const x of entries) {
+    const u = x.e.usage ?? x.usage;
+    byUsage.set(u, [...(byUsage.get(u) ?? []), x]);
+  }
+  const out = [];
+  for (const [usage, list] of byUsage) {
+    const scoped = list.filter((x) => x.e.scope);
+    if (!scoped.length || scoped.some((x) => x.e.scope === 'dans le composant')) {
+      out.push(...list);
+      continue;
+    }
+    /** @type {Record<string, number>} */
+    const scopes = {};
+    /** @type {Record<string, number>} */
+    const signals = {};
+    let kinds;
+    const properties = new Set();
+    /** @type {string[]} */
+    const selectors = [];
+    let n = 0;
+    for (const x of list) {
+      n += x.n;
+      if (x.e.scope) scopes[x.e.scope] = (scopes[x.e.scope] ?? 0) + x.n;
+      for (const [k, v] of Object.entries(x.e.signals ?? {})) signals[k] = (signals[k] ?? 0) + /** @type {number} */ (v);
+      for (const p of x.e.properties ?? []) properties.add(p);
+      for (const sel of x.e.selectors ?? []) if (selectors.length < 4 && !selectors.includes(sel)) selectors.push(sel);
+      kinds = mergeKinds(kinds, x.e.kinds);
+    }
+    out.push({ usage, n, e: { usage, properties: [...properties], selectors, kinds, scopes, signals } });
+  }
+  return out;
 }
 
 /** Lot P, étape 3 : où corriger une marge, d'après sa relation. */
@@ -288,8 +332,12 @@ const spaceAfter = (sp, next) => {
   return round2((sp.mode === 'max' ? Math.max(0, ...v) : v.reduce((a, b) => a + b, 0)) + sp.extra);
 };
 
-/** Ligne de marge d'une valeur et d'une relation. @param {Row[]} rows @param {string} old @param {string} scope */
-const marginRow = (rows, old, scope) => rows.find((r) => r.old === old && r.usage === 'marge' && r.scope === scope);
+/**
+ * Ligne de marge d'une valeur et d'une relation ; à défaut (lot P-fin, valeur non coupée), la ligne sans relation.
+ * @param {Row[]} rows @param {string} old @param {string} scope
+ */
+export const marginRow = (rows, old, scope) =>
+  rows.find((r) => r.old === old && r.usage === 'marge' && r.scope === scope) ?? rows.find((r) => r.old === old && r.usage === 'marge' && !r.scope);
 
 /**
  * Lot P, P3 : dans le composant doit rester strictement inférieur à entre composants, sinon
@@ -297,17 +345,45 @@ const marginRow = (rows, old, scope) => rows.find((r) => r.old === old && r.usag
  * @param {Row[]} rows @param {any[]} proximity
  */
 function proximityControl(rows, proximity) {
+  /** @type {Map<Row, string[]>} paires en faute de chaque ligne, en clair */
+  const faults = new Map();
   for (const x of proximity) {
     if (x.in.gapPx < x.out.gapPx) continue;
+    const where = pairAt(x);
     for (const sp of [x.in, x.out])
       for (const part of sp.parts) {
         const r = marginRow(rows, part, sp.scope);
         if (!r || isOut(r.class)) continue;
         r.class = 'décision';
-        r.reason = PROXIMITY_REASON;
         r.control ??= { before: { in: x.in.gapPx, out: x.out.gapPx } };
+        const l = faults.get(r) ?? [];
+        if (!l.includes(where)) l.push(where);
+        faults.set(r, l);
       }
   }
+  // Lot P-fin : le motif nomme la page et les éléments de chaque paire en faute (3 au plus).
+  for (const [r, l] of faults) {
+    const more = l.length - FAULTS_SHOWN;
+    r.reason = `${PROXIMITY_REASON} (${l.slice(0, FAULTS_SHOWN).join(' ; ')}${more > 0 ? ` ; et ${more} ${more === 1 ? 'autre' : 'autres'}` : ''})`;
+  }
+}
+
+/** Paires en faute nommées dans un motif, avant « et n autres ». */
+const FAULTS_SHOWN = 3;
+
+/**
+ * Lot P-fin : une paire en clair, « page /compte.html : input#courriel, p.erreur, label.libelle » :
+ * l'élément du composant, celui qui fait face au voisin, puis le voisin.
+ * @param {{ page?: string, elements: string[], facing?: number }} x
+ */
+function pairAt(x) {
+  const f = x.facing ?? 1;
+  const els = [x.elements[1 - f], x.elements[f], x.elements[2]];
+  let page = x.page ?? '';
+  try {
+    page = new URL(page).pathname;
+  } catch {}
+  return `${page ? `page ${page} : ` : ''}${els.join(', ')}`;
 }
 
 /**
@@ -691,6 +767,13 @@ export function propose(rendered, target) {
   if (target.colors) put('colors', u ? colorUsageRows(u, target.colors) : colorRows(gather(rendered, ['colors']), target.colors));
   return { thresholds: THRESHOLDS, rules: RULES, families, ...(u?.proximity?.length ? { proximity: u.proximity } : {}) };
 }
+
+/**
+ * Lot P-fin : valeurs × usage coupées par relation (« 10px|marge »), pour que la simulation
+ * range ses changements sous la même clé que la table.
+ * @param {{ families: Record<string, { rows: Row[] }> }} table
+ */
+export const splitOf = (table) => [...new Set((table.families.spacing?.rows ?? []).filter((r) => r.scope).map((r) => `${r.old}|${r.usage}`))];
 
 /**
  * Clé d'une ligne dans les décisions et dans la simulation.

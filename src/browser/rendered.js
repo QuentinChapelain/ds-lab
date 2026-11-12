@@ -522,11 +522,22 @@ export function collectInPage(thirdSelectors = []) {
     p.querySelectorAll(CTRL).length === 1 &&
     !p.querySelector(HEADINGS) &&
     [...p.children].every((c) => hasCtrl(c) || c.tagName === 'LABEL' || !(c.matches(BLOCKERS) || c.querySelector(BLOCKERS)));
+  /**
+   * Lot P-fin : un texte non vide (nœud texte) entre deux frères, comme le « / » d'un paginateur :
+   * la relation est alors inconnue. @param {Element} a @param {Element} b
+   */
+  const textBetween = (a, b) => {
+    if (a.parentNode !== b.parentNode) return false;
+    const [first, last] = a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? [a, b] : [b, a];
+    for (let n = first.nextSibling; n && n !== last; n = n.nextSibling) if (n.nodeType === Node.TEXT_NODE && (n.textContent ?? '').trim()) return true;
+    return false;
+  };
   /** Contrôle dont le texte t est le message, d'après la position : précédé du contrôle, sans titre ni contrôle entre. @param {Element} t */
   const fieldOf = (t) => {
     for (let x = t.previousElementSibling; x; x = x.previousElementSibling) {
       if (!inFlow(x)) continue;
-      if (x.matches(CTRL)) return x;
+      // Lot P-fin : un texte sous le contrôle seulement, jamais à gauche ni à droite.
+      if (x.matches(CTRL)) return t.getBoundingClientRect().top >= x.getBoundingClientRect().bottom - 0.5 ? x : null;
       if (!isText(x)) return null;
     }
     return null;
@@ -590,6 +601,11 @@ export function collectInPage(thirdSelectors = []) {
         (r.margins ??= {})[side] = { scope: 'inconnue', signal: null, neighbor: null, visiblePx: null, role: placeOf(el) };
         continue;
       }
+      // Lot P-fin : un texte entre l'élément et son voisin rend la relation inconnue (aucun contrôle).
+      if (textBetween(el, nb.el)) {
+        (r.margins ??= {})[side] = { scope: 'inconnue', signal: null, detail: 'texte entre l’élément et son voisin', neighbor: null, visiblePx: null, role: placeOf(el) };
+        continue;
+      }
       const rel = relationOf(el, nb.el);
       (r.margins ??= {})[side] = { ...rel, neighbor: selectorOf(nb.el), visiblePx: nb.gap, role: placeOf(el), neighborRole: placeOf(nb.el) };
       if (rel.scope !== IN) continue;
@@ -619,7 +635,7 @@ export function collectInPage(thirdSelectors = []) {
       [b, side],
     ]) {
       const y = nearOf(/** @type {Element} */ (z), /** @type {string} */ (away));
-      if (!y || relationOf(/** @type {Element} */ (z), y.el).scope !== OUT) continue;
+      if (!y || textBetween(/** @type {Element} */ (z), y.el) || relationOf(/** @type {Element} */ (z), y.el).scope !== OUT) continue;
       proximity.push({
         elements: [selectorOf(a), selectorOf(b), selectorOf(y.el)],
         // Étape 3 : rôles, élément de la paire qui fait face au voisin, et sens (suivant, précédent).
@@ -639,7 +655,7 @@ export function collectInPage(thirdSelectors = []) {
     if (!r.retained || r.pseudo) return;
     const t = elements[i];
     const c = controlOfMessage(t);
-    if (!c || points(c, t, 'aria-describedby')) return;
+    if (!c || points(c, t, 'aria-describedby') || textBetween(c, t)) return;
     messages.push({ message: selectorOf(t), field: selectorOf(c) });
   });
 

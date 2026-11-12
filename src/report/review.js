@@ -6,7 +6,7 @@
  * reduce relit au tour suivant (--decisions). Un seul fichier, sans dépendance.
  * Toute chaîne venue de la page auditée est échappée.
  */
-import { ALL_CLASSES, OUT, rowKey, isOut, decisionFor, APPLIED, WHERE_TO_FIX } from '../reduce/propose.js';
+import { ALL_CLASSES, OUT, rowKey, isOut, decisionFor, APPLIED, WHERE_TO_FIX, marginRow } from '../reduce/propose.js';
 
 /** @param {unknown} s */
 const esc = (s) =>
@@ -241,6 +241,12 @@ const withCounts = (list) => list.map((x) => `${x.text} (${x.n})`).join(', ');
 
 /** Lot P, étape 3 : relation, signal et lieu de correction d'une marge. @param {any} r */
 function relationDetail(r) {
+  // Lot P-fin : marge non coupée, relations réunies.
+  if (!r.scope && r.scopes?.length) {
+    const rel = r.scopes.map((/** @type {any} */ x) => `${x.text === 'inconnue' ? 'relation inconnue' : x.text} (${x.n})`).join(', ');
+    const where = r.scopes.length === 1 ? WHERE_TEXT[r.scopes[0].text] : 'à vérifier élément par élément : la ligne réunit plusieurs relations, aucune dans le composant';
+    return `<dt>Relation</dt><dd>${esc(rel)}</dd>${r.signals?.length ? `<dt>Signal</dt><dd>${esc(withCounts(r.signals))}</dd>` : ''}<dt>Où corriger</dt><dd>${esc(where ?? '')}</dd>`;
+  }
   if (!r.scope) return '';
   const rel = r.scope === 'inconnue' ? 'relation inconnue' : `${r.scope}${r.relations?.length ? ` · ${withCounts(r.relations)}` : ''}`;
   return `<dt>Relation</dt><dd>${esc(rel)}</dd>${r.signals?.length ? `<dt>Signal</dt><dd>${esc(withCounts(r.signals))}</dd>` : ''}<dt>Où corriger</dt><dd>${esc(WHERE_TEXT[r.scope] ?? WHERE_TO_FIX[r.scope] ?? '')}</dd>`;
@@ -281,7 +287,7 @@ function detail(family, r, key, cls) {
 function controlPairs(table) {
   const rows = table.families?.spacing?.rows ?? [];
   /** @param {string} old @param {string} scope */
-  const rowOf = (old, scope) => rows.find((/** @type {any} */ r) => r.old === old && r.usage === 'marge' && r.scope === scope);
+  const rowOf = (old, scope) => marginRow(rows, old, scope);
   /** @param {any} sp */
   const side = (sp) => ({
     mode: sp.mode,
