@@ -535,14 +535,14 @@ export function rowTitle(family, r) {
   const text = cut(ref.first.label ?? '');
   const total = groups.reduce((t, [, g]) => t + g.n, 0);
   const others = total - 1;
-  // Gouttière : les enfants que l'espace sépare, et non le bloc ; puis le nombre de blocs s'il y en a plusieurs.
+  // Gouttière : les enfants que l'espace sépare, et non le bloc ; puis le nombre de conteneurs s'il y en a plusieurs.
   const kids = family === 'spacing' && usage === 'gouttière' ? ref.first.children : undefined;
   if (kids) {
     const names = [...new Set(kids.items.map(elementName))];
     const kind = names.length === 1 ? (kids.n > 1 ? `${names[0]}s` : names[0]) : 'éléments';
     const quoted = kids.items.map((c) => cut(c.label)).filter(Boolean).map((t) => `« ${t} »`);
     const more = kids.n - kids.items.length;
-    const rest = others ? `, dans ${others + 1} blocs` : '';
+    const rest = others ? `, dans ${others + 1} conteneurs` : '';
     return `${property} · ${kids.n} ${kind}${quoted.length ? ` ${quoted.join(', ')}` : ''}${more ? ` et ${more} ${more === 1 ? 'autre' : 'autres'}` : ''}${rest}`;
   }
   let tail = others ? ` et ${others} ${others === 1 ? 'autre' : 'autres'}` : '';

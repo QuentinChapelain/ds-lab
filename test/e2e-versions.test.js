@@ -1,0 +1,98 @@
+// @ts-check
+/**
+ * Lot R, R-3 : une capture par version de chaque décision (actuelle, puis chaque candidat),
+ * sur la réduction des trois pages en désordre avec la valise. Chaque version ne change que
+ * sa ligne ; la valeur calculée de l'élément est celle de la version ; toutes les versions
+ * d'une décision ont le même cadre et la même taille d'image ; ce cadre contient le contexte
+ * de la règle R-9 (voisin du côté de la marge, libellé d'un champ, enfants d'une gouttière).
+ */
+import { test, before, after } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile, mkdtemp } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
+import { runReduce } from '../src/cli/reduce.js';
+
+const E = JSON.parse(await readFile(new URL('../fixtures/marque-demo/expected-desordre-valise.json', import.meta.url), 'utf8'));
+
+/** @type {Awaited<ReturnType<typeof startFixtureServers>>} */
+let servers;
+/** @type {any[]} */
+let decisions = [];
+/** @type {any} */
+let saved;
+
+before(async () => {
+  servers = await startFixtureServers();
+  const [first, ...rest] = E.conditions.pages;
+  const [r] = await runReduce({
+    addresses: [servers.origin + first, ...rest],
+    targetPath: `${FIXTURE_DIR}cible-valise.json`,
+    sourcesPath: `${FIXTURE_DIR}sources.json`,
+    viewport: E.conditions.viewport,
+    waitMs: 100,
+    outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-versions-')),
+    now: new Date(2026, 10, 12, 16, 0),
+  });
+  decisions = Object.values(r.table.families).flatMap((/** @type {any} */ f) => f.rows.filter((/** @type {any} */ x) => x.class === 'décision'));
+  saved = JSON.parse(await readFile(r.files[0], 'utf8'));
+});
+
+after(async () => servers?.close());
+
+/** Largeur et hauteur lues dans l'en-tête IHDR d'un PNG. @param {string} b64 */
+const pngSize = (b64) => {
+  const b = Buffer.from(b64, 'base64');
+  return { width: b.readUInt32BE(16), height: b.readUInt32BE(20) };
+};
+
+test('R-3 : chaque décision a une version actuelle, puis une par candidat', () => {
+  assert.ok(decisions.length > 0);
+  for (const r of decisions) {
+    assert.ok(r.capture, `${r.id} sans capture`);
+    const want = [{ label: 'actuelle', value: r.old }, ...r.candidates.map((/** @type {any} */ c, /** @type {number} */ n) => ({ label: `candidat ${n + 1}`, value: c.value }))];
+    assert.deepEqual(r.capture.versions.map((/** @type {any} */ v) => ({ label: v.label, value: v.value })), want, r.id);
+  }
+});
+
+test('R-3 : pour chaque version, la valeur calculée de l’élément est celle de la version', () => {
+  for (const r of decisions)
+    for (const v of r.capture.versions) {
+      const measured = Object.entries(v.measured);
+      assert.ok(measured.length > 0, `${r.id} ${v.label} : aucune propriété mesurée`);
+      for (const [prop, value] of measured) assert.equal(value, v.value, `${r.id} ${v.label} : ${prop}`);
+    }
+});
+
+test('R-3 : les versions d’une même décision ont le même cadre et la même taille d’image', () => {
+  for (const r of decisions) {
+    const { clip } = r.capture;
+    for (const v of r.capture.versions) {
+      assert.deepEqual([v.shot.width, v.shot.height], [clip.width, clip.height], `${r.id} ${v.label} : cadre`);
+      assert.deepEqual(pngSize(v.shot.png), { width: clip.width, height: clip.height }, `${r.id} ${v.label} : image`);
+    }
+  }
+});
+
+test('R-3 : les captures sont rangées avec leur ligne dans table.json', () => {
+  const byId = new Map(Object.values(saved.table.families).flatMap((/** @type {any} */ f) => f.rows.map((/** @type {any} */ x) => [x.id, x])));
+  for (const r of decisions) assert.deepEqual(byId.get(r.id)?.capture, r.capture, r.id);
+});
+
+test('R-9 : sous chaque version, le cadre contient le rectangle du voisin (libellé, enfants, bord du parent)', () => {
+  /** @param {any} c @param {any} r */
+  const inside = (c, r) => r.x >= c.x - 0.5 && r.y >= c.y - 0.5 && r.x + r.width <= c.x + c.width + 0.5 && r.y + r.height <= c.y + c.height + 0.5;
+  /** @type {Set<string>} */
+  const kinds = new Set();
+  for (const r of decisions) {
+    const { clip } = r.capture;
+    assert.ok(clip.height <= 400, `${r.id} : hauteur ${clip.height}`);
+    for (const v of r.capture.versions)
+      for (const a of v.around) {
+        kinds.add(a.kind);
+        assert.ok(inside(clip, a.rect), `${r.id} ${v.label} : ${a.kind}${a.side ? ` (${a.side})` : ''} hors du cadre`);
+      }
+  }
+  assert.ok(kinds.has('voisin') && kinds.has('enfant') && kinds.has('libellé'), `contextes vus : ${[...kinds].join(', ')}`);
+});

@@ -397,3 +397,228 @@ export async function simulatePage(page, map, { maxCropped = 80, fullPage = true
     after,
   };
 }
+
+/**
+ * Lot R, R-3 : exécutée dans la page, après scanInPage et showInPage. Élément d'une ligne
+ * (le premier d'au moins 8 × 8 px, sinon le premier touché), son rectangle en coordonnées de
+ * page, la valeur calculée de chaque propriété touchée (px ou hex), la taille du document et,
+ * règle R-9, les rectangles qui donnent le contexte :
+ *   marge      l'élément frère le plus proche à l'écran du côté de la marge (en dessous pour
+ *              une marge basse, au-dessus, à gauche, à droite), sinon le bord du parent ; si ce
+ *              voisin est le libellé d'un champ, le champ aussi ;
+ *   gouttière  les deux premiers enfants qu'elle sépare ;
+ *   champ      son libellé (label associé).
+ * @param {{ key: string, i?: number, family: string, usage?: string }} o  i : élément imposé (versions suivantes)
+ */
+export function versionInPage({ key, i, family, usage }) {
+  const sim = /** @type {any} */ (window).__dsSim;
+  const ops = sim.ops.filter((/** @type {any} */ op) => op.key === key);
+  if (!ops.length) return null;
+  const change = sim.changes.find((/** @type {any} */ c) => c.key === key);
+  const index = i ?? change?.samples?.[0] ?? ops[0].i;
+  const el = sim.els[index];
+  if (!el) return null;
+  const cs = getComputedStyle(el);
+  /** @param {string} v */
+  const norm = (v) => {
+    const px = /^(-?\d+(?:\.\d+)?)px$/.exec(v.trim());
+    if (px) return `${Math.round(Number(px[1]) * 100) / 100}px`;
+    const m = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/.exec(v.trim());
+    if (m) return '#' + [m[1], m[2], m[3]].map((n) => Number(n).toString(16).padStart(2, '0')).join('');
+    return v.trim();
+  };
+  /** @param {Element} e */
+  const rectOf = (e) => {
+    const r = e.getBoundingClientRect();
+    return { x: r.left + window.scrollX, y: r.top + window.scrollY, width: r.width, height: r.height };
+  };
+  const META = new Set(['SCRIPT', 'STYLE', 'TEMPLATE', 'NOSCRIPT', 'LINK', 'META']);
+  /** @param {Element | null} e */
+  const visible = (e) => !!e && !META.has(e.tagName) && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden';
+  /**
+   * Frère le plus proche à l'écran, entièrement du côté demandé ; à distance égale, le plus
+   * proche dans l'autre axe (centres).
+   * @param {Element} e @param {string} side
+   */
+  const sibling = (e, side) => {
+    const r = rectOf(e);
+    const T = 0.5;
+    let best = null;
+    let bestKey = [Infinity, Infinity];
+    for (const x of e.parentElement?.children ?? []) {
+      if (x === e || !visible(x)) continue;
+      const q = rectOf(x);
+      const gap =
+        side === 'bottom' ? (q.y >= r.y + r.height - T ? q.y - (r.y + r.height) : null)
+        : side === 'top' ? (q.y + q.height <= r.y + T ? r.y - (q.y + q.height) : null)
+        : side === 'right' ? (q.x >= r.x + r.width - T ? q.x - (r.x + r.width) : null)
+        : q.x + q.width <= r.x + T ? r.x - (q.x + q.width) : null;
+      if (gap === null) continue;
+      const across = side === 'bottom' || side === 'top' ? Math.abs(q.x + q.width / 2 - (r.x + r.width / 2)) : Math.abs(q.y + q.height / 2 - (r.y + r.height / 2));
+      const key = [Math.max(0, gap), across];
+      if (key[0] < bestKey[0] - 0.01 || (Math.abs(key[0] - bestKey[0]) <= 0.01 && key[1] < bestKey[1])) {
+        best = x;
+        bestKey = key;
+      }
+    }
+    return best;
+  };
+  const props = [...new Set(ops.filter((/** @type {any} */ op) => op.i === index).map((/** @type {any} */ op) => op.prop))];
+  const er = rectOf(el);
+  /** @type {{ kind: string, side?: string, rect: { x: number, y: number, width: number, height: number } }[]} */
+  const around = [];
+  if (family === 'spacing' && usage === 'marge') {
+    for (const p of props) {
+      const side = p.replace('margin-', '');
+      const s = sibling(el, side);
+      if (s) {
+        around.push({ kind: 'voisin', side, rect: rectOf(s) });
+        // Voisin libellé d'un champ : le champ aussi.
+        const control = s.tagName === 'LABEL' ? /** @type {any} */ (s).control : null;
+        if (control && control !== el && visible(control)) around.push({ kind: 'champ du voisin', side, rect: rectOf(control) });
+      } else if (el.parentElement) {
+        // Sans voisin de ce côté : le bord du parent, comme un trait.
+        const pr = rectOf(el.parentElement);
+        const edge =
+          side === 'bottom' ? { x: er.x, y: pr.y + pr.height, width: er.width, height: 0 }
+          : side === 'top' ? { x: er.x, y: pr.y, width: er.width, height: 0 }
+          : side === 'left' ? { x: pr.x, y: er.y, width: 0, height: er.height }
+          : { x: pr.x + pr.width, y: er.y, width: 0, height: er.height };
+        around.push({ kind: 'bord du parent', side, rect: edge });
+      }
+    }
+  }
+  if (family === 'spacing' && usage === 'gouttière') for (const c of [...el.children].filter(visible).slice(0, 2)) around.push({ kind: 'enfant', rect: rectOf(c) });
+  const label = [...(/** @type {any} */ (el).labels ?? [])].find(visible);
+  if (label) around.push({ kind: 'libellé', rect: rectOf(label) });
+  return {
+    i: index,
+    tag: el.tagName.toLowerCase(),
+    values: Object.fromEntries(props.map((p) => [p, norm(cs.getPropertyValue(p))])),
+    rect: er,
+    around,
+    doc: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight },
+  };
+}
+
+/** R-9 : marge autour du cadre, hauteur maximale. */
+export const FRAME = { pad: 16, maxHeight: 400 };
+
+/**
+ * @typedef {{ x: number, y: number, width: number, height: number }} Rect
+ * @typedef {object} DecisionVersion
+ * @property {string} label     « actuelle », « candidat 1 »…
+ * @property {string} value     valeur posée sur la ligne
+ * @property {string} [name]    nom du pas de la cible
+ * @property {Record<string, string>} measured  valeur calculée de l'élément, par propriété touchée
+ * @property {{ kind: string, side?: string, rect: Rect }[]} around  contexte du cadre (R-9), en coordonnées de page
+ * @property {Shot} shot        même cadre et même taille pour toutes les versions d'une décision
+ * @typedef {{ page: string, element: { tag: string, index: number }, clip: Rect, versions: DecisionVersion[] }} DecisionCapture
+ */
+
+/**
+ * Lot R, R-9 : cadre commun à toutes les versions. Réunion, sous chaque version, de l'élément
+ * (pour une gouttière, de ses deux premiers enfants) et de son contexte, plus 16 px, dans le
+ * document le plus petit. Au-delà de 400 px de haut, une fenêtre de 400 px : pour un retrait,
+ * ancrée en haut de l'élément, ou en bas si seul le retrait bas change ; sinon centrée sur ce
+ * qui change (le bord de l'élément du côté de la marge, le milieu entre les deux enfants, à
+ * défaut le centre de l'élément).
+ * @param {{ rect: Rect, values: Record<string, string>, around: { kind: string, side?: string, rect: Rect }[], doc: { width: number, height: number } }[]} probes
+ * @param {{ usage?: string, family: string }} d
+ * @returns {Rect}
+ */
+export function frameOf(probes, d) {
+  const gap = d.family === 'spacing' && d.usage === 'gouttière';
+  const rects = probes.flatMap((p) => {
+    const kids = p.around.filter((a) => a.kind === 'enfant').map((a) => a.rect);
+    const base = gap && kids.length ? kids : [p.rect];
+    return [...base, ...p.around.filter((a) => a.kind !== 'enfant').map((a) => a.rect)];
+  });
+  const docW = Math.min(...probes.map((p) => p.doc.width));
+  const docH = Math.min(...probes.map((p) => p.doc.height));
+  const x0 = Math.max(0, Math.floor(Math.min(...rects.map((r) => r.x)) - FRAME.pad));
+  const x1 = Math.min(docW, Math.ceil(Math.max(...rects.map((r) => r.x + r.width)) + FRAME.pad));
+  let y0 = Math.max(0, Math.floor(Math.min(...rects.map((r) => r.y)) - FRAME.pad));
+  let y1 = Math.min(docH, Math.ceil(Math.max(...rects.map((r) => r.y + r.height)) + FRAME.pad));
+  if (y1 - y0 > FRAME.maxHeight && d.family === 'spacing' && d.usage === 'retrait') {
+    // Retrait : coin haut-gauche de l'élément, ou le côté touché s'il n'y en a qu'un.
+    const p = probes[0];
+    const sides = Object.keys(p.values).map((k) => k.replace('padding-', ''));
+    if (sides.length === 1 && sides[0] === 'bottom') {
+      y1 = Math.min(y1, Math.ceil(p.rect.y + p.rect.height) + FRAME.pad);
+      y0 = y1 - FRAME.maxHeight;
+    } else {
+      y0 = Math.max(y0, Math.floor(p.rect.y) - FRAME.pad);
+      y1 = y0 + FRAME.maxHeight;
+    }
+  } else if (y1 - y0 > FRAME.maxHeight) {
+    const p = probes[0];
+    const side = p.around.find((a) => a.side)?.side;
+    const kids = p.around.filter((a) => a.kind === 'enfant').map((a) => a.rect);
+    const focus =
+      side === 'bottom' ? p.rect.y + p.rect.height
+      : side === 'top' ? p.rect.y
+      : gap && kids.length === 2 ? (kids[0].y + kids[0].height / 2 + kids[1].y + kids[1].height / 2) / 2
+      : p.rect.y + p.rect.height / 2;
+    const top = Math.round(Math.min(Math.max(focus - FRAME.maxHeight / 2, y0), y1 - FRAME.maxHeight));
+    y0 = top;
+    y1 = top + FRAME.maxHeight;
+  }
+  return { x: x0, y: y0, width: Math.max(8, x1 - x0), height: Math.max(8, y1 - y0) };
+}
+
+/**
+ * Lot R, R-3 : une capture par version de chaque décision (actuelle, puis chaque candidat).
+ * Base : la page d'origine ; chaque version ne change que cette ligne. Un élément par
+ * décision, le premier trouvé dans l'ordre des pages ; même cadre pour toutes les versions (R-9).
+ * @param {import('playwright-core').Page} page  page d'origine déjà chargée
+ * @param {{ key: string, family: string, usage?: string, mapKey: string, old: string, candidates: { value: string, name?: string }[] }} d
+ * @param {string[]} thirdParty
+ * @returns {Promise<DecisionCapture | null>} null si la ligne ne touche rien sur cette page
+ */
+export async function captureDecision(page, d, thirdParty = []) {
+  const versions = [{ label: 'actuelle', value: d.old }, ...d.candidates.map((c, n) => ({ label: `candidat ${n + 1}`, value: c.value, name: c.name }))];
+  /** @param {string} value @param {number} [i] */
+  const pose = async (value, i) => {
+    await page.evaluate(scanInPage, { [d.family]: { [d.mapKey]: value }, thirdParty });
+    await page.evaluate(showInPage, { on: true });
+    return page.evaluate(versionInPage, { key: d.key, i, family: d.family, usage: d.usage });
+  };
+  // Premier passage : l'élément et son contexte sous chaque version, pour un cadre commun.
+  const first = await pose(versions[0].value);
+  if (!first) {
+    await page.evaluate(showInPage, { on: false });
+    return null;
+  }
+  const probes = [first];
+  for (const v of versions.slice(1)) {
+    const p = await pose(v.value, first.i);
+    if (p) probes.push(p);
+  }
+  await page.evaluate(showInPage, { on: false });
+  const clip = frameOf(probes, d);
+  // Second passage : capture de chaque version dans ce cadre, puis valeur calculée et contexte.
+  /** @type {DecisionVersion[]} */
+  const out = [];
+  for (const v of versions) {
+    await pose(v.value, first.i);
+    const buf = await page.screenshot({ fullPage: true, clip, animations: 'disabled' });
+    const m = await page.evaluate(versionInPage, { key: d.key, i: first.i, family: d.family, usage: d.usage });
+    const r = m?.rect ?? first.rect;
+    out.push({
+      label: v.label,
+      value: v.value,
+      ...(v.name ? { name: v.name } : {}),
+      measured: m?.values ?? {},
+      around: m?.around ?? [],
+      shot: {
+        png: buf.toString('base64'),
+        width: clip.width,
+        height: clip.height,
+        box: { x: Math.round(r.x - clip.x), y: Math.round(r.y - clip.y), width: Math.round(r.width), height: Math.round(r.height) },
+      },
+    });
+  }
+  await page.evaluate(showInPage, { on: false });
+  return { page: page.url(), element: { tag: first.tag, index: first.i }, clip, versions: out };
+}

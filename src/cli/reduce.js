@@ -16,8 +16,8 @@ import { loadSources } from '../lib/sources.js';
 import { gotoAndSettle, DEFAULT_WAIT_MS } from '../browser/navigate.js';
 import { createRenderedAggregator } from '../rendered/aggregate.js';
 import { measureRendered } from '../rendered/run.js';
-import { propose, mapping } from '../reduce/propose.js';
-import { simulatePage, installLive } from '../browser/simulate.js';
+import { propose, mapping, rowKey } from '../reduce/propose.js';
+import { simulatePage, installLive, captureDecision } from '../browser/simulate.js';
 import { renderReview } from '../report/review.js';
 import { buildMigration } from '../report/migration.js';
 import { stampOf, freeOutputDir } from '../report/json.js';
@@ -99,6 +99,26 @@ export async function runReduce(opts) {
         try {
           await gotoAndSettle(page, url, { waitMs });
           pages.push(await simulatePage(page, map));
+        } finally {
+          await page.close().catch(() => {});
+        }
+      }
+      // Lot R, R-3 : une capture par version de chaque décision, sur la page d'origine.
+      const pending = Object.entries(table.families).flatMap(([family, f]) =>
+        f.rows.filter((r) => r.class === 'décision').map((r) => ({ family, r })),
+      );
+      for (const url of hostUrls) {
+        if (pending.every((x) => x.r.capture)) break;
+        log(`versions → ${url}`);
+        const page = await context.newPage();
+        try {
+          await gotoAndSettle(page, url, { waitMs });
+          for (const { family, r } of pending) {
+            if (r.capture) continue;
+            const d = { key: rowKey(family, r), family, usage: r.usage, mapKey: r.usage ? `${r.old}|${r.usage}` : r.old, old: r.old, candidates: r.candidates };
+            const c = await captureDecision(page, d, table.thirdParty);
+            if (c) r.capture = c;
+          }
         } finally {
           await page.close().catch(() => {});
         }
