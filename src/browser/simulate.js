@@ -534,6 +534,47 @@ export function versionInPage({ key, i, family, usage }) {
         space.push({ axis: 'rangée', px: r2(b.y - (a.y + a.height)), rect: { x: left, y: a.y + a.height, width: Math.max(a.x + a.width, b.x + b.width) - left, height: b.y - (a.y + a.height) } });
     }
   }
+  // Lot R : pour une couleur, le contraste le plus faible des éléments touchés et son seuil.
+  // Texte, fond, plein : la couleur du texte de l'élément sur le premier fond opaque, en remontant
+  // depuis l'élément (4,5:1, 3:1 en grand texte) ; bordure : sur le fond du parent (3:1).
+  /** @type {{ ratio: number, threshold: number, text: string, bg: string } | null} */
+  let contrast = null;
+  if (family === 'colors') {
+    /** @param {string} v */
+    const rgb = (v) => {
+      const m = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/.exec(v.trim());
+      return m && (m[4] === undefined || Number(m[4]) >= 1) ? [1, 2, 3].map((k) => Number(m[k])) : null;
+    };
+    /** @param {number[]} c */
+    const lum = (c) => {
+      const [R, G, B] = c.map((v) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+      return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+    };
+    /** @param {Element | null} e */
+    const bgOf = (e) => {
+      for (let x = e; x; x = x.parentElement) {
+        const c = rgb(getComputedStyle(x).backgroundColor);
+        if (c) return c;
+      }
+      return [255, 255, 255];
+    };
+    for (const j of [...new Set(ops.map((/** @type {any} */ op) => op.i))]) {
+      const e = sim.els[j];
+      const ecs = getComputedStyle(e);
+      const prop = ops.find((/** @type {any} */ op) => op.i === j).prop;
+      const border = usage === 'bordure';
+      const fg = rgb(border ? ecs.getPropertyValue(prop) : ecs.color);
+      if (!fg) continue;
+      const bg = border ? bgOf(e.parentElement) : bgOf(e);
+      const size = parseFloat(ecs.fontSize);
+      const large = size >= 24 || (size >= (14 * 96) / 72 && Number(ecs.fontWeight) >= 700);
+      const threshold = border || large ? 3 : 4.5;
+      const [a, b] = [lum(fg), lum(bg)];
+      const ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+      const hexOf = (/** @type {number[]} */ c) => '#' + c.map((n) => n.toString(16).padStart(2, '0')).join('');
+      if (!contrast || ratio / threshold < contrast.ratio / contrast.threshold) contrast = { ratio: Math.round(ratio * 10000) / 10000, threshold, text: hexOf(fg), bg: hexOf(bg) };
+    }
+  }
   return {
     i: index,
     tag: el.tagName.toLowerCase(),
@@ -541,6 +582,7 @@ export function versionInPage({ key, i, family, usage }) {
     rect: er,
     around,
     space,
+    contrast,
     doc: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight },
   };
 }
@@ -561,6 +603,8 @@ export const FRAME = { pad: 16, maxHeight: 400, wideRetrait: 600, scale: 2 };
  * @property {{ kind: string, side?: string, rect: Rect }[]} around  contexte du cadre (R-9), en coordonnées de page
  * @property {{ side?: string, axis?: string, px: number, rect: Rect }[]} space  zone d'espace (R-8), dans la capture,
  *   en px CSS : bande de marge, de retrait (côté par côté) ou de gouttière ; px : son épaisseur
+ * @property {{ ratio: number, threshold: number, text: string, bg: string }} [contrast]  couleur : contraste le plus faible
+ *   des éléments touchés, son seuil et sa paire (texte ou bordure, fond)
  * @property {Shot & { scale: number }} shot  même cadre et même taille pour toutes les versions d'une décision ;
  *   width et height en px CSS, l'image en densité scale
  * @typedef {{ page: string, element: { tag: string, index: number }, clip: Rect, versions: DecisionVersion[] }} DecisionCapture
@@ -678,6 +722,7 @@ export async function captureDecision(page, d, thirdParty = []) {
       measured: m?.values ?? {},
       around: m?.around ?? [],
       space: (m?.space ?? []).map((z) => ({ ...z, rect: rel(z.rect) })),
+      ...(m?.contrast ? { contrast: m.contrast } : {}),
       shot: {
         png: buf.toString('base64'),
         width: clip.width,

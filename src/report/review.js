@@ -85,6 +85,83 @@ function glyph(family, value) {
   return `<span class="g txt" style="font-size:${Math.min(Math.max(n, 6), 44)}px">Aa</span>`;
 }
 
+/** Lot R : valeur lisible, « 10 px » ou « #d0563f ». @param {string} family @param {string} v */
+const short = (family, v) => {
+  const n = num(v);
+  return family === 'colors' || n === null ? v : `${String(n).replace('.', ',')} px`;
+};
+/** @param {number} n */
+const fr = (n) => String(Math.round(n * 100) / 100).replace('.', ',');
+/** Lot R : nom de jeton d'un pas de dimension (les couleurs gardent le nom de la valise). */
+const TOKEN_PREFIX = /** @type {Record<string, string>} */ ({ spacing: 'espace', radii: 'arrondi', fontSizes: 'taille' });
+/** Lot R : nom du pas d'une version, « terre-9 » ou « espace.8 ». @param {string} family @param {{ value: string, name?: string }} c */
+const stepName = (family, c) => c.name ?? (num(c.value) !== null && TOKEN_PREFIX[family] ? `${TOKEN_PREFIX[family]}.${num(c.value)}` : '');
+/** @param {number} n @param {number} d */
+const pct = (n, d) => `${((100 * n) / d).toFixed(3)}%`;
+/** Plus petit cadre affiché sans agrandissement (R-8) : en deçà, l'image est montrée à 2×. */
+const SMALL_FRAME = 200;
+
+/**
+ * Lot R : zones d'espace d'une version, découpées au cadre ; cote au milieu de la partie
+ * visible, toujours dans l'image. Masquées avec la case « repères ».
+ * @param {{ width: number, height: number }} shot @param {{ px: number, rect: { x: number, y: number, width: number, height: number } }[]} space
+ */
+function zones(shot, space) {
+  return space
+    .map((z) => {
+      const x = Math.max(0, z.rect.x);
+      const y = Math.max(0, z.rect.y);
+      const w = Math.min(shot.width, z.rect.x + z.rect.width) - x;
+      const h = Math.min(shot.height, z.rect.y + z.rect.height) - y;
+      if (w < 0 || h < 0 || x > shot.width || y > shot.height) return '';
+      const cx = Math.min(Math.max(x + w / 2, 26), shot.width - 26);
+      const cy = Math.min(Math.max(y + h / 2, 9), shot.height - 9);
+      return `<span class="zone" style="left:${pct(x, shot.width)};top:${pct(y, shot.height)};width:${pct(w, shot.width)};height:${pct(h, shot.height)}"></span><span class="cote" style="left:${pct(cx, shot.width)};top:${pct(cy, shot.height)}">${fr(z.px)} px</span>`;
+    })
+    .join('');
+}
+
+/**
+ * Lot R : contraste d'une version de couleur : « 4,35 · sous le seuil de 4,5 », puis la couleur
+ * réelle de l'autre côté de la paire (le texte posé sur un fond, le fond sous un texte ou une bordure).
+ * @param {string | undefined} usage @param {{ ratio: number, threshold: number, text: string, bg: string }} c
+ */
+function contrastLine(usage, c) {
+  const pass = c.ratio >= c.threshold - 1e-9;
+  const other = usage === 'texte' || usage === 'bordure' ? `sur le fond actuel ${c.bg}` : `avec le texte actuel ${c.text}`;
+  return `<small>${fr(c.ratio)} · ${pass ? 'passe' : 'sous'} le seuil de ${fr(c.threshold)}</small><small>${esc(other)}</small>`;
+}
+
+/**
+ * Lot R : carte de décision. Sélecteur de versions (actuelle, puis chaque candidat), une seule
+ * image (la version affichée) avec sa zone d'espace, et « Choisir cette version ». Afficher
+ * une version ne change pas l'export ; seule une version choisie y entre.
+ * @param {string} family @param {any} r
+ */
+function decisionCard(family, r) {
+  const versions = r.capture?.versions ?? [{ label: 'actuelle', value: r.old }, ...r.candidates.map((/** @type {any} */ c, /** @type {number} */ i) => ({ label: `candidat ${i + 1}`, value: c.value, name: c.name }))];
+  const nearest = r.candidates[0];
+  const gap = nearest ? (family === 'colors' ? `écart ΔE ${fr(nearest.delta)}` : `écart ${fr(nearest.delta)} px`) : '';
+  const buttons = versions
+    .map((/** @type {any} */ v, /** @type {number} */ i) => {
+      const name = i === 0 ? `actuelle · ${short(family, v.value)}` : `${short(family, v.value)}${stepName(family, v) ? ` · ${stepName(family, v)}` : ''}`;
+      const note = i === 0 ? '<small>la choisir garde la valeur</small>' : i === 1 && gap ? `<small>le plus proche · ${esc(gap)}</small>` : '';
+      const ctr = v.contrast ? contrastLine(r.usage, v.contrast) : '';
+      return `<button type="button" class="v" data-v="${i}" data-value="${esc(v.value)}" data-court="${esc(short(family, v.value))}" aria-pressed="${i === 0}">${glyph(family, v.value)}<span class="nom"><span>${esc(name)}</span>${note}${ctr}</span></button>`;
+    })
+    .join('');
+  const shot0 = versions[0].shot;
+  const scale = shot0 && shot0.width < SMALL_FRAME ? 2 : 1;
+  const view = shot0
+    ? `<div class="vue" style="width:${shot0.width * scale}px;aspect-ratio:${shot0.width} / ${shot0.height}">${versions
+        .map((/** @type {any} */ v, /** @type {number} */ i) => `<div class="ver" data-v="${i}"${i ? ' hidden' : ''}>${img(v.shot.png)}${zones(v.shot, v.space ?? [])}</div>`)
+        .join('')}</div>`
+    : '';
+  return `<div class="versions" role="group" aria-label="Versions">${buttons}</div>
+  ${view}
+  <div class="trancher"><button type="button" class="retenir">Choisir cette version</button></div>`;
+}
+
 /**
  * @param {ReturnType<typeof import('../reduce/propose.js').propose>} table
  * @param {{ url: string, changes: import('../browser/simulate.js').SimulatedChange[], before: string | null, after: string | null }[]} pages
@@ -121,23 +198,20 @@ export function renderReview(table, pages, meta) {
             const what = [...(props.get(key) ?? [])].map((x) => `<span class="quoi">${esc(x)}</span>`).join('');
             const pick =
               cls === 'décision'
-                ? `<div class="pick">${r.candidates
-                    .map(
-                      (c, i) =>
-                        `<label><input type="radio" name="${esc(key)}" value="${esc(c.value)}">${glyph(family, c.value)}<code>${esc(c.value)}</code>${c.name ? ` ${esc(c.name)}` : ''} <i>écart ${c.delta}</i></label>`,
-                    )
-                    .join('')}<label><input type="radio" name="${esc(key)}" value="" checked> garder <code>${esc(r.old)}</code></label></div>`
+                ? decisionCard(family, r)
                 : cls === 'proche' || cls === 'auto' || cls === 'correction'
                   ? `<label class="ok"><input type="checkbox" name="${esc(key)}" checked> appliquer</label>`
                   : '';
-            const arrow = r.new && r.new !== r.old ? `<b class="arrow">→</b>${glyph(family, r.new)}<code>${esc(r.new)}</code>${r.name ? ` <i>${esc(r.name)}</i>` : ''}` : r.name ? ` <i>${esc(r.name)}</i>` : '';
+            const arrow = cls === 'décision' ? '' : r.new && r.new !== r.old ? `<b class="arrow">→</b>${glyph(family, r.new)}<code>${esc(r.new)}</code>${r.name ? ` <i>${esc(r.name)}</i>` : ''}` : r.name ? ` <i>${esc(r.name)}</i>` : '';
             const usage = (r.usages ?? []).map((x) => `<span class="usage">${esc(x)}</span>`).join('');
             const contrast = r.contrast
               ? ` <span class="ctr">contraste ${String(r.contrast.before).replace('.', ',')} → ${String(r.contrast.after).replace('.', ',')} (seuil ${String(r.contrast.threshold).replace('.', ',')})</span>`
               : '';
             const motif = r.reason || r.contrast ? `<p class="motif">${r.reason ? `Motif : ${esc(r.reason)}.` : ''}${contrast}</p>` : '';
-            const head = r.id ? `<p class="titre"><b class="id">${esc(r.id)}</b> ${esc(r.title ?? '')}</p>\n  ` : '';
-            return `<article class="row c-${isOut(cls) ? 'hors' : esc(cls)}" data-key="${esc(key)}">
+            const choice = cls === 'décision' ? '<span class="choix">Pas encore choisie</span>' : '';
+            const head = r.id ? `<p class="titre"><b class="id">${esc(r.id)}</b> ${esc(r.title ?? '')}${choice}</p>\n  ` : '';
+            const decision = cls === 'décision';
+            return `<article class="row c-${isOut(cls) ? 'hors' : esc(cls)}${decision ? ' decision a-trancher' : ''}" data-key="${esc(key)}"${decision ? ' tabindex="0"' : ''}>
   ${head}<header>${glyph(family, r.old)}<code>${esc(r.old)}</code>${arrow}${usage}${what}<span class="n">×${r.count}${r.delta ? ` · écart ${r.delta}` : ''}</span></header>
   ${motif}<div class="sel">${r.selectors.map((x) => `<code>${esc(x)}</code>`).join(' ')}</div>
   ${pick}${shots}
@@ -212,6 +286,22 @@ ${byClass}
   .shots { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
   .full { margin-top:10px; max-height:620px; overflow:auto; border-radius:8px; }
   .cmp.page { display:grid; }
+  .row.decision:focus-visible { outline:3px solid #2563eb; outline-offset:2px; }
+  .row.decision { border-left-color:#c5cad3; } .row.a-trancher { border:3px solid #ea580c; border-left-width:6px; }
+  .row.decision .titre { display:flex; align-items:baseline; gap:6px; } .choix { margin-left:auto; font-weight:400; font-size:14px; color:var(--soft); white-space:nowrap; }
+  .versions { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 8px; }
+  .versions .v { font:inherit; font-size:13px; display:inline-flex; align-items:center; gap:8px; text-align:left; border:1px solid var(--line); background:#fff; border-radius:8px; padding:5px 10px; cursor:pointer; color:var(--ink); }
+  .versions .v .nom { display:flex; flex-direction:column; } .versions .v small { color:var(--soft); font-size:12px; }
+  .versions .v[aria-pressed="true"] { border-color:#16181d; box-shadow:inset 0 0 0 1px #16181d; }
+  .versions .v.retenue .nom::after { content:"choisie"; font-size:11px; font-weight:600; color:var(--go); }
+  .vue { display:grid; position:relative; max-width:100%; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:#fff; }
+  .vue .ver { grid-area:1 / 1; position:relative; line-height:0; } .vue .ver[hidden] { display:none; }
+  .vue img { display:block; width:100%; height:auto; }
+  .zone { position:absolute; min-width:1px; min-height:1px; background:repeating-linear-gradient(45deg, rgba(226,87,43,.55) 0 2px, rgba(226,87,43,.12) 2px 5px); outline:1px solid #e2572b; pointer-events:none; }
+  .cote { position:absolute; transform:translate(-50%, -50%); background:#e2572b; color:#fff; font:600 11px/1 ui-monospace, Menlo, monospace; padding:2px 4px; border-radius:3px; white-space:nowrap; pointer-events:none; }
+  body.sans-reperes .zone, body.sans-reperes .cote { display:none; }
+  .trancher { display:flex; align-items:center; gap:10px; margin-top:10px; }
+  .retenir { font:inherit; font-size:14px; font-weight:600; border:0; border-radius:6px; padding:7px 14px; cursor:pointer; background:#16181d; color:#fff; }
   .barre { position:fixed; left:0; right:0; bottom:0; background:#16181d; color:#fff; padding:10px 24px; display:flex; gap:16px; align-items:center; justify-content:center; font-size:14px; }
   .barre label { display:inline-flex; align-items:center; gap:6px; cursor:pointer; }
   .barre button { font:inherit; border:0; border-radius:6px; padding:7px 14px; cursor:pointer; background:#fff; color:#16181d; font-weight:600; }
@@ -222,6 +312,7 @@ ${byClass}
 <h1>Revue de la réduction : ${esc(meta.host)}</h1>
 <p class="lede">${esc(meta.stamp)} · cible : <code>${esc(meta.target)}</code> · ${pages.length} page(s) simulée(s). Rien n’a été modifié sur le site : les nouvelles valeurs sont posées dans le navigateur de l’audit, le temps des captures. Les pseudo-éléments (icônes) ne sont pas simulés.</p>
 <p class="lede"><b>Pour voir un changement</b> : clique sur une capture, elle bascule entre avant et après au même endroit. Chaque capture ne contient que le changement de sa ligne. Le cadre en pointillés entoure l’élément modifié. La touche <code>Espace</code> bascule toutes les captures à la fois.</p>
+<p class="lede"><b>Pour trancher une décision</b> : parcours ses versions (clic, ou <code>←</code> <code>→</code> quand la carte a le focus), puis « Choisir cette version » (ou <code>Entrée</code>). Afficher une version ne change rien à l’export ; une décision pas encore choisie n’y figure pas, l’actuelle choisie y vaut <code>false</code>.</p>
 ${sections}
 <h2>Pages entières</h2>
 <p class="lede">Avec toutes les propositions appliquées. Clique dans la page pour basculer.</p>
@@ -236,25 +327,56 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
   try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) {}
   var state = Object.assign({}, previous, saved);
   function rows() { return Array.prototype.slice.call(document.querySelectorAll('.row[data-key]')); }
+  // Décisions : une version affichée (sans effet sur l'export), une version retenue (exportée).
+  function versionsOf(row) { return Array.prototype.slice.call(row.querySelectorAll('.versions .v')); }
+  function shown(row) { return Number(row.getAttribute('data-vue') || 0); }
+  function show(row, i) {
+    var vs = versionsOf(row); if (!vs.length) return;
+    i = Math.max(0, Math.min(vs.length - 1, i));
+    row.setAttribute('data-vue', String(i));
+    vs.forEach(function (b, j) { b.setAttribute('aria-pressed', String(j === i)); });
+    row.querySelectorAll('.vue .ver').forEach(function (f) { f.hidden = Number(f.getAttribute('data-v')) !== i; });
+  }
+  function retain(row, i, imposed) {
+    var vs = versionsOf(row);
+    row.classList.remove('a-trancher');
+    vs.forEach(function (b, j) { b.classList.toggle('retenue', j === i); });
+    if (i >= 0) { row.setAttribute('data-retenu', String(i)); row.removeAttribute('data-impose'); }
+    else { row.removeAttribute('data-retenu'); row.setAttribute('data-impose', imposed); }
+    var choix = row.querySelector('.choix');
+    if (choix) choix.textContent = i === 0 ? 'Gardée : ' + vs[0].getAttribute('data-court') : 'Choisie : ' + (i > 0 ? vs[i].getAttribute('data-court') : imposed);
+  }
   function restore() {
     rows().forEach(function (row) {
       var k = row.getAttribute('data-key'); if (!(k in state)) return;
       var v = state[k];
       var box = row.querySelector('input[type=checkbox]');
       if (box) box.checked = v !== false;
-      row.querySelectorAll('input[type=radio]').forEach(function (r) { r.checked = v === false ? r.value === '' : r.value === v; });
+      if (row.classList.contains('decision')) {
+        var vs = versionsOf(row);
+        var i = v === false ? 0 : vs.map(function (b) { return b.getAttribute('data-value'); }).indexOf(v);
+        retain(row, i, v);
+        if (i >= 0) show(row, i);
+      }
     });
   }
   function collect() {
     var out = {};
     rows().forEach(function (row) {
       var k = row.getAttribute('data-key');
-      var box = row.querySelector('input[type=checkbox]');
-      var radio = row.querySelector('input[type=radio]:checked');
       var refused = false;
-      if (box) { if (!box.checked) { out[k] = false; refused = true; } }
-      else if (radio) { if (radio.value === '') { out[k] = false; refused = true; } else out[k] = radio.value; }
-      row.classList.toggle('refuse', refused);
+      if (row.classList.contains('decision')) {
+        // Non tranchée : absente ; l'actuelle retenue : false ; sinon la valeur retenue.
+        var r = row.getAttribute('data-retenu');
+        if (r !== null) {
+          if (r === '0') { out[k] = false; refused = true; }
+          else out[k] = versionsOf(row)[Number(r)].getAttribute('data-value');
+        } else if (row.hasAttribute('data-impose')) out[k] = row.getAttribute('data-impose');
+      } else {
+        var box = row.querySelector('input[type=checkbox]');
+        if (box && !box.checked) { out[k] = false; refused = true; }
+      }
+      row.classList.toggle('refuse', refused && !row.classList.contains('decision'));
     });
     return out;
   }
@@ -262,8 +384,8 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
     state = collect();
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
     var refused = Object.keys(state).filter(function (k) { return state[k] === false; }).length;
-    var decided = document.querySelectorAll('.row.c-décision').length;
-    document.getElementById('bilan').textContent = decided + ' décision(s) à prendre, ' + refused + ' changement(s) refusé(s)';
+    var open = document.querySelectorAll('.row.a-trancher').length;
+    document.getElementById('bilan').textContent = open + ' décision(s) pas encore choisie(s), ' + refused + ' changement(s) refusé(s)';
   }
   restore(); refresh();
   document.addEventListener('change', function (e) {
@@ -272,8 +394,13 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
   });
   function flip(el, etat) { el.setAttribute('data-etat', etat || (el.getAttribute('data-etat') === 'avant' ? 'apres' : 'avant')); }
   document.addEventListener('click', function (e) {
-    var c = e.target && e.target.closest ? e.target.closest('.cmp') : null;
-    if (c) flip(c);
+    var t = e.target && e.target.closest ? e.target : null; if (!t) return;
+    var c = t.closest('.cmp');
+    if (c) { flip(c); return; }
+    var row = t.closest('.row.decision'); if (!row) return;
+    var v = t.closest('.versions .v');
+    if (v) { show(row, Number(v.getAttribute('data-v'))); return; }
+    if (t.closest('.retenir')) { retain(row, shown(row)); refresh(); }
   });
   var global = 'avant';
   function flipAll() {
@@ -282,6 +409,9 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
   }
   document.getElementById('tout').addEventListener('click', flipAll);
   document.addEventListener('keydown', function (e) {
+    var row = e.target && e.target.closest ? e.target.closest('.row.decision') : null;
+    if (row && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { e.preventDefault(); show(row, shown(row) + (e.key === 'ArrowRight' ? 1 : -1)); return; }
+    if (row && e.key === 'Enter' && e.target === row) { e.preventDefault(); retain(row, shown(row)); refresh(); return; }
     var t = e.target && e.target.tagName;
     if (e.code === 'Space' && t !== 'INPUT' && t !== 'BUTTON') { e.preventDefault(); flipAll(); }
   });
