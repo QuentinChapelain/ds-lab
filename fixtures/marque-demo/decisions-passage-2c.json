@@ -1,0 +1,12 @@
+{
+  "radii|6px|rayon": "8px",
+  "spacing|10px|marge": "12px",
+  "spacing|20px|retrait": "16px",
+  "spacing|6px|marge": "4px",
+  "spacing|10px|gouttière": "8px",
+  "colors|#1f2a44|texte": "#103060",
+  "colors|#595959|texte": "#6d675b",
+  "colors|#d0563f|plein": "#c8553d",
+  "colors|#30548a|texte": "#4c6994",
+  "colors|#c4513a|plein": "#c8553d"
+}

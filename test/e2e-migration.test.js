@@ -7,7 +7,7 @@
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile, mkdtemp } from 'node:fs/promises';
+import { readFile, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { wcagContrast } from 'culori';
@@ -24,6 +24,12 @@ let servers;
 const desordre = { data: null, md: '' };
 /** @type {{ data: any, md: string }} */
 const pieges = { data: null, md: '' };
+/** Passage 2c : décisions du designer (fixtures/marque-demo/decisions-passage-2c.json), puis un refus en plus. */
+const DECISIONS = `${FIXTURE_DIR}decisions-passage-2c.json`;
+/** @type {{ data: any, md: string, decisions: Record<string, string | false> }} */
+const decidee = { data: null, md: '', decisions: {} };
+/** @type {{ data: any, md: string }} */
+const refusee = { data: null, md: '' };
 
 before(async () => {
   servers = await startFixtureServers();
@@ -42,6 +48,17 @@ before(async () => {
   const [p] = await runReduce({ ...common, addresses: [servers.origin + '/pieges/pieges.html'], outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-migration-')) });
   pieges.data = p.migration;
   pieges.md = await readFile(p.files[2], 'utf8');
+  decidee.decisions = JSON.parse(await readFile(DECISIONS, 'utf8'));
+  const addresses = [servers.origin + first, ...rest];
+  const [dd] = await runReduce({ ...common, addresses, decisionsPath: DECISIONS, outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-migration-')) });
+  decidee.data = dd.migration;
+  decidee.md = await readFile(dd.files[2], 'utf8');
+  const tmp = await mkdtemp(join(tmpdir(), 'ds-lab-migration-'));
+  const withRefusal = join(tmp, 'decisions-refus.json');
+  await writeFile(withRefusal, JSON.stringify({ ...decidee.decisions, 'colors|#999999|bordure': false }));
+  const [rr] = await runReduce({ ...common, addresses, decisionsPath: withRefusal, outRoot: tmp });
+  refusee.data = rr.migration;
+  refusee.md = await readFile(rr.files[2], 'utf8');
 });
 
 after(async () => servers?.close());
@@ -53,7 +70,7 @@ test('expected-migration.json : contrastes recalculés avec culori', () => {
 });
 
 test('migration.md : table, trois sections et cinq exceptions nommées', () => {
-  for (const h of ['## Table', '## Appliqué (auto, proche, correction)', '## Décisions en attente', '## Hors table', '## Exceptions'])
+  for (const h of ['## Table', '## Appliqué (auto, proche, correction, décidée)', '## Décisions en attente', '## Refusée, laissée telle quelle', '## Hors table', '## Exceptions'])
     assert.ok(desordre.md.includes(h), h);
   for (const h of ['Liens sans soulignement dans un paragraphe', 'onSolid', 'États non lus', 'Élément injecté après le chargement', 'Égalités tranchées en silence'])
     assert.ok(desordre.md.includes(`### ${h}`) || desordre.md.includes(h), h);
@@ -143,4 +160,54 @@ test('pièges : L1, un lien sans soulignement dans un paragraphe', () => {
   assert.equal(links[0].neighbor, want.neighbor);
   assert.ok(Math.abs(links[0].ratio - want.ratio) <= TOL, `contraste ${links[0].ratio}`);
   assert.ok(pieges.md.includes('### Liens sans soulignement dans un paragraphe : 1'));
+});
+
+test('décisions (passage 2c) : les 10 lignes décidées passent dans « Appliqué », plus aucune en attente', () => {
+  const n = Object.keys(decidee.decisions).length;
+  assert.equal(n, 10, 'décisions lues');
+  assert.equal(decidee.data.decided, n);
+  assert.equal(decidee.data.sections.pending.total, 0, 'en attente');
+  assert.equal(decidee.data.sections.applied.total, E.desordre.sections.applied.total + n, 'appliqué');
+  assert.equal(decidee.data.sections.refused.total, 0, 'refusée');
+  for (const [key, value] of Object.entries(decidee.decisions)) {
+    const [family, old, usage] = key.split('|');
+    const row = decidee.data.rows.find((/** @type {any} */ r) => r.family === family && r.value === old && r.usage === usage);
+    assert.ok(row, `${key} absente`);
+    assert.equal(row.status, 'décidée', key);
+    assert.equal(row.new, value, `${key} : valeur choisie`);
+  }
+  const ink = decidee.data.rows.find((/** @type {any} */ r) => r.value === '#1f2a44' && r.usage === 'texte');
+  assert.equal(ink.token, 'couleur.bleu.12', 'jeton de la valeur choisie');
+  assert.ok(decidee.md.includes('| décision, décidée |'), 'mention « décidée » dans la table');
+  assert.ok(decidee.md.includes('## Décisions en attente : 0'));
+});
+
+test('décisions : une ligne refusée va dans « Refusée, laissée telle quelle »', () => {
+  assert.equal(refusee.data.sections.refused.total, 1);
+  const row = refusee.data.rows.find((/** @type {any} */ r) => r.value === '#999999' && r.usage === 'bordure');
+  assert.equal(row.status, 'refusée');
+  assert.equal(row.new, null);
+  assert.equal(refusee.data.sections.applied.total, decidee.data.sections.applied.total - 1);
+  assert.ok(refusee.md.includes('## Refusée, laissée telle quelle : 1'));
+  assert.ok(refusee.data.agent.lines.some((/** @type {string} */ l) => l.startsWith('- Refusée : #999999 (bordure)')), 'consigne : ne pas toucher');
+});
+
+test('consigne pour un agent : contexte, une instruction par ligne appliquée, couplage onSolid, vérification', () => {
+  const a = decidee.data.agent;
+  const text = a.lines.join('\n');
+  assert.ok(decidee.md.includes('## Consigne pour un agent'));
+  const ctx = a.lines.slice(1, a.lines.indexOf(''));
+  assert.equal(ctx.length, 3, 'contexte en 3 lignes');
+  assert.ok(ctx.some((/** @type {string} */ l) => l.includes('var(--couleur-neutre-11)')));
+  const steps = a.lines.filter((/** @type {string} */ l) => /^\d+\. /.test(l));
+  assert.equal(steps.length, decidee.data.sections.applied.total, 'une instruction par ligne appliquée');
+  for (const l of steps) assert.ok(l.includes('Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.'), l);
+  assert.ok(steps.some((/** @type {string} */ l) => l.includes('remplace #999999 par var(--couleur-neutre-11) (#6d675b)') && l.includes('Propriété color')));
+  assert.ok(steps.some((/** @type {string} */ l) => l.includes('remplace #1f2a44 par var(--couleur-bleu-12) (#103060) [décidée]')));
+  assert.ok(text.includes('Le texte posé sur un plein terre devient #220000 (onSolid, var(--couleur-terre-sur-plein))'));
+  assert.ok(text.includes('- Hors table : #2196f3'));
+  assert.ok(text.includes('- Composant tiers : .tiers-cookies'));
+  assert.ok(text.includes('- Valeur hors de sa tranche : #2b4c7e (bleu-9) en texte'));
+  assert.ok(text.includes(`--decisions ${DECISIONS}`), 'commande exacte');
+  assert.deepEqual(decidee.data.remaining.map((/** @type {any} */ p) => `${p.text}|${p.bg}`), ['#2196f3|#ffffff'], 'une seule paire sous 4,5:1 après migration');
 });

@@ -116,7 +116,29 @@ export async function runReduce(opts) {
         map,
         target,
         tokens,
-        meta: { host, stamp, target: opts.targetPath.split('/').pop() ?? '', tokens: opts.tokensPath ? opts.tokensPath.split('/').pop() ?? null : null, pages: hostUrls.map((u) => new URL(u).pathname), viewport },
+        decisions,
+        meta: {
+          host,
+          stamp,
+          target: opts.targetPath.split('/').pop() ?? '',
+          tokens: opts.tokensPath ? opts.tokensPath.split('/').pop() ?? null : null,
+          decisions: opts.decisionsPath ? opts.decisionsPath.split('/').pop() ?? null : null,
+          pages: hostUrls.map((u) => new URL(u).pathname),
+          viewport,
+          // Commande à relancer pour vérifier la migration.
+          command: [
+            'npm run reduce --',
+            q(hostUrls[0]),
+            ...hostUrls.slice(1).map((u) => q(new URL(u).pathname)),
+            `--target ${q(opts.targetPath)}`,
+            opts.tokensPath ? `--tokens ${q(opts.tokensPath)}` : '',
+            opts.sourcesPath ? `--sources ${q(opts.sourcesPath)}` : '',
+            opts.decisionsPath ? `--decisions ${q(opts.decisionsPath)}` : '',
+            `--viewport ${viewport.width}x${viewport.height}`,
+          ]
+            .filter(Boolean)
+            .join(' '),
+        },
       });
       await writeFile(files[2], migration.markdown);
       results.push({ host, dir, files, table, map, first: hostUrls[0], migration: migration.data });
@@ -144,6 +166,9 @@ export async function runReduce(opts) {
   }
   return results;
 }
+
+/** Argument de shell, entre apostrophes s'il le faut. @param {string} x */
+const q = (x) => (/[\s()'"$&;|<>*?]/.test(x) ? `'${x.replace(/'/g, `'\\''`)}'` : x);
 
 /** @param {string[]} argv */
 export function parseReduceArgs(argv) {
