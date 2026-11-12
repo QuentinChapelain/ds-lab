@@ -1,5 +1,5 @@
 {
-  "$comment": "Attendus du lot M : migration.md, écrit par reduce à chaque réduction, lu par le développeur sans l'outil. Écrits à la main avant le code. Les chiffres des pages en désordre sont un instantané de la table du lot B (reduce du 12/11/2026, ~/Desktop/Alumnforce-code/seance-2c/127.0.0.1_57877/2026-11-12T1331/table.json), corrigé par R7 étendue (un rayon de 50 % ou plus est une pilule). En cas d'écart entre l'outil et ce fichier : ne corriger ni l'un ni l'autre, signaler l'écart.",
+  "$comment": "Attendus du lot M : migration.md, écrit par reduce à chaque réduction, lu par le développeur sans l'outil. Écrits à la main avant le code. Les chiffres des pages en désordre sont un instantané de la table du lot B (réduction du 12/11/2026, hors dépôt), corrigé par R7 étendue (un rayon de 50 % ou plus est une pilule). En cas d'écart entre l'outil et ce fichier : ne corriger ni l'un ni l'autre, signaler l'écart.",
   "conditions": {
     "pages": ["/desordre/carte.html", "/desordre/compte.html", "/desordre/gestion.html"],
     "target": "fixtures/marque-demo/cible-valise.json",
