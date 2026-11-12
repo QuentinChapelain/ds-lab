@@ -62,6 +62,8 @@ const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cibl
  */
 /** Lot R : vignettes des autres éléments touchés par une décision, au plus. */
 const THUMBS = 3;
+/** Lot R : classes dont les lignes reçoivent des captures par version (5c : avant et après hors décision). */
+const CAPTURED = new Set(['décision', 'proche', 'auto', 'correction']);
 
 export async function runReduce(opts) {
   const { viewport = { width: 1366, height: 900 }, waitMs = DEFAULT_WAIT_MS, outRoot = 'local/reductions', now = new Date(), log = () => {} } = opts;
@@ -101,15 +103,20 @@ export async function runReduce(opts) {
         const page = await context.newPage();
         try {
           await gotoAndSettle(page, url, { waitMs });
-          pages.push(await simulatePage(page, map));
+          // Lot R, 5c : les captures par ligne viennent du passage des versions ; ici, pages entières seulement.
+          pages.push(await simulatePage(page, map, { maxCropped: 0 }));
         } finally {
           await page.close().catch(() => {});
         }
       }
       // Lot R, R-3 : une capture par version de chaque décision, sur la page d'origine ; puis une
       // vignette par autre élément touché (3 au plus), et le relevé de tous les éléments touchés.
+      // Lot R, 5c : les lignes proches, d'office et les corrections reçoivent les mêmes captures,
+      // en deux versions, « avant » et « après », sans vignettes.
       const pending = Object.entries(table.families).flatMap(([family, f]) =>
-        f.rows.filter((r) => r.class === 'décision').map((r) => ({ family, r, others: /** @type {any[]} */ ([]), touched: /** @type {any[]} */ ([]) })),
+        f.rows
+          .filter((r) => CAPTURED.has(r.class) && (r.class === 'décision' || (r.new && r.new !== r.old)))
+          .map((r) => ({ family, r, decision: r.class === 'décision', others: /** @type {any[]} */ ([]), touched: /** @type {any[]} */ ([]) })),
       );
       // R-8 : captures des versions en densité 2, dans un contexte à part (les pages entières restent en densité 1).
       const sharp = pending.length ? await browser.newContext({ viewport, storageState: opts.storageState ?? undefined, deviceScaleFactor: FRAME.scale }) : null;
@@ -119,19 +126,20 @@ export async function runReduce(opts) {
         try {
           await gotoAndSettle(page, url, { waitMs });
           for (const x of pending) {
-            const { family, r } = x;
-            const d = { key: rowKey(family, r), family, usage: r.usage, mapKey: r.usage ? `${r.old}|${r.usage}` : r.old, old: r.old, candidates: r.candidates };
+            const { family, r, decision } = x;
+            const candidates = decision ? r.candidates : [{ value: /** @type {string} */ (r.new), name: r.name }];
+            const d = { key: rowKey(family, r), family, usage: r.usage, mapKey: r.usage ? `${r.old}|${r.usage}` : r.old, old: r.old, candidates };
             const here = await touchedElements(page, d, table.thirdParty);
             if (!here.length) continue;
             for (const t of here) x.touched.push({ page: url, selector: t.selector, text: t.text });
             let rest = here.map((t) => t.index);
             if (!r.capture) {
-              const c = await captureDecision(page, d, table.thirdParty);
+              const c = await captureDecision(page, d, table.thirdParty, decision ? {} : { labels: ['avant', 'après'] });
               if (!c) continue;
               r.capture = c;
               rest = rest.filter((i) => i !== c.element.index);
             }
-            for (const i of rest) {
+            for (const i of decision ? rest : []) {
               if (x.others.length >= THUMBS) break;
               const c = await captureDecision(page, d, table.thirdParty, { index: i, compact: true });
               if (c) x.others.push(c);

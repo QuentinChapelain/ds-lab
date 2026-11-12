@@ -409,9 +409,12 @@ export async function simulatePage(page, map, { maxCropped = 80, fullPage = true
  *              voisin est le libellé d'un champ, le champ aussi ;
  *   gouttière  les deux premiers enfants qu'elle sépare ;
  *   champ      son libellé (label associé).
- * @param {{ key: string, i?: number, family: string, usage?: string }} o  i : élément imposé (versions suivantes)
+ * Lot R : lignes de texte autour (lines) : chaque ligne visible proche de l'élément, avec le bloc
+ * qui la porte ; avec un cadre (clip), le nombre de lignes que ses bords haut et bas coupent.
+ * @param {{ key: string, i?: number, family: string, usage?: string, lines?: boolean, clip?: { x: number, y: number, width: number, height: number } }} o
+ *   i : élément imposé (versions suivantes)
  */
-export function versionInPage({ key, i, family, usage }) {
+export function versionInPage({ key, i, family, usage, lines = false, clip }) {
   const sim = /** @type {any} */ (window).__dsSim;
   const ops = sim.ops.filter((/** @type {any} */ op) => op.key === key);
   if (!ops.length) return null;
@@ -576,6 +579,38 @@ export function versionInPage({ key, i, family, usage }) {
       if (!contrast || ratio / threshold < contrast.ratio / contrast.threshold) contrast = { ratio: Math.round(ratio * 10000) / 10000, threshold, text: hexOf(fg), bg: hexOf(bg) };
     }
   }
+  // Lignes de texte visibles (boîtes de ligne), avec le bloc qui les porte, près de l'élément.
+  /** @type {{ line: { x: number, y: number, width: number, height: number }, block: { x: number, y: number, width: number, height: number } }[]} */
+  const textLines = [];
+  if (lines || clip) {
+    const all = [er, ...around.map((a) => a.rect)];
+    const zone = clip ?? {
+      x: Math.min(...all.map((r) => r.x)) - 32,
+      y: Math.min(...all.map((r) => r.y)) - 440,
+      width: Math.max(...all.map((r) => r.x + r.width)) - Math.min(...all.map((r) => r.x)) + 64,
+      height: Math.max(...all.map((r) => r.y + r.height)) - Math.min(...all.map((r) => r.y)) + 880,
+    };
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      if (!(n.textContent ?? '').trim()) continue;
+      let block = n.parentElement;
+      if (!block || !visible(block)) continue;
+      while (block.parentElement && getComputedStyle(block).display.startsWith('inline')) block = block.parentElement;
+      const range = document.createRange();
+      range.selectNodeContents(n);
+      const b = rectOf(block);
+      for (const q of range.getClientRects()) {
+        const line = { x: q.left + window.scrollX, y: q.top + window.scrollY, width: q.width, height: q.height };
+        if (line.width < 1 || line.height < 1) continue;
+        if (line.x > zone.x + zone.width || line.x + line.width < zone.x || line.y > zone.y + zone.height || line.y + line.height < zone.y) continue;
+        textLines.push({ line, block: b });
+      }
+    }
+  }
+  /** Lignes coupées par le bord haut ou bas du cadre. */
+  const cutLines = clip
+    ? textLines.filter(({ line: l }) => (l.y < clip.y - 0.5 && l.y + l.height > clip.y + 0.5) || (l.y < clip.y + clip.height - 0.5 && l.y + l.height > clip.y + clip.height + 0.5)).length
+    : 0;
   return {
     i: index,
     tag: el.tagName.toLowerCase(),
@@ -584,6 +619,8 @@ export function versionInPage({ key, i, family, usage }) {
     around,
     space,
     contrast,
+    ...(lines ? { lines: textLines } : {}),
+    ...(clip ? { cutLines } : {}),
     doc: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight },
   };
 }
@@ -671,6 +708,23 @@ export function frameOf(probes, d) {
     y0 = top;
     y1 = top + FRAME.maxHeight;
   }
+  // Lot R : un bord qui coupe une ligne de texte s'élargit jusqu'au bord du bloc qui la porte,
+  // dans la limite de 400 px de haut ; au-delà, il passe entre deux lignes, jamais au milieu.
+  const all = probes.flatMap((p) => /** @type {any} */ (p).lines ?? []);
+  for (let round = 0; round < 6 && all.length; round++) {
+    const across = all.filter((/** @type {any} */ t) => t.line.x < x1 && t.line.x + t.line.width > x0);
+    const top = across.filter((/** @type {any} */ t) => t.line.y < y0 - 0.5 && t.line.y + t.line.height > y0 + 0.5);
+    const bottom = across.filter((/** @type {any} */ t) => t.line.y < y1 - 0.5 && t.line.y + t.line.height > y1 + 0.5);
+    if (!top.length && !bottom.length) break;
+    if (top.length) {
+      const edge = Math.max(0, Math.floor(Math.min(...top.map((/** @type {any} */ t) => t.block.y))));
+      y0 = y1 - edge <= FRAME.maxHeight ? edge : Math.ceil(Math.max(...top.map((/** @type {any} */ t) => t.line.y + t.line.height)));
+    }
+    if (bottom.length) {
+      const edge = Math.min(docH, Math.ceil(Math.max(...bottom.map((/** @type {any} */ t) => t.block.y + t.block.height))));
+      y1 = edge - y0 <= FRAME.maxHeight ? edge : Math.floor(Math.min(...bottom.map((/** @type {any} */ t) => t.line.y)));
+    }
+  }
   return { x: x0, y: y0, width: Math.max(8, x1 - x0), height: Math.max(8, y1 - y0) };
 }
 
@@ -682,17 +736,18 @@ export function frameOf(probes, d) {
  * @param {import('playwright-core').Page} page  page d'origine déjà chargée
  * @param {{ key: string, family: string, usage?: string, mapKey: string, old: string, candidates: { value: string, name?: string }[] }} d
  * @param {string[]} thirdParty
- * @param {{ index?: number, compact?: boolean }} [opts]  index : élément imposé (vignette d'un autre élément touché) ;
- *   compact : cadre réduit à l'élément et à son voisin direct (ou aux enfants d'une gouttière), sans libellé ni champ du voisin
+ * @param {{ index?: number, compact?: boolean, labels?: string[] }} [opts]  index : élément imposé (vignette d'un autre élément touché) ;
+ *   compact : cadre réduit à l'élément et à son voisin direct (ou aux enfants d'une gouttière), sans libellé ni champ du voisin ;
+ *   labels : noms des versions (lot R, 5c : « avant », « après » pour une ligne appliquée)
  * @returns {Promise<DecisionCapture | null>} null si la ligne ne touche rien sur cette page
  */
-export async function captureDecision(page, d, thirdParty = [], { index, compact = false } = {}) {
-  const versions = [{ label: 'actuelle', value: d.old }, ...d.candidates.map((c, n) => ({ label: `candidat ${n + 1}`, value: c.value, name: c.name }))];
+export async function captureDecision(page, d, thirdParty = [], { index, compact = false, labels } = {}) {
+  const versions = [{ label: labels?.[0] ?? 'actuelle', value: d.old }, ...d.candidates.map((c, n) => ({ label: labels?.[n + 1] ?? `candidat ${n + 1}`, value: c.value, name: c.name }))];
   /** @param {string} value @param {number} [i] */
   const pose = async (value, i) => {
     await page.evaluate(scanInPage, { [d.family]: { [d.mapKey]: value }, thirdParty });
     await page.evaluate(showInPage, { on: true });
-    return page.evaluate(versionInPage, { key: d.key, i, family: d.family, usage: d.usage });
+    return page.evaluate(versionInPage, { key: d.key, i, family: d.family, usage: d.usage, lines: true });
   };
   // Premier passage : l'élément et son contexte sous chaque version, pour un cadre commun.
   const first = await pose(versions[0].value, index);
@@ -715,7 +770,7 @@ export async function captureDecision(page, d, thirdParty = [], { index, compact
   for (const v of versions) {
     await pose(v.value, first.i);
     const buf = await page.screenshot({ fullPage: true, clip, animations: 'disabled' });
-    const m = await page.evaluate(versionInPage, { key: d.key, i: first.i, family: d.family, usage: d.usage });
+    const m = await page.evaluate(versionInPage, { key: d.key, i: first.i, family: d.family, usage: d.usage, clip });
     const r = m?.rect ?? first.rect;
     /** @param {Rect} q */
     const rel = (q) => ({ x: r2(q.x - clip.x), y: r2(q.y - clip.y), width: r2(q.width), height: r2(q.height) });
@@ -727,6 +782,7 @@ export async function captureDecision(page, d, thirdParty = [], { index, compact
       around: m?.around ?? [],
       space: (m?.space ?? []).map((z) => ({ ...z, rect: rel(z.rect) })),
       ...(m?.contrast ? { contrast: m.contrast } : {}),
+      cutLines: m?.cutLines ?? 0,
       shot: {
         png: buf.toString('base64'),
         width: clip.width,

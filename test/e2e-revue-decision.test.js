@@ -347,3 +347,31 @@ test('revue : la remise à zéro écarte aussi les décisions venues de --decisi
     await context.close();
   }
 });
+
+test('revue : cartes proche, d’office et correction, sélecteur « avant · après » au-dessus de l’image ; ←/→ ; « Tout basculer » les bascule toutes', async () => {
+  const { context, page } = await open();
+  try {
+    const cards = page.locator('article.row.avant-apres');
+    const n = await cards.count();
+    const applied = [...byId.values()].filter((x) => ['proche', 'auto', 'correction'].includes(x.row.class) && x.row.capture).length;
+    assert.equal(n, applied, 'une carte avant / après par ligne appliquée capturée');
+    assert.equal(await page.locator('article.row.avant-apres .cmp, article.row.avant-apres .etat').count(), 0, 'plus de pastille sur l’image');
+    // Une carte proche : sa section est ouverte par défaut (les « d'office » sont repliées).
+    const c = page.locator('article.row.c-proche.avant-apres').first();
+    assert.deepEqual(await c.locator('.versions .v .nom > span').allTextContents(), ['avant', 'après']);
+    assert.equal(await c.locator('.vue .ver[data-v="0"]').isVisible(), true);
+    await c.locator('.versions .v[data-v="1"]').click();
+    assert.equal(await c.locator('.vue .ver[data-v="1"]').isVisible(), true);
+    assert.equal(await c.locator('.vue .ver[data-v="0"]').isVisible(), false);
+    await c.focus();
+    await page.keyboard.press('ArrowLeft');
+    assert.equal(await c.getAttribute('data-vue'), '0');
+    await page.click('#tout');
+    assert.deepEqual([...new Set(await cards.evaluateAll((els) => els.map((e) => e.getAttribute('data-vue'))))], ['1'], 'toutes en « après »');
+    await page.click('#tout');
+    assert.deepEqual([...new Set(await cards.evaluateAll((els) => els.map((e) => e.getAttribute('data-vue'))))], ['0'], 'toutes en « avant »');
+    assert.deepEqual(await exported(page), {}, 'basculer ne change pas l’export');
+  } finally {
+    await context.close();
+  }
+});

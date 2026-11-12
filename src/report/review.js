@@ -38,23 +38,6 @@ const PROP_LABELS = /** @type {Record<string, string>} */ ({
   'border-radius': 'arrondi',
 });
 
-/**
- * Une couche du comparateur : la capture et le repère de l'élément modifié.
- * @param {import('../browser/simulate.js').Shot} shot @param {string} cls
- */
-function layer(shot, cls) {
-  const pct = (/** @type {number} */ n, /** @type {number} */ d) => `${Math.max(0, Math.min(100, (100 * n) / d)).toFixed(2)}%`;
-  const b = shot.box;
-  return `<div class="layer ${cls}">${img(shot.png)}<span class="repere" style="left:${pct(b.x, shot.width)};top:${pct(b.y, shot.height)};width:${pct(b.width, shot.width)};height:${pct(b.height, shot.height)}"></span></div>`;
-}
-
-/**
- * Comparateur : avant et après au même endroit, on bascule d'un clic.
- * @param {{ before: import('../browser/simulate.js').Shot, after: import('../browser/simulate.js').Shot }} x
- */
-const comparator = (x) =>
-  `<button type="button" class="cmp" data-etat="avant" title="Cliquer pour basculer entre avant et après">${layer(x.before, 'a')}${layer(x.after, 'b')}<span class="etat"></span></button>`;
-
 const FAMILY_LABELS = /** @type {Record<string, string>} */ ({ radii: 'Rayons', spacing: 'Espacements', fontSizes: 'Tailles de police', colors: 'Couleurs' });
 const CLASS_LABELS = /** @type {Record<string, [string, string]>} */ ({
   décision: ['Décisions', 'L’écart se voit, ou le contraste l’impose. Choisis une valeur parmi les candidates ; sans choix, l’ancienne reste (R5).'],
@@ -142,6 +125,29 @@ function contrastLine(usage, c) {
   const pass = c.ratio >= c.threshold - 1e-9;
   const other = usage === 'texte' || usage === 'bordure' ? `sur le fond actuel ${c.bg}` : `avec le texte actuel ${c.text}`;
   return `<small>${fr(c.ratio)} · ${pass ? 'passe' : 'sous'} le seuil de ${fr(c.threshold)}</small><small>${esc(other)}</small>`;
+}
+
+/**
+ * Lot R, 5c : capture d'une ligne appliquée (proche, d'office, correction), en deux versions,
+ * « avant » et « après », avec le même sélecteur que les décisions (clic, ou ←/→ quand la
+ * carte a le focus) ; « Tout basculer » les bascule toutes. Même cadre et même taille que pour
+ * une décision, zone d'espace hachurée et cotée.
+ * @param {string} family @param {any} r
+ */
+function beforeAfter(family, r) {
+  const vs = r.capture?.versions;
+  if (!vs || vs.length < 2) return '';
+  const buttons = vs
+    .slice(0, 2)
+    .map((/** @type {any} */ v, /** @type {number} */ i) => `<button type="button" class="v" data-v="${i}" data-value="${esc(v.value)}" aria-pressed="${i === 0}">${glyph(family, v.value)}<span class="nom"><span>${i === 0 ? 'avant' : 'après'}</span><small>${esc(short(family, v.value))}</small></span></button>`)
+    .join('');
+  const a = vs[0].shot;
+  const scale = a.width < SMALL_FRAME ? 2 : 1;
+  return `<div class="versions" role="group" aria-label="Avant, après">${buttons}</div>
+  <div class="vue" style="width:${a.width * scale}px;aspect-ratio:${a.width} / ${a.height}">${vs
+    .slice(0, 2)
+    .map((/** @type {any} */ v, /** @type {number} */ i) => `<div class="ver" data-v="${i}"${i ? ' hidden' : ''}>${img(v.shot.png)}${zones(v.shot, v.space ?? [])}</div>`)
+    .join('')}</div>`;
 }
 
 /** Lot R : « Ce choix s'applique à n éléments ». @param {any} r */
@@ -247,16 +253,11 @@ function detail(family, r, key, cls) {
  * @param {{ host: string, stamp: string, target: string, decisions: Record<string, string | false> }} meta
  */
 export function renderReview(table, pages, meta) {
-  /** @type {Map<string, { before: import('../browser/simulate.js').Shot, after: import('../browser/simulate.js').Shot }[]>} */
-  const crops = new Map();
   /** @type {Map<string, Set<string>>} */
   const props = new Map();
   for (const p of pages)
     for (const c of p.changes) {
       const k = c.key ?? `${c.family}|${c.old}`;
-      const list = crops.get(k) ?? [];
-      for (const x of c.crops) if (list.length < 2) list.push(x);
-      crops.set(k, list);
       const set = props.get(k) ?? new Set();
       for (const name of c.props ?? []) set.add(PROP_LABELS[name] ?? name);
       props.set(k, set);
@@ -272,8 +273,8 @@ export function renderReview(table, pages, meta) {
         const cards = rows
           .map((r) => {
             const key = rowKey(family, r);
-            const list = crops.get(key) ?? [];
-            const shots = list.length ? `<div class="shots">${list.map(comparator).join('')}</div>` : '';
+            const shots = cls === 'décision' ? '' : beforeAfter(family, r);
+            const twoWay = !!shots;
             const whatList = [...(props.get(key) ?? [])];
             const pick =
               cls === 'décision'
@@ -289,10 +290,10 @@ export function renderReview(table, pages, meta) {
             const decision = cls === 'décision';
             const choice = decision ? '<span class="choix">Pas encore choisie</span>' : '<span class="choix"></span>';
             const head = `<p class="titre"><b class="id">${esc(r.id ?? '')}</b> ${esc(r.title ?? '')}${choice}</p>`;
-            return `<article class="row c-${isOut(cls) ? 'hors' : esc(cls)}${decision ? ' decision a-trancher' : ''}" data-key="${esc(key)}"${decision ? ' tabindex="0"' : ''}>
+            return `<article class="row c-${isOut(cls) ? 'hors' : esc(cls)}${decision ? ' decision a-trancher' : ''}${twoWay ? ' avant-apres' : ''}" data-key="${esc(key)}"${decision || twoWay ? ' tabindex="0"' : ''}>
   ${head}
   <header>${glyph(family, r.old)}<code>${esc(r.old)}</code>${arrow}${usage}${what}</header>
-  ${decision ? portee(r) : ''}
+  ${decision || r.capture ? portee(r) : ''}
   ${pick}${shots}
   ${detail(family, r, key, cls)}
 </article>`;
@@ -361,8 +362,7 @@ ${byClass}
   .cmp .etat { position:absolute; top:6px; right:6px; font:600 12px/1 system-ui, sans-serif; padding:4px 8px; border-radius:999px; color:#fff; background:#5b616e; }
   .cmp[data-etat="apres"] .etat { background:#17603a; }
   .cmp[data-etat="avant"] .etat::after { content:"avant"; } .cmp[data-etat="apres"] .etat::after { content:"après"; }
-  .repere { position:absolute; border:2px dashed #d6249f; border-radius:3px; pointer-events:none; }
-  body.sans-reperes .repere { display:none; }
+  .row.avant-apres:focus-visible { outline:3px solid #2563eb; outline-offset:2px; }
   .txt { line-height:1; font-weight:500; }
   .pick { display:flex; flex-direction:column; gap:4px; margin:10px 0 0; } .pick label, .ok { display:flex; align-items:center; gap:8px; cursor:pointer; }
   .ok { margin-top:8px; font-size:14px; }
@@ -402,7 +402,7 @@ ${byClass}
 <main>
 <h1>Revue de la réduction : ${esc(meta.host)}</h1>
 <p class="lede">${esc(meta.stamp)} · cible : <code>${esc(meta.target)}</code> · ${pages.length} page(s) simulée(s). Rien n’a été modifié sur le site : les nouvelles valeurs sont posées dans le navigateur de l’audit, le temps des captures. Les pseudo-éléments (icônes) ne sont pas simulés.</p>
-<p class="lede"><b>Pour voir un changement</b> : clique sur une capture, elle bascule entre avant et après au même endroit. Chaque capture ne contient que le changement de sa ligne. Le cadre en pointillés entoure l’élément modifié. La touche <code>Espace</code> bascule toutes les captures à la fois.</p>
+<p class="lede"><b>Pour voir un changement</b> : choisis « avant » ou « après » au-dessus de la capture (ou <code>←</code> <code>→</code> quand la carte a le focus), l’image change au même endroit. Chaque capture ne contient que le changement de sa ligne. La touche <code>Espace</code> bascule toutes les captures à la fois.</p>
 <p class="lede"><b>Pour trancher une décision</b> : parcours ses versions (clic, ou <code>←</code> <code>→</code> quand la carte a le focus), puis « Choisir cette version » (ou <code>Entrée</code>). Afficher une version ne change rien à l’export ; une décision pas encore choisie n’y figure pas, l’actuelle choisie y vaut <code>false</code>.</p>
 ${sections}
 <h2>Pages entières</h2>
@@ -536,21 +536,22 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
     var t = e.target && e.target.closest ? e.target : null; if (!t) return;
     var c = t.closest('.cmp');
     if (c) { flip(c); return; }
-    var row = t.closest('.row.decision'); if (!row) return;
+    var row = t.closest('.row.decision, .row.avant-apres'); if (!row) return;
     var v = t.closest('.versions .v');
     if (v) { show(row, Number(v.getAttribute('data-v'))); return; }
-    if (t.closest('.retenir')) { retain(row, shown(row)); refresh(); }
+    if (row.classList.contains('decision') && t.closest('.retenir')) { retain(row, shown(row)); refresh(); }
   });
   var global = 'avant';
   function flipAll() {
     global = global === 'avant' ? 'apres' : 'avant';
     document.querySelectorAll('.cmp').forEach(function (c) { flip(c, global); });
+    document.querySelectorAll('.row.avant-apres').forEach(function (r) { show(r, global === 'apres' ? 1 : 0); });
   }
   document.getElementById('tout').addEventListener('click', flipAll);
   document.addEventListener('keydown', function (e) {
-    var row = e.target && e.target.closest ? e.target.closest('.row.decision') : null;
+    var row = e.target && e.target.closest ? e.target.closest('.row.decision, .row.avant-apres') : null;
     if (row && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { e.preventDefault(); show(row, shown(row) + (e.key === 'ArrowRight' ? 1 : -1)); return; }
-    if (row && e.key === 'Enter' && e.target === row) { e.preventDefault(); retain(row, shown(row)); refresh(); return; }
+    if (row && row.classList.contains('decision') && e.key === 'Enter' && e.target === row) { e.preventDefault(); retain(row, shown(row)); refresh(); return; }
     var t = e.target && e.target.tagName;
     if (e.code === 'Space' && t !== 'INPUT' && t !== 'BUTTON') { e.preventDefault(); flipAll(); }
   });

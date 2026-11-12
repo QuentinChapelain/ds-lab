@@ -22,6 +22,8 @@ const E = JSON.parse(await readFile(new URL('../fixtures/marque-demo/expected-de
 let servers;
 /** @type {any[]} */
 let decisions = [];
+/** Lot R, 5c : lignes proches, d'office et corrections. @type {any[]} */
+let applied = [];
 /** @type {any} */
 let saved;
 
@@ -38,6 +40,7 @@ before(async () => {
     now: new Date(2026, 10, 12, 16, 0),
   });
   decisions = Object.values(r.table.families).flatMap((/** @type {any} */ f) => f.rows.filter((/** @type {any} */ x) => x.class === 'décision'));
+  applied = Object.values(r.table.families).flatMap((/** @type {any} */ f) => f.rows.filter((/** @type {any} */ x) => ['proche', 'auto', 'correction'].includes(x.class)));
   saved = JSON.parse(await readFile(r.files[0], 'utf8'));
 });
 
@@ -171,5 +174,33 @@ test('simulation : la taille du texte d’un champ rempli change aussi, comme sa
     assert.equal(cs.size, '16px', 'taille du texte');
   } finally {
     await browser.close();
+  }
+});
+
+test('5c : pour chaque ligne proche, d’office ou corrigée, la valeur calculée de l’élément vaut l’ancienne avant et la nouvelle après', () => {
+  assert.ok(applied.length > 0);
+  for (const r of applied) {
+    assert.ok(r.capture, `${r.id} sans capture`);
+    const [before, after, ...rest] = r.capture.versions;
+    assert.deepEqual([before.label, after.label, rest.length], ['avant', 'après', 0], r.id);
+    assert.deepEqual([before.value, after.value], [r.old, r.new], r.id);
+    for (const [v, want] of /** @type {const} */ ([[before, r.old], [after, r.new]])) {
+      const measured = Object.entries(v.measured);
+      assert.ok(measured.length > 0, `${r.id} ${v.label} : aucune propriété mesurée`);
+      for (const [prop, value] of measured) assert.equal(value, want, `${r.id} ${v.label} : ${prop}`);
+      assert.equal(v.shot.scale, 2, `${r.id} : densité`);
+      assert.deepEqual([v.shot.width, v.shot.height], [r.capture.clip.width, r.capture.clip.height], `${r.id} : même cadre`);
+    }
+    assert.equal(r.capture.others.length, 0, `${r.id} : pas de vignettes`);
+    assert.ok(r.capture.elements >= 1, `${r.id} : éléments`);
+  }
+});
+
+test('cadre : aucune ligne de texte coupée par le haut ou le bas, 400 px de haut au plus', () => {
+  const captures = [...decisions, ...applied].flatMap((r) => [r.capture, ...(r.capture?.others ?? [])].filter(Boolean).map((c) => ({ id: r.id, c })));
+  assert.ok(captures.length > 0);
+  for (const { id, c } of captures) {
+    assert.ok(c.clip.height <= 400, `${id} : ${c.clip.height} px de haut`);
+    for (const v of c.versions) assert.equal(v.cutLines, 0, `${id} ${v.label} : ${v.cutLines} ligne(s) coupée(s)`);
   }
 });
