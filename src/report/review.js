@@ -195,6 +195,53 @@ function decisionCard(family, r) {
 }
 
 /**
+ * Lot R : motif réécrit en clair, et la règle qui l'impose. Un motif inconnu reste tel quel.
+ * @param {string} reason
+ * @returns {{ text: string, rule: string | null }}
+ */
+export function plainReason(reason) {
+  const rule = /\((R\d+)\)\s*$/.exec(reason)?.[1] ?? null;
+  /** @type {[RegExp, (m: RegExpExecArray) => string][]} */
+  const RULES = [
+    [/^ΔE ([\d.]+) à la valeur la plus proche de la valise \((.+)\) : aucune échelle/, (m) => `aucune couleur de la valise n’en est assez proche (la plus proche, ${m[2]}, est à ΔE ${m[1].replace('.', ',')}) : la valeur est laissée telle quelle`],
+    [/^fond plus sombre que le pas 10/, () => 'ce fond est plus sombre que tous les fonds de la valise : il est laissé tel quel'],
+    [/^texte posé sur un fond sombre/, () => 'ce texte est posé sur un fond sombre que la valise ne couvre pas : sa couleur est à choisir à l’œil'],
+    [/^la paire passe avant et échoue après/, () => 'le contraste suffit aujourd’hui, mais ne suffirait plus avec la valeur la plus proche'],
+    [/^texte sous 4,5:1 avant, au seuil après/, () => 'ce texte n’était pas assez lisible (contraste sous 4,5:1) ; la valeur proposée le rend lisible'],
+    [/^bordure de champ sous 3:1 avant, au seuil après/, () => 'le bord de ce champ se distinguait mal du fond (contraste sous 3:1) ; la valeur proposée le rend visible'],
+    [/^texte porté sous 4,5:1 avant, au seuil après/, () => 'le texte posé sur ce fond n’était pas assez lisible (contraste sous 4,5:1) ; ce fond le rend lisible'],
+    [/^texte posé sur .+ : utiliser onSolid/, () => 'un texte est posé sur ce fond ; si le fond change, la couleur du texte devra changer pour rester lisible'],
+    [/^espacement négatif/, () => 'cet espacement est négatif : il relève de la mise en page et reste tel quel'],
+    [/^espacement supérieur à (\d+) px/, (m) => `cet espacement dépasse ${m[1]} px : il relève de la mise en page et reste tel quel`],
+  ];
+  for (const [re, f] of RULES) {
+    const m = re.exec(reason);
+    if (m) return { text: f(m), rule };
+  }
+  return { text: reason, rule };
+}
+
+/**
+ * Lot R : « Détail » d'une carte, fermé par défaut, en bas de la carte : motif en clair,
+ * contrastes chiffrés, usages, sélecteurs, clé technique. Le contraste « après » est celui de
+ * la valeur la plus proche pour une décision, de la valeur proposée sinon.
+ * @param {string} family @param {any} r @param {string} key @param {string} cls
+ */
+function detail(family, r, key, cls) {
+  const against = cls === 'décision' ? 'avec la valeur la plus proche' : 'avec la valeur proposée';
+  const ctr = r.contrast ? `<dt>Contraste</dt><dd>${fr(r.contrast.before)} avant → ${fr(r.contrast.after)} ${against} (seuil ${fr(r.contrast.threshold)})</dd>` : '';
+  const gap = r.delta ? ` · écart ${family === 'colors' ? 'ΔE ' : ''}${fr(r.delta)}${family === 'colors' ? '' : ' px'}` : '';
+  const motif = r.reason ? plainReason(r.reason) : null;
+  const sel = (r.capture?.touched?.length ? [...new Set(r.capture.touched.map((/** @type {any} */ t) => t.selector))] : r.selectors) ?? [];
+  return `<details class="detail"><summary>Détail</summary><dl>
+    ${motif ? `<dt>Motif</dt><dd>${esc(motif.text)}${motif.rule ? ` <i>(règle ${esc(motif.rule)})</i>` : ''}</dd>` : ''}
+    ${ctr}<dt>Usages</dt><dd>${r.count}${gap}</dd>
+    <dt>Sélecteurs</dt><dd>${sel.map((/** @type {string} */ x) => `<code>${esc(x)}</code>`).join(' ')}</dd>
+    <dt>Clé technique</dt><dd><code>${esc(key)}</code></dd>
+  </dl></details>`;
+}
+
+/**
  * @param {ReturnType<typeof import('../reduce/propose.js').propose>} table
  * @param {{ url: string, changes: import('../browser/simulate.js').SimulatedChange[], before: string | null, after: string | null }[]} pages
  * @param {{ host: string, stamp: string, target: string, decisions: Record<string, string | false> }} meta
@@ -227,7 +274,7 @@ export function renderReview(table, pages, meta) {
             const key = rowKey(family, r);
             const list = crops.get(key) ?? [];
             const shots = list.length ? `<div class="shots">${list.map(comparator).join('')}</div>` : '';
-            const what = [...(props.get(key) ?? [])].map((x) => `<span class="quoi">${esc(x)}</span>`).join('');
+            const whatList = [...(props.get(key) ?? [])];
             const pick =
               cls === 'décision'
                 ? decisionCard(family, r)
@@ -235,18 +282,19 @@ export function renderReview(table, pages, meta) {
                   ? `<label class="ok"><input type="checkbox" name="${esc(key)}" checked> appliquer</label>`
                   : '';
             const arrow = cls === 'décision' ? '' : r.new && r.new !== r.old ? `<b class="arrow">→</b>${glyph(family, r.new)}<code>${esc(r.new)}</code>${r.name ? ` <i>${esc(r.name)}</i>` : ''}` : r.name ? ` <i>${esc(r.name)}</i>` : '';
-            const usage = (r.usages ?? []).map((x) => `<span class="usage">${esc(x)}</span>`).join('');
-            const contrast = r.contrast
-              ? ` <span class="ctr">contraste ${String(r.contrast.before).replace('.', ',')} → ${String(r.contrast.after).replace('.', ',')} (seuil ${String(r.contrast.threshold).replace('.', ',')})</span>`
-              : '';
-            const motif = r.reason || r.contrast ? `<p class="motif">${r.reason ? `Motif : ${esc(r.reason)}.` : ''}${contrast}</p>` : '';
-            const choice = cls === 'décision' ? '<span class="choix">Pas encore choisie</span>' : '';
-            const head = r.id ? `<p class="titre"><b class="id">${esc(r.id)}</b> ${esc(r.title ?? '')}${choice}</p>\n  ` : '';
+            // Une seule étiquette quand deux disent la même chose (« retrait » et « retrait intérieur ») : la plus explicite.
+            const usageList = (r.usages ?? []).filter((/** @type {string} */ u) => !whatList.some((w) => w === u || w.startsWith(`${u} `)));
+            const usage = usageList.map((/** @type {string} */ x) => `<span class="usage">${esc(x)}</span>`).join('');
+            const what = whatList.map((x) => `<span class="quoi">${esc(x)}</span>`).join('');
             const decision = cls === 'décision';
+            const choice = decision ? '<span class="choix">Pas encore choisie</span>' : '<span class="choix"></span>';
+            const head = `<p class="titre"><b class="id">${esc(r.id ?? '')}</b> ${esc(r.title ?? '')}${choice}</p>`;
             return `<article class="row c-${isOut(cls) ? 'hors' : esc(cls)}${decision ? ' decision a-trancher' : ''}" data-key="${esc(key)}"${decision ? ' tabindex="0"' : ''}>
-  ${head}<header>${glyph(family, r.old)}<code>${esc(r.old)}</code>${arrow}${usage}${what}${cls === 'décision' ? '' : `<span class="n">×${r.count}${r.delta ? ` · écart ${r.delta}` : ''}</span>`}</header>
-  ${motif}${cls === 'décision' ? portee(r) : `<div class="sel">${r.selectors.map((x) => `<code>${esc(x)}</code>`).join(' ')}</div>`}
+  ${head}
+  <header>${glyph(family, r.old)}<code>${esc(r.old)}</code>${arrow}${usage}${what}</header>
+  ${decision ? portee(r) : ''}
   ${pick}${shots}
+  ${detail(family, r, key, cls)}
 </article>`;
           })
           .join('\n');
@@ -290,7 +338,10 @@ ${byClass}
   .row.c-décision { border-left-color:#b45309; } .row.c-correction { border-left-color:#17603a; }
   .usage { font-size:12px; border:1px solid var(--line); border-radius:999px; padding:0 8px; color:var(--ink); }
   .motif { margin:6px 0 0; font-size:14px; } .ctr { color:var(--soft); font-variant-numeric:tabular-nums; } .row.c-proche { border-left-color:#2563eb; } .row.c-auto { border-left-color:#6b7280; }
-  .row.refuse { opacity:.55; }
+  .row.refuse, .row.refuse.c-proche, .row.refuse.c-auto, .row.refuse.c-correction { border-color:#9aa0aa; border-left-color:#9aa0aa; }
+  .detail { margin:8px 0 0; } .detail summary { font-weight:500; font-size:13px; color:var(--soft); padding:2px 0; }
+  .detail dl { display:grid; grid-template-columns:max-content 1fr; gap:4px 12px; margin:6px 0 0; font-size:13px; }
+  .detail dt { color:var(--soft); } .detail dd { margin:0; display:flex; flex-wrap:wrap; gap:4px; align-items:baseline; }
   .row header { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
   .titre { margin:0 0 6px; font-weight:600; } .titre .id { font:600 12px/1.4 ui-monospace, Menlo, monospace; color:var(--soft); margin-right:6px; }
   .arrow { color:var(--soft); margin:0 4px; }
@@ -320,7 +371,7 @@ ${byClass}
   .cmp.page { display:grid; }
   .row.decision:focus-visible { outline:3px solid #2563eb; outline-offset:2px; }
   .row.decision { border-left-color:#c5cad3; } .row.a-trancher { border:3px solid #ea580c; border-left-width:6px; }
-  .row.decision .titre { display:flex; align-items:baseline; gap:6px; } .choix { margin-left:auto; font-weight:400; font-size:14px; color:var(--soft); white-space:nowrap; }
+  .row .titre { display:flex; align-items:baseline; gap:6px; } .choix { margin-left:auto; font-weight:400; font-size:14px; color:var(--soft); white-space:nowrap; }
   .versions { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 8px; }
   .versions .v { font:inherit; font-size:13px; display:inline-flex; align-items:center; gap:8px; text-align:left; border:1px solid var(--line); background:#fff; border-radius:8px; padding:5px 10px; cursor:pointer; color:var(--ink); }
   .versions .v .nom { display:flex; flex-direction:column; } .versions .v small { color:var(--soft); font-size:12px; }
@@ -342,6 +393,8 @@ ${byClass}
   .retenir { font:inherit; font-size:14px; font-weight:600; border:0; border-radius:6px; padding:7px 14px; cursor:pointer; background:#16181d; color:#fff; }
   .barre { position:fixed; left:0; right:0; bottom:0; background:#16181d; color:#fff; padding:10px 24px; display:flex; gap:16px; align-items:center; justify-content:center; font-size:14px; }
   .barre label { display:inline-flex; align-items:center; gap:6px; cursor:pointer; }
+  #ecartees { color:#f6c39f; }
+  .barre .raz[data-confirmer] { background:#ea580c; color:#fff; }
   .barre button { font:inherit; border:0; border-radius:6px; padding:7px 14px; cursor:pointer; background:#fff; color:#16181d; font-weight:600; }
 </style>
 </head>
@@ -356,14 +409,22 @@ ${sections}
 <p class="lede">Avec toutes les propositions appliquées. Clique dans la page pour basculer.</p>
 ${full || '<p class="lede">Aucune capture de page.</p>'}
 </main>
-<div class="barre"><span id="bilan"></span><button id="tout" type="button">Tout basculer</button><label><input id="reperes" type="checkbox" checked> repères</label><button id="export" type="button">Exporter mes décisions</button></div>
+<div class="barre"><span id="bilan"></span><span id="ecartees" hidden>décisions du fichier écartées</span><button id="suivante" type="button">Suivante à choisir</button><button id="tout" type="button">Tout basculer</button><label><input id="reperes" type="checkbox" checked> repères</label><button id="export" type="button">Exporter mes décisions</button><button id="raz" type="button" class="raz">Tout remettre à zéro</button></div>
 <script>
 (function () {
-  var KEY = 'ds-lab-revue:' + ${JSON.stringify(meta.host)};
+  // Mémoire propre à chaque réduction : hôte et horodatage.
+  var KEY = 'ds-lab-revue:' + ${JSON.stringify(meta.host)} + ':' + ${JSON.stringify(meta.stamp)};
   var previous = ${JSON.stringify(meta.decisions).replace(/</g, '\\u003c')};
+  // Décisions venues de --decisions : écartées par une remise à zéro, jusqu'à la prochaine réduction.
+  var FILE_KEY = KEY + ':fichier';
+  var discarded = false;
+  try { discarded = localStorage.getItem(FILE_KEY) === 'écartées'; } catch (e) {}
+  var hasFile = Object.keys(previous).length > 0;
   var saved = {};
   try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) {}
-  var state = Object.assign({}, previous, saved);
+  var state = Object.assign({}, discarded ? {} : previous, saved);
+  function showDiscarded() { document.getElementById('ecartees').hidden = !(discarded && hasFile); }
+  showDiscarded();
   function rows() { return Array.prototype.slice.call(document.querySelectorAll('.row[data-key]')); }
   // Décisions : une version affichée (sans effet sur l'export), une version retenue (exportée).
   function versionsOf(row) { return Array.prototype.slice.call(row.querySelectorAll('.versions .v')); }
@@ -413,19 +474,59 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
       } else {
         var box = row.querySelector('input[type=checkbox]');
         if (box && !box.checked) { out[k] = false; refused = true; }
+        var choix = row.querySelector('.choix');
+        if (choix && box) choix.textContent = refused ? 'Refusé' : '';
       }
       row.classList.toggle('refuse', refused && !row.classList.contains('decision'));
     });
     return out;
   }
-  function refresh() {
+  function refresh(save) {
     state = collect();
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
-    var refused = Object.keys(state).filter(function (k) { return state[k] === false; }).length;
+    if (save !== false) try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+    var total = document.querySelectorAll('.row.decision').length;
     var open = document.querySelectorAll('.row.a-trancher').length;
-    document.getElementById('bilan').textContent = open + ' décision(s) pas encore choisie(s), ' + refused + ' changement(s) refusé(s)';
+    document.getElementById('bilan').textContent = (total - open) + ' / ' + total + ' choisies';
   }
-  restore(); refresh();
+  // Suivante à choisir : la première carte pas encore choisie après celle qui a le focus.
+  document.getElementById('suivante').addEventListener('click', function () {
+    var open = Array.prototype.slice.call(document.querySelectorAll('.row.a-trancher'));
+    if (!open.length) return;
+    var here = document.activeElement && document.activeElement.closest ? document.activeElement.closest('.row.decision') : null;
+    var next = here ? open.filter(function (r) { return here.compareDocumentPosition(r) & Node.DOCUMENT_POSITION_FOLLOWING; })[0] || open[0] : open[0];
+    next.scrollIntoView({ block: 'center' });
+    next.focus({ preventScroll: true });
+  });
+  // Tout remettre à zéro : un second clic confirme, sans boîte de dialogue.
+  var raz = document.getElementById('raz');
+  var razTimer = null;
+  raz.addEventListener('click', function () {
+    if (!raz.hasAttribute('data-confirmer')) {
+      raz.setAttribute('data-confirmer', '');
+      raz.textContent = 'Cliquer encore pour tout remettre à zéro';
+      razTimer = setTimeout(function () { raz.removeAttribute('data-confirmer'); raz.textContent = 'Tout remettre à zéro'; }, 4000);
+      return;
+    }
+    clearTimeout(razTimer);
+    raz.removeAttribute('data-confirmer');
+    raz.textContent = 'Tout remettre à zéro';
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    if (hasFile) { discarded = true; try { localStorage.setItem(FILE_KEY, 'écartées'); } catch (e) {} }
+    showDiscarded();
+    rows().forEach(function (row) {
+      var box = row.querySelector('input[type=checkbox]');
+      if (box) box.checked = true;
+      if (row.classList.contains('decision')) {
+        row.classList.add('a-trancher');
+        row.removeAttribute('data-retenu'); row.removeAttribute('data-impose');
+        versionsOf(row).forEach(function (b) { b.classList.remove('retenue'); });
+        var choix = row.querySelector('.choix'); if (choix) choix.textContent = 'Pas encore choisie';
+        show(row, 0);
+      }
+    });
+    refresh(false);
+  });
+  restore(); refresh(false);
   document.addEventListener('change', function (e) {
     if (e.target && e.target.id === 'reperes') { document.body.classList.toggle('sans-reperes', !e.target.checked); return; }
     refresh();

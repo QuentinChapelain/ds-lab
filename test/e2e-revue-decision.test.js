@@ -15,6 +15,8 @@ import { wcagContrast } from 'culori';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
 import { runReduce } from '../src/cli/reduce.js';
 import { rowKey } from '../src/reduce/propose.js';
+import { renderReview } from '../src/report/review.js';
+import { writeFile } from 'node:fs/promises';
 
 const E = JSON.parse(await readFile(new URL('../fixtures/marque-demo/expected-desordre-valise.json', import.meta.url), 'utf8'));
 
@@ -24,6 +26,12 @@ let servers;
 let browser;
 /** @type {string} */
 let revue;
+/** Clé de la mémoire de cette réduction. @type {string} */
+let memoryKey;
+/** Revue de la même table avec decisions-passage-2c.json. @type {string} */
+let revueFichier;
+/** @type {Record<string, string | false>} */
+let fileDecisions;
 /** @type {Map<string, { key: string, row: any, family: string }>} */
 const byId = new Map();
 
@@ -40,6 +48,14 @@ before(async () => {
     now: new Date(2026, 10, 12, 17, 0),
   });
   revue = pathToFileURL(r.files[1]).href;
+  const saved = JSON.parse(await readFile(r.files[0], 'utf8'));
+  memoryKey = `ds-lab-revue:${saved.host}:${saved.stamp}`;
+  // Même table, relue avec les décisions du passage 2c (comme --decisions).
+  const decisions = JSON.parse(await readFile(`${FIXTURE_DIR}decisions-passage-2c.json`, 'utf8'));
+  const withFile = join(await mkdtemp(join(tmpdir(), 'ds-lab-revue-fichier-')), 'revue.html');
+  await writeFile(withFile, renderReview(r.table, [], { host: saved.host, stamp: saved.stamp, target: 'cible-valise.json', decisions }));
+  revueFichier = pathToFileURL(withFile).href;
+  fileDecisions = decisions;
   for (const [family, f] of Object.entries(r.table.families)) for (const row of f.rows) byId.set(row.id, { key: rowKey(family, row), row, family });
   const { chromium } = await import('playwright-core');
   browser = await chromium.launch();
@@ -196,6 +212,137 @@ test('revue : dans une vignette, la cote est réduite et posée au bout de la ba
       assert.ok(Math.abs(p.coteMid - p.zoneMid) <= 1, 'cote centrée sur la bande');
       assert.ok(p.size < 11, `cote de ${p.size} px`);
     }
+  } finally {
+    await context.close();
+  }
+});
+
+/** @param {any} page */
+const bilan = (page) => page.locator('#bilan').textContent();
+/** @param {any} page */
+const stored = (page) => page.evaluate((/** @type {string} */ k) => localStorage.getItem(k), memoryKey);
+
+test('revue : le compteur « n / 11 choisies » suit les choix ; « Suivante à choisir » donne le focus à la carte suivante', async () => {
+  const { context, page } = await open();
+  try {
+    const total = [...byId.values()].filter((x) => x.row.class === 'décision').length;
+    assert.equal(await bilan(page), `0 / ${total} choisies`);
+    await page.click('#suivante');
+    const first = await page.evaluate(() => document.activeElement?.getAttribute('data-key'));
+    assert.equal(first, await page.locator('article.row.a-trancher').first().getAttribute('data-key'), 'focus sur la première carte à choisir');
+    await page.keyboard.press('Enter');
+    assert.equal(await bilan(page), `1 / ${total} choisies`);
+    await page.click('#suivante');
+    const second = await page.evaluate(() => document.activeElement?.getAttribute('data-key'));
+    assert.notEqual(second, first);
+    assert.equal(second, await page.locator('article.row.a-trancher').first().getAttribute('data-key'));
+    const c = card(page, 'esp-17');
+    await c.locator('.versions .v[data-value="8px"]').click();
+    await c.locator('.retenir').click();
+    assert.equal(await bilan(page), `2 / ${total} choisies`);
+    await c.locator('.versions .v[data-v="0"]').click();
+    await c.locator('.retenir').click();
+    assert.equal(await bilan(page), `2 / ${total} choisies`, 'changer d’avis ne compte pas deux fois');
+  } finally {
+    await context.close();
+  }
+});
+
+test('revue : mémoire propre à la réduction ; « Tout remettre à zéro » demande un second clic et vide la mémoire', async () => {
+  const { context, page } = await open();
+  try {
+    const total = [...byId.values()].filter((x) => x.row.class === 'décision').length;
+    assert.equal(await stored(page), null, 'rien d’écrit au chargement');
+    const c = card(page, 'esp-17');
+    await c.locator('.versions .v[data-value="8px"]').click();
+    await c.locator('.retenir').click();
+    assert.deepEqual(JSON.parse(/** @type {string} */ (await stored(page))), { [/** @type {any} */ (byId.get('esp-17')).key]: '8px' });
+    await page.reload();
+    assert.equal(await bilan(page), `1 / ${total} choisies`, 'choix relu de la mémoire');
+    await page.click('#raz');
+    assert.equal(await bilan(page), `1 / ${total} choisies`, 'un seul clic ne remet rien à zéro');
+    assert.notEqual(await stored(page), null);
+    await page.click('#raz');
+    assert.equal(await bilan(page), `0 / ${total} choisies`);
+    assert.equal(await stored(page), null, 'mémoire vidée');
+    assert.equal(await card(page, 'esp-17').locator('.choix').textContent(), 'Pas encore choisie');
+    await page.reload();
+    assert.equal(await bilan(page), `0 / ${total} choisies`);
+    assert.deepEqual(await exported(page), {});
+  } finally {
+    await context.close();
+  }
+});
+
+test('revue : détail fermé par défaut sur toutes les cartes ; aucune opacité inférieure à 1, un refus affiche « Refusé »', async () => {
+  const { context, page } = await open();
+  try {
+    const cards = await page.locator('article.row').count();
+    assert.ok(cards > 0);
+    assert.equal(await page.locator('article.row > details.detail').count(), cards, 'un détail par carte');
+    assert.equal(await page.locator('article.row > details.detail[open]').count(), 0, 'détail fermé');
+    const near = page.locator('article.row.c-proche').first();
+    await near.locator('input[type=checkbox]').uncheck();
+    assert.equal(await near.locator('.choix').textContent(), 'Refusé');
+    assert.equal(await near.evaluate((el) => el.classList.contains('refuse')), true);
+    const faded = await page.evaluate(() =>
+      [...document.querySelectorAll('main *, .barre, .barre *')].filter((el) => parseFloat(getComputedStyle(el).opacity) < 1).map((el) => el.tagName + '.' + el.className),
+    );
+    assert.deepEqual(faded, []);
+  } finally {
+    await context.close();
+  }
+});
+
+test('revue : détail en bas de la carte ; contraste « avec la valeur la plus proche » pour une décision, « proposée » pour une correction ; écart ΔE', async () => {
+  const { context, page } = await open();
+  try {
+    const cards = await page.locator('article.row').count();
+    assert.equal(await page.locator('article.row > details.detail:last-child').count(), cards, 'détail en dernier');
+    const coul = await card(page, 'coul-24').locator('details.detail').textContent();
+    assert.ok(coul?.includes('avec la valeur la plus proche'), coul ?? '');
+    assert.ok(coul?.includes('écart ΔE 1,59'), coul ?? '');
+    const corr = await page.locator('article.row.c-correction details.detail').first().textContent();
+    assert.ok(corr?.includes('avec la valeur proposée'), corr ?? '');
+  } finally {
+    await context.close();
+  }
+});
+
+test('revue : une seule étiquette d’usage quand deux disent la même chose', async () => {
+  const { context, page } = await open();
+  try {
+    const doubles = await page.locator('article.row header').evaluateAll((hs) =>
+      hs.flatMap((h) => {
+        const tags = [...h.querySelectorAll('.usage, .quoi')].map((x) => (x.textContent ?? '').trim());
+        return tags.filter((a) => tags.some((b) => b !== a && b.startsWith(`${a} `))).map((a) => `${a} (${tags.join(', ')})`);
+      }),
+    );
+    assert.deepEqual(doubles, []);
+  } finally {
+    await context.close();
+  }
+});
+
+test('revue : la remise à zéro écarte aussi les décisions venues de --decisions, et la barre l’indique', async () => {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
+  try {
+    const page = await context.newPage();
+    await page.goto(revueFichier);
+    const total = [...byId.values()].filter((x) => x.row.class === 'décision').length;
+    const fromFile = Object.keys(fileDecisions).filter((k) => [...byId.values()].some((x) => x.key === k && x.row.class === 'décision')).length;
+    assert.ok(fromFile > 0);
+    assert.equal(await bilan(page), `${fromFile} / ${total} choisies`, 'décisions du fichier relues');
+    assert.equal(await page.locator('#ecartees').isVisible(), false);
+    await page.click('#raz');
+    await page.click('#raz');
+    assert.equal(await bilan(page), `0 / ${total} choisies`);
+    assert.equal(await page.locator('#ecartees').textContent(), 'décisions du fichier écartées');
+    assert.equal(await page.locator('#ecartees').isVisible(), true);
+    await page.reload();
+    assert.equal(await bilan(page), `0 / ${total} choisies`, 'toujours écartées après rechargement');
+    assert.equal(await page.locator('#ecartees').isVisible(), true);
+    assert.deepEqual(await exported(page), {});
   } finally {
     await context.close();
   }
