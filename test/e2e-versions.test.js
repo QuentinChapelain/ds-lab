@@ -141,3 +141,14 @@ test('R-3 : pour chaque version, la valeur calculée de chaque élément en vign
   }
   assert.ok(seen > 0);
 });
+
+test('simulation : la valeur d’un champ rempli est recolorée, coul-02 s’applique à 51 éléments comme son titre', () => {
+  const r = decisions.find((x) => x.id === 'coul-02');
+  assert.ok(r, 'coul-02 absente');
+  const m = /et (\d+) autres/.exec(r.title);
+  const announced = m ? Number(m[1]) + 1 : 1;
+  assert.equal(announced, 51, `titre : ${r.title}`);
+  assert.equal(r.capture.elements, announced, `capture : ${r.capture.elements} éléments touchés`);
+  const fields = r.capture.touched.filter((/** @type {any} */ t) => /^(input|textarea|select)\b/.test(t.selector)).map((/** @type {any} */ t) => t.selector);
+  assert.deepEqual(fields.sort(), ['input#courriel', 'input#nom', 'input#telephone']);
+});
