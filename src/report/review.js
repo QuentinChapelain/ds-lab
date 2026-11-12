@@ -83,6 +83,8 @@ const stepName = (family, c) => c.name ?? (num(c.value) !== null && TOKEN_PREFIX
 const pct = (n, d) => `${((100 * n) / d).toFixed(3)}%`;
 /** Plus petit cadre affiché sans agrandissement (R-8) : en deçà, l'image est montrée à 2×. */
 const SMALL_FRAME = 200;
+/** Sélecteurs montrés dans le détail d'une carte, avant « et n autres ». */
+const SELECTORS_SHOWN = 4;
 /** Largeur maximale d'une vignette. */
 const THUMB_MAX = 240;
 
@@ -238,11 +240,16 @@ function detail(family, r, key, cls) {
   const ctr = r.contrast ? `<dt>Contraste</dt><dd>${fr(r.contrast.before)} avant → ${fr(r.contrast.after)} ${against} (seuil ${fr(r.contrast.threshold)})</dd>` : '';
   const gap = r.delta ? ` · écart ${family === 'colors' ? 'ΔE ' : ''}${fr(r.delta)}${family === 'colors' ? '' : ' px'}` : '';
   const motif = r.reason ? plainReason(r.reason) : null;
-  const sel = (r.capture?.touched?.length ? [...new Set(r.capture.touched.map((/** @type {any} */ t) => t.selector))] : r.selectors) ?? [];
+  // Sélecteurs : 4 au plus, puis « et n autres » ; sans capture, les exemples du relevé, dits coupés s'ils le sont.
+  const full = !!r.capture?.touched?.length;
+  const all = (full ? [...new Set(r.capture.touched.map((/** @type {any} */ t) => t.selector))] : r.selectors) ?? [];
+  const sel = all.slice(0, SELECTORS_SHOWN);
+  const more = all.length - sel.length;
+  const cut = more > 0 ? `<i>et ${more} ${more === 1 ? 'autre' : 'autres'}</i>` : !full && all.length >= 3 && r.count > all.length ? '<i>et d’autres (liste coupée au relevé)</i>' : '';
   return `<details class="detail"><summary>Détail</summary><dl>
     ${motif ? `<dt>Motif</dt><dd>${esc(motif.text)}${motif.rule ? ` <i>(règle ${esc(motif.rule)})</i>` : ''}</dd>` : ''}
     ${ctr}<dt>Usages</dt><dd>${r.count}${gap}</dd>
-    <dt>Sélecteurs</dt><dd>${sel.map((/** @type {string} */ x) => `<code>${esc(x)}</code>`).join(' ')}</dd>
+    <dt>Sélecteurs</dt><dd>${sel.map((/** @type {string} */ x) => `<code>${esc(x)}</code>`).join(' ')}${cut}</dd>
     <dt>Clé technique</dt><dd><code>${esc(key)}</code></dd>
   </dl></details>`;
 }

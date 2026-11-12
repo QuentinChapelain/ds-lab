@@ -218,3 +218,14 @@ test('consigne pour un agent : contexte, une instruction par ligne appliquée, c
   assert.ok(a.lines.includes('Après modification du CSS, relance reduce sur les pages de la table et sur les pages témoins, et compare au prévu ; signale tout écart avant la mise en ligne.'), 'pages témoins');
   assert.deepEqual(decidee.data.remaining.map((/** @type {any} */ p) => `${p.text}|${p.bg}`), ['#2196f3|#ffffff'], 'une seule paire sous 4,5:1 après migration');
 });
+
+test('consigne : tous les sélecteurs, sans plafond ; la ligne de esp-17 cite p.aide', () => {
+  const line = desordre.data.agent.lines.find((/** @type {string} */ l) => l.startsWith('- esp-17 '));
+  assert.ok(line, 'esp-17 absente de la consigne');
+  assert.ok(line.includes('p.aide'), line);
+  for (const sel of ['input#nom', 'input#courriel', 'p.erreur', 'input#telephone']) assert.ok(line.includes(sel), `${sel} : ${line}`);
+  // Table « Décisions en attente » : sélecteurs en dernière colonne.
+  const pending = desordre.md.slice(desordre.md.indexOf('## Décisions en attente'), desordre.md.indexOf('## Refusée'));
+  const row = pending.split('\n').find((/** @type {string} */ l) => l.startsWith('| esp-17 '));
+  assert.ok(row?.includes('`p.aide`'), `table : ${row}`);
+});

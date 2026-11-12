@@ -375,3 +375,17 @@ test('revue : cartes proche, d’office et correction, sélecteur « avant · ap
     await context.close();
   }
 });
+
+test('revue : détail, 4 sélecteurs au plus puis « et n autres »', async () => {
+  const { context, page } = await open();
+  try {
+    const r = /** @type {any} */ (byId.get('esp-17')).row;
+    const all = [...new Set(r.capture.touched.map((/** @type {any} */ t) => t.selector))];
+    assert.ok(all.length > 4, `${all.length} sélecteurs`);
+    const dd = card(page, 'esp-17').locator('details.detail dt:text-is("Sélecteurs") + dd');
+    assert.equal(await dd.locator('code').count(), 4);
+    assert.equal(await dd.locator('i').textContent(), `et ${all.length - 4} ${all.length - 4 === 1 ? 'autre' : 'autres'}`);
+  } finally {
+    await context.close();
+  }
+});

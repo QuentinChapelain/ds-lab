@@ -97,8 +97,10 @@ export function indexTokens(tokens) {
 const cell = (s) => String(s ?? '').replace(/\|/g, '\\|').replace(/\n/g, ' ');
 /** Lot R, R-2 : identifiant et titre d'une ligne, en tête de cellule. @param {{ id: string, title: string }} r */
 const line = (r) => cell(`${r.id} ${r.title}`.trim());
-/** Lot R, R-2 : sélecteurs d'exemple, gardés en détail. @param {{ selectors: string[] }} r */
-const selectorsOf = (r) => r.selectors.map((x) => `\`${cell(x)}\``).join(', ') || '—';
+/** Lot R, R-2 : sélecteurs d'exemple, gardés en détail. @param {{ selectors: string[], selectorsCut?: boolean }} r */
+const selectorsOf = (r) => (r.selectors.map((x) => `\`${cell(x)}\``).join(', ') || '—') + cutNote(r);
+/** Lot R : la liste des sélecteurs est-elle coupée ? @param {{ selectorsCut?: boolean }} r */
+const cutNote = (r) => (r.selectorsCut ? ' (liste coupée au relevé, d’autres éléments sont touchés)' : '');
 /** @param {number} n */
 const fr = (n) => String(n).replace('.', ',');
 
@@ -204,7 +206,10 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
         status,
         decision: d ?? null,
         properties: r.properties ?? [],
-        selectors: r.selectors ?? [],
+        // Lot R : tous les sélecteurs des éléments touchés (capture), sinon les exemples du relevé,
+        // signalés comme coupés quand la ligne compte plus d'occurrences que d'exemples.
+        selectors: r.capture?.touched?.length ? [...new Set(r.capture.touched.map((/** @type {any} */ t) => t.selector))] : r.selectors ?? [],
+        selectorsCut: !r.capture?.touched?.length && (r.selectors ?? []).length >= 3 && r.count > (r.selectors ?? []).length,
         class: r.class,
         origin: originOf(rendered, family, r),
         elements: r.count,
@@ -429,7 +434,7 @@ function agentBrief(d, s) {
   );
   s.applied.forEach((r, i) => {
     lines.push(
-      `${i + 1}. ${r.id} ${r.title}. Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage} : remplace ${r.value} par ${write(r)}${r.status === 'décidée' ? ' [décidée]' : ''}. Sélecteurs : ${r.selectors.join(', ') || '—'}. Point de départ : ${r.origin}. Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`,
+      `${i + 1}. ${r.id} ${r.title}. Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage} : remplace ${r.value} par ${write(r)}${r.status === 'décidée' ? ' [décidée]' : ''}. Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}. Point de départ : ${r.origin}. Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`,
     );
   });
   lines.push('');
@@ -448,7 +453,7 @@ function agentBrief(d, s) {
   for (const r of s.outOfTable) lines.push(`- Hors table : ${r.value} (${r.usage}), ${r.reason}.`);
   for (const r of s.refused) lines.push(`- Refusée : ${r.value} (${r.usage}), le designer garde la valeur.`);
   // Lot R, R-2 : décisions en attente, avec leur identifiant et leur titre.
-  for (const r of s.pending) lines.push(`- ${r.id} ${r.title}. Pas encore choisie par le designer : ne l'applique pas (${r.value}, ${r.usage}). Sélecteurs : ${r.selectors.join(', ') || '—'}.`);
+  for (const r of s.pending) lines.push(`- ${r.id} ${r.title}. Pas encore choisie par le designer : ne l'applique pas (${r.value}, ${r.usage}). Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}.`);
   for (const sel of d.thirdParty) lines.push(`- Composant tiers : ${sel} et tout ce qu'il contient.`);
   lines.push('- Toute valeur absente de cette consigne.');
   lines.push('');
