@@ -14,7 +14,7 @@
   "colors": [
     {
       "id": "C1",
-      "values": [{ "value": "#999999", "new": "#767676", "name": "gris", "deltaE": 11.7117, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 2.849 } }],
+      "values": [{ "value": "#999999", "new": "#767676", "name": "gris", "deltaE": 11.7117, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 2.849 }, "afterB": { "class": "hors table, aucune échelle", "rule": "R4", "why": "ΔE à la valeur la plus proche de la cible supérieur à 10" } }],
       "uses": [
         { "page": "compte", "property": "color", "role": "texte", "usage": "texte d'aide sous un champ" },
         { "page": "gestion", "property": "border-bottom-color", "role": "texte", "usage": "bordure des cellules du tableau" }
@@ -26,8 +26,8 @@
     {
       "id": "C2",
       "values": [
-        { "value": "#9a9a9a", "new": "#767676", "name": "gris", "deltaE": 12.0386, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 2.8139 } },
-        { "value": "#9e9e9e", "new": "#767676", "name": "gris", "deltaE": 13.3424, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 2.6792 } }
+        { "value": "#9a9a9a", "new": "#767676", "name": "gris", "deltaE": 12.0386, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 2.8139 }, "afterB": { "class": "hors table, aucune échelle", "rule": "R4", "why": "ΔE à la valeur la plus proche de la cible supérieur à 10" } },
+        { "value": "#9e9e9e", "new": "#767676", "name": "gris", "deltaE": 13.3424, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 2.6792 }, "afterB": { "class": "hors table, aucune échelle", "rule": "R4", "why": "ΔE à la valeur la plus proche de la cible supérieur à 10" } }
       ],
       "uses": [
         { "page": "carte", "value": "#9a9a9a", "property": "color", "role": "texte", "usage": "description de produit" },
@@ -66,7 +66,7 @@
       "values": [
         { "value": "#666666", "new": "#767676", "name": "gris", "deltaE": 5.5558, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 5.7418 } },
         { "value": "#616161", "new": "#767676", "name": "gris", "deltaE": 7.3227, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 6.1933 } },
-        { "value": "#595959", "new": "#767676", "name": "gris", "deltaE": 10.1834, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 7.0047 } }
+        { "value": "#595959", "new": "#767676", "name": "gris", "deltaE": 10.1834, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 7.0047 }, "afterB": { "class": "hors table, aucune échelle", "rule": "R4", "why": "ΔE à la valeur la plus proche de la cible supérieur à 10" } }
       ],
       "uses": [
         { "page": "carte", "value": "#666666", "property": "color", "role": "texte", "usage": "sous-titre" },
@@ -155,14 +155,14 @@
     },
     {
       "id": "C15",
-      "values": [{ "value": "#2196f3", "new": "#767676", "name": "gris", "deltaE": 19.2536, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 3.1243 }, "deltaEToAnswer": { "value": "#2b4c7e", "deltaE": 25.3684 } }],
+      "values": [{ "value": "#2196f3", "new": "#767676", "name": "gris", "deltaE": 19.2536, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 3.1243 }, "deltaEToAnswer": { "value": "#2b4c7e", "deltaE": 25.3684 }, "afterB": { "class": "hors table, aucune échelle", "rule": "R4", "why": "ΔE à la valeur la plus proche de la cible supérieur à 10" } }],
       "uses": [{ "page": "compte", "property": "color", "role": "lien", "usage": "liens (bleu par défaut de bibliothèque)" }],
       "answer": "bleu, pas gris",
       "teaches": "La proximité trompe : usage, puis contraste, puis proximité."
     },
     {
       "id": "C16",
-      "values": [{ "value": "#4990e2", "new": "#767676", "name": "gris", "deltaE": 16.3446, "class": "décision", "contrast": { "text": "#ffffff", "bg": "#4990e2", "ratio": 3.2963 }, "deltaEToAnswer": { "value": "#2b4c7e", "deltaE": 23.4056 } }],
+      "values": [{ "value": "#4990e2", "new": "#767676", "name": "gris", "deltaE": 16.3446, "class": "décision", "contrast": { "text": "#ffffff", "bg": "#4990e2", "ratio": 3.2963 }, "deltaEToAnswer": { "value": "#2b4c7e", "deltaE": 23.4056 }, "afterB": { "class": "hors table, aucune échelle", "rule": "R4", "why": "ΔE à la valeur la plus proche de la cible supérieur à 10" } }],
       "uses": [{ "page": "gestion", "property": "background-color", "role": "bouton", "usage": "bouton d'action" }],
       "answer": "bleu",
       "teaches": "La proximité trompe : usage, puis contraste, puis proximité."
@@ -178,7 +178,7 @@
       "id": "C18",
       "values": [
         { "value": "#d0563f", "new": "#c8553d", "name": "terre", "deltaE": 1.5888, "class": "auto" },
-        { "value": "#c4513a", "new": "#c8553d", "name": "terre", "deltaE": 1.2101, "class": "auto" }
+        { "value": "#c4513a", "new": "#c8553d", "name": "terre", "deltaE": 1.2101, "class": "auto" , "afterB": { "class": "décision", "rule": "R2", "contrast": { "text": "#ffffff", "before": 4.5799, "after": 4.3544 } } }
       ],
       "uses": [
         { "page": "carte", "value": "#d0563f", "property": "background-color", "role": "texte", "usage": "étiquette « nouveau »" },
