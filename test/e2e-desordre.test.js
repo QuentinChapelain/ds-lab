@@ -107,7 +107,8 @@ test('les trois pages sont mesurées, la cible inchangée', () => {
 const wanted = (v) => {
   if (!v.afterB) return v;
   const out = { value: v.value, class: v.afterB.class };
-  return String(v.afterB.class).startsWith('hors table') ? out : { ...out, new: v.new, deltaE: v.deltaE };
+  if (String(v.afterB.class).startsWith('hors table')) return out;
+  return 'new' in v.afterB ? { ...out, new: v.afterB.new } : { ...out, new: v.new, deltaE: v.deltaE };
 };
 /** @param {any[]} values */
 const afterBLabel = (values) => {
@@ -179,8 +180,8 @@ test('C21 tiers : bandeau de cookies écarté sur les trois pages (R17)', () => 
 const AUDIT_FAMILY = /** @type {Record<string, string>} */ ({ fontSizes: 'fontSizes', radii: 'radii' });
 for (const [family, entries] of /** @type {const} */ ([['spacing', E.spacing], ['fontSizes', E.fontSizes], ['radii', E.radii]])) {
   for (const e of entries) {
-    test(`${e.id} table : ${label(e.values)}`, () => {
-      for (const v of e.values) checkRow(family, v);
+    test(`${e.id} table : ${label(e.values)}${afterBLabel(e.values)}`, () => {
+      for (const v of e.values) checkRow(family, wanted(v));
     });
     test(`${e.id} audit : usages`, () => {
       for (const u of e.uses) {

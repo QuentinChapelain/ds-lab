@@ -2,13 +2,15 @@
 /**
  * Attribution des feuilles de style à une source nommée (thème, bundle, CDN…).
  *
- * Les motifs ne sont jamais écrits dans le code : ils viennent de
- * `local/sources.json` (ignoré par git) ou d'un fichier passé par `--sources`.
+ * Les motifs ne sont jamais écrits dans le code : ils viennent d'un fichier
+ * passé par `--sources` (par exemple `local/sources.json`, ignoré par git).
+ * Sans `--sources`, aucun fichier n'est lu, de local/ ni d'ailleurs.
  * Un exemple générique est versionné dans `config/sources.example.json`.
  */
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
+/** Emplacement conseillé du fichier de sources ; il n'est lu que passé par `--sources`. */
 export const DEFAULT_SOURCES_PATH = 'local/sources.json';
 
 /** Étiquettes réservées, attribuées avant toute règle. */
@@ -69,25 +71,24 @@ export function compileSources(config) {
 /**
  * Charge la configuration des sources.
  * - `path` fourni : le fichier doit exister et être valide (sinon erreur) ;
- * - sinon `local/sources.json` ; s'il manque, repli sur l'attribution par origine
- *   avec un avertissement.
+ * - sinon aucun fichier n'est lu (pas même local/sources.json) : attribution par
+ *   origine seulement, avec un avertissement.
  * @param {{ path?: string, cwd?: string }} [opts]
  * @returns {Promise<{ sources: CompiledSources | null, path: string | null, warning: string | null }>}
  */
 export async function loadSources({ path, cwd = process.cwd() } = {}) {
-  const explicit = path !== undefined;
-  const file = resolve(cwd, path ?? DEFAULT_SOURCES_PATH);
+  if (path === undefined) {
+    return {
+      sources: null,
+      path: null,
+      warning: `aucun fichier de sources (--sources) : attribution par origine seulement (${RESERVED.inline}, ${RESERVED.sameOrigin}, ${RESERVED.crossOrigin})`,
+    };
+  }
+  const file = resolve(cwd, path);
   let text;
   try {
     text = await readFile(file, 'utf8');
   } catch (e) {
-    if (!explicit && /** @type {NodeJS.ErrnoException} */ (e).code === 'ENOENT') {
-      return {
-        sources: null,
-        path: null,
-        warning: `${DEFAULT_SOURCES_PATH} absent : attribution par origine seulement (${RESERVED.inline}, ${RESERVED.sameOrigin}, ${RESERVED.crossOrigin})`,
-      };
-    }
     throw new Error(`sources : lecture impossible de ${file} (${/** @type {Error} */ (e).message})`);
   }
   let json;

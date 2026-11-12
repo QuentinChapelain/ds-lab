@@ -309,6 +309,12 @@ for (const id of ['P8', 'P8b']) {
   test(`${id} afterB : ${T[id].afterB.text}`, { todo: TODO }, () => checkAfterBRows(T[id]));
 }
 
+// L1 (lot M) : lien sans soulignement dans un paragraphe ; l'exception est testée dans e2e-migration.
+test(`L1 today : ${T.L1.today.text}`, () => {
+  checkTodayRows(T.L1);
+  assert.equal(rowsOf(WIDE, 'colors', T.L1.values[0].value)[0].count, T.L1.values[0].elements, 'éléments');
+});
+
 test('aucune valeur hors pièges : chaque ligne qui n’est pas « inchangé » appartient à un piège', () => {
   /** @type {Set<string>} */
   const listed = new Set();

@@ -25,6 +25,7 @@
  * @property {Record<string, string>} [props]
  * @property {[number, number]} [box]       largeur et hauteur de la boîte (lot B, pilule R7)
  * @property {string[]} [autoMargins]     côtés dont la marge est auto (lot B, R7)
+ * @property {{ neighbor: string }} [proseLink]  lien sans soulignement dans du texte courant, couleur du texte voisin (lot M)
  */
 
 /**
@@ -196,6 +197,25 @@ export function collectInPage(thirdSelectors = []) {
     if (before[0] > 0 || before[2] > 0) probe([['height', `${r.height + 2}px`], ['max-height', 'none'], ['min-height', '0px'], ['flex-shrink', '0']], [0, 2]);
     return out;
   };
+  /**
+   * Lot M : lien sans soulignement posé dans du texte courant. Renvoie la couleur
+   * du texte voisin (celle du parent), ou null. Texte courant : le bloc qui porte
+   * le lien (premier ancêtre non inline, ni flex ni grid) contient du texte hors lien.
+   * @param {Element} el @param {CSSStyleDeclaration} cs
+   */
+  const proseLink = (el, cs) => {
+    if (el.tagName !== 'A' || !el.hasAttribute('href')) return null;
+    if (/underline/.test(cs.textDecorationLine)) return null;
+    if (cs.borderBottomStyle !== 'none' && parseFloat(cs.borderBottomWidth) > 0) return null;
+    let block = el.parentElement;
+    while (block && getComputedStyle(block).display.startsWith('inline')) block = block.parentElement;
+    if (!block || /\b(flex|grid)\b/.test(getComputedStyle(block).display)) return null;
+    const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      if ((n.textContent ?? '').trim() && !n.parentElement?.closest('a')) return getComputedStyle(/** @type {Element} */ (el.parentElement)).color;
+    }
+    return null;
+  };
   /** @param {Element} el */
   const selectorOf = (el) => {
     const t = el.tagName.toLowerCase();
@@ -263,6 +283,8 @@ export function collectInPage(thirdSelectors = []) {
       rec.box = [Math.round(box.width * 100) / 100, Math.round(box.height * 100) / 100];
       const auto = autoSidesOf(el, cs);
       if (auto.length) rec.autoMargins = auto;
+      const neighbor = proseLink(el, cs);
+      if (neighbor) rec.proseLink = { neighbor };
       // R18 : boîte d'image = fond d'attente d'un média, sans texte propre.
       if (!text) {
         const isMedia = (/** @type {Element} */ c) =>

@@ -54,20 +54,22 @@ test('compileSources : configurations invalides refusées avec un message clair'
   for (const [cfg, re] of bad) assert.throws(() => compileSources(cfg), re, JSON.stringify(cfg));
 });
 
-test('loadSources : fichier par défaut absent → avertissement et repli', async () => {
+test('loadSources : sans --sources → avertissement et repli', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'ds-lab-sources-'));
   const r = await loadSources({ cwd: dir });
   assert.equal(r.sources, null);
-  assert.match(r.warning ?? '', /local\/sources\.json absent/);
+  assert.match(r.warning ?? '', /aucun fichier de sources \(--sources\)/);
 });
 
-test('loadSources : fichier par défaut présent', async () => {
+test('loadSources : sans --sources, local/sources.json n’est pas lu (lot M)', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'ds-lab-sources-'));
   await mkdir(join(dir, 'local'));
   await writeFile(join(dir, 'local/sources.json'), JSON.stringify({ rules: [{ label: 'theme', match: '/theme/' }] }));
   const r = await loadSources({ cwd: dir });
-  assert.equal(r.warning, null);
-  assert.equal(r.sources?.rules.length, 1);
+  assert.equal(r.sources, null);
+  assert.equal(r.path, null);
+  const explicit = await loadSources({ cwd: dir, path: 'local/sources.json' });
+  assert.equal(explicit.sources?.rules.length, 1, 'lu seulement s’il est passé par --sources');
 });
 
 test('loadSources : chemin explicite absent ou JSON invalide → erreur', async () => {

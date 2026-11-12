@@ -178,6 +178,19 @@ for (const e of E.colors.filter((/** @type {any} */ x) => x.rows)) {
   });
 }
 
+for (const e of E.radii ?? []) {
+  test(`${e.id} rayons : ${e.rows.map((/** @type {any} */ r) => `${r.value} ${r.usage} → ${r.target}, ${r.class}`).join(' ; ')}`, () => {
+    for (const want of e.rows) {
+      const r = table.families.radii.rows.find((/** @type {any} */ x) => x.old === want.value && x.usage === want.usage);
+      assert.ok(r, `${want.value} (${want.usage}) absente des rayons`);
+      assert.equal(r.class, want.class, `${want.value} : classe « ${r.class} »`);
+      assert.equal(r.new, want.new, `${want.value} : vers ${r.new}`);
+      const m = map.radii[`${want.value}|${want.usage}`] ?? map.radii[want.value];
+      assert.equal(m, APPLIED_CLASSES.has(want.class) ? want.new : undefined, `${want.value} : application`);
+    }
+  });
+}
+
 test('C20 et C21 : contenu et tiers absents de la table, comme au lot E', () => {
   const c20 = LOT_E.colors.find((/** @type {any} */ x) => x.id === 'C20');
   const c21 = LOT_E.colors.find((/** @type {any} */ x) => x.id === 'C21');

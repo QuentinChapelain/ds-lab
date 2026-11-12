@@ -22,7 +22,7 @@ const PKG = JSON.parse(await readFile(new URL('../../package.json', import.meta.
  * @typedef {object} AuditOptions
  * @property {string[]} addresses
  * @property {string} [storageState]   chemin d'un storageState Playwright (.auth/<nom>.json)
- * @property {string} [sourcesPath]    défaut : local/sources.json
+ * @property {string} [sourcesPath]    sans lui : aucun fichier de sources lu
  * @property {{ width: number, height: number }} [viewport]
  * @property {number} [waitMs]
  * @property {boolean} [trace]          --trace-rendered

@@ -24,7 +24,7 @@
  *   R5  une décision sans réponse, ou une ligne hors table, n'est pas appliquée ;
  *   R6  les éléments tiers sont exclus de la simulation (src/browser/simulate.js) ;
  *   R7  espacement négatif, > 64 px ou marge auto : hors table, mise en page ;
- *       rayon ≥ moitié du plus petit côté : pilule ;
+ *       rayon ≥ moitié du plus petit côté, ou pourcentage ≥ 50 % : pilule ;
  *   R8  fond plus sombre que le pas 10 le plus sombre : hors table, fond sombre (avant R1) ;
  *       un texte posé dessus est une décision ;
  *   R9  correction : la paire la plus défavorable échoue avant et passe après, cible
@@ -163,9 +163,14 @@ function dimensionRow(base, scale, { pill = false, forcePill = false } = {}) {
   const steps = [...scale].sort((a, b) => a - b);
   const old = base.old;
   const n = px(old);
-  if (n === null) return { ...base, new: null, class: 'hors table', delta: null, candidates: [] };
   const maxStep = steps[steps.length - 1];
-  if ((forcePill || (pill && n >= THRESHOLDS.pillPx)) && maxStep >= THRESHOLDS.pillPx) {
+  // R7 : une pilule (y compris un pourcentage de 50 % ou plus) va au plus grand pas.
+  if (forcePill && maxStep >= THRESHOLDS.pillPx) {
+    const same = n === maxStep;
+    return { ...base, new: `${maxStep}px`, class: same ? 'inchangé' : 'auto', delta: 0, candidates: [{ value: `${maxStep}px`, delta: 0 }] };
+  }
+  if (n === null) return { ...base, new: null, class: 'hors table', delta: null, candidates: [] };
+  if (pill && n >= THRESHOLDS.pillPx && maxStep >= THRESHOLDS.pillPx) {
     const same = n === maxStep;
     return { ...base, new: `${maxStep}px`, class: same ? 'inchangé' : 'auto', delta: 0, candidates: [{ value: `${maxStep}px`, delta: 0 }] };
   }

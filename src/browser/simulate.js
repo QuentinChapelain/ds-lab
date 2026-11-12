@@ -140,7 +140,14 @@ export function scanInPage(map) {
       for (const n of el.childNodes) if (n.nodeType === 3 && (n.textContent ?? '').trim()) text = true;
       const box = el.getBoundingClientRect();
       for (const c of CORNERS) {
-        const k = pxKey(cs.getPropertyValue(`border-${c}-radius`));
+        const raw = cs.getPropertyValue(`border-${c}-radius`).trim().split(/\s+/)[0];
+        const pct = /^(\d+(?:\.\d+)?)%$/.exec(raw);
+        if (pct) {
+          // R7 (lot M) : un pourcentage de 50 % ou plus est une pilule.
+          consider(i, 'radii', `border-${c}-radius`, `${Number(pct[1])}%`, Number(pct[1]) >= 50 ? 'pilule' : 'rayon');
+          continue;
+        }
+        const k = pxKey(raw);
         const n = k ? parseFloat(k) : 0;
         const pill = n >= 500 || (box.width > 0 && box.height > 0 && n >= Math.min(box.width, box.height) / 2);
         consider(i, 'radii', `border-${c}-radius`, k, pill ? 'pilule' : 'rayon');

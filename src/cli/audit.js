@@ -15,7 +15,7 @@ const USAGE = `Usage : npm run audit -- <adresse> [<adresse ou chemin relatif>�
 
 Options :
   --storage-state <fichier>  session enregistrée par npm run login (.auth/<nom>.json)
-  --sources <fichier>        motifs d'attribution des feuilles (défaut : local/sources.json)
+  --sources <fichier>        motifs d'attribution des feuilles (sans lui : aucun fichier lu, attribution par origine)
   --viewport <LxH>           fenêtre (défaut : 1366x900) ; un audit mesure une seule fenêtre :
                              relancer avec --viewport 390x844 pour la mise en page mobile
   --wait-ms <ms>             délai après load et networkidle (défaut : ${DEFAULT_WAIT_MS})

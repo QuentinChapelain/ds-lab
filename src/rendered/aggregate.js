@@ -288,11 +288,13 @@ export const SPACING_USAGE = /** @type {const} */ ({ margins: 'marge', paddings:
 
 /**
  * Lot B, R7 : un rayon au moins égal à la moitié du plus petit côté de l'élément
- * (ou d'au moins 500 px) dessine une pilule.
+ * (ou d'au moins 500 px), ou un pourcentage de 50 % ou plus (lot M), dessine une pilule.
  * @param {string} key  « 20px » @param {[number, number] | undefined} box
  * @returns {'pilule' | 'rayon'}
  */
 export function radiusUsage(key, box) {
+  const pct = /^(\d+(?:\.\d+)?)%$/.exec(key);
+  if (pct) return Number(pct[1]) >= 50 ? 'pilule' : 'rayon';
   const m = /^(-?\d+(?:\.\d+)?)px$/.exec(key);
   if (!m) return 'rayon';
   const n = Number(m[1]);
@@ -358,6 +360,8 @@ export function createRenderedAggregator() {
   const usagePairs = new Map();
   /** @type {Map<string, { border: string, bg: string, bgUsage: string, threshold: number, n: number }>} */
   const borderPairs = new Map();
+  /** Lot M : liens sans soulignement dans du texte courant. @type {Map<string, { color: string, neighbor: string, ratio: number, n: number, selectors: string[], pages: Record<string, number> }>} */
+  const proseLinks = new Map();
   /**
    * @param {string} family @param {string} value @param {string} usage @param {RenderedRecord} rec
    * @param {string} page @param {string} property @param {{ content?: boolean, field?: boolean }} [o]
@@ -416,6 +420,18 @@ export function createRenderedAggregator() {
         const c = fam[f].add(k, raw, property, rec, page, index, content);
         if (c) created.push({ family: f, value: k.key, context: c });
       };
+      if (rec.proseLink && !rec.pseudo) {
+        const fg = normalizeColor(p['color'] ?? '');
+        const nb = normalizeColor(rec.proseLink.neighbor);
+        if (fg && nb && isOpaque(fg.hex) && isOpaque(nb.hex)) {
+          const k = `${fg.hex}|${nb.hex}`;
+          const l = proseLinks.get(k) ?? { color: fg.hex, neighbor: nb.hex, ratio: Math.round(contrastRatio(fg.hex, nb.hex) * 10000) / 10000, n: 0, selectors: [], pages: {} };
+          l.n++;
+          if (l.selectors.length < MAX_SELECTORS && !l.selectors.includes(rec.selector ?? '')) l.selectors.push(rec.selector ?? '');
+          l.pages[page] = (l.pages[page] ?? 0) + 1;
+          proseLinks.set(k, l);
+        }
+      }
       for (const c of paintedColors(p, !!rec.text, { imageBox: !!rec.imageBox })) {
         add('colors', { key: c.hex, normalizable: true }, c.raw, c.property, !!c.content);
         if (rec.pseudo) continue;
@@ -707,6 +723,7 @@ export function createRenderedAggregator() {
         ),
         pairs: [...usagePairs.values()],
         borderPairs: [...borderPairs.values()],
+        links: [...proseLinks.values()],
       },
       contrast: {
         pairs: pairList,

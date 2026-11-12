@@ -19,21 +19,24 @@ import { measureRendered } from '../rendered/run.js';
 import { propose, mapping } from '../reduce/propose.js';
 import { simulatePage, installLive } from '../browser/simulate.js';
 import { renderReview } from '../report/review.js';
+import { buildMigration } from '../report/migration.js';
 import { stampOf, freeOutputDir } from '../report/json.js';
 
 const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cible.json> [options]
 
   --target <fichier>         échelles cibles : radii, spacing, fontSizes (px), colors ({ name, value })
   --decisions <fichier>      decisions.json exporté depuis revue.html (tour suivant)
+  --tokens <fichier>         jetons DTCG de la cible (.tokens.json) : leurs chemins nomment les lignes de migration.md
   --storage-state <fichier>  session enregistrée par npm run login
-  --sources <fichier>        fichier de sources (pour thirdParty ; défaut : local/sources.json)
+  --sources <fichier>        fichier de sources (pour thirdParty ; sans lui : aucun fichier lu)
   --viewport <LxH>           fenêtre (défaut : 1366x900)
   --live                     après la revue, ouvre la première adresse dans une fenêtre avec une barre
                              avant / après et un interrupteur par famille ; fermer la fenêtre pour finir
   --out <dossier>            racine des sorties (défaut : local/reductions)
   -h, --help                 cette aide
 
-  Sorties : table.json (proposition et synthèse) et revue.html (à ouvrir).
+  Sorties : table.json (proposition et synthèse), revue.html (à ouvrir) et
+  migration.md (pour le développeur, lisible sans l'outil).
   Le site n'est pas modifié : chaque page est chargée une fois, les valeurs sont
   remplacées dans ce navigateur le temps des captures.`;
 
@@ -42,6 +45,7 @@ const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cibl
  * @property {string[]} addresses
  * @property {string} targetPath
  * @property {string} [decisionsPath]
+ * @property {string} [tokensPath]     jetons DTCG de la cible, pour migration.md
  * @property {string} [storageState]
  * @property {string} [sourcesPath]
  * @property {{ width: number, height: number }} [viewport]
@@ -54,13 +58,14 @@ const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cibl
 
 /**
  * @param {ReduceOptions} opts
- * @returns {Promise<{ host: string, dir: string, files: string[], table: ReturnType<typeof propose>, map: Record<string, any>, first: string }[]>}
+ * @returns {Promise<{ host: string, dir: string, files: string[], table: ReturnType<typeof propose>, map: Record<string, any>, first: string, migration: ReturnType<typeof buildMigration>['data'] }[]>}
  */
 export async function runReduce(opts) {
   const { viewport = { width: 1366, height: 900 }, waitMs = DEFAULT_WAIT_MS, outRoot = 'local/reductions', now = new Date(), log = () => {} } = opts;
   const target = JSON.parse(await readFile(opts.targetPath, 'utf8'));
   /** @type {Record<string, string | false>} */
   const decisions = opts.decisionsPath ? JSON.parse(await readFile(opts.decisionsPath, 'utf8')) : {};
+  const tokens = opts.tokensPath ? JSON.parse(await readFile(opts.tokensPath, 'utf8')) : null;
   const { sources } = await loadSources({ path: opts.sourcesPath });
   const urls = resolveAddresses(opts.addresses);
   const { chromium } = await import('playwright-core');
@@ -76,13 +81,15 @@ export async function runReduce(opts) {
         const page = await context.newPage();
         try {
           await gotoAndSettle(page, url, { waitMs });
-          await measureRendered(page, agg, { thirdParty: sources?.thirdParty ?? [], sources });
+          // Lot M : origine CSS (règle d'un élément d'exemple) et états forcés, pour migration.md.
+          await measureRendered(page, agg, { trace: true, states: true, thirdParty: sources?.thirdParty ?? [], sources });
         } finally {
           await page.close().catch(() => {});
         }
       }
       // R6 : les sélecteurs tiers suivent la table, pour que la simulation les exclue.
-      const table = { ...propose(agg.result(), target), thirdParty: sources?.thirdParty ?? [] };
+      const rendered = agg.result();
+      const table = { ...propose(rendered, target), thirdParty: sources?.thirdParty ?? [] };
       const map = mapping(table, decisions);
       // Tour 2 : simuler la table, page par page.
       const pages = [];
@@ -100,10 +107,19 @@ export async function runReduce(opts) {
       const stamp = stampOf(now);
       const dir = await freeOutputDir(outRoot, host, stamp);
       await mkdir(dir, { recursive: true });
-      const files = [join(dir, 'table.json'), join(dir, 'revue.html')];
+      const files = [join(dir, 'table.json'), join(dir, 'revue.html'), join(dir, 'migration.md')];
       await writeFile(files[0], JSON.stringify({ host, stamp, viewport, target, decisions, table, pages: pages.map((p) => ({ url: p.url, elements: p.elements, operations: p.operations })) }, null, 2) + '\n');
       await writeFile(files[1], renderReview(table, pages, { host, stamp, target: opts.targetPath.split('/').pop() ?? '', decisions }));
-      results.push({ host, dir, files, table, map, first: hostUrls[0] });
+      const migration = buildMigration({
+        table,
+        rendered,
+        map,
+        target,
+        tokens,
+        meta: { host, stamp, target: opts.targetPath.split('/').pop() ?? '', tokens: opts.tokensPath ? opts.tokensPath.split('/').pop() ?? null : null, pages: hostUrls.map((u) => new URL(u).pathname), viewport },
+      });
+      await writeFile(files[2], migration.markdown);
+      results.push({ host, dir, files, table, map, first: hostUrls[0], migration: migration.data });
     }
   } finally {
     await browser.close();
@@ -137,6 +153,7 @@ export function parseReduceArgs(argv) {
     options: {
       target: { type: 'string' },
       decisions: { type: 'string' },
+      tokens: { type: 'string' },
       'storage-state': { type: 'string' },
       sources: { type: 'string' },
       viewport: { type: 'string', default: '1366x900' },
@@ -156,6 +173,7 @@ export function parseReduceArgs(argv) {
       addresses: positionals,
       targetPath: String(values.target),
       decisionsPath: values.decisions,
+      tokensPath: values.tokens,
       storageState: values['storage-state'],
       sourcesPath: values.sources,
       viewport: { width: Number(vp[1]), height: Number(vp[2]) },
