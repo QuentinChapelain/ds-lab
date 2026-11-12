@@ -65,6 +65,81 @@ export function scanInPage(map) {
     if (t === 'select') return ((/** @type {any} */ (el).selectedOptions?.[0]?.textContent) ?? '').trim() !== '';
     return false;
   };
+  // Lot P : relation d'une marge avec le voisin de son côté, mêmes règles que collectInPage
+  // (src/browser/rendered.js), réécrites ici parce que la fonction est sérialisée dans la page.
+  const META = new Set(['SCRIPT', 'STYLE', 'TEMPLATE', 'NOSCRIPT', 'LINK', 'META', 'TITLE', 'BASE']);
+  const CTRL = 'input:not([type=hidden]):not([type=button]):not([type=submit]):not([type=reset]):not([type=image]),select,textarea';
+  const HEADINGS = 'h1,h2,h3,h4,h5,h6,[role=heading]';
+  const NOT_TEXT = `${HEADINGS},label,button,a[href],${CTRL}`;
+  /** @param {Element} e */
+  const hasCtrl = (e) => e.matches(CTRL) || !!e.querySelector(CTRL);
+  /** @param {Element} e */
+  const isText = (e) => !e.matches(NOT_TEXT) && !e.querySelector(NOT_TEXT) && (e.textContent ?? '').trim() !== '';
+  /** @param {Element} e */
+  const inFlow = (e) => !META.has(e.tagName) && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden' && !/^(absolute|fixed)$/.test(getComputedStyle(e).position);
+  /** @param {Element} e @param {string} side */
+  const nearOf = (e, side) => {
+    const r = e.getBoundingClientRect();
+    let best = null;
+    let key = [Infinity, Infinity];
+    for (const x of e.parentElement?.children ?? []) {
+      if (x === e || !inFlow(x)) continue;
+      const q = x.getBoundingClientRect();
+      const gap =
+        side === 'bottom' ? (q.top >= r.bottom - 0.5 ? q.top - r.bottom : null)
+        : side === 'top' ? (q.bottom <= r.top + 0.5 ? r.top - q.bottom : null)
+        : side === 'right' ? (q.left >= r.right - 0.5 ? q.left - r.right : null)
+        : q.right <= r.left + 0.5 ? r.left - q.right : null;
+      if (gap === null) continue;
+      const across = side === 'top' || side === 'bottom' ? Math.abs(q.left + q.width / 2 - (r.left + r.width / 2)) : Math.abs(q.top + q.height / 2 - (r.top + r.height / 2));
+      const k = [Math.max(0, gap), across];
+      if (k[0] < key[0] - 0.01 || (Math.abs(k[0] - key[0]) <= 0.01 && k[1] < key[1])) {
+        best = x;
+        key = k;
+      }
+    }
+    return best;
+  };
+  /** @param {Element} a @param {Element} b @param {string} attr */
+  const points = (a, b, attr) =>
+    [a, ...a.querySelectorAll(`[${attr}]`)].some((x) =>
+      (x.getAttribute(attr) ?? '').split(/\s+/).some((id) => {
+        const t = id ? document.getElementById(id) : null;
+        return !!t && (t === b || b.contains(t));
+      }),
+    );
+  /** @param {Element | null} p */
+  const fieldBox = (p) =>
+    !!p &&
+    p.querySelectorAll(CTRL).length === 1 &&
+    !p.querySelector(HEADINGS) &&
+    [...p.children].every((c) => hasCtrl(c) || c.tagName === 'LABEL' || !c.querySelector('button,a[href],ul,ol,table,section,article,nav,form,fieldset'));
+  /** @param {Element} t */
+  const fieldOf = (t) => {
+    for (let x = t.previousElementSibling; x; x = x.previousElementSibling) {
+      if (!inFlow(x)) continue;
+      if (x.matches(CTRL)) return x;
+      if (!isText(x)) return null;
+    }
+    return null;
+  };
+  /** @param {Element} el @param {string} side */
+  const scopeOf = (el, side) => {
+    const b = nearOf(el, side);
+    if (!b) return 'inconnue';
+    if (points(el, b, 'for') || points(b, el, 'for') || points(el, b, 'aria-describedby') || points(b, el, 'aria-describedby')) return 'dans le composant';
+    if (fieldBox(el.parentElement)) {
+      const [c, o] = hasCtrl(el) ? [el, b] : [b, el];
+      if (hasCtrl(c) && !hasCtrl(o) && !o.matches(HEADINGS)) return 'dans le composant';
+    }
+    const fa = isText(el) ? fieldOf(el) : null;
+    const fb = isText(b) ? fieldOf(b) : null;
+    if ((fa && (fa === b || fa === fb)) || (fb && fb === el)) return 'dans le composant';
+    return 'entre composants';
+  };
+  const spacingMap = map.spacing ?? {};
+  /** Une marge de cette valeur figure dans la table (sous « ancien », « ancien|marge » ou « ancien|marge|relation »). @param {string} old */
+  const marginListed = (old) => old in spacingMap || Object.keys(spacingMap).some((k) => k === `${old}|marge` || k.startsWith(`${old}|marge|`));
   // Pleins : éléments dont le fond opaque porte un texte plus clair que lui (R1).
   /** @type {Set<Element>} */
   const plein = new Set();
@@ -111,11 +186,11 @@ export function scanInPage(map) {
   const ops = [];
   /** @type {Map<string, { key: string, family: string, old: string, usage?: string, new: string, count: number, samples: number[], props: string[] }>} */
   const changes = new Map();
-  /** @param {number} i @param {string} family @param {string} prop @param {string | null} old @param {string} [usage] */
-  const consider = (i, family, prop, old, usage) => {
-    const next = old ? (usage ? map[family]?.[`${old}|${usage}`] ?? map[family]?.[old] : map[family]?.[old]) : undefined;
+  /** @param {number} i @param {string} family @param {string} prop @param {string | null} old @param {string} [usage] @param {string} [scope]  lot P : relation d'une marge */
+  const consider = (i, family, prop, old, usage, scope) => {
+    const next = old ? (usage ? (scope ? map[family]?.[`${old}|${usage}|${scope}`] : undefined) ?? map[family]?.[`${old}|${usage}`] ?? map[family]?.[old] : map[family]?.[old]) : undefined;
     if (!old || !next) return;
-    const key = usage ? `${family}|${old}|${usage}` : `${family}|${old}`;
+    const key = usage ? `${family}|${old}|${usage}${scope ? `|${scope}` : ''}` : `${family}|${old}`;
     const style = /** @type {HTMLElement} */ (els[i]).style;
     ops.push({ i, prop, value: next, family, key, prev: style?.getPropertyValue(prop) ?? '', prevPriority: style?.getPropertyPriority(prop) ?? '' });
     let c = changes.get(key);
@@ -155,7 +230,7 @@ export function scanInPage(map) {
       const auto = autoSidesOf(el, cs);
       for (const s of SIDES) {
         const m = pxKey(cs.getPropertyValue(`margin-${s}`));
-        if (m && m !== '0px' && !auto.includes(s)) consider(i, 'spacing', `margin-${s}`, m, 'marge');
+        if (m && m !== '0px' && !auto.includes(s) && marginListed(m)) consider(i, 'spacing', `margin-${s}`, m, 'marge', scopeOf(el, s));
         const p = pxKey(cs.getPropertyValue(`padding-${s}`));
         if (p && p !== '0px') consider(i, 'spacing', `padding-${s}`, p, 'retrait');
         if (cs.getPropertyValue(`border-${s}-style`) !== 'none' && parseFloat(cs.getPropertyValue(`border-${s}-width`)) > 0)

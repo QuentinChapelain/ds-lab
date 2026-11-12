@@ -20,8 +20,8 @@ const TOL = 0.01;
 
 /** @type {Awaited<ReturnType<typeof startFixtureServers>>} */
 let servers;
-/** @type {{ data: any, md: string }} */
-const desordre = { data: null, md: '' };
+/** @type {{ data: any, md: string, table: any }} */
+const desordre = { data: null, md: '', table: null };
 /** @type {{ data: any, md: string }} */
 const pieges = { data: null, md: '' };
 /** Passage 2c : décisions du designer (fixtures/marque-demo/decisions-passage-2c.json), puis un refus en plus. */
@@ -44,6 +44,7 @@ before(async () => {
   const [first, ...rest] = E.conditions.pages;
   const [d] = await runReduce({ ...common, addresses: [servers.origin + first, ...rest], outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-migration-')) });
   desordre.data = d.migration;
+  desordre.table = d.table;
   desordre.md = await readFile(d.files[2], 'utf8');
   const [p] = await runReduce({ ...common, addresses: [servers.origin + '/pieges/pieges.html'], outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-migration-')) });
   pieges.data = p.migration;
@@ -162,14 +163,15 @@ test('pièges : L1, un lien sans soulignement dans un paragraphe', () => {
   assert.ok(pieges.md.includes('### Liens sans soulignement dans un paragraphe : 1'));
 });
 
-test('décisions (passage 2c) : les 10 lignes décidées passent dans « Appliqué » ; une seule en attente, la taille 40px née du lot R', () => {
+test('décisions (passage 2c) : les 10 décisions lues décident 11 lignes (la marge de 10 px est coupée par relation), qui passent dans « Appliqué » ; une seule en attente, la taille 40px née du lot R', () => {
   const n = Object.keys(decidee.decisions).length;
   assert.equal(n, 10, 'décisions lues');
-  assert.equal(decidee.data.decided, n);
+  // Lot P : « spacing|10px|marge », choisi avant la coupure, vaut pour ses deux lignes.
+  assert.equal(decidee.data.decided, n + 1);
   assert.equal(decidee.data.sections.pending.total, 1, 'en attente');
   const pending = decidee.data.rows.filter((/** @type {any} */ r) => r.status === 'en attente');
   assert.deepEqual(pending.map((/** @type {any} */ r) => `${r.family}|${r.value}`), ['fontSizes|40px'], 'seule la taille de texte 40px est en attente');
-  assert.equal(decidee.data.sections.applied.total, E.desordre.sections.applied.total + n, 'appliqué');
+  assert.equal(decidee.data.sections.applied.total, E.desordre.sections.applied.total + n + 1, 'appliqué');
   assert.equal(decidee.data.sections.refused.total, 0, 'refusée');
   for (const [key, value] of Object.entries(decidee.decisions)) {
     const [family, old, usage] = key.split('|');
@@ -219,13 +221,18 @@ test('consigne pour un agent : contexte, une instruction par ligne appliquée, c
   assert.deepEqual(decidee.data.remaining.map((/** @type {any} */ p) => `${p.text}|${p.bg}`), ['#2196f3|#ffffff'], 'une seule paire sous 4,5:1 après migration');
 });
 
-test('consigne : tous les sélecteurs, sans plafond ; la ligne de esp-17 cite p.aide', () => {
-  const line = desordre.data.agent.lines.find((/** @type {string} */ l) => l.startsWith('- esp-17 '));
-  assert.ok(line, 'esp-17 absente de la consigne');
-  assert.ok(line.includes('p.aide'), line);
-  for (const sel of ['input#nom', 'input#courriel', 'p.erreur', 'input#telephone']) assert.ok(line.includes(sel), `${sel} : ${line}`);
-  // Table « Décisions en attente » : sélecteurs en dernière colonne.
+test('consigne : tous les sélecteurs, sans plafond ; les deux lignes de la marge de 10 px, cherchées par valeur, usage et relation, citent leurs éléments', () => {
+  // Lot P : la marge basse de 10 px est coupée par relation ; p.aide est entre composants.
+  const want = { 'entre composants': ['input#nom', 'p.erreur', 'p.aide'], 'dans le composant': ['input#courriel', 'input#telephone'] };
   const pending = desordre.md.slice(desordre.md.indexOf('## Décisions en attente'), desordre.md.indexOf('## Refusée'));
-  const row = pending.split('\n').find((/** @type {string} */ l) => l.startsWith('| esp-17 '));
-  assert.ok(row?.includes('`p.aide`'), `table : ${row}`);
+  for (const [scope, sels] of Object.entries(want)) {
+    const r = desordre.table.families.spacing.rows.find((/** @type {any} */ x) => x.old === '10px' && x.usage === 'marge' && x.scope === scope);
+    assert.ok(r, `10px marge « ${scope} » absente`);
+    const line = desordre.data.agent.lines.find((/** @type {string} */ l) => l.startsWith(`- ${r.id} `));
+    assert.ok(line, `${r.id} absente de la consigne`);
+    for (const sel of sels) assert.ok(line.includes(sel), `${sel} : ${line}`);
+    // Table « Décisions en attente » : sélecteurs en dernière colonne.
+    const row = pending.split('\n').find((/** @type {string} */ l) => l.startsWith(`| ${r.id} `));
+    for (const sel of sels) assert.ok(row?.includes(`\`${sel}\``), `table : ${row}`);
+  }
 });

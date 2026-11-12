@@ -16,7 +16,7 @@ import { loadSources } from '../lib/sources.js';
 import { gotoAndSettle, DEFAULT_WAIT_MS } from '../browser/navigate.js';
 import { createRenderedAggregator } from '../rendered/aggregate.js';
 import { measureRendered } from '../rendered/run.js';
-import { propose, mapping, rowKey } from '../reduce/propose.js';
+import { propose, mapping, rowKey, controlAfter } from '../reduce/propose.js';
 import { simulatePage, installLive, captureDecision, touchedElements, FRAME } from '../browser/simulate.js';
 import { renderReview } from '../report/review.js';
 import { buildMigration } from '../report/migration.js';
@@ -102,6 +102,8 @@ export async function runReduce(opts) {
       // R6 : les sélecteurs tiers suivent la table, pour que la simulation les exclue.
       const rendered = agg.result();
       const table = { ...propose(rendered, target), thirdParty: sources?.thirdParty ?? [] };
+      // Lot P (P3) : la hiérarchie des espaces, recalculée avec les décisions relues.
+      controlAfter(table, decisions);
       const map = mapping(table, decisions);
       // Tour 2 : simuler la table, page par page.
       const pages = [];
@@ -135,7 +137,7 @@ export async function runReduce(opts) {
           for (const x of pending) {
             const { family, r, decision } = x;
             const candidates = decision ? r.candidates : [{ value: /** @type {string} */ (r.new), name: r.name }];
-            const d = { key: rowKey(family, r), family, usage: r.usage, mapKey: r.usage ? `${r.old}|${r.usage}` : r.old, old: r.old, candidates };
+            const d = { key: rowKey(family, r), family, usage: r.usage, mapKey: r.usage ? `${r.old}|${r.usage}${r.scope ? `|${r.scope}` : ''}` : r.old, old: r.old, candidates };
             const here = await touchedElements(page, d, table.thirdParty);
             if (!here.length) continue;
             for (const t of here) x.touched.push({ page: url, selector: t.selector, text: t.text });

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Orbe Café — votre compte</title>
+  <link rel="stylesheet" href="/proximite/styles/proximite.css">
+</head>
+<body>
+  <main class="page">
+    <h1 class="titre-page">Votre compte</h1>
+
+    <!-- PX1 : formulaire à plat, message juste après le champ, sans lien. -->
+    <section class="bloc" id="px1" aria-label="PX1">
+      <h2 class="titre-bloc">Livraison</h2>
+      <form class="formulaire" id="px1-form" action="#">
+        <label class="libelle" id="px1-libelle-nom" for="px1-nom">Nom sur la sonnette</label>
+        <input class="champ" id="px1-nom" type="text" value="Lovelace">
+        <p class="message" id="px1-message">Le livreur sonne une seule fois.</p>
+        <label class="libelle libelle-suivant" id="px1-libelle-ville" for="px1-ville">Ville</label>
+        <input class="champ" id="px1-ville" type="text" value="Lyon">
+      </form>
+    </section>
+
+    <!-- PX2 : un conteneur par champ, message relié par aria-describedby. -->
+    <section class="bloc" id="px2" aria-label="PX2">
+      <h2 class="titre-bloc">Contact</h2>
+      <form class="formulaire" id="px2-form" action="#">
+        <div class="groupe" id="px2-groupe-mail">
+          <label class="libelle" id="px2-libelle-mail" for="px2-mail">E-mail</label>
+          <input class="champ" id="px2-mail" type="text" value="ada@exemple.fr" aria-describedby="px2-aide-mail">
+          <p class="message" id="px2-aide-mail">Pour le reçu seulement.</p>
+        </div>
+        <div class="groupe groupe-suivant" id="px2-groupe-tel">
+          <label class="libelle" id="px2-libelle-tel" for="px2-tel">Téléphone</label>
+          <input class="champ" id="px2-tel" type="text" value="06 12 34 56 78">
+        </div>
+      </form>
+    </section>
+
+    <!-- PX3 : paragraphe après un champ, précédé d'un titre de section. -->
+    <section class="bloc" id="px3" aria-label="PX3">
+      <h2 class="titre-bloc">Abonnement</h2>
+      <form class="formulaire" id="px3-form" action="#">
+        <label class="libelle" id="px3-libelle-code" for="px3-code">Code d'abonné</label>
+        <input class="champ" id="px3-code" type="text" value="OC-2041">
+        <h3 class="titre-section" id="px3-titre">Préférences</h3>
+        <p class="texte" id="px3-texte">Nous torréfions le mardi et expédions le mercredi.</p>
+        <label class="libelle libelle-suivant" id="px3-libelle-mouture" for="px3-mouture">Mouture</label>
+        <input class="champ" id="px3-mouture" type="text" value="Filtre">
+      </form>
+    </section>
+
+    <!-- PX4 : 4 px dans le composant, 16 px entre ; conteneur de champ sans aria-describedby. -->
+    <section class="bloc" id="px4" aria-label="PX4">
+      <h2 class="titre-bloc">Fidélité</h2>
+      <form class="formulaire" id="px4-form" action="#">
+        <div class="groupe" id="px4-groupe-carte">
+          <label class="libelle" id="px4-libelle-carte" for="px4-carte">Numéro de carte</label>
+          <input class="champ" id="px4-carte" type="text" value="0042 1187">
+          <p class="message" id="px4-aide-carte">Au dos de la carte, sous le logo.</p>
+        </div>
+        <div class="groupe groupe-suivant" id="px4-groupe-prenom">
+          <label class="libelle" id="px4-libelle-prenom" for="px4-prenom">Prénom</label>
+          <input class="champ" id="px4-prenom" type="text" value="Ada">
+        </div>
+      </form>
+    </section>
+
+    <!-- PX5 : aide à marge basse de 10 px, bloc suivant à marge haute de 16 px (marges fusionnées). -->
+    <section class="bloc" id="px5" aria-label="PX5">
+      <h2 class="titre-bloc">Prévenir</h2>
+      <form class="formulaire" id="px5-form" action="#">
+        <label class="libelle" id="px5-libelle-tel" for="px5-tel">Téléphone</label>
+        <input class="champ" id="px5-tel" type="text" value="06 98 76 54 32">
+        <p class="message aide" id="px5-aide">Utilisé seulement quand la commande est prête.</p>
+        <div class="actions" id="px5-actions">
+          <button class="bouton" type="button">Enregistrer</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- PX6 : formulaire à plat, message aussi loin de son champ que du champ suivant (12 px et 12 px). -->
+    <section class="bloc" id="px6" aria-label="PX6">
+      <h2 class="titre-bloc">Cadeau</h2>
+      <form class="formulaire" id="px6-form" action="#">
+        <label class="libelle" id="px6-libelle-mot" for="px6-mot">Mot sur la carte</label>
+        <input class="champ" id="px6-mot" type="text" value="Bon anniversaire">
+        <p class="message message-loin" id="px6-message">Trente caractères au plus.</p>
+        <label class="libelle libelle-loin" id="px6-libelle-signature" for="px6-signature">Signature</label>
+        <input class="champ" id="px6-signature" type="text" value="Ada">
+      </form>
+    </section>
+
+    <!-- PX7 : champ et message dans une rangée flex avec gouttière : les marges ne fusionnent pas. -->
+    <section class="bloc" id="px7" aria-label="PX7">
+      <h2 class="titre-bloc">Parrainage</h2>
+      <form class="formulaire" id="px7-form" action="#">
+        <div class="groupe" id="px7-groupe-code">
+          <label class="libelle" id="px7-libelle-code" for="px7-code">Code de parrainage</label>
+          <div class="rangee" id="px7-rangee">
+            <input class="champ champ-rangee" id="px7-code" type="text" value="ORBE-7Q" aria-describedby="px7-aide">
+            <p class="message message-rangee" id="px7-aide">Six lettres.</p>
+          </div>
+        </div>
+        <div class="groupe groupe-loin" id="px7-groupe-filleul">
+          <label class="libelle" id="px7-libelle-filleul" for="px7-filleul">Filleul</label>
+          <input class="champ" id="px7-filleul" type="text" value="Grace">
+        </div>
+      </form>
+    </section>
+
+    <!-- PX8 : seul enfant d'un encart sans retrait ni bordure : sa marge haute fusionne avec celle de l'encart. -->
+    <section class="bloc" id="px8" aria-label="PX8">
+      <h2 class="titre-bloc" id="px8-titre">Horaires</h2>
+      <div class="encart" id="px8-encart">
+        <p class="note" id="px8-note">Ouvert du mardi au samedi, de 8 h à 18 h.</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

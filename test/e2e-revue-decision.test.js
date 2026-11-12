@@ -80,6 +80,18 @@ async function exported(page) {
 }
 /** @param {any} page @param {string} id */
 const card = (page, id) => page.locator(`article.row[data-key="${/** @type {any} */ (byId.get(id)).key}"]`);
+/**
+ * Ligne cherchée par famille, valeur, usage et relation (lot P), jamais par numéro.
+ * @param {string} family @param {string} old @param {string} usage @param {string} [scope]
+ * @returns {{ key: string, row: any, family: string }}
+ */
+const lineOf = (family, old, usage, scope) => {
+  const x = [...byId.values()].find((y) => y.family === family && y.row.old === old && y.row.usage === usage && (scope === undefined || y.row.scope === scope));
+  assert.ok(x, `${family} ${old} ${usage} ${scope ?? ''} absente`);
+  return /** @type {any} */ (x);
+};
+/** La marge basse de 10 px entre composants (input#nom, p.erreur, p.aide) : une décision, entre 8 et 12 px. */
+const MARGE_10 = () => lineOf('spacing', '10px', 'marge', 'entre composants');
 
 test('revue : chaque décision est « Pas encore choisie », une image affichée, un bouton par version', async () => {
   const { context, page } = await open();
@@ -140,8 +152,8 @@ test('revue : parcourir les versions sans choisir laisse l’export vide', async
 test('revue : choisir l’actuelle exporte false, « Gardée : 10 px »', async () => {
   const { context, page } = await open();
   try {
-    const { key } = /** @type {any} */ (byId.get('esp-17'));
-    const c = card(page, 'esp-17');
+    const { key, row } = MARGE_10();
+    const c = card(page, row.id);
     await c.locator('.versions .v[data-v="2"]').click();
     await c.focus();
     await page.keyboard.press('ArrowLeft');
@@ -158,8 +170,8 @@ test('revue : choisir l’actuelle exporte false, « Gardée : 10 px »', async 
 test('revue : choisir 8 px exporte « 8px » ; afficher ensuite une autre version ne change pas l’export', async () => {
   const { context, page } = await open();
   try {
-    const { key } = /** @type {any} */ (byId.get('esp-17'));
-    const c = card(page, 'esp-17');
+    const { key, row } = MARGE_10();
+    const c = card(page, row.id);
     await c.locator('.versions .v[data-value="8px"]').click();
     await c.locator('.retenir').click();
     assert.equal(await c.locator('.retenir').textContent(), 'Choisir cette version');
@@ -197,7 +209,7 @@ test('revue : sous chaque version de couleur, le contraste le plus faible et son
 test('revue : dans une vignette, la cote est réduite et posée au bout de la bande, à droite', async () => {
   const { context, page } = await open();
   try {
-    const c = card(page, 'esp-17');
+    const c = card(page, MARGE_10().row.id);
     const pairs = await c.locator('.vig .ver:not([hidden])').evaluateAll((vers) =>
       vers.map((v) => {
         const z = /** @type {Element} */ (v.querySelector('.zone')).getBoundingClientRect();
@@ -222,7 +234,7 @@ const bilan = (page) => page.locator('#bilan').textContent();
 /** @param {any} page */
 const stored = (page) => page.evaluate((/** @type {string} */ k) => localStorage.getItem(k), memoryKey);
 
-test('revue : le compteur « n / 11 choisies » suit les choix ; « Suivante à choisir » donne le focus à la carte suivante', async () => {
+test('revue : le compteur « n / 12 choisies » suit les choix ; « Suivante à choisir » donne le focus à la carte suivante', async () => {
   const { context, page } = await open();
   try {
     const total = [...byId.values()].filter((x) => x.row.class === 'décision').length;
@@ -236,7 +248,7 @@ test('revue : le compteur « n / 11 choisies » suit les choix ; « Suivante à 
     const second = await page.evaluate(() => document.activeElement?.getAttribute('data-key'));
     assert.notEqual(second, first);
     assert.equal(second, await page.locator('article.row.a-trancher').first().getAttribute('data-key'));
-    const c = card(page, 'esp-17');
+    const c = card(page, MARGE_10().row.id);
     await c.locator('.versions .v[data-value="8px"]').click();
     await c.locator('.retenir').click();
     assert.equal(await bilan(page), `2 / ${total} choisies`);
@@ -253,10 +265,10 @@ test('revue : mémoire propre à la réduction ; « Tout remettre à zéro » de
   try {
     const total = [...byId.values()].filter((x) => x.row.class === 'décision').length;
     assert.equal(await stored(page), null, 'rien d’écrit au chargement');
-    const c = card(page, 'esp-17');
+    const c = card(page, MARGE_10().row.id);
     await c.locator('.versions .v[data-value="8px"]').click();
     await c.locator('.retenir').click();
-    assert.deepEqual(JSON.parse(/** @type {string} */ (await stored(page))), { [/** @type {any} */ (byId.get('esp-17')).key]: '8px' });
+    assert.deepEqual(JSON.parse(/** @type {string} */ (await stored(page))), { [MARGE_10().key]: '8px' });
     await page.reload();
     assert.equal(await bilan(page), `1 / ${total} choisies`, 'choix relu de la mémoire');
     await page.click('#raz');
@@ -265,7 +277,7 @@ test('revue : mémoire propre à la réduction ; « Tout remettre à zéro » de
     await page.click('#raz');
     assert.equal(await bilan(page), `0 / ${total} choisies`);
     assert.equal(await stored(page), null, 'mémoire vidée');
-    assert.equal(await card(page, 'esp-17').locator('.choix').textContent(), 'Pas encore choisie');
+    assert.equal(await card(page, MARGE_10().row.id).locator('.choix').textContent(), 'Pas encore choisie');
     await page.reload();
     assert.equal(await bilan(page), `0 / ${total} choisies`);
     assert.deepEqual(await exported(page), {});
@@ -379,10 +391,11 @@ test('revue : cartes proche, d’office et correction, sélecteur « avant · ap
 test('revue : détail, 4 sélecteurs au plus puis « et n autres »', async () => {
   const { context, page } = await open();
   try {
-    const r = /** @type {any} */ (byId.get('esp-17')).row;
+    // Lot P : la marge de 10 px est coupée par relation (3 et 2 éléments) ; l'encre #1f2a44 en texte en touche plus de 4.
+    const r = lineOf('colors', '#1f2a44', 'texte').row;
     const all = [...new Set(r.capture.touched.map((/** @type {any} */ t) => t.selector))];
     assert.ok(all.length > 4, `${all.length} sélecteurs`);
-    const dd = card(page, 'esp-17').locator('details.detail dt:text-is("Sélecteurs") + dd');
+    const dd = card(page, r.id).locator('details.detail dt:text-is("Sélecteurs") + dd');
     assert.equal(await dd.locator('code').count(), 4);
     assert.equal(await dd.locator('i').textContent(), `et ${all.length - 4} ${all.length - 4 === 1 ? 'autre' : 'autres'}`);
   } finally {

@@ -23,10 +23,10 @@
     ]
   },
   "desordre": {
-    "table": { "rows": 87, "unchanged": 34 },
+    "table": { "rows": 92, "unchanged": 37, "corrected": "12/11/2026 : lot P, lignes de marge coupées par relation (10px, 14px, 8px, 4px, 24px : 5 lignes de plus, dont 3 inchangées)" },
     "sections": {
-      "applied": { "total": 41, "colors": 25, "spacing": 7, "fontSizes": 6, "radii": 3, "corrected": "12/11/2026 : lot R, seuil de 2 px pour les tailles de texte" },
-      "pending": { "total": 11, "colors": 5, "spacing": 4, "fontSizes": 1, "radii": 1, "corrected": "12/11/2026 : lot R, seuil de 2 px pour les tailles de texte" },
+      "applied": { "total": 42, "colors": 25, "spacing": 8, "fontSizes": 6, "radii": 3, "corrected": "12/11/2026 : lot R, seuil de 2 px pour les tailles de texte ; 12/11/2026 : lot P, 14px marge (proche) coupée en entre composants et inconnue" },
+      "pending": { "total": 12, "colors": 5, "spacing": 5, "fontSizes": 1, "radii": 1, "corrected": "12/11/2026 : lot R, seuil de 2 px pour les tailles de texte ; 12/11/2026 : lot P, 10px marge (décision) coupée en dans le composant et entre composants" },
       "outOfTable": { "total": 1, "rows": [{ "family": "colors", "value": "#2196f3", "reason": "aucune échelle (R4)" }] }
     },
     "tokens": [
@@ -60,9 +60,11 @@
       },
       "injected": { "count": null, "note": "limite connue : non détecté, signalé sans compte" },
       "silentTies": {
-        "count": 2,
+        "count": 3,
+        "corrected": "12/11/2026 : lot P, 14px marge coupée par relation : une égalité par ligne",
         "rows": [
-          { "family": "spacing", "value": "14px", "usage": "marge", "tie": ["12px", "16px"], "class": "proche", "new": "12px", "id": "E5" },
+          { "family": "spacing", "value": "14px", "usage": "marge", "scope": "entre composants", "tie": ["12px", "16px"], "class": "proche", "new": "12px", "id": "E5" },
+          { "family": "spacing", "value": "14px", "usage": "marge", "scope": "inconnue", "tie": ["12px", "16px"], "class": "proche", "new": "12px", "id": "E5" },
           { "family": "radii", "value": "3px", "usage": "rayon", "tie": ["2px", "4px"], "class": "auto", "new": "2px" }
         ]
       }

@@ -407,6 +407,8 @@ export function createRenderedAggregator() {
    * @type {Record<string, Map<string, Map<string, { count: number, content: number, field: number, properties: Set<string>, selectors: string[], pages: Record<string, number> }>>>}
    */
   const usageFam = { colors: new Map(), spacing: new Map(), radii: new Map() };
+  /** Lot P (P3) : paires contrôlées de toutes les pages. @type {any[]} */
+  const proximity = [];
   /** @type {Map<string, { text: string, bg: string, bgUsage: string, threshold: number, n: number }>} */
   const usagePairs = new Map();
   /** @type {Map<string, { border: string, bg: string, bgUsage: string, threshold: number, n: number }>} */
@@ -417,12 +419,14 @@ export function createRenderedAggregator() {
    * @param {string} family @param {string} value @param {string} usage @param {RenderedRecord} rec
    * @param {string} page @param {string} property @param {{ content?: boolean, field?: boolean }} [o]
    */
-  const addUsage = (family, value, usage, rec, page, property, { content = false, field = false, index = -1 } = {}) => {
+  const addUsage = (family, value, usage, rec, page, property, { content = false, field = false, index = -1, scope = /** @type {string | undefined} */ (undefined) } = {}) => {
     const byValue = usageFam[family];
     let u = byValue.get(value);
     if (!u) byValue.set(value, (u = new Map()));
-    let e = u.get(usage);
-    if (!e) u.set(usage, (e = { count: 0, content: 0, field: 0, properties: new Set(), selectors: [], pages: {} }));
+    // Lot P : une entrée par usage et par relation (marges).
+    const slot = scope ? `${usage}|${scope}` : usage;
+    let e = u.get(slot);
+    if (!e) u.set(slot, (e = { count: 0, content: 0, field: 0, properties: new Set(), selectors: [], pages: {}, ...(scope ? { usage, scope } : {}) }));
     e.count++;
     if (content) e.content++;
     else touch(e, rec, pageNo, index);
@@ -444,6 +448,12 @@ export function createRenderedAggregator() {
     const page = pc.url;
     pageNo++;
     const stats = (byPage[page] = { elements: 0, pseudoElements: 0, excluded: pc.excluded, textBearing: 0, iframes: pc.iframes });
+    // Lot P (P3) : paires contrôlées, marges converties en clés de valeur.
+    for (const x of pc.proximity ?? []) {
+      /** @param {any} sp */
+      const keyed = (sp) => ({ ...sp, parts: sp.parts.map((/** @type {string} */ m) => lengthKey(m, 16).key) });
+      proximity.push({ page, elements: x.elements, in: keyed(x.in), out: keyed(x.out) });
+    }
     if (pc.thirdParty) {
       third.elements += pc.thirdParty.elements;
       for (const [sel, n] of Object.entries(pc.thirdParty.selectors)) third.selectors[sel] = (third.selectors[sel] ?? 0) + n;
@@ -524,7 +534,7 @@ export function createRenderedAggregator() {
         if (m && m !== '0px') {
           const k = lengthKey(m, 16);
           add('margins', k, m, `margin-${s}`);
-          if (!rec.pseudo && !rec.autoMargins?.includes(s)) addUsage('spacing', k.key, SPACING_USAGE.margins, rec, page, `margin-${s}`, { index });
+          if (!rec.pseudo && !rec.autoMargins?.includes(s)) addUsage('spacing', k.key, SPACING_USAGE.margins, rec, page, `margin-${s}`, { index, scope: rec.margins?.[s]?.scope });
         }
         const pd = p[`padding-${s}`];
         if (pd && pd !== '0px') {
@@ -777,6 +787,7 @@ export function createRenderedAggregator() {
         pairs: [...usagePairs.values()],
         borderPairs: [...borderPairs.values()],
         links: [...proseLinks.values()],
+        proximity,
       },
       contrast: {
         pairs: pairList,

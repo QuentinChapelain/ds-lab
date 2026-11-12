@@ -7,7 +7,7 @@
  * renvoyées avec le texte, pour les tests.
  */
 import { basename } from 'node:path';
-import { APPLIED, isOut, SLICES, rowKey } from '../reduce/propose.js';
+import { APPLIED, isOut, SLICES, decisionFor } from '../reduce/propose.js';
 import { contrastRatio, isOpaque, toLab, deltaE } from '../lib/color.js';
 
 /** Groupes de jetons de dimension, par famille de la table. */
@@ -168,10 +168,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
   };
 
   /** @param {string} family @param {any} r */
-  const decisionOf = (family, r) => {
-    const k = rowKey(family, r);
-    return k in decisions ? decisions[k] : decisions[`${family}|${r.old}`];
-  };
+  const decisionOf = (family, r) => decisionFor(decisions, family, r);
   /** @param {string} hex */
   const valiseName = (hex) => T.find((/** @type {any} */ t) => t.value === hex.toLowerCase())?.name ?? null;
 

@@ -29,6 +29,9 @@
  * @property {[number, number]} [box]       largeur et hauteur de la boîte (lot B, pilule R7)
  * @property {string[]} [autoMargins]     côtés dont la marge est auto (lot B, R7)
  * @property {{ neighbor: string }} [proseLink]  lien sans soulignement dans du texte courant, couleur du texte voisin (lot M)
+ * @property {Record<string, { scope: string, signal: string | null, detail?: string, neighbor: string | null, visiblePx: number | null }>} [margins]
+ *   lot P : par côté de marge non nulle, relation avec le voisin de ce côté (« dans le composant »,
+ *   « entre composants », ou « inconnue » sans élément voisin), signal, voisin et espace visible
  */
 
 /**
@@ -38,6 +41,12 @@
  * @property {number} iframes
  * @property {number} excluded
  * @property {{ elements: number, selectors: Record<string, number>, invalid: string[] }} [thirdParty]  éléments tiers écartés (R17)
+ * @property {Proximity[]} [proximity]  lot P (P3) : paires contrôlées, espace dans le composant face à l'espace entre composants
+ */
+/**
+ * @typedef {{ scope: string, gapPx: number, mode: 'max' | 'sum', extra: number, parts: string[] }} Space
+ *   mode : marges fusionnées (la plus grande) ou additionnées ; extra : reste mesuré (gouttière) ; parts : marges non nulles
+ * @typedef {{ elements: string[], in: Space, out: Space }} Proximity
  */
 
 /**
@@ -455,6 +464,144 @@ export function collectInPage(thirdSelectors = []) {
     });
   }
 
+  // Lot P : relation de chaque marge avec le voisin de son côté (P1, P2), et paires contrôlées (P3).
+  // Règles réécrites dans scanInPage (src/browser/simulate.js), la fonction étant sérialisée dans la page.
+  const IN = 'dans le composant';
+  const OUT = 'entre composants';
+  const CTRL = 'input:not([type=hidden]):not([type=button]):not([type=submit]):not([type=reset]):not([type=image]),select,textarea';
+  const HEADINGS = 'h1,h2,h3,h4,h5,h6,[role=heading]';
+  const NOT_TEXT = `${HEADINGS},label,button,a[href],${CTRL}`;
+  const OPP = /** @type {Record<string, string>} */ ({ top: 'bottom', bottom: 'top', left: 'right', right: 'left' });
+  /** @param {Element} e */
+  const hasCtrl = (e) => e.matches(CTRL) || !!e.querySelector(CTRL);
+  /** @param {Element} e */
+  const isText = (e) => !e.matches(NOT_TEXT) && !e.querySelector(NOT_TEXT) && (e.textContent ?? '').trim() !== '';
+  /** @param {Element} e */
+  const inFlow = (e) => !META.has(e.tagName) && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden' && !/^(absolute|fixed)$/.test(getComputedStyle(e).position);
+  /**
+   * Voisin du côté demandé : frère en flux, entièrement de ce côté, le plus proche ; à égalité, le plus centré.
+   * @param {Element} e @param {string} side
+   */
+  const nearOf = (e, side) => {
+    const r = e.getBoundingClientRect();
+    let best = null;
+    let key = [Infinity, Infinity];
+    for (const x of e.parentElement?.children ?? []) {
+      if (x === e || !inFlow(x)) continue;
+      const q = x.getBoundingClientRect();
+      const gap =
+        side === 'bottom' ? (q.top >= r.bottom - 0.5 ? q.top - r.bottom : null)
+        : side === 'top' ? (q.bottom <= r.top + 0.5 ? r.top - q.bottom : null)
+        : side === 'right' ? (q.left >= r.right - 0.5 ? q.left - r.right : null)
+        : q.right <= r.left + 0.5 ? r.left - q.right : null;
+      if (gap === null) continue;
+      const across = side === 'top' || side === 'bottom' ? Math.abs(q.left + q.width / 2 - (r.left + r.width / 2)) : Math.abs(q.top + q.height / 2 - (r.top + r.height / 2));
+      const k = [Math.max(0, gap), across];
+      if (k[0] < key[0] - 0.01 || (Math.abs(k[0] - key[0]) <= 0.01 && k[1] < key[1])) {
+        best = x;
+        key = k;
+      }
+    }
+    return best ? { el: best, gap: Math.round(key[0] * 100) / 100 } : null;
+  };
+  /** @param {Element} a @param {Element} b @param {string} attr  a, ou un descendant, pointe b ou un de ses descendants */
+  const points = (a, b, attr) =>
+    [a, ...a.querySelectorAll(`[${attr}]`)].some((x) =>
+      (x.getAttribute(attr) ?? '').split(/\s+/).some((id) => {
+        const t = id ? document.getElementById(id) : null;
+        return !!t && (t === b || b.contains(t));
+      }),
+    );
+  /** Conteneur de champ : un seul contrôle, aucun titre, rien d'autre que libellé, contrôle et texte. @param {Element | null} p */
+  const fieldBox = (p) =>
+    !!p &&
+    p.querySelectorAll(CTRL).length === 1 &&
+    !p.querySelector(HEADINGS) &&
+    [...p.children].every((c) => hasCtrl(c) || c.tagName === 'LABEL' || !c.querySelector('button,a[href],ul,ol,table,section,article,nav,form,fieldset'));
+  /** Contrôle dont le texte t est le message, d'après la position : précédé du contrôle, sans titre ni contrôle entre. @param {Element} t */
+  const fieldOf = (t) => {
+    for (let x = t.previousElementSibling; x; x = x.previousElementSibling) {
+      if (!inFlow(x)) continue;
+      if (x.matches(CTRL)) return x;
+      if (!isText(x)) return null;
+    }
+    return null;
+  };
+  /**
+   * P2 : relation entre deux frères voisins, signaux dans l'ordre.
+   * @param {Element} a @param {Element} b
+   * @returns {{ scope: string, signal: string | null, detail?: string }}
+   */
+  const relationOf = (a, b) => {
+    if (points(a, b, 'for') || points(b, a, 'for')) return { scope: IN, signal: 'relié', detail: 'relié par for' };
+    if (points(a, b, 'aria-describedby') || points(b, a, 'aria-describedby')) return { scope: IN, signal: 'relié', detail: 'relié par aria-describedby' };
+    if (fieldBox(a.parentElement)) {
+      const [c, o] = hasCtrl(a) ? [a, b] : [b, a];
+      if (hasCtrl(c) && !hasCtrl(o) && !o.matches(HEADINGS)) return { scope: IN, signal: 'même conteneur de champ' };
+    }
+    const fa = isText(a) ? fieldOf(a) : null;
+    const fb = isText(b) ? fieldOf(b) : null;
+    if ((fa && (fa === b || fa === fb)) || (fb && fb === a)) return { scope: IN, signal: 'déduit de la position' };
+    return { scope: OUT, signal: null };
+  };
+  /** @type {Map<Element, number>} */
+  const indexOf = new Map();
+  records.forEach((r, i) => {
+    if (r.retained && !r.pseudo) indexOf.set(elements[i], i);
+  });
+  /** @param {Element} e @param {string} side */
+  const marginOf = (e, side) => parseFloat(getComputedStyle(e).getPropertyValue(`margin-${side}`)) || 0;
+  /** @type {[Element, Element, string, number][]} paires dans le composant : a, b, côté de a vers b, espace visible */
+  const inside = [];
+  const seenPairs = new Set();
+  records.forEach((r, i) => {
+    if (!r.retained || r.pseudo || !r.props) return;
+    const el = elements[i];
+    for (const side of SIDES) {
+      if (!marginOf(el, side)) continue;
+      const nb = nearOf(el, side);
+      if (!nb) {
+        (r.margins ??= {})[side] = { scope: 'inconnue', signal: null, neighbor: null, visiblePx: null };
+        continue;
+      }
+      const rel = relationOf(el, nb.el);
+      (r.margins ??= {})[side] = { ...rel, neighbor: selectorOf(nb.el), visiblePx: nb.gap };
+      if (rel.scope !== IN) continue;
+      const id = [indexOf.get(el), indexOf.get(nb.el)].sort().join(':');
+      if (seenPairs.has(id)) continue;
+      seenPairs.add(id);
+      inside.push([el, nb.el, side, nb.gap]);
+    }
+  });
+  /**
+   * Espace entre deux voisins, d'après leurs marges : fusionnées (la plus grande) ou additionnées
+   * (flex, grille), plus le reste mesuré (gouttière). @param {Element} a @param {Element} b @param {string} side @param {number} gap
+   */
+  const spaceOf = (a, b, side, gap) => {
+    const ma = marginOf(a, side);
+    const mb = marginOf(b, OPP[side]);
+    const mode = Math.abs(gap - Math.max(ma, mb)) < 0.5 ? 'max' : 'sum';
+    const extra = Math.round((gap - (mode === 'max' ? Math.max(ma, mb) : ma + mb)) * 100) / 100;
+    const parts = [ma ? getComputedStyle(a).getPropertyValue(`margin-${side}`) : null, mb ? getComputedStyle(b).getPropertyValue(`margin-${OPP[side]}`) : null].filter(Boolean);
+    return { gapPx: gap, mode, extra, parts: /** @type {string[]} */ (parts) };
+  };
+  /** P3 : chaque élément d'une paire dans le composant, face au composant voisin de son autre côté. @type {any[]} */
+  const proximity = [];
+  for (const [a, b, side, gap] of inside) {
+    for (const [z, away] of [
+      [a, OPP[side]],
+      [b, side],
+    ]) {
+      const y = nearOf(/** @type {Element} */ (z), /** @type {string} */ (away));
+      if (!y || relationOf(/** @type {Element} */ (z), y.el).scope !== OUT) continue;
+      proximity.push({
+        elements: [selectorOf(a), selectorOf(b), selectorOf(y.el)],
+        in: { scope: IN, ...spaceOf(a, b, side, gap) },
+        out: { scope: OUT, ...spaceOf(/** @type {Element} */ (z), y.el, /** @type {string} */ (away), y.gap) },
+      });
+    }
+  }
+
   // Gardés pour --trace-rendered et pour les états (R15) : élément de chaque relevé, par indice,
   // et lecture des propriétés d'un élément dans son état courant.
   Object.defineProperty(window, '__dsAuditElements', { value: elements, configurable: true });
@@ -470,7 +617,7 @@ export function collectInPage(thirdSelectors = []) {
     },
     configurable: true,
   });
-  return { url: location.href, records, iframes, excluded, thirdParty };
+  return { url: location.href, records, iframes, excluded, thirdParty, proximity };
 }
 
 /**

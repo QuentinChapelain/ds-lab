@@ -75,6 +75,9 @@ export const isOut = (cls) => cls.startsWith('hors table');
  * @property {string} [name]         nom du pas de la cible, pour une couleur
  * @property {string} class          une de ALL_CLASSES
  * @property {string} [usage]        lot B : usage de la ligne (R3)
+ * @property {string} [scope]        lot P : relation d'une marge (« dans le composant », « entre composants », « inconnue »)
+ * @property {{ before: { in: number, out: number }, after?: { in: number, out: number }, signal?: string }} [control]
+ *   lot P (P3) : espaces de la paire mise en défaut (dans le composant, entre composants), avant et après les décisions
  * @property {string[]} [usages]     lot B : usages couverts (une ligne hors table « aucune échelle » les regroupe)
  * @property {string} [slice]        lot B : tranche de la valise (R1)
  * @property {string} [reason]       lot B : motif d'une décision imposée, d'une correction ou d'un hors table
@@ -147,7 +150,7 @@ const ordered = (rows) =>
     (a, b) =>
       ALL_CLASSES.indexOf(/** @type {any} */ (a.class)) - ALL_CLASSES.indexOf(/** @type {any} */ (b.class)) ||
       b.count - a.count ||
-      (a.old < b.old ? -1 : a.old > b.old ? 1 : (a.usage ?? '') < (b.usage ?? '') ? -1 : 1),
+      (a.old < b.old ? -1 : a.old > b.old ? 1 : (a.usage ?? '') !== (b.usage ?? '') ? ((a.usage ?? '') < (b.usage ?? '') ? -1 : 1) : (a.scope ?? '') < (b.scope ?? '') ? -1 : 1),
   );
 
 /**
@@ -210,12 +213,14 @@ const usageEntries = (byUsage) =>
  * @param {Record<string, Record<string, any>>} usages @param {number[]} scale
  * @returns {Row[]}
  */
-function spacingUsageRows(usages, scale) {
+function spacingUsageRows(usages, scale, proximity = []) {
   /** @type {Row[]} */
   const rows = [];
   for (const [old, byUsage] of Object.entries(usages)) {
-    for (const { usage, e, n } of usageEntries(byUsage)) {
-      const base = { old, count: n, properties: e.properties, selectors: e.selectors, usage, usages: [usage], kinds: e.kinds };
+    for (const { usage: slot, e, n } of usageEntries(byUsage)) {
+      // Lot P : une marge porte sa relation (scope) ; l'entrée est rangée sous « usage|relation ».
+      const usage = e.usage ?? slot;
+      const base = { old, count: n, properties: e.properties, selectors: e.selectors, usage, usages: [usage], ...(e.scope ? { scope: e.scope } : {}), kinds: e.kinds };
       const v = px(old);
       if (v !== null && (v < 0 || v > RULES.layoutMaxPx)) {
         rows.push({ ...base, new: null, class: OUT.layout, delta: null, candidates: [], reason: v < 0 ? 'espacement négatif (R7)' : `espacement supérieur à ${RULES.layoutMaxPx} px (R7)` });
@@ -224,7 +229,43 @@ function spacingUsageRows(usages, scale) {
       rows.push(dimensionRow(base, scale));
     }
   }
+  proximityControl(rows, proximity);
   return ordered(rows);
+}
+
+/** Lot P, P3 : motif d'une ligne mise en défaut par le contrôle de proximité. */
+export const PROXIMITY_REASON = 'le message est aussi loin de son champ que du champ suivant : on ne voit pas à quel champ il appartient';
+
+/**
+ * Lot P : espace d'une paire après remplacement de ses marges (fusionnées : la plus grande ;
+ * additionnées : la somme), plus le reste mesuré (gouttière).
+ * @param {{ mode: string, extra: number, parts: string[] }} sp @param {(old: string) => string} next
+ */
+const spaceAfter = (sp, next) => {
+  const v = sp.parts.map((p) => px(next(p)) ?? 0);
+  return round2((sp.mode === 'max' ? Math.max(0, ...v) : v.reduce((a, b) => a + b, 0)) + sp.extra);
+};
+
+/** Ligne de marge d'une valeur et d'une relation. @param {Row[]} rows @param {string} old @param {string} scope */
+const marginRow = (rows, old, scope) => rows.find((r) => r.old === old && r.usage === 'marge' && r.scope === scope);
+
+/**
+ * Lot P, P3 : dans le composant doit rester strictement inférieur à entre composants, sinon
+ * les lignes des marges de la paire deviennent des décisions, avec le motif (hors table exceptée).
+ * @param {Row[]} rows @param {any[]} proximity
+ */
+function proximityControl(rows, proximity) {
+  for (const x of proximity) {
+    if (x.in.gapPx < x.out.gapPx) continue;
+    for (const sp of [x.in, x.out])
+      for (const part of sp.parts) {
+        const r = marginRow(rows, part, sp.scope);
+        if (!r || isOut(r.class)) continue;
+        r.class = 'décision';
+        r.reason = PROXIMITY_REASON;
+        r.control ??= { before: { in: x.in.gapPx, out: x.out.gapPx } };
+      }
+  }
 }
 
 /**
@@ -572,7 +613,9 @@ const byValue = (a, b) => {
  */
 function identify(family, rows) {
   const prefix = ID_PREFIX[family] ?? family;
-  const order = [...rows].sort((a, b) => b.count - a.count || byValue(a.old, b.old) || ((a.usage ?? '') < (b.usage ?? '') ? -1 : (a.usage ?? '') > (b.usage ?? '') ? 1 : 0));
+  /** @param {string} a @param {string} b */
+  const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+  const order = [...rows].sort((a, b) => b.count - a.count || byValue(a.old, b.old) || cmp(a.usage ?? '', b.usage ?? '') || cmp(a.scope ?? '', b.scope ?? ''));
   order.forEach((r, i) => {
     r.id = `${prefix}-${String(i + 1).padStart(2, '0')}`;
     r.title = rowTitle(family, r);
@@ -595,17 +638,63 @@ export function propose(rendered, target) {
   // Lot B : avec le relevé par usage, une ligne par valeur × usage et les règles R1 à R9.
   const u = rendered.usages;
   if (target.radii) put('radii', u ? radiusUsageRows(u.radii, target.radii) : dimensionRows(gather(rendered, ['radii']), target.radii, { pill: true }));
-  if (target.spacing) put('spacing', u ? spacingUsageRows(u.spacing, target.spacing) : dimensionRows(gather(rendered, ['margins', 'paddings', 'gaps']), target.spacing));
+  if (target.spacing) put('spacing', u ? spacingUsageRows(u.spacing, target.spacing, u.proximity) : dimensionRows(gather(rendered, ['margins', 'paddings', 'gaps']), target.spacing));
   if (target.fontSizes) put('fontSizes', dimensionRows(gather(rendered, ['fontSizes']), target.fontSizes, { nearPx: THRESHOLDS.nearTextPx }));
   if (target.colors) put('colors', u ? colorUsageRows(u, target.colors) : colorRows(gather(rendered, ['colors']), target.colors));
-  return { thresholds: THRESHOLDS, rules: RULES, families };
+  return { thresholds: THRESHOLDS, rules: RULES, families, ...(u?.proximity?.length ? { proximity: u.proximity } : {}) };
 }
 
 /**
  * Clé d'une ligne dans les décisions et dans la simulation.
  * @param {string} family @param {{ old: string, usage?: string }} r
  */
-export const rowKey = (family, r) => (r.usage ? `${family}|${r.old}|${r.usage}` : `${family}|${r.old}`);
+export const rowKey = (family, r) => (r.usage ? `${family}|${r.old}|${r.usage}${r.scope ? `|${r.scope}` : ''}` : `${family}|${r.old}`);
+
+/**
+ * Décision d'une ligne : sous sa clé, sinon sous la clé sans relation (lot P : un choix fait avant
+ * la coupure vaut pour les lignes qui en sont issues), sinon sous la valeur seule.
+ * @param {Record<string, string | false>} decisions @param {string} family @param {{ old: string, usage?: string, scope?: string }} r
+ * @returns {string | false | undefined}
+ */
+export function decisionFor(decisions, family, r) {
+  for (const k of [rowKey(family, r), r.usage ? `${family}|${r.old}|${r.usage}` : null, `${family}|${r.old}`]) if (k && k in decisions) return decisions[k];
+  return undefined;
+}
+
+/**
+ * Lot P, P3 après les décisions : chaque paire contrôlée dont une marge a une décision est recalculée avec les valeurs retenues
+ * (décision, sinon proposition appliquée, sinon valeur actuelle). Si dans le composant n'est
+ * toujours pas strictement inférieur à entre composants, les lignes de ses marges le signalent.
+ * @param {{ families: Record<string, { rows: Row[] }>, proximity?: any[] }} table
+ * @param {Record<string, string | false>} decisions
+ */
+export function controlAfter(table, decisions) {
+  const rows = table.families.spacing?.rows ?? [];
+  for (const x of table.proximity ?? []) {
+    /** @param {string} scope */
+    const next = (scope) => (/** @type {string} */ old) => {
+      const r = marginRow(rows, old, scope);
+      if (!r) return old;
+      const d = decisionFor(decisions, 'spacing', r);
+      return d === false ? old : typeof d === 'string' ? d : APPLIED.has(r.class) && r.new ? r.new : old;
+    };
+    const decided = [x.in, x.out].some((sp) => sp.parts.some((/** @type {string} */ part) => {
+      const r = marginRow(rows, part, sp.scope);
+      return !!r && decisionFor(decisions, 'spacing', r) !== undefined;
+    }));
+    if (!decided) continue;
+    const inPx = spaceAfter(x.in, next(x.in.scope));
+    const outPx = spaceAfter(x.out, next(x.out.scope));
+    if (inPx < outPx) continue;
+    const signal = inPx === outPx ? 'la hiérarchie reste égale après les décisions' : 'la hiérarchie reste inversée après les décisions';
+    for (const sp of [x.in, x.out])
+      for (const part of sp.parts) {
+        const r = marginRow(rows, part, sp.scope);
+        if (!r) continue;
+        r.control = { ...(r.control ?? { before: { in: x.in.gapPx, out: x.out.gapPx } }), after: { in: inPx, out: outPx }, signal };
+      }
+  }
+}
 
 /**
  * Applique des décisions du designer à une table : { "<famille>|<ancien>[|<usage>]": "<nouveau>" | false }.
@@ -626,10 +715,9 @@ export function mapping(table, decisions = {}) {
     /** @type {Map<string, { usage?: string, next: string | null }[]>} */
     const byOld = new Map();
     for (const r of f.rows) {
-      const k = rowKey(family, r);
-      const d = k in decisions ? decisions[k] : decisions[`${family}|${r.old}`];
+      const d = decisionFor(decisions, family, r);
       const next = d === false ? null : typeof d === 'string' ? d : APPLIED.has(r.class) ? r.new : null;
-      byOld.set(r.old, [...(byOld.get(r.old) ?? []), { usage: r.usage, next }]);
+      byOld.set(r.old, [...(byOld.get(r.old) ?? []), { usage: r.usage, scope: r.scope, next }]);
     }
     for (const [old, list] of byOld) {
       const first = list[0].next;
@@ -637,7 +725,12 @@ export function mapping(table, decisions = {}) {
         if (first && first !== old) fam[old] = first;
         continue;
       }
-      for (const x of list) if (x.next && x.next !== old) fam[x.usage ? `${old}|${x.usage}` : old] = x.next;
+      // Lot P : par usage si ses relations s'accordent, sinon par usage et relation.
+      for (const x of list) {
+        if (!x.next || x.next === old) continue;
+        const same = list.filter((y) => y.usage === x.usage).every((y) => y.next === x.next);
+        fam[x.usage ? `${old}|${x.usage}${x.scope && !same ? `|${x.scope}` : ''}` : old] = x.next;
+      }
     }
   }
   if (table.thirdParty?.length) out.thirdParty = [...table.thirdParty];
