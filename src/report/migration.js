@@ -192,7 +192,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
       rows.push({
         family,
         value: r.old,
-        usage: r.usage ?? (r.usages ?? []).join(', '),
+        usage: r.usage ?? (family === 'fontSizes' ? 'taille du texte' : (r.usages ?? []).join(', ')),
         token: token(family, next, family === 'colors' ? { name, pleinScales: r.usage === 'texte' ? pleinScalesOf(r.old) : new Set() } : undefined),
         new: next,
         status,
@@ -417,6 +417,9 @@ function agentBrief(d, s) {
   lines.push('Les valeurs ci-dessous sont des valeurs calculées : dans la source, elles peuvent être écrites autrement (rem, em, rgb(), mot-clé) ; cherche leur équivalent.');
   lines.push('');
   lines.push(`REMPLACEMENTS (${s.applied.length})`);
+  lines.push(
+    `0. Crée tokens.css, qui déclare dans :root chaque variable utilisée ci-dessous avec sa valeur, à partir de ${m.tokens ?? 'primitives.tokens.json'}, et charge-la avant toutes les autres feuilles.`,
+  );
   s.applied.forEach((r, i) => {
     lines.push(
       `${i + 1}. Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage} : remplace ${r.value} par ${write(r)}${r.status === 'décidée' ? ' [décidée]' : ''}. Sélecteurs : ${r.selectors.join(', ') || '—'}. Point de départ : ${r.origin}. Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`,
@@ -430,6 +433,10 @@ function agentBrief(d, s) {
     );
   if (!d.exceptions.onSolid.length) lines.push('- Aucun.');
   lines.push('');
+  lines.push('CHANGE AUSSI');
+  const links = d.exceptions.links;
+  lines.push(`- Souligne tout lien posé dans du texte courant : ${links.length} trouvé${links.length > 1 ? 's' : ''} ici${links.length ? ` (${links.flatMap((/** @type {any} */ l) => l.selectors).join(', ')})` : ''}.`);
+  lines.push('');
   lines.push('NE TOUCHE PAS');
   for (const r of s.outOfTable) lines.push(`- Hors table : ${r.value} (${r.usage}), ${r.reason}.`);
   for (const r of s.refused) lines.push(`- Refusée : ${r.value} (${r.usage}), le designer garde la valeur.`);
@@ -438,7 +445,6 @@ function agentBrief(d, s) {
   lines.push('');
   lines.push('SIGNALE SANS MODIFIER');
   for (const x of d.exceptions.outOfSlice) lines.push(`- Valeur hors de sa tranche : ${x.value} (${x.name}) en ${x.usage}, ${x.elements} élément(s), tranche attendue ${x.expected} : ${x.selectors.join(', ')}.`);
-  for (const l of d.exceptions.links) lines.push(`- Lien sans soulignement dans un paragraphe : ${l.color} dans un texte ${l.neighbor} (${String(l.ratio).replace('.', ',')}:1) : ${l.selectors.join(', ')}.`);
   for (const st of d.exceptions.states) lines.push(`- État non lu : ${st.value} (${[...new Set(st.contexts.map((/** @type {any} */ c) => `${c.state} ${c.property}`))].join(', ')}).`);
   for (const r of d.exceptions.ties) lines.push(`- Égalité tranchée en silence : ${r.value} (${r.usage}) entre ${r.tie[0]} et ${r.tie[1]}, rangée vers ${r.new}.`);
   lines.push("- Élément injecté après le chargement : non mesuré ; signale-le si tu en trouves.");

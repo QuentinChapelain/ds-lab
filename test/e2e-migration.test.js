@@ -199,7 +199,11 @@ test('consigne pour un agent : contexte, une instruction par ligne appliquée, c
   const ctx = a.lines.slice(1, a.lines.indexOf(''));
   assert.equal(ctx.length, 3, 'contexte en 3 lignes');
   assert.ok(ctx.some((/** @type {string} */ l) => l.includes('var(--couleur-neutre-11)')));
-  const steps = a.lines.filter((/** @type {string} */ l) => /^\d+\. /.test(l));
+  assert.ok(a.lines.includes('0. Crée tokens.css, qui déclare dans :root chaque variable utilisée ci-dessous avec sa valeur, à partir de primitives.tokens.json, et charge-la avant toutes les autres feuilles.'), 'étape 0');
+  assert.ok(a.lines.includes('- Souligne tout lien posé dans du texte courant : 0 trouvé ici.'), 'change aussi');
+  assert.ok(pieges.data.agent.lines.includes('- Souligne tout lien posé dans du texte courant : 1 trouvé ici (a.lien-discret).'), 'change aussi, pièges (L1)');
+  const steps = a.lines.filter((/** @type {string} */ l) => /^[1-9]\d*\. /.test(l));
+  assert.ok(steps.some((/** @type {string} */ l) => l.includes('Propriété font-size, usage taille du texte : remplace 13.5px par var(--taille-texte-14) (14px)')), 'usage taille du texte');
   assert.equal(steps.length, decidee.data.sections.applied.total, 'une instruction par ligne appliquée');
   for (const l of steps) assert.ok(l.includes('Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.'), l);
   assert.ok(steps.some((/** @type {string} */ l) => l.includes('remplace #999999 par var(--couleur-neutre-11) (#6d675b)') && l.includes('Propriété color')));
