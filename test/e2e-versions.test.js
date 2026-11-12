@@ -14,6 +14,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
 import { runReduce } from '../src/cli/reduce.js';
+import { scanInPage, showInPage } from '../src/browser/simulate.js';
 
 const E = JSON.parse(await readFile(new URL('../fixtures/marque-demo/expected-desordre-valise.json', import.meta.url), 'utf8'));
 
@@ -151,4 +152,24 @@ test('simulation : la valeur d’un champ rempli est recolorée, coul-02 s’app
   assert.equal(r.capture.elements, announced, `capture : ${r.capture.elements} éléments touchés`);
   const fields = r.capture.touched.filter((/** @type {any} */ t) => /^(input|textarea|select)\b/.test(t.selector)).map((/** @type {any} */ t) => t.selector);
   assert.deepEqual(fields.sort(), ['input#courriel', 'input#nom', 'input#telephone']);
+});
+
+test('simulation : la taille du texte d’un champ rempli change aussi, comme sa couleur', async () => {
+  const { chromium } = await import('playwright-core');
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage();
+    await page.setContent('<!doctype html><html><body><label for="m">E-mail</label> <input id="m" style="font-size:15px;color:#595959"></body></html>');
+    await page.fill('#m', 'X');
+    await page.evaluate(scanInPage, { fontSizes: { '15px': '16px' }, colors: { '#595959|texte': '#363026' } });
+    await page.evaluate(showInPage, { on: true });
+    const cs = await page.evaluate(() => {
+      const s = getComputedStyle(/** @type {Element} */ (document.querySelector('#m')));
+      return { size: s.fontSize, color: s.color };
+    });
+    assert.equal(cs.color, 'rgb(54, 48, 38)', 'couleur');
+    assert.equal(cs.size, '16px', 'taille du texte');
+  } finally {
+    await browser.close();
+  }
 });

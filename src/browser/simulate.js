@@ -163,9 +163,11 @@ export function scanInPage(map) {
       }
       if (/\b(flex|grid)\b/.test(cs.display)) for (const g of ['row-gap', 'column-gap']) consider(i, 'spacing', g, pxKey(cs.getPropertyValue(g)), 'gouttière');
       consider(i, 'colors', 'background-color', hexKey(cs.backgroundColor), plein.has(el) ? 'plein' : 'fond');
-      if (text) consider(i, 'fontSizes', 'font-size', pxKey(cs.fontSize));
-      // Lot R : la valeur d'un champ rempli est un texte (comme au relevé, R3 bis) : elle est recolorée.
-      if (text || hasText(el)) consider(i, 'colors', 'color', hexKey(cs.color), 'texte');
+      // Lot R : la valeur d'un champ rempli est un texte (comme au relevé, R3 bis) : couleur et taille changent.
+      if (text || hasText(el)) {
+        consider(i, 'fontSizes', 'font-size', pxKey(cs.fontSize));
+        consider(i, 'colors', 'color', hexKey(cs.color), 'texte');
+      }
     }
     for (const child of el.children) visit(child);
     if (el.shadowRoot) for (const child of el.shadowRoot.children) visit(child);
