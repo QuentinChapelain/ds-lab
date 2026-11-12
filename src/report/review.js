@@ -6,7 +6,7 @@
  * reduce relit au tour suivant (--decisions). Un seul fichier, sans dépendance.
  * Toute chaîne venue de la page auditée est échappée.
  */
-import { CLASSES } from '../reduce/propose.js';
+import { ALL_CLASSES, OUT, rowKey, isOut } from '../reduce/propose.js';
 
 /** @param {unknown} s */
 const esc = (s) =>
@@ -57,10 +57,14 @@ const comparator = (x) =>
 
 const FAMILY_LABELS = /** @type {Record<string, string>} */ ({ radii: 'Rayons', spacing: 'Espacements', fontSizes: 'Tailles de police', colors: 'Couleurs' });
 const CLASS_LABELS = /** @type {Record<string, [string, string]>} */ ({
-  décision: ['Décisions', 'L’écart se voit. Choisis une valeur parmi les candidates, ou garde l’ancienne.'],
+  décision: ['Décisions', 'L’écart se voit, ou le contraste l’impose. Choisis une valeur parmi les candidates ; sans choix, l’ancienne reste (R5).'],
+  correction: ['Corrections', 'Le contraste échouait et passe avec la valise (R9). Appliquées d’office, annulables une à une.'],
   proche: ['Proches', 'Écart faible. Valide le lot d’un clic, ou refuse au cas par cas.'],
   auto: ['Appliqués d’office', 'Écart invisible à l’œil. Listés pour mémoire, refusables.'],
   inchangé: ['Déjà sur la cible', ''],
+  [OUT.scale]: ['Hors table : aucune échelle', 'Trop loin de toute la valise (ΔE > 10, R4) : laissées telles quelles.'],
+  [OUT.dark]: ['Hors table : fond sombre', 'Plus sombres que le pas 10 le plus sombre de la valise (R8) : laissés tels quels.'],
+  [OUT.layout]: ['Hors table : mise en page', 'Espacements négatifs ou supérieurs à 64 px (R7) : laissés tels quels. Les marges auto ne sont pas relevées.'],
   'hors table': ['Hors table', 'Valeurs non convertibles (pourcentages, transparences) : laissées telles quelles.'],
 });
 
@@ -93,7 +97,7 @@ export function renderReview(table, pages, meta) {
   const props = new Map();
   for (const p of pages)
     for (const c of p.changes) {
-      const k = `${c.family}|${c.old}`;
+      const k = c.key ?? `${c.family}|${c.old}`;
       const list = crops.get(k) ?? [];
       for (const x of c.crops) if (list.length < 2) list.push(x);
       crops.set(k, list);
@@ -105,13 +109,13 @@ export function renderReview(table, pages, meta) {
   const sections = Object.entries(table.families)
     .map(([family, f]) => {
       const s = f.summary;
-      const byClass = CLASSES.map((cls) => {
+      const byClass = ALL_CLASSES.map((cls) => {
         const rows = f.rows.filter((r) => r.class === cls);
         if (!rows.length) return '';
         const [title, help] = CLASS_LABELS[cls];
         const cards = rows
           .map((r) => {
-            const key = `${family}|${r.old}`;
+            const key = rowKey(family, r);
             const list = crops.get(key) ?? [];
             const shots = list.length ? `<div class="shots">${list.map(comparator).join('')}</div>` : '';
             const what = [...(props.get(key) ?? [])].map((x) => `<span class="quoi">${esc(x)}</span>`).join('');
@@ -120,26 +124,31 @@ export function renderReview(table, pages, meta) {
                 ? `<div class="pick">${r.candidates
                     .map(
                       (c, i) =>
-                        `<label><input type="radio" name="${esc(key)}" value="${esc(c.value)}"${i === 0 ? ' checked' : ''}>${glyph(family, c.value)}<code>${esc(c.value)}</code>${c.name ? ` ${esc(c.name)}` : ''} <i>écart ${c.delta}</i></label>`,
+                        `<label><input type="radio" name="${esc(key)}" value="${esc(c.value)}">${glyph(family, c.value)}<code>${esc(c.value)}</code>${c.name ? ` ${esc(c.name)}` : ''} <i>écart ${c.delta}</i></label>`,
                     )
-                    .join('')}<label><input type="radio" name="${esc(key)}" value=""> garder <code>${esc(r.old)}</code></label></div>`
-                : cls === 'proche' || cls === 'auto'
+                    .join('')}<label><input type="radio" name="${esc(key)}" value="" checked> garder <code>${esc(r.old)}</code></label></div>`
+                : cls === 'proche' || cls === 'auto' || cls === 'correction'
                   ? `<label class="ok"><input type="checkbox" name="${esc(key)}" checked> appliquer</label>`
                   : '';
             const arrow = r.new && r.new !== r.old ? `<b class="arrow">→</b>${glyph(family, r.new)}<code>${esc(r.new)}</code>${r.name ? ` <i>${esc(r.name)}</i>` : ''}` : r.name ? ` <i>${esc(r.name)}</i>` : '';
-            return `<article class="row c-${cls === 'hors table' ? 'hors' : esc(cls)}" data-key="${esc(key)}">
-  <header>${glyph(family, r.old)}<code>${esc(r.old)}</code>${arrow}${what}<span class="n">×${r.count}${r.delta ? ` · écart ${r.delta}` : ''}</span></header>
-  <div class="sel">${r.selectors.map((x) => `<code>${esc(x)}</code>`).join(' ')}</div>
+            const usage = (r.usages ?? []).map((x) => `<span class="usage">${esc(x)}</span>`).join('');
+            const contrast = r.contrast
+              ? ` <span class="ctr">contraste ${String(r.contrast.before).replace('.', ',')} → ${String(r.contrast.after).replace('.', ',')} (seuil ${String(r.contrast.threshold).replace('.', ',')})</span>`
+              : '';
+            const motif = r.reason || r.contrast ? `<p class="motif">${r.reason ? `Motif : ${esc(r.reason)}.` : ''}${contrast}</p>` : '';
+            return `<article class="row c-${isOut(cls) ? 'hors' : esc(cls)}" data-key="${esc(key)}">
+  <header>${glyph(family, r.old)}<code>${esc(r.old)}</code>${arrow}${usage}${what}<span class="n">×${r.count}${r.delta ? ` · écart ${r.delta}` : ''}</span></header>
+  ${motif}<div class="sel">${r.selectors.map((x) => `<code>${esc(x)}</code>`).join(' ')}</div>
   ${pick}${shots}
 </article>`;
           })
           .join('\n');
-        const open = cls === 'décision' || cls === 'proche';
+        const open = cls === 'décision' || cls === 'proche' || cls === 'correction';
         return `<details${open ? ' open' : ''}><summary>${esc(title)} <span class="n">${rows.length}</span></summary>${help ? `<p class="lede">${esc(help)}</p>` : ''}${cards}</details>`;
       }).join('\n');
       return `<section>
 <h2>${esc(FAMILY_LABELS[family] ?? family)}</h2>
-<p class="lede"><b>${s.before}</b> valeurs aujourd’hui → <b>${s.after}</b> sur la cible, pour ${s.occurrences} usages. ${s.decisions} décision(s), ${s.near} proche(s), ${s.auto} d’office, ${s.unchanged} déjà bonnes${s.outOfTable ? `, ${s.outOfTable} hors table` : ''}.</p>
+<p class="lede"><b>${s.before}</b> valeurs aujourd’hui → <b>${s.after}</b> sur la cible, pour ${s.occurrences} usages. ${s.decisions} décision(s), ${s.corrections ?? 0} correction(s), ${s.near} proche(s), ${s.auto} d’office, ${s.unchanged} déjà bonnes${s.outOfTable ? `, ${s.outOfTable} hors table` : ''}.</p>
 ${byClass}
 </section>`;
     })
@@ -171,7 +180,9 @@ ${byClass}
   details { margin:10px 0; } summary { cursor:pointer; font-weight:600; padding:6px 0; }
   .n { color:var(--soft); font-weight:400; font-size:13px; margin-left:8px; }
   .row { background:var(--card); border:1px solid var(--line); border-left:4px solid var(--line); border-radius:10px; padding:12px 14px; margin:8px 0; }
-  .row.c-décision { border-left-color:#b45309; } .row.c-proche { border-left-color:#2563eb; } .row.c-auto { border-left-color:#6b7280; }
+  .row.c-décision { border-left-color:#b45309; } .row.c-correction { border-left-color:#17603a; }
+  .usage { font-size:12px; border:1px solid var(--line); border-radius:999px; padding:0 8px; color:var(--ink); }
+  .motif { margin:6px 0 0; font-size:14px; } .ctr { color:var(--soft); font-variant-numeric:tabular-nums; } .row.c-proche { border-left-color:#2563eb; } .row.c-auto { border-left-color:#6b7280; }
   .row.refuse { opacity:.55; }
   .row header { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
   .arrow { color:var(--soft); margin:0 4px; }

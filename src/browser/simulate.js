@@ -8,12 +8,17 @@
  * interrupteur avant / après dans la page (mode --live).
  * Limites : les pseudo-éléments ne sont pas modifiés ; un élément créé après
  * le relevé ne l'est qu'après une nouvelle lecture de la page.
+ * Lot B : chaque remplacement suit l'usage de sa ligne (R3 : texte, bordure, fond,
+ * plein ; marge, retrait, gouttière ; pilule, rayon), les marges auto ne sont pas
+ * touchées (R7) et les éléments tiers sont exclus (R6). Les règles d'usage sont
+ * celles de src/rendered/aggregate.js, réécrites ici parce que la fonction est
+ * sérialisée dans la page.
  */
 
 /**
  * Exécutée dans la page. Relève les remplacements à faire et installe
  * window.__dsSim = { els, ops, changes, show }. Tout est éteint au départ.
- * @param {Record<string, Record<string, string>>} map  par famille : ancien → nouveau
+ * @param {Record<string, any>} map  par famille : ancien (ou ancien|usage) → nouveau ; thirdParty : sélecteurs (R6)
  */
 export function scanInPage(map) {
   const SIDES = ['top', 'right', 'bottom', 'left'];
@@ -29,23 +34,92 @@ export function scanInPage(map) {
     if (!m || (m[4] !== undefined && Number(m[4]) < 1)) return null;
     return '#' + [m[1], m[2], m[3]].map((n) => Number(n).toString(16).padStart(2, '0')).join('');
   };
+  /** @param {string} hex */
+  const lum = (hex) => {
+    const [R, G, B] = [1, 3, 5].map((i) => {
+      const v = parseInt(hex.slice(i, i + 2), 16) / 255;
+      return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+  };
   const previous = /** @type {any} */ (window).__dsSim;
   if (previous) previous.show({ on: false });
+  /** R6 : sélecteurs tiers valides. @type {string[]} */
+  const third = [];
+  for (const sel of Array.isArray(map.thirdParty) ? map.thirdParty : []) {
+    try {
+      document.querySelector(sel);
+      third.push(sel);
+    } catch {
+      // sélecteur invalide : ignoré, comme au relevé
+    }
+  }
+  /** @param {Element} el */
+  const hasText = (el) => {
+    for (const n of el.childNodes) if (n.nodeType === 3 && (n.textContent ?? '').trim()) return true;
+    const t = el.tagName.toLowerCase();
+    if (t === 'input' || t === 'textarea') {
+      const type = (el.getAttribute('type') ?? 'text').toLowerCase();
+      return !['hidden', 'checkbox', 'radio', 'range', 'color', 'file', 'image'].includes(type) && String(/** @type {any} */ (el).value ?? '') !== '';
+    }
+    if (t === 'select') return ((/** @type {any} */ (el).selectedOptions?.[0]?.textContent) ?? '').trim() !== '';
+    return false;
+  };
+  // Pleins : éléments dont le fond opaque porte un texte plus clair que lui (R1).
+  /** @type {Set<Element>} */
+  const plein = new Set();
+  if (document.body)
+    for (const el of document.body.querySelectorAll('*')) {
+      if (!hasText(el) || el.getClientRects().length === 0) continue;
+      const fg = hexKey(getComputedStyle(el).color);
+      if (!fg) continue;
+      for (/** @type {Element | null} */ let x = el; x; x = x.parentElement) {
+        const bg = hexKey(getComputedStyle(x).backgroundColor);
+        if (!bg) continue;
+        if (lum(fg) > lum(bg)) plein.add(x);
+        break;
+      }
+    }
+  /** R7 : côtés en marge auto (même sonde que le relevé). @param {Element} el @param {CSSStyleDeclaration} cs */
+  const autoSidesOf = (el, cs) => {
+    const margins = () => SIDES.map((s) => parseFloat(getComputedStyle(el).getPropertyValue(`margin-${s}`)) || 0);
+    const before = SIDES.map((s) => parseFloat(cs.getPropertyValue(`margin-${s}`)) || 0);
+    if (!before.some((m) => m > 0) || /^(inline|contents|none)$/.test(cs.display)) return [];
+    const st = /** @type {HTMLElement} */ (el).style;
+    if (!st) return [];
+    const saved = el.getAttribute('style');
+    const r = el.getBoundingClientRect();
+    /** @type {string[]} */
+    const out = [];
+    /** @param {[string, string][]} props @param {number[]} sides */
+    const probe = (props, sides) => {
+      st.setProperty('transition', 'none', 'important');
+      st.setProperty('box-sizing', 'border-box', 'important');
+      for (const [k, v] of props) st.setProperty(k, v, 'important');
+      const after = margins();
+      if (saved === null) el.removeAttribute('style');
+      else el.setAttribute('style', saved);
+      for (const i of sides) if (before[i] > 0 && after[i] < before[i] - 0.5) out.push(SIDES[i]);
+    };
+    if (before[1] > 0 || before[3] > 0) probe([['width', `${r.width + 2}px`], ['max-width', 'none'], ['min-width', '0px'], ['flex-shrink', '0']], [1, 3]);
+    if (before[0] > 0 || before[2] > 0) probe([['height', `${r.height + 2}px`], ['max-height', 'none'], ['min-height', '0px'], ['flex-shrink', '0']], [0, 2]);
+    return out;
+  };
   /** @type {Element[]} */
   const els = [];
   /** @type {{ i: number, prop: string, value: string, family: string, key: string, prev: string, prevPriority: string }[]} */
   const ops = [];
-  /** @type {Map<string, { family: string, old: string, new: string, count: number, samples: number[], props: string[] }>} */
+  /** @type {Map<string, { key: string, family: string, old: string, usage?: string, new: string, count: number, samples: number[], props: string[] }>} */
   const changes = new Map();
-  /** @param {number} i @param {string} family @param {string} prop @param {string | null} old */
-  const consider = (i, family, prop, old) => {
-    const next = old ? map[family]?.[old] : undefined;
+  /** @param {number} i @param {string} family @param {string} prop @param {string | null} old @param {string} [usage] */
+  const consider = (i, family, prop, old, usage) => {
+    const next = old ? (usage ? map[family]?.[`${old}|${usage}`] ?? map[family]?.[old] : map[family]?.[old]) : undefined;
     if (!old || !next) return;
-    const key = `${family}|${old}`;
+    const key = usage ? `${family}|${old}|${usage}` : `${family}|${old}`;
     const style = /** @type {HTMLElement} */ (els[i]).style;
     ops.push({ i, prop, value: next, family, key, prev: style?.getPropertyValue(prop) ?? '', prevPriority: style?.getPropertyPriority(prop) ?? '' });
     let c = changes.get(key);
-    if (!c) changes.set(key, (c = { family, old, new: next, count: 0, samples: [], props: [] }));
+    if (!c) changes.set(key, (c = { key, family, old, usage, new: next, count: 0, samples: [], props: [] }));
     c.count++;
     const kind = prop.replace(/-(top|right|bottom|left)(-(left|right))?/, '');
     if (!c.props.includes(kind)) c.props.push(kind);
@@ -57,32 +131,47 @@ export function scanInPage(map) {
   /** @param {Element} el */
   const visit = (el) => {
     if (el.hasAttribute('data-ds-lab')) return;
+    if (third.some((sel) => el.matches(sel))) return;
     const cs = getComputedStyle(el);
     if (el.getClientRects().length > 0 && cs.visibility !== 'hidden' && parseFloat(cs.opacity) !== 0) {
       const i = els.length;
       els.push(el);
       let text = false;
       for (const n of el.childNodes) if (n.nodeType === 3 && (n.textContent ?? '').trim()) text = true;
-      for (const c of CORNERS) consider(i, 'radii', `border-${c}-radius`, pxKey(cs.getPropertyValue(`border-${c}-radius`)));
-      for (const s of SIDES) {
-        for (const p of ['margin', 'padding']) {
-          const k = pxKey(cs.getPropertyValue(`${p}-${s}`));
-          if (k && k !== '0px') consider(i, 'spacing', `${p}-${s}`, k);
-        }
-        if (cs.getPropertyValue(`border-${s}-style`) !== 'none' && parseFloat(cs.getPropertyValue(`border-${s}-width`)) > 0)
-          consider(i, 'colors', `border-${s}-color`, hexKey(cs.getPropertyValue(`border-${s}-color`)));
+      const box = el.getBoundingClientRect();
+      for (const c of CORNERS) {
+        const k = pxKey(cs.getPropertyValue(`border-${c}-radius`));
+        const n = k ? parseFloat(k) : 0;
+        const pill = n >= 500 || (box.width > 0 && box.height > 0 && n >= Math.min(box.width, box.height) / 2);
+        consider(i, 'radii', `border-${c}-radius`, k, pill ? 'pilule' : 'rayon');
       }
-      if (/\b(flex|grid)\b/.test(cs.display)) for (const g of ['row-gap', 'column-gap']) consider(i, 'spacing', g, pxKey(cs.getPropertyValue(g)));
-      consider(i, 'colors', 'background-color', hexKey(cs.backgroundColor));
+      const auto = autoSidesOf(el, cs);
+      for (const s of SIDES) {
+        const m = pxKey(cs.getPropertyValue(`margin-${s}`));
+        if (m && m !== '0px' && !auto.includes(s)) consider(i, 'spacing', `margin-${s}`, m, 'marge');
+        const p = pxKey(cs.getPropertyValue(`padding-${s}`));
+        if (p && p !== '0px') consider(i, 'spacing', `padding-${s}`, p, 'retrait');
+        if (cs.getPropertyValue(`border-${s}-style`) !== 'none' && parseFloat(cs.getPropertyValue(`border-${s}-width`)) > 0)
+          consider(i, 'colors', `border-${s}-color`, hexKey(cs.getPropertyValue(`border-${s}-color`)), 'bordure');
+      }
+      if (/\b(flex|grid)\b/.test(cs.display)) for (const g of ['row-gap', 'column-gap']) consider(i, 'spacing', g, pxKey(cs.getPropertyValue(g)), 'gouttière');
+      consider(i, 'colors', 'background-color', hexKey(cs.backgroundColor), plein.has(el) ? 'plein' : 'fond');
       if (text) {
         consider(i, 'fontSizes', 'font-size', pxKey(cs.fontSize));
-        consider(i, 'colors', 'color', hexKey(cs.color));
+        consider(i, 'colors', 'color', hexKey(cs.color), 'texte');
       }
     }
     for (const child of el.children) visit(child);
     if (el.shadowRoot) for (const child of el.shadowRoot.children) visit(child);
   };
   if (document.body) for (const child of document.body.children) visit(child);
+  // Lot B, R1 : fond de page porté par html ou body.
+  for (const el of [document.documentElement, document.body]) {
+    if (!el) continue;
+    const i = els.length;
+    els.push(el);
+    consider(i, 'colors', 'background-color', hexKey(getComputedStyle(el).backgroundColor), plein.has(el) ? 'plein' : 'fond');
+  }
   /**
    * Allume ou éteint la simulation, pour tout, pour des familles ou pour des changements.
    * @param {{ on: boolean, families?: string[] | null, keys?: string[] | null }} o
@@ -250,7 +339,9 @@ async function crop(page, r) {
 
 /**
  * @typedef {object} SimulatedChange
+ * @property {string} key       clé de la ligne (famille|ancien[|usage])
  * @property {string} family
+ * @property {string} [usage]
  * @property {string} old
  * @property {string} new
  * @property {number} count
@@ -278,7 +369,7 @@ export async function simulatePage(page, map, { maxCropped = 80, fullPage = true
   const shots = new Map();
   for (const c of shown) {
     if (!c.samples.length) continue;
-    const key = `${c.family}|${c.old}`;
+    const key = c.key;
     await page.evaluate(showInPage, { on: true, keys: [key] });
     const list = [];
     for (const r of await page.evaluate(rectsInPage, c.samples)) {
@@ -294,7 +385,7 @@ export async function simulatePage(page, map, { maxCropped = 80, fullPage = true
     url: page.url(),
     elements: scan.elements,
     operations: scan.operations,
-    changes: scan.changes.map((c) => ({ family: c.family, old: c.old, new: c.new, count: c.count, props: c.props, crops: shots.get(`${c.family}|${c.old}`) ?? [] })),
+    changes: scan.changes.map((/** @type {any} */ c) => ({ key: c.key, family: c.family, old: c.old, usage: c.usage, new: c.new, count: c.count, props: c.props, crops: shots.get(c.key) ?? [] })),
     before,
     after,
   };

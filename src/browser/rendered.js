@@ -23,6 +23,8 @@
  * @property {string} [role]
  * @property {boolean} [text]         porteur de texte (R3, R2)
  * @property {Record<string, string>} [props]
+ * @property {[number, number]} [box]       largeur et hauteur de la boîte (lot B, pilule R7)
+ * @property {string[]} [autoMargins]     côtés dont la marge est auto (lot B, R7)
  */
 
 /**
@@ -163,6 +165,37 @@ export function collectInPage(thirdSelectors = []) {
     if (/** @type {any} */ (el).ownerSVGElement) return 'image';
     return text ? 'texte' : 'conteneur';
   };
+  /**
+   * R7 (lot B) : côtés dont la marge est « auto ». Le rendu ne donne que des pixels :
+   * on élargit (puis on allonge) l'élément de 2 px par un style en ligne, et un côté
+   * dont la marge diminue est auto. Le style d'origine est rétabli aussitôt.
+   * @param {Element} el @param {CSSStyleDeclaration} cs
+   * @returns {string[]}
+   */
+  const autoSidesOf = (el, cs) => {
+    const margins = () => SIDES.map((s) => parseFloat(getComputedStyle(el).getPropertyValue(`margin-${s}`)) || 0);
+    const before = SIDES.map((s) => parseFloat(cs.getPropertyValue(`margin-${s}`)) || 0);
+    if (!before.some((m) => m > 0) || /^(inline|contents|none)$/.test(cs.display)) return [];
+    const st = /** @type {HTMLElement} */ (el).style;
+    if (!st) return [];
+    const saved = el.getAttribute('style');
+    const r = el.getBoundingClientRect();
+    /** @type {string[]} */
+    const out = [];
+    /** @param {[string, string][]} props @param {number[]} sides */
+    const probe = (props, sides) => {
+      st.setProperty('transition', 'none', 'important');
+      st.setProperty('box-sizing', 'border-box', 'important');
+      for (const [k, v] of props) st.setProperty(k, v, 'important');
+      const after = margins();
+      if (saved === null) el.removeAttribute('style');
+      else el.setAttribute('style', saved);
+      for (const i of sides) if (before[i] > 0 && after[i] < before[i] - 0.5) out.push(SIDES[i]);
+    };
+    if (before[1] > 0 || before[3] > 0) probe([['width', `${r.width + 2}px`], ['max-width', 'none'], ['min-width', '0px'], ['flex-shrink', '0']], [1, 3]);
+    if (before[0] > 0 || before[2] > 0) probe([['height', `${r.height + 2}px`], ['max-height', 'none'], ['min-height', '0px'], ['flex-shrink', '0']], [0, 2]);
+    return out;
+  };
   /** @param {Element} el */
   const selectorOf = (el) => {
     const t = el.tagName.toLowerCase();
@@ -225,6 +258,11 @@ export function collectInPage(thirdSelectors = []) {
       rec.role = roleOf(el, text);
       rec.text = text;
       rec.props = propsOf(cs, text, el);
+      // Lot B : dimensions de la boîte (pilule, R7) et côtés en marge auto (R7).
+      const box = el.getBoundingClientRect();
+      rec.box = [Math.round(box.width * 100) / 100, Math.round(box.height * 100) / 100];
+      const auto = autoSidesOf(el, cs);
+      if (auto.length) rec.autoMargins = auto;
       // R18 : boîte d'image = fond d'attente d'un média, sans texte propre.
       if (!text) {
         const isMedia = (/** @type {Element} */ c) =>

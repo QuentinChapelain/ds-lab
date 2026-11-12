@@ -13,6 +13,7 @@ import {
   withOpacity,
   blend,
   contrastRatio,
+  relativeLuminance,
   isLargeText,
   wcagLevels,
 } from '../lib/color.js';
@@ -270,6 +271,69 @@ export function effectiveBackground(records, index) {
 }
 
 /**
+ * Lot B, R1 et R3 : usage d'une couleur peinte, d'après sa propriété. Un fond
+ * qui porte un texte plus clair que lui est un plein (tranche 9-10).
+ * @param {string} property @param {boolean} plein
+ * @returns {'texte' | 'bordure' | 'fond' | 'plein' | 'autre'}
+ */
+export function colorUsage(property, plein) {
+  if (property === 'color' || property === 'text-decoration-color') return 'texte';
+  if (/^border-(top|right|bottom|left)-color$/.test(property) || property === 'outline-color') return 'bordure';
+  if (property === 'background-color') return plein ? 'plein' : 'fond';
+  return 'autre';
+}
+
+/** Lot B, R3 : usage d'un espacement, d'après sa famille. */
+export const SPACING_USAGE = /** @type {const} */ ({ margins: 'marge', paddings: 'retrait', gaps: 'gouttière' });
+
+/**
+ * Lot B, R7 : un rayon au moins égal à la moitié du plus petit côté de l'élément
+ * (ou d'au moins 500 px) dessine une pilule.
+ * @param {string} key  « 20px » @param {[number, number] | undefined} box
+ * @returns {'pilule' | 'rayon'}
+ */
+export function radiusUsage(key, box) {
+  const m = /^(-?\d+(?:\.\d+)?)px$/.exec(key);
+  if (!m) return 'rayon';
+  const n = Number(m[1]);
+  if (n >= 500) return 'pilule';
+  return box && box[0] > 0 && box[1] > 0 && n >= Math.min(box[0], box[1]) / 2 ? 'pilule' : 'rayon';
+}
+
+/**
+ * Indice du relevé qui fournit le premier fond opaque d'un élément (lui-même ou un ancêtre), ou -1.
+ * @param {RenderedRecord[]} records @param {number} index
+ */
+export function opaqueSource(records, index) {
+  for (let i = index; i >= 0; i = records[i].parent) {
+    const c = normalizeColor(records[i].bg);
+    if (c && isOpaque(c.hex)) return i;
+  }
+  return -1;
+}
+
+/**
+ * Lot B : éléments dont le fond porte un texte plus clair que lui (pleins).
+ * @param {RenderedRecord[]} records
+ * @returns {Set<number>}
+ */
+export function pleinSources(records) {
+  /** @type {Set<number>} */
+  const out = new Set();
+  records.forEach((rec, i) => {
+    if (!rec.retained || !rec.props || !rec.text || rec.pseudo) return;
+    const fg = normalizeColor(rec.props['color'] ?? '');
+    if (!fg) return;
+    const s = opaqueSource(records, i);
+    if (s < 0) return;
+    const bg = /** @type {{ hex: string }} */ (normalizeColor(records[s].bg)).hex;
+    const text = isOpaque(fg.hex) ? fg.hex : blend(fg.hex, bg);
+    if (relativeLuminance(text) > relativeLuminance(bg)) out.add(s);
+  });
+  return out;
+}
+
+/**
  * Agrégateur incrémental : une page à la fois, pour pouvoir tracer les
  * contextes nouveaux tant que la page est ouverte.
  */
@@ -284,6 +348,34 @@ export function createRenderedAggregator() {
   const byPage = {};
   const roles = new Set();
   let unmeasuredContrast = 0;
+  /**
+   * Lot B : occurrences par valeur et par usage (R3), hors marges auto (R7),
+   * et paires de contraste rattachées aux lignes (R2, R8, R9).
+   * @type {Record<string, Map<string, Map<string, { count: number, content: number, field: number, properties: Set<string>, selectors: string[], pages: Record<string, number> }>>>}
+   */
+  const usageFam = { colors: new Map(), spacing: new Map(), radii: new Map() };
+  /** @type {Map<string, { text: string, bg: string, bgUsage: string, threshold: number, n: number }>} */
+  const usagePairs = new Map();
+  /** @type {Map<string, { border: string, bg: string, bgUsage: string, threshold: number, n: number }>} */
+  const borderPairs = new Map();
+  /**
+   * @param {string} family @param {string} value @param {string} usage @param {RenderedRecord} rec
+   * @param {string} page @param {string} property @param {{ content?: boolean, field?: boolean }} [o]
+   */
+  const addUsage = (family, value, usage, rec, page, property, { content = false, field = false } = {}) => {
+    const byValue = usageFam[family];
+    let u = byValue.get(value);
+    if (!u) byValue.set(value, (u = new Map()));
+    let e = u.get(usage);
+    if (!e) u.set(usage, (e = { count: 0, content: 0, field: 0, properties: new Set(), selectors: [], pages: {} }));
+    e.count++;
+    if (content) e.content++;
+    if (field) e.field++;
+    e.properties.add(property);
+    const sel = rec.selector ?? '';
+    if (e.selectors.length < 4 && !e.selectors.includes(sel)) e.selectors.push(sel);
+    e.pages[page] = (e.pages[page] ?? 0) + 1;
+  };
   /** R14 : par couleur de texte (avant fusion), occurrences sur fond sombre et leurs fonds. */
   /** @type {Record<string, { onDark: number, backgrounds: Record<string, number> }>} */
   const darkByText = {};
@@ -302,6 +394,15 @@ export function createRenderedAggregator() {
     }
     /** @type {{ family: string, value: string, context: Context }[]} */
     const created = [];
+    const plein = pleinSources(pc.records);
+    // Lot B, R1 : fond de page porté par html ou body (hors relevé de l'audit, mais rangé et simulé).
+    pc.records.forEach((rec, index) => {
+      if (rec.retained || (rec.parent !== -1 && rec.parent !== 0)) return;
+      const c = normalizeColor(rec.bg);
+      if (!c || !isOpaque(c.hex)) return;
+      const root = { ...rec, selector: rec.parent === -1 ? 'html' : 'body' };
+      addUsage('colors', c.hex, plein.has(index) ? 'plein' : 'fond', root, page, 'background-color');
+    });
     pc.records.forEach((rec, index) => {
       if (!rec.retained || !rec.props) return;
       const p = rec.props;
@@ -315,8 +416,23 @@ export function createRenderedAggregator() {
         const c = fam[f].add(k, raw, property, rec, page, index, content);
         if (c) created.push({ family: f, value: k.key, context: c });
       };
-      for (const c of paintedColors(p, !!rec.text, { imageBox: !!rec.imageBox }))
+      for (const c of paintedColors(p, !!rec.text, { imageBox: !!rec.imageBox })) {
         add('colors', { key: c.hex, normalizable: true }, c.raw, c.property, !!c.content);
+        if (rec.pseudo) continue;
+        const usage = colorUsage(c.property, plein.has(index));
+        const field = usage === 'bordure' && rec.role === 'champ';
+        addUsage('colors', c.hex, usage, rec, page, c.property, { content: !!c.content, field });
+        if (field && !c.content && isOpaque(c.hex)) {
+          // R9 : bordure de champ contre le fond qui l'entoure (3:1).
+          const eff = effectiveBackground(pc.records, rec.parent);
+          const src = opaqueSource(pc.records, rec.parent);
+          const bgUsage = plein.has(src) ? 'plein' : 'fond';
+          const k = `${c.hex}|${eff.bg}|${bgUsage}`;
+          const bp = borderPairs.get(k) ?? { border: c.hex, bg: eff.bg, bgUsage, threshold: 3, n: 0 };
+          bp.n++;
+          borderPairs.set(k, bp);
+        }
+      }
 
       if (rec.text) {
         stats.textBearing++;
@@ -329,19 +445,32 @@ export function createRenderedAggregator() {
         if (p['line-height'] !== 'normal') add('lineHeights', lineHeightKey(p['line-height'], 16), p['line-height'], 'line-height');
         if (p['letter-spacing'] !== 'normal')
           add('letterSpacings', lengthKey(p['letter-spacing'], 16), p['letter-spacing'], 'letter-spacing');
-        addContrast(pc, index, page);
+        addContrast(pc, index, page, plein);
       }
       // R3 bis : un ::placeholder n'a que sa typographie et son fond.
       if (rec.textOnly) return;
 
       for (const s of SIDES) {
         const m = p[`margin-${s}`];
-        if (m && m !== '0px') add('margins', lengthKey(m, 16), m, `margin-${s}`);
+        if (m && m !== '0px') {
+          const k = lengthKey(m, 16);
+          add('margins', k, m, `margin-${s}`);
+          if (!rec.pseudo && !rec.autoMargins?.includes(s)) addUsage('spacing', k.key, SPACING_USAGE.margins, rec, page, `margin-${s}`);
+        }
         const pd = p[`padding-${s}`];
-        if (pd && pd !== '0px') add('paddings', lengthKey(pd, 16), pd, `padding-${s}`);
+        if (pd && pd !== '0px') {
+          const k = lengthKey(pd, 16);
+          add('paddings', k, pd, `padding-${s}`);
+          if (!rec.pseudo) addUsage('spacing', k.key, SPACING_USAGE.paddings, rec, page, `padding-${s}`);
+        }
       }
       if (/\b(flex|grid)\b/.test(p['display'] ?? '')) {
-        for (const g of ['row-gap', 'column-gap']) if (p[g] && p[g] !== 'normal') add('gaps', lengthKey(p[g], 16), p[g], g);
+        for (const g of ['row-gap', 'column-gap'])
+          if (p[g] && p[g] !== 'normal') {
+            const k = lengthKey(p[g], 16);
+            add('gaps', k, p[g], g);
+            if (!rec.pseudo) addUsage('spacing', k.key, SPACING_USAGE.gaps, rec, page, g);
+          }
       }
       for (const s of SIDES) {
         const w = p[`border-${s}-width`];
@@ -354,6 +483,7 @@ export function createRenderedAggregator() {
         if (!r || r === '0px') continue;
         const parts = splitSpaces(r).map((x) => lengthKey(x, 16));
         add('radii', { key: parts.map((x) => x.key).join(' '), normalizable: parts.every((x) => x.normalizable) }, r, `border-${c}-radius`);
+        if (!rec.pseudo) addUsage('radii', parts[0].key, radiusUsage(parts[0].key, rec.box), rec, page, `border-${c}-radius`);
       }
       if (p['box-shadow'] && p['box-shadow'] !== 'none') add('shadows', shadowKey(p['box-shadow'], 16), p['box-shadow'], 'box-shadow');
       if (p['opacity'] && p['opacity'] !== '1') add('opacities', opacityKey(p['opacity']), p['opacity'], 'opacity');
@@ -441,8 +571,9 @@ export function createRenderedAggregator() {
    * @param {PageCollection} pc
    * @param {number} index
    * @param {string} page
+   * @param {Set<number>} plein  éléments dont le fond est un plein (lot B)
    */
-  function addContrast(pc, index, page) {
+  function addContrast(pc, index, page, plein) {
     const rec = pc.records[index];
     const p = /** @type {Record<string, string>} */ (rec.props);
     const fg = normalizeColor(p['color']);
@@ -462,6 +593,15 @@ export function createRenderedAggregator() {
     const large = isLargeText(parseFloat(p['font-size']), parseFloat(p['font-weight']));
     // R11 ter : une icône se juge au seuil des éléments graphiques (3:1), sans niveau AAA.
     const lv = rec.icon ? { AA: ratio >= 3, AAA: true } : wcagLevels(ratio, large);
+    if (isOpaque(fg.hex) && !rec.pseudo) {
+      // Lot B : paire rattachée aux lignes texte et fond (R2, R8, R9).
+      const bgUsage = plein.has(opaqueSource(pc.records, index)) ? 'plein' : 'fond';
+      const threshold = rec.icon || large ? 3 : 4.5;
+      const uk = `${text}|${eff.bg}|${bgUsage}|${threshold}`;
+      const up = usagePairs.get(uk) ?? { text, bg: eff.bg, bgUsage, threshold, n: 0 };
+      up.n++;
+      usagePairs.set(uk, up);
+    }
     const key = `${text}|${eff.bg}`;
     let pair = pairs.get(key);
     if (!pair) {
@@ -552,6 +692,21 @@ export function createRenderedAggregator() {
             ]),
         ),
         onlyInStates: [...stateColors.keys()].filter((hex) => !(hex in families.colors.values)).sort(),
+      },
+      usages: {
+        ...Object.fromEntries(
+          Object.entries(usageFam).map(([f, byValue]) => [
+            f,
+            Object.fromEntries(
+              [...byValue.entries()].map(([value, u]) => [
+                value,
+                Object.fromEntries([...u.entries()].map(([usage, e]) => [usage, { ...e, properties: [...e.properties] }])),
+              ]),
+            ),
+          ]),
+        ),
+        pairs: [...usagePairs.values()],
+        borderPairs: [...borderPairs.values()],
       },
       contrast: {
         pairs: pairList,

@@ -54,7 +54,7 @@ const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cibl
 
 /**
  * @param {ReduceOptions} opts
- * @returns {Promise<{ host: string, dir: string, files: string[], table: ReturnType<typeof propose>, map: Record<string, Record<string, string>>, first: string }[]>}
+ * @returns {Promise<{ host: string, dir: string, files: string[], table: ReturnType<typeof propose>, map: Record<string, any>, first: string }[]>}
  */
 export async function runReduce(opts) {
   const { viewport = { width: 1366, height: 900 }, waitMs = DEFAULT_WAIT_MS, outRoot = 'local/reductions', now = new Date(), log = () => {} } = opts;
@@ -81,7 +81,8 @@ export async function runReduce(opts) {
           await page.close().catch(() => {});
         }
       }
-      const table = propose(agg.result(), target);
+      // R6 : les sélecteurs tiers suivent la table, pour que la simulation les exclue.
+      const table = { ...propose(agg.result(), target), thirdParty: sources?.thirdParty ?? [] };
       const map = mapping(table, decisions);
       // Tour 2 : simuler la table, page par page.
       const pages = [];
@@ -181,7 +182,7 @@ async function main() {
     console.log(`\n${r.host} : ${r.files.join(', ')}`);
     for (const [family, f] of Object.entries(r.table.families)) {
       const s = f.summary;
-      console.log(`  ${family} : ${s.before} → ${s.after} valeurs ; ${s.decisions} décision(s), ${s.near} proche(s), ${s.auto} d'office`);
+      console.log(`  ${family} : ${s.before} → ${s.after} valeurs ; ${s.decisions} décision(s), ${s.corrections} correction(s), ${s.near} proche(s), ${s.auto} d'office`);
     }
   }
 }
