@@ -313,7 +313,8 @@ test('revue : détail en bas de la carte ; contraste « avec la valeur la plus p
     assert.equal(await page.locator('article.row > details.detail:last-child').count(), cards, 'détail en dernier');
     const coul = await card(page, 'coul-24').locator('details.detail').textContent();
     assert.ok(coul?.includes('avec la valeur la plus proche'), coul ?? '');
-    assert.ok(coul?.includes('écart ΔE 1,59'), coul ?? '');
+    // Lot P-fin : l'écart en une phrase (« Écart : ΔE 1,59 avec la valeur la plus proche (…) »).
+    assert.ok(coul?.includes('ΔE 1,59 avec la valeur la plus proche'), coul ?? '');
     const corr = await page.locator('article.row.c-correction details.detail').first().textContent();
     assert.ok(corr?.includes('avec la valeur proposée'), corr ?? '');
   } finally {

@@ -634,6 +634,18 @@ export function versionInPage({ key, i, family, usage, lines = false, clip }) {
         : side === 'top' ? { x: er.x, y: er.y - m, width: er.width, height: m }
         : side === 'left' ? { x: er.x - m, y: er.y, width: m, height: er.height }
         : { x: er.x + er.width, y: er.y, width: m, height: er.height };
+      // Lot P-fin : marge absorbée, quand l'espace visible vient de la marge du voisin, plus grande (fusion).
+      const s = sibling(el, side);
+      if (s) {
+        const q = rectOf(s);
+        const visible = side === 'bottom' ? q.y - (er.y + er.height) : side === 'top' ? er.y - (q.y + q.height) : side === 'left' ? er.x - (q.x + q.width) : q.x - (er.x + er.width);
+        const OPPOSITE = /** @type {Record<string, string>} */ ({ top: 'bottom', bottom: 'top', left: 'right', right: 'left' });
+        const theirs = parseFloat(getComputedStyle(s).getPropertyValue(`margin-${OPPOSITE[side]}`)) || 0;
+        if (theirs > m + 0.5 && Math.abs(visible - theirs) < 0.5) {
+          space.push({ side, px: r2(m), rect, visiblePx: r2(visible), absorbed: true });
+          continue;
+        }
+      }
       space.push({ side, px: r2(m), rect });
     }
   if (family === 'spacing' && usage === 'retrait') {
@@ -763,8 +775,9 @@ export const FRAME = { pad: 16, maxHeight: 400, wideRetrait: 600, scale: 2 };
  * @property {string} [name]    nom du pas de la cible
  * @property {Record<string, string>} measured  valeur calculée de l'élément, par propriété touchée
  * @property {{ kind: string, side?: string, rect: Rect }[]} around  contexte du cadre (R-9), en coordonnées de page
- * @property {{ side?: string, axis?: string, px: number, rect: Rect }[]} space  zone d'espace (R-8), dans la capture,
- *   en px CSS : bande de marge, de retrait (côté par côté) ou de gouttière ; px : son épaisseur
+ * @property {{ side?: string, axis?: string, px: number, rect: Rect, visiblePx?: number, absorbed?: boolean }[]} space  zone d'espace (R-8), dans la capture,
+ *   en px CSS : bande de marge, de retrait (côté par côté) ou de gouttière ; px : son épaisseur ;
+ *   absorbed, visiblePx (lot P-fin) : marge absorbée par celle du voisin, plus grande, et espace visible
  * @property {{ ratio: number, threshold: number, text: string, bg: string }} [contrast]  couleur : contraste le plus faible
  *   des éléments touchés, son seuil et sa paire (texte ou bordure, fond)
  * @property {Shot & { scale: number }} shot  même cadre et même taille pour toutes les versions d'une décision ;

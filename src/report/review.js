@@ -119,6 +119,20 @@ function zones(shot, space, { end = false } = {}) {
 }
 
 /**
+ * Lot P-fin : légende d'une version dont la marge est absorbée par celle du voisin, plus grande
+ * (« espace visible 16 px, la marge du voisin l'emporte ») ; une par version, qui suit la version affichée.
+ * @param {any[]} versions
+ */
+function absorbedNotes(versions) {
+  return versions
+    .map((v, i) => {
+      const z = (v.space ?? []).find((/** @type {any} */ x) => x.absorbed);
+      return z ? `<p class="absorbe" data-v="${i}"${i ? ' hidden' : ''}>espace visible ${fr(z.visiblePx)} px, la marge du voisin l’emporte</p>` : '';
+    })
+    .join('');
+}
+
+/**
  * Lot R : contraste d'une version de couleur : « 4,35 · sous le seuil de 4,5 », puis la couleur
  * réelle de l'autre côté de la paire (le texte posé sur un fond, le fond sous un texte ou une bordure).
  * @param {string | undefined} usage @param {{ ratio: number, threshold: number, text: string, bg: string }} c
@@ -149,7 +163,7 @@ function beforeAfter(family, r) {
   <div class="vue" style="width:${a.width * scale}px;aspect-ratio:${a.width} / ${a.height}">${vs
     .slice(0, 2)
     .map((/** @type {any} */ v, /** @type {number} */ i) => `<div class="ver" data-v="${i}"${i ? ' hidden' : ''}>${img(v.shot.png)}${zones(v.shot, v.space ?? [])}</div>`)
-    .join('')}</div>`;
+    .join('')}</div>${absorbedNotes(vs.slice(0, 2))}`;
 }
 
 /** Lot R : « Ce choix s'applique à n éléments ». @param {any} r */
@@ -181,7 +195,7 @@ function decisionCard(family, r) {
   const view = shot0
     ? `<div class="vue" style="width:${shot0.width * scale}px;aspect-ratio:${shot0.width} / ${shot0.height}">${versions
         .map((/** @type {any} */ v, /** @type {number} */ i) => `<div class="ver" data-v="${i}"${i ? ' hidden' : ''}>${img(v.shot.png)}${zones(v.shot, v.space ?? [])}</div>`)
-        .join('')}</div>`
+        .join('')}</div>${absorbedNotes(versions)}`
     : '';
   // Une vignette par autre élément touché, 3 au plus, à la taille CSS de son cadre plafonnée à 240 px ;
   // chacune suit la version affichée.
@@ -191,9 +205,9 @@ function decisionCard(family, r) {
     ? `<div class="vignettes">${others
         .map(
           (/** @type {any} */ o) =>
-            `<div class="vig" style="width:${Math.min(o.clip.width, THUMB_MAX)}px;aspect-ratio:${o.clip.width} / ${o.clip.height}">${o.versions
+            `<figure class="vig-bloc" style="width:${Math.min(o.clip.width, THUMB_MAX)}px"><div class="vig" style="width:${Math.min(o.clip.width, THUMB_MAX)}px;aspect-ratio:${o.clip.width} / ${o.clip.height}">${o.versions
               .map((/** @type {any} */ v, /** @type {number} */ i) => `<div class="ver" data-v="${i}"${i ? ' hidden' : ''}>${img(v.shot.png)}${zones(v.shot, v.space ?? [], { end: true })}</div>`)
-              .join('')}</div>`,
+              .join('')}</div>${absorbedNotes(o.versions)}</figure>`,
         )
         .join('')}${more > 0 ? `<span class="encore">et ${more} ${more === 1 ? 'autre' : 'autres'}</span>` : ''}</div>`
     : '';
@@ -261,7 +275,11 @@ function relationDetail(r) {
 function detail(family, r, key, cls) {
   const against = cls === 'décision' ? 'avec la valeur la plus proche' : 'avec la valeur proposée';
   const ctr = r.contrast ? `<dt>Contraste</dt><dd>${fr(r.contrast.before)} avant → ${fr(r.contrast.after)} ${against} (seuil ${fr(r.contrast.threshold)})</dd>` : '';
-  const gap = r.delta ? ` · écart ${family === 'colors' ? 'ΔE ' : ''}${fr(r.delta)}${family === 'colors' ? '' : ' px'}` : '';
+  // Lot P-fin : l'écart en une phrase, avec la valeur visée ; le nombre d'usages seulement s'il ne répète pas la portée.
+  const target = cls === 'décision' ? r.candidates?.[0]?.value : r.new;
+  const ecart = r.delta && target ? `${family === 'colors' ? `ΔE ${fr(r.delta)}` : `${fr(r.delta)} px`} avec ${cls === 'décision' ? 'la valeur la plus proche' : 'la valeur proposée'} (${short(family, target)})` : '';
+  const scope = r.capture?.elements ?? r.count;
+  const usages = r.count !== scope ? `${r.count} occurrences relevées dans le rendu, sur ${scope} ${scope === 1 ? 'élément' : 'éléments'} (un élément peut porter la valeur sur plusieurs côtés)` : '';
   const motif = r.reason ? plainReason(r.reason) : null;
   // Sélecteurs : 4 au plus, puis « et n autres » ; sans capture, les exemples du relevé, dits coupés s'ils le sont.
   const full = !!r.capture?.touched?.length;
@@ -271,7 +289,7 @@ function detail(family, r, key, cls) {
   const cut = more > 0 ? `<i>et ${more} ${more === 1 ? 'autre' : 'autres'}</i>` : !full && all.length >= 3 && r.count > all.length ? '<i>et d’autres (liste coupée au relevé)</i>' : '';
   return `<details class="detail"><summary>Détail</summary><dl>
     ${motif ? `<dt>Motif</dt><dd>${esc(motif.text)}${motif.rule ? ` <i>(règle ${esc(motif.rule)})</i>` : ''}</dd>` : ''}
-    ${relationDetail(r)}${ctr}<dt>Usages</dt><dd>${r.count}${gap}</dd>
+    ${relationDetail(r)}${ctr}${ecart ? `<dt>Écart</dt><dd>${esc(ecart)}</dd>` : ''}${usages ? `<dt>Usages</dt><dd>${esc(usages)}</dd>` : ''}
     <dt>Sélecteurs</dt><dd>${sel.map((/** @type {string} */ x) => `<code>${esc(x)}</code>`).join(' ')}${cut}</dd>
     <dt>Clé technique</dt><dd><code>${esc(key)}</code></dd>
   </dl></details>`;
@@ -470,6 +488,8 @@ ${byClass}
   .vig { display:grid; position:relative; max-width:100%; border:1px solid var(--line); border-radius:6px; overflow:hidden; background:#fff; }
   .vig .ver { grid-area:1 / 1; position:relative; line-height:0; } .vig .ver[hidden] { display:none; } .vig img { display:block; width:100%; height:auto; }
   .encore { font-size:13px; color:var(--soft); padding-bottom:4px; }
+  .vig-bloc { margin:0; max-width:100%; display:flex; flex-direction:column; gap:4px; }
+  .absorbe { margin:4px 0 0; font-size:12px; line-height:1.35; color:#7a3a00; } .absorbe[hidden] { display:none; }
   .trancher { display:flex; align-items:center; gap:10px; margin-top:10px; }
   .retenir { font:inherit; font-size:14px; font-weight:600; border:0; border-radius:6px; padding:7px 14px; cursor:pointer; background:#16181d; color:#fff; }
   .barre { position:fixed; left:0; right:0; bottom:0; background:#16181d; color:#fff; padding:10px 24px; display:flex; gap:16px; align-items:center; justify-content:center; font-size:14px; }
@@ -517,7 +537,7 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
     i = Math.max(0, Math.min(vs.length - 1, i));
     row.setAttribute('data-vue', String(i));
     vs.forEach(function (b, j) { b.setAttribute('aria-pressed', String(j === i)); });
-    row.querySelectorAll('.vue .ver, .vig .ver').forEach(function (f) { f.hidden = Number(f.getAttribute('data-v')) !== i; });
+    row.querySelectorAll('.vue .ver, .vig .ver, .absorbe').forEach(function (f) { f.hidden = Number(f.getAttribute('data-v')) !== i; });
   }
   function retain(row, i, imposed) {
     var vs = versionsOf(row);
@@ -592,7 +612,9 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
     PAIRS.forEach(function (x) {
       var a = spaceOf(x.in), b = spaceOf(x.out);
       if (a.px < b.px && !x.before) return;
-      var me = x.roles[x.facing], own = x.roles[1 - x.facing], next = x.roles[2] + ' ' + x.toward;
+      // Lot P-fin : une seule formulation, « du champ suivant » : libellé, champ et message comptent comme un champ.
+      var group = function (role) { return role === 'libellé' || role === 'message' ? 'champ' : role; };
+      var me = x.roles[x.facing], own = x.roles[1 - x.facing], next = group(x.roles[2]) + ' ' + x.toward;
       var verdict = a.px < b.px ? 'on voit à quel ' + own + ' il appartient'
         : a.px === b.px ? 'même distance, on ne voit pas à quel ' + own + ' il appartient'
         : 'il est plus près du ' + next + ' que de son ' + own;

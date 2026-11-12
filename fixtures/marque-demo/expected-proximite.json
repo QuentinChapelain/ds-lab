@@ -172,6 +172,22 @@
   "notCovered": [
     "Fusion parent-enfant quand le parent a lui-même une marge non nulle, et marge basse d'un dernier enfant."
   ],
+  "etapeFin3": {
+    "added": "13/11/2026, lot P-fin, étape 3 : attendus écrits avant le code.",
+    "detail": {
+      "rule": "« Usages : n · écart » est remplacé : l’écart devient une phrase (« Écart »), le nombre d’usages disparaît quand il répète « Ce choix s’applique à n éléments ».",
+      "card": { "value": "10px", "scope": "dans le composant" },
+      "ecart": "2 px avec la valeur la plus proche (8 px)",
+      "noUsages": true
+    },
+    "agent": { "rule": "« à vérifier » n’apparaît pas dans la consigne pour l’agent ; il reste dans la revue.", "absent": "à vérifier" },
+    "absorbed": {
+      "rule": "Une vignette dit quand la marge est absorbée : l’espace visible vient de la marge du voisin, plus grande.",
+      "card": { "value": "10px", "scope": "entre composants" },
+      "element": "p.aide",
+      "text": "espace visible 16 px, la marge du voisin l’emporte"
+    }
+  },
   "etape3": {
     "added": "12/11/2026, étape 3 (revue et migration.md) : attendus écrits à la main avant le code, d’après la consigne : titre qui dit la relation, détail qui dit le signal et le lieu de correction, ancien choix sans relation appliqué dans la revue, contrôle qui suit les choix, relation et motif dans migration.md, messages à relier par aria-describedby.",
     "phrases": {
@@ -257,22 +273,23 @@
         }
       ],
       "control": {
-        "rule": "Les deux cartes de 10 px disent, en clair, l’espace du message à son champ et au libellé suivant, recalculé à chaque choix (une décision sans choix garde l’ancienne valeur).",
-        "initial": "En l’état, le message est à 10 px de son champ et à 10 px du libellé suivant : même distance, on ne voit pas à quel champ il appartient.",
+        "wordingNote": "13/11/2026, lot P-fin, étape 3 : une seule formulation dans l’avertissement et le motif, « du champ suivant » (libellé, champ et message comptent comme un champ).",
+        "rule": "Les deux cartes de 10 px disent, en clair, l’espace du message à son champ et au champ suivant, recalculé à chaque choix (une décision sans choix garde l’ancienne valeur).",
+        "initial": "En l’état, le message est à 10 px de son champ et à 10 px du champ suivant : même distance, on ne voit pas à quel champ il appartient.",
         "same": {
           "in": "8px",
           "out": "8px",
-          "text": "Avec ces choix, le message est à 8 px de son champ et à 8 px du libellé suivant : même distance, on ne voit pas à quel champ il appartient."
+          "text": "Avec ces choix, le message est à 8 px de son champ et à 8 px du champ suivant : même distance, on ne voit pas à quel champ il appartient."
         },
         "inverted": {
           "in": "12px",
           "out": "8px",
-          "text": "Avec ces choix, le message est à 12 px de son champ et à 8 px du libellé suivant : il est plus près du libellé suivant que de son champ."
+          "text": "Avec ces choix, le message est à 12 px de son champ et à 8 px du champ suivant : il est plus près du champ suivant que de son champ."
         },
         "restored": {
           "in": "4px",
           "out": "12px",
-          "text": "Avec ces choix, le message est à 4 px de son champ et à 12 px du libellé suivant : on voit à quel champ il appartient."
+          "text": "Avec ces choix, le message est à 4 px de son champ et à 12 px du champ suivant : on voit à quel champ il appartient."
         }
       },
       "oldChoice": {
@@ -285,7 +302,7 @@
           "spacing|6px|marge": "4px"
         },
         "exportNote": "13/11/2026 : lot P-fin, la marge de 6 px n'est plus coupée (aucune ligne dans le composant) : sa clé n'a pas de relation.",
-        "control": "Avec ces choix, le message est à 12 px de son champ et à 12 px du libellé suivant : même distance, on ne voit pas à quel champ il appartient."
+        "control": "Avec ces choix, le message est à 12 px de son champ et à 12 px du champ suivant : même distance, on ne voit pas à quel champ il appartient."
       },
       "migration": {
         "tableColumns": "| ligne | famille | valeur | usage | jeton | classe | relation | motif | origine CSS | éléments |",

@@ -151,7 +151,7 @@ export async function runReduce(opts) {
             for (const i of decision ? rest : []) {
               if (x.others.length >= THUMBS) break;
               const c = await captureDecision(page, d, table.thirdParty, { index: i, compact: true });
-              if (c) x.others.push(c);
+              if (c) x.others.push({ ...c, selector: here.find((t) => t.index === i)?.selector });
             }
           }
         } finally {

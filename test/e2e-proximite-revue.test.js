@@ -193,3 +193,37 @@ test('migration.md : « Change aussi » demande de relier chaque message à son 
     'pièges : messages non reliés',
   );
 });
+
+// Lot P-fin, étape 3 : attendus du bloc « etapeFin3 ».
+const F = P.etapeFin3;
+
+test('revue : l’écart dit en une phrase ; pas de nombre d’usages qui répète la portée', async () => {
+  const { context, page } = await open(orbe.revue);
+  try {
+    const r = margin(orbe.table, F.detail.card.value, F.detail.card.scope);
+    const c = card(page, r);
+    await c.locator('.detail summary').click();
+    assert.equal(await dd(c, 'Écart'), F.detail.ecart);
+    if (F.detail.noUsages) assert.equal(await c.locator('.detail dt', { hasText: 'Usages' }).count(), 0, 'Usages');
+  } finally {
+    await context.close();
+  }
+});
+
+test('consigne : « à vérifier » absent de la consigne pour l’agent', () => {
+  const hits = orbe.data.agent.lines.filter((/** @type {string} */ l) => l.includes(F.agent.absent));
+  assert.deepEqual(hits, []);
+});
+
+test('revue : la vignette dit quand la marge est absorbée par celle du voisin', async () => {
+  const r = margin(orbe.table, F.absorbed.card.value, F.absorbed.card.scope);
+  const i = r.capture.others.findIndex((/** @type {any} */ o) => o.selector === F.absorbed.element);
+  assert.ok(i >= 0, `vignette ${F.absorbed.element} absente (${r.capture.others.map((/** @type {any} */ o) => o.selector).join(', ')})`);
+  const { context, page } = await open(orbe.revue);
+  try {
+    const legend = card(page, r).locator('.vig-bloc').nth(i).locator('.absorbe:not([hidden])');
+    assert.equal(await legend.textContent(), F.absorbed.text);
+  } finally {
+    await context.close();
+  }
+});

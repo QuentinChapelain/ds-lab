@@ -438,7 +438,11 @@ function propertyOf(family, props) {
 }
 
 /** Lot P, étape 3 : relation d'une marge dans la consigne. @param {any} r */
-const relationOf = (r) => (r.relation && r.relation !== '—' ? ` Relation : ${r.relation}.` : '');
+// Lot P-fin : « à vérifier » reste dans la revue et dans les tables, pas dans la consigne.
+const relationOf = (r) => {
+  const rel = (r.relation ?? '').split(' · ').filter((/** @type {string} */ x) => !x.startsWith('à vérifier')).join(' · ');
+  return rel && rel !== '—' ? ` Relation : ${rel}.` : '';
+};
 
 /** Variable CSS d'un jeton DTCG (points en tirets). @param {string} token */
 const cssVar = (token) => `var(--${token.replace(/\./g, '-')})`;
