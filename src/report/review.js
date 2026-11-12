@@ -42,7 +42,7 @@ const FAMILY_LABELS = /** @type {Record<string, string>} */ ({ radii: 'Rayons', 
 const CLASS_LABELS = /** @type {Record<string, [string, string]>} */ ({
   décision: ['Décisions', 'L’écart se voit, ou le contraste l’impose. Choisis une valeur parmi les candidates ; sans choix, l’ancienne reste (R5).'],
   correction: ['Corrections', 'Le contraste échouait et passe avec la valise (R9). Appliquées d’office, annulables une à une.'],
-  proche: ['Proches', 'Écart faible. Valide le lot d’un clic, ou refuse au cas par cas.'],
+  proche: ['Proches', 'Écart faible. Appliqués par défaut ; refuse au cas par cas.'],
   auto: ['Appliqués d’office', 'Écart invisible à l’œil. Listés pour mémoire, refusables.'],
   inchangé: ['Déjà sur la cible', ''],
   [OUT.scale]: ['Hors table : aucune échelle', 'Trop loin de toute la valise (ΔE > 10, R4) : laissées telles quelles.'],
