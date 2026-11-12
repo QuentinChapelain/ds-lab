@@ -7,7 +7,7 @@
  * renvoyées avec le texte, pour les tests.
  */
 import { basename } from 'node:path';
-import { APPLIED, isOut } from '../reduce/propose.js';
+import { APPLIED, isOut, SLICES } from '../reduce/propose.js';
 import { contrastRatio, isOpaque, toLab, deltaE } from '../lib/color.js';
 
 /** Groupes de jetons de dimension, par famille de la table. */
@@ -21,12 +21,36 @@ const SPACING_FAMILY = /** @type {Record<string, string>} */ ({ marge: 'margins'
 const FAMILY_LABELS = /** @type {Record<string, string>} */ ({ colors: 'couleurs', spacing: 'espacements', fontSizes: 'tailles', radii: 'rayons' });
 const OUT_REASON = 'valeur non convertible (pourcentage, transparence)';
 
+/** Jeton « sur plein » (texte posé sur le pas 9 d'une échelle). @param {string} path */
+const isOnSolid = (path) => /\.(sur-plein|on-solid|onSolid)$/.test(path);
+
 /**
- * Index des jetons DTCG : couleur par hex, dimension par groupe et valeur en px.
+ * Choix d'un jeton de couleur quand plusieurs ont la même valeur : d'abord celui
+ * qui porte le nom de la ligne dans la valise (blanc → couleur.blanc, neutre-11 →
+ * couleur.neutre.11) ; un jeton sur-plein seulement pour un texte posé sur le
+ * plein de cette échelle ; sinon le premier jeton qui n'est pas sur-plein.
+ * @param {string[]} paths
+ * @param {{ name?: string | null, pleinScales?: Set<string> }} [ctx]
+ */
+export function pickColorToken(paths, { name = null, pleinScales = new Set() } = {}) {
+  if (name) {
+    const suffix = name.replace(/-(\d+)$/, '.$1');
+    const hit = paths.find((p) => !isOnSolid(p) && (p === suffix || p.endsWith(`.${suffix}`)));
+    if (hit) return hit;
+  }
+  for (const scale of pleinScales) {
+    const hit = paths.find((p) => isOnSolid(p) && p.split('.').slice(-2, -1)[0] === scale);
+    if (hit) return hit;
+  }
+  return paths.find((p) => !isOnSolid(p)) ?? null;
+}
+
+/**
+ * Index des jetons DTCG : couleurs par hex (tous les chemins), dimension par groupe et valeur en px.
  * @param {any} tokens  contenu d'un fichier .tokens.json (DTCG 2025.10)
  */
 export function indexTokens(tokens) {
-  /** @type {Map<string, string>} */
+  /** @type {Map<string, string[]>} */
   const colors = new Map();
   /** @type {Map<string, Map<string, string>>} */
   const dims = new Map();
@@ -36,7 +60,10 @@ export function indexTokens(tokens) {
     const t = node.$type ?? type;
     if ('$value' in node) {
       const v = node.$value;
-      if (t === 'color' && v?.hex) colors.set(String(v.hex).toLowerCase(), path.join('.'));
+      if (t === 'color' && v?.hex) {
+        const k = String(v.hex).toLowerCase();
+        colors.set(k, [...(colors.get(k) ?? []), path.join('.')]);
+      }
       else if (t === 'dimension' && v?.unit === 'px') {
         const g = dims.get(path[0]) ?? new Map();
         if (!g.has(`${v.value}px`)) g.set(`${v.value}px`, path.join('.'));
@@ -47,17 +74,23 @@ export function indexTokens(tokens) {
     for (const [k, child] of Object.entries(node)) if (!k.startsWith('$')) walk(child, [...path, k], t);
   };
   walk(tokens, [], undefined);
-  /** @param {string} family @param {string | null} value */
-  const find = (family, value) => {
+  /**
+   * @param {string} family @param {string | null} value
+   * @param {{ name?: string | null, pleinScales?: Set<string> }} [ctx]  couleur : nom dans la valise, échelles des pleins qui portent ce texte
+   */
+  const find = (family, value, ctx) => {
     if (!value) return null;
-    if (family === 'colors') return colors.get(value.toLowerCase()) ?? null;
+    if (family === 'colors') {
+      const paths = colors.get(value.toLowerCase());
+      return paths ? pickColorToken(paths, ctx) : null;
+    }
     for (const g of DIM_GROUPS[family] ?? []) {
       const hit = dims.get(g)?.get(value);
       if (hit) return hit;
     }
     return null;
   };
-  return { find, size: colors.size + [...dims.values()].reduce((t, g) => t + g.size, 0) };
+  return { find, size: [...colors.values()].reduce((t, l) => t + l.length, 0) + [...dims.values()].reduce((t, g) => t + g.size, 0) };
 }
 
 /** @param {unknown} s */
@@ -104,8 +137,28 @@ function originOf(rendered, family, r) {
  */
 export function buildMigration({ table, rendered, map, target, tokens, meta }) {
   const idx = tokens ? indexTokens(tokens) : null;
-  /** @param {string} family @param {string | null} value */
-  const token = (family, value) => (value === null ? '—' : idx?.find(family, value) ?? 'jeton absent');
+  /** @param {string} family @param {string | null} value @param {{ name?: string | null, pleinScales?: Set<string> }} [ctx] */
+  const token = (family, value, ctx) => (value === null ? '—' : idx?.find(family, value, ctx) ?? 'jeton absent');
+  const T = (target.colors ?? []).map((/** @type {any} */ c) => ({ name: c.name, value: c.value.toLowerCase(), lab: toLab(c.value.toLowerCase()) }));
+  /** Échelle d'un plein (pas 9-10 le plus proche), ou null. @param {string} hex */
+  const scaleOf = (hex) => {
+    if (!T.length || !isOpaque(hex)) return null;
+    const lab = toLab(hex);
+    const best = T.map((/** @type {any} */ t) => ({ t, d: deltaE(lab, t.lab) })).sort((/** @type {any} */ a, /** @type {any} */ b) => a.d - b.d)[0];
+    const m = /^(.+)-(\d+)$/.exec(best.t.name ?? '');
+    return m && Number(m[2]) >= 9 && Number(m[2]) <= 10 ? m[1] : null;
+  };
+  /** Échelles des pleins sur lesquels un texte est posé (après la table). @param {string} text */
+  const pleinScalesOf = (text) => {
+    /** @type {Set<string>} */
+    const out = new Set();
+    for (const p of rendered.usages?.pairs ?? []) {
+      if (p.text !== text || p.bgUsage !== 'plein') continue;
+      const sc = scaleOf(mapped(map, p.bg, 'plein'));
+      if (sc) out.add(sc);
+    }
+    return out;
+  };
 
   /** @type {any[]} */
   const rows = [];
@@ -116,7 +169,7 @@ export function buildMigration({ table, rendered, map, target, tokens, meta }) {
         family,
         value: r.old,
         usage: r.usage ?? (r.usages ?? []).join(', '),
-        token: token(family, shown),
+        token: token(family, shown, family === 'colors' ? { name: isOut(r.class) ? null : r.name ?? null, pleinScales: r.usage === 'texte' ? pleinScalesOf(r.old) : new Set() } : undefined),
         new: isOut(r.class) ? null : r.new,
         class: r.class,
         origin: originOf(rendered, family, r),
@@ -136,15 +189,6 @@ export function buildMigration({ table, rendered, map, target, tokens, meta }) {
   // Exceptions nommées.
   const links = (rendered.usages?.links ?? []).map((/** @type {any} */ l) => ({ ...l }));
   const onSolidMap = target.onSolid ?? {};
-  const T = (target.colors ?? []).map((/** @type {any} */ c) => ({ name: c.name, value: c.value.toLowerCase(), lab: toLab(c.value.toLowerCase()) }));
-  /** @param {string} hex */
-  const scaleOf = (hex) => {
-    if (!T.length || !isOpaque(hex)) return null;
-    const lab = toLab(hex);
-    const best = T.map((/** @type {any} */ t) => ({ t, d: deltaE(lab, t.lab) })).sort((/** @type {any} */ a, /** @type {any} */ b) => a.d - b.d)[0];
-    const m = /^(.+)-(\d+)$/.exec(best.t.name ?? '');
-    return m && Number(m[2]) >= 9 && Number(m[2]) <= 10 ? m[1] : null;
-  };
   /** @type {any[]} */
   const onSolid = [];
   for (const p of rendered.usages?.pairs ?? []) {
@@ -161,6 +205,18 @@ export function buildMigration({ table, rendered, map, target, tokens, meta }) {
     return { value: hex, contexts: v.contexts.map((/** @type {any} */ c) => ({ state: c.state, property: c.property, role: c.role, selectors: c.selectors })) };
   });
   const ties = rows.filter((r) => r.tie && APPLIED.has(r.class) && r.class !== 'inchangé');
+  // Valeur de la valise utilisée hors de sa tranche (R1) : signalée, la table ne change pas.
+  /** @type {any[]} */
+  const outOfSlice = [];
+  for (const r of table.families.colors?.rows ?? []) {
+    const slice = r.usage ? SLICES[r.usage] : undefined;
+    const exact = T.find((/** @type {any} */ t) => t.value === r.old);
+    const m = exact ? /^(.+)-(\d+)$/.exec(exact.name ?? '') : null;
+    if (!slice || !m) continue;
+    const step = Number(m[2]);
+    if (step >= slice[0] && step <= slice[1]) continue;
+    outOfSlice.push({ value: r.old, name: exact.name, usage: r.usage, elements: r.count, step, expected: `${r.usage} ${slice[0]}-${slice[1]}`, class: r.class, selectors: r.selectors });
+  }
 
   const data = {
     meta,
@@ -171,7 +227,7 @@ export function buildMigration({ table, rendered, map, target, tokens, meta }) {
       outOfTable: { total: outOfTable.length, ...byFamily(outOfTable) },
     },
     unchanged: rows.filter((r) => r.class === 'inchangé').length,
-    exceptions: { links, onSolid, states, injected: null, ties },
+    exceptions: { links, onSolid, states, injected: null, ties, outOfSlice },
   };
   return { data, markdown: renderMarkdown(data, { applied, pending, outOfTable }) };
 }
@@ -242,6 +298,13 @@ function renderMarkdown(d, s) {
   L.push('La valeur est à égale distance de deux pas ; la table a pris le plus petit sans le demander.', '');
   for (const r of e.ties) L.push(`- ${FAMILY_LABELS[r.family]} \`${r.value}\` (${r.usage}) : entre \`${r.tie[0]}\` et \`${r.tie[1]}\`, rangée vers \`${r.new}\` (${r.class}).`);
   if (!e.ties.length) L.push('- Aucune.');
+  L.push('');
+  L.push(`### Valeur de la valise utilisée hors de sa tranche : ${e.outOfSlice.length}`, '');
+  L.push('La valeur est un pas exact de la valise, mais son usage appelle une autre tranche (texte 11-12, bordure 6-8, fond 1-5, plein 9-10). La table ne la change pas ; à revoir avec le designer.', '');
+  L.push('| valeur | pas | usage | éléments | tranche attendue | classe dans la table | exemples |', '|---|---|---|---|---|---|---|');
+  for (const x of e.outOfSlice)
+    L.push(`| \`${x.value}\` | ${x.name} | ${x.usage} | ${x.elements} | ${x.expected} | ${x.class} | ${x.selectors.map((/** @type {string} */ y) => `\`${cell(y)}\``).join(', ')} |`);
+  if (!e.outOfSlice.length) L.push('| — | | | | | | |');
   L.push('');
   return L.join('\n');
 }

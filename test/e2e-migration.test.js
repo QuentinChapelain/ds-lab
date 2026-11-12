@@ -88,6 +88,23 @@ test('désordre : jetons DTCG repris de primitives.tokens.json', () => {
   assert.ok(desordre.data.rows.every((/** @type {any} */ r) => r.token === '—' || r.token === 'jeton absent' || /^(couleur|espace|taille-texte|rayon)\./.test(r.token)));
 });
 
+test('désordre et pièges : #ffffff → couleur.blanc ; aucun jeton sur-plein hors d’un texte posé sur un plein', () => {
+  for (const d of [desordre.data, pieges.data]) {
+    for (const r of d.rows.filter((/** @type {any} */ x) => x.family === 'colors' && x.value === '#ffffff' && x.class === 'inchangé')) assert.equal(r.token, 'couleur.blanc', `#ffffff ${r.usage}`);
+    for (const r of d.rows.filter((/** @type {any} */ x) => /sur-plein/.test(x.token))) assert.equal(r.usage, 'texte', `${r.value} ${r.usage} : ${r.token}`);
+  }
+});
+
+test('désordre : exception « valeur de la valise utilisée hors de sa tranche » (#2b4c7e, bleu-9, en texte)', () => {
+  const list = desordre.data.exceptions.outOfSlice;
+  const x = list.find((/** @type {any} */ y) => y.value === '#2b4c7e' && y.usage === 'texte');
+  assert.ok(x, '#2b4c7e en texte absent de la liste');
+  assert.equal(x.name, 'bleu-9');
+  assert.equal(x.expected, 'texte 11-12');
+  assert.ok(x.elements > 0);
+  assert.ok(desordre.md.includes('### Valeur de la valise utilisée hors de sa tranche'));
+});
+
 test('désordre : origine CSS (fichier:ligne de la règle)', () => {
   for (const o of E.desordre.origins) {
     const row = desordre.data.rows.find((/** @type {any} */ x) => x.family === o.family && x.value === o.value && (!o.usage || x.usage === o.usage));
