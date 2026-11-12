@@ -1,0 +1,217 @@
+{
+  "$comment": "Attendus du lot E2, écrits avant la page fixtures/marque-demo/pieges/pieges.html, de la marque fictive Orbe Café, sans aucune valeur reprise d'un site réel. Mesure sur fixtures/marque-demo/cible-valise.json, aux largeurs 1366×900 et 1024×900, avec le tiers « .tiers-cookies ». Chaque piège a deux côtés. « today » décrit ce que l'outil actuel doit produire : ce côté prouve que le piège reproduit le défaut et doit passer dès que la page existe. « afterB » est le critère de fin du lot B et reste en attente d'ici là. En cas d'écart, ne corriger ni l'outil ni ce fichier : le signaler.",
+  "how": "ΔE = 100 × distance euclidienne OKLab ; contraste et luminance relative WCAG 2.1. Calculés avec culori 4.0.2 : node --input-type=module -e \"import { differenceEuclidean, wcagContrast, wcagLuminance } from 'culori'; console.log(100 * differenceEuclidean('oklab')(a, b), wcagContrast(a, b), wcagLuminance(a))\". Valeurs arrondies à 4 décimales.",
+  "conditions": {
+    "page": "/pieges/pieges.html",
+    "target": "fixtures/marque-demo/cible-valise.json",
+    "sources": "fixtures/marque-demo/sources.json",
+    "thirdParty": [".tiers-cookies"],
+    "viewports": [{ "width": 1366, "height": 900 }, { "width": 1024, "height": 900 }],
+    "thresholds": "auto ≤ 1 px ou ΔE ≤ 2 ; proche ≤ 15 % ou ΔE ≤ 5 ; décision au-delà"
+  },
+  "rules": {
+    "R4": "Une couleur est « hors table, aucune échelle » si son ΔE à la valeur la plus proche de toute la valise, toutes tranches confondues, dépasse 10. Ce test passe avant la règle 1 (l'usage choisit la tranche). Sinon, un gris de texte comme #999999 (ΔE 16,8 au pas 11) sortirait de la table au lieu d'être corrigé.",
+    "R5": "Une décision sans réponse n'est pas appliquée dans la simulation. Une ligne hors table non plus.",
+    "R7": "Un espacement négatif, supérieur à 64 px ou issu d'une marge auto est « hors table, mise en page ». Un rayon au moins égal à la moitié de la plus petite dimension de l'élément devient une pilule.",
+    "R8": "Un fond dont la luminance relative est inférieure à celle du pas 10 le plus sombre de la valise (bleu-10, #27487a, 0,0647) est « hors table, fond sombre ». Un texte posé sur ce fond est toujours une décision, jamais auto.",
+    "figures": {
+      "R4": { "value": "#999999", "step": "neutre-11", "stepValue": "#6d675b", "deltaE": 16.8454, "nearest": { "name": "neutre-8", "value": "#958f84", "deltaE": 3.5575 } },
+      "R8": { "step": "bleu-10", "value": "#27487a", "luminance": 0.0647 }
+    }
+  },
+  "traps": [
+    {
+      "id": "P1",
+      "title": "marge auto",
+      "construction": "Bloc en max-width 1286px avec margin 0 auto, ce qui donne 40px à 1366.",
+      "values": [{ "family": "spacing", "value": "40px", "viewport": 1366 }],
+      "today": {
+        "text": "Ligne 40px en décision vers 32 (égalité 32/48 tranchée en silence), appliquée ; après simulation à 1366, l'écart entre marge gauche et marge droite dépasse 1 px.",
+        "rows": [{ "family": "spacing", "value": "40px", "new": "32px", "class": "décision", "tie": ["32px", "48px"], "applied": true }],
+        "marginGapPx": { "viewport": 1366, "greaterThan": 1 }
+      },
+      "afterB": {
+        "text": "Aucune ligne issue de cette marge ; écart de 1 px au plus, aux deux largeurs.",
+        "rule": "R7",
+        "rows": [],
+        "marginGapPx": { "viewports": [1366, 1024], "atMost": 1 }
+      }
+    },
+    {
+      "id": "P2",
+      "title": "marges négatives",
+      "construction": "Loupe en margin-left −12px dans un champ ; bandeau en margin-top −40px sur un visuel.",
+      "values": [{ "family": "spacing", "value": "-12px" }, { "family": "spacing", "value": "-40px" }],
+      "today": {
+        "text": "Lignes −12px et −40px en décision vers 0, appliquées ; la loupe bouge de 12 px et le bandeau de 40 px.",
+        "rows": [
+          { "family": "spacing", "value": "-12px", "new": "0px", "class": "décision", "applied": true },
+          { "family": "spacing", "value": "-40px", "new": "0px", "class": "décision", "applied": true }
+        ],
+        "movesPx": { "loupe": 12, "bandeau": 40 }
+      },
+      "afterB": {
+        "text": "Les deux lignes hors table « mise en page », positions identiques avant et après.",
+        "rule": "R7",
+        "rows": [
+          { "family": "spacing", "value": "-12px", "class": "hors table, mise en page", "applied": false },
+          { "family": "spacing", "value": "-40px", "class": "hors table, mise en page", "applied": false }
+        ],
+        "movesPx": { "loupe": 0, "bandeau": 0 }
+      }
+    },
+    {
+      "id": "P3",
+      "title": "titre placé par une grande marge",
+      "construction": "Tuile en position relative de 200 px de haut ; titre en position absolue, top 0, margin-top 96px ; description en position absolue, top 60px, hauteur 30px.",
+      "values": [{ "family": "spacing", "value": "96px" }],
+      "today": {
+        "text": "96px en décision vers 64, appliquée ; titre et description se superposent.",
+        "rows": [{ "family": "spacing", "value": "96px", "new": "64px", "class": "décision", "applied": true }],
+        "overlap": true
+      },
+      "afterB": {
+        "text": "96px hors table « mise en page » (supérieur à 64 px), non appliquée ; titre et description ne se superposent pas.",
+        "rule": "R7",
+        "rows": [{ "family": "spacing", "value": "96px", "class": "hors table, mise en page", "applied": false }],
+        "overlap": false
+      }
+    },
+    {
+      "id": "P3b",
+      "title": "contrôle de P3",
+      "construction": "Même tuile sans description, margin-top 52px.",
+      "values": [{ "family": "spacing", "value": "52px" }],
+      "today": {
+        "text": "Proche vers 48, appliquée, le titre bouge de 4 px.",
+        "rows": [{ "family": "spacing", "value": "52px", "new": "48px", "class": "proche", "applied": true }],
+        "movesPx": { "titre": 4 }
+      },
+      "afterB": {
+        "text": "Identique à today : proche vers 48, appliquée, le titre bouge de 4 px. C'est une limite assumée de R7.",
+        "rule": "R7",
+        "sameAsToday": true,
+        "rows": [{ "family": "spacing", "value": "52px", "new": "48px", "class": "proche", "applied": true }],
+        "movesPx": { "titre": 4 }
+      }
+    },
+    {
+      "id": "P4",
+      "title": "avatar rond",
+      "construction": "Avatar 40×40 avec un rayon de 20px ; carte de 160 px de haut avec le même rayon.",
+      "values": [{ "family": "radii", "value": "20px" }],
+      "today": {
+        "text": "Une seule ligne 20px en décision vers 12, appliquée ; l'avatar devient carré arrondi.",
+        "rows": [{ "family": "radii", "value": "20px", "new": "12px", "class": "décision", "applied": true }],
+        "avatarRadiusPx": 12
+      },
+      "afterB": {
+        "text": "Deux lignes ; avatar vers 9999 en auto, son rayon calculé reste ≥ 20 ; carte vers 12 en décision, non appliquée.",
+        "rule": "R7",
+        "rows": [
+          { "family": "radii", "value": "20px", "element": "avatar", "new": "9999px", "class": "auto", "applied": true },
+          { "family": "radii", "value": "20px", "element": "carte", "new": "12px", "class": "décision", "applied": false }
+        ],
+        "avatarRadiusPx": { "atLeast": 20 }
+      }
+    },
+    {
+      "id": "P5",
+      "title": "pied de page sombre",
+      "construction": "Fond #2e2e2e, textes #999999 et #c8c8c8.",
+      "values": [
+        { "value": "#2e2e2e", "property": "background-color", "luminance": 0.0273 },
+        { "value": "#999999", "property": "color", "contrast": { "text": "#999999", "bg": "#2e2e2e", "ratio": 4.7665 } },
+        { "value": "#c8c8c8", "property": "color", "contrast": { "text": "#c8c8c8", "bg": "#2e2e2e", "ratio": 8.1166 } }
+      ],
+      "today": {
+        "text": "Fond proche vers neutre-12 (ΔE 2,22), textes proches vers neutre-8 (3,56) et neutre-7 (4,03), tous appliqués.",
+        "rows": [
+          { "family": "colors", "value": "#2e2e2e", "new": "#363026", "name": "neutre-12", "deltaE": 2.2175, "class": "proche", "applied": true },
+          { "family": "colors", "value": "#999999", "new": "#958f84", "name": "neutre-8", "deltaE": 3.5575, "class": "proche", "applied": true, "contrastAfter": { "text": "#958f84", "bg": "#363026", "ratio": 4.0682 } },
+          { "family": "colors", "value": "#c8c8c8", "new": "#bfbbb5", "name": "neutre-7", "deltaE": 4.0338, "class": "proche", "applied": true, "contrastAfter": { "text": "#bfbbb5", "bg": "#363026", "ratio": 6.8366 } }
+        ]
+      },
+      "afterB": {
+        "text": "Fond hors table « fond sombre » ; les deux textes en décision ; couleurs calculées du pied de page identiques avant et après.",
+        "rule": "R8",
+        "rows": [
+          { "family": "colors", "value": "#2e2e2e", "class": "hors table, fond sombre", "applied": false },
+          { "family": "colors", "value": "#999999", "class": "décision", "applied": false },
+          { "family": "colors", "value": "#c8c8c8", "class": "décision", "applied": false }
+        ],
+        "footerUnchanged": true
+      }
+    },
+    {
+      "id": "P6",
+      "title": "tiers repeint",
+      "construction": "Bandeau .tiers-cookies en fond #eeeeee et texte #555555 ; une section de la page en fond #eeeeee.",
+      "values": [{ "value": "#eeeeee", "property": "background-color" }, { "value": "#555555", "property": "color", "thirdPartyOnly": true }],
+      "today": {
+        "text": "Le bandeau est exclu de la mesure mais son fond change dans la simulation (auto vers neutre-4, ΔE 0,93).",
+        "rows": [{ "family": "colors", "value": "#eeeeee", "new": "#ecebe9", "name": "neutre-4", "deltaE": 0.93, "class": "auto", "applied": true }],
+        "thirdPartyMeasured": false,
+        "thirdPartyRepainted": true
+      },
+      "afterB": {
+        "text": "Style calculé du bandeau identique avant et après.",
+        "rule": "R17",
+        "thirdPartyMeasured": false,
+        "thirdPartyRepainted": false
+      }
+    },
+    {
+      "id": "P7",
+      "title": "couleur de marque non déclarée",
+      "construction": "Violet #7c6fe0 sur 5 éléments : fond d'un bouton à texte blanc, texte de 2 liens, fond d'un badge, bordure d'une carte.",
+      "values": [{ "value": "#7c6fe0", "elements": 5, "contrast": { "text": "#ffffff", "bg": "#7c6fe0", "ratio": 4.0329 } }],
+      "today": {
+        "text": "Une ligne en décision vers bleu-8 (ΔE 12,68), appliquée.",
+        "rows": [{ "family": "colors", "value": "#7c6fe0", "new": "#7b91b2", "name": "bleu-8", "deltaE": 12.6819, "class": "décision", "applied": true }]
+      },
+      "afterB": {
+        "text": "Hors table « aucune échelle », avec 5 éléments et les usages fond, texte et bordure ; non appliquée. Le blanc sur violet (4,03:1) reste signalé en échec par l'audit, sans correction proposée.",
+        "rule": "R4",
+        "rows": [{ "family": "colors", "value": "#7c6fe0", "class": "hors table, aucune échelle", "elements": 5, "usages": ["fond", "texte", "bordure"], "applied": false }],
+        "auditBelowAA": { "text": "#ffffff", "bg": "#7c6fe0", "ratio": 4.0329, "fixProposed": false }
+      }
+    },
+    {
+      "id": "P8",
+      "title": "bleu isolé",
+      "construction": "#3d8bfd en fond d'un seul bouton.",
+      "values": [{ "value": "#3d8bfd", "property": "background-color", "elements": 1 }],
+      "today": {
+        "text": "Décision vers bleu-8 (13,07), appliquée.",
+        "rows": [{ "family": "colors", "value": "#3d8bfd", "new": "#7b91b2", "name": "bleu-8", "deltaE": 13.0742, "class": "décision", "applied": true }]
+      },
+      "afterB": {
+        "text": "Hors table « aucune échelle », 1 élément.",
+        "rule": "R4",
+        "rows": [{ "family": "colors", "value": "#3d8bfd", "class": "hors table, aucune échelle", "elements": 1, "applied": false }]
+      }
+    },
+    {
+      "id": "P8b",
+      "title": "contrôle de P8",
+      "construction": "#5aa0e6 en bordure d'un champ.",
+      "values": [{ "value": "#5aa0e6", "property": "border-color", "elements": 1 }],
+      "today": {
+        "text": "Décision vers bleu-8 (8,09), appliquée.",
+        "rows": [{ "family": "colors", "value": "#5aa0e6", "new": "#7b91b2", "name": "bleu-8", "deltaE": 8.088, "class": "décision", "applied": true }]
+      },
+      "afterB": {
+        "text": "Reste une décision, dans la tranche bordure, non appliquée.",
+        "rule": "R5",
+        "rows": [{ "family": "colors", "value": "#5aa0e6", "class": "décision", "slice": "bordure", "applied": false }]
+      }
+    }
+  ],
+  "omitted": [
+    {
+      "what": "Élément injecté après le chargement, ni mesuré ni simulé.",
+      "status": "Limite connue, à écrire dans le plan de migration ; non testée."
+    }
+  ]
+}
