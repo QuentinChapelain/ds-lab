@@ -149,6 +149,46 @@ export function collectInPage(thirdSelectors = []) {
     return { value: false, placeholder: false };
   };
   /**
+   * Lot R (R-1) : texte visible d'un bloc, un espace entre deux éléments (« Filtre du jour Nouveau »),
+   * un saut de ligne autour d'un élément qui n'est pas en ligne et à chaque br.
+   * @param {Element} root
+   */
+  const spacedText = (root) => {
+    let out = '';
+    /** @type {Element | null} */
+    let last = null;
+    /** @param {Node} node */
+    const walk = (node) => {
+      for (const n of node.childNodes) {
+        if (out.length > 400) return;
+        if (n.nodeType === 3) {
+          const t = (n.textContent ?? '').replace(/\s+/g, ' ');
+          if (!t.trim()) continue;
+          if (last && last !== n.parentElement) out += ' ';
+          out += t;
+          last = n.parentElement;
+        } else if (n.nodeType === 1) {
+          const e = /** @type {Element} */ (n);
+          if (META.has(e.tagName)) continue;
+          const ecs = getComputedStyle(e);
+          if (ecs.display === 'none' || ecs.visibility === 'hidden') continue;
+          if (e.tagName === 'BR') {
+            out += '\n';
+            last = null;
+            continue;
+          }
+          const block = !ecs.display.startsWith('inline') && ecs.display !== 'contents';
+          if (block) out += '\n';
+          walk(e);
+          if (block) out += '\n';
+          if (block) last = null;
+        }
+      }
+    };
+    walk(root);
+    return out;
+  };
+  /**
    * Lot R (R-1) : texte visible d'un élément, espaces resserrés, coupé à 31 caractères
    * (le titre le coupe à 30 et sait ainsi qu'il a coupé). Un champ donne son libellé
    * (label associé, puis aria-label, puis texte d'indice), jamais sa valeur saisie ;
@@ -164,8 +204,8 @@ export function collectInPage(thirdSelectors = []) {
       s = labels[0] || clean(el.getAttribute('aria-label')) || clean(el.getAttribute('placeholder'));
     } else if (role === 'conteneur') {
       const h = [...el.querySelectorAll('h1, h2, h3, h4, h5, h6')].find((x) => x.getClientRects().length > 0);
-      const heading = h ? clean(/** @type {any} */ (h).innerText) : '';
-      s = heading || (String(anyEl.innerText ?? '').split('\n').map(clean).find(Boolean) ?? '');
+      const heading = h ? clean(spacedText(h)) : '';
+      s = heading || (spacedText(el).split('\n').map(clean).find(Boolean) ?? '');
     } else s = clean(anyEl.innerText ?? el.textContent);
     return s.slice(0, 31);
   };
