@@ -441,10 +441,16 @@
           "applied": false,
           "why": "R5",
           "contrast": {
-            "bg": "#ffffff",
-            "before": 7.6065,
-            "after": 5.5917
-          }
+            "bg": "#faf6ef",
+            "before": 7.0608,
+            "after": {
+              "text": "#4c6994",
+              "bg": "#f8f8f7",
+              "bgName": "neutre-2",
+              "ratio": 5.2619
+            }
+          },
+          "corrected": "12/11/2026 : fond mesuré crème, pas blanc"
         }
       ]
     },
@@ -675,8 +681,32 @@
   "criteria": {
     "$comment": "Après simulation : auto et corrections appliquées, aucune décision.",
     "a": {
-      "text": "Les seules paires de texte sous 4,5:1 sont celles de #2196f3 et du blanc sur #d0563f.",
-      "status": "hypothèse : si l'outil en trouve d'autres, les lister sans corriger"
+      "text": "12 paires avant, 3 après : #2196f3 (R4) ; blanc sur #d0563f et blanc sur #c8553d, texte sur terre à poser en onSolid (zone morte).",
+      "status": "résultat",
+      "before": 12,
+      "after": 3,
+      "remaining": [
+        {
+          "text": "#2196f3",
+          "bg": "#ffffff",
+          "ratio": 3.1243,
+          "why": "R4"
+        },
+        {
+          "text": "#ffffff",
+          "bg": "#d0563f",
+          "ratio": 4.1299,
+          "why": "onSolid"
+        },
+        {
+          "text": "#ffffff",
+          "bg": "#c8553d",
+          "ratio": 4.3544,
+          "why": "onSolid"
+        }
+      ],
+      "was": "Hypothèse : les seules paires de texte sous 4,5:1 sont celles de #2196f3 et du blanc sur #d0563f.",
+      "corrected": "12/11/2026 : hypothèse remplacée par la mesure (test e2e-desordre-valise)"
     },
     "b": "Le bandeau tiers est identique avant et après.",
     "c": "Aucune ligne d'espacement négative ou au-delà de 64 px n'est rangée.",

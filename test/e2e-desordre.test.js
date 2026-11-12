@@ -5,7 +5,8 @@
  * fixtures/marque-demo/expected-desordre.json, écrit avant les pages et
  * jamais recalé. Un test par piège et par côté (table, audit) : un écart
  * entre l'outil et l'attendu reste visible, en échec. Les entrées « lotB »
- * (rangement valeur × usage) sont en attente (todo), pas en échec.
+ * (rangement valeur × usage) sont en attente (todo), pas en échec. Une valeur
+ * qui porte un « afterB » (lot B : R2, R4) est jugée sur lui.
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -98,10 +99,26 @@ test('les trois pages sont mesurées, la cible inchangée', () => {
 });
 
 // Couleurs : un test « table » et un test « audit » par piège.
+/**
+ * Lot B : une valeur qui porte un « afterB » se juge sur lui (classe et règle) ;
+ * hors table, elle n'a plus de cible.
+ * @param {any} v
+ */
+const wanted = (v) => {
+  if (!v.afterB) return v;
+  const out = { value: v.value, class: v.afterB.class };
+  return String(v.afterB.class).startsWith('hors table') ? out : { ...out, new: v.new, deltaE: v.deltaE };
+};
+/** @param {any[]} values */
+const afterBLabel = (values) => {
+  const rules = values.filter((v) => v.afterB).map((v) => `${v.value} ${v.afterB.rule}`);
+  return rules.length ? ` (afterB : ${rules.join(', ')})` : '';
+};
+
 for (const e of E.colors.filter((/** @type {any} */ x) => !x.class)) {
-  test(`${e.id} table : ${label(e.values)}`, () => {
+  test(`${e.id} table : ${label(e.values)}${afterBLabel(e.values)}`, () => {
     for (const v of e.values) {
-      checkRow('colors', v);
+      checkRow('colors', wanted(v));
       if (v.contrast) {
         const p = pair(v.contrast.text ?? v.value, v.contrast.bg);
         assert.ok(p, `${e.id} : paire ${v.contrast.text ?? v.value} / ${v.contrast.bg} absente de l'audit`);
@@ -128,7 +145,9 @@ for (const e of E.colors.filter((/** @type {any} */ x) => !x.class)) {
     }
   });
   if (e.lotB) {
-    test(`${e.id} lot B : une ligne par usage`, { todo: e.lotB }, () => {
+    // Remplacé par l'afterB de la même entrée : R4 range toute la valeur hors table, en une ligne.
+    const by = e.values.find((/** @type {any} */ v) => v.afterB)?.afterB;
+    test(`${e.id} lot B : une ligne par usage`, by ? { skip: `remplacé par ${e.id} afterB (${by.rule})` } : { todo: e.lotB }, () => {
       assert.ok(rows('colors', e.values[0].value).length >= e.uses.length);
     });
   }

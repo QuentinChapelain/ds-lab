@@ -44,7 +44,8 @@ test('reduce : la table range le rendu de la démo sur la cible', () => {
   assert.deepEqual([row(t, 'fontSizes', '22.5px').class, row(t, 'fontSizes', '22.5px').new], ['proche', '24px']);
   assert.deepEqual([row(t, 'fontSizes', '13.5px').class, row(t, 'fontSizes', '13.5px').new], ['auto', '14px']);
   assert.deepEqual([row(t, 'colors', '#2c4d7f').class, row(t, 'colors', '#2c4d7f').new], ['auto', '#2b4c7e']);
-  assert.equal(row(t, 'colors', '#9a9a9a').class, 'décision');
+  // Lot B, R4 : ΔE 12,04 à la valeur la plus proche de la cible (gris), au-delà de 10.
+  assert.equal(row(t, 'colors', '#9a9a9a').class, 'hors table, aucune échelle');
   assert.deepEqual([row(t, 'radii', '999px').class, row(t, 'radii', '999px').new], ['auto', '9999px']);
   assert.deepEqual([row(t, 'spacing', '27px').class, row(t, 'spacing', '27px').new], ['proche', '24px']);
 });
