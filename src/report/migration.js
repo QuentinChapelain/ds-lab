@@ -451,6 +451,7 @@ function agentBrief(d, s) {
   lines.push('');
   lines.push('VÉRIFICATION');
   lines.push(`Relance : ${m.command ?? 'npm run reduce (mêmes options)'}`);
+  lines.push('Après modification du CSS, relance reduce sur les pages de la table et sur les pages témoins, et compare au prévu ; signale tout écart avant la mise en ligne.');
   lines.push('Chaque ligne traitée doit ressortir « inchangé » dans la nouvelle table.');
   lines.push(
     `Il ne doit rester ${d.remaining.length === 1 ? 'qu’une paire' : `que ${d.remaining.length} paires`} de texte sous 4,5:1 : ${d.remaining.map((/** @type {any} */ p) => `${p.text} sur ${p.bg} (${String(p.ratio).replace('.', ',')}:1)`).join(' ; ') || 'aucune'}.`,

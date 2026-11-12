@@ -213,5 +213,6 @@ test('consigne pour un agent : contexte, une instruction par ligne appliquée, c
   assert.ok(text.includes('- Composant tiers : .tiers-cookies'));
   assert.ok(text.includes('- Valeur hors de sa tranche : #2b4c7e (bleu-9) en texte'));
   assert.ok(text.includes(`--decisions ${DECISIONS}`), 'commande exacte');
+  assert.ok(a.lines.includes('Après modification du CSS, relance reduce sur les pages de la table et sur les pages témoins, et compare au prévu ; signale tout écart avant la mise en ligne.'), 'pages témoins');
   assert.deepEqual(decidee.data.remaining.map((/** @type {any} */ p) => `${p.text}|${p.bg}`), ['#2196f3|#ffffff'], 'une seule paire sous 4,5:1 après migration');
 });
