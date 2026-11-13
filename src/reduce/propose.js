@@ -88,7 +88,7 @@ export const isOut = (cls) => cls.startsWith('hors table');
  * @property {{ threshold: number, before: number, after: number }} [contrast]  lot B : paire la plus défavorable,
  *   avant et avec la cible proposée (appliquée ou non), les autres lignes suivant la table
  * @property {number | null} delta   écart en px, ou ΔE × 100 pour une couleur
- * @property {{ value: string, name?: string, delta: number }[]} candidates
+ * @property {{ value: string, name?: string, delta: number, nearest?: boolean }[]} candidates
  * @property {string[]} properties   familles ou propriétés d'origine
  * @property {string[]} selectors    exemples
  * @property {string} [id]           lot R : identifiant stable de la ligne (R-1)
@@ -178,7 +178,7 @@ function dimensionRows(values, scale, { pill = false, nearPx = Infinity } = {}) 
  *   nearPx : écart absolu au-delà duquel la ligne n'est plus proche (lot R, tailles de texte)
  * @returns {Row}
  */
-function dimensionRow(base, scale, { pill = false, forcePill = false, nearPx = Infinity } = {}) {
+export function dimensionRow(base, scale, { pill = false, forcePill = false, nearPx = Infinity } = {}) {
   const steps = [...scale].sort((a, b) => a - b);
   const old = base.old;
   const n = px(old);
@@ -186,21 +186,71 @@ function dimensionRow(base, scale, { pill = false, forcePill = false, nearPx = I
   // R7 : une pilule (y compris un pourcentage de 50 % ou plus) va au plus grand pas.
   if (forcePill && maxStep >= THRESHOLDS.pillPx) {
     const same = n === maxStep;
-    return { ...base, new: `${maxStep}px`, class: same ? 'inchangé' : 'auto', delta: 0, candidates: [{ value: `${maxStep}px`, delta: 0 }] };
+    return { ...base, new: `${maxStep}px`, class: same ? 'inchangé' : 'auto', delta: 0, candidates: [{ value: `${maxStep}px`, delta: 0, nearest: true }] };
   }
   if (n === null) return { ...base, new: null, class: 'hors table', delta: null, candidates: [] };
   if (pill && n >= THRESHOLDS.pillPx && maxStep >= THRESHOLDS.pillPx) {
     const same = n === maxStep;
-    return { ...base, new: `${maxStep}px`, class: same ? 'inchangé' : 'auto', delta: 0, candidates: [{ value: `${maxStep}px`, delta: 0 }] };
+    return { ...base, new: `${maxStep}px`, class: same ? 'inchangé' : 'auto', delta: 0, candidates: [{ value: `${maxStep}px`, delta: 0, nearest: true }] };
   }
-  const candidates = steps
+  // C5 : le défaut reste le pas le plus proche de toute l'échelle, départagé par la plus petite valeur.
+  const best = steps
     .map((s) => ({ value: `${s}px`, delta: round2(Math.abs(s - n)) }))
-    .sort((a, b) => a.delta - b.delta || /** @type {number} */ (px(a.value)) - /** @type {number} */ (px(b.value)))
-    .slice(0, 3);
-  const best = candidates[0];
+    .sort((a, b) => a.delta - b.delta || /** @type {number} */ (px(a.value)) - /** @type {number} */ (px(b.value)))[0];
   const ratio = n === 0 ? (best.delta === 0 ? 0 : 1) : best.delta / Math.abs(n);
   const cls = best.delta === 0 ? 'inchangé' : best.delta <= THRESHOLDS.autoPx ? 'auto' : ratio <= THRESHOLDS.nearRatio && best.delta <= nearPx ? 'proche' : 'décision';
+  const window = candidateWindow(steps, n);
+  if (!window.includes(/** @type {number} */ (px(best.value)))) window.push(/** @type {number} */ (px(best.value)));
+  // C6 : par valeur croissante ; le défaut porte « le plus proche ».
+  const candidates = window
+    .sort((a, b) => a - b)
+    .map((s) => ({ value: `${s}px`, delta: round2(Math.abs(s - n)), ...(`${s}px` === best.value ? { nearest: true } : {}) }));
   return { ...base, new: best.value, class: cls, delta: best.delta, candidates };
+}
+
+/**
+ * Lot C : le candidat le plus proche (C6). Les dimensions le marquent (ordre par valeur) ;
+ * les couleurs gardent l'ordre du plus proche au plus loin (C11).
+ * @param {any} r
+ */
+export const nearestOf = (r) => (r.candidates ?? []).find((/** @type {any} */ c) => c.nearest) ?? r.candidates?.[0];
+
+/**
+ * Égalité tranchée en silence : les deux candidats les plus proches à même écart (non nul).
+ * Lot C : les candidats de dimension sont rangés par valeur, l'égalité se lit sur les écarts.
+ * @param {{ value: string, delta: number }[]} candidates
+ * @returns {[string, string] | null}
+ */
+export function tieOf(candidates) {
+  const [a, b] = [...candidates].sort((x, y) => x.delta - y.delta);
+  return a && b && a.delta > 0 && a.delta === b.delta ? [a.value, b.value] : null;
+}
+
+/**
+ * Lot C : fenêtre des candidats d'une valeur (C1 à C4). Les deux pas qui encadrent la valeur
+ * (un seul si elle tombe sur un pas ou au-delà d'un bord), plus un pas de chaque côté, sans
+ * compenser au bord (C2). 0 n'est jamais ajouté pour élargir, mais reste candidat s'il encadre
+ * la valeur (C3). Les pas de pilule restent hors fenêtre (C4).
+ * @param {number[]} steps  pas triés @param {number} n
+ * @returns {number[]}
+ */
+export function candidateWindow(steps, n) {
+  const s = steps.filter((x) => x < THRESHOLDS.pillPx);
+  if (!s.length) return [];
+  // Pas du bas (≤ n) et pas du haut (≥ n) ; les mêmes quand n tombe sur un pas ; -1 au-delà d'un bord.
+  const lo = s.findLastIndex((x) => x <= n);
+  const hi = s.findIndex((x) => x >= n);
+  /** @type {number[]} */
+  const out = [];
+  if (lo >= 0) {
+    if (lo > 0 && s[lo - 1] !== 0) out.push(s[lo - 1]);
+    out.push(s[lo]);
+  }
+  if (hi >= 0) {
+    if (hi !== lo) out.push(s[hi]);
+    if (hi + 1 < s.length) out.push(s[hi + 1]);
+  }
+  return out;
 }
 
 /**

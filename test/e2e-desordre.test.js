@@ -66,7 +66,8 @@ function checkRow(family, want) {
   if ('new' in want) assert.equal(r.new, want.new, `${want.value} : vers ${r.new}`);
   if (want.deltaE !== undefined) assert.ok(Math.abs(r.delta - want.deltaE) <= TOL, `${want.value} : ΔE ${r.delta}, attendu ${want.deltaE}`);
   if (want.tie) {
-    const [a, b] = r.candidates;
+    // Lot C : candidats de dimension par valeur ; l'égalité se lit sur les deux plus proches.
+    const [a, b] = [...r.candidates].sort((/** @type {any} */ x, /** @type {any} */ y) => x.delta - y.delta);
     assert.equal(a.delta, b.delta, `${want.value} : égalité entre ${a.value} et ${b.value}`);
     assert.deepEqual([a.value, b.value].sort(), [...want.tie].sort());
   }

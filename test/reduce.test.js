@@ -46,7 +46,8 @@ test('espacements : marges, retraits et gouttières partagent une échelle', () 
   assert.deepEqual([row('spacing', '5px').class, row('spacing', '5px').new], ['auto', '4px']);
   const r = row('spacing', '75px');
   assert.equal(r.class, 'décision', '48 est à 36 % : au designer de trancher');
-  assert.deepEqual(r.candidates.map((/** @type {any} */ c) => c.value), ['48px', '32px', '24px']);
+  // Lot C : fenêtre au bord haut (C2), par valeur croissante.
+  assert.deepEqual(r.candidates.map((/** @type {any} */ c) => c.value), ['32px', '48px']);
   assert.equal(row('spacing', '32px').count, 6);
 });
 

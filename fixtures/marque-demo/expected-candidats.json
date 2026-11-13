@@ -1,0 +1,96 @@
+{
+  "$comment": "Lot C (candidats). Attendus écrits à la main avant le code, jamais recalés. Fenêtre : les deux pas qui encadrent la valeur, plus un pas de chaque côté (C1) ; rien au-delà d'un bord (C2) ; 0 n'est jamais ajouté pour élargir, mais reste candidat s'il encadre la valeur (C3) ; pilule hors fenêtre (C4) ; défaut et classes inchangés (C5) ; ordre par valeur croissante, le plus proche signalé (C6). Grisé (C7 à C10) : un candidat qui rendrait l'espace dans le composant égal ou supérieur à l'espace entre composants, avec le calcul de control() ; les paires « before » grisent aussi ; une marge non appariée ne grise rien.",
+  "scales": {
+    "spacing": [0, 4, 8, 12, 16, 24, 32, 48, 64],
+    "radii": [0, 2, 4, 8, 12, 9999],
+    "fontSizes": [12, 14, 16, 18, 20, 24, 30, 36, 48, 60]
+  },
+  "window": [
+    { "case": "milieu d'échelle, égalité 8 / 12", "family": "spacing", "value": "10px", "candidates": ["4px", "8px", "12px", "16px"], "nearest": "8px" },
+    { "case": "milieu d'échelle", "family": "spacing", "value": "20px", "candidates": ["12px", "16px", "24px", "32px"], "nearest": "16px" },
+    { "case": "0 encadre la valeur : candidat et défaut (égalité 0 / 4, la plus petite)", "family": "spacing", "value": "2px", "candidates": ["0px", "4px", "8px"], "nearest": "0px" },
+    { "case": "0 encadre la valeur, sous le seuil d'office", "family": "spacing", "value": "1px", "candidates": ["0px", "4px", "8px"], "nearest": "0px" },
+    { "case": "0 n'est pas ajouté pour élargir (C3)", "family": "spacing", "value": "6px", "candidates": ["4px", "8px", "12px"], "nearest": "4px" },
+    { "case": "bord bas, échelle sans 0 : valeur sous le premier pas", "family": "fontSizes", "value": "10.5px", "candidates": ["12px", "14px"], "nearest": "12px" },
+    { "case": "bord haut : rien au-delà du dernier pas", "family": "spacing", "value": "70px", "candidates": ["48px", "64px"], "nearest": "64px" },
+    { "case": "valeur égale à un pas : le pas et un de chaque côté", "family": "spacing", "value": "16px", "candidates": ["12px", "16px", "24px"], "nearest": "16px" },
+    { "case": "valeur égale au premier pas non nul : 0 n'est pas ajouté", "family": "spacing", "value": "4px", "candidates": ["4px", "8px"], "nearest": "4px" },
+    { "case": "rayon : la pilule reste hors fenêtre (C4)", "family": "radii", "value": "6px", "candidates": ["2px", "4px", "8px", "12px"], "nearest": "4px" },
+    { "case": "rayon au-delà du dernier pas hors pilule : bord haut, sans 9999", "family": "radii", "value": "20px", "candidates": ["8px", "12px"], "nearest": "12px" },
+    { "case": "rayon de pilule : règle actuelle (R7)", "family": "radii", "value": "999px", "pill": true, "candidates": ["9999px"], "nearest": "9999px" },
+    { "case": "taille de texte", "family": "fontSizes", "value": "40px", "candidates": ["30px", "36px", "48px", "60px"], "nearest": "36px" }
+  ],
+  "orbe": {
+    "decisions": 12,
+    "cards": [
+      { "title": "Marge 10 px, entre composants", "value": "10px", "usage": "marge", "scope": "entre composants", "candidates": ["4px", "8px", "12px", "16px"], "nearest": "8px" },
+      { "title": "Marge 10 px, dans le composant", "value": "10px", "usage": "marge", "scope": "dans le composant", "candidates": ["4px", "8px", "12px", "16px"], "nearest": "8px" },
+      { "title": "Gouttière 10 px", "value": "10px", "usage": "gouttière", "scope": null, "candidates": ["4px", "8px", "12px", "16px"], "nearest": "8px" },
+      { "title": "Marge 6 px", "value": "6px", "usage": "marge", "scope": null, "candidates": ["4px", "8px", "12px"], "nearest": "4px" },
+      { "title": "Retrait 20 px", "value": "20px", "usage": "retrait", "scope": null, "candidates": ["12px", "16px", "24px", "32px"], "nearest": "16px" },
+      { "title": "Rayon 6 px", "family": "radii", "value": "6px", "usage": "rayon", "scope": null, "candidates": ["2px", "4px", "8px", "12px"], "nearest": "4px" },
+      { "title": "Taille 40 px", "family": "fontSizes", "value": "40px", "usage": null, "scope": null, "candidates": ["30px", "36px", "48px", "60px"], "nearest": "36px" }
+    ],
+    "ties": {
+      "$comment": "Égalité d'écart : les deux candidats affichent leur écart ; le défaut porte « le plus proche, à égalité avec X px ». Les autres candidats n'affichent rien.",
+      "cards": [
+        { "value": "10px", "usage": "marge", "scope": "entre composants", "notes": { "8px": "le plus proche, à égalité avec 12 px · écart 2 px", "12px": "écart 2 px" }, "silent": ["4px", "16px"] },
+        { "value": "6px", "usage": "marge", "scope": null, "notes": { "4px": "le plus proche, à égalité avec 8 px · écart 2 px", "8px": "écart 2 px" }, "silent": ["12px"] },
+        { "family": "radii", "value": "6px", "usage": "rayon", "scope": null, "notes": { "4px": "le plus proche, à égalité avec 8 px · écart 2 px", "8px": "écart 2 px" }, "silent": ["2px", "12px"] },
+        { "family": "fontSizes", "value": "40px", "usage": null, "scope": null, "notes": { "36px": "le plus proche · écart 4 px" }, "silent": ["30px", "48px", "60px"] }
+      ]
+    },
+    "passage2": {
+      "$comment": "Choix du passage 2 sur les cartes numériques d'Orbe Café, réécrits à la main (clés de revue).",
+      "choices": {
+        "radii|6px|rayon": "4px",
+        "spacing|20px|retrait": "24px",
+        "spacing|6px|marge": "8px",
+        "spacing|10px|marge|entre composants": "12px",
+        "spacing|10px|gouttière": "12px",
+        "spacing|10px|marge|dans le composant": "4px",
+        "fontSizes|40px": "48px"
+      },
+      "greyed": {
+        "entre composants": {
+          "values": ["4px"],
+          "reasons": {
+            "4px": "même distance, on ne voit pas à quel libellé ni à quel champ il appartient"
+          }
+        },
+        "dans le composant": {
+          "values": ["12px", "16px"],
+          "reasons": {
+            "12px": "même distance, on ne voit pas à quel champ il appartient",
+            "16px": "même distance, on ne voit pas à quel champ il appartient, et il est plus près du champ suivant que de son champ"
+          }
+        }
+      },
+      "bilan": [
+        "Marge : 4, 8, 12, 16, 24, 32 px (6 valeurs)",
+        "Retrait : 4, 8, 12, 16, 24, 32 px (6 valeurs)",
+        "Gouttière : 4, 8, 12, 16, 24, 32 px (6 valeurs)",
+        "Rayon : 2, 4, 8, 12 px (4 valeurs)",
+        "Pilule : 9999 px (1 valeur)",
+        "Taille du texte : 12, 14, 16, 18, 20, 24, 30, 48 px (8 valeurs)"
+      ]
+    },
+    "clicks": {
+      "$comment": "Mise à jour à chaque clic, à partir des choix du passage 2.",
+      "entre16": { "choose": { "scope": "entre composants", "value": "16px" }, "greyedDans": ["16px"] },
+      "dans8": { "choose": { "scope": "dans le composant", "value": "8px" }, "greyedEntre": ["4px", "8px"] },
+      "rayon6": { "choose": { "family": "radii", "value": "6px", "usage": "rayon", "pick": "8px" }, "bilan": "Rayon : 2, 4, 8, 12 px (4 valeurs)" },
+      "rayon6actuelle": { "choose": { "family": "radii", "value": "6px", "usage": "rayon", "pick": "actuelle" }, "bilan": "Rayon : 2, 4, 6, 8, 12 px (5 valeurs)" },
+      "greyedClickable": { "scope": "entre composants", "value": "4px", "choix": "Choisie : 4 px", "control": "même distance, on ne voit pas à quel champ il appartient" }
+    },
+    "migration": {
+      "$comment": "Décisions en attente de migration.md, sans --decisions : candidats dans le même ordre, sans grisé.",
+      "pending": [
+        { "value": "10px", "scope": "entre composants", "cell": "`4px` (6), `8px` (2, le plus proche, à égalité avec 12 px), `12px` (2), `16px` (6)" },
+        { "value": "6px", "usage": "marge", "cell": "`4px` (2, le plus proche, à égalité avec 8 px), `8px` (2), `12px` (6)" },
+        { "family": "fontSizes", "value": "40px", "usage": null, "cell": "`30px` (10), `36px` (4, le plus proche), `48px` (8), `60px` (20)" }
+      ]
+    },
+    "forbidden": "recommandé"
+  }
+}

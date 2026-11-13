@@ -6,7 +6,7 @@
  * reduce relit au tour suivant (--decisions). Un seul fichier, sans dépendance.
  * Toute chaîne venue de la page auditée est échappée.
  */
-import { ALL_CLASSES, OUT, rowKey, isOut, decisionFor, APPLIED, WHERE_TO_FIX, marginRow, M_REASONS } from '../reduce/propose.js';
+import { ALL_CLASSES, OUT, rowKey, isOut, decisionFor, APPLIED, WHERE_TO_FIX, marginRow, M_REASONS, nearestOf, tieOf } from '../reduce/propose.js';
 
 /** @param {unknown} s */
 const esc = (s) =>
@@ -192,12 +192,25 @@ function portee(r) {
  */
 function decisionCard(family, r) {
   const versions = r.capture?.versions ?? [{ label: 'actuelle', value: r.old }, ...r.candidates.map((/** @type {any} */ c, /** @type {number} */ i) => ({ label: `candidat ${i + 1}`, value: c.value, name: c.name }))];
-  const nearest = r.candidates[0];
-  const gap = nearest ? (family === 'colors' ? `écart ΔE ${fr(nearest.delta)}` : `écart ${fr(nearest.delta)} px`) : '';
+  const nearest = nearestOf(r);
+  /** @param {{ delta: number }} c */
+  const gapOf = (c) => (family === 'colors' ? `écart ΔE ${fr(c.delta)}` : `écart ${fr(c.delta)} px`);
+  const gap = nearest ? gapOf(nearest) : '';
+  // Lot C : à égalité d'écart, les deux candidats affichent leur écart ; le défaut le dit.
+  const tie = tieOf(r.candidates ?? []);
+  const partner = tie && nearest && tie.includes(nearest.value) ? tie.find((v) => v !== nearest.value) : null;
+  const partnerC = partner ? r.candidates.find((/** @type {any} */ c) => c.value === partner) : null;
   const buttons = versions
     .map((/** @type {any} */ v, /** @type {number} */ i) => {
       const name = i === 0 ? `actuelle · ${short(family, v.value)}` : `${short(family, v.value)}${stepName(family, v) ? ` · ${stepName(family, v)}` : ''}`;
-      const note = i === 0 ? '<small>la choisir garde la valeur</small>' : i === 1 && gap ? `<small>le plus proche · ${esc(gap)}</small>` : '';
+      const note =
+        i === 0
+          ? '<small>la choisir garde la valeur</small>'
+          : nearest && v.value === nearest.value && gap
+            ? `<small class="ecart">le plus proche${partner ? `, à égalité avec ${esc(short(family, partner))}` : ''} · ${esc(gap)}</small>`
+            : partnerC && v.value === partner
+              ? `<small class="ecart">${esc(gapOf(partnerC))}</small>`
+              : '';
       const ctr = v.contrast ? contrastLine(r.usage, v.contrast) : '';
       return `<button type="button" class="v" data-v="${i}" data-value="${esc(v.value)}" data-court="${esc(short(family, v.value))}" aria-pressed="${i === 0}">${glyph(family, v.value)}<span class="nom"><span>${esc(name)}</span>${note}${ctr}</span></button>`;
     })
@@ -316,7 +329,7 @@ function detail(family, r, key, cls) {
   const against = `avec ${label}`;
   const ctr = r.contrast ? `<dt>Contraste</dt><dd>${fr(r.contrast.before)} avant → ${fr(r.contrast.after)} ${against} (seuil ${fr(r.contrast.threshold)})</dd>` : '';
   // Lot P-fin : l'écart en une phrase, avec la valeur visée ; le nombre d'usages seulement s'il ne répète pas la portée.
-  const target = cls === 'décision' && !readable ? r.candidates?.[0]?.value : r.new;
+  const target = cls === 'décision' && !readable ? nearestOf(r)?.value : r.new;
   const ecart = r.delta && target ? `${family === 'colors' ? `ΔE ${fr(r.delta)}` : `${fr(r.delta)} px`} ${against} (${short(family, target)})` : '';
   const scope = r.capture?.elements ?? r.count;
   const usages = r.count !== scope ? `${r.count} occurrences relevées dans le rendu, sur ${scope} ${scope === 1 ? 'élément' : 'éléments'} (un élément peut porter la valeur sur plusieurs côtés)` : '';
@@ -369,6 +382,35 @@ function controlPairs(table) {
   return [...out.values()];
 }
 
+/** Lot C (C12) : étiquette d'usage du bilan. */
+const BILAN_LABELS = /** @type {Record<string, string>} */ ({ marge: 'Marge', retrait: 'Retrait', 'gouttière': 'Gouttière', rayon: 'Rayon', pilule: 'Pilule' });
+/** Familles numériques du bilan, dans l'ordre d'affichage. */
+const BILAN_FAMILIES = ['spacing', 'radii', 'fontSizes'];
+
+/**
+ * Lot C (C12) : lignes numériques de la table pour le bilan par usage (hors table exclues : leur
+ * valeur n'est pas rangée sur l'échelle). Chaque entrée porte sa clé, sa valeur actuelle et la proposition.
+ * @param {any} table
+ */
+function usageBilan(table) {
+  /** @type {{ label: string, rows: { key: string, old: string, new: string | null }[] }[]} */
+  const out = [];
+  for (const family of BILAN_FAMILIES) {
+    const rows = table.families?.[family]?.rows ?? [];
+    /** @type {Map<string, { key: string, old: string, new: string | null }[]>} */
+    const byUsage = new Map();
+    for (const r of rows) {
+      if (isOut(r.class) || r.class === 'hors table') continue;
+      const label = family === 'fontSizes' ? 'Taille du texte' : BILAN_LABELS[r.usage] ?? (r.usage ? r.usage[0].toUpperCase() + r.usage.slice(1) : FAMILY_LABELS[family] ?? family);
+      byUsage.set(label, [...(byUsage.get(label) ?? []), { key: rowKey(family, r), old: r.old, new: r.new ?? null }]);
+    }
+    const order = Object.values(BILAN_LABELS);
+    for (const label of [...byUsage.keys()].sort((a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99) || a.localeCompare(b, 'fr')))
+      out.push({ label, rows: /** @type {any} */ (byUsage.get(label)) });
+  }
+  return out;
+}
+
 /**
  * @param {ReturnType<typeof import('../reduce/propose.js').propose>} table
  * @param {{ url: string, changes: import('../browser/simulate.js').SimulatedChange[], before: string | null, after: string | null }[]} pages
@@ -386,6 +428,7 @@ export function renderReview(table, pages, meta) {
       if (!(k in previous) && d !== undefined) previous[k] = d;
     }
   const pairs = controlPairs(table);
+  const usageLines = usageBilan(table);
   /** @type {Set<string>} */
   const paired = new Set(pairs.flatMap((x) => [...x.in.parts, ...x.out.parts].map((q) => q.key).filter((k) => k !== null)));
   /** @type {Map<string, Set<string>>} */
@@ -465,7 +508,7 @@ ${byClass}
   :root { --ink:#16181d; --soft:#5b616e; --line:#e3e5ea; --bg:#f6f7f9; --card:#fff; --go:#17603a; --no:#a3172f; }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  main { max-width:1080px; margin:0 auto; padding:28px 24px 120px; }
+  main { max-width:1080px; margin:0 auto; padding:28px 24px 200px; }
   h1 { font-size:25px; margin:0 0 4px; } h2 { font-size:20px; margin:44px 0 2px; }
   .lede { color:var(--soft); margin:2px 0 12px; max-width:75ch; } .lede b { color:var(--ink); }
   code { font:12px/1.4 ui-monospace, Menlo, monospace; background:#eef0f3; padding:1px 5px; border-radius:4px; }
@@ -513,6 +556,8 @@ ${byClass}
   .versions .v { font:inherit; font-size:13px; display:inline-flex; align-items:center; gap:8px; text-align:left; border:1px solid var(--line); background:#fff; border-radius:8px; padding:5px 10px; cursor:pointer; color:var(--ink); }
   .versions .v .nom { display:flex; flex-direction:column; } .versions .v small { color:var(--soft); font-size:12px; }
   .versions .v[aria-pressed="true"] { border-color:#16181d; box-shadow:inset 0 0 0 1px #16181d; }
+  .versions .v.grise { background:#f1f2f4; border-style:dashed; border-color:#9aa0aa; color:#4a4f59; }
+  .versions .v .raison { color:#7a3a00; max-width:34ch; white-space:normal; }
   .versions .v.retenue .nom::after { content:"choisie"; font-size:11px; font-weight:600; color:var(--go); }
   .vue { display:grid; position:relative; max-width:100%; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:#fff; }
   .vue .ver { grid-area:1 / 1; position:relative; line-height:0; } .vue .ver[hidden] { display:none; }
@@ -537,6 +582,9 @@ ${byClass}
   .trancher { display:flex; align-items:center; gap:10px; margin-top:10px; }
   .retenir { font:inherit; font-size:14px; font-weight:600; border:0; border-radius:6px; padding:7px 14px; cursor:pointer; background:#16181d; color:#fff; }
   .barre { position:fixed; left:0; right:0; bottom:0; background:#16181d; color:#fff; padding:10px 24px; display:flex; gap:16px; align-items:center; justify-content:center; font-size:14px; }
+  .compte { display:flex; flex-direction:column; gap:2px; }
+  #bilan-usages { list-style:none; margin:0; padding:0; font-size:12px; line-height:1.35; color:#d5d8de; display:grid; grid-template-columns:repeat(2, max-content); gap:0 18px; }
+  #bilan-usages b { color:#fff; font-weight:600; }
   .barre label { display:inline-flex; align-items:center; gap:6px; cursor:pointer; }
   #ecartees { color:#f6c39f; }
   .barre .raz[data-confirmer] { background:#ea580c; color:#fff; }
@@ -554,7 +602,7 @@ ${sections}
 <p class="lede">Avec toutes les propositions appliquées. Clique dans la page pour basculer.</p>
 ${full || '<p class="lede">Aucune capture de page.</p>'}
 </main>
-<div class="barre"><span id="bilan"></span><span id="ecartees" hidden>décisions du fichier écartées</span><button id="suivante" type="button">Suivante à choisir</button><button id="tout" type="button">Tout basculer</button><label><input id="reperes" type="checkbox" checked> repères</label><button id="export" type="button">Exporter mes décisions</button><button id="raz" type="button" class="raz">Tout remettre à zéro</button></div>
+<div class="barre"><div class="compte"><span id="bilan"></span><ul id="bilan-usages" aria-label="Valeurs finales par usage" aria-live="polite"></ul></div><span id="ecartees" hidden>décisions du fichier écartées</span><button id="suivante" type="button">Suivante à choisir</button><button id="tout" type="button">Tout basculer</button><label><input id="reperes" type="checkbox" checked> repères</label><button id="export" type="button">Exporter mes décisions</button><button id="raz" type="button" class="raz">Tout remettre à zéro</button></div>
 <script>
 (function () {
   // Mémoire propre à chaque réduction : hôte et horodatage.
@@ -562,6 +610,8 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
   var previous = ${JSON.stringify(previous).replace(/</g, '\\u003c')};
   // Lot P, étape 3 : paires contrôlées (P3), recalculées à chaque choix.
   var PAIRS = ${JSON.stringify(pairs).replace(/</g, '\\u003c')};
+  // Lot C (C12) : lignes numériques par usage, pour le bilan des valeurs finales.
+  var BILAN = ${JSON.stringify(usageLines).replace(/</g, '\\u003c')};
   // Décisions venues de --decisions : écartées par une remise à zéro, jusqu'à la prochaine réduction.
   var FILE_KEY = KEY + ':fichier';
   var discarded = false;
@@ -631,7 +681,8 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
   // Lot P, étape 3 : valeur d'une marge avec les choix de la revue. Décision : la version choisie,
   // l'ancienne sans choix ; ligne appliquée : la proposition, l'ancienne si elle est refusée.
   function byKey(k) { return rows().filter(function (r) { return r.getAttribute('data-key') === k; })[0] || null; }
-  function valueOf(part) {
+  function valueOf(part, over) {
+    if (over && part.key && part.key in over) return { v: over[part.key], chosen: true };
     var row = part.key ? byKey(part.key) : null;
     if (!row) return { v: part.old, chosen: false };
     if (row.classList.contains('decision')) {
@@ -644,24 +695,98 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
     if (box && !box.checked) return { v: part.old, chosen: true };
     return { v: part.applied || part.old, chosen: false };
   }
-  function spaceOf(sp) {
+  function spaceOf(sp, over) {
     var chosen = false;
-    var vs = sp.parts.map(function (p) { var x = valueOf(p); chosen = chosen || x.chosen; return parseFloat(x.v) || 0; });
+    var vs = sp.parts.map(function (p) { var x = valueOf(p, over); chosen = chosen || x.chosen; return parseFloat(x.v) || 0; });
     var v = sp.mode === 'max' ? Math.max.apply(null, [0].concat(vs)) : vs.reduce(function (a, b) { return a + b; }, 0);
     return { px: Math.round((v + sp.extra) * 100) / 100, chosen: chosen };
   }
   function fr(n) { return String(n).replace('.', ','); }
+  // Lot P-fin : une seule formulation, « du champ suivant » : libellé, champ et message comptent comme un champ.
+  function group(role) { return role === 'libellé' || role === 'message' ? 'champ' : role; }
+  function nextOf(x) { return group(x.roles[2]) + ' ' + x.toward; }
+  function verdictOf(x, a, b) {
+    var own = x.roles[1 - x.facing];
+    return a.px < b.px ? 'on voit à quel ' + own + ' il appartient'
+      : a.px === b.px ? 'même distance, on ne voit pas à quel ' + own + ' il appartient'
+      : 'il est plus près du ' + nextOf(x) + ' que de son ' + own;
+  }
+  // Lot C (C7 à C10) : un candidat d'une marge appariée qui rendrait l'espace dans le composant égal
+  // ou supérieur à l'espace entre composants est grisé, avec sa raison ; il reste cliquable.
+  // Même calcul que control() (marges fusionnées, autres choix en cours), le candidat à la place de la marge.
+  function greyOut() {
+    var marks = {};
+    PAIRS.forEach(function (x) {
+      x.in.parts.concat(x.out.parts).forEach(function (p) {
+        var row = p.key ? byKey(p.key) : null;
+        if (!row || !row.classList.contains('decision')) return;
+        versionsOf(row).slice(1).forEach(function (b) {
+          var over = {}; over[p.key] = b.getAttribute('data-value');
+          var a = spaceOf(x.in, over), o = spaceOf(x.out, over);
+          if (a.px < o.px) return;
+          var m = (marks[p.key] = marks[p.key] || {});
+          var l = (m[b.getAttribute('data-value')] = m[b.getAttribute('data-value')] || { same: [], closer: [] });
+          var own = x.roles[1 - x.facing];
+          if (a.px === o.px) { if (l.same.indexOf(own) < 0) l.same.push(own); }
+          else { var k = nextOf(x) + '|' + own; if (l.closer.indexOf(k) < 0) l.closer.push(k); }
+        });
+      });
+    });
+    rows().forEach(function (row) {
+      if (!row.classList.contains('decision')) return;
+      var m = marks[row.getAttribute('data-key')] || {};
+      versionsOf(row).forEach(function (b) {
+        var why = m[b.getAttribute('data-value')];
+        var old = b.querySelector('.raison'); if (old) old.remove();
+        b.classList.toggle('grise', !!why && b.getAttribute('data-v') !== '0');
+        if (!why || b.getAttribute('data-v') === '0') return;
+        var s = document.createElement('small'); s.className = 'raison'; s.textContent = reasonOf(why);
+        b.querySelector('.nom').appendChild(s);
+      });
+    });
+  }
+  // Lot C : raisons d'un candidat grisé fusionnées en une phrase, dans la formulation du lot P.
+  function reasonOf(why) {
+    var parts = [];
+    if (why.same.length) parts.push('même distance, on ne voit pas ' + why.same.map(function (o) { return 'à quel ' + o; }).join(' ni ') + ' il appartient');
+    if (why.closer.length) parts.push('il est plus près ' + why.closer.map(function (k) { var x = k.split('|'); return 'du ' + x[0] + ' que de son ' + x[1]; }).join(' et '));
+    return parts.join(', et ');
+  }
+  // Lot C (C12) : valeurs finales distinctes par usage, toutes lignes comprises.
+  function finalOf(e) {
+    var row = byKey(e.key);
+    if (!row) return e.new || e.old;
+    if (row.classList.contains('decision')) {
+      var r = row.getAttribute('data-retenu');
+      if (r !== null) return r === '0' ? e.old : versionsOf(row)[Number(r)].getAttribute('data-value');
+      if (row.hasAttribute('data-impose')) return row.getAttribute('data-impose');
+      return e.old;
+    }
+    var box = row.querySelector('input[type=checkbox]');
+    if (box && !box.checked) return e.old;
+    return e.new || e.old;
+  }
+  function usages() {
+    var ul = document.getElementById('bilan-usages'); if (!ul) return;
+    ul.innerHTML = '';
+    BILAN.forEach(function (u) {
+      var seen = {};
+      u.rows.forEach(function (e) { var v = parseFloat(finalOf(e)); if (!isNaN(v)) seen[v] = true; });
+      var vs = Object.keys(seen).map(Number).sort(function (a, b) { return a - b; });
+      var li = document.createElement('li');
+      var b = document.createElement('b'); b.textContent = u.label + ' : ';
+      li.appendChild(b);
+      li.appendChild(document.createTextNode(vs.map(fr).join(', ') + ' px (' + vs.length + ' valeur' + (vs.length > 1 ? 's' : '') + ')'));
+      ul.appendChild(li);
+    });
+  }
   function control() {
     var lines = {};
     PAIRS.forEach(function (x) {
       var a = spaceOf(x.in), b = spaceOf(x.out);
       if (a.px < b.px && !x.before) return;
-      // Lot P-fin : une seule formulation, « du champ suivant » : libellé, champ et message comptent comme un champ.
-      var group = function (role) { return role === 'libellé' || role === 'message' ? 'champ' : role; };
-      var me = x.roles[x.facing], own = x.roles[1 - x.facing], next = group(x.roles[2]) + ' ' + x.toward;
-      var verdict = a.px < b.px ? 'on voit à quel ' + own + ' il appartient'
-        : a.px === b.px ? 'même distance, on ne voit pas à quel ' + own + ' il appartient'
-        : 'il est plus près du ' + next + ' que de son ' + own;
+      var me = x.roles[x.facing], own = x.roles[1 - x.facing], next = nextOf(x);
+      var verdict = verdictOf(x, a, b);
       var text = (a.chosen || b.chosen ? 'Avec ces choix' : 'En l’état') + ', le ' + me + ' est à ' + fr(a.px) + ' px de son ' + own + ' et à ' + fr(b.px) + ' px du ' + next + ' : ' + verdict + '.';
       x.in.parts.concat(x.out.parts).forEach(function (p) {
         if (!p.key) return;
@@ -680,6 +805,8 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
   function refresh(save) {
     state = collect();
     control();
+    greyOut();
+    usages();
     if (save !== false) try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
     var total = document.querySelectorAll('.row.decision').length;
     var open = document.querySelectorAll('.row.a-trancher').length;

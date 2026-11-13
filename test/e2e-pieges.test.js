@@ -164,7 +164,8 @@ function checkTodayRows(trap) {
     assert.equal(r.new, want.new, `${trap.id} ${want.value} : vers ${r.new}, attendu ${want.new}`);
     if (want.deltaE !== undefined) assert.ok(Math.abs(r.delta - want.deltaE) <= TOL, `${trap.id} ${want.value} : ΔE ${r.delta}, attendu ${want.deltaE}`);
     if (want.tie) {
-      const [a, b] = r.candidates;
+      // Lot C : candidats de dimension par valeur ; l'égalité se lit sur les deux plus proches.
+      const [a, b] = [...r.candidates].sort((/** @type {any} */ x, /** @type {any} */ y) => x.delta - y.delta);
       assert.equal(a.delta, b.delta, `${trap.id} ${want.value} : pas d'égalité (${a.value} ${a.delta}, ${b.value} ${b.delta})`);
       assert.deepEqual([a.value, b.value].sort(), [...want.tie].sort());
     }

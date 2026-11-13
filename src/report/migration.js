@@ -7,7 +7,7 @@
  * renvoyées avec le texte, pour les tests.
  */
 import { basename } from 'node:path';
-import { APPLIED, isOut, SLICES, decisionFor, WHERE_TO_FIX } from '../reduce/propose.js';
+import { APPLIED, isOut, SLICES, decisionFor, WHERE_TO_FIX, nearestOf, tieOf } from '../reduce/propose.js';
 import { contrastRatio, isOpaque, toLab, deltaE } from '../lib/color.js';
 
 /** Groupes de jetons de dimension, par famille de la table. */
@@ -163,6 +163,9 @@ function originOf(rendered, family, r) {
  * @param {Record<string, string | false>} [o.decisions]  décisions du designer (--decisions) : une chaîne décide, false refuse
  * @param {{ host: string, stamp: string, target: string, tokens: string | null, pages: string[], viewport: { width: number, height: number }, command?: string }} o.meta
  */
+/** Lot C : « 12 px » pour une dimension, la valeur telle quelle sinon. @param {string} v */
+const shortValue = (v) => (/^-?[\d.]+px$/.test(v) ? `${String(parseFloat(v)).replace('.', ',')} px` : v);
+
 /**
  * Lot G (G4) : onSolid d'une échelle pour un plein donné. La valise donne une valeur pour
  * l'échelle, ou une valeur par pas ({ 9, 10 }) quand aucune ne tient sur les deux.
@@ -251,7 +254,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
         reason: r.reason ?? (r.class === 'hors table' ? OUT_REASON : null),
         candidates: r.candidates ?? [],
         contrast: r.contrast ?? null,
-        tie: r.candidates?.length > 1 && r.candidates[0].delta > 0 && r.candidates[0].delta === r.candidates[1].delta ? [r.candidates[0].value, r.candidates[1].value] : null,
+        tie: tieOf(r.candidates ?? []),
         // Lot M : emplacement de marque, seconde version ou exception (M6).
         ...(r.slot ? { slot: r.slot } : {}),
         // Valeur lisible sur tous les fonds (proposition M5), gardée par les éléments en exception.
@@ -428,17 +431,17 @@ function renderMarkdown(d, s) {
     );
   L.push('');
 
-  L.push(`## Décisions en attente : ${s.pending.length}`, '', 'Rien n’est appliqué tant que le designer n’a pas répondu (R5). Les candidats sont rangés du plus proche au plus loin.', '');
+  L.push(`## Décisions en attente : ${s.pending.length}`, '', 'Rien n’est appliqué tant que le designer n’a pas répondu (R5). Les candidats de dimension sont rangés par valeur croissante, le plus proche signalé ; ceux de couleur, du plus proche au plus loin.', '');
   L.push('| ligne | famille | valeur | usage | relation | proposé | candidats | motif | sélecteurs |', '|---|---|---|---|---|---|---|---|---|');
   for (const r of s.pending)
     L.push(
-      `| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.relation)} | ${r.token === 'jeton absent' ? r.token : `\`${r.token}\``} (\`${cell(r.new)}\`) | ${r.candidates.map((/** @type {any} */ c) => `\`${cell(c.value)}\` (${fr(c.delta)})`).join(', ')} | ${cell(r.reason ?? 'écart au-delà des seuils')}${r.contrast ? ` contraste ${fr(r.contrast.before)} → ${fr(r.contrast.after)} si appliquée` : ''}${cell(m6Text(r))} | ${selectorsOf(r)} |`,
+      `| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.relation)} | ${r.token === 'jeton absent' ? r.token : `\`${r.token}\``} (\`${cell(r.new)}\`) | ${r.candidates.map((/** @type {any} */ c) => `\`${cell(c.value)}\` (${fr(c.delta)}${c.nearest ? `, le plus proche${r.tie && r.tie[0] === c.value ? `, à égalité avec ${shortValue(r.tie[1])}` : ''}` : ''})`).join(', ')} | ${cell(r.reason ?? 'écart au-delà des seuils')}${r.contrast ? ` contraste ${fr(r.contrast.before)} → ${fr(r.contrast.after)} si appliquée` : ''}${cell(m6Text(r))} | ${selectorsOf(r)} |`,
     );
   L.push('');
 
   L.push(`## Refusée, laissée telle quelle : ${s.refused.length}`, '', 'Le designer a refusé le changement : la valeur reste.', '');
   L.push('| ligne | famille | valeur | usage | relation | proposé | classe | motif | éléments |', '|---|---|---|---|---|---|---|---|---|');
-  for (const r of s.refused) L.push(`| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.relation)} | ${r.candidates[0] ? `\`${cell(r.candidates[0].value)}\`` : '—'} | ${cell(r.class)} | ${cell(r.reason ?? '—')} | ${r.elements} |`);
+  for (const r of s.refused) L.push(`| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.relation)} | ${nearestOf(r) ? `\`${cell(nearestOf(r).value)}\`` : '—'} | ${cell(r.class)} | ${cell(r.reason ?? '—')} | ${r.elements} |`);
   if (!s.refused.length) L.push('| — | | | | | | | | |');
   L.push('');
 
