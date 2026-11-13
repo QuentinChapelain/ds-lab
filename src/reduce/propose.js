@@ -39,7 +39,7 @@
  * trois au plus, quand ils sont mélangés.
  */
 import { toLab, deltaE, isOpaque, contrastRatio, relativeLuminance } from '../lib/color.js';
-import { resolveBrand } from '../brand/brand.js';
+import { resolveBrand, isGrey } from '../brand/brand.js';
 
 export const CLASSES = /** @type {const} */ (['décision', 'proche', 'auto', 'inchangé', 'hors table']);
 
@@ -450,7 +450,9 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
     const all = sorted(lab, T);
     // M3 : la valeur d'un emplacement ou d'une variante va sur l'échelle de son emplacement.
     const declared = B?.byValue.get(old);
-    const nearest = (declared && all.find((c) => c.t.scale === declared.scale)) || all[0];
+    // G8 : un gris (chroma OKLCH < 0,02) ne se range que sur neutre, jamais sur une échelle de marque ou de statut.
+    const greyHome = !declared && isGrey(old) ? all.find((c) => c.t.scale === 'neutre') : undefined;
+    const nearest = (declared && all.find((c) => c.t.scale === declared.scale)) || greyHome || all[0];
     if (!declared && nearest.delta > RULES.noScaleDeltaE) {
       rows.push({
         old, count, properties, selectors, usages: labels, kinds, new: null, class: OUT.scale, delta: nearest.delta, candidates: candidatesOf(all),

@@ -163,19 +163,34 @@ function originOf(rendered, family, r) {
  * @param {Record<string, string | false>} [o.decisions]  décisions du designer (--decisions) : une chaîne décide, false refuse
  * @param {{ host: string, stamp: string, target: string, tokens: string | null, pages: string[], viewport: { width: number, height: number }, command?: string }} o.meta
  */
+/**
+ * Lot G (G4) : onSolid d'une échelle pour un plein donné. La valise donne une valeur pour
+ * l'échelle, ou une valeur par pas ({ 9, 10 }) quand aucune ne tient sur les deux.
+ * @param {Record<string, string | Record<string, string>>} map  target.onSolid
+ * @param {string} scale @param {number} step  9 ou 10
+ * @returns {string | null}
+ */
+export function onSolidOf(map, scale, step) {
+  const v = map?.[scale];
+  if (!v) return null;
+  return typeof v === 'string' ? v : v[String(step)] ?? v['9'] ?? null;
+}
+
 export function buildMigration({ table, rendered, map, target, tokens, decisions = {}, meta }) {
   const idx = tokens ? indexTokens(tokens) : null;
   /** @param {string} family @param {string | null} value @param {{ name?: string | null, pleinScales?: Set<string> }} [ctx] */
   const token = (family, value, ctx) => (value === null ? '—' : idx?.find(family, value, ctx) ?? 'jeton absent');
   const T = (target.colors ?? []).map((/** @type {any} */ c) => ({ name: c.name, value: c.value.toLowerCase(), lab: toLab(c.value.toLowerCase()) }));
-  /** Échelle d'un plein (pas 9-10 le plus proche), ou null. @param {string} hex */
-  const scaleOf = (hex) => {
+  /** Échelle et pas d'un plein (pas 9-10 le plus proche), ou null. @param {string} hex */
+  const pleinOf = (hex) => {
     if (!T.length || !isOpaque(hex)) return null;
     const lab = toLab(hex);
     const best = T.map((/** @type {any} */ t) => ({ t, d: deltaE(lab, t.lab) })).sort((/** @type {any} */ a, /** @type {any} */ b) => a.d - b.d)[0];
     const m = /^(.+)-(\d+)$/.exec(best.t.name ?? '');
-    return m && Number(m[2]) >= 9 && Number(m[2]) <= 10 ? m[1] : null;
+    return m && Number(m[2]) >= 9 && Number(m[2]) <= 10 ? { scale: m[1], step: /** @type {9 | 10} */ (Number(m[2])) } : null;
   };
+  /** @param {string} hex */
+  const scaleOf = (hex) => pleinOf(hex)?.scale ?? null;
   /** Échelles des pleins sur lesquels un texte est posé (après la table). @param {string} text */
   const pleinScalesOf = (text) => {
     /** @type {Set<string>} */
@@ -260,16 +275,19 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     const text = mapped(map, p.text, 'texte');
     const bg = mapped(map, p.bg, 'plein');
     const ratio = contrastRatio(text, bg);
-    const scale = scaleOf(bg);
-    if (ratio >= p.threshold || !scale || !onSolidMap[scale]) continue;
+    const plein = pleinOf(bg);
+    const scale = plein?.scale ?? null;
+    // Lot G (G4) : onSolid par pas quand la valise en donne un pour le 9 et un pour le 10.
+    const solid = scale ? onSolidOf(onSolidMap, scale, plein?.step ?? 9) : null;
+    if (ratio >= p.threshold || !scale || !solid) continue;
     const seen = (rendered.contrast?.pairs ?? []).find((/** @type {any} */ x) => x.text === p.text && x.bg === p.bg);
     // Une entrée par paire après la table : plusieurs fonds d'origine peuvent aller au même pas.
     let o = onSolid.find((x) => x.text === text && x.bg === bg);
     if (!o) {
       o = {
-        text, bg, before: { text: p.text, bg: p.bg }, befores: [], ratio: Math.round(ratio * 10000) / 10000, threshold: p.threshold, scale, onSolid: onSolidMap[scale], n: 0,
+        text, bg, before: { text: p.text, bg: p.bg }, befores: [], ratio: Math.round(ratio * 10000) / 10000, threshold: p.threshold, scale, onSolid: solid, n: 0,
         selectors: [],
-        token: idx?.find('colors', onSolidMap[scale], { pleinScales: new Set([scale]) }) ?? null,
+        token: idx?.find('colors', solid, { pleinScales: new Set([scale]) }) ?? null,
       };
       onSolid.push(o);
     }
