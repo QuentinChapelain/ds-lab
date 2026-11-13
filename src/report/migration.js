@@ -237,6 +237,10 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
         candidates: r.candidates ?? [],
         contrast: r.contrast ?? null,
         tie: r.candidates?.length > 1 && r.candidates[0].delta > 0 && r.candidates[0].delta === r.candidates[1].delta ? [r.candidates[0].value, r.candidates[1].value] : null,
+        // Lot M : emplacement de marque, seconde version ou exception (M6).
+        ...(r.slot ? { slot: r.slot } : {}),
+        // Valeur lisible sur tous les fonds (proposition M5), gardée par les éléments en exception.
+        ...(r.alternatives ? { alternatives: r.alternatives, readable: { name: r.name, value: r.new } } : {}),
       });
     }
   const applied = rows.filter((r) => r.status === 'appliquée' || r.status === 'décidée');
@@ -318,6 +322,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     exceptions: { links, onSolid, states, injected: null, ties, outOfSlice, messages: rendered.usages?.messages ?? [] },
     remaining: [...remaining.values()],
     thirdParty: table.thirdParty ?? [],
+    ...(table.brand ? { brand: table.brand } : {}),
   };
   const agent = agentBrief(data, { applied, pending, refused, outOfTable });
   return { data: { ...data, agent }, markdown: renderMarkdown(data, { applied, pending, refused, outOfTable }) + '\n' + agent.markdown };
@@ -327,6 +332,43 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
  * @param {any} d
  * @param {{ applied: any[], pending: any[], refused: any[], outOfTable: any[] }} s
  */
+/**
+ * Lot M (M6) : seconde version d'une décision, ou pourquoi il n'y en a pas.
+ * @param {any} r
+ */
+function m6Text(r) {
+  const a = r.alternatives?.[0];
+  if (!a) return '';
+  const moves = a.backgrounds.map((/** @type {any} */ b) => `le fond ${b.from} passe à ${b.name} (${b.to})`).join(' et ');
+  const ex = exceptionsText(a, r.readable);
+  return ` Seconde version (M6) : ${a.name} (${a.new})${moves ? `, si ${moves}` : ''}${ex ? `, sauf ${ex}` : ''}.`;
+}
+
+/**
+ * Lot M (M6) : éléments en exception d'une seconde version (aucun fond proche), et la valeur qu'ils gardent.
+ * @param {any} a  seconde version @param {{ name: string, value: string } | undefined} readable
+ */
+function exceptionsText(a, readable) {
+  if (!a.exceptions?.length) return '';
+  return a.exceptions
+    .map((/** @type {any} */ x) => `${x.elements} élément(s) sur le fond ${x.background}, page ${x.pages.join(', ')} (${x.selectors.join(', ')}), qui gardent ${readable ? `${readable.name} (${readable.value})` : 'la valeur lisible'}`)
+    .join(' ; ');
+}
+
+/**
+ * Lot M : fond à déplacer quand la valeur décidée est celle de la seconde version (M6).
+ * @param {any} r
+ */
+function m6Move(r) {
+  const a = r.alternatives?.find((/** @type {any} */ x) => x.new === r.new);
+  if (r.status !== 'décidée' || !a) return '';
+  const moves = a.backgrounds.length ? ` Déplace aussi le fond de la paire : ${a.backgrounds.map((/** @type {any} */ b) => `${b.from} → ${b.to} (${b.name})`).join(', ')}, seulement sous ces sélecteurs.` : '';
+  const ex = a.exceptions?.length
+    ? ` Exception (M6) : ${a.exceptions.map((/** @type {any} */ x) => `page ${x.pages.join(', ')}, fond ${x.background}, ${x.elements} élément(s) (${x.selectors.join(', ')})`).join(' ; ')} : écris ${r.readable ? `${r.readable.value} (${r.readable.name})` : 'la valeur lisible'} au lieu de ${a.new}, qui y resterait sous le seuil.`
+    : '';
+  return moves + ex;
+}
+
 function renderMarkdown(d, s) {
   const m = d.meta;
   const L = [];
@@ -343,6 +385,16 @@ function renderMarkdown(d, s) {
   }
   L.push(`| Inchangé | ${d.unchanged} | | | | |`, '');
 
+  if (d.brand) {
+    L.push('## Marque déclarée', '', 'Emplacements lus dans la cible (bloc brand) : chacun range sa valeur et ses variantes sur son échelle (M3) ; un emplacement gris rejoint neutre (M1), sauf déclaration contraire.', '');
+    L.push('| emplacement | variable | valeur | échelle |', '|---|---|---|---|');
+    for (const x of d.brand.slots) L.push(`| ${cell(x.slot)} | ${x.variable ? `\`${cell(x.variable)}\`` : '—'} | \`${cell(x.value)}\` | ${cell(x.scale)}${x.rule ? ` (${x.rule})` : ''} |`);
+    L.push('', `### Contradictions entre le back-office et la feuille : ${d.brand.contradictions.length}`, '');
+    for (const c of d.brand.contradictions)
+      L.push(`- \`${c.variable}\` vaut \`${c.backOffice}\` au back-office, la feuille donne \`${c.sheet}\` : ${c.ruling ? `la cible le range sur ${c.ruling} (M7)` : 'la cible ne tranche pas : à déclarer (M7)'}.`);
+    if (!d.brand.contradictions.length) L.push('- Aucune.');
+    L.push('');
+  }
   L.push('## Table', '', 'Chaque ligne commence par son identifiant et son titre, les mêmes que dans table.json, revue.html et la barre --live.', '');
   L.push('« Relation » dit, pour une marge, ce qu’elle sépare (dans le composant, entre composants, ou inconnue), le signal qui l’établit et où la corriger ; « motif », pourquoi la ligne est classée ainsi.', '');
   L.push('| ligne | famille | valeur | usage | jeton | classe | relation | motif | origine CSS | éléments |', '|---|---|---|---|---|---|---|---|---|---|');
@@ -362,7 +414,7 @@ function renderMarkdown(d, s) {
   L.push('| ligne | famille | valeur | usage | relation | proposé | candidats | motif | sélecteurs |', '|---|---|---|---|---|---|---|---|---|');
   for (const r of s.pending)
     L.push(
-      `| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.relation)} | ${r.token === 'jeton absent' ? r.token : `\`${r.token}\``} (\`${cell(r.new)}\`) | ${r.candidates.map((/** @type {any} */ c) => `\`${cell(c.value)}\` (${fr(c.delta)})`).join(', ')} | ${cell(r.reason ?? 'écart au-delà des seuils')}${r.contrast ? ` contraste ${fr(r.contrast.before)} → ${fr(r.contrast.after)} si appliquée` : ''} | ${selectorsOf(r)} |`,
+      `| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.relation)} | ${r.token === 'jeton absent' ? r.token : `\`${r.token}\``} (\`${cell(r.new)}\`) | ${r.candidates.map((/** @type {any} */ c) => `\`${cell(c.value)}\` (${fr(c.delta)})`).join(', ')} | ${cell(r.reason ?? 'écart au-delà des seuils')}${r.contrast ? ` contraste ${fr(r.contrast.before)} → ${fr(r.contrast.after)} si appliquée` : ''}${cell(m6Text(r))} | ${selectorsOf(r)} |`,
     );
   L.push('');
 
@@ -467,7 +519,7 @@ function agentBrief(d, s) {
   );
   s.applied.forEach((r, i) => {
     lines.push(
-      `${i + 1}. ${r.id} ${r.title}. Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage} : remplace ${r.value} par ${write(r)}${r.status === 'décidée' ? ' [décidée]' : ''}.${relationOf(r)}${r.reason && r.status !== 'décidée' ? ` Motif : ${r.reason}.` : ''} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}. Point de départ : ${r.origin}. Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`,
+      `${i + 1}. ${r.id} ${r.title}. Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage} : remplace ${r.value} par ${write(r)}${r.status === 'décidée' ? ' [décidée]' : ''}.${relationOf(r)}${r.reason && r.status !== 'décidée' ? ` Motif : ${r.reason}.` : ''} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}. Point de départ : ${r.origin}.${m6Move(r)} Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`,
     );
   });
   lines.push('');
@@ -490,7 +542,7 @@ function agentBrief(d, s) {
   for (const r of s.outOfTable) lines.push(`- Hors table : ${r.value} (${r.usage}), ${r.reason}.`);
   for (const r of s.refused) lines.push(`- Refusée : ${r.value} (${r.usage}), le designer garde la valeur.`);
   // Lot R, R-2 : décisions en attente, avec leur identifiant et leur titre.
-  for (const r of s.pending) lines.push(`- ${r.id} ${r.title}. Pas encore choisie par le designer : ne l'applique pas (${r.value}, ${r.usage}).${relationOf(r)}${r.reason ? ` Motif : ${r.reason}.` : ''} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}.`);
+  for (const r of s.pending) lines.push(`- ${r.id} ${r.title}. Pas encore choisie par le designer : ne l'applique pas (${r.value}, ${r.usage}).${relationOf(r)}${r.reason ? ` Motif : ${r.reason}.` : ''}${m6Text(r)} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}.`);
   for (const sel of d.thirdParty) lines.push(`- Composant tiers : ${sel} et tout ce qu'il contient.`);
   lines.push('- Toute valeur absente de cette consigne.');
   lines.push('');

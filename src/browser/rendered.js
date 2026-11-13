@@ -95,6 +95,19 @@ export function collectInPage(thirdSelectors = []) {
   const PAINTER_TAGS = new Set(['img', 'video', 'canvas', 'svg']);
   const MEDIA_TAGS = new Set(['IMG', 'PICTURE', 'VIDEO', 'CANVAS']);
   const body = document.body;
+  // Lot M (M4) : vrai état — dans un role="alert" ou un aria-invalid="true", ou message relié à
+  // un champ (son id, ou celui d'un ancêtre, dans aria-describedby ou aria-errormessage du champ).
+  const STATE_IDS = new Set(
+    [...document.querySelectorAll('input, select, textarea, [role="textbox"], [role="combobox"], [role="searchbox"]')].flatMap((c) =>
+      ['aria-describedby', 'aria-errormessage'].flatMap((a) => (c.getAttribute(a) ?? '').split(/\s+/).filter(Boolean)),
+    ),
+  );
+  /** @param {Element} el */
+  const stateOf = (el) => {
+    if (el.closest('[role="alert"], [aria-invalid="true"]')) return true;
+    for (let x = /** @type {Element | null} */ (el); x && x !== body; x = x.parentElement) if (x.id && STATE_IDS.has(x.id)) return true;
+    return false;
+  };
   /** @type {any[]} */
   const records = [];
   /** @type {Element[]} */
@@ -366,6 +379,7 @@ export function collectInPage(thirdSelectors = []) {
       }
       rec.text = text;
       rec.props = propsOf(cs, text, el);
+      if (stateOf(el)) rec.state = true;
       // Lot B : dimensions de la boîte (pilule, R7) et côtés en marge auto (R7).
       const box = el.getBoundingClientRect();
       rec.box = [Math.round(box.width * 100) / 100, Math.round(box.height * 100) / 100];

@@ -1,0 +1,262 @@
+{
+  "$comment": "Attendus du lot M (marque d’abord), écrits à la main le 13/11/2026 avant le code, sur la page fixtures/marque-demo/marque/marque.html de la marque fictive Orbe Café, avec fixtures/marque-demo/cible-marque.json (mêmes valeurs que cible-valise.json, échelles renommées primaire = bleu, accent = terre). Aucune valeur reprise d’un site réel. En cas d’écart, ne corriger ni l’outil ni ce fichier : le signaler.",
+  "notes": [
+    "13/11/2026, étape 2, corrections validées : seuil « gris » abaissé à chroma OKLCH < 0,02 (0,05 à l’étape 1) ; la déclaration de la cible l’emporte toujours sur M1 ; préfixe des variables du back-office réglable, préfixe neutre « --marque- » dans cette fixture (le préfixe réel reste hors dépôt). Conséquences : #1b2333 (chroma 0,0325) devient une couleur forte ; #363026 (0,0192) et #958f84 (0,0175) restent des gris.",
+    "13/11/2026, avant le commit de l’étape 2, correction validée de M6 : sans fond proche, la seconde version est quand même proposée ; les éléments sur ce fond sont en exception (nombre, pages, sélecteurs, fond), gardent la valeur lisible et partent dans la consigne. Plus de champ exception : chaque seconde version porte backgrounds et exceptions. PM8 devient « pas 11 avec exception » ; PM7 gagne exceptions: []. Les vignettes de version donnent le contraste le plus défavorable de la ligne, toutes pages.",
+    "13/11/2026, avant le commit de l’étape 2 : vignettes et détail mesurent sur le même état, les fonds après la table (bgToday : le fond d’aujourd’hui quand il change). PM7 : #e3e3e3 passe à neutre-5 (#e3e2df). Ajout du cas décidé : PM8 choisi sur accent-11 (decisions.json), la consigne applique accent-11 sauf à la pastille, qui garde accent-12."
+  ],
+  "how": "ΔE = 100 × distance euclidienne OKLab (ΔE de la table) ; contraste WCAG 2.1 ; chroma OKLCH. Calculés avec culori 4.0.2 : node --input-type=module -e \"import { differenceEuclidean, wcagContrast, oklch } from 'culori'; console.log(100 * differenceEuclidean('oklab')(a, b), wcagContrast(a, b), oklch(a).c)\". Valeurs arrondies à 4 décimales. Fond d’une paire : fond opaque le plus proche en remontant les ancêtres.",
+  "conditions": {
+    "page": "/marque/marque.html",
+    "prefix": "--marque-",
+    "target": "fixtures/marque-demo/cible-marque.json",
+    "viewport": { "width": 1366, "height": 900 },
+    "thresholds": "auto ≤ ΔE 2 ; proche ≤ ΔE 5 ; décision au-delà ; texte 4,5:1 (18 px gras et moins), 3:1 au-delà"
+  },
+  "rules": {
+    "M0": "La marque est déclarée avant la réduction (bloc brand de la cible). Une lecture rapide sort les variables du back-office posées sur <html> (préfixe réglable, ici --marque-), les couleurs fortes du site et leurs contradictions avec la feuille.",
+    "M1": "Un emplacement gris rejoint neutre.",
+    "M3": "Une couleur de marque ou sa variante va sur l’échelle de son emplacement, puis le pas se choisit par l’usage.",
+    "M4": "Les échelles de statut sont réservées aux vrais états (aria-invalid, role=\"alert\", message relié). Sinon, c’est une décision.",
+    "M5": "Une correction de couleur de marque à plus de 10 (ΔE de la table) devient une décision.",
+    "M6": "Une décision propose aussi le pas proche avec le fond de la paire en échec déplacé.",
+    "M7": "Quand le back-office et la feuille du client se contredisent, c’est signalé, et c’est la cible qui tranche.",
+    "definitions": {
+      "gris": "chroma OKLCH < 0,02 (#8f8f8f : 0 ; #363026 : 0,0192 ; #1b2333 : 0,0325, pas un gris). La déclaration de la cible (clé scale d’un emplacement) l’emporte toujours.",
+      "couleur forte": "couleur opaque mesurée au rendu (texte, fond, bordure), de chroma OKLCH ≥ 0,02 (tout ce qui n’est pas gris).",
+      "contradiction": "une variable du back-office posée sur <html> avec une valeur, et la feuille qui donne une autre valeur pour le même rôle : en repli de var(--variable, valeur) ou en dur dans une déclaration qui porte aussi ce repli, ou ailleurs avec la même valeur.",
+      "couleur de marque": "ligne dont l’échelle est celle d’un emplacement non gris (ici primaire ou accent), déclarée ou non. Un gris (neutre, y compris l’emplacement secondaire gris) n’est pas une couleur de marque : ses corrections restent des corrections.",
+      "pas proche (M6)": "pas de la tranche de l’usage, dans l’échelle de la ligne, à ΔE ≤ 10 de la valeur d’origine (ici le pas 11).",
+      "fond déplacé (M6)": "pour chaque paire où le pas proche échoue : pas de la tranche fond (1 à 5) de l’échelle du fond, le plus proche du fond d’origine de la paire, à ΔE ≤ 5, sur lequel le pas proche passe le seuil. Si une paire n’en a aucun : ses éléments sont en exception (nombre, pages, sélecteurs, fond) ; ils gardent la valeur lisible proposée et la consigne les met à part."
+    }
+  },
+  "contract": {
+    "status": "Proposé le 13/11/2026 (lot M, étape 1), à valider.",
+    "read": "src/brand/read.js exporte readBrand({ addresses, viewport, waitMs, prefix }) : { variables: [{ name, value }], strong: [{ value, count }], contradictions: [{ variable, backOffice, sheet, where: ['fichier.css:ligne', …] }] }. Valeurs en hexadécimal minuscule. variables : seulement celles qui commencent par prefix, dans l’ordre de l’attribut style de <html>.",
+    "table": "Avec une cible qui porte brand : table.brand = { slots: [{ slot, variable, value, scale, rule? }], contradictions: [{ variable, backOffice, sheet, ruling }] }. Une ligne de couleur dont la valeur est celle d’un emplacement ou d’une de ses variantes porte slot. Une décision M4 ou M5 porte reason (texte ci-dessous). M6 : alternatives = [{ name, new, backgrounds: [{ from, name, to }], exceptions: [{ background, elements, pages, selectors }] }] (pages en chemins). Sans bloc brand, rien ne change.",
+    "reasons": {
+      "R9": "texte sous 4,5:1 avant, au seuil après (R9)",
+      "M4": "échelle de statut réservée aux états (aria-invalid, role=\"alert\", message relié) : décision (M4)",
+      "M5": "correction de couleur de marque à plus de 10 : décision (M5)"
+    }
+  },
+  "guard": {
+    "title": "Orbe Café ne bouge pas : sans bloc brand, 12 décisions sur les pages du désordre",
+    "pages": ["/desordre/carte.html", "/desordre/compte.html", "/desordre/gestion.html"],
+    "target": "fixtures/marque-demo/cible-valise.json",
+    "sources": "fixtures/marque-demo/sources.json",
+    "viewport": { "width": 1366, "height": 900 },
+    "decisions": 12
+  },
+  "decided": {
+    "title": "cas décidé : PM8 choisi sur accent-11, la consigne garde accent-12 pour l’exception",
+    "decisions": { "colors|#cd5a40|texte": "#b3422b" },
+    "row": { "value": "#cd5a40", "usage": "texte", "status": "décidée", "new": "#b3422b" },
+    "agentLine": [
+      "remplace #cd5a40 par #b3422b",
+      "[décidée]",
+      "Exception (M6) : page /marque/marque.html, fond #d8d6d2, 1 élément(s) (span#pm8-pastille) : écris #6a0000 (accent-12) au lieu de #b3422b, qui y resterait sous le seuil."
+    ]
+  },
+  "traps": [
+    {
+      "id": "PM0",
+      "title": "lecture rapide et contradiction",
+      "construction": "<html style> pose quatre variables --marque-* et une variable sans rapport (--orbe-largeur). marque.css donne à l’onglet actif color: #dd3f2b puis var(--marque-primary-color, #dd3f2b) (lignes 42 à 44), et #dd3f2b en dur pour .lien-fort et .encart-titre (lignes 106 et 117). Le rendu de l’onglet suit le back-office (#2b4c7e).",
+      "elements": [
+        { "selector": "#pm0-onglet", "color": "#2b4c7e", "bg": "#ffffff", "contrast": 8.6144 }
+      ],
+      "read": {
+        "variables": [
+          { "name": "--marque-primary-color", "value": "#2b4c7e" },
+          { "name": "--marque-primary-color-darken-4", "value": "#1b2333" },
+          { "name": "--marque-secondary-color", "value": "#8f8f8f" },
+          { "name": "--marque-accent-color", "value": "#c8553d" }
+        ],
+        "strongIncludes": ["#2b4c7e", "#1b2333", "#dd3f2b", "#c8553d", "#cd5a40", "#e39a85", "#cf1e48", "#e0383e"],
+        "strongExcludes": ["#8f8f8f", "#363026", "#e3e3e3", "#d8d6d2", "#958f84", "#ffffff"],
+        "chroma": { "#2b4c7e": 0.0925, "#e39a85": 0.0933, "#1b2333": 0.0325, "#363026": 0.0192, "#958f84": 0.0175, "#8f8f8f": 0 },
+        "contradictions": [
+          { "variable": "--marque-primary-color", "backOffice": "#2b4c7e", "sheet": "#dd3f2b", "where": ["marque.css:42", "marque.css:43", "marque.css:44", "marque.css:106", "marque.css:117"] }
+        ]
+      },
+      "tableBrand": {
+        "contradictions": [
+          { "variable": "--marque-primary-color", "backOffice": "#2b4c7e", "sheet": "#dd3f2b", "ruling": "accent" }
+        ]
+      }
+    },
+    {
+      "id": "PM1",
+      "title": "deux emplacements",
+      "construction": "Bouton plein en var(--marque-primary-color) (#2b4c7e) avec texte blanc ; texte de 14 px en var(--marque-secondary-color) (#8f8f8f, gris), sur blanc.",
+      "elements": [
+        { "selector": "#pm1-meta", "color": "#8f8f8f", "bg": "#ffffff", "contrast": 3.234 },
+        { "selector": "#pm1-bouton", "color": "#ffffff", "bg": "#2b4c7e", "contrast": 8.6144 }
+      ],
+      "tableBrand": {
+        "slots": [
+          { "slot": "primaire", "variable": "--marque-primary-color", "value": "#2b4c7e", "scale": "primaire" },
+          { "slot": "secondaire", "variable": "--marque-secondary-color", "value": "#8f8f8f", "scale": "neutre", "rule": "M1" },
+          { "slot": "accent", "variable": "--marque-accent-color", "value": "#c8553d", "scale": "accent" }
+        ]
+      },
+      "rows": [
+        {
+          "value": "#8f8f8f", "usage": "texte",
+          "want": { "class": "correction", "name": "neutre-11", "new": "#6d675b", "slot": "secondaire", "reason": "texte sous 4,5:1 avant, au seuil après (R9)" },
+          "today": { "class": "correction", "name": "neutre-11" },
+          "figures": "ΔE #8f8f8f → neutre-11 13,5827 (gris : M5 ne s’applique pas) ; 3,234 → 5,6129 sur blanc."
+        },
+        {
+          "value": "#2b4c7e", "usage": "plein",
+          "want": { "class": "inchangé", "name": "primaire-9", "new": "#2b4c7e", "slot": "primaire" },
+          "today": { "class": "inchangé", "name": "primaire-9" }
+        }
+      ]
+    },
+    {
+      "id": "PM2",
+      "title": "variante darken-4",
+      "construction": "Titre de 24 px en var(--marque-primary-color-darken-4) (#1b2333), sur blanc (15,7325:1).",
+      "elements": [
+        { "selector": "#pm2-titre", "color": "#1b2333", "bg": "#ffffff", "contrast": 15.7325 }
+      ],
+      "rows": [
+        {
+          "value": "#1b2333", "usage": "texte",
+          "want": { "class": "décision", "name": "primaire-12", "new": "#103060", "slot": "primaire" },
+          "today": { "class": "décision", "name": "neutre-12" },
+          "figures": "Plus proche de toute la valise : neutre-12 (#363026) à 7,6229 ; primaire-12 (#103060) à 8,4989. Aujourd’hui l’échelle suit la plus proche (neutre) ; M3 la place sur primaire, le pas texte le plus proche est 12. ΔE > 5 : décision."
+        }
+      ]
+    },
+    {
+      "id": "PM3",
+      "title": "rose de contenu proche de l’erreur → décision",
+      "construction": "Paragraphe en #cf1e48, sur blanc (5,3403:1, passe), hors de tout état.",
+      "elements": [
+        { "selector": "#pm3-promo", "color": "#cf1e48", "bg": "#ffffff", "contrast": 5.3403 }
+      ],
+      "rows": [
+        {
+          "value": "#cf1e48", "usage": "texte",
+          "want": { "class": "décision", "reason": "échelle de statut réservée aux états (aria-invalid, role=\"alert\", message relié) : décision (M4)" },
+          "today": { "class": "proche", "name": "erreur-11" },
+          "figures": "Plus proche : erreur-11 (#cb1d2a) à 3,482."
+        }
+      ]
+    },
+    {
+      "id": "PM4",
+      "title": "vrai message d’erreur → échelle erreur",
+      "construction": "p#pm4-erreur en #e0383e, role=\"alert\", relié par aria-describedby au champ input#pm4-mail en aria-invalid=\"true\", sur blanc (4,3707:1, échoue).",
+      "elements": [
+        { "selector": "#pm4-erreur", "color": "#e0383e", "bg": "#ffffff", "contrast": 4.3707 }
+      ],
+      "rows": [
+        {
+          "value": "#e0383e", "usage": "texte",
+          "want": { "class": "correction", "name": "erreur-11", "new": "#cb1d2a", "reason": "texte sous 4,5:1 avant, au seuil après (R9)", "alternatives": [], "exception": null },
+          "today": { "class": "correction", "name": "erreur-11" },
+          "figures": "ΔE → erreur-11 5,885 ; 4,3707 → 5,6023. Garde-fou : un vrai état garde l’échelle erreur."
+        }
+      ]
+    },
+    {
+      "id": "PM5",
+      "title": "pas 11 suffisant partout → correction sans décision",
+      "construction": "Paragraphe en var(--marque-accent-color) (#c8553d = accent-9), sur blanc seulement (4,3544:1, échoue).",
+      "elements": [
+        { "selector": "#pm5-accroche", "color": "#c8553d", "bg": "#ffffff", "contrast": 4.3544 }
+      ],
+      "rows": [
+        {
+          "value": "#c8553d", "usage": "texte",
+          "want": { "class": "correction", "name": "accent-11", "new": "#b3422b", "slot": "accent", "reason": "texte sous 4,5:1 avant, au seuil après (R9)", "alternatives": [], "exception": null },
+          "today": { "class": "correction", "name": "accent-11" },
+          "figures": "ΔE → accent-11 6,0912 (≤ 10 : M5 ne joue pas) ; 4,3544 → 5,6287."
+        }
+      ]
+    },
+    {
+      "id": "PM6",
+      "title": "aucun pas proche → décision",
+      "construction": "Légende de 14 px en #e39a85 (teinte claire de l’accent, non déclarée), sur blanc (2,2759:1).",
+      "elements": [
+        { "selector": "#pm6-legende", "color": "#e39a85", "bg": "#ffffff", "contrast": 2.2759 }
+      ],
+      "rows": [
+        {
+          "value": "#e39a85", "usage": "texte",
+          "want": { "class": "décision", "name": "accent-11", "new": "#b3422b", "reason": "correction de couleur de marque à plus de 10 : décision (M5)", "alternatives": [], "exception": null },
+          "today": { "class": "correction", "name": "accent-11" },
+          "figures": "Plus proche : accent-7 à 5,0945 ; accent-11 à 22,886, accent-12 à 42,6169 : aucun pas texte à ΔE ≤ 10, donc pas de seconde version ni d’exception."
+        }
+      ]
+    },
+    {
+      "id": "PM7",
+      "title": "pas 11 qui échoue sur un seul titre sur gris → deux versions, dont pas 11 + fond déplacé",
+      "construction": "#dd3f2b (couleur du gabarit, fusionnée sur accent par la cible) : lien sur blanc (4,3566:1) et titre de 18 px gras (pas grand texte) dans un encart #e3e3e3 (3,3946:1). Le fond #e3e3e3 va sur neutre-5 (#e3e2df, auto, ΔE 0,5214).",
+      "elements": [
+        { "selector": "#pm7-lien", "color": "#dd3f2b", "bg": "#ffffff", "contrast": 4.3566 },
+        { "selector": "#pm7-titre", "color": "#dd3f2b", "bg": "#e3e3e3", "contrast": 3.3946 }
+      ],
+      "rows": [
+        {
+          "value": "#dd3f2b", "usage": "texte",
+          "want": {
+            "class": "décision", "name": "accent-12", "new": "#6a0000", "slot": "accent",
+            "reason": "correction de couleur de marque à plus de 10 : décision (M5)",
+            "alternatives": [
+              { "name": "accent-11", "new": "#b3422b", "backgrounds": [{ "from": "#e3e3e3", "name": "neutre-4", "to": "#ecebe9" }], "exceptions": [] }
+            ],
+            "exception": null
+          },
+          "today": { "class": "correction", "name": "erreur-12" },
+          "tiles": [
+            { "value": "#dd3f2b", "ratio": 3.3629, "threshold": 4.5, "bg": "#e3e2df", "bgToday": "#e3e3e3" },
+            { "value": "#b3422b", "ratio": 4.3449, "threshold": 4.5, "bg": "#e3e2df", "bgToday": "#e3e3e3" },
+            { "value": "#6a0000", "ratio": 10.0508, "threshold": 4.5, "bg": "#e3e2df", "bgToday": "#e3e3e3" }
+          ],
+          "figures": "Plus proche de toute la valise : erreur-9 à 2,8563 (accent-9 à 4,6876), d’où erreur aujourd’hui. accent-11 à 8,1681 (pas proche) mais 4,3449:1 sur neutre-5 : échoue ; accent-12 à 27,6965, 10,0508:1. Fond déplacé : neutre-4 (#ecebe9), ΔE 2,4618 de #e3e3e3, accent-11 4,7245:1 ; neutre-5 échoue. accent-12 et erreur-12 valent tous deux #6a0000 : seul le nom les distingue."
+        },
+        {
+          "value": "#e3e3e3", "usage": "fond",
+          "want": { "class": "auto", "name": "neutre-5", "new": "#e3e2df" },
+          "today": { "class": "auto", "name": "neutre-5" }
+        }
+      ]
+    },
+    {
+      "id": "PM8",
+      "title": "aucun fond proche → pas 11 avec exception",
+      "construction": "#cd5a40 (orangé proche de l’accent, non déclaré) : lien sur blanc (4,0917:1) et texte de 14 px dans une pastille #d8d6d2 (= neutre-6, inchangé) (2,8192:1).",
+      "elements": [
+        { "selector": "#pm8-lien", "color": "#cd5a40", "bg": "#ffffff", "contrast": 4.0917 },
+        { "selector": "#pm8-pastille", "color": "#cd5a40", "bg": "#d8d6d2", "contrast": 2.8192 }
+      ],
+      "rows": [
+        {
+          "value": "#cd5a40", "usage": "texte",
+          "want": {
+            "class": "décision", "name": "accent-12", "new": "#6a0000",
+            "reason": "correction de couleur de marque à plus de 10 : décision (M5)",
+            "alternatives": [
+              { "name": "accent-11", "new": "#b3422b", "backgrounds": [], "exceptions": [{ "background": "#d8d6d2", "elements": 1, "pages": ["/marque/marque.html"], "selectors": ["span#pm8-pastille"] }] }
+            ],
+            "exception": null
+          },
+          "today": { "class": "correction", "name": "accent-12" },
+          "figures": "Plus proche : accent-9 à 1,5109. accent-11 à 7,5924 (pas proche) mais 3,8782:1 sur #d8d6d2 ; accent-12 à 27,941, 8,9712:1. Fonds de neutre où accent-11 passe : neutre-4 (4,7245:1) à ΔE 6,3814, neutre-3 (5,0342:1) à 8,5209 : au-delà de 5 ; neutre-5 (ΔE 3,6231) échoue (4,3449:1). Aucun fond proche : seconde version accent-11 avec la pastille en exception (1 élément, gardant accent-12)."
+        },
+        {
+          "value": "#d8d6d2", "usage": "fond",
+          "want": { "class": "inchangé", "name": "neutre-6", "new": "#d8d6d2" },
+          "today": { "class": "inchangé", "name": "neutre-6" }
+        }
+      ]
+    }
+  ]
+}

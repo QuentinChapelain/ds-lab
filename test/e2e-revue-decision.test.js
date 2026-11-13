@@ -197,7 +197,12 @@ test('revue : sous chaque version de couleur, le contraste le plus faible et son
         const fr = (/** @type {number} */ n) => String(Math.round(n * 100) / 100).replace('.', ',');
         const pass = v.contrast.ratio >= v.contrast.threshold;
         assert.ok(smalls.includes(`${fr(v.contrast.ratio)} · ${pass ? 'passe' : 'sous'} le seuil de ${fr(v.contrast.threshold)}`), `${row.id} ${v.label} : ${smalls.join(' | ')}`);
-        const other = row.usage === 'texte' || row.usage === 'bordure' ? `sur le fond actuel ${v.contrast.bg}` : `avec le texte actuel ${v.contrast.text}`;
+        // Lot M : la paire la plus défavorable de la ligne, toutes pages, après la table.
+        const c2 = v.contrast;
+        const other =
+          row.usage === 'texte' || row.usage === 'bordure'
+            ? c2.bgToday ? `sur le fond le moins favorable après la table (${c2.bg}, aujourd’hui ${c2.bgToday})` : `sur le fond le moins favorable ${c2.bg}`
+            : c2.textToday ? `avec le texte le moins favorable après la table (${c2.text}, aujourd’hui ${c2.textToday})` : `avec le texte le moins favorable ${c2.text}`;
         assert.ok(smalls.includes(other), `${row.id} ${v.label} : ${smalls.join(' | ')}`);
       }
     }

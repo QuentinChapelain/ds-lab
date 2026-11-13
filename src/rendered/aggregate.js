@@ -433,6 +433,8 @@ export function createRenderedAggregator() {
     if (content) e.content++;
     else touch(e, rec, pageNo, index);
     if (field) e.field++;
+    // Lot M (M4) : occurrences portées par un vrai état (role="alert", aria-invalid, message relié).
+    if (rec.state && !content) e.states = (e.states ?? 0) + 1;
     e.properties.add(property);
     const sel = rec.selector ?? '';
     if (e.selectors.length < 4 && !e.selectors.includes(sel)) e.selectors.push(sel);

@@ -6,7 +6,7 @@
  * reduce relit au tour suivant (--decisions). Un seul fichier, sans dépendance.
  * Toute chaîne venue de la page auditée est échappée.
  */
-import { ALL_CLASSES, OUT, rowKey, isOut, decisionFor, APPLIED, WHERE_TO_FIX, marginRow } from '../reduce/propose.js';
+import { ALL_CLASSES, OUT, rowKey, isOut, decisionFor, APPLIED, WHERE_TO_FIX, marginRow, M_REASONS } from '../reduce/propose.js';
 
 /** @param {unknown} s */
 const esc = (s) =>
@@ -133,13 +133,25 @@ function absorbedNotes(versions) {
 }
 
 /**
+ * Lot M : l'autre côté de la paire la plus défavorable, après la table, et sa valeur d'aujourd'hui quand elle change.
+ * @param {string | undefined} usage @param {{ text: string, bg: string, bgToday?: string, textToday?: string }} c
+ */
+export function contrastSide(usage, c) {
+  if (usage === 'texte' || usage === 'bordure')
+    return c.bgToday ? `sur le fond le moins favorable après la table (${c.bg}, aujourd’hui ${c.bgToday})` : `sur le fond le moins favorable ${c.bg}`;
+  return c.textToday ? `avec le texte le moins favorable après la table (${c.text}, aujourd’hui ${c.textToday})` : `avec le texte le moins favorable ${c.text}`;
+}
+
+/**
  * Lot R : contraste d'une version de couleur : « 4,35 · sous le seuil de 4,5 », puis la couleur
  * réelle de l'autre côté de la paire (le texte posé sur un fond, le fond sous un texte ou une bordure).
- * @param {string | undefined} usage @param {{ ratio: number, threshold: number, text: string, bg: string }} c
+ * Lot M : la paire est la plus défavorable de la ligne, sur toutes les pages, après la table.
+ * @param {string | undefined} usage @param {{ ratio: number, threshold: number, text: string, bg: string, bgToday?: string, textToday?: string }} c
  */
 function contrastLine(usage, c) {
   const pass = c.ratio >= c.threshold - 1e-9;
-  const other = usage === 'texte' || usage === 'bordure' ? `sur le fond actuel ${c.bg}` : `avec le texte actuel ${c.text}`;
+  // Lot M : la paire la plus défavorable de toute la ligne (toutes pages), après la table, comme le détail.
+  const other = contrastSide(usage, c);
   return `<small>${fr(c.ratio)} · ${pass ? 'passe' : 'sous'} le seuil de ${fr(c.threshold)}</small><small>${esc(other)}</small>`;
 }
 
@@ -222,7 +234,7 @@ function decisionCard(family, r) {
  * @returns {{ text: string, rule: string | null }}
  */
 export function plainReason(reason) {
-  const rule = /\((R\d+)\)\s*$/.exec(reason)?.[1] ?? null;
+  const rule = /\(([RM]\d+)\)\s*$/.exec(reason)?.[1] ?? null;
   /** @type {[RegExp, (m: RegExpExecArray) => string][]} */
   const RULES = [
     [/^ΔE ([\d.]+) à la valeur la plus proche de la valise \((.+)\) : aucune échelle/, (m) => `aucune couleur de la valise n’en est assez proche (la plus proche, ${m[2]}, est à ΔE ${m[1].replace('.', ',')}) : la valeur est laissée telle quelle`],
@@ -233,6 +245,8 @@ export function plainReason(reason) {
     [/^bordure de champ sous 3:1 avant, au seuil après/, () => 'le bord de ce champ se distinguait mal du fond (contraste sous 3:1) ; la valeur proposée le rend visible'],
     [/^texte porté sous 4,5:1 avant, au seuil après/, () => 'le texte posé sur ce fond n’était pas assez lisible (contraste sous 4,5:1) ; ce fond le rend lisible'],
     [/^texte posé sur .+ : utiliser onSolid/, () => 'un texte est posé sur ce fond ; si le fond change, la couleur du texte devra changer pour rester lisible'],
+    [/^échelle de statut réservée aux états/, () => 'cette couleur tombe sur une échelle de statut (erreur, succès), réservée aux vrais états : champ invalide, alerte, message relié à un champ. Ici, ce n’en est pas un : la couleur est à choisir'],
+    [/^correction de couleur de marque à plus de 10/, () => 'couleur de marque peu lisible : la valeur la plus proche qui reste lisible sur tous ses fonds s’en écarte de plus de ΔE 10, ce qui change la marque. La correction n’est pas appliquée d’office : elle est à choisir'],
     [/^espacement négatif/, () => 'cet espacement est négatif : il relève de la mise en page et reste tel quel'],
     [/^espacement supérieur à (\d+) px/, (m) => `cet espacement dépasse ${m[1]} px : il relève de la mise en page et reste tel quel`],
   ];
@@ -241,6 +255,29 @@ export function plainReason(reason) {
     if (m) return { text: f(m), rule };
   }
   return { text: reason, rule };
+}
+
+/**
+ * Lot M : note visible d'une carte de couleur de marque — pourquoi elle est à choisir (M4, M5),
+ * et la seconde version (M6) ou pourquoi il n'y en a pas.
+ * @param {any} r
+ */
+function brandNote(r) {
+  /** @type {string[]} */
+  const lines = [];
+  if (r.reason === M_REASONS.M5) lines.push(`Couleur de marque : la valeur la plus proche lisible sur tous ses fonds (${r.name}, ${r.new}) s’en écarte de ΔE ${fr(r.delta)}. À choisir.`);
+  if (r.reason === M_REASONS.M4) lines.push(`Échelle de statut réservée aux vrais états : ${r.name ? `${r.name.replace(/-\d+$/, '')} ` : ''}ne vaut ici pour aucun champ invalide, alerte ou message relié. À choisir.`);
+  for (const a of r.alternatives ?? []) {
+    const moves = a.backgrounds.map((/** @type {any} */ b) => `le fond ${b.from} passe à ${b.name} (${b.to})`).join(' et ');
+    const n = a.exceptions.reduce((/** @type {number} */ t, /** @type {any} */ x) => t + x.elements, 0);
+    const where = a.exceptions
+      .map((/** @type {any} */ x) => `${a.exceptions.length > 1 ? `${x.elements} ` : ''}sur le fond ${x.background}, page ${x.pages.join(', ')} (${x.selectors.join(', ')})`)
+      .join(' ; ');
+    lines.push(
+      `Seconde version : ${a.name} (${a.new}), plus proche de la couleur d’origine, lisible${moves ? ` si ${moves}` : ''}${n ? `${moves ? ',' : ''} partout sauf ${n} ${n === 1 ? 'élément' : 'éléments'} en exception : ${where}. Aucun fond proche (ΔE ≤ 5) ne les rend lisibles : ils gardent ${r.name} (${r.new}), et la consigne les met à part` : ''}.`,
+    );
+  }
+  return lines.length ? `<p class="marque">${lines.map((l) => `<span>${esc(l)}</span>`).join('')}</p>` : '';
 }
 
 /** Lot P, étape 3 : où corriger, en clair, d'après la relation de la marge. */
@@ -273,11 +310,14 @@ function relationDetail(r) {
  * @param {string} family @param {any} r @param {string} key @param {string} cls
  */
 function detail(family, r, key, cls) {
-  const against = cls === 'décision' ? 'avec la valeur la plus proche' : 'avec la valeur proposée';
+  // Lot M (M5) : la valeur proposée est la plus proche lisible sur tous ses fonds, pas la plus proche.
+  const readable = r.reason === M_REASONS.M5;
+  const label = readable ? 'la valeur la plus proche lisible sur tous ses fonds' : cls === 'décision' ? 'la valeur la plus proche' : 'la valeur proposée';
+  const against = `avec ${label}`;
   const ctr = r.contrast ? `<dt>Contraste</dt><dd>${fr(r.contrast.before)} avant → ${fr(r.contrast.after)} ${against} (seuil ${fr(r.contrast.threshold)})</dd>` : '';
   // Lot P-fin : l'écart en une phrase, avec la valeur visée ; le nombre d'usages seulement s'il ne répète pas la portée.
-  const target = cls === 'décision' ? r.candidates?.[0]?.value : r.new;
-  const ecart = r.delta && target ? `${family === 'colors' ? `ΔE ${fr(r.delta)}` : `${fr(r.delta)} px`} avec ${cls === 'décision' ? 'la valeur la plus proche' : 'la valeur proposée'} (${short(family, target)})` : '';
+  const target = cls === 'décision' && !readable ? r.candidates?.[0]?.value : r.new;
+  const ecart = r.delta && target ? `${family === 'colors' ? `ΔE ${fr(r.delta)}` : `${fr(r.delta)} px`} ${against} (${short(family, target)})` : '';
   const scope = r.capture?.elements ?? r.count;
   const usages = r.count !== scope ? `${r.count} occurrences relevées dans le rendu, sur ${scope} ${scope === 1 ? 'élément' : 'éléments'} (un élément peut porter la valeur sur plusieurs côtés)` : '';
   const motif = r.reason ? plainReason(r.reason) : null;
@@ -289,6 +329,7 @@ function detail(family, r, key, cls) {
   const cut = more > 0 ? `<i>et ${more} ${more === 1 ? 'autre' : 'autres'}</i>` : !full && all.length >= 3 && r.count > all.length ? '<i>et d’autres (liste coupée au relevé)</i>' : '';
   return `<details class="detail"><summary>Détail</summary><dl>
     ${motif ? `<dt>Motif</dt><dd>${esc(motif.text)}${motif.rule ? ` <i>(règle ${esc(motif.rule)})</i>` : ''}</dd>` : ''}
+    ${r.slot ? `<dt>Emplacement</dt><dd>${esc(r.slot)} (valeur ou variante déclarée dans la cible)</dd>` : ''}
     ${relationDetail(r)}${ctr}${ecart ? `<dt>Écart</dt><dd>${esc(ecart)}</dd>` : ''}${usages ? `<dt>Usages</dt><dd>${esc(usages)}</dd>` : ''}
     <dt>Sélecteurs</dt><dd>${sel.map((/** @type {string} */ x) => `<code>${esc(x)}</code>`).join(' ')}${cut}</dd>
     <dt>Clé technique</dt><dd><code>${esc(key)}</code></dd>
@@ -389,6 +430,7 @@ export function renderReview(table, pages, meta) {
   <header>${glyph(family, r.old)}<code>${esc(r.old)}</code>${arrow}${usage}${what}</header>
   ${decision || r.capture ? portee(r) : ''}
   ${paired.has(key) ? '<p class="controle" aria-live="polite" hidden></p>' : ''}
+  ${family === 'colors' ? brandNote(r) : ''}
   ${pick}${shots}
   ${detail(family, r, key, cls)}
 </article>`;
@@ -481,6 +523,8 @@ ${byClass}
   body.sans-reperes .zone, body.sans-reperes .cote { display:none; }
   .portee { margin:6px 0 0; font-size:14px; color:var(--soft); }
   .controle { margin:8px 0 0; display:flex; flex-direction:column; gap:4px; font-size:14px; }
+  .marque { margin:8px 0 0; display:flex; flex-direction:column; gap:4px; font-size:14px; }
+  .marque span { border-radius:6px; padding:6px 10px; background:#eef2fb; color:#1f3363; border:1px solid #a9b9e0; }
   .controle span { border-radius:6px; padding:6px 10px; }
   .controle .alerte { background:#fff4e5; color:#7a3a00; border:1px solid #f0b46b; }
   .controle .ok { background:#eaf6ee; color:#17603a; border:1px solid #9fd0b0; }

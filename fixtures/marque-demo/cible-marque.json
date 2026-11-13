@@ -1,0 +1,136 @@
+{
+  "$comment": "Valise de la page de marque d’Orbe Café (lot M, 13/11/2026), marque fictive. Mêmes valeurs que cible-valise.json, échelles renommées par emplacement de marque : primaire = bleu, accent = terre ; sable retiré. Le bloc brand est la marque déclarée avant la réduction (M0) : emplacements du back-office fictif, variantes, échelles de statut. Sans bloc brand (cible-valise.json), les règles M ne s’appliquent pas.",
+  "brand": {
+    "slots": {
+      "primaire": {
+        "variable": "--marque-primary-color",
+        "value": "#2b4c7e",
+        "variants": [
+          {
+            "variable": "--marque-primary-color-darken-4",
+            "value": "#1b2333"
+          }
+        ]
+      },
+      "secondaire": {
+        "variable": "--marque-secondary-color",
+        "value": "#8f8f8f"
+      },
+      "accent": {
+        "variable": "--marque-accent-color",
+        "value": "#c8553d",
+        "variants": [
+          {
+            "value": "#dd3f2b",
+            "from": "feuille du gabarit : repli de --marque-primary-color et valeur en dur (contradiction PM0, tranchée ici, M7)"
+          }
+        ]
+      }
+    },
+    "status": [
+      "erreur",
+      "succes"
+    ]
+  },
+  "onSolid": {
+    "neutre": "#201d17",
+    "primaire": "#ffffff",
+    "accent": "#220000",
+    "erreur": "#ffffff",
+    "succes": "#001005"
+  },
+  "radii": [
+    0,
+    2,
+    4,
+    8,
+    12,
+    9999
+  ],
+  "spacing": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    24,
+    32,
+    48,
+    64
+  ],
+  "fontSizes": [
+    12,
+    14,
+    16,
+    18,
+    20,
+    24,
+    30,
+    36,
+    48,
+    60
+  ],
+  "colors": [
+    { "name": "blanc", "value": "#ffffff" },
+    { "name": "neutre-1", "value": "#fbfbfb" },
+    { "name": "neutre-2", "value": "#f8f8f7" },
+    { "name": "neutre-3", "value": "#f3f2f1" },
+    { "name": "neutre-4", "value": "#ecebe9" },
+    { "name": "neutre-5", "value": "#e3e2df" },
+    { "name": "neutre-6", "value": "#d8d6d2" },
+    { "name": "neutre-7", "value": "#bfbbb5" },
+    { "name": "neutre-8", "value": "#958f84" },
+    { "name": "neutre-9", "value": "#8a8478" },
+    { "name": "neutre-10", "value": "#7d776c" },
+    { "name": "neutre-11", "value": "#6d675b" },
+    { "name": "neutre-12", "value": "#363026" },
+    { "name": "primaire-1", "value": "#fdfdfe" },
+    { "name": "primaire-2", "value": "#f8f9fb" },
+    { "name": "primaire-3", "value": "#f1f3f7" },
+    { "name": "primaire-4", "value": "#e8ecf2" },
+    { "name": "primaire-5", "value": "#dce2eb" },
+    { "name": "primaire-6", "value": "#ced7e4" },
+    { "name": "primaire-7", "value": "#afbdd1" },
+    { "name": "primaire-8", "value": "#7b91b2" },
+    { "name": "primaire-9", "value": "#2b4c7e" },
+    { "name": "primaire-10", "value": "#27487a" },
+    { "name": "primaire-11", "value": "#4c6994" },
+    { "name": "primaire-12", "value": "#103060" },
+    { "name": "accent-1", "value": "#fefcfb" },
+    { "name": "accent-2", "value": "#fef8f7" },
+    { "name": "accent-3", "value": "#fcf1ef" },
+    { "name": "accent-4", "value": "#fae6e1" },
+    { "name": "accent-5", "value": "#f7ddd6" },
+    { "name": "accent-6", "value": "#f4cec5" },
+    { "name": "accent-7", "value": "#eaad9e" },
+    { "name": "accent-8", "value": "#d57560" },
+    { "name": "accent-9", "value": "#c8553d" },
+    { "name": "accent-10", "value": "#ba4834" },
+    { "name": "accent-11", "value": "#b3422b" },
+    { "name": "accent-12", "value": "#6a0000" },
+    { "name": "erreur-1", "value": "#fffaf9" },
+    { "name": "erreur-2", "value": "#fff7f7" },
+    { "name": "erreur-3", "value": "#fff0ee" },
+    { "name": "erreur-4", "value": "#ffe6e3" },
+    { "name": "erreur-5", "value": "#fed9d6" },
+    { "name": "erreur-6", "value": "#fccac6" },
+    { "name": "erreur-7", "value": "#f7a7a0" },
+    { "name": "erreur-8", "value": "#e76862" },
+    { "name": "erreur-9", "value": "#d93036" },
+    { "name": "erreur-10", "value": "#c8292e" },
+    { "name": "erreur-11", "value": "#cb1d2a" },
+    { "name": "erreur-12", "value": "#6a0000" },
+    { "name": "succes-1", "value": "#fafcfb" },
+    { "name": "succes-2", "value": "#f4f9f6" },
+    { "name": "succes-3", "value": "#ecf4ef" },
+    { "name": "succes-4", "value": "#e2eee6" },
+    { "name": "succes-5", "value": "#d4e7db" },
+    { "name": "succes-6", "value": "#c2dccc" },
+    { "name": "succes-7", "value": "#9bc6ad" },
+    { "name": "succes-8", "value": "#529f76" },
+    { "name": "succes-9", "value": "#1f8a5b" },
+    { "name": "succes-10", "value": "#1a7e50" },
+    { "name": "succes-11", "value": "#00774a" },
+    { "name": "succes-12", "value": "#003a12" }
+  ]
+}

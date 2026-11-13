@@ -39,6 +39,7 @@
  * trois au plus, quand ils sont mélangés.
  */
 import { toLab, deltaE, isOpaque, contrastRatio, relativeLuminance } from '../lib/color.js';
+import { resolveBrand } from '../brand/brand.js';
 
 export const CLASSES = /** @type {const} */ (['décision', 'proche', 'auto', 'inchangé', 'hors table']);
 
@@ -410,11 +411,13 @@ const round4 = (n) => Math.round(n * 10000) / 10000;
 
 /**
  * Lot B : couleurs par valeur × usage, règles R1 à R5, R8 et R9.
+ * Lot M, avec une marque déclarée (bloc brand de la cible) : M3, M4, M5 et M6.
  * @param {any} usages   rendered.usages
  * @param {TargetColor[]} targets
+ * @param {import('../brand/brand.js').Brand | null} [B]  marque résolue
  * @returns {Row[]}
  */
-function colorUsageRows(usages, targets) {
+function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {any[]} */ ([])) {
   const T = targets.map((t) => {
     const value = t.value.toLowerCase();
     const m = /^(.+)-(\d+)$/.exec(t.name ?? '');
@@ -445,8 +448,10 @@ function colorUsageRows(usages, targets) {
     }
     const lab = toLab(old);
     const all = sorted(lab, T);
-    const nearest = all[0];
-    if (nearest.delta > RULES.noScaleDeltaE) {
+    // M3 : la valeur d'un emplacement ou d'une variante va sur l'échelle de son emplacement.
+    const declared = B?.byValue.get(old);
+    const nearest = (declared && all.find((c) => c.t.scale === declared.scale)) || all[0];
+    if (!declared && nearest.delta > RULES.noScaleDeltaE) {
       rows.push({
         old, count, properties, selectors, usages: labels, kinds, new: null, class: OUT.scale, delta: nearest.delta, candidates: candidatesOf(all),
         reason: `ΔE ${nearest.delta} à la valeur la plus proche de la valise (${nearest.t.name}) : aucune échelle (R4)`,
@@ -460,7 +465,8 @@ function colorUsageRows(usages, targets) {
       const cands = sorted(lab, pool);
       const exact = T.find((t) => t.value === old);
       /** @type {any} */
-      const row = { old, count: n, properties: e.properties, selectors: e.selectors, usage, usages: [USAGE_LABEL[usage] ?? usage], kinds: e.kinds, candidates: candidatesOf(cands), _cands: cands, _nearest: nearest, _exact: exact };
+      const row = { old, count: n, properties: e.properties, selectors: e.selectors, usage, usages: [USAGE_LABEL[usage] ?? usage], kinds: e.kinds, candidates: candidatesOf(cands), _cands: cands, _nearest: nearest, _exact: exact, _states: e.states ?? 0 };
+      if (declared) row.slot = declared.slot;
       if (range) row.slice = usage;
       if (e.field) row.field = e.field;
       if (darkLum !== null && (usage === 'fond' || usage === 'plein') && relativeLuminance(old) < darkLum) {
@@ -506,6 +512,47 @@ function colorUsageRows(usages, targets) {
       if (!best || ratio / p.threshold < best.ratio / best.threshold) best = { ratio, threshold: p.threshold };
     }
     return /** @type {{ ratio: number, threshold: number }} */ (best);
+  };
+
+  /**
+   * M4 et M5 (marque déclarée) : classe et motif, ou null si la règle ne joue pas.
+   * @param {any} r @param {{ t: any, delta: number }} c @param {string} cls
+   * @returns {[string, string] | null}
+   */
+  const brandRule = (r, c, cls) => {
+    if (!B) return null;
+    if (B.status.has(c.t.scale) && r._states < r.count) return ['décision', M_REASONS.M4];
+    if (cls === 'correction' && B.brandScales.has(c.t.scale) && c.delta > RULES.noScaleDeltaE) return ['décision', M_REASONS.M5];
+    return null;
+  };
+  /**
+   * M6 : pas proche (tranche de l'usage, même échelle, ΔE ≤ 10) ; pour chaque fond où il échoue,
+   * le pas de la tranche fond (1 à 5) de l'échelle du fond, à ΔE ≤ 5 du fond d'origine, où il passe.
+   * Sans fond proche : les éléments sur ce fond sont en exception (nombre, pages, sélecteurs, fond) ;
+   * la seconde version vaut pour les autres.
+   * @param {any} r @param {any[]} ps @param {{ t: any }} chosen
+   */
+  const secondVersion = (r, ps, chosen) => {
+    const near = r._cands.find((/** @type {any} */ c) => c.delta <= RULES.noScaleDeltaE && c.t.value !== chosen.t.value);
+    if (!near) return;
+    /** @type {Map<string, number>} */
+    const failing = new Map();
+    for (const p of ps) if (fails(near.t.value, now(p.bg, p.bgUsage), p.threshold)) failing.set(p.bg, Math.max(failing.get(p.bg) ?? 0, p.threshold));
+    if (!failing.size) return;
+    const backgrounds = [];
+    const exceptions = [];
+    for (const [bg, thr] of failing) {
+      const blab = toLab(bg);
+      const scale = sorted(blab, T)[0].t.scale;
+      const to = sorted(blab, T.filter((t) => t.scale === scale && t.step !== null && t.step >= SLICES.fond[0] && t.step <= SLICES.fond[1] && !fails(near.t.value, t.value, thr)))[0];
+      if (to && to.delta <= THRESHOLDS.nearDeltaE) backgrounds.push({ from: bg, name: to.t.name, to: to.t.value });
+      else {
+        const cp = contrastPairs.find((x) => x.text === r.old && x.bg === bg);
+        const n = cp?.n ?? ps.filter((p) => p.bg === bg).reduce((t, p) => t + p.n, 0);
+        exceptions.push({ background: bg, elements: n, pages: Object.keys(cp?.pages ?? {}).map((u) => { try { return new URL(u).pathname; } catch { return u; } }), selectors: cp?.selectors ?? [] });
+      }
+    }
+    r.alternatives = [{ name: near.t.name, new: near.t.value, backgrounds, exceptions }];
   };
 
   // R8 : un texte posé sur un fond sombre est une décision.
@@ -555,6 +602,13 @@ function colorUsageRows(usages, targets) {
           }
         }
         if (cls === 'correction') reason = r.usage === 'texte' ? 'texte sous 4,5:1 avant, au seuil après (R9)' : 'bordure de champ sous 3:1 avant, au seuil après (R9)';
+        const m = brandRule(r, chosen, cls);
+        if (m) [cls, reason] = m;
+        // M6 : une décision M5 propose aussi le pas proche, avec le fond de la paire en échec déplacé.
+        const before6 = JSON.stringify(r.alternatives);
+        delete r.alternatives;
+        if (reason === M_REASONS.M5) secondVersion(r, ps, chosen);
+        if (JSON.stringify(r.alternatives) !== before6) changed = true;
         if (set(r, chosen, cls, reason)) changed = true;
         const b = worst(ps, (p) => [r.old, p.bg]);
         const a = worst(ps, (p) => [r.new ?? r.old, now(p.bg, p.bgUsage)]);
@@ -579,6 +633,8 @@ function colorUsageRows(usages, targets) {
           cls = 'décision';
           reason = `texte posé sur ${c.t.scale} : utiliser onSolid`;
         }
+        const m = brandRule(r, c, cls);
+        if (m) [cls, reason] = m;
         if (set(r, c, cls, reason)) changed = true;
         const b = worst(ps, (p) => [p.text, r.old]);
         const a = worst(ps, (p) => [now(p.text, 'texte'), r.new ?? r.old]);
@@ -587,11 +643,19 @@ function colorUsageRows(usages, targets) {
     }
     if (!changed) break;
   }
+  // M4 : lignes que la boucle ne relit pas (sans paire de contraste), sur une échelle de statut.
+  for (const r of rows)
+    if (B && r._cands && r.name && r.class !== 'décision' && !isOut(r.class)) {
+      const c = r._cands.find((/** @type {any} */ x) => x.t.name === r.name) ?? { t: T.find((t) => t.name === r.name), delta: r.delta ?? 0 };
+      const m = c.t && B.status.has(c.t.scale) && r._states < r.count ? ['décision', M_REASONS.M4] : null;
+      if (m) Object.assign(r, { class: m[0], reason: m[1] });
+    }
   for (const r of rows) {
     delete r._cands;
     delete r._nearest;
     delete r._fixed;
     delete r._exact;
+    delete r._states;
   }
   return ordered(rows);
 }
@@ -751,7 +815,7 @@ function identify(family, rows) {
  * @param {any} rendered  audit.rendered
  * @param {Target} target
  */
-export function propose(rendered, target) {
+export function propose(rendered, target, { contradictions = /** @type {any[]} */ ([]) } = {}) {
   /** @type {Record<string, { rows: Row[], summary: ReturnType<typeof summarize> }>} */
   const families = {};
   /** @param {string} name @param {Row[]} rows */
@@ -764,8 +828,69 @@ export function propose(rendered, target) {
   if (target.radii) put('radii', u ? radiusUsageRows(u.radii, target.radii) : dimensionRows(gather(rendered, ['radii']), target.radii, { pill: true }));
   if (target.spacing) put('spacing', u ? spacingUsageRows(u.spacing, target.spacing, u.proximity) : dimensionRows(gather(rendered, ['margins', 'paddings', 'gaps']), target.spacing));
   if (target.fontSizes) put('fontSizes', dimensionRows(gather(rendered, ['fontSizes']), target.fontSizes, { nearPx: THRESHOLDS.nearTextPx }));
-  if (target.colors) put('colors', u ? colorUsageRows(u, target.colors) : colorRows(gather(rendered, ['colors']), target.colors));
-  return { thresholds: THRESHOLDS, rules: RULES, families, ...(u?.proximity?.length ? { proximity: u.proximity } : {}) };
+  const B = target.brand && target.colors ? brandOf(target) : null;
+  if (target.colors) put('colors', u ? colorUsageRows(u, target.colors, B, rendered.contrast?.pairs ?? []) : colorRows(gather(rendered, ['colors']), target.colors));
+  return {
+    thresholds: THRESHOLDS,
+    rules: RULES,
+    families,
+    ...(u?.proximity?.length ? { proximity: u.proximity } : {}),
+    // M0, M1, M7 : emplacements résolus, contradictions back-office / feuille et qui les tranche.
+    ...(B ? { brand: { slots: B.slots, contradictions: contradictions.map((c) => ({ variable: c.variable, backOffice: c.backOffice, sheet: c.sheet, ruling: B.byValue.get(c.sheet)?.slot ?? null })) } } : {}),
+  };
+}
+
+/**
+ * Lot M : contraste le plus défavorable d'une valeur sur toutes les paires de sa ligne (toutes
+ * pages), rapporté au seuil : texte et bordure sur leurs fonds, fond et plein sous leurs textes.
+ * L'autre côté de la paire est pris après la table (`map`, décisions comprises), comme le détail ;
+ * sa valeur d'aujourd'hui est gardée (bgToday, textToday) quand elle change. Null sans paire.
+ * @param {any} usages  rendered.usages
+ * @param {{ old: string, usage?: string }} r
+ * @param {string} value
+ * @param {Record<string, string>} [map]  mapping(table, decisions).colors
+ * @returns {{ ratio: number, threshold: number, text: string, bg: string, bgToday?: string, textToday?: string } | null}
+ */
+export function worstContrast(usages, r, value, map = {}) {
+  /** @param {string} hex @param {string} usage */
+  const after = (hex, usage) => map[`${hex}|${usage}`] ?? map[hex] ?? hex;
+  /** @type {{ text: string, bg: string, threshold: number, today: string }[]} */
+  let list = [];
+  if (r.usage === 'texte') list = (usages?.pairs ?? []).filter((/** @type {any} */ p) => p.text === r.old).map((/** @type {any} */ p) => ({ text: value, bg: after(p.bg, p.bgUsage), threshold: p.threshold, today: p.bg }));
+  else if (r.usage === 'bordure') list = (usages?.borderPairs ?? []).filter((/** @type {any} */ p) => p.border === r.old).map((/** @type {any} */ p) => ({ text: value, bg: after(p.bg, p.bgUsage), threshold: p.threshold, today: p.bg }));
+  else if (r.usage === 'fond' || r.usage === 'plein') list = (usages?.pairs ?? []).filter((/** @type {any} */ p) => p.bg === r.old && p.bgUsage === r.usage).map((/** @type {any} */ p) => ({ text: after(p.text, 'texte'), bg: value, threshold: p.threshold, today: p.text }));
+  const fg = r.usage === 'texte' || r.usage === 'bordure';
+  /** @type {any} */
+  let worst = null;
+  for (const p of list) {
+    const ratio = contrastRatio(p.text, p.bg);
+    if (worst && ratio / p.threshold >= worst.ratio / worst.threshold) continue;
+    worst = { ratio: round4(ratio), threshold: p.threshold, text: p.text, bg: p.bg };
+    if (fg && p.today !== p.bg) worst.bgToday = p.today;
+    if (!fg && p.today !== p.text) worst.textToday = p.today;
+  }
+  return worst;
+}
+
+/** Lot M : motifs des décisions imposées par la marque. */
+export const M_REASONS = {
+  M4: 'échelle de statut réservée aux états (aria-invalid, role="alert", message relié) : décision (M4)',
+  M5: 'correction de couleur de marque à plus de 10 : décision (M5)',
+};
+
+/**
+ * Lot M : marque déclarée de la cible, résolue sur les échelles de la valise.
+ * @param {Target & { brand?: any }} target
+ */
+export function brandOf(target) {
+  const T = (target.colors ?? []).map((t) => ({ name: t.name, value: t.value.toLowerCase(), lab: toLab(t.value.toLowerCase()), scale: /^(.+)-(\d+)$/.exec(t.name ?? '')?.[1] ?? t.name }));
+  const scales = new Set(T.map((t) => t.scale));
+  /** @param {string} hex */
+  const nearestScale = (hex) => {
+    const lab = toLab(hex);
+    return T.map((t) => ({ t, d: deltaE(lab, t.lab) })).sort((a, b) => a.d - b.d)[0]?.t.scale ?? '';
+  };
+  return resolveBrand(target.brand, scales, nearestScale);
 }
 
 /**

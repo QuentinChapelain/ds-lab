@@ -11,6 +11,7 @@
   "scripts": {
     "audit": "node src/cli/audit.js",
     "login": "node src/cli/login.js",
+    "marque": "node src/cli/marque.js",
     "reduce": "node src/cli/reduce.js",
     "demo": "node test/helpers/demo.js",
     "test": "node --test \"test/**/*.test.js\""

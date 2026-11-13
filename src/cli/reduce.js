@@ -16,7 +16,9 @@ import { loadSources } from '../lib/sources.js';
 import { gotoAndSettle, DEFAULT_WAIT_MS } from '../browser/navigate.js';
 import { createRenderedAggregator } from '../rendered/aggregate.js';
 import { measureRendered } from '../rendered/run.js';
-import { propose, mapping, rowKey, controlAfter, splitOf } from '../reduce/propose.js';
+import { propose, mapping, rowKey, controlAfter, splitOf, brandOf, worstContrast } from '../reduce/propose.js';
+import { collectSheets } from '../browser/sheets.js';
+import { contradictionsIn } from '../brand/brand.js';
 import { simulatePage, installLive, captureDecision, touchedElements, FRAME } from '../browser/simulate.js';
 import { renderReview } from '../report/review.js';
 import { buildMigration } from '../report/migration.js';
@@ -87,6 +89,9 @@ export async function runReduce(opts) {
     for (const [host, hostUrls] of groupByHost(urls)) {
       const context = await browser.newContext({ viewport, storageState: opts.storageState ?? undefined });
       const agg = createRenderedAggregator();
+      // Lot M (M7) : avec une marque déclarée, feuilles lues pour les replis contraires au back-office.
+      const brandSheets = /** @type {any[]} */ ([]);
+      const seenSheets = new Set();
       // Tour 1 : mesurer, pour proposer la table sur l'ensemble des pages.
       for (const url of hostUrls) {
         log(`mesure → ${url}`);
@@ -95,13 +100,21 @@ export async function runReduce(opts) {
           await gotoAndSettle(page, url, { waitMs });
           // Lot M : origine CSS (règle d'un élément d'exemple) et états forcés, pour migration.md.
           await measureRendered(page, agg, { trace: true, states: true, thirdParty: sources?.thirdParty ?? [], sources });
+          if (target.brand)
+            for (const sh of (await collectSheets(page)).sheets) {
+              const k = sh.href ?? `${url}#${sh.styleSheetId}`;
+              if (seenSheets.has(k)) continue;
+              seenSheets.add(k);
+              brandSheets.push(sh);
+            }
         } finally {
           await page.close().catch(() => {});
         }
       }
       // R6 : les sélecteurs tiers suivent la table, pour que la simulation les exclue.
       const rendered = agg.result();
-      const table = { ...propose(rendered, target), thirdParty: sources?.thirdParty ?? [] };
+      const contradictions = target.brand ? contradictionsIn(brandSheets, brandOf(target).variables) : [];
+      const table = { ...propose(rendered, target, { contradictions }), thirdParty: sources?.thirdParty ?? [] };
       // Lot P (P3) : la hiérarchie des espaces, recalculée avec les décisions relues.
       controlAfter(table, decisions);
       const map = mapping(table, decisions);
@@ -159,6 +172,14 @@ export async function runReduce(opts) {
         }
       }
       for (const { r, others, touched } of pending) if (r.capture) Object.assign(r.capture, { elements: touched.length, touched, others });
+      // Lot M : sous chaque version de couleur, le contraste le plus défavorable sur toutes les paires
+      // de la ligne (toutes pages), pas seulement celui des éléments de la page capturée.
+      for (const { family, r } of pending)
+        if (family === 'colors')
+          for (const v of r.capture?.versions ?? []) {
+            const w = worstContrast(rendered.usages, r, v.value, map.colors ?? {});
+            if (w) v.contrast = w;
+          }
       await sharp?.close();
       await context.close();
       const stamp = stampOf(now);
