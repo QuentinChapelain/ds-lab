@@ -468,8 +468,16 @@ export function renderReview(table, pages, meta) {
             const decision = cls === 'décision';
             const choice = decision ? '<span class="choix">Pas encore choisie</span>' : '<span class="choix"></span>';
             const head = `<p class="titre"><b class="id">${esc(r.id ?? '')}</b> ${esc(r.title ?? '')}${choice}</p>`;
+            // Lot V, étape 6 (D4) : même déclaration que d'autres lignes aux issues différentes (trace).
+            const conflict = r.conflict
+              ? `<p class="conflit">${typeof decisionFor(meta.decisions, family, r) === 'string' ? 'décidé, ' : ''}${r.conflict === 'total' ? 'non applicable' : 'en partie non applicable'} sans changer la structure (${(r.conflicts ?? [])
+                  .map((/** @type {any} */ c) => `même déclaration : ${c.file}:${c.line} ${c.selector}${c.with?.length ? `, avec ${c.with.join(', ')}` : ''}`)
+                  .map(esc)
+                  .join(' ; ')})</p>`
+              : '';
             return `<article class="row c-${isOut(cls) ? 'hors' : esc(cls)}${decision ? ' decision a-trancher' : ''}${twoWay ? ' avant-apres' : ''}" data-key="${esc(key)}"${decision || twoWay ? ' tabindex="0"' : ''}>
   ${head}
+  ${conflict}
   <header>${glyph(family, r.old)}<code>${esc(r.old)}</code>${arrow}${usage}${what}</header>
   ${decision || r.capture ? portee(r) : ''}
   ${paired.has(key) ? '<p class="controle" aria-live="polite" hidden></p>' : ''}
@@ -568,6 +576,7 @@ ${byClass}
   body.sans-reperes .zone, body.sans-reperes .cote { display:none; }
   .portee { margin:6px 0 0; font-size:14px; color:var(--soft); }
   .controle { margin:8px 0 0; display:flex; flex-direction:column; gap:4px; font-size:14px; }
+  .conflit { margin:6px 0 0; padding:4px 8px; border-left:3px solid currentColor; font-size:14px; }
   .marque { margin:8px 0 0; display:flex; flex-direction:column; gap:4px; font-size:14px; }
   .marque span { border-radius:6px; padding:6px 10px; background:#eef2fb; color:#1f3363; border:1px solid #a9b9e0; }
   .controle span { border-radius:6px; padding:6px 10px; }

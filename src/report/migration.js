@@ -242,8 +242,8 @@ export const simulationCouplings = (couplings) =>
  *   uncovered: { family: string, value: string, usage: string | null, count: number, selectors: string[] }[] }} Witness
  */
 
-/** @param {{ table: any, rendered: any, map: Record<string, any>, target: any, tokens?: any, decisions?: Record<string, string | false>, meta: any, witnesses?: Witness[] }} o */
-export function buildMigration({ table, rendered, map, target, tokens, decisions = {}, meta, witnesses = [] }) {
+/** @param {{ table: any, rendered: any, map: Record<string, any>, target: any, tokens?: any, decisions?: Record<string, string | false>, meta: any, witnesses?: Witness[], conflicts?: any[] }} o */
+export function buildMigration({ table, rendered, map, target, tokens, decisions = {}, meta, witnesses = [], conflicts = [] }) {
   const idx = tokens ? indexTokens(tokens) : null;
   /** @param {string} family @param {string | null} value @param {{ name?: string | null, pleinScales?: Set<string> }} [ctx] */
   const token = (family, value, ctx) => (value === null ? '—' : idx?.find(family, value, ctx) ?? 'jeton absent');
@@ -311,6 +311,11 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
         candidates: r.candidates ?? [],
         contrast: r.contrast ?? null,
         tie: tieOf(r.candidates ?? []),
+        // Lot V, étape 6 : déclarations sources (unité écrite) et conflits (même déclaration, issues différentes).
+        declarations: r.declarations ?? null,
+        conflict: r.conflict ?? null,
+        conflicts: r.conflicts ?? [],
+        coupledDeclarations: r.coupledDeclarations ?? [],
         // Lot M : emplacement de marque, seconde version ou exception (M6).
         ...(r.slot ? { slot: r.slot } : {}),
         // Valeur lisible sur tous les fonds (proposition M5), gardée par les éléments en exception.
@@ -364,6 +369,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     meta,
     rows,
     witnesses,
+    conflicts,
     sections: {
       applied: { total: applied.length, ...byFamily(applied) },
       pending: { total: pending.length, ...byFamily(pending) },
@@ -592,14 +598,71 @@ function agentBrief(d, s) {
     "Écris chaque jeton sous la forme var(--couleur-neutre-11, ancienne valeur) : chemin du jeton, points remplacés par des tirets ; en repli, l'ancienne valeur ; si la source l'écrit autrement (rem, rgb()), garde l'écriture de la source. Si la ligne dit « jeton absent », écris la valeur hex ou px indiquée.",
   );
   lines.push('Les valeurs ci-dessous sont des valeurs calculées : dans la source, elles peuvent être écrites autrement (rem, em, rgb(), mot-clé) ; cherche leur équivalent.');
-  lines.push('');
-  lines.push(`REMPLACEMENTS (${s.applied.length})`);
+  // Lot V, étape 6 : D3 (unité relative) et D4 (conflits), en règle générale.
   lines.push(
-    `0. Crée tokens.css, qui déclare dans :root chaque variable utilisée ci-dessous avec sa valeur, à partir de ${m.tokens ?? 'primitives.tokens.json'}, et charge-la avant toutes les autres feuilles.`,
+    "Une déclaration source en unité relative (rem, em, %) dépend de la racine de sa page : en RATTACHE, ne la rattache pas, laisse-la et pose au-dessus /* ds-lab : unité relative, non rattachée (<valeur>, <date>) */ ; en REMPLACEMENTS, remplace-la et vérifie le rendu sur les pages témoins. Quand une ligne ne liste pas ses déclarations, lis la source et applique cette règle.",
   );
-  s.applied.forEach((r, i) => {
+  lines.push("Quand une ligne liste ses déclarations, ne touche que celles-là. Une déclaration de CONFLITS ne se remplace pas : ne coupe pas la règle.");
+  lines.push('');
+  const date = String(m.stamp ?? '').slice(0, 10);
+  /** @param {any} e */
+  const at = (e) => `${e.file}:${e.line} ${e.selector}`;
+  /** @param {any} e */
+  const said = (e) => `${at(e)} (${e.written ?? '?'}${e.inherited ? ', héritée' : ''})`;
+  /**
+   * Déclarations d'une ligne, pour l'agent (D3, D4). Null quand l'outil ne les connaît pas.
+   * @param {any} r @param {boolean} attach  ligne RATTACHE
+   */
+  const declsOf = (r, attach) => {
+    // Une déclaration par feuille, ligne et sélecteur : les côtés et les coins d'un raccourci ne se répètent pas.
+    /** @type {Map<string, any>} */
+    const seen = new Map();
+    for (const e of r.declarations ?? []) {
+      const k = `${at(e)}|${e.written}`;
+      const prev = seen.get(k);
+      seen.set(k, prev ? { ...prev, conflict: prev.conflict || e.conflict, inherited: prev.inherited || e.inherited } : e);
+    }
+    const ds = [...seen.values()];
+    if (!ds.length) return null;
+    const ok = ds.filter((/** @type {any} */ e) => !e.conflict);
+    const rel = ok.filter((/** @type {any} */ e) => e.unit === 'relative');
+    const parts = [];
+    if (attach) {
+      const abs = ok.filter((/** @type {any} */ e) => e.unit !== 'relative');
+      if (abs.length) parts.push(`Déclarations à rattacher : ${abs.map(said).join(', ')}.`);
+      if (rel.length)
+        parts.push(`Laisse en l'état, unité relative : ${rel.map((/** @type {any} */ e) => `${said(e)}, pose au-dessus /* ds-lab : unité relative, non rattachée (${e.written}, ${date}) */`).join(' ; ')}.`);
+    } else {
+      if (ok.length) parts.push(`Déclarations à remplacer : ${ok.map(said).join(', ')}.`);
+      if (rel.length) parts.push(`Unité relative (${rel.map((/** @type {any} */ e) => `${e.written}, ${e.file}:${e.line}`).join(' ; ')}) : à vérifier sur les pages témoins.`);
+    }
+    const conf = ds.filter((/** @type {any} */ e) => e.conflict);
+    if (conf.length) parts.push(`hors : ${conf.map(said).join(', ')} : conflit, voir CONFLITS.`);
+    parts.push('Ne touche que ces déclarations.');
+    return parts.join(' ');
+  };
+  /**
+   * Lot V, étape 6 : une ligne de texte exclut les éléments visés par un COUPLAGE (leur texte devient
+   * l'onSolid) et le dit ; leurs déclarations relèvent de COUPLAGES.
+   * @param {any} r
+   */
+  const coupledOf = (r) => {
+    if (r.family !== 'colors' || r.usage !== 'texte') return '';
+    const hits = d.exceptions.onSolid.filter((/** @type {any} */ p) => p.befores.some((/** @type {any} */ b) => b.text === r.value));
+    if (!hits.length) return '';
+    const sels = [...new Set(hits.flatMap((/** @type {any} */ p) => p.selectors))];
+    const decl = [...new Set((r.coupledDeclarations ?? []).map((/** @type {any} */ e) => `${e.file}:${e.line} ${e.selector}`))];
+    return ` Exclut les éléments du COUPLAGE (texte posé sur un plein ${[...new Set(hits.map((/** @type {any} */ p) => p.scale))].join(', ')}, voir COUPLAGES) : ${sels.join(', ') || '—'}${decl.length ? ` ; leurs déclarations relèvent de COUPLAGES : ${decl.join(', ')}` : ''}.`;
+  };
+  const replaceable = s.applied.filter((/** @type {any} */ r) => r.conflict !== 'total');
+  lines.push(`REMPLACEMENTS (${replaceable.length})`);
+  lines.push(
+    `0. Crée tokens.css, qui déclare dans :root chaque variable utilisée ci-dessous avec sa valeur, à partir de ${m.tokens ?? 'primitives.tokens.json'}, et charge-la avant toutes les autres feuilles, dans toute page qui charge une feuille modifiée, pas seulement les pages de la table.`,
+  );
+  replaceable.forEach((r, i) => {
+    const decl = declsOf(r, false);
     lines.push(
-      `${i + 1}. ${r.id} ${r.title}. Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage} : remplace ${r.value} par ${write(r)}${r.status === 'décidée' ? ' [décidée]' : ''}.${relationOf(r)}${r.reason && r.status !== 'décidée' ? ` Motif : ${r.reason}.` : ''} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}. Point de départ : ${r.origin}.${m6Move(r)} Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`,
+      `${i + 1}. ${r.id} ${r.title}. Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage} : remplace ${r.value} par ${write(r)}${r.status === 'décidée' ? ' [décidée]' : ''}.${relationOf(r)}${r.reason && r.status !== 'décidée' ? ` Motif : ${r.reason}.` : ''} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}.${coupledOf(r)}${m6Move(r)} ${decl ?? `Point de départ : ${r.origin}. Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`}`,
     );
   });
   lines.push('');
@@ -611,11 +674,19 @@ function agentBrief(d, s) {
   } else {
     s.attached.forEach((r, i) => {
       lines.push(
-        `${i + 1}. ${r.id} ${r.title}. Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage}, valeur ${r.value} : remplace la valeur écrite par ${cssVarFallback(r.token, r.value)} ; aucun changement visible.${relationOf(r)} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}. Point de départ : ${r.origin}. Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`,
+        `${i + 1}. ${r.id} ${r.title}. Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage}, valeur ${r.value} : remplace la valeur écrite par ${cssVarFallback(r.token, r.value)} ; aucun changement visible sur les pages mesurées.${relationOf(r)} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}.${coupledOf(r)} ${declsOf(r, true) ?? `Point de départ : ${r.origin}. Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`}`,
       );
     });
     if (!s.attached.length) lines.push('- Aucune.');
   }
+  lines.push('');
+  // Lot V, étape 6 (D4) : une déclaration, deux lignes aux issues différentes.
+  lines.push(`CONFLITS (${(d.conflicts ?? []).length})`);
+  for (const c of d.conflicts ?? [])
+    lines.push(
+      `- ${c.file}:${c.line} ${c.selector} { ${c.property}: ${c.written ?? '?'} } : même déclaration pour ${c.rows.map((/** @type {any} */ x) => `${x.id} (${x.outcome === 'laisse' ? 'laissée' : `→ ${x.outcome}`}${x.scope ? `, ${x.scope}` : ''})`).join(' et ')}, pages ${c.pages.join(', ')}. Ne remplace pas cette déclaration et ne coupe pas la règle ; pose au-dessus /* ds-lab : conflit, ${c.rows.map((/** @type {any} */ x) => `${x.id} ${x.outcome}`).join(' / ')}, même déclaration (${date}) */ ; signale-le dans ton compte rendu.`,
+    );
+  if (!(d.conflicts ?? []).length) lines.push('- Aucun.');
   lines.push('');
   lines.push(`COUPLAGES (${d.exceptions.onSolid.length})`);
   for (const p of d.exceptions.onSolid) {
@@ -662,7 +733,7 @@ function agentBrief(d, s) {
   lines.push('VÉRIFICATION');
   lines.push(`Relance : ${m.command ?? 'npm run reduce (mêmes options)'}`);
   lines.push('Après modification du CSS, relance reduce sur les pages de la table et sur les pages témoins, et compare au prévu ; signale tout écart avant la mise en ligne.');
-  lines.push('Chaque ligne traitée doit ressortir « inchangé » dans la nouvelle table.');
+  lines.push('Chaque ligne traitée doit ressortir « inchangé » dans la nouvelle table. Les déclarations de CONFLITS et les unités relatives laissées ressortent telles quelles : c’est attendu.');
   // Lot I (I6).
   lines.push('Chaque variable écrite est déclarée dans tokens.css.');
   lines.push('Retire le repli quand toutes les pages sont migrées, pas avant.');
@@ -670,5 +741,5 @@ function agentBrief(d, s) {
     `Il ne doit rester ${d.remaining.length === 1 ? 'qu’une paire' : `que ${d.remaining.length} paires`} de texte sous 4,5:1 : ${d.remaining.map((/** @type {any} */ p) => `${p.text} sur ${p.bg} (${String(p.ratio).replace('.', ',')}:1)`).join(' ; ') || 'aucune'}.`,
   );
   const markdown = ['## Consigne pour un agent', '', 'À copier telle quelle.', '', '```text', ...lines, '```', ''].join('\n');
-  return { markdown, replacements: s.applied.length, lines };
+  return { markdown, replacements: replaceable.length, lines };
 }

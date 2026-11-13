@@ -24,6 +24,7 @@ import { renderReview } from '../report/review.js';
 import { buildMigration, couplingsOf, simulationCouplings } from '../report/migration.js';
 import { stampOf, freeOutputDir } from '../report/json.js';
 import { pageName, writeReference } from '../verify/reference.js';
+import { identityMapping, declarationsOnPage, attachDeclarations } from '../reduce/declarations.js';
 
 const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cible.json> [options]
 
@@ -155,6 +156,25 @@ export async function runReduce(opts) {
       // Lot V, étape 4 : la simulation (revue, références, captures, --live) pose aussi les COUPLAGES.
       map.solid = [...solid];
       map.couplings = simulationCouplings(couplingsOf({ rendered, map, target }));
+      // Lot V, étape 6 : déclarations sources de chaque ligne (unité écrite, D3) et conflits (D4),
+      // sur les pages de la table et les pages témoins, qui partagent les feuilles.
+      const hostWitnesses = witnessUrls.filter((w) => new URL(w).host === host);
+      // Couplages lus sur la page telle quelle (fond attendu = fond lu) : ils marquent les éléments couplés.
+      const identity = { ...identityMapping(table, { split: splitOf(table), solid: map.solid }), couplings: map.couplings.map((/** @type {any} */ c) => ({ ...c, to: c.bg })) };
+      /** @type {any[]} */
+      const records = [];
+      for (const url of [...hostUrls, ...hostWitnesses]) {
+        log(`déclarations → ${url}`);
+        const page = await context.newPage();
+        try {
+          await gotoAndSettle(page, url, { waitMs });
+          records.push(...(await declarationsOnPage(page, identity, { sources })));
+        } finally {
+          await page.close().catch(() => {});
+        }
+      }
+      const conflicts = attachDeclarations(table, records, decisions);
+      map.conflicts = conflicts.map((c) => ({ id: c.id, keys: c.rows.map((/** @type {any} */ r) => r.key) }));
       // Tour 2 : simuler la table, page par page.
       const pages = [];
       /** @type {string[]} */
@@ -181,7 +201,7 @@ export async function runReduce(opts) {
       // puis la table simulée dessus, couplages compris, et sa référence.
       /** @type {any[]} */
       const witnesses = [];
-      for (const url of witnessUrls.filter((w) => new URL(w).host === host)) {
+      for (const url of hostWitnesses) {
         log(`témoin → ${url}`);
         const wagg = createRenderedAggregator({ solid });
         const probe = await context.newPage();
@@ -278,6 +298,7 @@ export async function runReduce(opts) {
         tokens,
         decisions,
         witnesses,
+        conflicts,
         meta: {
           host,
           stamp,

@@ -211,7 +211,8 @@ test('revue : l’écart dit en une phrase ; pas de nombre d’usages qui répè
 });
 
 test('consigne : « à vérifier » absent de la consigne pour l’agent', () => {
-  const hits = orbe.data.agent.lines.filter((/** @type {string} */ l) => l.includes(F.agent.absent));
+  // Lot V, étape 6 (D3) : seule exception, « à vérifier sur les pages témoins » (unité relative).
+  const hits = orbe.data.agent.lines.filter((/** @type {string} */ l) => l.split(F.agent.except).join('').includes(F.agent.absent));
   assert.deepEqual(hits, []);
 });
 

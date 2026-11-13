@@ -34,8 +34,8 @@ let target;
 const BOX = 'position:absolute;left:40px;width:200px;height:60px;line-height:60px;padding:0 8px;font:700 14px/60px Arial,sans-serif';
 // Avant migration : blanc sur un plein terre qui change (#d0563f, décidé vers terre-9) et sur terre-9 déjà sur la cible.
 const AVANT = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>avant</title>
-<style>html,body{margin:0;background:#ffffff}.nouveau{${BOX};top:40px;color:#ffffff;background-color:#d0563f}.annulee{${BOX};top:140px;color:#ffffff;background-color:#c8553d}</style></head>
-<body><span class="nouveau">Nouveau</span><span class="annulee">Annulée</span></body></html>`;
+<style>html,body{margin:0;background:#ffffff}.nouveau{${BOX};top:40px;color:#ffffff;background-color:#d0563f}.annulee{${BOX};top:140px;color:#ffffff;background-color:#c8553d}.pied{${BOX};top:240px;color:#ffffff;background-color:#2b4c7e}</style></head>
+<body><span class="nouveau">Nouveau</span><span class="annulee">Annulée</span><span class="pied">Pied</span></body></html>`;
 // Après migration : onSolid terre sur terre-9 ; bleu-12 sur sable-9 (pas l'onSolid de sable).
 const APRES = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>apres</title>
 <style>html,body{margin:0;background:#ffffff}.annulee{${BOX};top:40px;color:#220000;background-color:#c8553d}.promo{${BOX};top:140px;color:#103060;background-color:#f0c987}</style></head>
@@ -178,4 +178,37 @@ test('1 : capture par version de la ligne du plein : #220000 avec terre-9, blanc
   const png = (/** @type {any} */ v) => PNG.sync.read(Buffer.from(v.shot.png, 'base64'));
   assert.equal(countHex(png(now), '#220000'), 0, 'actuelle : pas de couplage');
   assert.ok(countHex(png(terre), '#220000') > 0, 'terre-9 : texte #220000');
+});
+
+// Lot V, étape 6, retouches de la consigne. Attendus écrits avant le code :
+// 1. Étape 0 : tokens.css se charge dans toute page qui charge une feuille modifiée, pas seulement
+//    les pages de la table.
+// 2. Une ligne RATTACHE exclut les éléments visés par un COUPLAGE et le dit : ici le blanc en texte
+//    (blanc sur bleu-9, .pied, 8,6144:1, rattaché) n'inclut pas .nouveau ni .annulee (couplés) ;
+//    leurs déclarations de couleur ne sont pas dans « Déclarations à rattacher ».
+test('consigne, étape 0 : tokens.css dans toute page qui charge une feuille modifiée', () => {
+  const zero = run.migration.agent.lines.find((/** @type {string} */ l) => l.startsWith('0. '));
+  assert.ok(zero?.includes('dans toute page qui charge une feuille modifiée, pas seulement les pages de la table'), zero);
+});
+
+test('consigne, RATTACHE : le blanc exclut les éléments couplés et le dit', () => {
+  const white = run.migration.rows.find((/** @type {any} */ r) => r.value === '#ffffff' && r.usage === 'texte');
+  assert.ok(white, 'ligne du blanc en texte');
+  const a = /** @type {string[]} */ (run.migration.agent.lines);
+  const i = a.findIndex((l) => l.startsWith('RATTACHE ('));
+  const line = a.slice(i).find((l) => l.includes(`${white.id} `));
+  assert.ok(line, 'ligne RATTACHE du blanc');
+  assert.match(line, /[Ee]xclut les éléments du COUPLAGE/);
+  assert.ok(line.includes('span.nouveau') && line.includes('span.annulee'), `éléments couplés cités : ${line}`);
+  const toAttach = (line.split('Déclarations à rattacher : ')[1] ?? '').split('. ')[0];
+  assert.ok(toAttach.includes('.pied'), `.pied à rattacher : ${line}`);
+  assert.ok(!toAttach.includes('.nouveau') && !toAttach.includes('.annulee'), `couplés hors des déclarations à rattacher : ${toAttach}`);
+});
+
+test('déclarations : la valeur écrite est celle de la source (#ffffff), pas la valeur normalisée', () => {
+  const a = /** @type {string[]} */ (run.migration.agent.lines);
+  const white = run.migration.rows.find((/** @type {any} */ r) => r.value === '#ffffff' && r.usage === 'texte');
+  const line = a.slice(a.findIndex((l) => l.startsWith('RATTACHE ('))).find((l) => l.includes(`${white.id} `)) ?? '';
+  assert.match(line, /\.pied \(#ffffff\)/, line);
+  assert.ok(!line.includes('rgb('), line);
 });

@@ -15,6 +15,8 @@
  * sérialisée dans la page.
  */
 
+import { traceElements, declarationId } from './trace.js';
+
 /**
  * Exécutée dans la page. Relève les remplacements à faire et installe
  * window.__dsSim = { els, ops, changes, show }. Tout est éteint au départ.
@@ -314,7 +316,7 @@ export function scanInPage(map) {
     let active = 0;
     // Lot V, étape 4 : un couplage s'allume avec l'opération de fond qu'il suit (with).
     /** @param {(typeof ops)[number]} op */
-    const isOn = (op) => o.on && (!o.families || o.families.includes(op.family)) && (!o.keys || o.keys.includes(op.key) || (!!op.with && o.keys.includes(op.with)));
+    const isOn = (op) => !op.frozen && o.on && (!o.families || o.families.includes(op.family)) && (!o.keys || o.keys.includes(op.key) || (!!op.with && o.keys.includes(op.with)));
     // Deux passages : on rétablit d'abord, on pose ensuite, pour qu'une opération éteinte
     // n'efface pas une autre posée sur la même propriété du même élément (texte et couplage).
     for (const op of ops) {
@@ -339,6 +341,34 @@ export function scanInPage(map) {
   // Lot V, étape 5 : éléments distincts touchés par au moins une opération.
   const changed = new Set(ops.map((op) => op.i)).size;
   return { elements: els.length, operations: ops.length, changed, changes: list, byFamily };
+}
+
+/**
+ * Lot V, étape 6 (D4) : gèle, dans la simulation installée, les opérations des lignes en conflit
+ * dont l'élément tient sa valeur de la déclaration en conflit (trace de la déclaration gagnante).
+ * @param {import('playwright-core').Page} page
+ * @param {{ id: string, keys: string[] }[]} conflicts
+ * @returns {Promise<{ operations: number, changed: number, byFamily: Record<string, number>, frozen: number }>}
+ */
+export async function freezeConflicts(page, conflicts) {
+  const keys = new Set(conflicts.flatMap((c) => c.keys));
+  const ids = new Set(conflicts.map((c) => c.id));
+  const ops = await page.evaluate(
+    (k) => /** @type {any} */ (window).__dsSim.ops.map((/** @type {any} */ o, /** @type {number} */ n) => ({ n, i: o.i, prop: o.prop, key: o.key })).filter((/** @type {any} */ o) => k.includes(o.key)),
+    [...keys],
+  );
+  const traces = await traceElements(page, ops.map((/** @type {any} */ o) => ({ index: o.i, property: o.prop, pseudo: false })), { sources: null, lookup: (i) => `window.__dsSim.els[${Number(i)}]` });
+  const path = new URL(page.url()).pathname;
+  const frozen = ops.filter((/** @type {any} */ o, /** @type {number} */ j) => traces[j]?.origin === 'feuille' && ids.has(declarationId(traces[j], o.prop, path))).map((/** @type {any} */ o) => o.n);
+  return page.evaluate((list) => {
+    const sim = /** @type {any} */ (window).__dsSim;
+    for (const n of list) sim.ops[n].frozen = true;
+    const live = sim.ops.filter((/** @type {any} */ o) => !o.frozen);
+    /** @type {Record<string, number>} */
+    const byFamily = {};
+    for (const o of live) byFamily[o.family] = (byFamily[o.family] ?? 0) + 1;
+    return { operations: live.length, changed: new Set(live.map((/** @type {any} */ o) => o.i)).size, byFamily, frozen: list.length };
+  }, frozen);
 }
 
 /** Exécutée dans la page : rectangles (coordonnées de page) des éléments demandés. @param {number[]} indices */
@@ -530,7 +560,10 @@ async function crop(page, r) {
  * @returns {Promise<{ url: string, elements: number, operations: number, changed: number, byFamily: Record<string, number>, changes: SimulatedChange[], before: string | null, after: string | null }>}
  */
 export async function simulatePage(page, map, { maxCropped = 80, fullPage = true } = {}) {
-  const scan = await page.evaluate(scanInPage, map);
+  let scan = await page.evaluate(scanInPage, map);
+  // Lot V, étape 6 (D4) : les opérations dont l'élément tient sa valeur d'une déclaration en conflit
+  // ne sont pas appliquées (la consigne laisse ces déclarations telles quelles).
+  if (Array.isArray(map.conflicts) && map.conflicts.length) scan = { ...scan, ...(await freezeConflicts(page, map.conflicts)) };
   const before = fullPage ? (await page.screenshot({ fullPage: true, animations: 'disabled' })).toString('base64') : null;
   const shown = new Set([...scan.changes].sort((a, b) => b.count - a.count).slice(0, maxCropped));
   /** @type {Map<number, Shot>} */

@@ -180,7 +180,7 @@
       "ecart": "2 px avec la valeur la plus proche (8 px)",
       "noUsages": true
     },
-    "agent": { "rule": "« à vérifier » n’apparaît pas dans la consigne pour l’agent ; il reste dans la revue.", "absent": "à vérifier" },
+    "agent": { "rule": "« à vérifier » n’apparaît pas dans la consigne pour l’agent ; il reste dans la revue. Exception (lot V, étape 6, D3) : « à vérifier sur les pages témoins », pour une déclaration en unité relative.", "absent": "à vérifier", "except": "à vérifier sur les pages témoins" },
     "absorbed": {
       "rule": "Une vignette dit quand la marge est absorbée : l’espace visible vient de la marge du voisin, plus grande.",
       "card": { "value": "10px", "scope": "entre composants" },

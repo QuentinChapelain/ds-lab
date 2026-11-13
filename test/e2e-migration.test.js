@@ -223,15 +223,20 @@ test('consigne pour un agent : contexte, une instruction par ligne appliquée, c
   const text = a.lines.join('\n');
   assert.ok(decidee.md.includes('## Consigne pour un agent'));
   const ctx = a.lines.slice(1, a.lines.indexOf(''));
-  assert.equal(ctx.length, 3, 'contexte en 3 lignes');
+  // Lot V, étape 6 : deux règles générales s'ajoutent (D3 unité relative, D4 conflits).
+  assert.equal(ctx.length, 5, 'contexte en 5 lignes');
   assert.ok(ctx.some((/** @type {string} */ l) => l.includes("en repli, l'ancienne valeur ; si la source l'écrit autrement (rem, rgb()), garde l'écriture de la source")));
-  assert.ok(a.lines.includes('0. Crée tokens.css, qui déclare dans :root chaque variable utilisée ci-dessous avec sa valeur, à partir de primitives.tokens.json, et charge-la avant toutes les autres feuilles.'), 'étape 0');
+  // Lot V, étape 6 : tokens.css dans toute page qui charge une feuille modifiée (pages témoins comprises).
+  assert.ok(a.lines.includes('0. Crée tokens.css, qui déclare dans :root chaque variable utilisée ci-dessous avec sa valeur, à partir de primitives.tokens.json, et charge-la avant toutes les autres feuilles, dans toute page qui charge une feuille modifiée, pas seulement les pages de la table.'), 'étape 0');
   assert.ok(a.lines.includes('- Souligne tout lien posé dans du texte courant : 0 trouvé ici.'), 'change aussi');
   assert.ok(pieges.data.agent.lines.includes('- Souligne tout lien posé dans du texte courant : 1 trouvé ici (a.lien-discret).'), 'change aussi, pièges (L1)');
   const steps = (sectionOf(a.lines, 'REMPLACEMENTS (') ?? []).filter((/** @type {string} */ l) => /^[1-9]\d*\. /.test(l));
   assert.ok(steps.some((/** @type {string} */ l) => l.includes('Propriété font-size, usage taille du texte : remplace 13.5px par var(--taille-texte-14, 13.5px) (14px)')), 'usage taille du texte');
-  assert.equal(steps.length, decidee.data.sections.applied.total, 'une instruction par ligne appliquée');
-  for (const l of steps) assert.ok(l.includes('Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.'), l);
+  // Lot V, étape 6 (D4) : une ligne dont toutes les déclarations sont en conflit passe en CONFLITS.
+  const total = decidee.data.rows.filter((/** @type {any} */ r) => (r.status === 'appliquée' || r.status === 'décidée') && r.conflict === 'total').length;
+  assert.equal(steps.length, decidee.data.sections.applied.total - total, 'une instruction par ligne appliquée, hors conflit total');
+  // Lot V, étape 6 : une ligne aux déclarations tracées les liste ; sinon, la recherche par valeur.
+  for (const l of steps) assert.ok(l.endsWith('Ne touche que ces déclarations.') || l.includes('Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.'), l);
   assert.ok(steps.some((/** @type {string} */ l) => l.includes('remplace #999999 par var(--couleur-neutre-11, #999999) (#6d675b)') && l.includes('Propriété color')));
   assert.ok(steps.some((/** @type {string} */ l) => l.includes('remplace #1f2a44 par var(--couleur-bleu-12, #1f2a44) (#103060) [décidée]')));
   assert.ok(text.includes('Le texte posé sur un plein terre devient #220000 (onSolid, var(--couleur-terre-sur-plein, #ffffff))'));
@@ -276,14 +281,19 @@ test('I1 : RATTACHE après REMPLACEMENTS, une ligne par valeur inchangée qui a 
     const l = stepOf(sec, r.id);
     assert.ok(l, `${r.id} absente de RATTACHE`);
     assert.ok(l.includes(`${r.id} ${r.title}.`), `titre : ${l}`);
-    assert.ok(l.includes(`usage ${r.usage}, valeur ${r.value} : remplace la valeur écrite par var(--${r.token.replace(/\./g, '-')}, ${r.value}) ; aucun changement visible.`), l);
+    // Lot V, étape 6 (D3) : « sur les pages mesurées » ; avec ses déclarations tracées, la ligne les liste
+    // (« Ne touche que ces déclarations. ») au lieu du point de départ et de la recherche.
+    assert.ok(l.includes(`usage ${r.usage}, valeur ${r.value} : remplace la valeur écrite par var(--${r.token.replace(/\./g, '-')}, ${r.value}) ; aucun changement visible sur les pages mesurées.`), l);
     assert.ok(l.includes(' Propriété '), `propriété : ${l}`);
     assert.ok(l.includes(` Sélecteurs : ${r.selectors.join(', ') || '—'}`), `sélecteurs : ${l}`);
-    assert.ok(l.includes(` Point de départ : ${r.origin}.`), `point de départ : ${l}`);
-    assert.ok(l.endsWith('Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.'), l);
+    if (r.declarations?.length) assert.ok(l.endsWith('Ne touche que ces déclarations.'), l);
+    else {
+      assert.ok(l.includes(` Point de départ : ${r.origin}.`), `point de départ : ${l}`);
+      assert.ok(l.endsWith('Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.'), l);
+    }
   }
   const white = desordre.data.rows.find((/** @type {any} */ r) => r.family === 'colors' && r.value === '#ffffff' && r.usage === 'texte');
-  assert.ok(stepOf(sec, white.id)?.includes('Propriété color, usage texte, valeur #ffffff : remplace la valeur écrite par var(--couleur-blanc, #ffffff) ; aucun changement visible.'), '#ffffff en texte');
+  assert.ok(stepOf(sec, white.id)?.includes('Propriété color, usage texte, valeur #ffffff : remplace la valeur écrite par var(--couleur-blanc, #ffffff) ; aucun changement visible sur les pages mesurées.'), '#ffffff en texte');
 });
 
 test('I2 : inchangé sans jeton absent de RATTACHE ; sans fichier de jetons, une seule phrase', () => {
