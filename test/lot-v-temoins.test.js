@@ -51,7 +51,8 @@ before(async () => {
   await writeFile(join(root, 't', 'A.html'), PAGE_A);
   await writeFile(join(root, 't', 'W.html'), PAGE_W);
   const decisions = join(root, 'decisions.json');
-  await writeFile(decisions, JSON.stringify({ 'colors|#d0563f|plein': '#c8553d', 'colors|#1f2a44|texte': '#103060' }));
+  // Lot K : le couplage est la version « onSolid » de la carte du plein terre.
+  await writeFile(decisions, JSON.stringify({ 'colors|#d0563f|plein': '#c8553d', 'colors|#1f2a44|texte': '#103060', 'plein|terre': 'onSolid' }));
   refs = await mkdtemp(join(tmpdir(), 'ds-lab-lot-v-temoins-refs-'));
   servers = await startFixtureServers({ root });
   const common = { targetPath: TARGET, tokensPath: TOKENS, decisionsPath: decisions, viewport: { width: 400, height: 360 }, waitMs: 50 };

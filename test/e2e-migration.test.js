@@ -26,6 +26,8 @@ const desordre = { data: null, md: '', table: null };
 const pieges = { data: null, md: '' };
 /** Passage 2c : décisions du designer (fixtures/marque-demo/decisions-passage-2c.json), puis un refus en plus. */
 const DECISIONS = `${FIXTURE_DIR}decisions-passage-2c.json`;
+/** Lot K : passage 2c plus la carte « Texte sur plein terre » (onSolid), fichier temporaire. */
+let decisionsK = '';
 /** @type {{ data: any, md: string, decisions: Record<string, string | false> }} */
 const decidee = { data: null, md: '', decisions: {} };
 /** @type {{ data: any, md: string }} */
@@ -66,9 +68,13 @@ before(async () => {
   const [p] = await runReduce({ ...common, addresses: [servers.origin + '/pieges/pieges.html'], outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-migration-')) });
   pieges.data = p.migration;
   pieges.md = await readFile(p.files[2], 'utf8');
-  decidee.decisions = JSON.parse(await readFile(DECISIONS, 'utf8'));
+  // Lot K : le couplage est une décision par plein ; le passage 2c tranche aussi la carte du plein terre.
+  const kDir = await mkdtemp(join(tmpdir(), 'ds-lab-migration-k-'));
+  decisionsK = join(kDir, 'decisions-passage-2c-plein.json');
+  decidee.decisions = { ...JSON.parse(await readFile(DECISIONS, 'utf8')), 'plein|terre': 'onSolid' };
+  await writeFile(decisionsK, JSON.stringify(decidee.decisions));
   const addresses = [servers.origin + first, ...rest];
-  const [dd] = await runReduce({ ...common, addresses, decisionsPath: DECISIONS, outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-migration-')) });
+  const [dd] = await runReduce({ ...common, addresses, decisionsPath: decisionsK, outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-migration-')) });
   decidee.data = dd.migration;
   decidee.md = await readFile(dd.files[2], 'utf8');
   const tmp = await mkdtemp(join(tmpdir(), 'ds-lab-migration-'));
@@ -157,8 +163,10 @@ test('désordre : exceptions', () => {
   const e = desordre.data.exceptions;
   const want = E.desordre.exceptions;
   assert.equal(e.links.length, want.ununderlinedLinks.count, 'liens sans soulignement');
+  // Lot K : sans décision, la carte du plein terre attend (K5) : aucun couplage ; tranchée « onSolid », les deux.
+  assert.deepEqual(e.onSolid, [], 'aucun couplage sans décision');
   assert.deepEqual(
-    e.onSolid.map((/** @type {any} */ p) => `${p.text}|${p.bg}|${p.scale}|${p.onSolid}`).sort(),
+    decidee.data.exceptions.onSolid.map((/** @type {any} */ p) => `${p.text}|${p.bg}|${p.scale}|${p.onSolid}`).sort(),
     want.onSolid.pairs.map((/** @type {any} */ p) => `${p.text}|${p.bg}|${p.scale}|${p.onSolid}`).sort(),
     'texte sur plein à poser en onSolid',
   );
@@ -186,7 +194,8 @@ test('pièges : L1, un lien sans soulignement dans un paragraphe', () => {
 });
 
 test('décisions (passage 2c) : les 10 décisions lues décident 11 lignes (la marge de 10 px est coupée par relation), qui passent dans « Appliqué » ; une seule en attente, la taille 40px née du lot R', () => {
-  const n = Object.keys(decidee.decisions).length;
+  // Lot K : « plein|terre » est la décision d'une carte, pas d'une ligne ; ses lignes de fond la suivent.
+  const n = Object.keys(decidee.decisions).filter((k) => !k.startsWith('plein|')).length;
   assert.equal(n, 10, 'décisions lues');
   // Lot P : « spacing|10px|marge », choisi avant la coupure, vaut pour ses deux lignes.
   assert.equal(decidee.data.decided, n + 1);
@@ -196,6 +205,7 @@ test('décisions (passage 2c) : les 10 décisions lues décident 11 lignes (la m
   assert.equal(decidee.data.sections.applied.total, E.desordre.sections.applied.total + n + 1, 'appliqué');
   assert.equal(decidee.data.sections.refused.total, 0, 'refusée');
   for (const [key, value] of Object.entries(decidee.decisions)) {
+    if (key.startsWith('plein|')) continue;
     const [family, old, usage] = key.split('|');
     const row = decidee.data.rows.find((/** @type {any} */ r) => r.family === family && r.value === old && r.usage === usage);
     assert.ok(row, `${key} absente`);
@@ -243,7 +253,7 @@ test('consigne pour un agent : contexte, une instruction par ligne appliquée, c
   assert.ok(text.includes('- Hors table : #2196f3'));
   assert.ok(text.includes('- Composant tiers : .tiers-cookies'));
   assert.ok(text.includes('- Valeur hors de sa tranche : #2b4c7e (bleu-9) en texte'));
-  assert.ok(text.includes(`--decisions ${DECISIONS}`), 'commande exacte');
+  assert.ok(text.includes(`--decisions ${decisionsK}`), 'commande exacte');
   assert.ok(a.lines.includes('Après modification du CSS, relance reduce sur les pages de la table et sur les pages témoins, et compare au prévu ; signale tout écart avant la mise en ligne.'), 'pages témoins');
   assert.deepEqual(decidee.data.remaining.map((/** @type {any} */ p) => `${p.text}|${p.bg}`), ['#2196f3|#ffffff'], 'une seule paire sous 4,5:1 après migration');
 });
@@ -275,7 +285,7 @@ test('I1 : RATTACHE après REMPLACEMENTS, une ligne par valeur inchangée qui a 
   assert.ok(sec, 'section RATTACHE absente');
   assert.equal(sec[0], `RATTACHE (${want.length})`);
   assert.ok(a.indexOf(sec[0]) > iRep, 'après REMPLACEMENTS');
-  assert.ok(a.indexOf(sec[0]) < a.indexOf('COUPLAGES (' + desordre.data.exceptions.onSolid.length + ')'), 'avant COUPLAGES');
+  assert.ok(a.indexOf(sec[0]) < a.findIndex((/** @type {string} */ l) => l.startsWith('COUPLAGES (')), 'avant COUPLAGES');
   assert.equal(sec.length - 1, want.length, 'une ligne par valeur');
   for (const r of want) {
     const l = stepOf(sec, r.id);
@@ -328,7 +338,8 @@ test('I3 : repli partout, l’ancienne valeur mesurée de la ligne ; la source g
 });
 
 test('Correction 2 : COUPLAGES avec repli, l’ancienne couleur du texte', () => {
-  const c = sectionOf(desordre.data.agent.lines, 'COUPLAGES (') ?? [];
+  // Lot K : le couplage n'existe que tranché « onSolid » (réduction décidée).
+  const c = sectionOf(decidee.data.agent.lines, 'COUPLAGES (') ?? [];
   assert.ok(c.length > 1);
   for (const l of c.slice(1)) assert.ok(!/var\(--[^,)]*\)/.test(l), `variable sans repli : ${l}`);
   assert.ok(c.some((l) => l.startsWith('- Le texte posé sur un plein terre devient #220000 (onSolid, var(--couleur-terre-sur-plein, #ffffff))')));

@@ -23,10 +23,10 @@
     ]
   },
   "desordre": {
-    "table": { "rows": 89, "unchanged": 35, "corrected": "12/11/2026 : lot P, lignes de marge coupées par relation (10px, 14px, 8px, 4px, 24px : 5 lignes de plus, dont 3 inchangées) ; 13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : 14px, 8px et 24px réunies (3 lignes de moins, dont 2 inchangées)" },
+    "table": { "rows": 89, "unchanged": 34, "corrected": "13/11/2026 : lot K, #c8553d en plein (déjà sur terre-9) suit la carte « Texte sur plein terre », en attente sans décision (35 → 34) ; 12/11/2026 : lot P, lignes de marge coupées par relation (10px, 14px, 8px, 4px, 24px : 5 lignes de plus, dont 3 inchangées) ; 13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : 14px, 8px et 24px réunies (3 lignes de moins, dont 2 inchangées)" },
     "sections": {
       "applied": { "total": 41, "colors": 25, "spacing": 7, "fontSizes": 6, "radii": 3, "corrected": "12/11/2026 : lot R, seuil de 2 px pour les tailles de texte ; 12/11/2026 : lot P, 14px marge (proche) coupée en entre composants et inconnue ; 13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : 14px marge réunie en une ligne" },
-      "pending": { "total": 12, "colors": 5, "spacing": 5, "fontSizes": 1, "radii": 1, "corrected": "12/11/2026 : lot R, seuil de 2 px pour les tailles de texte ; 12/11/2026 : lot P, 10px marge (décision) coupée en dans le composant et entre composants" },
+      "pending": { "total": 13, "colors": 6, "spacing": 5, "fontSizes": 1, "radii": 1, "corrected": "13/11/2026 : lot K, les trois fonds du plein terre attendent la carte « Texte sur plein terre » (#d0563f et #c4513a déjà en attente, #c8553d en plus) ; 12/11/2026 : lot R, seuil de 2 px pour les tailles de texte ; 12/11/2026 : lot P, 10px marge (décision) coupée en dans le composant et entre composants" },
       "outOfTable": { "total": 1, "rows": [{ "family": "colors", "value": "#2196f3", "reason": "aucune échelle (R4)" }] }
     },
     "tokens": [
@@ -45,11 +45,12 @@
     "exceptions": {
       "ununderlinedLinks": { "count": 0 },
       "onSolid": {
-        "count": 2,
+        "$comment": "Lot K : couplages de la réduction décidée (passage 2c et « plein|terre » : « onSolid ») ; sans décision, aucun (K5).",
+        "count": 1,
         "pairs": [
-          { "text": "#ffffff", "bg": "#d0563f", "scale": "terre", "onSolid": "#220000" },
-          { "text": "#ffffff", "bg": "#c8553d", "scale": "terre", "onSolid": "#220000" }
-        ]
+          { "text": "#ffffff", "bg": "#c8553d", "scale": "terre", "onSolid": "#220000", "befores": ["#d0563f", "#c4513a", "#c8553d"] }
+        ],
+        "corrected": "13/11/2026, lot K : la carte tranchée envoie les trois fonds terre au pas 9 ; une seule paire après la table (avant : blanc sur #d0563f et sur #c8553d, la décision de #d0563f n'étant pas appliquée)."
       },
       "unreadStates": {
         "count": 2,

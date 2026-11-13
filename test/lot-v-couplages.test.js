@@ -55,7 +55,8 @@ before(async () => {
   await writeFile(join(root, 'couplage', 'avant.html'), AVANT);
   await writeFile(join(root, 'couplage', 'apres.html'), APRES);
   const decisions = join(root, 'decisions.json');
-  await writeFile(decisions, JSON.stringify({ 'colors|#d0563f|plein': '#c8553d' }));
+  // Lot K : le couplage est la version « onSolid » de la carte du plein terre.
+  await writeFile(decisions, JSON.stringify({ 'colors|#d0563f|plein': '#c8553d', 'plein|terre': 'onSolid' }));
   refs = await mkdtemp(join(tmpdir(), 'ds-lab-lot-v-couplages-refs-'));
   servers = await startFixtureServers({ root });
   [run] = await runReduce({
@@ -169,15 +170,15 @@ test('1 : revue, pages entières : l’après porte le couplage, l’avant non',
   assert.equal(countHex(b, '#220000'), 0, 'avant');
 });
 
-test('1 : capture par version de la ligne du plein : #220000 avec terre-9, blanc avec la valeur actuelle', () => {
-  const r = run.table.families.colors.rows.find((/** @type {any} */ x) => x.old === '#d0563f' && x.usage === 'plein');
-  assert.ok(r?.capture?.versions?.length, 'captures de la ligne');
-  const now = r.capture.versions.find((/** @type {any} */ v) => v.value === '#d0563f');
-  const terre = r.capture.versions.find((/** @type {any} */ v) => v.value === '#c8553d');
-  assert.ok(now && terre, 'versions actuelle et terre-9');
+test('1 : captures de la carte du plein (lot K) : #220000 avec la version onSolid, blanc gardé avec « garder »', () => {
+  const g = (/** @type {any} */ (run.table).pleins ?? []).find((/** @type {any} */ x) => x.scale === 'terre');
+  assert.ok(g?.capture?.versions?.length, 'captures de la carte');
+  const solid = g.capture.versions.find((/** @type {any} */ v) => v.choice === 'onSolid');
+  const keep = g.capture.versions.find((/** @type {any} */ v) => v.choice === 'garder');
+  assert.ok(solid && keep, 'versions onSolid et garder');
   const png = (/** @type {any} */ v) => PNG.sync.read(Buffer.from(v.shot.png, 'base64'));
-  assert.equal(countHex(png(now), '#220000'), 0, 'actuelle : pas de couplage');
-  assert.ok(countHex(png(terre), '#220000') > 0, 'terre-9 : texte #220000');
+  assert.ok(countHex(png(keep), '#220000') === 0 && countHex(png(keep), '#ffffff') > 0, 'garder : texte blanc');
+  assert.ok(countHex(png(solid), '#220000') > 0, 'onSolid : texte #220000');
 });
 
 // Lot V, étape 6, retouches de la consigne. Attendus écrits avant le code :

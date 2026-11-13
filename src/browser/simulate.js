@@ -1046,3 +1046,86 @@ export async function touchedElements(page, d, thirdParty = []) {
   await page.evaluate(showInPage, { on: false });
   return list;
 }
+
+/**
+ * Lot K : éléments d'une carte « Texte sur plein » sur une page déjà chargée (fonds de ses lignes,
+ * dans l'ordre de la page) et, si demandé, une capture par version (onSolid, pas-10, garder), dans
+ * un même cadre : tous les éléments de la carte sur cette page s'ils tiennent en 400 px de haut,
+ * sinon le premier. Chaque version pose ses fonds et, pour onSolid, ses couplages.
+ * @param {import('playwright-core').Page} page
+ * @param {any} g  carte (src/reduce/pleins.js)
+ * @param {string[]} thirdParty @param {string[]} solid
+ * @param {{ versions?: boolean, versionMap: (g: any, choice: string, solid: string[]) => Record<string, any> }} o
+ * @returns {Promise<{ elements: { selector: string, text: string, bg: string }[], capture: any } | null>}
+ */
+export async function capturePlein(page, g, thirdParty, solid, { versions = true, versionMap }) {
+  const identity = { colors: Object.fromEntries(g.rows.map((/** @type {any} */ r) => [`${r.old}|plein`, r.old])), thirdParty, solid };
+  await page.evaluate(scanInPage, identity);
+  /** @type {{ index: number, selector: string, text: string, bg: string }[]} */
+  const found = [];
+  for (const r of g.rows) for (const t of await page.evaluate(touchedInPage, { key: r.key })) found.push({ ...t, bg: r.old });
+  await page.evaluate(showInPage, { on: false });
+  if (!found.length) return null;
+  found.sort((a, b) => a.index - b.index);
+  const elements = found.map(({ selector, text, bg }) => ({ selector, text, bg }));
+  if (!versions) return { elements, capture: null };
+  const geo = await page.evaluate((idx) => {
+    const els = /** @type {any} */ (window).__dsSim.els;
+    const rects = idx.map((/** @type {number} */ i) => {
+      const r = els[i].getBoundingClientRect();
+      return { x: r.left + scrollX, y: r.top + scrollY, width: r.width, height: r.height };
+    });
+    const d = document.documentElement;
+    // Lignes de texte de la page, pour ne pas en couper une au bord du cadre.
+    /** @type {{ x: number, y: number, width: number, height: number }[]} */
+    const lines = [];
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      if (!(n.textContent ?? '').trim()) continue;
+      const range = document.createRange();
+      range.selectNodeContents(n);
+      for (const q of range.getClientRects()) if (q.width > 0 && q.height > 0) lines.push({ x: q.left + scrollX, y: q.top + scrollY, width: q.width, height: q.height });
+    }
+    return { rects, lines, doc: { width: Math.max(d.scrollWidth, d.clientWidth), height: Math.max(d.scrollHeight, d.clientHeight) } };
+  }, found.map((e) => e.index));
+  /** @param {Rect[]} rs */
+  const box = (rs) => {
+    const x0 = Math.max(0, Math.floor(Math.min(...rs.map((r) => r.x)) - FRAME.pad));
+    const y0 = Math.max(0, Math.floor(Math.min(...rs.map((r) => r.y)) - FRAME.pad));
+    const x1 = Math.min(geo.doc.width, Math.ceil(Math.max(...rs.map((r) => r.x + r.width)) + FRAME.pad));
+    const y1 = Math.min(geo.doc.height, Math.ceil(Math.max(...rs.map((r) => r.y + r.height)) + FRAME.pad));
+    return { x: x0, y: y0, width: Math.max(8, x1 - x0), height: Math.max(8, y1 - y0) };
+  };
+  let clip = box(geo.rects);
+  if (clip.height > FRAME.maxHeight) clip = box([geo.rects[0]]);
+  // Une ligne coupée par le bord haut ou bas : le cadre va jusqu'à son bord, dans la limite de
+  // 400 px ; au-delà, il s'arrête avant elle.
+  for (let round = 0; round < 6; round++) {
+    let { y, height } = clip;
+    const across = geo.lines.filter((t) => t.x < clip.x + clip.width && t.x + t.width > clip.x);
+    const top = across.filter((t) => t.y < y - 0.5 && t.y + t.height > y + 0.5);
+    const bottom = across.filter((t) => t.y < y + height - 0.5 && t.y + t.height > y + height + 0.5);
+    if (!top.length && !bottom.length) break;
+    let y0 = y;
+    let y1 = y + height;
+    if (top.length) {
+      const edge = Math.max(0, Math.floor(Math.min(...top.map((t) => t.y))));
+      y0 = y1 - edge <= FRAME.maxHeight ? edge : Math.ceil(Math.max(...top.map((t) => t.y + t.height)));
+    }
+    if (bottom.length) {
+      const edge = Math.min(geo.doc.height, Math.ceil(Math.max(...bottom.map((t) => t.y + t.height))));
+      y1 = edge - y0 <= FRAME.maxHeight ? edge : Math.floor(Math.min(...bottom.map((t) => t.y)));
+    }
+    clip = { ...clip, y: y0, height: Math.max(8, y1 - y0) };
+  }
+  const scale = await page.evaluate(() => window.devicePixelRatio);
+  const out = [];
+  for (const v of g.versions) {
+    await page.evaluate(scanInPage, { ...versionMap(g, v.choice, solid), thirdParty });
+    await page.evaluate(showInPage, { on: true });
+    const buf = await page.screenshot({ fullPage: true, clip, animations: 'disabled' });
+    out.push({ choice: v.choice, label: v.label, value: v.choice, shot: { png: buf.toString('base64'), width: clip.width, height: clip.height, scale } });
+  }
+  await page.evaluate(showInPage, { on: false });
+  return { elements, capture: { page: page.url(), clip, versions: out } };
+}

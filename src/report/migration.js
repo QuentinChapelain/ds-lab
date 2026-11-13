@@ -10,7 +10,8 @@ import { basename } from 'node:path';
 import { APPLIED, isOut, SLICES, decisionFor, WHERE_TO_FIX, nearestOf, tieOf, onSolidOf } from '../reduce/propose.js';
 
 export { onSolidOf };
-import { contrastRatio, isOpaque, toLab, deltaE } from '../lib/color.js';
+import { contrastRatio } from '../lib/color.js';
+import { pleinFinder } from '../reduce/pleins.js';
 
 /** Groupes de jetons de dimension, par famille de la table. */
 const DIM_GROUPS = /** @type {Record<string, string[]>} */ ({
@@ -175,49 +176,30 @@ function originOf(rendered, family, r) {
 const shortValue = (v) => (/^-?[\d.]+px$/.test(v) ? `${String(parseFloat(v)).replace('.', ',')} px` : v);
 
 
-/**
- * Couleurs de la valise, et échelle et pas d'un plein (pas 9-10 le plus proche), ou null.
- * @param {any} target
- */
-function pleinFinder(target) {
-  const T = (target.colors ?? []).map((/** @type {any} */ c) => ({ name: c.name, value: c.value.toLowerCase(), lab: toLab(c.value.toLowerCase()) }));
-  /** @param {string} hex @returns {{ scale: string, step: 9 | 10 } | null} */
-  const pleinOf = (hex) => {
-    if (!T.length || !isOpaque(hex)) return null;
-    const lab = toLab(hex);
-    const best = T.map((/** @type {any} */ t) => ({ t, d: deltaE(lab, t.lab) })).sort((/** @type {any} */ a, /** @type {any} */ b) => a.d - b.d)[0];
-    const m = /^(.+)-(\d+)$/.exec(best.t.name ?? '');
-    return m && Number(m[2]) >= 9 && Number(m[2]) <= 10 ? { scale: m[1], step: /** @type {9 | 10} */ (Number(m[2])) } : null;
-  };
-  return { T, pleinOf };
-}
 
 /**
- * COUPLAGES : textes posés sur un plein, encore sous leur seuil une fois la table posée, et
- * l'onSolid de l'échelle du plein. Une entrée par paire après la table, avec ses paires d'origine
- * (befores). Lot V, étape 4 : la simulation les applique aussi (voir simulationCouplings).
- * @param {{ rendered: any, map: Record<string, any>, target: any }} o
+ * COUPLAGES : textes posés sur un plein et l'onSolid de l'échelle du plein. Une entrée par paire
+ * après la table, avec ses paires d'origine (befores). Lot V, étape 4 : la simulation les applique
+ * aussi (voir simulationCouplings). Lot K : un couplage est une décision ; seuls les pleins dont la
+ * carte a retenu « onSolid » en ont, pour tous leurs textes (sauf ceux déjà à l'onSolid).
+ * @param {{ rendered: any, map: Record<string, any>, target?: any, pleins?: any[] }} o
  */
-export function couplingsOf({ rendered, map, target }) {
-  const { pleinOf } = pleinFinder(target);
-  const onSolidMap = target.onSolid ?? {};
+export function couplingsOf({ rendered, map, pleins = [] }) {
   /** @type {any[]} */
   const onSolid = [];
   for (const p of rendered.usages?.pairs ?? []) {
     if (p.bgUsage !== 'plein') continue;
+    const g = pleins.find((x) => x.choice === 'onSolid' && x.rows.some((/** @type {any} */ r) => r.old === p.bg));
+    if (!g) continue;
     const text = mapped(map, p.text, 'texte');
     const bg = mapped(map, p.bg, 'plein');
+    if (text === g.onSolid) continue;
     const ratio = contrastRatio(text, bg);
-    const plein = pleinOf(bg);
-    const scale = plein?.scale ?? null;
-    // Lot G (G4) : onSolid par pas quand la valise en donne un pour le 9 et un pour le 10.
-    const solid = scale ? onSolidOf(onSolidMap, scale, plein?.step ?? 9) : null;
-    if (ratio >= p.threshold || !scale || !solid) continue;
     const seen = (rendered.contrast?.pairs ?? []).find((/** @type {any} */ x) => x.text === p.text && x.bg === p.bg);
     // Une entrée par paire après la table : plusieurs fonds d'origine peuvent aller au même pas.
     let o = onSolid.find((x) => x.text === text && x.bg === bg);
     if (!o) {
-      o = { text, bg, before: { text: p.text, bg: p.bg }, befores: [], ratio: Math.round(ratio * 10000) / 10000, threshold: p.threshold, scale, onSolid: solid, n: 0, selectors: [] };
+      o = { text, bg, before: { text: p.text, bg: p.bg }, befores: [], ratio: Math.round(ratio * 10000) / 10000, threshold: p.threshold, scale: g.scale, onSolid: g.onSolid, card: g.title, n: 0, selectors: [] };
       onSolid.push(o);
     }
     o.n += p.n;
@@ -273,8 +255,15 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     for (const r of f.rows) {
       const d = decisionOf(family, r);
       // Statut après décisions : une chaîne décide (la ligne est appliquée), false refuse.
-      const status =
-        r.class === 'inchangé' && d !== false
+      // Lot K : une ligne de fond d'un plein suit sa carte ; non tranchée, elle attend (K5).
+      const pl = r.plein ?? null;
+      const status = pl
+        ? !pl.choice
+          ? 'en attente'
+          : typeof d === 'string' && d !== r.old
+            ? 'décidée'
+            : 'inchangé'
+        : r.class === 'inchangé' && d !== false
           ? 'inchangé'
           : d === false
             ? 'refusée'
@@ -316,6 +305,8 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
         conflict: r.conflict ?? null,
         conflicts: r.conflicts ?? [],
         coupledDeclarations: r.coupledDeclarations ?? [],
+        // Lot K : carte de plein suivie (identifiant, titre, choix, décision de ligne ignorée).
+        plein: pl,
         // Lot M : emplacement de marque, seconde version ou exception (M6).
         ...(r.slot ? { slot: r.slot } : {}),
         // Valeur lisible sur tous les fonds (proposition M5), gardée par les éléments en exception.
@@ -333,7 +324,8 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
 
   // Exceptions nommées.
   const links = (rendered.usages?.links ?? []).map((/** @type {any} */ l) => ({ ...l }));
-  const onSolid = couplingsOf({ rendered, map, target }).map((o) => ({ ...o, token: idx?.find('colors', o.onSolid, { pleinScales: new Set([o.scale]) }) ?? null }));
+  const pleins = table.pleins ?? [];
+  const onSolid = couplingsOf({ rendered, map, target, pleins }).map((o) => ({ ...o, token: idx?.find('colors', o.onSolid, { pleinScales: new Set([o.scale]) }) ?? null }));
   // Paires encore sous leur seuil une fois la table posée, hors celles que le couplage onSolid répare.
   /** @type {Map<string, { text: string, bg: string, ratio: number, threshold: number, n: number }>} */
   const remaining = new Map();
@@ -343,7 +335,11 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     const ratio = contrastRatio(text, bg);
     if (ratio >= p.threshold || onSolid.some((o) => o.text === text && o.bg === bg)) continue;
     const k = `${text}|${bg}`;
-    const x = remaining.get(k) ?? { text, bg, ratio: Math.round(ratio * 10000) / 10000, threshold: p.threshold, n: 0 };
+    // Lot K : paire d'un plein gardée par le designer (c), ou dont la carte attend (K5).
+    const g = pleins.find((x) => x.rows.some((/** @type {any} */ r) => r.old === p.bg));
+    const note = g?.choice === 'garder' ? 'gardée par le designer' : g && !g.choice ? `en attente du designer (carte ${g.title})` : null;
+    const x = remaining.get(k) ?? { text, bg, ratio: Math.round(ratio * 10000) / 10000, threshold: p.threshold, n: 0, note };
+    x.note = x.note ?? note;
     x.n += p.n;
     remaining.set(k, x);
   }
@@ -370,6 +366,8 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     rows,
     witnesses,
     conflicts,
+    // Lot K : cartes « Texte sur plein », sans leurs captures.
+    pleins: pleins.map(({ capture, ...g }) => g),
     sections: {
       applied: { total: applied.length, ...byFamily(applied) },
       pending: { total: pending.length, ...byFamily(pending) },
@@ -454,6 +452,16 @@ function renderMarkdown(d, s) {
     for (const c of d.brand.contradictions)
       L.push(`- \`${c.variable}\` vaut \`${c.backOffice}\` au back-office, la feuille donne \`${c.sheet}\` : ${c.ruling ? `la cible le range sur ${c.ruling} (M7)` : 'la cible ne tranche pas : à déclarer (M7)'}.`);
     if (!d.brand.contradictions.length) L.push('- Aucune.');
+    L.push('');
+  }
+  // Lot K : une décision par plein ; les décisions de ligne sur ses fonds sont ignorées.
+  if ((d.pleins ?? []).length) {
+    L.push(`## Texte sur plein : ${d.pleins.length}`, '', 'Un texte posé sur un plein qui échoue au contraste est une décision par plein (une carte par échelle). Les lignes de fond qui mènent à ce plein suivent la carte, sans choix séparé ; non tranchée, rien n’est appliqué (ni texte, ni fond).', '');
+    L.push('| carte | clé | lignes de fond | versions (contraste) | choix | décisions de ligne ignorées |', '|---|---|---|---|---|---|');
+    for (const g of d.pleins)
+      L.push(
+        `| ${cell(g.title)} | \`${cell(g.key)}\` | ${g.rows.map((/** @type {any} */ r) => `${r.id} \`${r.old}\``).join(', ')} | ${g.versions.map((/** @type {any} */ v) => `${v.choice} : ${v.text} sur ${v.bg}, ${fr(v.ratio)}:1${v.pass ? '' : ', sous le seuil'}`).join(' ; ')} | ${g.choice ?? 'en attente'} | ${g.ignored.length ? g.ignored.map((/** @type {any} */ x) => `décision de ligne ignorée (${x.value === false ? 'false' : x.value}) : ${x.id} \`${x.key}\`, suit la carte`).join(' ; ') : '—'} |`,
+      );
     L.push('');
   }
   L.push('## Table', '', 'Chaque ligne commence par son identifiant et son titre, les mêmes que dans table.json, revue.html et la barre --live.', '');
@@ -654,6 +662,9 @@ function agentBrief(d, s) {
     const decl = [...new Set((r.coupledDeclarations ?? []).map((/** @type {any} */ e) => `${e.file}:${e.line} ${e.selector}`))];
     return ` Exclut les éléments du COUPLAGE (texte posé sur un plein ${[...new Set(hits.map((/** @type {any} */ p) => p.scale))].join(', ')}, voir COUPLAGES) : ${sels.join(', ') || '—'}${decl.length ? ` ; leurs déclarations relèvent de COUPLAGES : ${decl.join(', ')}` : ''}.`;
   };
+  /** Lot K : ligne de fond qui suit une carte de plein. @param {any} r */
+  const pleinNote = (r) =>
+    !r.plein ? '' : r.plein.choice ? ` Suit la carte ${r.plein.title} (${r.plein.key}, choix : ${r.plein.choice}).` : ` Suit la carte ${r.plein.title} (${r.plein.key}), pas encore choisie.`;
   const replaceable = s.applied.filter((/** @type {any} */ r) => r.conflict !== 'total');
   lines.push(`REMPLACEMENTS (${replaceable.length})`);
   lines.push(
@@ -662,7 +673,7 @@ function agentBrief(d, s) {
   replaceable.forEach((r, i) => {
     const decl = declsOf(r, false);
     lines.push(
-      `${i + 1}. ${r.id} ${r.title}. Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage} : remplace ${r.value} par ${write(r)}${r.status === 'décidée' ? ' [décidée]' : ''}.${relationOf(r)}${r.reason && r.status !== 'décidée' ? ` Motif : ${r.reason}.` : ''} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}.${coupledOf(r)}${m6Move(r)} ${decl ?? `Point de départ : ${r.origin}. Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`}`,
+      `${i + 1}. ${r.id} ${r.title}. Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage} : remplace ${r.value} par ${write(r)}${r.status === 'décidée' ? ' [décidée]' : ''}.${pleinNote(r)}${relationOf(r)}${r.reason && r.status !== 'décidée' ? ` Motif : ${r.reason}.` : ''} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}.${coupledOf(r)}${m6Move(r)} ${decl ?? `Point de départ : ${r.origin}. Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`}`,
     );
   });
   lines.push('');
@@ -688,7 +699,8 @@ function agentBrief(d, s) {
     );
   if (!(d.conflicts ?? []).length) lines.push('- Aucun.');
   lines.push('');
-  lines.push(`COUPLAGES (${d.exceptions.onSolid.length})`);
+  // Lot K : un couplage suit la carte de son plein ; les autres choix et les cartes en attente le disent.
+  const couples = [];
   for (const p of d.exceptions.onSolid) {
     // Repli : l'ancienne couleur du texte ; une par texte d'origine quand il y en a plusieurs.
     const olds = [...new Set(p.befores.map((/** @type {any} */ b) => b.text))];
@@ -697,11 +709,22 @@ function agentBrief(d, s) {
       : olds.length === 1
         ? `, ${cssVarFallback(p.token, olds[0])}`
         : `, ${olds.map((/** @type {string} */ o) => `${cssVarFallback(p.token, o)} là où le texte valait ${o}`).join(', ')}`;
-    lines.push(
+    couples.push(
       `- Le texte posé sur un plein ${p.scale} devient ${p.onSolid} (onSolid${v}) : texte ${p.text} sur ${p.bg} après la table (fonds d'origine ${p.befores.map((/** @type {any} */ b) => b.bg).join(', ')}), ${String(p.ratio).replace('.', ',')}:1. Sélecteurs : ${p.selectors.join(', ') || '—'}.`,
     );
   }
-  if (!d.exceptions.onSolid.length) lines.push('- Aucun.');
+  for (const g of d.pleins ?? []) {
+    const ver = g.versions.find((/** @type {any} */ x) => x.choice === (g.choice ?? ''));
+    const ratio = ver ? `${String(ver.ratio).replace('.', ',')}:1` : '';
+    if (g.choice === 'pas-10')
+      couples.push(`- Plein ${g.scale} : le fond passe au pas 10 (${g.steps[10].name}, ${g.steps[10].value}) et le texte reste tel quel (${ver.text} sur ${ver.bg}, ${ratio}), choisi par le designer (carte ${g.title}). Les fonds sont dans REMPLACEMENTS ; ne change pas le texte.`);
+    else if (g.choice === 'garder')
+      couples.push(`- Plein ${g.scale} : le texte reste tel quel (${ver.text} sur ${ver.bg}, ${ratio}, sous ${String(ver.threshold).replace('.', ',')}:1), gardé par le designer (carte ${g.title}). Ne change pas le texte.`);
+    else if (!g.choice) couples.push(`- Plein ${g.scale} : en attente du designer (carte ${g.title}) : ne change ni le texte ni le fond ; les lignes de fond sont dans NE TOUCHE PAS.`);
+  }
+  lines.push(`COUPLAGES (${couples.length})`);
+  lines.push(...couples);
+  if (!couples.length) lines.push('- Aucun.');
   lines.push('');
   lines.push('CHANGE AUSSI');
   const links = d.exceptions.links;
@@ -716,7 +739,7 @@ function agentBrief(d, s) {
   for (const r of s.refused) lines.push(`- Refusée : ${r.value} (${r.usage}), le designer garde la valeur.`);
   // Lot R, R-2 : décisions en attente, avec leur identifiant et leur titre.
   // Lot I (I4) : un commentaire CSS marque la déclaration en attente.
-  for (const r of s.pending) lines.push(`- ${r.id} ${r.title}. Pas encore choisie par le designer : ne l'applique pas (${r.value}, ${r.usage}). Ajoute au-dessus de la déclaration le commentaire /* ds-lab : en attente du designer, ${r.value} ${r.usage}${relationShort(r)} (${r.id}, ${m.stamp}) */.${relationOf(r)}${r.reason ? ` Motif : ${r.reason}.` : ''}${m6Text(r)} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}.`);
+  for (const r of s.pending) lines.push(`- ${r.id} ${r.title}. Pas encore choisie par le designer : ne l'applique pas (${r.value}, ${r.usage}). Ajoute au-dessus de la déclaration le commentaire /* ds-lab : en attente du designer, ${r.value} ${r.usage}${relationShort(r)} (${r.id}, ${m.stamp}) */.${pleinNote(r)}${relationOf(r)}${r.reason ? ` Motif : ${r.reason}.` : ''}${m6Text(r)} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}.`);
   for (const sel of d.thirdParty) lines.push(`- Composant tiers : ${sel} et tout ce qu'il contient.`);
   lines.push('- Toute valeur absente de cette consigne.');
   lines.push('');
@@ -738,7 +761,7 @@ function agentBrief(d, s) {
   lines.push('Chaque variable écrite est déclarée dans tokens.css.');
   lines.push('Retire le repli quand toutes les pages sont migrées, pas avant.');
   lines.push(
-    `Il ne doit rester ${d.remaining.length === 1 ? 'qu’une paire' : `que ${d.remaining.length} paires`} de texte sous 4,5:1 : ${d.remaining.map((/** @type {any} */ p) => `${p.text} sur ${p.bg} (${String(p.ratio).replace('.', ',')}:1)`).join(' ; ') || 'aucune'}.`,
+    `Il ne doit rester ${d.remaining.length === 1 ? 'qu’une paire' : `que ${d.remaining.length} paires`} de texte sous 4,5:1 : ${d.remaining.map((/** @type {any} */ p) => `${p.text} sur ${p.bg} (${String(p.ratio).replace('.', ',')}:1)${p.note ? `, sous ${String(p.threshold).replace('.', ',')}:1, ${p.note}` : ''}`).join(' ; ') || 'aucune'}.`,
   );
   const markdown = ['## Consigne pour un agent', '', 'À copier telle quelle.', '', '```text', ...lines, '```', ''].join('\n');
   return { markdown, replacements: replaceable.length, lines };

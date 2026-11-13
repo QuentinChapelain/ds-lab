@@ -19,12 +19,13 @@ import { measureRendered } from '../rendered/run.js';
 import { propose, mapping, rowKey, controlAfter, splitOf, brandOf, worstContrast, solidPairs, uncoveredValues } from '../reduce/propose.js';
 import { collectSheets } from '../browser/sheets.js';
 import { contradictionsIn } from '../brand/brand.js';
-import { simulatePage, installLive, captureDecision, touchedElements, FRAME } from '../browser/simulate.js';
+import { simulatePage, installLive, captureDecision, touchedElements, capturePlein, FRAME } from '../browser/simulate.js';
 import { renderReview } from '../report/review.js';
 import { buildMigration, couplingsOf, simulationCouplings } from '../report/migration.js';
 import { stampOf, freeOutputDir } from '../report/json.js';
 import { pageName, writeReference } from '../verify/reference.js';
 import { identityMapping, declarationsOnPage, attachDeclarations } from '../reduce/declarations.js';
+import { pleinGroups, applyPleins, pleinVersionMap } from '../reduce/pleins.js';
 
 const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cible.json> [options]
 
@@ -150,12 +151,17 @@ export async function runReduce(opts) {
       const rendered = agg.result();
       const contradictions = target.brand ? contradictionsIn(brandSheets, brandOf(target).variables) : [];
       const table = { ...propose(rendered, target, { contradictions }), thirdParty: sources?.thirdParty ?? [] };
+      // Lot K : une carte par plein dont le texte échoue ; ses lignes de fond suivent son choix.
+      const pleins = pleinGroups({ table, rendered, target, decisions });
+      /** @type {any} */ (table).pleins = pleins;
+      const effective = applyPleins(table, pleins, decisions);
       // Lot P (P3) : la hiérarchie des espaces, recalculée avec les décisions relues.
-      controlAfter(table, decisions);
-      const map = mapping(table, decisions);
+      controlAfter(table, effective);
+      const map = mapping(table, effective);
       // Lot V, étape 4 : la simulation (revue, références, captures, --live) pose aussi les COUPLAGES.
+      // Lot K : seulement ceux des pleins dont la carte a retenu « onSolid ».
       map.solid = [...solid];
-      map.couplings = simulationCouplings(couplingsOf({ rendered, map, target }));
+      map.couplings = simulationCouplings(couplingsOf({ rendered, map, target, pleins }));
       // Lot V, étape 6 : déclarations sources de chaque ligne (unité écrite, D3) et conflits (D4),
       // sur les pages de la table et les pages témoins, qui partagent les feuilles.
       const hostWitnesses = witnessUrls.filter((w) => new URL(w).host === host);
@@ -173,7 +179,7 @@ export async function runReduce(opts) {
           await page.close().catch(() => {});
         }
       }
-      const conflicts = attachDeclarations(table, records, decisions);
+      const conflicts = attachDeclarations(table, records, effective);
       map.conflicts = conflicts.map((c) => ({ id: c.id, keys: c.rows.map((/** @type {any} */ r) => r.key) }));
       // Tour 2 : simuler la table, page par page.
       const pages = [];
@@ -239,16 +245,24 @@ export async function runReduce(opts) {
       // en deux versions, « avant » et « après », sans vignettes.
       const pending = Object.entries(table.families).flatMap(([family, f]) =>
         f.rows
-          .filter((r) => CAPTURED.has(r.class) && (r.class === 'décision' || (r.new && r.new !== r.old)))
+          // Lot K : une ligne de fond d'un plein n'a pas de captures à elle ; la carte du plein les porte.
+          .filter((r) => !r.plein && CAPTURED.has(r.class) && (r.class === 'décision' || (r.new && r.new !== r.old)))
           .map((r) => ({ family, r, decision: r.class === 'décision', others: /** @type {any[]} */ ([]), touched: /** @type {any[]} */ ([]) })),
       );
       // R-8 : captures des versions en densité 2, dans un contexte à part (les pages entières restent en densité 1).
-      const sharp = pending.length ? await browser.newContext({ viewport, storageState: opts.storageState ?? undefined, deviceScaleFactor: FRAME.scale }) : null;
+      const sharp = pending.length || pleins.length ? await browser.newContext({ viewport, storageState: opts.storageState ?? undefined, deviceScaleFactor: FRAME.scale }) : null;
       for (const url of sharp ? hostUrls : []) {
         log(`versions → ${url}`);
         const page = await /** @type {any} */ (sharp).newPage();
         try {
           await gotoAndSettle(page, url, { waitMs });
+          // Lot K : éléments de chaque carte de plein, et ses trois versions sur la première page qui en porte.
+          for (const g of pleins) {
+            const els = await capturePlein(page, g, table.thirdParty, map.solid, { versions: !g.capture, versionMap: pleinVersionMap });
+            if (!els) continue;
+            for (const e of els.elements) g.elements.push({ page: new URL(url).pathname, ...e });
+            if (els.capture && !g.capture) g.capture = els.capture;
+          }
           for (const x of pending) {
             const { family, r, decision } = x;
             const candidates = decision ? r.candidates : [{ value: /** @type {string} */ (r.new), name: r.name }];
@@ -296,7 +310,7 @@ export async function runReduce(opts) {
         map,
         target,
         tokens,
-        decisions,
+        decisions: effective,
         witnesses,
         conflicts,
         meta: {

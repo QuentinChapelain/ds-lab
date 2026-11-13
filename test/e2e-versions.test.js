@@ -39,7 +39,8 @@ before(async () => {
     outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-versions-')),
     now: new Date(2026, 10, 12, 16, 0),
   });
-  decisions = Object.values(r.table.families).flatMap((/** @type {any} */ f) => f.rows.filter((/** @type {any} */ x) => x.class === 'décision'));
+  decisions = Object.values(r.table.families).flatMap((/** @type {any} */ f) => f.rows.filter((/** @type {any} */ x) => x.class === 'décision' && !x.plein));
+  // Lot K : une ligne de fond d'un plein suit la carte « Texte sur plein », qui porte les captures.
   applied = Object.values(r.table.families).flatMap((/** @type {any} */ f) => f.rows.filter((/** @type {any} */ x) => ['proche', 'auto', 'correction'].includes(x.class)));
   saved = JSON.parse(await readFile(r.files[0], 'utf8'));
 });

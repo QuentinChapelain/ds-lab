@@ -34,6 +34,8 @@ let revueFichier;
 let fileDecisions;
 /** @type {Map<string, { key: string, row: any, family: string }>} */
 const byId = new Map();
+/** Lot K : cartes « Texte sur plein » (une décision par plein ; ses lignes de fond la suivent). @type {any[]} */
+let pleins = [];
 
 before(async () => {
   servers = await startFixtureServers();
@@ -57,6 +59,7 @@ before(async () => {
   revueFichier = pathToFileURL(withFile).href;
   fileDecisions = decisions;
   for (const [family, f] of Object.entries(r.table.families)) for (const row of f.rows) byId.set(row.id, { key: rowKey(family, row), row, family });
+  pleins = r.table.pleins ?? [];
   const { chromium } = await import('playwright-core');
   browser = await chromium.launch();
 });
@@ -96,8 +99,8 @@ const MARGE_10 = () => lineOf('spacing', '10px', 'marge', 'entre composants');
 test('revue : chaque décision est « Pas encore choisie », une image affichée, un bouton par version', async () => {
   const { context, page } = await open();
   try {
-    const decisions = [...byId.values()].filter((x) => x.row.class === 'décision');
-    assert.equal(await page.locator('article.row.decision').count(), decisions.length);
+    const decisions = [...byId.values()].filter((x) => x.row.class === 'décision' && !x.row.plein);
+    assert.equal(await page.locator('article.row.decision').count(), decisions.length + pleins.length);
     for (const { row } of decisions) {
       const c = card(page, row.id);
       assert.ok(await c.evaluate((el) => el.classList.contains('a-trancher')), `${row.id} : à trancher`);
@@ -127,7 +130,7 @@ test('revue : chaque décision est « Pas encore choisie », une image affichée
 test('revue : parcourir les versions sans choisir laisse l’export vide', async () => {
   const { context, page } = await open();
   try {
-    for (const { row } of [...byId.values()].filter((x) => x.row.class === 'décision')) {
+    for (const { row } of [...byId.values()].filter((x) => x.row.class === 'décision' && !x.row.plein)) {
       const c = card(page, row.id);
       const n = row.capture.versions.length;
       for (let i = n - 1; i >= 0; i--) await c.locator(`.versions .v[data-v="${i}"]`).click();
@@ -186,7 +189,7 @@ test('revue : choisir 8 px exporte « 8px » ; afficher ensuite une autre versio
 test('revue : sous chaque version de couleur, le contraste le plus faible et son seuil (recalculé avec culori)', async () => {
   const { context, page } = await open();
   try {
-    const colors = [...byId.values()].filter((x) => x.row.class === 'décision' && x.family === 'colors');
+    const colors = [...byId.values()].filter((x) => x.row.class === 'décision' && !x.row.plein && x.family === 'colors');
     assert.ok(colors.length > 0);
     for (const { row } of colors) {
       const c = card(page, row.id);
@@ -242,7 +245,7 @@ const stored = (page) => page.evaluate((/** @type {string} */ k) => localStorage
 test('revue : le compteur « n / 12 choisies » suit les choix ; « Suivante à choisir » donne le focus à la carte suivante', async () => {
   const { context, page } = await open();
   try {
-    const total = [...byId.values()].filter((x) => x.row.class === 'décision').length;
+    const total = [...byId.values()].filter((x) => x.row.class === 'décision' && !x.row.plein).length + pleins.length;
     assert.equal(await bilan(page), `0 / ${total} choisies`);
     await page.click('#suivante');
     const first = await page.evaluate(() => document.activeElement?.getAttribute('data-key'));
@@ -268,7 +271,7 @@ test('revue : le compteur « n / 12 choisies » suit les choix ; « Suivante à 
 test('revue : mémoire propre à la réduction ; « Tout remettre à zéro » demande un second clic et vide la mémoire', async () => {
   const { context, page } = await open();
   try {
-    const total = [...byId.values()].filter((x) => x.row.class === 'décision').length;
+    const total = [...byId.values()].filter((x) => x.row.class === 'décision' && !x.row.plein).length + pleins.length;
     assert.equal(await stored(page), null, 'rien d’écrit au chargement');
     const c = card(page, MARGE_10().row.id);
     await c.locator('.versions .v[data-value="8px"]').click();
@@ -347,9 +350,9 @@ test('revue : la remise à zéro écarte aussi les décisions venues de --decisi
   try {
     const page = await context.newPage();
     await page.goto(revueFichier);
-    const total = [...byId.values()].filter((x) => x.row.class === 'décision').length;
+    const total = [...byId.values()].filter((x) => x.row.class === 'décision' && !x.row.plein).length + pleins.length;
     // Lot P, étape 3 : un choix du fichier sans relation vaut pour chaque ligne coupée (10 px et 6 px en marge).
-    const fromFile = [...byId.values()].filter((x) => x.row.class === 'décision' && decisionFor(fileDecisions, x.family, x.row) !== undefined).length;
+    const fromFile = [...byId.values()].filter((x) => x.row.class === 'décision' && !x.row.plein && decisionFor(fileDecisions, x.family, x.row) !== undefined).length;
     assert.ok(fromFile > 0);
     assert.equal(await bilan(page), `${fromFile} / ${total} choisies`, 'décisions du fichier relues');
     assert.equal(await page.locator('#ecartees').isVisible(), false);

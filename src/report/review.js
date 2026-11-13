@@ -416,6 +416,56 @@ function usageBilan(table) {
  * @param {{ url: string, changes: import('../browser/simulate.js').SimulatedChange[], before: string | null, after: string | null }[]} pages
  * @param {{ host: string, stamp: string, target: string, decisions: Record<string, string | false> }} meta
  */
+/**
+ * Lot K : carte « Texte sur plein <échelle> ». Trois versions (onSolid sur le pas 9, texte d'origine
+ * sur le pas 10 si le contraste passe, garder), chacune avec sa capture et son contraste ; aucune
+ * recommandée ni présélectionnée. Les lignes de fond qui mènent à ce plein suivent la carte.
+ * @param {any} g
+ */
+function pleinCard(g) {
+  const vs = g.versions;
+  const shots = g.capture?.versions ?? [];
+  const buttons = vs
+    .map((/** @type {any} */ v, /** @type {number} */ i) => {
+      const pass = v.pass ? `passe le seuil de ${fr(v.threshold)}` : 'sous le seuil';
+      const sw = hex(v.bg) && hex(v.text) ? `<span class="g sw paire" style="background:${v.bg};color:${v.text}">Aa</span>` : '<span class="g sw vide"></span>';
+      return `<button type="button" class="v" data-v="${i}" data-value="${esc(v.choice)}" data-court="${esc(v.label)}" aria-pressed="${i === 0}">${sw}<span class="nom"><span>${esc(v.label)}</span><small>${esc(v.text)} sur ${esc(v.bg)}</small><small>${String(v.ratio).replace('.', ',')} · ${pass}</small></span></button>`;
+    })
+    .join('');
+  const s0 = shots[0]?.shot;
+  const scale = s0 && s0.width < SMALL_FRAME ? 2 : 1;
+  const view = s0
+    ? `<div class="vue" style="width:${s0.width * scale}px;aspect-ratio:${s0.width} / ${s0.height}">${shots
+        .map((/** @type {any} */ v, /** @type {number} */ i) => `<div class="ver" data-v="${i}"${i ? ' hidden' : ''}>${img(v.shot.png)}</div>`)
+        .join('')}</div>`
+    : '';
+  const n = g.elements.length;
+  const rows = g.rows.map((/** @type {any} */ r) => `${r.id} (${r.old})`).join(', ');
+  const els = g.elements.map((/** @type {any} */ e) => `<li><code>${esc(e.selector)}</code> ${esc(e.text)} <i>fond ${esc(e.bg)}, ${esc(e.page)}</i></li>`).join('');
+  return `<article class="row decision a-trancher plein" data-key="${esc(g.key)}" tabindex="0">
+  <p class="titre"><b class="id">${esc(g.id)}</b> ${esc(g.title)}<span class="choix">Pas encore choisie</span></p>
+  <p class="portee">Ce choix s’applique à ${n} ${n === 1 ? 'élément' : 'éléments'} : tous les textes posés sur un plein ${esc(g.scale)}, y compris ceux dont le fond est déjà sur la cible. Les lignes de fond ${esc(rows)} suivent ce choix.</p>
+  <div class="versions" role="group" aria-label="Versions">${buttons}</div>
+  ${view}
+  <div class="trancher"><button type="button" class="retenir">Choisir cette version</button></div>
+  <details class="detail"><summary>Détail</summary><dl>
+    <dt>Éléments</dt><dd><ul class="couverts">${els}</ul></dd>
+    <dt>Versions</dt><dd>onSolid : le texte prend l’onSolid ${esc(g.onSolid)}, fonds au pas 9 ; pas-10 : fonds au pas 10, texte gardé (seulement si chaque texte y passe) ; garder : fonds au pas 9, texte gardé.</dd>
+    <dt>Clé technique</dt><dd><code>${esc(g.key)}</code></dd>
+  </dl></details>
+</article>`;
+}
+
+/**
+ * Lot K : une ligne de fond qui suit une carte de plein : pas de choix à elle ; une décision de
+ * ligne lue dans le fichier est ignorée, et la carte le dit.
+ * @param {any} pl  r.plein
+ */
+const followsPlein = (pl) =>
+  `<p class="suit">suit la carte ${esc(pl.title)} (${pl.choice ? `choix : ${esc(pl.choice)}` : 'pas encore choisie'})</p>${
+    pl.ignored !== null && pl.ignored !== undefined ? `<p class="suit">décision de ligne ignorée (${esc(pl.ignored === false ? 'false' : pl.ignored)}) : suit la carte</p>` : ''
+  }`;
+
 export function renderReview(table, pages, meta) {
   // Lot P, étape 3 : un choix enregistré sans relation (ou sans usage) vaut pour les lignes qui en sont issues ;
   // il est rangé sous la clé de chaque ligne, que l'export reprend.
@@ -451,11 +501,13 @@ export function renderReview(table, pages, meta) {
         const cards = rows
           .map((r) => {
             const key = rowKey(family, r);
-            const shots = cls === 'décision' ? '' : beforeAfter(family, r);
+            const pl = r.plein ?? null;
+            const shots = cls === 'décision' || pl ? '' : beforeAfter(family, r);
             const twoWay = !!shots;
             const whatList = [...(props.get(key) ?? [])];
-            const pick =
-              cls === 'décision'
+            const pick = pl
+              ? followsPlein(pl)
+              : cls === 'décision'
                 ? decisionCard(family, r)
                 : cls === 'proche' || cls === 'auto' || cls === 'correction'
                   ? `<label class="ok"><input type="checkbox" name="${esc(key)}" checked> appliquer</label>`
@@ -465,8 +517,8 @@ export function renderReview(table, pages, meta) {
             const usageList = (r.usages ?? []).filter((/** @type {string} */ u) => !whatList.some((w) => w === u || w.startsWith(`${u} `)));
             const usage = usageList.map((/** @type {string} */ x) => `<span class="usage">${esc(x)}</span>`).join('');
             const what = whatList.map((x) => `<span class="quoi">${esc(x)}</span>`).join('');
-            const decision = cls === 'décision';
-            const choice = decision ? '<span class="choix">Pas encore choisie</span>' : '<span class="choix"></span>';
+            const decision = cls === 'décision' && !pl;
+            const choice = decision ? '<span class="choix">Pas encore choisie</span>' : pl ? '<span class="choix">Suit la carte</span>' : '<span class="choix"></span>';
             const head = `<p class="titre"><b class="id">${esc(r.id ?? '')}</b> ${esc(r.title ?? '')}${choice}</p>`;
             // Lot V, étape 6 (D4) : même déclaration que d'autres lignes aux issues différentes (trace).
             const conflict = r.conflict
@@ -479,7 +531,7 @@ export function renderReview(table, pages, meta) {
   ${head}
   ${conflict}
   <header>${glyph(family, r.old)}<code>${esc(r.old)}</code>${arrow}${usage}${what}</header>
-  ${decision || r.capture ? portee(r) : ''}
+  ${(decision || r.capture) && !pl ? portee(r) : ''}
   ${paired.has(key) ? '<p class="controle" aria-live="polite" hidden></p>' : ''}
   ${family === 'colors' ? brandNote(r) : ''}
   ${pick}${shots}
@@ -490,10 +542,15 @@ export function renderReview(table, pages, meta) {
         const open = cls === 'décision' || cls === 'proche' || cls === 'correction';
         return `<details${open ? ' open' : ''}><summary>${esc(title)} <span class="n">${rows.length}</span></summary>${help ? `<p class="lede">${esc(help)}</p>` : ''}${cards}</details>`;
       }).join('\n');
+      // Lot K : cartes « Texte sur plein », en tête des couleurs.
+      const pleins = family === 'colors' ? /** @type {any[]} */ (/** @type {any} */ (table).pleins ?? []) : [];
+      const pleinCards = pleins.length
+        ? `<details open><summary>Texte sur plein <span class="n">${pleins.length}</span></summary><p class="lede">${esc('Un texte posé sur un plein échoue au contraste. Une seule décision par plein : ses lignes de fond suivent le choix. Sans choix, rien n’est appliqué, ni texte ni fond.')}</p>${pleins.map(pleinCard).join('\n')}</details>`
+        : '';
       return `<section>
 <h2>${esc(FAMILY_LABELS[family] ?? family)}</h2>
 <p class="lede"><b>${s.before}</b> valeurs aujourd’hui → <b>${s.after}</b> sur la cible, pour ${s.occurrences} usages. ${s.decisions} décision(s), ${s.corrections ?? 0} correction(s), ${s.near} proche(s), ${s.auto} d’office, ${s.unchanged} déjà bonnes${s.outOfTable ? `, ${s.outOfTable} hors table` : ''}.</p>
-${byClass}
+${pleinCards}${byClass}
 </section>`;
     })
     .join('\n');
@@ -576,6 +633,8 @@ ${byClass}
   body.sans-reperes .zone, body.sans-reperes .cote { display:none; }
   .portee { margin:6px 0 0; font-size:14px; color:var(--soft); }
   .controle { margin:8px 0 0; display:flex; flex-direction:column; gap:4px; font-size:14px; }
+  .suit { margin:6px 0 0; font-size:14px; color:#7a3a00; } .sw.paire { display:inline-flex; align-items:center; justify-content:center; font:600 12px/1 system-ui, sans-serif; width:40px; }
+  .row.plein { border-left-color:#b45309; } .couverts { margin:0; padding-left:18px; }
   .conflit { margin:6px 0 0; padding:4px 8px; border-left:3px solid currentColor; font-size:14px; }
   .marque { margin:8px 0 0; display:flex; flex-direction:column; gap:4px; font-size:14px; }
   .marque span { border-radius:6px; padding:6px 10px; background:#eef2fb; color:#1f3363; border:1px solid #a9b9e0; }
@@ -649,7 +708,8 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
     if (i >= 0) { row.setAttribute('data-retenu', String(i)); row.removeAttribute('data-impose'); }
     else { row.removeAttribute('data-retenu'); row.setAttribute('data-impose', imposed); }
     var choix = row.querySelector('.choix');
-    if (choix) choix.textContent = i === 0 ? 'Gardée : ' + vs[0].getAttribute('data-court') : 'Choisie : ' + (i > 0 ? vs[i].getAttribute('data-court') : imposed);
+    var plein = row.classList.contains('plein');
+    if (choix) choix.textContent = i === 0 && !plein ? 'Gardée : ' + vs[0].getAttribute('data-court') : 'Choisie : ' + (i >= 0 ? vs[i].getAttribute('data-court') : imposed);
   }
   function restore() {
     rows().forEach(function (row) {
@@ -659,7 +719,7 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
       if (box) box.checked = v !== false;
       if (row.classList.contains('decision')) {
         var vs = versionsOf(row);
-        var i = v === false ? 0 : vs.map(function (b) { return b.getAttribute('data-value'); }).indexOf(v);
+        var i = v === false && !row.classList.contains('plein') ? 0 : vs.map(function (b) { return b.getAttribute('data-value'); }).indexOf(v);
         retain(row, i, v);
         if (i >= 0) show(row, i);
       }
@@ -674,7 +734,7 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
         // Non tranchée : absente ; l'actuelle retenue : false ; sinon la valeur retenue.
         var r = row.getAttribute('data-retenu');
         if (r !== null) {
-          if (r === '0') { out[k] = false; refused = true; }
+          if (r === '0' && !row.classList.contains('plein')) { out[k] = false; refused = true; }
           else out[k] = versionsOf(row)[Number(r)].getAttribute('data-value');
         } else if (row.hasAttribute('data-impose')) out[k] = row.getAttribute('data-impose');
       } else {

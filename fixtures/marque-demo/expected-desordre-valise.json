@@ -681,20 +681,32 @@
   "criteria": {
     "$comment": "Après simulation : auto et corrections appliquées, aucune décision.",
     "a": {
-      "text": "12 paires avant, 1 après : #2196f3 (R4). Le blanc sur #d0563f et sur #c8553d passe à l'onSolid terre #220000 (couplage posé par la simulation).",
+      "text": "12 paires avant, 3 après : #2196f3 (R4) ; le blanc sur #d0563f et sur #c8553d reste, la carte « Texte sur plein terre » n'étant pas tranchée (lot K, K5 : rien n'est appliqué, ni texte ni fond).",
       "status": "résultat",
       "before": 12,
-      "after": 1,
+      "after": 3,
       "remaining": [
         {
           "text": "#2196f3",
           "bg": "#ffffff",
           "ratio": 3.1243,
           "why": "R4"
+        },
+        {
+          "text": "#ffffff",
+          "bg": "#d0563f",
+          "ratio": 4.1299,
+          "why": "carte Texte sur plein terre en attente (K5)"
+        },
+        {
+          "text": "#ffffff",
+          "bg": "#c8553d",
+          "ratio": 4.3544,
+          "why": "carte Texte sur plein terre en attente (K5)"
         }
       ],
       "coupled": {
-        "$comment": "culori 4.0.2 : node -e 'import(\"culori\").then(({wcagContrast:w})=>console.log(w(\"#220000\",\"#d0563f\"),w(\"#220000\",\"#c8553d\"),w(\"#ffffff\",\"#c4513a\")))'",
+        "$comment": "Lot K : seulement avec « plein|terre » : « onSolid » dans les décisions. culori 4.0.2 : node -e 'import(\"culori\").then(({wcagContrast:w})=>console.log(w(\"#220000\",\"#d0563f\"),w(\"#220000\",\"#c8553d\"),w(\"#ffffff\",\"#c4513a\")))'",
         "pairs": [
           { "text": "#220000", "bg": "#d0563f", "ratio": 4.761, "from": "#ffffff, décision #d0563f non appliquée" },
           { "text": "#220000", "bg": "#c8553d", "ratio": 4.5155, "from": "#ffffff" }
@@ -702,7 +714,7 @@
         "notCoupled": { "text": "#ffffff", "bg": "#c4513a", "ratio": 4.5799, "why": "au-dessus de 4,5 : pas de couplage" }
       },
       "was": "12/11/2026 : 3 après, le blanc sur #d0563f (4,1299) et sur #c8553d (4,3544) laissé en zone morte, la simulation ne posant pas les couplages.",
-      "corrected": "13/11/2026, lot V étape 4 : la simulation applique les COUPLAGES comme la consigne ; il ne reste que #2196f3"
+      "corrected": "13/11/2026, lot V étape 4 : la simulation applique les COUPLAGES comme la consigne ; il ne reste que #2196f3. 13/11/2026, lot K : un couplage est une décision par plein ; sans décision (cas de cette réduction), rien n'est appliqué sur le plein terre : 3 après. Contrastes culori 4.0.2 : node -e 'import(\"culori\").then(({wcagContrast:w})=>console.log(w(\"#ffffff\",\"#d0563f\"),w(\"#ffffff\",\"#c8553d\")))' → 4,1299 ; 4,3544."
     },
     "b": "Le bandeau tiers est identique avant et après.",
     "c": "Aucune ligne d'espacement négative ou au-delà de 64 px n'est rangée.",
