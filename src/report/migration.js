@@ -265,6 +265,8 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
   const pending = rows.filter((r) => r.status === 'en attente');
   const refused = rows.filter((r) => r.status === 'refusée');
   const outOfTable = rows.filter((r) => r.status === 'hors table');
+  // Lot I : valeurs inchangées rattachées à leur jeton (I1) ; sans jeton, elles restent écrites (I2).
+  const attached = rows.filter((r) => r.status === 'inchangé' && hasToken(r));
   /** @param {any[]} list */
   const byFamily = (list) => Object.fromEntries(Object.keys(table.families).map((f) => [f, list.filter((r) => r.family === f).length]));
 
@@ -339,13 +341,14 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
       outOfTable: { total: outOfTable.length, ...byFamily(outOfTable) },
     },
     unchanged: rows.filter((r) => r.status === 'inchangé').length,
+    attached: attached.length,
     decided: rows.filter((r) => r.status === 'décidée').length,
     exceptions: { links, onSolid, states, injected: null, ties, outOfSlice, messages: rendered.usages?.messages ?? [] },
     remaining: [...remaining.values()],
     thirdParty: table.thirdParty ?? [],
     ...(table.brand ? { brand: table.brand } : {}),
   };
-  const agent = agentBrief(data, { applied, pending, refused, outOfTable });
+  const agent = agentBrief(data, { applied, pending, refused, outOfTable, attached });
   return { data: { ...data, agent }, markdown: renderMarkdown(data, { applied, pending, refused, outOfTable }) + '\n' + agent.markdown };
 }
 
@@ -398,13 +401,14 @@ function renderMarkdown(d, s) {
   L.push(`Pages : ${m.pages.map((/** @type {string} */ p) => `\`${p}\``).join(', ')}.`, '');
   L.push('Ce document se lit sans l’outil. Chaque ligne range une valeur relevée dans le rendu, pour un usage, sur un jeton de la cible.');
   L.push('« Origine CSS » donne la règle d’un élément d’exemple (fichier:ligne de la règle) ; « non tracé » quand elle n’a pas pu être lue (fond de page, pseudo-élément).', '');
-  L.push('| section | lignes | couleurs | espacements | tailles | rayons |', '|---|---|---|---|---|---|');
   if (m.decisions) L.push(`Décisions lues : \`${m.decisions}\`, ${d.decided} décidée(s), ${d.sections.refused.total} refusée(s).`, '');
+  L.push('| section | lignes | couleurs | espacements | tailles | rayons |', '|---|---|---|---|---|---|');
   for (const [k, label] of [['applied', 'Appliqué (auto, proche, correction, décidée)'], ['pending', 'Décisions en attente'], ['refused', 'Refusée, laissée telle quelle'], ['outOfTable', 'Hors table']]) {
     const x = d.sections[k];
     L.push(`| ${label} | ${x.total} | ${x.colors ?? 0} | ${x.spacing ?? 0} | ${x.fontSizes ?? 0} | ${x.radii ?? 0} |`);
   }
-  L.push(`| Inchangé | ${d.unchanged} | | | | |`, '');
+  // Lot I (I7) : combien rattachées à leur jeton, combien sans jeton.
+  L.push(`| Inchangé : ${d.attached} rattachée${d.attached > 1 ? 's' : ''}, ${d.unchanged - d.attached} sans jeton | ${d.unchanged} | | | | |`, '');
 
   if (d.brand) {
     L.push('## Marque déclarée', '', 'Emplacements lus dans la cible (bloc brand) : chacun range sa valeur et ses variantes sur son échelle (M3) ; un emplacement gris rejoint neutre (M1), sauf déclaration contraire.', '');
@@ -517,21 +521,30 @@ const relationOf = (r) => {
   return rel && rel !== '—' ? ` Relation : ${rel}.` : '';
 };
 
-/** Variable CSS d'un jeton DTCG (points en tirets). @param {string} token */
-const cssVar = (token) => `var(--${token.replace(/\./g, '-')})`;
+/** Variable CSS d'un jeton DTCG (points en tirets), avec repli : l'ancienne valeur mesurée (lot I). @param {string} token @param {string} old */
+const cssVarFallback = (token, old) => `var(--${token.replace(/\./g, '-')}, ${old})`;
+/** La ligne a-t-elle un jeton ? @param {any} r */
+const hasToken = (r) => !!r.token && r.token !== 'jeton absent' && r.token !== '—';
+/** Lot I (I4) : relation d'une ligne en quelques mots (sans signal ni lieu), ou rien. @param {any} r */
+const relationShort = (r) => {
+  const first = (r.relation ?? '—').split(' · ')[0];
+  return first && first !== '—' ? ` ${first}` : '';
+};
 
 /**
  * Lot M : « Consigne pour un agent », à l'impératif, copiable telle quelle.
- * @param {any} d @param {{ applied: any[], pending: any[], refused: any[], outOfTable: any[] }} s
+ * @param {any} d @param {{ applied: any[], pending: any[], refused: any[], outOfTable: any[], attached: any[] }} s
  */
 function agentBrief(d, s) {
   const m = d.meta;
   /** @param {any} r */
-  const write = (r) => (r.token && r.token !== 'jeton absent' && r.token !== '—' ? `${cssVar(r.token)} (${r.new})` : `${r.new} (jeton absent : écris la valeur)`);
+  const write = (r) => (hasToken(r) ? `${cssVarFallback(r.token, r.value)} (${r.new})` : `${r.new} (jeton absent : écris la valeur)`);
   const lines = [];
   lines.push('CONTEXTE');
   lines.push(`Tu migres les feuilles CSS des pages ${m.pages.join(', ')} vers les jetons ${m.tokens ?? '(aucun fichier de jetons)'} de la cible ${m.target}.`);
-  lines.push('Écris chaque jeton sous la forme var(--couleur-neutre-11) (chemin du jeton, points remplacés par des tirets) ; si la ligne dit « jeton absent », écris la valeur hex ou px indiquée.');
+  lines.push(
+    "Écris chaque jeton sous la forme var(--couleur-neutre-11, ancienne valeur) : chemin du jeton, points remplacés par des tirets ; en repli, l'ancienne valeur ; si la source l'écrit autrement (rem, rgb()), garde l'écriture de la source. Si la ligne dit « jeton absent », écris la valeur hex ou px indiquée.",
+  );
   lines.push('Les valeurs ci-dessous sont des valeurs calculées : dans la source, elles peuvent être écrites autrement (rem, em, rgb(), mot-clé) ; cherche leur équivalent.');
   lines.push('');
   lines.push(`REMPLACEMENTS (${s.applied.length})`);
@@ -544,11 +557,33 @@ function agentBrief(d, s) {
     );
   });
   lines.push('');
+  // Lot I (I1, I2) : valeurs déjà sur la cible, rattachées à leur jeton sans changement visible.
+  lines.push(`RATTACHE (${s.attached.length})`);
+  if (!m.tokens) {
+    const n = d.unchanged;
+    lines.push(`Aucun fichier de jetons : relance avec --tokens pour rattacher ${n} valeur${n > 1 ? 's' : ''}.`);
+  } else {
+    s.attached.forEach((r, i) => {
+      lines.push(
+        `${i + 1}. ${r.id} ${r.title}. Propriété ${propertyOf(r.family, r.properties)}, usage ${r.usage}, valeur ${r.value} : remplace la valeur écrite par ${cssVarFallback(r.token, r.value)} ; aucun changement visible.${relationOf(r)} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}. Point de départ : ${r.origin}. Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.`,
+      );
+    });
+    if (!s.attached.length) lines.push('- Aucune.');
+  }
+  lines.push('');
   lines.push(`COUPLAGES (${d.exceptions.onSolid.length})`);
-  for (const p of d.exceptions.onSolid)
+  for (const p of d.exceptions.onSolid) {
+    // Repli : l'ancienne couleur du texte ; une par texte d'origine quand il y en a plusieurs.
+    const olds = [...new Set(p.befores.map((/** @type {any} */ b) => b.text))];
+    const v = !p.token
+      ? ''
+      : olds.length === 1
+        ? `, ${cssVarFallback(p.token, olds[0])}`
+        : `, ${olds.map((/** @type {string} */ o) => `${cssVarFallback(p.token, o)} là où le texte valait ${o}`).join(', ')}`;
     lines.push(
-      `- Le texte posé sur un plein ${p.scale} devient ${p.onSolid} (onSolid${p.token ? `, ${cssVar(p.token)}` : ''}) : texte ${p.text} sur ${p.bg} après la table (fonds d'origine ${p.befores.map((/** @type {any} */ b) => b.bg).join(', ')}), ${String(p.ratio).replace('.', ',')}:1. Sélecteurs : ${p.selectors.join(', ') || '—'}.`,
+      `- Le texte posé sur un plein ${p.scale} devient ${p.onSolid} (onSolid${v}) : texte ${p.text} sur ${p.bg} après la table (fonds d'origine ${p.befores.map((/** @type {any} */ b) => b.bg).join(', ')}), ${String(p.ratio).replace('.', ',')}:1. Sélecteurs : ${p.selectors.join(', ') || '—'}.`,
     );
+  }
   if (!d.exceptions.onSolid.length) lines.push('- Aucun.');
   lines.push('');
   lines.push('CHANGE AUSSI');
@@ -563,12 +598,17 @@ function agentBrief(d, s) {
   for (const r of s.outOfTable) lines.push(`- Hors table : ${r.value} (${r.usage}), ${r.reason}.`);
   for (const r of s.refused) lines.push(`- Refusée : ${r.value} (${r.usage}), le designer garde la valeur.`);
   // Lot R, R-2 : décisions en attente, avec leur identifiant et leur titre.
-  for (const r of s.pending) lines.push(`- ${r.id} ${r.title}. Pas encore choisie par le designer : ne l'applique pas (${r.value}, ${r.usage}).${relationOf(r)}${r.reason ? ` Motif : ${r.reason}.` : ''}${m6Text(r)} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}.`);
+  // Lot I (I4) : un commentaire CSS marque la déclaration en attente.
+  for (const r of s.pending) lines.push(`- ${r.id} ${r.title}. Pas encore choisie par le designer : ne l'applique pas (${r.value}, ${r.usage}). Ajoute au-dessus de la déclaration le commentaire /* ds-lab : en attente du designer, ${r.value} ${r.usage}${relationShort(r)} (${r.id}, ${m.stamp}) */.${relationOf(r)}${r.reason ? ` Motif : ${r.reason}.` : ''}${m6Text(r)} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}.`);
   for (const sel of d.thirdParty) lines.push(`- Composant tiers : ${sel} et tout ce qu'il contient.`);
   lines.push('- Toute valeur absente de cette consigne.');
   lines.push('');
   lines.push('SIGNALE SANS MODIFIER');
-  for (const x of d.exceptions.outOfSlice) lines.push(`- Valeur hors de sa tranche : ${x.value} (${x.name}) en ${x.usage}, ${x.elements} élément(s), tranche attendue ${x.expected} : ${x.selectors.join(', ')}.`);
+  // Lot I (I5) : une valeur hors tranche et inchangée est rattachée, et reste signalée.
+  /** @param {any} x */
+  const isAttached = (x) => s.attached.some((r) => r.family === 'colors' && r.value === x.value && r.usage === x.usage);
+  for (const x of d.exceptions.outOfSlice)
+    lines.push(`- Valeur hors de sa tranche : ${x.value} (${x.name}) en ${x.usage}, ${x.elements} élément(s), tranche attendue ${x.expected} : ${x.selectors.join(', ')}${isAttached(x) ? " ; rattaché, rôle à revoir à l'étape 3" : ''}.`);
   for (const st of d.exceptions.states) lines.push(`- État non lu : ${st.value} (${[...new Set(st.contexts.map((/** @type {any} */ c) => `${c.state} ${c.property}`))].join(', ')}).`);
   for (const r of d.exceptions.ties) lines.push(`- Égalité tranchée en silence : ${r.value} (${r.usage}) entre ${r.tie[0]} et ${r.tie[1]}, rangée vers ${r.new}.`);
   lines.push("- Élément injecté après le chargement : non mesuré ; signale-le si tu en trouves.");
@@ -577,6 +617,9 @@ function agentBrief(d, s) {
   lines.push(`Relance : ${m.command ?? 'npm run reduce (mêmes options)'}`);
   lines.push('Après modification du CSS, relance reduce sur les pages de la table et sur les pages témoins, et compare au prévu ; signale tout écart avant la mise en ligne.');
   lines.push('Chaque ligne traitée doit ressortir « inchangé » dans la nouvelle table.');
+  // Lot I (I6).
+  lines.push('Chaque variable écrite est déclarée dans tokens.css.');
+  lines.push('Retire le repli quand toutes les pages sont migrées, pas avant.');
   lines.push(
     `Il ne doit rester ${d.remaining.length === 1 ? 'qu’une paire' : `que ${d.remaining.length} paires`} de texte sous 4,5:1 : ${d.remaining.map((/** @type {any} */ p) => `${p.text} sur ${p.bg} (${String(p.ratio).replace('.', ',')}:1)`).join(' ; ') || 'aucune'}.`,
   );

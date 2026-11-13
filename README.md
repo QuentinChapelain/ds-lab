@@ -91,6 +91,8 @@ Le site audité n'est jamais modifié : les nouvelles valeurs sont posées dans 
 | Version | La valeur actuelle ou un candidat, montrés au même endroit. « Le plus proche » n'est pas une recommandation |
 | Identifiant et titre | `esp-17 Marge basse · champ « Nom » et 4 autres (champs, textes)`, le même dans la revue, `migration.md` et la fenêtre en direct |
 | Fenêtre en direct | Le site avec une barre pour appliquer les changements une ligne ou une famille à la fois (`--live`) |
+| Rattacher | Remplacer une valeur déjà sur la cible par la variable de son jeton : rien ne change à l'écran, mais la valeur suit désormais le jeton |
+| Repli | L'ancienne valeur, écrite en second dans `var(--jeton, ancienne valeur)` comme la source l'écrivait (rem, rgb()) : la page garde son rendu si `tokens.css` manque. Retiré en fin de migration |
 | Consigne pour l'agent | La fin de `migration.md` : déclarer les variables CSS à partir des jetons (`tokens.css`), remplacer, ne pas toucher, vérifier |
 | Pages témoins | Pages que les décisions n'ont pas vues, pour vérifier les effets de bord |
 | Contrôle après modification | Relancer l'outil sur le CSS modifié et comparer au prévu |
@@ -118,7 +120,7 @@ Règles : marques fictives uniquement ; rien de `local/` ni de `.auth/` dans un 
 ## Limites
 
 - Validé sur des pages fictives et sur un vrai site en lecture seule, pas encore avec une équipe.
-- La correspondance par usage ne sait pas encore exprimer la relation entre éléments (règle R10, en cours).
+- Le CSS migré garde un repli à retirer en fin de migration : `var(--jeton, ancienne valeur)` reste tant que toutes les pages ne sont pas passées aux jetons.
 - Les pseudo-éléments (icônes) ne sont pas simulés ; le contraste du texte sur image est mesuré mais marqué à vérifier, car le fond réel est incertain.
 
 Licence MIT.

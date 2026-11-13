@@ -30,6 +30,23 @@ const DECISIONS = `${FIXTURE_DIR}decisions-passage-2c.json`;
 const decidee = { data: null, md: '', decisions: {} };
 /** @type {{ data: any, md: string }} */
 const refusee = { data: null, md: '' };
+/** Lot I : les pages en désordre sans fichier de jetons. */
+/** @type {{ data: any, md: string }} */
+const sansJetons = { data: null, md: '' };
+/** Date de réduction des passages ci-dessous (now). */
+const STAMP = '2026-11-12T1400';
+
+/** Lignes d'une section de la consigne, de son titre à la ligne vide. @param {string[]} lines @param {string} head */
+const sectionOf = (lines, head) => {
+  const i = lines.findIndex((l) => l.startsWith(head));
+  if (i < 0) return null;
+  const j = lines.indexOf('', i);
+  return lines.slice(i, j < 0 ? undefined : j);
+};
+/** Ligne numérotée d'une section pour un identifiant. @param {string[]} sec @param {string} id */
+const stepOf = (sec, id) => sec.find((l) => new RegExp(`^\\d+\\. ${id} `).test(l));
+/** Valeurs inchangées qui ont un jeton. @param {any} d */
+const withToken = (d) => d.rows.filter((/** @type {any} */ r) => r.status === 'inchangé' && /^(couleur|espace|taille-texte|rayon)\./.test(r.token));
 
 before(async () => {
   servers = await startFixtureServers();
@@ -60,6 +77,10 @@ before(async () => {
   const [rr] = await runReduce({ ...common, addresses, decisionsPath: withRefusal, outRoot: tmp });
   refusee.data = rr.migration;
   refusee.md = await readFile(rr.files[2], 'utf8');
+  const { tokensPath: _t, ...noTokens } = common;
+  const [sj] = await runReduce({ ...noTokens, addresses, outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-migration-')) });
+  sansJetons.data = sj.migration;
+  sansJetons.md = await readFile(sj.files[2], 'utf8');
 });
 
 after(async () => servers?.close());
@@ -203,17 +224,17 @@ test('consigne pour un agent : contexte, une instruction par ligne appliquée, c
   assert.ok(decidee.md.includes('## Consigne pour un agent'));
   const ctx = a.lines.slice(1, a.lines.indexOf(''));
   assert.equal(ctx.length, 3, 'contexte en 3 lignes');
-  assert.ok(ctx.some((/** @type {string} */ l) => l.includes('var(--couleur-neutre-11)')));
+  assert.ok(ctx.some((/** @type {string} */ l) => l.includes("en repli, l'ancienne valeur ; si la source l'écrit autrement (rem, rgb()), garde l'écriture de la source")));
   assert.ok(a.lines.includes('0. Crée tokens.css, qui déclare dans :root chaque variable utilisée ci-dessous avec sa valeur, à partir de primitives.tokens.json, et charge-la avant toutes les autres feuilles.'), 'étape 0');
   assert.ok(a.lines.includes('- Souligne tout lien posé dans du texte courant : 0 trouvé ici.'), 'change aussi');
   assert.ok(pieges.data.agent.lines.includes('- Souligne tout lien posé dans du texte courant : 1 trouvé ici (a.lien-discret).'), 'change aussi, pièges (L1)');
-  const steps = a.lines.filter((/** @type {string} */ l) => /^[1-9]\d*\. /.test(l));
-  assert.ok(steps.some((/** @type {string} */ l) => l.includes('Propriété font-size, usage taille du texte : remplace 13.5px par var(--taille-texte-14) (14px)')), 'usage taille du texte');
+  const steps = (sectionOf(a.lines, 'REMPLACEMENTS (') ?? []).filter((/** @type {string} */ l) => /^[1-9]\d*\. /.test(l));
+  assert.ok(steps.some((/** @type {string} */ l) => l.includes('Propriété font-size, usage taille du texte : remplace 13.5px par var(--taille-texte-14, 13.5px) (14px)')), 'usage taille du texte');
   assert.equal(steps.length, decidee.data.sections.applied.total, 'une instruction par ligne appliquée');
   for (const l of steps) assert.ok(l.includes('Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.'), l);
-  assert.ok(steps.some((/** @type {string} */ l) => l.includes('remplace #999999 par var(--couleur-neutre-11) (#6d675b)') && l.includes('Propriété color')));
-  assert.ok(steps.some((/** @type {string} */ l) => l.includes('remplace #1f2a44 par var(--couleur-bleu-12) (#103060) [décidée]')));
-  assert.ok(text.includes('Le texte posé sur un plein terre devient #220000 (onSolid, var(--couleur-terre-sur-plein))'));
+  assert.ok(steps.some((/** @type {string} */ l) => l.includes('remplace #999999 par var(--couleur-neutre-11, #999999) (#6d675b)') && l.includes('Propriété color')));
+  assert.ok(steps.some((/** @type {string} */ l) => l.includes('remplace #1f2a44 par var(--couleur-bleu-12, #1f2a44) (#103060) [décidée]')));
+  assert.ok(text.includes('Le texte posé sur un plein terre devient #220000 (onSolid, var(--couleur-terre-sur-plein, #ffffff))'));
   assert.ok(text.includes('- Hors table : #2196f3'));
   assert.ok(text.includes('- Composant tiers : .tiers-cookies'));
   assert.ok(text.includes('- Valeur hors de sa tranche : #2b4c7e (bleu-9) en texte'));
@@ -236,4 +257,136 @@ test('consigne : tous les sélecteurs, sans plafond ; les deux lignes de la marg
     const row = pending.split('\n').find((/** @type {string} */ l) => l.startsWith(`| ${r.id} `));
     for (const sel of sels) assert.ok(row?.includes(`\`${sel}\``), `table : ${row}`);
   }
+});
+
+// Lot I : rattacher les valeurs inchangées à leur jeton, avec un repli.
+
+test('I1 : RATTACHE après REMPLACEMENTS, une ligne par valeur inchangée qui a un jeton, même forme que les remplacements', () => {
+  const a = desordre.data.agent.lines;
+  const want = withToken(desordre.data);
+  assert.ok(want.length > 0, 'des valeurs inchangées ont un jeton');
+  const iRep = a.findIndex((/** @type {string} */ l) => l.startsWith('REMPLACEMENTS ('));
+  const sec = sectionOf(a, 'RATTACHE (');
+  assert.ok(sec, 'section RATTACHE absente');
+  assert.equal(sec[0], `RATTACHE (${want.length})`);
+  assert.ok(a.indexOf(sec[0]) > iRep, 'après REMPLACEMENTS');
+  assert.ok(a.indexOf(sec[0]) < a.indexOf('COUPLAGES (' + desordre.data.exceptions.onSolid.length + ')'), 'avant COUPLAGES');
+  assert.equal(sec.length - 1, want.length, 'une ligne par valeur');
+  for (const r of want) {
+    const l = stepOf(sec, r.id);
+    assert.ok(l, `${r.id} absente de RATTACHE`);
+    assert.ok(l.includes(`${r.id} ${r.title}.`), `titre : ${l}`);
+    assert.ok(l.includes(`usage ${r.usage}, valeur ${r.value} : remplace la valeur écrite par var(--${r.token.replace(/\./g, '-')}, ${r.value}) ; aucun changement visible.`), l);
+    assert.ok(l.includes(' Propriété '), `propriété : ${l}`);
+    assert.ok(l.includes(` Sélecteurs : ${r.selectors.join(', ') || '—'}`), `sélecteurs : ${l}`);
+    assert.ok(l.includes(` Point de départ : ${r.origin}.`), `point de départ : ${l}`);
+    assert.ok(l.endsWith('Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.'), l);
+  }
+  const white = desordre.data.rows.find((/** @type {any} */ r) => r.family === 'colors' && r.value === '#ffffff' && r.usage === 'texte');
+  assert.ok(stepOf(sec, white.id)?.includes('Propriété color, usage texte, valeur #ffffff : remplace la valeur écrite par var(--couleur-blanc, #ffffff) ; aucun changement visible.'), '#ffffff en texte');
+});
+
+test('I2 : inchangé sans jeton absent de RATTACHE ; sans fichier de jetons, une seule phrase', () => {
+  const sec = sectionOf(desordre.data.agent.lines, 'RATTACHE (') ?? [];
+  for (const r of desordre.data.rows.filter((/** @type {any} */ x) => x.status === 'inchangé' && !withToken(desordre.data).includes(x)))
+    assert.equal(stepOf(sec, r.id), undefined, `${r.id} sans jeton dans RATTACHE`);
+  const n = sansJetons.data.rows.filter((/** @type {any} */ r) => r.status === 'inchangé').length;
+  assert.ok(n > 1);
+  assert.deepEqual(sectionOf(sansJetons.data.agent.lines, 'RATTACHE'), ['RATTACHE (0)', `Aucun fichier de jetons : relance avec --tokens pour rattacher ${n} valeurs.`]);
+});
+
+test('I3 : repli partout, l’ancienne valeur mesurée de la ligne ; la source garde son écriture', () => {
+  const a = desordre.data.agent.lines;
+  const ctx = a.slice(1, a.indexOf(''));
+  assert.ok(ctx.some((/** @type {string} */ l) => l.includes("en repli, l'ancienne valeur ; si la source l'écrit autrement (rem, rgb()), garde l'écriture de la source")), 'contexte');
+  assert.ok(!a.join('\n').includes("valeur d'origine"), 'plus de texte « valeur d’origine »');
+  for (const head of ['REMPLACEMENTS (', 'RATTACHE (']) {
+    const sec = sectionOf(a, head) ?? [];
+    const steps = sec.filter((l) => /^[1-9]\d*\. /.test(l));
+    assert.ok(steps.length > 0, head);
+    for (const l of steps) {
+      const id = l.split(' ')[1];
+      const r = desordre.data.rows.find((/** @type {any} */ x) => x.id === id);
+      const vars = l.match(/var\(--[^)]*\)/g) ?? [];
+      for (const v of vars) assert.equal(v.split(', ')[1], `${r.value})`, `${head} ${id} : ${v}`);
+    }
+  }
+  const rep = sectionOf(a, 'REMPLACEMENTS (') ?? [];
+  assert.ok(rep.some((l) => l.includes('remplace #999999 par var(--couleur-neutre-11, #999999) (#6d675b)')), '#999999 en bordure');
+  const dec = sectionOf(decidee.data.agent.lines, 'REMPLACEMENTS (') ?? [];
+  assert.ok(dec.some((l) => l.includes('remplace 6px par var(--rayon-8, 6px) (8px) [décidée]')), 'rayon 6px décidé à 8px');
+});
+
+test('Correction 2 : COUPLAGES avec repli, l’ancienne couleur du texte', () => {
+  const c = sectionOf(desordre.data.agent.lines, 'COUPLAGES (') ?? [];
+  assert.ok(c.length > 1);
+  for (const l of c.slice(1)) assert.ok(!/var\(--[^,)]*\)/.test(l), `variable sans repli : ${l}`);
+  assert.ok(c.some((l) => l.startsWith('- Le texte posé sur un plein terre devient #220000 (onSolid, var(--couleur-terre-sur-plein, #ffffff))')));
+});
+
+test('Correction 3 : « Décisions lues » au-dessus du tableau de synthèse, pas au milieu', () => {
+  const L = decidee.md.split('\n');
+  const iDec = L.findIndex((l) => l.startsWith('Décisions lues : '));
+  const iHead = L.indexOf('| section | lignes | couleurs | espacements | tailles | rayons |');
+  assert.ok(iDec >= 0 && iDec < iHead, 'au-dessus');
+  assert.deepEqual(
+    L.slice(iHead + 1, iHead + 7).map((l) => l.split(' | ')[0]),
+    ['|---|---|---|---|---|---|', '| Appliqué (auto, proche, correction, décidée)', '| Décisions en attente', '| Refusée, laissée telle quelle', '| Hors table', '| Inchangé : 35 rattachées, 0 sans jeton'],
+    'tableau d’un seul tenant',
+  );
+});
+
+test('I4 : décision en attente, un commentaire CSS au-dessus de la déclaration', () => {
+  const nt = sectionOf(desordre.data.agent.lines, 'NE TOUCHE PAS') ?? [];
+  const pending = desordre.data.rows.filter((/** @type {any} */ r) => r.status === 'en attente');
+  assert.ok(pending.length > 0);
+  for (const r of pending) {
+    const l = nt.find((x) => x.startsWith(`- ${r.id} `));
+    const rel = r.relation === '—' ? '' : ` ${r.relation.split(' · ')[0]}`;
+    assert.ok(l?.includes(` Ajoute au-dessus de la déclaration le commentaire /* ds-lab : en attente du designer, ${r.value} ${r.usage}${rel} (${r.id}, ${STAMP}) */.`), `${r.id} : ${l}`);
+  }
+  // Écrits à la main : la marge de 10 px entre composants, la taille de 40 px sans relation.
+  const m10 = pending.find((/** @type {any} */ r) => r.value === '10px' && r.scope === 'entre composants');
+  assert.ok(nt.some((x) => x.includes(`/* ds-lab : en attente du designer, 10px marge entre composants (${m10.id}, 2026-11-12T1400) */`)));
+  const t40 = pending.find((/** @type {any} */ r) => r.value === '40px');
+  assert.ok(nt.some((x) => x.includes(`/* ds-lab : en attente du designer, 40px taille du texte (${t40.id}, 2026-11-12T1400) */`)));
+});
+
+test('I5 : valeur hors tranche et inchangée, rattachée et toujours signalée', () => {
+  const a = desordre.data.agent.lines;
+  const rat = sectionOf(a, 'RATTACHE (') ?? [];
+  const sig = sectionOf(a, 'SIGNALE SANS MODIFIER') ?? [];
+  // #2b4c7e (bleu-9) en texte et en bordure, #f0c987 (sable-9) en fond : inchangées ; #f0c987 en texte : correction.
+  for (const [value, usage, attached] of /** @type {const} */ ([['#2b4c7e', 'texte', true], ['#2b4c7e', 'bordure', true], ['#f0c987', 'fond', true], ['#f0c987', 'texte', false]])) {
+    const r = desordre.data.rows.find((/** @type {any} */ x) => x.family === 'colors' && x.value === value && x.usage === usage);
+    const l = sig.find((x) => x.startsWith(`- Valeur hors de sa tranche : ${value} `) && x.includes(` en ${usage},`));
+    assert.ok(l, `${value} ${usage} signalée`);
+    assert.equal(!!stepOf(rat, r.id), attached, `${value} ${usage} dans RATTACHE`);
+    assert.equal(l.endsWith(" ; rattaché, rôle à revoir à l'étape 3."), attached, l);
+  }
+  const sigNo = sectionOf(sansJetons.data.agent.lines, 'SIGNALE SANS MODIFIER') ?? [];
+  assert.ok(sigNo.every((x) => !x.includes('rattaché')), 'sans jetons : rien de rattaché');
+});
+
+test('I6 : VÉRIFICATION, variables déclarées dans tokens.css, repli retiré en fin de migration', () => {
+  const v = sectionOf(desordre.data.agent.lines, 'VÉRIFICATION') ?? [];
+  assert.ok(v.includes('Chaque variable écrite est déclarée dans tokens.css.'));
+  assert.ok(v.includes('Retire le repli quand toutes les pages sont migrées, pas avant.'));
+});
+
+test('I7 : synthèse, la ligne Inchangé dit combien rattachées et combien sans jeton', () => {
+  const n = desordre.data.unchanged;
+  const k = withToken(desordre.data).length;
+  assert.ok(desordre.md.includes(`| Inchangé : ${k} rattachées, ${n - k} sans jeton | ${n} |`), 'avec jetons');
+  const m = sansJetons.data.unchanged;
+  assert.ok(sansJetons.md.includes(`| Inchangé : 0 rattachée, ${m} sans jeton | ${m} |`), 'sans jetons');
+});
+
+test('I8 : README, glossaire « Rattacher » et « Repli », limites à jour', async () => {
+  const readme = await readFile(new URL('../README.md', import.meta.url), 'utf8');
+  assert.match(readme, /^\| Rattacher \| .+ \|$/m);
+  assert.match(readme, /^\| Repli \| .+ \|$/m);
+  const limits = readme.slice(readme.indexOf('## Limites'));
+  assert.ok(!limits.includes('R10, en cours'), 'R10 en cours retiré');
+  assert.ok(limits.includes('repli à retirer en fin de migration'));
 });
