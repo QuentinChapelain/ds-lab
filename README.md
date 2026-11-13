@@ -24,6 +24,7 @@ Sur les pages fictives d'Orbe Café, une fois la cible posée : 87 lignes, dont 
 npm run audit  -- <adresse> [options]                        mesurer l'existant
 npm run reduce -- <adresse> --target <cible.json> [options]  ranger, revoir, produire la consigne
 npm run login                                                enregistrer une session (dans .auth/)
+npm run verify -- <adresse> --reference <dossier> [--save]   vérifier qu'une page n'a pas bougé (pixels, arbre d'accessibilité)
 npm test
 ```
 
@@ -114,6 +115,8 @@ Le site audité n'est jamais modifié : les nouvelles valeurs sont posées dans 
 | `tokens/orbe-cafe/` | Primitives DTCG de la marque fictive |
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles, attendus |
 | `test/` | Tests, dont `noms-interdits` qui refuse tout nom réel dans un fichier ou un message de commit |
+
+Dépendances : `playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (couleurs, contraste), `pixelmatch` et `pngjs` (comparaison de captures, lot V).
 
 Règles : marques fictives uniquement ; rien de `local/` ni de `.auth/` dans un fichier versionné ; attendu avant le code.
 

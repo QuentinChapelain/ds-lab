@@ -68,7 +68,7 @@ export const isOut = (cls) => cls.startsWith('hors table');
 
 /**
  * @typedef {{ name?: string, value: string }} TargetColor
- * @typedef {{ radii?: number[], spacing?: number[], fontSizes?: number[], colors?: TargetColor[] }} Target
+ * @typedef {{ radii?: number[], spacing?: number[], fontSizes?: number[], colors?: TargetColor[], onSolid?: Record<string, string | Record<string, string>> }} Target
  * @typedef {object} Row
  * @property {string} old
  * @property {number} count          occurrences d'interface dans le rendu
@@ -467,7 +467,7 @@ const round4 = (n) => Math.round(n * 10000) / 10000;
  * @param {import('../brand/brand.js').Brand | null} [B]  marque résolue
  * @returns {Row[]}
  */
-function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {any[]} */ ([])) {
+function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {any[]} */ ([]), onSolidMap = /** @type {Record<string, any> | undefined} */ (undefined)) {
   const T = targets.map((t) => {
     const value = t.value.toLowerCase();
     const m = /^(.+)-(\d+)$/.exec(t.name ?? '');
@@ -481,12 +481,44 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
     list.map((t) => ({ t, delta: round2(deltaE(lab, t.lab)) })).sort((a, b) => a.delta - b.delta || (a.t.value < b.t.value ? -1 : 1));
   /** @param {{ t: (typeof T)[number], delta: number }[]} list */
   const candidatesOf = (list) => list.slice(0, 3).map((c) => ({ value: c.t.value, name: c.t.name, delta: c.delta }));
+  /**
+   * Lot V, étape 4 : échelle dont `text` est l'onSolid sur chacun de ses fonds (pas 9 ou 10 de
+   * cette échelle), avec la paire la plus défavorable ; null si un fond sort de ce cas.
+   * @param {string} text
+   */
+  const solidTextOf = (text) => {
+    const ps = (usages.pairs ?? []).filter((/** @type {any} */ p) => p.text === text);
+    if (!ps.length || !usages.colors?.[text]?.texte) return null;
+    /** @type {string | null} */
+    let scale = null;
+    let worst = null;
+    for (const p of ps) {
+      const bg = T.find((t) => t.value === p.bg && (t.step === 9 || t.step === 10));
+      if (!bg || onSolidOf(onSolidMap, bg.scale, /** @type {number} */ (bg.step))?.toLowerCase() !== text || (scale && scale !== bg.scale)) return null;
+      scale = bg.scale;
+      const ratio = contrastRatio(text, p.bg);
+      if (!worst || ratio / p.threshold < worst.ratio / worst.threshold) worst = { ratio, threshold: p.threshold };
+    }
+    return scale && worst ? { scale, ratio: round4(worst.ratio), threshold: worst.threshold } : null;
+  };
 
   /** @type {(Row & { _cands?: any[], _nearest?: any, _fixed?: boolean, _exact?: any })[]} */
   const rows = [];
   for (const [old, byUsage] of Object.entries(usages.colors ?? {})) {
-    const entries = usageEntries(byUsage);
+    let entries = usageEntries(byUsage);
     if (!entries.length) continue;
+    // Lot V, étape 4 : l'onSolid d'une échelle, en texte posé seulement sur le pas 9 ou 10 de cette
+    // échelle, est sur la cible (inchangé, <échelle>-sur-plein), avant R4. Une valeur de la valise garde son nom.
+    const solid = isOpaque(old) && !T.some((t) => t.value === old) ? solidTextOf(old) : null;
+    if (solid) {
+      const x = /** @type {(typeof entries)[number]} */ (entries.find((y) => y.usage === 'texte'));
+      rows.push({
+        old, count: x.n, properties: x.e.properties, selectors: x.e.selectors, usage: 'texte', usages: [USAGE_LABEL.texte ?? 'texte'], kinds: x.e.kinds,
+        new: old, name: `${solid.scale}-sur-plein`, class: 'inchangé', delta: 0, candidates: [], contrast: { threshold: solid.threshold, before: solid.ratio, after: solid.ratio },
+      });
+      entries = entries.filter((y) => y !== x);
+      if (!entries.length) continue;
+    }
     const properties = [...new Set(entries.flatMap((x) => x.e.properties))];
     const selectors = [...new Set(entries.flatMap((x) => x.e.selectors))].slice(0, 4);
     const count = entries.reduce((t, x) => t + x.n, 0);
@@ -881,7 +913,7 @@ export function propose(rendered, target, { contradictions = /** @type {any[]} *
   if (target.spacing) put('spacing', u ? spacingUsageRows(u.spacing, target.spacing, u.proximity) : dimensionRows(gather(rendered, ['margins', 'paddings', 'gaps']), target.spacing));
   if (target.fontSizes) put('fontSizes', dimensionRows(gather(rendered, ['fontSizes']), target.fontSizes, { nearPx: THRESHOLDS.nearTextPx }));
   const B = target.brand && target.colors ? brandOf(target) : null;
-  if (target.colors) put('colors', u ? colorUsageRows(u, target.colors, B, rendered.contrast?.pairs ?? []) : colorRows(gather(rendered, ['colors']), target.colors));
+  if (target.colors) put('colors', u ? colorUsageRows(u, target.colors, B, rendered.contrast?.pairs ?? [], target.onSolid) : colorRows(gather(rendered, ['colors']), target.colors));
   return {
     thresholds: THRESHOLDS,
     rules: RULES,
@@ -1042,5 +1074,36 @@ export function mapping(table, decisions = {}) {
     }
   }
   if (table.thirdParty?.length) out.thirdParty = [...table.thirdParty];
+  return out;
+}
+
+/**
+ * Lot G (G4) : onSolid d'une échelle pour un plein donné. La valise donne une valeur pour
+ * l'échelle, ou une valeur par pas ({ 9, 10 }) quand aucune ne tient sur les deux.
+ * @param {Record<string, string | Record<string, string>> | undefined} map  target.onSolid
+ * @param {string} scale @param {number} step  9 ou 10
+ * @returns {string | null}
+ */
+export function onSolidOf(map, scale, step) {
+  const v = map?.[scale];
+  if (!v) return null;
+  return typeof v === 'string' ? v : v[String(step)] ?? v['9'] ?? null;
+}
+
+/**
+ * Lot V, étape 4 (B) : pleins de la cible reconnus par leur texte. Pour chaque échelle qui a un
+ * onSolid, « fond|texte » du pas 9 et du pas 10 avec cet onSolid (minuscules). Un fond de la page
+ * qui porte exactement ce texte est un plein, même si le texte est plus foncé que lui.
+ * @param {{ colors?: TargetColor[], onSolid?: Record<string, string | Record<string, string>> }} target
+ * @returns {Set<string>}
+ */
+export function solidPairs(target) {
+  /** @type {Set<string>} */
+  const out = new Set();
+  for (const c of target?.colors ?? []) {
+    const m = /^(.+)-(9|10)$/.exec(c.name ?? '');
+    const text = m ? onSolidOf(target.onSolid, m[1], Number(m[2])) : null;
+    if (m && text) out.add(`${c.value.toLowerCase()}|${text.toLowerCase()}`);
+  }
   return out;
 }

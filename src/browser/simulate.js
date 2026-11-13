@@ -18,7 +18,9 @@
 /**
  * Exécutée dans la page. Relève les remplacements à faire et installe
  * window.__dsSim = { els, ops, changes, show }. Tout est éteint au départ.
- * @param {Record<string, any>} map  par famille : ancien (ou ancien|usage) → nouveau ; thirdParty : sélecteurs (R6)
+ * @param {Record<string, any>} map  par famille : ancien (ou ancien|usage) → nouveau ; thirdParty : sélecteurs (R6) ;
+ *   lot V, étape 4 : solid, paires « fond|texte » de la cible qui font un plein ; couplings, textes
+ *   posés sur un plein qui prennent l'onSolid ({ text, bg, to, onSolid }, voir simulationCouplings)
  */
 export function scanInPage(map) {
   const SIDES = ['top', 'right', 'bottom', 'left'];
@@ -159,7 +161,9 @@ export function scanInPage(map) {
   }
   /** Une marge de cette valeur figure dans la table (sous « ancien », « ancien|marge » ou « ancien|marge|relation »). @param {string} old */
   const marginListed = (old) => old in spacingMap || Object.keys(spacingMap).some((k) => k === `${old}|marge` || k.startsWith(`${old}|marge|`));
-  // Pleins : éléments dont le fond opaque porte un texte plus clair que lui (R1).
+  // Pleins : éléments dont le fond opaque porte un texte plus clair que lui (R1), ou l'onSolid de
+  // son échelle (lot V, étape 4 : paires de la cible, comme au relevé).
+  const solid = new Set(Array.isArray(map.solid) ? map.solid : []);
   /** @type {Set<Element>} */
   const plein = new Set();
   if (document.body)
@@ -170,7 +174,7 @@ export function scanInPage(map) {
       for (/** @type {Element | null} */ let x = el; x; x = x.parentElement) {
         const bg = hexKey(getComputedStyle(x).backgroundColor);
         if (!bg) continue;
-        if (lum(fg) > lum(bg)) plein.add(x);
+        if (lum(fg) > lum(bg) || solid.has(`${bg}|${fg}`)) plein.add(x);
         break;
       }
     }
@@ -201,8 +205,10 @@ export function scanInPage(map) {
   };
   /** @type {Element[]} */
   const els = [];
-  /** @type {{ i: number, prop: string, value: string, family: string, key: string, prev: string, prevPriority: string }[]} */
+  /** with : clé de l'opération de fond à laquelle un couplage est lié (lot V, étape 4). @type {{ i: number, prop: string, value: string, family: string, key: string, prev: string, prevPriority: string, with?: string | null }[]} */
   const ops = [];
+  /** Éléments porteurs de texte, pour les couplages. @type {number[]} */
+  const textEls = [];
   /** @type {Map<string, { key: string, family: string, old: string, usage?: string, new: string, count: number, samples: number[], props: string[] }>} */
   const changes = new Map();
   /** @param {number} i @param {string} family @param {string} prop @param {string | null} old @param {string} [usage] @param {string} [scope]  lot P : relation d'une marge */
@@ -261,6 +267,7 @@ export function scanInPage(map) {
       consider(i, 'colors', 'background-color', hexKey(cs.backgroundColor), plein.has(el) ? 'plein' : 'fond');
       // Lot R : la valeur d'un champ rempli est un texte (comme au relevé, R3 bis) : couleur et taille changent.
       if (text || hasText(el)) {
+        textEls.push(i);
         consider(i, 'fontSizes', 'font-size', pxKey(cs.fontSize));
         consider(i, 'colors', 'color', hexKey(cs.color), 'texte');
       }
@@ -276,21 +283,51 @@ export function scanInPage(map) {
     els.push(el);
     consider(i, 'colors', 'background-color', hexKey(getComputedStyle(el).backgroundColor), plein.has(el) ? 'plein' : 'fond');
   }
+  // Lot V, étape 4 : COUPLAGES. Un texte dont la couleur et le fond (premier fond opaque, lu avant
+  // simulation) sont une paire couplée, et dont le fond simulé vaut le fond attendu, prend l'onSolid.
+  // L'opération suit celle du fond (with) ; sans opération de fond (fond déjà sur la cible), elle
+  // ne s'allume que dans la simulation complète.
+  const couplings = Array.isArray(map.couplings) ? map.couplings : [];
+  if (couplings.length)
+    for (const i of textEls) {
+      const el = els[i];
+      const fg = hexKey(getComputedStyle(el).color);
+      if (!fg) continue;
+      /** @type {Element | null} */
+      let x = el;
+      let bgOld = null;
+      for (; x; x = x.parentElement) if ((bgOld = hexKey(getComputedStyle(x).backgroundColor))) break;
+      if (!x || !bgOld) continue;
+      const j = els.indexOf(x);
+      const bgOp = j < 0 ? undefined : ops.find((op) => op.i === j && op.prop === 'background-color');
+      const after = bgOp?.value ?? bgOld;
+      const c = couplings.find((/** @type {any} */ k) => k.text === fg && k.bg === bgOld && k.to === after);
+      if (!c) continue;
+      const style = /** @type {HTMLElement} */ (el).style;
+      ops.push({ i, prop: 'color', value: c.onSolid, family: 'colors', key: `colors|${fg}|texte|sur-plein`, with: bgOp?.key ?? null, prev: style?.getPropertyValue('color') ?? '', prevPriority: style?.getPropertyPriority('color') ?? '' });
+    }
   /**
    * Allume ou éteint la simulation, pour tout, pour des familles ou pour des changements.
    * @param {{ on: boolean, families?: string[] | null, keys?: string[] | null }} o
    */
   const show = (o) => {
     let active = 0;
+    // Lot V, étape 4 : un couplage s'allume avec l'opération de fond qu'il suit (with).
+    /** @param {(typeof ops)[number]} op */
+    const isOn = (op) => o.on && (!o.families || o.families.includes(op.family)) && (!o.keys || o.keys.includes(op.key) || (!!op.with && o.keys.includes(op.with)));
+    // Deux passages : on rétablit d'abord, on pose ensuite, pour qu'une opération éteinte
+    // n'efface pas une autre posée sur la même propriété du même élément (texte et couplage).
     for (const op of ops) {
       const style = /** @type {HTMLElement} */ (els[op.i]).style;
-      if (!style) continue;
-      const on = o.on && (!o.families || o.families.includes(op.family)) && (!o.keys || o.keys.includes(op.key));
-      if (on) {
-        style.setProperty(op.prop, op.value, 'important');
-        active++;
-      } else if (op.prev) style.setProperty(op.prop, op.prev, op.prevPriority);
+      if (!style || isOn(op)) continue;
+      if (op.prev) style.setProperty(op.prop, op.prev, op.prevPriority);
       else style.removeProperty(op.prop);
+    }
+    for (const op of ops) {
+      const style = /** @type {HTMLElement} */ (els[op.i]).style;
+      if (!style || !isOn(op)) continue;
+      style.setProperty(op.prop, op.value, 'important');
+      active++;
     }
     return active;
   };
@@ -871,7 +908,7 @@ export function frameOf(probes, d) {
  * décision, le premier trouvé dans l'ordre des pages ; même cadre pour toutes les versions (R-9).
  * La page vient d'un contexte en densité FRAME.scale (R-8) : l'image a scale × la taille du cadre.
  * @param {import('playwright-core').Page} page  page d'origine déjà chargée
- * @param {{ key: string, family: string, usage?: string, mapKey: string, old: string, candidates: { value: string, name?: string }[] }} d
+ * @param {{ key: string, family: string, usage?: string, mapKey: string, old: string, candidates: { value: string, name?: string }[], solid?: string[], couplings?: { text: string, bg: string, to: string, onSolid: string }[] }} d
  * @param {string[]} thirdParty
  * @param {{ index?: number, compact?: boolean, labels?: string[] }} [opts]  index : élément imposé (vignette d'un autre élément touché) ;
  *   compact : cadre réduit à l'élément et à son voisin direct (ou aux enfants d'une gouttière), sans libellé ni champ du voisin ;
@@ -882,7 +919,7 @@ export async function captureDecision(page, d, thirdParty = [], { index, compact
   const versions = [{ label: labels?.[0] ?? 'actuelle', value: d.old }, ...d.candidates.map((c, n) => ({ label: labels?.[n + 1] ?? `candidat ${n + 1}`, value: c.value, name: c.name }))];
   /** @param {string} value @param {number} [i] */
   const pose = async (value, i) => {
-    await page.evaluate(scanInPage, { [d.family]: { [d.mapKey]: value }, thirdParty });
+    await page.evaluate(scanInPage, { [d.family]: { [d.mapKey]: value }, thirdParty, solid: d.solid ?? [], couplings: d.couplings ?? [] });
     await page.evaluate(showInPage, { on: true });
     return page.evaluate(versionInPage, { key: d.key, i, family: d.family, usage: d.usage, lines: true });
   };

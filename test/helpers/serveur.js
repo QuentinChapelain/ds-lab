@@ -1,13 +1,13 @@
 // @ts-check
 /**
  * Serveurs de test pour fixtures/marque-demo : deux origines distinctes.
- * - principale : http://127.0.0.1:<p1>/, racine fixtures/marque-demo/
+ * - principale : http://127.0.0.1:<p1>/, racine fixtures/marque-demo/ (ou `root`, lot V)
  * - distante   : http://localhost:<p2>/, racine fixtures/marque-demo/distant/
  * `{{ORIGINE_DISTANTE}}` est remplacé dans les pages HTML par l'origine distante.
  */
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { join, normalize, extname, sep } from 'node:path';
+import { join, normalize, extname, sep, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const FIXTURE_DIR = fileURLToPath(new URL('../../fixtures/marque-demo/', import.meta.url));
@@ -60,11 +60,12 @@ function listen(server, host) {
 
 /**
  * Démarre les deux serveurs.
+ * @param {{ root?: string }} [opts]  root : racine du serveur principal (lot V) ; le distant reste fixtures/marque-demo/distant/
  * @returns {Promise<{ origin: string, remoteOrigin: string, close: () => Promise<void> }>}
  */
-export async function startFixtureServers() {
+export async function startFixtureServers({ root = FIXTURE_DIR } = {}) {
   let remoteOrigin = '';
-  const main = createServer(handler(FIXTURE_DIR, () => remoteOrigin));
+  const main = createServer(handler(resolve(root), () => remoteOrigin));
   const remote = createServer(handler(join(FIXTURE_DIR, 'distant'), () => remoteOrigin));
   const p1 = await listen(main, '127.0.0.1');
   const p2 = await listen(remote, 'localhost');

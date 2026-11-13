@@ -16,13 +16,14 @@ import { loadSources } from '../lib/sources.js';
 import { gotoAndSettle, DEFAULT_WAIT_MS } from '../browser/navigate.js';
 import { createRenderedAggregator } from '../rendered/aggregate.js';
 import { measureRendered } from '../rendered/run.js';
-import { propose, mapping, rowKey, controlAfter, splitOf, brandOf, worstContrast } from '../reduce/propose.js';
+import { propose, mapping, rowKey, controlAfter, splitOf, brandOf, worstContrast, solidPairs } from '../reduce/propose.js';
 import { collectSheets } from '../browser/sheets.js';
 import { contradictionsIn } from '../brand/brand.js';
 import { simulatePage, installLive, captureDecision, touchedElements, FRAME } from '../browser/simulate.js';
 import { renderReview } from '../report/review.js';
-import { buildMigration } from '../report/migration.js';
+import { buildMigration, couplingsOf, simulationCouplings } from '../report/migration.js';
 import { stampOf, freeOutputDir } from '../report/json.js';
+import { pageName, writeReference } from '../verify/reference.js';
 
 const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cible.json> [options]
 
@@ -32,6 +33,9 @@ const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cibl
   --storage-state <fichier>  session enregistrée par npm run login
   --sources <fichier>        fichier de sources (pour thirdParty ; sans lui : aucun fichier lu)
   --viewport <LxH>           fenêtre (défaut : 1366x900)
+  --references <dossier>     pour chaque page : <page>.reference.png (pleine page après simulation complète,
+                             décisions comprises) et <page>.reference.aria.yml (arbre avant simulation),
+                             à comparer ensuite avec npm run verify
   --live                     après la revue, ouvre la première adresse dans une fenêtre avec une barre
                              avant / après et un interrupteur par famille ; fermer la fenêtre pour finir
   --out <dossier>            racine des sorties (défaut : local/reductions)
@@ -50,6 +54,7 @@ const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cibl
  * @property {string} [tokensPath]     jetons DTCG de la cible, pour migration.md
  * @property {string} [storageState]
  * @property {string} [sourcesPath]
+ * @property {string} [referencesPath]  lot V : dossier des références de npm run verify
  * @property {{ width: number, height: number }} [viewport]
  * @property {number} [waitMs]
  * @property {string} [outRoot]
@@ -60,7 +65,7 @@ const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cibl
 
 /**
  * @param {ReduceOptions} opts
- * @returns {Promise<{ host: string, dir: string, files: string[], table: ReturnType<typeof propose>, map: Record<string, any>, first: string, migration: ReturnType<typeof buildMigration>['data'] }[]>}
+ * @returns {Promise<{ host: string, dir: string, files: string[], references: string[], table: ReturnType<typeof propose>, map: Record<string, any>, first: string, migration: ReturnType<typeof buildMigration>['data'], pages: Awaited<ReturnType<typeof simulatePage>>[] }[]>}
  */
 /**
  * Lot R, R-2 : identifiant et titre de chaque ligne de la table, pour la barre --live.
@@ -82,13 +87,24 @@ export async function runReduce(opts) {
   const tokens = opts.tokensPath ? JSON.parse(await readFile(opts.tokensPath, 'utf8')) : null;
   const { sources } = await loadSources({ path: opts.sourcesPath });
   const urls = resolveAddresses(opts.addresses);
+  if (opts.referencesPath) {
+    // Lot V : un nom de fichier par page ; deux pages du même nom s'écraseraient.
+    const seen = new Map();
+    for (const u of urls) {
+      const n = pageName(u);
+      if (seen.has(n)) throw new Error(`--references : ${seen.get(n)} et ${u} donneraient le même fichier ${n}.reference.png`);
+      seen.set(n, u);
+    }
+  }
   const { chromium } = await import('playwright-core');
   const browser = await chromium.launch();
   const results = [];
   try {
     for (const [host, hostUrls] of groupByHost(urls)) {
       const context = await browser.newContext({ viewport, storageState: opts.storageState ?? undefined });
-      const agg = createRenderedAggregator();
+      // Lot V, étape 4 (B) : un fond qui porte l'onSolid de son échelle est un plein.
+      const solid = solidPairs(target);
+      const agg = createRenderedAggregator({ solid });
       // Lot M (M7) : avec une marque déclarée, feuilles lues pour les replis contraires au back-office.
       const brandSheets = /** @type {any[]} */ ([]);
       const seenSheets = new Set();
@@ -118,15 +134,27 @@ export async function runReduce(opts) {
       // Lot P (P3) : la hiérarchie des espaces, recalculée avec les décisions relues.
       controlAfter(table, decisions);
       const map = mapping(table, decisions);
+      // Lot V, étape 4 : la simulation (revue, références, captures, --live) pose aussi les COUPLAGES.
+      map.solid = [...solid];
+      map.couplings = simulationCouplings(couplingsOf({ rendered, map, target }));
       // Tour 2 : simuler la table, page par page.
       const pages = [];
+      /** @type {string[]} */
+      const references = [];
       for (const url of hostUrls) {
         log(`simulation → ${url}`);
         const page = await context.newPage();
         try {
           await gotoAndSettle(page, url, { waitMs });
+          // Lot V : l'arbre d'accessibilité avant simulation, la capture après simulation complète.
+          const aria = opts.referencesPath ? await page.ariaSnapshot() : '';
           // Lot R, 5c : les captures par ligne viennent du passage des versions ; ici, pages entières seulement.
-          pages.push(await simulatePage(page, { ...map, split: splitOf(table) }, { maxCropped: 0 }));
+          const simulated = await simulatePage(page, { ...map, split: splitOf(table) }, { maxCropped: 0 });
+          pages.push(simulated);
+          if (opts.referencesPath && simulated.after) {
+            const f = await writeReference(opts.referencesPath, url, { png: Buffer.from(simulated.after, 'base64'), aria });
+            references.push(f.png, f.aria);
+          }
         } finally {
           await page.close().catch(() => {});
         }
@@ -150,7 +178,7 @@ export async function runReduce(opts) {
           for (const x of pending) {
             const { family, r, decision } = x;
             const candidates = decision ? r.candidates : [{ value: /** @type {string} */ (r.new), name: r.name }];
-            const d = { key: rowKey(family, r), family, usage: r.usage, mapKey: r.usage ? `${r.old}|${r.usage}${r.scope ? `|${r.scope}` : ''}` : r.old, old: r.old, candidates };
+            const d = { key: rowKey(family, r), family, usage: r.usage, mapKey: r.usage ? `${r.old}|${r.usage}${r.scope ? `|${r.scope}` : ''}` : r.old, old: r.old, candidates, solid: map.solid, couplings: map.couplings };
             const here = await touchedElements(page, d, table.thirdParty);
             if (!here.length) continue;
             for (const t of here) x.touched.push({ page: url, selector: t.selector, text: t.text });
@@ -219,7 +247,7 @@ export async function runReduce(opts) {
         },
       });
       await writeFile(files[2], migration.markdown);
-      results.push({ host, dir, files, table, map, first: hostUrls[0], migration: migration.data });
+      results.push({ host, dir, files, references, table, map, first: hostUrls[0], migration: migration.data, pages });
     }
   } finally {
     await browser.close();
@@ -259,6 +287,7 @@ export function parseReduceArgs(argv) {
       tokens: { type: 'string' },
       'storage-state': { type: 'string' },
       sources: { type: 'string' },
+      references: { type: 'string' },
       viewport: { type: 'string', default: '1366x900' },
       out: { type: 'string', default: 'local/reductions' },
       live: { type: 'boolean', default: false },
@@ -279,6 +308,7 @@ export function parseReduceArgs(argv) {
       tokensPath: values.tokens,
       storageState: values['storage-state'],
       sourcesPath: values.sources,
+      referencesPath: values.references,
       viewport: { width: Number(vp[1]), height: Number(vp[2]) },
       outRoot: String(values.out),
       live: !!values.live,
@@ -301,6 +331,7 @@ async function main() {
   const results = await runReduce({ ...parsed.options, log: (m) => console.log(m) });
   for (const r of results) {
     console.log(`\n${r.host} : ${r.files.join(', ')}`);
+    if (r.references.length) console.log(`  références : ${r.references.join(', ')}`);
     for (const [family, f] of Object.entries(r.table.families)) {
       const s = f.summary;
       console.log(`  ${family} : ${s.before} → ${s.after} valeurs ; ${s.decisions} décision(s), ${s.corrections} correction(s), ${s.near} proche(s), ${s.auto} d'office`);

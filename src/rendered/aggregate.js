@@ -365,10 +365,13 @@ export function opaqueSource(records, index) {
 
 /**
  * Lot B : éléments dont le fond porte un texte plus clair que lui (pleins).
+ * Lot V, étape 4 (B) : aussi un fond qui porte exactement l'onSolid de son échelle (paire
+ * « fond|texte » de `solid`, pas 9 ou 10 de la cible), même si ce texte est plus foncé.
  * @param {RenderedRecord[]} records
+ * @param {Set<string>} [solid]  solidPairs(target)
  * @returns {Set<number>}
  */
-export function pleinSources(records) {
+export function pleinSources(records, solid = new Set()) {
   /** @type {Set<number>} */
   const out = new Set();
   records.forEach((rec, i) => {
@@ -379,7 +382,7 @@ export function pleinSources(records) {
     if (s < 0) return;
     const bg = /** @type {{ hex: string }} */ (normalizeColor(records[s].bg)).hex;
     const text = isOpaque(fg.hex) ? fg.hex : blend(fg.hex, bg);
-    if (relativeLuminance(text) > relativeLuminance(bg)) out.add(s);
+    if (relativeLuminance(text) > relativeLuminance(bg) || solid.has(`${bg}|${text}`)) out.add(s);
   });
   return out;
 }
@@ -388,7 +391,8 @@ export function pleinSources(records) {
  * Agrégateur incrémental : une page à la fois, pour pouvoir tracer les
  * contextes nouveaux tant que la page est ouverte.
  */
-export function createRenderedAggregator() {
+/** @param {{ solid?: Set<string> }} [o]  solid : paires plein de la cible (lot V, étape 4) */
+export function createRenderedAggregator({ solid = new Set() } = {}) {
   /** @type {Record<string, ReturnType<typeof createCollector>>} */
   const fam = Object.fromEntries(RENDERED_FAMILIES.map((f) => [f, createCollector()]));
   /** @type {Record<string, number>} */
@@ -482,7 +486,7 @@ export function createRenderedAggregator() {
     }
     /** @type {{ family: string, value: string, context: Context }[]} */
     const created = [];
-    const plein = pleinSources(pc.records);
+    const plein = pleinSources(pc.records, solid);
     // Lot B, R1 : fond de page porté par html ou body (hors relevé de l'audit, mais rangé et simulé).
     pc.records.forEach((rec, index) => {
       if (rec.retained || (rec.parent !== -1 && rec.parent !== 0)) return;

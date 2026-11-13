@@ -14,12 +14,15 @@
     "marque": "node src/cli/marque.js",
     "reduce": "node src/cli/reduce.js",
     "demo": "node test/helpers/demo.js",
-    "test": "node --test \"test/**/*.test.js\""
+    "test": "node --test \"test/**/*.test.js\"",
+    "verify": "node src/cli/verify.js"
   },
   "dependencies": {
     "@projectwallace/css-analyzer": "9.9.7",
     "culori": "4.0.2",
+    "pixelmatch": "8.0.0",
     "playwright-core": "1.59.1",
+    "pngjs": "7.0.0",
     "postcss": "8.5.32"
   }
 }

@@ -7,7 +7,9 @@
  * renvoyées avec le texte, pour les tests.
  */
 import { basename } from 'node:path';
-import { APPLIED, isOut, SLICES, decisionFor, WHERE_TO_FIX, nearestOf, tieOf } from '../reduce/propose.js';
+import { APPLIED, isOut, SLICES, decisionFor, WHERE_TO_FIX, nearestOf, tieOf, onSolidOf } from '../reduce/propose.js';
+
+export { onSolidOf };
 import { contrastRatio, isOpaque, toLab, deltaE } from '../lib/color.js';
 
 /** Groupes de jetons de dimension, par famille de la table. */
@@ -33,7 +35,13 @@ const isOnSolid = (path) => /\.(sur-plein|on-solid|onSolid)$/.test(path);
  * @param {{ name?: string | null, pleinScales?: Set<string> }} [ctx]
  */
 export function pickColorToken(paths, { name = null, pleinScales = new Set() } = {}) {
-  if (name) {
+  // Lot V, étape 4 : une ligne « <échelle>-sur-plein » va au jeton sur-plein de son échelle.
+  const solid = name ? /^(.+)-sur-plein$/.exec(name) : null;
+  if (solid) {
+    const hit = paths.find((p) => isOnSolid(p) && p.split('.').slice(-2, -1)[0] === solid[1]);
+    if (hit) return hit;
+  }
+  if (name && !solid) {
     const suffix = name.replace(/-(\d+)$/, '.$1');
     const hit = paths.find((p) => !isOnSolid(p) && (p === suffix || p.endsWith(`.${suffix}`)));
     if (hit) return hit;
@@ -166,25 +174,14 @@ function originOf(rendered, family, r) {
 /** Lot C : « 12 px » pour une dimension, la valeur telle quelle sinon. @param {string} v */
 const shortValue = (v) => (/^-?[\d.]+px$/.test(v) ? `${String(parseFloat(v)).replace('.', ',')} px` : v);
 
-/**
- * Lot G (G4) : onSolid d'une échelle pour un plein donné. La valise donne une valeur pour
- * l'échelle, ou une valeur par pas ({ 9, 10 }) quand aucune ne tient sur les deux.
- * @param {Record<string, string | Record<string, string>>} map  target.onSolid
- * @param {string} scale @param {number} step  9 ou 10
- * @returns {string | null}
- */
-export function onSolidOf(map, scale, step) {
-  const v = map?.[scale];
-  if (!v) return null;
-  return typeof v === 'string' ? v : v[String(step)] ?? v['9'] ?? null;
-}
 
-export function buildMigration({ table, rendered, map, target, tokens, decisions = {}, meta }) {
-  const idx = tokens ? indexTokens(tokens) : null;
-  /** @param {string} family @param {string | null} value @param {{ name?: string | null, pleinScales?: Set<string> }} [ctx] */
-  const token = (family, value, ctx) => (value === null ? '—' : idx?.find(family, value, ctx) ?? 'jeton absent');
+/**
+ * Couleurs de la valise, et échelle et pas d'un plein (pas 9-10 le plus proche), ou null.
+ * @param {any} target
+ */
+function pleinFinder(target) {
   const T = (target.colors ?? []).map((/** @type {any} */ c) => ({ name: c.name, value: c.value.toLowerCase(), lab: toLab(c.value.toLowerCase()) }));
-  /** Échelle et pas d'un plein (pas 9-10 le plus proche), ou null. @param {string} hex */
+  /** @param {string} hex @returns {{ scale: string, step: 9 | 10 } | null} */
   const pleinOf = (hex) => {
     if (!T.length || !isOpaque(hex)) return null;
     const lab = toLab(hex);
@@ -192,6 +189,58 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     const m = /^(.+)-(\d+)$/.exec(best.t.name ?? '');
     return m && Number(m[2]) >= 9 && Number(m[2]) <= 10 ? { scale: m[1], step: /** @type {9 | 10} */ (Number(m[2])) } : null;
   };
+  return { T, pleinOf };
+}
+
+/**
+ * COUPLAGES : textes posés sur un plein, encore sous leur seuil une fois la table posée, et
+ * l'onSolid de l'échelle du plein. Une entrée par paire après la table, avec ses paires d'origine
+ * (befores). Lot V, étape 4 : la simulation les applique aussi (voir simulationCouplings).
+ * @param {{ rendered: any, map: Record<string, any>, target: any }} o
+ */
+export function couplingsOf({ rendered, map, target }) {
+  const { pleinOf } = pleinFinder(target);
+  const onSolidMap = target.onSolid ?? {};
+  /** @type {any[]} */
+  const onSolid = [];
+  for (const p of rendered.usages?.pairs ?? []) {
+    if (p.bgUsage !== 'plein') continue;
+    const text = mapped(map, p.text, 'texte');
+    const bg = mapped(map, p.bg, 'plein');
+    const ratio = contrastRatio(text, bg);
+    const plein = pleinOf(bg);
+    const scale = plein?.scale ?? null;
+    // Lot G (G4) : onSolid par pas quand la valise en donne un pour le 9 et un pour le 10.
+    const solid = scale ? onSolidOf(onSolidMap, scale, plein?.step ?? 9) : null;
+    if (ratio >= p.threshold || !scale || !solid) continue;
+    const seen = (rendered.contrast?.pairs ?? []).find((/** @type {any} */ x) => x.text === p.text && x.bg === p.bg);
+    // Une entrée par paire après la table : plusieurs fonds d'origine peuvent aller au même pas.
+    let o = onSolid.find((x) => x.text === text && x.bg === bg);
+    if (!o) {
+      o = { text, bg, before: { text: p.text, bg: p.bg }, befores: [], ratio: Math.round(ratio * 10000) / 10000, threshold: p.threshold, scale, onSolid: solid, n: 0, selectors: [] };
+      onSolid.push(o);
+    }
+    o.n += p.n;
+    if (!o.befores.some((/** @type {any} */ b) => b.bg === p.bg && b.text === p.text)) o.befores.push({ text: p.text, bg: p.bg });
+    for (const sel of seen?.selectors ?? []) if (!o.selectors.includes(sel)) o.selectors.push(sel);
+  }
+  return onSolid;
+}
+
+/**
+ * Lot V, étape 4 : couplages pour la simulation, par paire d'origine : texte et fond lus dans la
+ * page, fond attendu après la table (to), couleur posée sur le texte (onSolid).
+ * @param {any[]} couplings  couplingsOf(…)
+ * @returns {{ text: string, bg: string, to: string, onSolid: string }[]}
+ */
+export const simulationCouplings = (couplings) =>
+  couplings.flatMap((o) => o.befores.map((/** @type {any} */ b) => ({ text: b.text, bg: b.bg, to: o.bg, onSolid: String(o.onSolid).toLowerCase() })));
+
+export function buildMigration({ table, rendered, map, target, tokens, decisions = {}, meta }) {
+  const idx = tokens ? indexTokens(tokens) : null;
+  /** @param {string} family @param {string | null} value @param {{ name?: string | null, pleinScales?: Set<string> }} [ctx] */
+  const token = (family, value, ctx) => (value === null ? '—' : idx?.find(family, value, ctx) ?? 'jeton absent');
+  const { T, pleinOf } = pleinFinder(target);
   /** @param {string} hex */
   const scaleOf = (hex) => pleinOf(hex)?.scale ?? null;
   /** Échelles des pleins sur lesquels un texte est posé (après la table). @param {string} text */
@@ -272,34 +321,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
 
   // Exceptions nommées.
   const links = (rendered.usages?.links ?? []).map((/** @type {any} */ l) => ({ ...l }));
-  const onSolidMap = target.onSolid ?? {};
-  /** @type {any[]} */
-  const onSolid = [];
-  for (const p of rendered.usages?.pairs ?? []) {
-    if (p.bgUsage !== 'plein') continue;
-    const text = mapped(map, p.text, 'texte');
-    const bg = mapped(map, p.bg, 'plein');
-    const ratio = contrastRatio(text, bg);
-    const plein = pleinOf(bg);
-    const scale = plein?.scale ?? null;
-    // Lot G (G4) : onSolid par pas quand la valise en donne un pour le 9 et un pour le 10.
-    const solid = scale ? onSolidOf(onSolidMap, scale, plein?.step ?? 9) : null;
-    if (ratio >= p.threshold || !scale || !solid) continue;
-    const seen = (rendered.contrast?.pairs ?? []).find((/** @type {any} */ x) => x.text === p.text && x.bg === p.bg);
-    // Une entrée par paire après la table : plusieurs fonds d'origine peuvent aller au même pas.
-    let o = onSolid.find((x) => x.text === text && x.bg === bg);
-    if (!o) {
-      o = {
-        text, bg, before: { text: p.text, bg: p.bg }, befores: [], ratio: Math.round(ratio * 10000) / 10000, threshold: p.threshold, scale, onSolid: solid, n: 0,
-        selectors: [],
-        token: idx?.find('colors', solid, { pleinScales: new Set([scale]) }) ?? null,
-      };
-      onSolid.push(o);
-    }
-    o.n += p.n;
-    if (!o.befores.some((/** @type {any} */ b) => b.bg === p.bg && b.text === p.text)) o.befores.push({ text: p.text, bg: p.bg });
-    for (const sel of seen?.selectors ?? []) if (!o.selectors.includes(sel)) o.selectors.push(sel);
-  }
+  const onSolid = couplingsOf({ rendered, map, target }).map((o) => ({ ...o, token: idx?.find('colors', o.onSolid, { pleinScales: new Set([o.scale]) }) ?? null }));
   // Paires encore sous leur seuil une fois la table posée, hors celles que le couplage onSolid répare.
   /** @type {Map<string, { text: string, bg: string, ratio: number, threshold: number, n: number }>} */
   const remaining = new Map();

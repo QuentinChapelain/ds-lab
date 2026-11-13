@@ -681,32 +681,28 @@
   "criteria": {
     "$comment": "Après simulation : auto et corrections appliquées, aucune décision.",
     "a": {
-      "text": "12 paires avant, 3 après : #2196f3 (R4) ; blanc sur #d0563f et blanc sur #c8553d, texte sur terre à poser en onSolid (zone morte).",
+      "text": "12 paires avant, 1 après : #2196f3 (R4). Le blanc sur #d0563f et sur #c8553d passe à l'onSolid terre #220000 (couplage posé par la simulation).",
       "status": "résultat",
       "before": 12,
-      "after": 3,
+      "after": 1,
       "remaining": [
         {
           "text": "#2196f3",
           "bg": "#ffffff",
           "ratio": 3.1243,
           "why": "R4"
-        },
-        {
-          "text": "#ffffff",
-          "bg": "#d0563f",
-          "ratio": 4.1299,
-          "why": "onSolid"
-        },
-        {
-          "text": "#ffffff",
-          "bg": "#c8553d",
-          "ratio": 4.3544,
-          "why": "onSolid"
         }
       ],
-      "was": "Hypothèse : les seules paires de texte sous 4,5:1 sont celles de #2196f3 et du blanc sur #d0563f.",
-      "corrected": "12/11/2026 : hypothèse remplacée par la mesure (test e2e-desordre-valise)"
+      "coupled": {
+        "$comment": "culori 4.0.2 : node -e 'import(\"culori\").then(({wcagContrast:w})=>console.log(w(\"#220000\",\"#d0563f\"),w(\"#220000\",\"#c8553d\"),w(\"#ffffff\",\"#c4513a\")))'",
+        "pairs": [
+          { "text": "#220000", "bg": "#d0563f", "ratio": 4.761, "from": "#ffffff, décision #d0563f non appliquée" },
+          { "text": "#220000", "bg": "#c8553d", "ratio": 4.5155, "from": "#ffffff" }
+        ],
+        "notCoupled": { "text": "#ffffff", "bg": "#c4513a", "ratio": 4.5799, "why": "au-dessus de 4,5 : pas de couplage" }
+      },
+      "was": "12/11/2026 : 3 après, le blanc sur #d0563f (4,1299) et sur #c8553d (4,3544) laissé en zone morte, la simulation ne posant pas les couplages.",
+      "corrected": "13/11/2026, lot V étape 4 : la simulation applique les COUPLAGES comme la consigne ; il ne reste que #2196f3"
     },
     "b": "Le bandeau tiers est identique avant et après.",
     "c": "Aucune ligne d'espacement négative ou au-delà de 64 px n'est rangée.",
