@@ -1107,3 +1107,35 @@ export function solidPairs(target) {
   }
   return out;
 }
+
+/**
+ * Lot V, étape 5 : valeurs d'une page témoin que la table ne couvre pas. Couleurs, espacements et
+ * rayons : valeur × usage du relevé sans ligne de la table pour cette valeur et cet usage (une ligne
+ * sans usage couvre la valeur entière) ; pour une marge, la relation aussi, sauf ligne sans relation.
+ * Tailles : la valeur seule. Les éléments de contenu sont écartés.
+ * @param {any} rendered  agrégat du témoin
+ * @param {{ families: Record<string, { rows: Row[] }> }} table
+ * @returns {{ family: string, value: string, usage: string | null, count: number, selectors: string[] }[]}
+ */
+export function uncoveredValues(rendered, table) {
+  /** @type {{ family: string, value: string, usage: string | null, count: number, selectors: string[] }[]} */
+  const out = [];
+  const rowsOf = (/** @type {string} */ family) => table.families[family]?.rows ?? [];
+  for (const family of ['colors', 'spacing', 'radii']) {
+    if (!table.families[family]) continue;
+    for (const [value, byUsage] of Object.entries(rendered.usages?.[family] ?? {}))
+      for (const { usage: key, e, n } of usageEntries(/** @type {any} */ (byUsage))) {
+        // Une marge est relevée sous « marge|relation » ; sa ligne porte l'usage et, coupée, la relation
+        // (scope). Une ligne sans relation couvre toutes les relations (comme marginRow).
+        const [base, keyScope] = key.split('|');
+        const usage = e.usage ?? base;
+        const scope = e.scope ?? keyScope ?? null;
+        const covered = rowsOf(family).some((r) => r.old === value && (!r.usage || (r.usage === usage && (!r.scope || r.scope === scope))));
+        if (!covered) out.push({ family, value, usage: scope ? `${usage} (${scope})` : usage, count: n, selectors: (e.selectors ?? []).slice(0, 4) });
+      }
+  }
+  if (table.families.fontSizes)
+    for (const [value, e] of gather(rendered, ['fontSizes']))
+      if (!rowsOf('fontSizes').some((r) => r.old === value)) out.push({ family: 'fontSizes', value, usage: null, count: e.count, selectors: e.selectors });
+  return out;
+}

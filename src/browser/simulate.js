@@ -336,7 +336,9 @@ export function scanInPage(map) {
   const byFamily = {};
   for (const op of ops) byFamily[op.family] = (byFamily[op.family] ?? 0) + 1;
   Object.defineProperty(window, '__dsSim', { value: { els, ops, changes: list, byFamily, show }, configurable: true });
-  return { elements: els.length, operations: ops.length, changes: list, byFamily };
+  // Lot V, étape 5 : éléments distincts touchés par au moins une opération.
+  const changed = new Set(ops.map((op) => op.i)).size;
+  return { elements: els.length, operations: ops.length, changed, changes: list, byFamily };
 }
 
 /** Exécutée dans la page : rectangles (coordonnées de page) des éléments demandés. @param {number[]} indices */
@@ -525,7 +527,7 @@ async function crop(page, r) {
  * @param {Record<string, Record<string, string>>} map
  * @param {{ maxCropped?: number, fullPage?: boolean }} [opts]
  *   maxCropped : nombre de changements illustrés par des captures (les plus fréquents d'abord)
- * @returns {Promise<{ url: string, elements: number, operations: number, changes: SimulatedChange[], before: string | null, after: string | null }>}
+ * @returns {Promise<{ url: string, elements: number, operations: number, changed: number, byFamily: Record<string, number>, changes: SimulatedChange[], before: string | null, after: string | null }>}
  */
 export async function simulatePage(page, map, { maxCropped = 80, fullPage = true } = {}) {
   const scan = await page.evaluate(scanInPage, map);
@@ -554,6 +556,8 @@ export async function simulatePage(page, map, { maxCropped = 80, fullPage = true
     url: page.url(),
     elements: scan.elements,
     operations: scan.operations,
+    changed: scan.changed,
+    byFamily: scan.byFamily,
     changes: scan.changes.map((/** @type {any} */ c) => ({ key: c.key, family: c.family, old: c.old, usage: c.usage, new: c.new, count: c.count, props: c.props, crops: shots.get(c.key) ?? [] })),
     before,
     after,

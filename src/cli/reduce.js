@@ -16,7 +16,7 @@ import { loadSources } from '../lib/sources.js';
 import { gotoAndSettle, DEFAULT_WAIT_MS } from '../browser/navigate.js';
 import { createRenderedAggregator } from '../rendered/aggregate.js';
 import { measureRendered } from '../rendered/run.js';
-import { propose, mapping, rowKey, controlAfter, splitOf, brandOf, worstContrast, solidPairs } from '../reduce/propose.js';
+import { propose, mapping, rowKey, controlAfter, splitOf, brandOf, worstContrast, solidPairs, uncoveredValues } from '../reduce/propose.js';
 import { collectSheets } from '../browser/sheets.js';
 import { contradictionsIn } from '../brand/brand.js';
 import { simulatePage, installLive, captureDecision, touchedElements, FRAME } from '../browser/simulate.js';
@@ -36,6 +36,9 @@ const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cibl
   --references <dossier>     pour chaque page : <page>.reference.png (pleine page après simulation complète,
                              décisions comprises) et <page>.reference.aria.yml (arbre avant simulation),
                              à comparer ensuite avec npm run verify
+  --temoins <adresses>       pages témoins (option répétable, adresses séparées par des virgules, relatives
+                             à la première adresse) : hors de la table, la table y est simulée (couplages
+                             compris) ; références avec --references ; section « Pages témoins » de migration.md
   --live                     après la revue, ouvre la première adresse dans une fenêtre avec une barre
                              avant / après et un interrupteur par famille ; fermer la fenêtre pour finir
   --out <dossier>            racine des sorties (défaut : local/reductions)
@@ -55,6 +58,7 @@ const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cibl
  * @property {string} [storageState]
  * @property {string} [sourcesPath]
  * @property {string} [referencesPath]  lot V : dossier des références de npm run verify
+ * @property {string[]} [temoins]  lot V, étape 5 : pages témoins, hors de la table
  * @property {{ width: number, height: number }} [viewport]
  * @property {number} [waitMs]
  * @property {string} [outRoot]
@@ -87,10 +91,24 @@ export async function runReduce(opts) {
   const tokens = opts.tokensPath ? JSON.parse(await readFile(opts.tokensPath, 'utf8')) : null;
   const { sources } = await loadSources({ path: opts.sourcesPath });
   const urls = resolveAddresses(opts.addresses);
+  // Lot V, étape 5 : pages témoins, relatives à la première adresse, distinctes des pages de la table.
+  const witnessUrls = [
+    ...new Set(
+      (opts.temoins ?? []).map((t) => {
+        const u = new URL(t, urls[0]);
+        u.hash = '';
+        return u.href;
+      }),
+    ),
+  ];
+  for (const w of witnessUrls) {
+    if (urls.includes(w)) throw new Error(`--temoins : ${w} est déjà une page de la table`);
+    if (!urls.some((u) => new URL(u).host === new URL(w).host)) throw new Error(`--temoins : ${w} n'a aucune page de la table sur son hôte`);
+  }
   if (opts.referencesPath) {
     // Lot V : un nom de fichier par page ; deux pages du même nom s'écraseraient.
     const seen = new Map();
-    for (const u of urls) {
+    for (const u of [...urls, ...witnessUrls]) {
       const n = pageName(u);
       if (seen.has(n)) throw new Error(`--references : ${seen.get(n)} et ${u} donneraient le même fichier ${n}.reference.png`);
       seen.set(n, u);
@@ -159,6 +177,42 @@ export async function runReduce(opts) {
           await page.close().catch(() => {});
         }
       }
+      // Lot V, étape 5 : pages témoins. Hors de la table : relevé à part (valeurs non couvertes),
+      // puis la table simulée dessus, couplages compris, et sa référence.
+      /** @type {any[]} */
+      const witnesses = [];
+      for (const url of witnessUrls.filter((w) => new URL(w).host === host)) {
+        log(`témoin → ${url}`);
+        const wagg = createRenderedAggregator({ solid });
+        const probe = await context.newPage();
+        try {
+          await gotoAndSettle(probe, url, { waitMs });
+          await measureRendered(probe, wagg, { thirdParty: sources?.thirdParty ?? [], sources });
+        } finally {
+          await probe.close().catch(() => {});
+        }
+        const page = await context.newPage();
+        try {
+          await gotoAndSettle(page, url, { waitMs });
+          const aria = opts.referencesPath ? await page.ariaSnapshot() : '';
+          const simulated = await simulatePage(page, { ...map, split: splitOf(table) }, { maxCropped: 0 });
+          if (opts.referencesPath && simulated.after) {
+            const f = await writeReference(opts.referencesPath, url, { png: Buffer.from(simulated.after, 'base64'), aria });
+            references.push(f.png, f.aria);
+          }
+          witnesses.push({
+            url,
+            page: new URL(url).pathname,
+            elements: simulated.elements,
+            changed: simulated.changed,
+            operations: simulated.operations,
+            byFamily: simulated.byFamily,
+            uncovered: uncoveredValues(wagg.result(), table),
+          });
+        } finally {
+          await page.close().catch(() => {});
+        }
+      }
       // Lot R, R-3 : une capture par version de chaque décision, sur la page d'origine ; puis une
       // vignette par autre élément touché (3 au plus), et le relevé de tous les éléments touchés.
       // Lot R, 5c : les lignes proches, d'office et les corrections reçoivent les mêmes captures,
@@ -223,6 +277,7 @@ export async function runReduce(opts) {
         target,
         tokens,
         decisions,
+        witnesses,
         meta: {
           host,
           stamp,
@@ -288,6 +343,7 @@ export function parseReduceArgs(argv) {
       'storage-state': { type: 'string' },
       sources: { type: 'string' },
       references: { type: 'string' },
+      temoins: { type: 'string', multiple: true },
       viewport: { type: 'string', default: '1366x900' },
       out: { type: 'string', default: 'local/reductions' },
       live: { type: 'boolean', default: false },
@@ -309,6 +365,7 @@ export function parseReduceArgs(argv) {
       storageState: values['storage-state'],
       sourcesPath: values.sources,
       referencesPath: values.references,
+      temoins: (values.temoins ?? []).flatMap((x) => String(x).split(',')).map((x) => x.trim()).filter(Boolean),
       viewport: { width: Number(vp[1]), height: Number(vp[2]) },
       outRoot: String(values.out),
       live: !!values.live,

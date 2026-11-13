@@ -236,7 +236,14 @@ export function couplingsOf({ rendered, map, target }) {
 export const simulationCouplings = (couplings) =>
   couplings.flatMap((o) => o.befores.map((/** @type {any} */ b) => ({ text: b.text, bg: b.bg, to: o.bg, onSolid: String(o.onSolid).toLowerCase() })));
 
-export function buildMigration({ table, rendered, map, target, tokens, decisions = {}, meta }) {
+/**
+ * Lot V, étape 5 : page témoin, hors de la table, sur laquelle la table est simulée.
+ * @typedef {{ url: string, page: string, elements: number, changed: number, operations: number, byFamily: Record<string, number>,
+ *   uncovered: { family: string, value: string, usage: string | null, count: number, selectors: string[] }[] }} Witness
+ */
+
+/** @param {{ table: any, rendered: any, map: Record<string, any>, target: any, tokens?: any, decisions?: Record<string, string | false>, meta: any, witnesses?: Witness[] }} o */
+export function buildMigration({ table, rendered, map, target, tokens, decisions = {}, meta, witnesses = [] }) {
   const idx = tokens ? indexTokens(tokens) : null;
   /** @param {string} family @param {string | null} value @param {{ name?: string | null, pleinScales?: Set<string> }} [ctx] */
   const token = (family, value, ctx) => (value === null ? '—' : idx?.find(family, value, ctx) ?? 'jeton absent');
@@ -356,6 +363,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
   const data = {
     meta,
     rows,
+    witnesses,
     sections: {
       applied: { total: applied.length, ...byFamily(applied) },
       pending: { total: pending.length, ...byFamily(pending) },
@@ -475,6 +483,22 @@ function renderMarkdown(d, s) {
   L.push('| ligne | famille | valeur | usage | relation | motif | éléments |', '|---|---|---|---|---|---|---|');
   for (const r of s.outOfTable) L.push(`| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.relation)} | ${cell(r.reason)} | ${r.elements} |`);
   L.push('');
+
+  // Lot V, étape 5 : pages témoins, hors de la table.
+  if (d.witnesses?.length) {
+    L.push(`## Pages témoins : ${d.witnesses.length}`, '', 'Ces pages n’entrent pas dans la table : la table y est simulée telle quelle, couplages compris. Une valeur non couverte n’a aucune ligne pour sa valeur et son usage ; la migration ne la touche pas.', '');
+    for (const w of d.witnesses) {
+      const fams = Object.entries(w.byFamily ?? {}).map(([f, n]) => `${FAMILY_LABELS[f] ?? f} ${n}`).join(', ');
+      L.push(`### \`${w.page}\``, '', `${w.changed} élément(s) changé(s) sur ${w.elements}, ${w.operations} opération(s)${fams ? ` (${fams})` : ''}.`, '');
+      if (!w.uncovered.length) L.push('Valeurs non couvertes : aucune.', '');
+      else {
+        L.push(`Valeurs non couvertes : ${w.uncovered.length}`, '', '| famille | valeur | usage | éléments | exemples |', '|---|---|---|---|---|');
+        for (const u of w.uncovered)
+          L.push(`| ${FAMILY_LABELS[u.family] ?? u.family} | \`${cell(u.value)}\` | ${cell(u.usage ?? 'taille du texte')} | ${u.count} | ${u.selectors.map((x) => `\`${cell(x)}\``).join(', ')} |`);
+        L.push('');
+      }
+    }
+  }
 
   const e = d.exceptions;
   L.push('## Exceptions', '');
