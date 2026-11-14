@@ -23,6 +23,15 @@
  *   bordure.focus → bleu 9 : 8,3247 / 8,1063 / 7,7046 sur neutre 1, 2, 3 ;
  *   blanc sur terre 10, succes 10, info 10 : 5,1669 / 5,0674 / 4,6220 (attendus annoncés : 5,17, 5,07, 4,62) ;
  *     commande : wcagContrast('#ffffff', hex du pas 10), même lecture des fichiers que ci-dessus.
+ *
+ * Décisions après T5 (14/11/2026), ratios culori, commande : wcagContrast(hex devant, hex fond) sur les
+ * pas lus dans primitives et statuts (couleur.blanc = #ffffff) :
+ *   fond.surface (blanc) : texte.principal 13,0628, texte.secondaire 5,6129, texte.interactif 5,5917,
+ *     texte.erreur 5,6023, texte.succes 5,6186, texte.avertissement 5,6230, texte.info 5,6178,
+ *     bordure.forte 3,2110, bordure.focus 8,6144 ;
+ *   texte.sur-inverse (blanc) sur fond.inverse (neutre 12) : 13,0628 ;
+ *   interdite texte.secondaire sur fond.interactif.fort : 1,5348, règle « sur un plein, le texte est texte.sur-* » ;
+ *   règle de bordure.forte sur fond.composant : « un champ se pose sur fond.surface ».
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -42,26 +51,33 @@ const load = (/** @type {string} */ f) => JSON.parse(readFileSync(join(DIR, f), 
 /** devant | fond | ratio culori (4 décimales) | seuil. */
 const TABLE = `
 texte.principal | fond.app | 12.6234 | 4.5
+texte.principal | fond.surface | 13.0628 | 4.5
 texte.principal | fond.discret | 12.2923 | 4.5
 texte.principal | fond.composant | 11.6831 | 4.5
 texte.principal | fond.composant.survol | 10.9644 | 4.5
 texte.principal | fond.composant.appui | 10.0834 | 4.5
 texte.secondaire | fond.app | 5.4241 | 4.5
+texte.secondaire | fond.surface | 5.6129 | 4.5
 texte.secondaire | fond.discret | 5.2818 | 4.5
 texte.secondaire | fond.composant | 5.0200 | 4.5
 texte.secondaire | fond.composant.survol | 4.7112 | 4.5
 texte.interactif | fond.app | 5.4037 | 4.5
+texte.interactif | fond.surface | 5.5917 | 4.5
 texte.interactif | fond.discret | 5.2619 | 4.5
 texte.interactif | fond.interactif.discret | 5.0335 | 4.5
 texte.accent | fond.app | 5.4393 | 4.5
 texte.accent | fond.discret | 5.2967 | 4.5
 texte.erreur | fond.app | 5.4139 | 4.5
+texte.erreur | fond.surface | 5.6023 | 4.5
 texte.erreur | fond.erreur.discret | 5.0556 | 4.5
 texte.succes | fond.app | 5.4296 | 4.5
+texte.succes | fond.surface | 5.6186 | 4.5
 texte.succes | fond.succes.discret | 5.0174 | 4.5
 texte.avertissement | fond.app | 5.4339 | 4.5
+texte.avertissement | fond.surface | 5.6230 | 4.5
 texte.avertissement | fond.avertissement.discret | 5.0476 | 4.5
 texte.info | fond.app | 5.4289 | 4.5
+texte.info | fond.surface | 5.6178 | 4.5
 texte.info | fond.info.discret | 5.0657 | 4.5
 texte.sur-interactif | fond.interactif.fort | 8.6144 | 4.5
 texte.sur-interactif | fond.interactif.fort.survol | 9.1534 | 4.5
@@ -70,13 +86,16 @@ texte.sur-erreur | fond.erreur.fort | 4.7443 | 4.5
 texte.sur-succes | fond.succes.fort | 5.0674 | 4.5
 texte.sur-avertissement | fond.avertissement.fort | 5.3075 | 4.5
 texte.sur-info | fond.info.fort | 4.6220 | 4.5
+texte.sur-inverse | fond.inverse | 13.0628 | 4.5
 bordure.forte | fond.app | 3.1030 | 3
+bordure.forte | fond.surface | 3.2110 | 3
 bordure.forte | fond.discret | 3.0216 | 3
 bordure.erreur | fond.app | 3.0963 | 3
 bordure.succes | fond.app | 3.0843 | 3
 bordure.avertissement | fond.app | 3.0885 | 3
 bordure.info | fond.app | 3.0936 | 3
 bordure.focus | fond.app | 8.3247 | 3
+bordure.focus | fond.surface | 8.6144 | 3
 bordure.focus | fond.discret | 8.1063 | 3
 bordure.focus | fond.composant | 7.7046 | 3
 `
@@ -89,16 +108,17 @@ bordure.focus | fond.composant | 7.7046 | 3
 /** Paires interdites : devant | fond | ratio culori | règle. */
 const INTERDITES = [
   { devant: 'texte.secondaire', fond: 'fond.composant.appui', ratio: 4.3327, regle: 'sur fond.composant.appui, le texte passe en texte.principal' },
-  { devant: 'bordure.forte', fond: 'fond.composant', ratio: 2.8718, regle: 'un champ se pose sur fond.app' },
+  { devant: 'texte.secondaire', fond: 'fond.interactif.fort', ratio: 1.5348, regle: 'sur un plein, le texte est texte.sur-*' },
+  { devant: 'bordure.forte', fond: 'fond.composant', ratio: 2.8718, regle: 'un champ se pose sur fond.surface' },
 ];
 const RETIREES = ['erreur', 'succes', 'avertissement', 'info'].map((s) => `bordure.${s}|fond.${s}.discret`);
 
 const paires = load('paires.json');
 const sem = load('semantique.tokens.json');
 
-test('T2 paires.json : seuils 4,5 texte, 3 bordure et focus ; 38 paires, sans doublon, dans l\'ordre', () => {
+test('T2 paires.json : seuils 4,5 texte, 3 bordure et focus ; 48 paires, sans doublon, dans l\'ordre', () => {
   assert.deepEqual(paires.seuils, { texte: 4.5, bordure: 3, focus: 3 });
-  assert.equal(paires.paires.length, 38);
+  assert.equal(paires.paires.length, 48);
   const keys = paires.paires.map((/** @type {any} */ p) => `${p.devant}|${p.fond}`);
   assert.equal(new Set(keys).size, keys.length);
   assert.deepEqual(paires.paires.map((/** @type {any} */ p) => [p.devant, p.fond]), TABLE.map((t) => [t.devant, t.fond]));
@@ -106,7 +126,7 @@ test('T2 paires.json : seuils 4,5 texte, 3 bordure et focus ; 38 paires, sans do
   assert.ok(keys.includes('texte.principal|fond.composant.appui'));
 });
 
-test('T2 paires.json : deux paires interdites, chacune avec sa règle, absentes des paires', () => {
+test('T2 paires.json : trois paires interdites, chacune avec sa règle, absentes des paires', () => {
   assert.deepEqual(
     paires.interdites.map((/** @type {any} */ p) => ({ devant: p.devant, fond: p.fond, regle: p.regle })),
     INTERDITES.map(({ devant, fond, regle }) => ({ devant, fond, regle })),
@@ -215,7 +235,7 @@ test('T3 paire invalide : rôle inconnu, type inconnu, interdite déclarée, rè
 test('T3 npm run contraste : sort en 0 sur les fichiers du dépôt ; en 1 avec une paire sous le seuil', () => {
   const cli = join(ROOT, 'src', 'cli', 'contraste.js');
   const ok = execFileSync(process.execPath, [cli], { cwd: ROOT, encoding: 'utf8' });
-  assert.match(ok, /38 paires de rôles, 0 paire en échec, 0 exception écrite, 2 paires interdites\./);
+  assert.match(ok, /48 paires de rôles, 0 paire en échec, 0 exception écrite, 3 paires interdites\./);
   for (const p of INTERDITES) assert.ok(ok.includes(`${p.devant} sur ${p.fond}`) && ok.includes(p.regle), `interdite listée : ${p.devant}`);
 
   const tmp = mkdtempSync(join(tmpdir(), 'contraste-'));

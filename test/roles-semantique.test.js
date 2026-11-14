@@ -13,6 +13,8 @@
  *   décisions du 14/11/2026 : bordure.focus → primaire 9 ; fond.accent.fort, fond.succes.fort et
  *     fond.info.fort → pas 10, avec texte blanc (texte.sur-accent, .sur-succes, .sur-info → couleur.blanc) ;
  *     avertissement inchangé ;
+ *   décisions après T5 (14/11/2026) : fond.surface → couleur.blanc (cartes et champs) ;
+ *     fond.inverse → neutre 12 et texte.sur-inverse → couleur.blanc ;
  *   un rôle qui a des états (fond.composant, fond.interactif.fort) porte sa valeur de base en $root (DTCG 2025.10) ;
  *   alias seulement, aucune valeur en dur ; $description d'une phrase.
  * Les alias sont résolus ici par un résolveur propre au test, indépendant du code.
@@ -27,10 +29,12 @@ const DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'tokens', 'orbe-
 const load = (/** @type {string} */ f) => JSON.parse(readFileSync(join(DIR, f), 'utf8'));
 
 const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
-/** Rôle → primitive visée (échelle.pas). 17 fonds, 14 textes, 8 bordures = 39. */
+/** Rôle → primitive visée (échelle.pas). 19 fonds, 15 textes, 8 bordures = 42. */
 const EXPECTED = /** @type {Record<string, string>} */ ({
   'fond.app': 'neutre.1',
   'fond.discret': 'neutre.2',
+  'fond.surface': 'blanc',
+  'fond.inverse': 'neutre.12',
   'fond.composant': 'neutre.3',
   'fond.composant.survol': 'neutre.4',
   'fond.composant.appui': 'neutre.5',
@@ -46,6 +50,7 @@ const EXPECTED = /** @type {Record<string, string>} */ ({
   ...Object.fromEntries(STATUTS.map((s) => [`texte.${s}`, `${s}.11`])),
   'texte.sur-interactif': 'bleu.sur-plein',
   'texte.sur-accent': 'blanc',
+  'texte.sur-inverse': 'blanc',
   ...Object.fromEntries(STATUTS.map((s) => [`texte.sur-${s}`, ['succes', 'info'].includes(s) ? 'blanc' : `${s}.sur-plein`])),
   'bordure.discrete': 'neutre.6',
   'bordure.defaut': 'neutre.7',
@@ -84,8 +89,8 @@ test('T1 description racine et DTCG 2025.10', () => {
   assert.ok(typeof sem.$description === 'string' && /DTCG 2025\.10/.test(sem.$description));
 });
 
-test('T1 liste exacte des 39 rôles', () => {
-  assert.equal(Object.keys(EXPECTED).length, 39);
+test('T1 liste exacte des 42 rôles', () => {
+  assert.equal(Object.keys(EXPECTED).length, 42);
   assert.deepEqual([...roles.keys()].sort(), Object.keys(EXPECTED).sort());
 });
 

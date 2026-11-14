@@ -11,6 +11,14 @@
       "$value": "{couleur.neutre.2}",
       "$description": "Zone qui se distingue à peine du fond de page, comme un panneau latéral ou une bande."
     },
+    "surface": {
+      "$value": "{couleur.blanc}",
+      "$description": "Fond blanc d'une carte ou d'un champ, posé sur le fond de page."
+    },
+    "inverse": {
+      "$value": "{couleur.neutre.12}",
+      "$description": "Fond sombre d'une zone inversée, comme un pied de page ou une bulle d'aide."
+    },
     "composant": {
       "$root": {
         "$value": "{couleur.neutre.3}",
@@ -146,6 +154,10 @@
     "sur-info": {
       "$value": "{couleur.blanc}",
       "$description": "Texte posé sur le plein d'information."
+    },
+    "sur-inverse": {
+      "$value": "{couleur.blanc}",
+      "$description": "Texte posé sur le fond inversé."
     }
   },
   "bordure": {

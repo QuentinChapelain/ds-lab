@@ -6,7 +6,7 @@
  * Attendu écrit à la main avant le code de src/report/roles.js :
  *   deux groupes dans cet ordre : texte, bordure (focus compris) ; dans chaque groupe, les paires dans
  *   l'ordre de paires.json, puis les paires interdites du groupe (verdict « interdite » et sa règle) ;
- *   texte : 29 paires + 1 interdite ; bordure : 9 paires + 1 interdite ;
+ *   texte : 37 paires + 2 interdites ; bordure : 11 paires + 1 interdite (décisions après T5, 14/11/2026) ;
  *   ratio affiché tronqué à 2 décimales, virgule décimale, « :1 » (jamais arrondi vers le seuil) ;
  *   seuil « 4,5:1 » ou « 3:1 » ; verdict « conforme », « échec », « exception » ou « interdite » ;
  *   aucun échec (décisions du 14/11/2026) ;
@@ -31,7 +31,8 @@ const paires = JSON.parse(readFileSync(join(DIR, 'paires.json'), 'utf8'));
 
 const INTERDITES = new Map([
   ['texte.secondaire|fond.composant.appui', { ratio: 4.3327, regle: 'sur fond.composant.appui, le texte passe en texte.principal' }],
-  ['bordure.forte|fond.composant', { ratio: 2.8718, regle: 'un champ se pose sur fond.app' }],
+  ['texte.secondaire|fond.interactif.fort', { ratio: 1.5348, regle: 'sur un plein, le texte est texte.sur-*' }],
+  ['bordure.forte|fond.composant', { ratio: 2.8718, regle: 'un champ se pose sur fond.surface' }],
 ]);
 const trunc = (/** @type {number} */ n) => (Math.floor(n * 100) / 100).toFixed(2).replace('.', ',');
 
@@ -54,11 +55,11 @@ test('T4 page autonome, en français, titrée', () => {
   assert.doesNotMatch(html, /(src|href)="https?:/);
 });
 
-test('T4 groupes par propriété : texte (29 + 1 interdite) puis bordure (9 + 1 interdite)', () => {
+test('T4 groupes par propriété : texte (37 + 2 interdites) puis bordure (11 + 1 interdite)', () => {
   const sections = [...html.matchAll(/<section data-propriete="([^"]+)">([^]*?)<\/section>/g)];
   assert.deepEqual(sections.map((s) => s[1]), ['texte', 'bordure']);
-  assert.equal(rows(sections[0][2]).length, 30);
-  assert.equal(rows(sections[1][2]).length, 10);
+  assert.equal(rows(sections[0][2]).length, 39);
+  assert.equal(rows(sections[1][2]).length, 12);
   for (const r of rows(sections[0][2])) assert.match(r.devant, /^texte\./);
   for (const r of rows(sections[1][2])) assert.match(r.devant, /^bordure\./);
 });
@@ -139,7 +140,7 @@ test('T4 à 420 px : le nom du fond se lit dans chaque ligne, sans défilement h
     return { vw, scroll: document.documentElement.scrollWidth, rows: out };
   });
   await page.close();
-  assert.equal(res.rows.length, 40);
+  assert.equal(res.rows.length, 51);
   for (const r of res.rows) assert.ok(r.seen, `${r.key} : nom du fond visible à 420 px`);
   assert.ok(res.scroll <= res.vw, `défilement horizontal : ${res.scroll} > ${res.vw}`);
 });
