@@ -1,0 +1,187 @@
+{
+  "$description": "Rôles de couleur d'Orbe Café (marque fictive), séance 3a du 14/11/2026. Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json et statuts.tokens.json ; primaire = bleu, accent = terre. Paires de contraste déclarées dans paires.json.",
+  "fond": {
+    "$type": "color",
+    "$description": "Surfaces sur lesquelles se posent texte et bordures.",
+    "app": {
+      "$value": "{couleur.neutre.1}",
+      "$description": "Fond de la page entière, sous tout le reste."
+    },
+    "discret": {
+      "$value": "{couleur.neutre.2}",
+      "$description": "Zone qui se distingue à peine du fond de page, comme un panneau latéral ou une bande."
+    },
+    "composant": {
+      "$root": {
+        "$value": "{couleur.neutre.3}",
+        "$description": "Fond d'un composant au repos, comme un champ, une carte ou un bouton secondaire."
+      },
+      "survol": {
+        "$value": "{couleur.neutre.4}",
+        "$description": "Fond d'un composant survolé par le pointeur."
+      },
+      "appui": {
+        "$value": "{couleur.neutre.5}",
+        "$description": "Fond d'un composant pendant l'appui, ou sélectionné."
+      }
+    },
+    "interactif": {
+      "discret": {
+        "$value": "{couleur.bleu.3}",
+        "$description": "Fond teinté d'un élément interactif peu appuyé, comme un bouton léger ou une ligne sélectionnée."
+      },
+      "fort": {
+        "$root": {
+          "$value": "{couleur.bleu.9}",
+          "$description": "Plein de l'action principale, comme le bouton qui valide."
+        },
+        "survol": {
+          "$value": "{couleur.bleu.10}",
+          "$description": "Plein de l'action principale survolée."
+        }
+      }
+    },
+    "accent": {
+      "fort": {
+        "$value": "{couleur.terre.9}",
+        "$description": "Plein qui met en avant sans appeler à l'action, comme une étiquette ou un bandeau."
+      }
+    },
+    "erreur": {
+      "discret": {
+        "$value": "{couleur.erreur.3}",
+        "$description": "Fond léger d'un message ou d'un champ en erreur."
+      },
+      "fort": {
+        "$value": "{couleur.erreur.9}",
+        "$description": "Plein qui signale une erreur ou une action destructrice."
+      }
+    },
+    "succes": {
+      "discret": {
+        "$value": "{couleur.succes.3}",
+        "$description": "Fond léger d'un message de réussite."
+      },
+      "fort": {
+        "$value": "{couleur.succes.9}",
+        "$description": "Plein qui signale une réussite."
+      }
+    },
+    "avertissement": {
+      "discret": {
+        "$value": "{couleur.avertissement.3}",
+        "$description": "Fond léger d'un message d'avertissement."
+      },
+      "fort": {
+        "$value": "{couleur.avertissement.9}",
+        "$description": "Plein qui signale un avertissement, avec un texte foncé posé dessus."
+      }
+    },
+    "info": {
+      "discret": {
+        "$value": "{couleur.info.3}",
+        "$description": "Fond léger d'un message d'information."
+      },
+      "fort": {
+        "$value": "{couleur.info.9}",
+        "$description": "Plein qui signale une information, avec un texte foncé posé dessus."
+      }
+    }
+  },
+  "texte": {
+    "$type": "color",
+    "$description": "Texte et icônes, posés sur un fond de rôle.",
+    "principal": {
+      "$value": "{couleur.neutre.12}",
+      "$description": "Texte courant et titres."
+    },
+    "secondaire": {
+      "$value": "{couleur.neutre.11}",
+      "$description": "Texte d'appoint, comme une aide, une légende ou une date."
+    },
+    "interactif": {
+      "$value": "{couleur.bleu.11}",
+      "$description": "Texte d'un lien ou d'une action sans fond plein."
+    },
+    "accent": {
+      "$value": "{couleur.terre.11}",
+      "$description": "Texte mis en avant sans être une action."
+    },
+    "erreur": {
+      "$value": "{couleur.erreur.11}",
+      "$description": "Texte d'un message d'erreur."
+    },
+    "succes": {
+      "$value": "{couleur.succes.11}",
+      "$description": "Texte d'un message de réussite."
+    },
+    "avertissement": {
+      "$value": "{couleur.avertissement.11}",
+      "$description": "Texte d'un message d'avertissement."
+    },
+    "info": {
+      "$value": "{couleur.info.11}",
+      "$description": "Texte d'un message d'information."
+    },
+    "sur-interactif": {
+      "$value": "{couleur.bleu.sur-plein}",
+      "$description": "Texte posé sur le plein de l'action principale, au repos comme au survol."
+    },
+    "sur-accent": {
+      "$value": "{couleur.terre.sur-plein}",
+      "$description": "Texte posé sur le plein d'accent."
+    },
+    "sur-erreur": {
+      "$value": "{couleur.erreur.sur-plein}",
+      "$description": "Texte posé sur le plein d'erreur."
+    },
+    "sur-succes": {
+      "$value": "{couleur.succes.sur-plein}",
+      "$description": "Texte posé sur le plein de réussite."
+    },
+    "sur-avertissement": {
+      "$value": "{couleur.avertissement.sur-plein}",
+      "$description": "Texte posé sur le plein d'avertissement."
+    },
+    "sur-info": {
+      "$value": "{couleur.info.sur-plein}",
+      "$description": "Texte posé sur le plein d'information."
+    }
+  },
+  "bordure": {
+    "$type": "color",
+    "$description": "Contours et séparateurs.",
+    "discrete": {
+      "$value": "{couleur.neutre.6}",
+      "$description": "Séparateur léger entre deux zones, décoratif, jamais seule pour repérer un champ ou un état."
+    },
+    "defaut": {
+      "$value": "{couleur.neutre.7}",
+      "$description": "Contour ordinaire d'une carte ou d'un champ, décoratif, jamais seule pour repérer un champ ou un état."
+    },
+    "forte": {
+      "$value": "{couleur.neutre.8}",
+      "$description": "Contour qui suffit à repérer un champ ou une case à cocher (3:1)."
+    },
+    "focus": {
+      "$value": "{couleur.bleu.8}",
+      "$description": "Anneau de focus clavier (3:1)."
+    },
+    "erreur": {
+      "$value": "{couleur.erreur.8}",
+      "$description": "Contour d'un champ en erreur (3:1)."
+    },
+    "succes": {
+      "$value": "{couleur.succes.8}",
+      "$description": "Contour d'un champ validé (3:1)."
+    },
+    "avertissement": {
+      "$value": "{couleur.avertissement.8}",
+      "$description": "Contour d'un champ ou d'un encadré d'avertissement (3:1)."
+    },
+    "info": {
+      "$value": "{couleur.info.8}",
+      "$description": "Contour d'un encadré d'information (3:1)."
+    }
+  }
+}
