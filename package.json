@@ -11,6 +11,7 @@
   "scripts": {
     "apply": "node src/cli/apply.js",
     "audit": "node src/cli/audit.js",
+    "contraste": "node src/cli/contraste.js",
     "login": "node src/cli/login.js",
     "marque": "node src/cli/marque.js",
     "reduce": "node src/cli/reduce.js",
