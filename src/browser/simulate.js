@@ -625,6 +625,9 @@ export async function simulatePage(page, map, { maxCropped = 80, fullPage = true
   // Lot V, étape 6 (D4) : les opérations dont l'élément tient sa valeur d'une déclaration en conflit
   // ne sont pas appliquées (la consigne laisse ces déclarations telles quelles).
   if (Array.isArray(map.conflicts) && map.conflicts.length) scan = { ...scan, ...(await freezeConflicts(page, map.conflicts)) };
+  // Lot J, J5 étendu : les éléments tiers déclarés sont masqués aussi dans les pages entières.
+  const third = Array.isArray(map.thirdParty) ? map.thirdParty : [];
+  await hideThirdParty(page, third, true);
   const before = fullPage ? (await page.screenshot({ fullPage: true, animations: 'disabled' })).toString('base64') : null;
   const shown = new Set([...scan.changes].sort((a, b) => b.count - a.count).slice(0, maxCropped));
   /** @type {Map<number, Shot>} */
@@ -646,6 +649,7 @@ export async function simulatePage(page, map, { maxCropped = 80, fullPage = true
   }
   await page.evaluate(showInPage, { on: true });
   const after = fullPage ? (await page.screenshot({ fullPage: true, animations: 'disabled' })).toString('base64') : null;
+  await hideThirdParty(page, third, false);
   return {
     url: page.url(),
     elements: scan.elements,
@@ -1001,11 +1005,12 @@ export function frameOf(probes, d) {
 }
 
 /**
- * Lot J, J5 : masque les éléments tiers (sélecteurs de sources.json) le temps des captures d'une
- * carte, par une feuille posée sur <html> (visibility: hidden, sans changer la mise en page).
+ * Lot J, J5 : masque les éléments tiers (sélecteurs de sources.json) le temps des captures (cartes,
+ * pages entières, références, verify), par une feuille posée sur <html> (visibility: hidden, sans
+ * changer la mise en page).
  * @param {import('playwright-core').Page} page @param {string[]} thirdParty @param {boolean} on
  */
-async function hideThirdParty(page, thirdParty, on) {
+export async function hideThirdParty(page, thirdParty, on) {
   await page.evaluate(
     ({ sels, on: show }) => {
       document.getElementById('ds-lab-tiers-masques')?.remove();

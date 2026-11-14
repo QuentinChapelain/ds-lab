@@ -40,11 +40,11 @@ export async function writeReference(dir, url, { png, aria }) {
 
 /**
  * Capture la page et la compare à sa référence.
- * @param {{ url: string, referenceDir: string, viewport?: { width: number, height: number }, waitMs?: number, storageState?: string }} opts
+ * @param {{ url: string, referenceDir: string, viewport?: { width: number, height: number }, waitMs?: number, storageState?: string, thirdParty?: string[] }} opts
  */
-export async function verifyPage({ url, referenceDir, viewport, waitMs, storageState }) {
+export async function verifyPage({ url, referenceDir, viewport, waitMs, storageState, thirdParty }) {
   const files = referenceFiles(referenceDir, url);
   const [refPng, refAria] = await Promise.all([readFile(files.png), readFile(files.aria, 'utf8')]);
-  const shot = await capturePage({ url, viewport, waitMs, storageState });
+  const shot = await capturePage({ url, viewport, waitMs, storageState, thirdParty });
   return { files, shot, pixels: compareImages(refPng, shot.png), aria: compareAria(refAria.replace(/\n$/, ''), shot.aria) };
 }

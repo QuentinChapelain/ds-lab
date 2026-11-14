@@ -24,7 +24,7 @@ Sur les pages fictives d'Orbe Café, une fois la cible posée : 87 lignes, dont 
 npm run audit  -- <adresse> [options]                        mesurer l'existant
 npm run reduce -- <adresse> --target <cible.json> [options]  ranger, revoir, produire la consigne
 npm run login                                                enregistrer une session (dans .auth/)
-npm run verify -- <adresse> --reference <dossier> [--save]   vérifier qu'une page n'a pas bougé (pixels, arbre d'accessibilité)
+npm run verify -- <adresse> --reference <dossier> [--save] [--sources <fichier>]   vérifier qu'une page n'a pas bougé (pixels, arbre d'accessibilité) ; avec --sources, ses éléments tiers sont masqués, comme dans les références de reduce --sources
 npm run apply  -- --modifications <fichier> --racine <dossier> [--essai]   appliquer au CSS la part tranchée
 npm test
 ```

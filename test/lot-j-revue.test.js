@@ -109,7 +109,8 @@ test('J7 : carte active (clic) : le panneau montre l’image « avant » de sa p
       return { same: i.src === avant.src, top: vue.scrollTop, max: vue.scrollHeight - vue.clientHeight, scale: i.clientWidth / i.naturalWidth, pos: getComputedStyle(document.getElementById('apercu') ?? document.body).position };
     });
     assert.ok(got.same, 'image « avant » de la page');
-    assert.equal(got.pos, 'fixed');
+    // Retouche de la revue (lot-j-revue-2) : deux vraies colonnes, le panneau colle en haut (sticky) au lieu d'être fixe.
+    assert.equal(got.pos, 'sticky');
     // Défilé jusqu'au premier élément (24 px au-dessus), ou au bas de l'image si elle s'arrête avant.
     const want = Math.min(Math.max(0, 1500 * got.scale - 24), got.max);
     assert.ok(Math.abs(got.top - want) <= 2, `défilement ${got.top}, attendu ${want}`);

@@ -442,13 +442,17 @@ function usageBilan(table) {
  * @param {any} g
  */
 function pleinCard(g, pageIndex = /** @type {Map<string, number>} */ (new Map())) {
-  const vs = g.versions;
-  const shots = g.capture?.versions ?? [];
+  // Retouche de la revue : « Garder » est l'actuelle, en premier et affichée à l'ouverture, comme
+  // sur les cartes de ligne ; son export reste « garder ».
+  const vs = [...g.versions.filter((/** @type {any} */ v) => v.choice === 'garder'), ...g.versions.filter((/** @type {any} */ v) => v.choice !== 'garder')];
+  const byChoice = new Map((g.capture?.versions ?? []).map((/** @type {any} */ s) => [s.choice, s]));
+  const shots = vs.map((/** @type {any} */ v) => byChoice.get(v.choice)).filter(Boolean);
   const buttons = vs
     .map((/** @type {any} */ v, /** @type {number} */ i) => {
       const pass = v.pass ? `passe le seuil de ${fr(v.threshold)}` : 'sous le seuil';
       const sw = hex(v.bg) && hex(v.text) ? `<span class="g sw paire" style="background:${v.bg};color:${v.text}">Aa</span>` : '<span class="g sw vide"></span>';
-      return `<button type="button" class="v" data-v="${i}" data-value="${esc(v.choice)}" data-court="${esc(v.label)}" aria-pressed="${i === 0}">${sw}<span class="nom"><span>${esc(v.label)}</span><small>${esc(v.text)} sur ${esc(v.bg)}</small><small>${String(v.ratio).replace('.', ',')} · ${pass}</small></span></button>`;
+      const name = v.choice === 'garder' ? `actuelle · ${v.label}` : v.label;
+      return `<button type="button" class="v" data-v="${i}" data-value="${esc(v.choice)}" data-court="${esc(v.label)}" aria-pressed="${i === 0}">${sw}<span class="nom"><span>${esc(name)}</span><small>${esc(v.text)} sur ${esc(v.bg)}</small><small>${String(v.ratio).replace('.', ',')} · ${pass}</small></span></button>`;
     })
     .join('');
   const s0 = shots[0]?.shot;
@@ -685,15 +689,22 @@ ${pleinCards}${byClass}
   .sans-capture, .sans-effet { margin:6px 0 0; font-size:12px; line-height:1.35; color:#4a4f59; font-style:italic; }
   .trancher { display:flex; align-items:center; gap:10px; margin-top:10px; }
   .retenir { font:inherit; font-size:14px; font-weight:600; border:0; border-radius:6px; padding:7px 14px; cursor:pointer; background:#16181d; color:#fff; }
-  /* Lot J, J7 : panneau fixe à droite, la page telle qu'elle existe ; sous la carte active sur écran étroit. */
-  .apercu { position:fixed; top:0; right:0; bottom:52px; width:min(34vw, 560px); background:#fff; border-left:1px solid var(--line); display:flex; flex-direction:column; z-index:4; }
+  /* Lot J, J7 : la page telle qu'elle existe, à droite ; sous la carte active sur écran étroit.
+     Retouche : deux vraies colonnes (cartes à gauche, sans marge vide ; page à droite), le panneau
+     colle en haut au défilement et s'arrête au haut de la barre (--barre, mesurée). */
+  :root { --barre:52px; --apercu:min(34vw, 560px); }
+  .apercu { background:#fff; border-left:1px solid var(--line); display:flex; flex-direction:column; }
   .apercu[hidden] { display:none; }
   .apercu-titre { margin:0; padding:6px 12px; font-size:12px; color:var(--soft); border-bottom:1px solid var(--line); overflow-wrap:anywhere; }
-  .apercu-vue { flex:1; overflow:auto; }
+  .apercu-vue { flex:1; min-height:0; overflow:auto; }
   .apercu-vue img { display:block; width:100%; height:auto; }
-  @media (min-width:1001px) { body.avec-apercu main { margin-right:min(34vw, 560px); } }
+  @media (min-width:1001px) {
+    body.avec-apercu { display:grid; grid-template-columns:minmax(0, 1fr) var(--apercu); align-items:start; }
+    body.avec-apercu main { grid-column:1; grid-row:1; max-width:none; margin:0; }
+    body.avec-apercu .apercu { grid-column:2; grid-row:1; position:sticky; top:0; height:calc(100vh - var(--barre)); }
+  }
   @media (max-width:1000px) { .apercu { position:static; width:auto; height:50vh; border:1px solid var(--line); border-radius:8px; margin:8px 0 16px; } }
-  .barre { position:fixed; left:0; right:0; bottom:0; background:#16181d; color:#fff; padding:10px 24px; display:flex; gap:16px; align-items:center; justify-content:center; font-size:14px; }
+  .barre { position:fixed; left:0; right:0; bottom:0; z-index:5; background:#16181d; color:#fff; padding:10px 24px; display:flex; gap:16px; align-items:center; justify-content:center; font-size:14px; }
   .compte { display:flex; flex-direction:column; gap:2px; }
   #bilan-usages { list-style:none; margin:0; padding:0; font-size:12px; line-height:1.35; color:#d5d8de; display:grid; grid-template-columns:repeat(2, max-content); gap:0 18px; }
   #bilan-usages b { color:#fff; font-weight:600; }
@@ -931,6 +942,12 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
   // défilée jusqu'à son premier élément ; sur écran étroit, le panneau passe sous la carte.
   var apercu = document.getElementById('apercu');
   var etroit = window.matchMedia('(max-width: 1000px)');
+  // Hauteur de la barre du bas (elle change avec le bilan) : le panneau s'arrête au-dessus.
+  var barre = document.querySelector('.barre');
+  function hauteurBarre() { document.documentElement.style.setProperty('--barre', barre.offsetHeight + 'px'); }
+  hauteurBarre();
+  window.addEventListener('resize', hauteurBarre);
+  if (window.ResizeObserver) new ResizeObserver(hauteurBarre).observe(barre);
   function voir(card, y0) {
     if (!apercu) return;
     var avant = document.querySelector('[data-avant="' + (card ? card.getAttribute('data-page') : '0') + '"] img');

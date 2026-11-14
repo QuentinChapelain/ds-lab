@@ -147,7 +147,8 @@ test('K2 : la carte dans la revue : trois versions, contraste, aucune recommand�
   assert.ok(a, 'carte plein|terre absente');
   assert.match(a, /Texte sur plein terre/);
   const values = [...a.matchAll(/class="v"[^>]*data-value="([^"]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(values, ['onSolid', 'pas-10', 'garder']);
+  // Retouche de la revue (lot-j-revue-2) : « Garder » est l'actuelle, en premier ; l'ordre de la carte (table) ne change pas.
+  assert.deepEqual(values, ['garder', 'onSolid', 'pas-10']);
   assert.match(a, /4,5155?/);
   assert.match(a, /5,1669?/);
   assert.match(a, /4,3544? · sous le seuil/);
@@ -263,7 +264,8 @@ test('libellés : terre (blanc) et sable, dans la carte et dans la revue', () =>
   assert.deepEqual(card('attente', 'terre').versions.map((/** @type {any} */ x) => x.label), ['Texte foncé', 'Texte blanc, fond plus foncé', 'Garder (sous le seuil)']);
   assert.deepEqual(card('attente', 'sable').versions.map((/** @type {any} */ x) => x.label), ['Texte foncé', 'Garder (sous le seuil)']);
   const a = article(R.attente.html, 'plein|terre');
-  for (const l of ['Texte foncé', 'Texte blanc, fond plus foncé', 'Garder (sous le seuil)']) assert.ok(a.includes(`<span>${l}</span>`), l);
+  // Retouche de la revue (lot-j-revue-2) : « Garder » marquée « actuelle ».
+  for (const l of ['Texte foncé', 'Texte blanc, fond plus foncé', 'actuelle · Garder (sous le seuil)']) assert.ok(a.includes(`<span>${l}</span>`), l);
   assert.ok(!/onSolid sur|texte d’origine sur/.test(a), 'anciens libellés');
   assert.match(a, /<span>Texte foncé<\/span><small>#220000 sur #c8553d<\/small><small>4,5155 · passe le seuil de 4,5<\/small>/);
 });
