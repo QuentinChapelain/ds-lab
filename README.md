@@ -25,18 +25,22 @@ npm run audit  -- <adresse> [options]                        mesurer l'existant
 npm run reduce -- <adresse> --target <cible.json> [options]  ranger, revoir, produire la consigne
 npm run login                                                enregistrer une session (dans .auth/)
 npm run verify -- <adresse> --reference <dossier> [--save]   vérifier qu'une page n'a pas bougé (pixels, arbre d'accessibilité)
+npm run apply  -- --modifications <fichier> --racine <dossier> [--essai]   appliquer au CSS la part tranchée
 npm test
 ```
 
-`npm run reduce` produit trois fichiers :
+`npm run reduce` produit trois fichiers, quatre avec `--tokens` :
 
 | Fichier | Pour qui | Contenu |
 |---|---|---|
 | `revue.html` | Le designer | Chaque changement en situation ; les décisions à prendre ; export de `decisions.json` |
 | `migration.md` | Le développeur | La table, les décisions, les exceptions, puis une consigne pour un agent |
 | `table.json` | L'outil | La proposition et la synthèse. Le tour suivant relit `decisions.json`, exporté depuis la revue et passé avec `--decisions` |
+| `modifications.json` | `npm run apply` | Avec `--tokens` : chaque déclaration à modifier (feuille, ligne, sélecteur, propriété, valeur écrite attendue, nouvelle valeur), les commentaires à poser, le contenu de `tokens.css` |
 
 Le site audité n'est jamais modifié : les nouvelles valeurs sont posées dans le navigateur de l'outil, le temps des captures. Options utiles : `--tokens` (nommer les lignes par les jetons DTCG), `--decisions` (relire les choix du designer), `--live` (fenêtre avec une barre avant / après), `--viewport 390x844` (mobile).
+
+`npm run apply` modifie une copie du site, à la racine donnée : il remplace chaque déclaration de `modifications.json` si la valeur écrite est bien celle attendue (sinon, un écart), pose les commentaires et écrit `tokens.css`. Relancé sur une copie déjà migrée, il ne change aucune feuille. Il ne touche pas au HTML ; il écrit `reste.md`, la consigne de ce qui reste pour l'agent (lien vers `tokens.css`, attributs d'accessibilité, écarts). `--essai` n'écrit rien.
 
 ## Le parcours d'une décision
 
@@ -125,6 +129,7 @@ Règles : marques fictives uniquement ; rien de `local/` ni de `.auth/` dans un 
 - Validé sur des pages fictives et sur un vrai site en lecture seule, pas encore avec une équipe.
 - Le CSS migré garde un repli à retirer en fin de migration : `var(--jeton, ancienne valeur)` reste tant que toutes les pages ne sont pas passées aux jetons.
 - Les pseudo-éléments (icônes) ne sont pas simulés ; le contraste du texte sur image est mesuré mais marqué à vérifier, car le fond réel est incertain.
+- `npm run apply` vaut là où la feuille servie est le fichier source : une feuille compilée, minifiée ou assemblée par un outil de build n'a pas les lignes du fichier qu'on modifie.
 - Les contrastes ne sont pas mesurés sur les pages témoins : seules les pages de la table entrent dans les paires texte sur fond et dans la liste des paires sous le seuil.
 
 Licence MIT.

@@ -47,7 +47,8 @@ const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cibl
   -h, --help                 cette aide
 
   Sorties : table.json (proposition et synthèse), revue.html (à ouvrir) et
-  migration.md (pour le développeur, lisible sans l'outil).
+  migration.md (pour le développeur, lisible sans l'outil) ; avec --tokens,
+  modifications.json (pour npm run apply).
   Le site n'est pas modifié : chaque page est chargée une fois, les valeurs sont
   remplacées dans ce navigateur le temps des captures.`;
 
@@ -337,6 +338,11 @@ export async function runReduce(opts) {
         },
       });
       await writeFile(files[2], migration.markdown);
+      // Lot S, S1 : à côté de migration.md, les modifications que npm run apply sait faire.
+      if (migration.modifications) {
+        files.push(join(dir, 'modifications.json'));
+        await writeFile(files[3], JSON.stringify(migration.modifications, null, 2) + '\n');
+      }
       results.push({ host, dir, files, references, table, map, first: hostUrls[0], migration: migration.data, pages });
     }
   } finally {

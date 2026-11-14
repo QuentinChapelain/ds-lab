@@ -94,7 +94,8 @@ export function attachDeclarations(table, records, decisions) {
       const list = (hit.r.coupledDeclarations ??= []);
       const file = t.href ? basename(new URL(t.href).pathname) : '<style>';
       const line = t.sheetLine ?? t.line;
-      if (!list.some((/** @type {any} */ e) => e.file === file && e.line === line && e.selector === t.selector)) list.push({ file, line, selector: t.selector, property: x.property, written: t.written });
+      if (!list.some((/** @type {any} */ e) => e.file === file && e.line === line && e.selector === t.selector)) list.push({ file, href: t.href ?? null, line, selector: t.selector, property: x.property, written: t.written, pages: [x.page] });
+      else list.find((/** @type {any} */ e) => e.file === file && e.line === line && e.selector === t.selector)?.pages?.push(x.page);
       continue;
     }
     const key = rowKey(hit.family, hit.r);
@@ -104,7 +105,7 @@ export function attachDeclarations(table, records, decisions) {
     if (!d) decls.set(id, (d = { id, file, href: t.href, line: t.sheetLine ?? t.line, selector: t.selector, property: x.property, written: t.written, unit: unitOf(t.written), rows: new Map() }));
     const m = byRow.get(key) ?? new Map();
     byRow.set(key, m);
-    const e = m.get(id) ?? { id, file, line: d.line, selector: d.selector, property: x.property, written: t.written, unit: d.unit, inherited: false, pages: new Set(), elements: 0 };
+    const e = m.get(id) ?? { id, file, href: d.href ?? null, line: d.line, selector: d.selector, property: x.property, written: t.written, unit: d.unit, inherited: false, pages: new Set(), elements: 0 };
     e.inherited = e.inherited || !!t.inherited;
     e.pages.add(x.page);
     e.elements++;
@@ -122,6 +123,7 @@ export function attachDeclarations(table, records, decisions) {
     conflicts.push({
       id: d.id,
       file: d.file,
+      href: d.href ?? null,
       line: d.line,
       selector: d.selector,
       property: d.property,

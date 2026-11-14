@@ -12,6 +12,7 @@ import { APPLIED, isOut, SLICES, decisionFor, decisionKeyFor, WHERE_TO_FIX, near
 export { onSolidOf };
 import { contrastRatio } from '../lib/color.js';
 import { pleinFinder } from '../reduce/pleins.js';
+import { buildModifications } from '../apply/modifications.js';
 
 /** Groupes de jetons de dimension, par famille de la table. */
 const DIM_GROUPS = /** @type {Record<string, string[]>} */ ({
@@ -391,7 +392,9 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     ...(table.brand ? { brand: table.brand } : {}),
   };
   const agent = agentBrief(data, { applied, pending, refused, outOfTable, attached });
-  return { data: { ...data, agent }, markdown: renderMarkdown(data, { applied, pending, refused, outOfTable }) + '\n' + agent.markdown };
+  // Lot S, S1 : modifications.json, pour npm run apply (avec un fichier de jetons).
+  const modifications = tokens ? buildModifications({ d: data, s: { applied, pending, refused, outOfTable, attached }, agentLines: agent.lines, tokens, helpers: { m6Move, relationShort } }) : null;
+  return { data: { ...data, agent }, markdown: renderMarkdown(data, { applied, pending, refused, outOfTable }) + '\n' + agent.markdown, modifications };
 }
 
 /**

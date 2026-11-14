@@ -9,6 +9,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "apply": "node src/cli/apply.js",
     "audit": "node src/cli/audit.js",
     "login": "node src/cli/login.js",
     "marque": "node src/cli/marque.js",
