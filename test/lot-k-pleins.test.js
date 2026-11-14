@@ -280,7 +280,11 @@ test('libellés génériques : texte d’origine non blanc ; onSolid clair (« T
   assert.equal(r4(wcagContrast('#f5f5f5', '#c8553d')), 3.9941);
   assert.equal(r4(wcagContrast('#f5f5f5', '#ba4834')), 4.7392);
   assert.deepEqual(one('#c8553d', '#f5f5f5'), [['Texte foncé', 'Texte d’origine, fond plus foncé', 'Garder (sous le seuil)']]);
-  assert.deepEqual(one('#2b4c7e', '#1a1a1a'), [['Texte clair', 'Garder (sous le seuil)']]);
+  // Lot J, J4 (14/11/2026) : était [['Texte clair', 'Garder (sous le seuil)']] ; la version « teinte »
+  // s'ajoute : #1a1a1a (échelle neutre) prend neutre-7 #bfbbb5, le plus proche qui passe sur bleu-9
+  // (culori : wcagContrast('#bfbbb5', '#2b4c7e') = 4,5085 ; neutre-8 #958f84 : 2,6828).
+  assert.equal(r4(wcagContrast('#bfbbb5', '#2b4c7e')), 4.5085);
+  assert.deepEqual(one('#2b4c7e', '#1a1a1a'), [['Texte clair', 'Même teinte, plus claire', 'Garder (sous le seuil)']]);
 });
 
 test('K1 bis : pas de carte quand chaque texte passe déjà sur le fond tel qu’il est (blanc sur terre-10 après migration)', async () => {

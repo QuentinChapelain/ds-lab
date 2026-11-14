@@ -469,7 +469,7 @@ function pleinCard(g) {
   <div class="trancher"><button type="button" class="retenir">Choisir cette version</button></div>
   <details class="detail"><summary>Détail</summary><dl>
     <dt>Éléments</dt><dd><ul class="couverts">${els}</ul></dd>
-    <dt>Versions</dt><dd>onSolid : le texte prend l’onSolid ${esc(g.onSolid)}, fonds au pas 9 ; pas-10 : fonds au pas 10, texte gardé (seulement si chaque texte y passe) ; garder : fonds au pas 9, texte gardé.</dd>
+    <dt>Versions</dt><dd>onSolid : le texte prend l’onSolid ${esc(g.onSolid)}, fonds au pas 9 ; pas-10 : fonds au pas 10, texte gardé (seulement si chaque texte y passe) ; ${g.tints ? 'teinte : fonds au pas 9, chaque texte prend le pas de sa propre échelle le plus proche qui passe ; ' : ''}garder : fonds au pas 9, texte gardé.</dd>
     <dt>Clé technique</dt><dd><code>${esc(g.key)}</code></dd>
   </dl></details>
 </article>`;

@@ -8,6 +8,9 @@
  *     que la table lui donnerait). La carte couvre tous les éléments portés par ces fonds.
  *     Retouche : l'échelle n'a pas de carte quand chaque texte passe déjà sur son fond tel qu'il
  *     est et sur le fond où la table le mène (blanc sur terre-10 après migration).
+ * J4. Version « teinte » (même teinte, plus claire / plus foncée) : chaque texte prend le pas de sa
+ *     propre échelle le plus proche (ΔE) qui passe sur le pas 9 ; un texte qui y passe déjà reste tel
+ *     quel ; seulement si chaque texte a un tel pas. Fonds au pas 9. Choisie : couplages (tints).
  * K6. Une carte ne couvre que les lignes de fond certaines : inchangé, auto, proche, correction, ou
  *     déjà décidées. Une ligne « décision » non tranchée garde sa propre carte et ses candidats ; ses
  *     éléments n'entrent pas dans la carte. Une échelle sans ligne certaine n'a pas de carte.
@@ -22,7 +25,7 @@ import { isOut, decisionFor, rowKey, onSolidOf, mapping } from './propose.js';
 import { contrastRatio, isOpaque, toLab, deltaE, relativeLuminance } from '../lib/color.js';
 
 /** Versions d'une carte de plein, dans l'ordre de la carte. */
-export const PLEIN_CHOICES = /** @type {const} */ (['onSolid', 'pas-10', 'garder']);
+export const PLEIN_CHOICES = /** @type {const} */ (['onSolid', 'pas-10', 'teinte', 'garder']);
 
 /**
  * Pas 9 ou 10 de la valise le plus proche d'une couleur (ΔE), ou null.
@@ -49,7 +52,7 @@ const r4 = (/** @type {number} */ x) => Math.round(x * 10000) / 10000;
  * @typedef {{ choice: string, label: string, text: string, bg: string, ratio: number, threshold: number, pass: boolean }} PleinVersion
  * @typedef {{ id: string, key: string, scale: string, title: string, steps: { 9: { name: string, value: string }, 10: { name: string, value: string } | null },
  *   onSolid: string, rows: { id: string, key: string, old: string, class: string }[], pairs: { text: string, after: string, bg: string, threshold: number, n: number }[],
- *   elements: { page: string, selector: string, text: string, bg: string }[], versions: PleinVersion[], choice: string | null,
+ *   elements: { page: string, selector: string, text: string, bg: string }[], versions: PleinVersion[], tints?: Record<string, string>, choice: string | null,
  *   ignored: { id: string, key: string, value: string | false }[], capture?: any }} Plein
  */
 
@@ -60,6 +63,19 @@ const r4 = (/** @type {number} */ x) => Math.round(x * 10000) / 10000;
  */
 export function pleinGroups({ table, rendered, target, decisions = {} }) {
   const { T, pleinOf } = pleinFinder(target);
+  /**
+   * J4 : pas de l'échelle du texte (la plus proche en ΔE) le plus proche du texte qui passe sur bg ;
+   * le texte lui-même s'il y passe déjà ; null sinon.
+   * @param {string} text @param {string} bg @param {number} threshold
+   */
+  const tintOf = (text, bg, threshold) => {
+    if (contrastRatio(text, bg) >= threshold - 1e-9) return text;
+    const lab = toLab(text);
+    const near = T.map((/** @type {any} */ t) => ({ t, d: deltaE(lab, t.lab) })).sort((/** @type {any} */ a, /** @type {any} */ b) => a.d - b.d);
+    const sc = /^(.+)-(\d+)$/.exec(near[0]?.t.name ?? '')?.[1];
+    if (!sc) return null;
+    return near.find((/** @type {any} */ x) => /^(.+)-(\d+)$/.exec(x.t.name ?? '')?.[1] === sc && contrastRatio(x.t.value, bg) >= threshold - 1e-9)?.t.value ?? null;
+  };
   /** @param {string} name */
   const step = (name) => {
     const t = T.find((/** @type {any} */ x) => x.name === name);
@@ -120,6 +136,26 @@ export function pleinGroups({ table, rendered, target, decisions = {} }) {
     const b = s10 ? worst(s10.value, (p) => p.after) : null;
     if (b?.pass && s10)
       versions.push({ choice: 'pas-10', label: `${allWhite ? 'Texte blanc' : 'Texte d’origine'}, fond plus ${darker(s10.value, s9.value) ? 'foncé' : 'clair'}`, ...b });
+    // J4 : même teinte, plus claire ou plus foncée.
+    /** @type {Record<string, string> | null} */
+    let tints = {};
+    for (const p of pairs) {
+      if (/** @type {any} */ (tints)[p.after] !== undefined) continue;
+      const thr = Math.max(...pairs.filter((/** @type {any} */ x) => x.after === p.after).map((/** @type {any} */ x) => x.threshold));
+      const t = tintOf(p.after, s9.value, thr);
+      if (!t) {
+        tints = null;
+        break;
+      }
+      tints[p.after] = t;
+    }
+    const changed = tints ? Object.entries(tints).filter(([a, t]) => a !== t) : [];
+    if (tints && changed.length) {
+      const tt = /** @type {Record<string, string>} */ (tints);
+      const lighter = changed.every(([a, t]) => relativeLuminance(t) > relativeLuminance(a));
+      const darker2 = changed.every(([a, t]) => relativeLuminance(t) < relativeLuminance(a));
+      versions.push({ choice: 'teinte', label: lighter ? 'Même teinte, plus claire' : darker2 ? 'Même teinte, plus foncée' : 'Même teinte', ...worst(s9.value, (p) => tt[p.after]) });
+    } else tints = null;
     versions.push({ choice: 'garder', label: keep.pass ? 'Garder' : 'Garder (sous le seuil)', ...keep });
     out.push({
       id: `plein-${scale}`,
@@ -132,6 +168,7 @@ export function pleinGroups({ table, rendered, target, decisions = {} }) {
       pairs,
       elements: [],
       versions,
+      ...(tints ? { tints } : {}),
       choice: null,
       ignored: [],
     });
@@ -203,6 +240,8 @@ export function pleinVersionMap(g, choice, solid = []) {
   const couplings =
     choice === 'onSolid'
       ? g.pairs.filter((p) => p.text !== g.onSolid).map((p) => ({ text: p.text, bg: p.bg, to, onSolid: g.onSolid }))
-      : [];
+      : choice === 'teinte' && g.tints
+        ? g.pairs.filter((p) => /** @type {any} */ (g.tints)[p.after] && /** @type {any} */ (g.tints)[p.after] !== p.text).map((p) => ({ text: p.text, bg: p.bg, to, onSolid: /** @type {any} */ (g.tints)[p.after] }))
+        : [];
   return { colors, solid, couplings };
 }

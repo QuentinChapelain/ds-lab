@@ -190,17 +190,19 @@ export function couplingsOf({ rendered, map, pleins = [] }) {
   const onSolid = [];
   for (const p of rendered.usages?.pairs ?? []) {
     if (p.bgUsage !== 'plein') continue;
-    const g = pleins.find((x) => x.choice === 'onSolid' && x.rows.some((/** @type {any} */ r) => r.old === p.bg));
+    // Lot J, J4 : « teinte » couple aussi : chaque texte prend son pas de même teinte (g.tints).
+    const g = pleins.find((x) => (x.choice === 'onSolid' || (x.choice === 'teinte' && x.tints)) && x.rows.some((/** @type {any} */ r) => r.old === p.bg));
     if (!g) continue;
     const text = mapped(map, p.text, 'texte');
     const bg = mapped(map, p.bg, 'plein');
-    if (text === g.onSolid) continue;
+    const to = g.choice === 'teinte' ? g.tints[text] : g.onSolid;
+    if (!to || text === to) continue;
     const ratio = contrastRatio(text, bg);
     const seen = (rendered.contrast?.pairs ?? []).find((/** @type {any} */ x) => x.text === p.text && x.bg === p.bg);
     // Une entrée par paire après la table : plusieurs fonds d'origine peuvent aller au même pas.
     let o = onSolid.find((x) => x.text === text && x.bg === bg);
     if (!o) {
-      o = { text, bg, before: { text: p.text, bg: p.bg }, befores: [], ratio: Math.round(ratio * 10000) / 10000, threshold: p.threshold, scale: g.scale, onSolid: g.onSolid, card: g.title, n: 0, selectors: [] };
+      o = { text, bg, before: { text: p.text, bg: p.bg }, befores: [], ratio: Math.round(ratio * 10000) / 10000, threshold: p.threshold, scale: g.scale, onSolid: to, ...(g.choice === 'teinte' ? { tint: true } : {}), card: g.title, n: 0, selectors: [] };
       onSolid.push(o);
     }
     o.n += p.n;
@@ -328,7 +330,11 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
   // Exceptions nommées.
   const links = (rendered.usages?.links ?? []).map((/** @type {any} */ l) => ({ ...l }));
   const pleins = table.pleins ?? [];
-  const onSolid = couplingsOf({ rendered, map, target, pleins }).map((o) => ({ ...o, token: idx?.find('colors', o.onSolid, { pleinScales: new Set([o.scale]) }) ?? null }));
+  const onSolid = couplingsOf({ rendered, map, target, pleins }).map((o) => {
+    // Lot J, J4 : un pas de même teinte se nomme par la valise (terre-6), pas comme un onSolid.
+    const name = o.tint ? T.find((/** @type {any} */ t) => t.value === o.onSolid)?.name ?? null : null;
+    return { ...o, ...(name ? { name } : {}), token: idx?.find('colors', o.onSolid, o.tint ? { name } : { pleinScales: new Set([o.scale]) }) ?? null };
+  });
   // Paires encore sous leur seuil une fois la table posée, hors celles que le couplage onSolid répare.
   /** @type {Map<string, { text: string, bg: string, ratio: number, threshold: number, n: number }>} */
   const remaining = new Map();
@@ -749,7 +755,7 @@ function agentBrief(d, s) {
         ? `, ${cssVarFallback(p.token, olds[0])}`
         : `, ${olds.map((/** @type {string} */ o) => `${cssVarFallback(p.token, o)} là où le texte valait ${o}`).join(', ')}`;
     couples.push(
-      `- Le texte posé sur un plein ${p.scale} devient ${p.onSolid} (onSolid${v}) : texte ${p.text} sur ${p.bg} après la table (fonds d'origine ${p.befores.map((/** @type {any} */ b) => b.bg).join(', ')}), ${String(p.ratio).replace('.', ',')}:1. Sélecteurs : ${p.selectors.join(', ') || '—'}.`,
+      `- Le texte posé sur un plein ${p.scale} devient ${p.onSolid} (${p.tint ? `même teinte, ${p.name ?? 'pas de la valise'}` : 'onSolid'}${v}) : texte ${p.text} sur ${p.bg} après la table (fonds d'origine ${p.befores.map((/** @type {any} */ b) => b.bg).join(', ')}), ${String(p.ratio).replace('.', ',')}:1. Sélecteurs : ${p.selectors.join(', ') || '—'}.`,
     );
   }
   for (const g of d.pleins ?? []) {

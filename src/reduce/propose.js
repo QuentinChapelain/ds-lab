@@ -661,6 +661,30 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
     r.alternatives = [{ name: near.t.name, new: near.t.value, backgrounds, exceptions }];
   };
 
+  // Lot J, J3 : un texte posé seulement sur le plein d'une échelle S (pas 9 ou 10, après la table
+  // provisoire), qui y passe aujourd'hui, a pour premier candidat l'onSolid de S (nommé
+  // <S>-sur-plein), avant la tranche 11-12. Un texte qui y échoue reste à la carte du plein (lot K).
+  if (hasScales && onSolidMap)
+    for (const r of rows) {
+      if (r.usage !== 'texte' || r._fixed || r._exact || !r._cands) continue;
+      const ps = textPairs.get(r.old) ?? [];
+      if (!ps.length || ps.some((p) => p.bgUsage !== 'plein' || fails(r.old, p.bg, p.threshold))) continue;
+      const steps = ps.map((p) => {
+        const v = byKey.get(`${p.bg}|plein`)?.new ?? p.bg;
+        return T.find((t) => t.value === v && (t.step === 9 || t.step === 10));
+      });
+      if (steps.some((t) => !t) || new Set(steps.map((t) => t?.scale)).size !== 1) continue;
+      const solids = new Set(steps.map((t) => String(onSolidOf(onSolidMap, /** @type {any} */ (t).scale, /** @type {any} */ (t).step) ?? '').toLowerCase()));
+      const solid = [...solids][0];
+      if (solids.size !== 1 || !solid || solid === r.old) continue;
+      const scale = /** @type {any} */ (steps[0]).scale;
+      const lab = toLab(solid);
+      const c = { t: { name: `${scale}-sur-plein`, value: solid, lab, lum: relativeLuminance(solid), scale, step: null }, delta: round2(deltaE(toLab(r.old), lab)) };
+      r._cands = [c, ...r._cands.filter((/** @type {any} */ x) => x.t.value !== solid)];
+      r.candidates = candidatesOf(r._cands);
+      Object.assign(r, { new: solid, name: c.t.name, delta: c.delta, class: byDelta(c.delta) });
+    }
+
   // R8 : un texte posé sur un fond sombre est une décision.
   if (darkLum !== null)
     for (const r of rows)
