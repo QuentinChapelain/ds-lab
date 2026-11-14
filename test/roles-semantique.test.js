@@ -84,6 +84,19 @@ function typesOf(node, path = /** @type {string[]} */ ([]), type = /** @type {st
 const sem = load('semantique.tokens.json');
 const roles = flatten(sem);
 const prims = new Map([...flatten(load('primitives.tokens.json')), ...flatten(load('statuts.tokens.json'))]);
+/** Séance 3b, M0 : les rôles de marque passent par marque.tokens.json (primaire → bleu, accent → terre). */
+const marque = flatten(load('marque.tokens.json'));
+const VIA_MARQUE = /** @type {Record<string, string>} */ ({
+  'fond.interactif.discret': 'marque.primaire.3',
+  'fond.interactif.fort': 'marque.primaire.9',
+  'fond.interactif.fort.survol': 'marque.primaire.10',
+  'fond.accent.fort': 'marque.accent.10',
+  'texte.interactif': 'marque.primaire.11',
+  'texte.accent': 'marque.accent.11',
+  'texte.sur-interactif': 'marque.primaire.sur-plein',
+  'texte.sur-accent': 'marque.accent.sur-plein',
+  'bordure.focus': 'marque.primaire.9',
+});
 
 test('T1 description racine et DTCG 2025.10', () => {
   assert.ok(typeof sem.$description === 'string' && /DTCG 2025\.10/.test(sem.$description));
@@ -94,10 +107,14 @@ test('T1 liste exacte des 42 rôles', () => {
   assert.deepEqual([...roles.keys()].sort(), Object.keys(EXPECTED).sort());
 });
 
-test('T1 chaque rôle est un alias vers la primitive attendue, sans valeur en dur', () => {
+test('T1 chaque rôle est un alias vers la primitive attendue (directement ou par la marque), sans valeur en dur', () => {
   for (const [role, target] of Object.entries(EXPECTED)) {
     const v = roles.get(role)?.$value;
-    assert.equal(v, `{couleur.${target}}`, role);
+    const slot = VIA_MARQUE[role];
+    if (slot) {
+      assert.equal(v, `{${slot}}`, `${role} : par la marque`);
+      assert.equal(marque.get(slot)?.$value, `{couleur.${target}}`, `${role} : ${slot} → {couleur.${target}}`);
+    } else assert.equal(v, `{couleur.${target}}`, role);
     assert.ok(prims.has(`couleur.${target}`), `${role} : {couleur.${target}} se résout dans primitives ou statuts`);
   }
   assert.doesNotMatch(JSON.stringify(sem), /#[0-9a-fA-F]{3,8}\b|"components"/, 'aucune couleur en dur');

@@ -134,7 +134,7 @@ test('T2 paires.json : trois paires interdites, chacune avec sa règle, absentes
 });
 
 test('T2 rôles des paires : existent, texte devant un fond, type selon la propriété', () => {
-  const roles = resolveRoles(sem, load('primitives.tokens.json'), load('statuts.tokens.json'));
+  const roles = resolveRoles(sem, load('primitives.tokens.json'), load('statuts.tokens.json'), load('marque.tokens.json'));
   for (const p of [...paires.paires, ...paires.interdites]) {
     assert.ok(roles.has(p.devant), p.devant);
     assert.ok(roles.has(p.fond), p.fond);
@@ -145,7 +145,7 @@ test('T2 rôles des paires : existent, texte devant un fond, type selon la propr
 
 test('T2 couverture : chaque texte et chaque bordure non décorative a une paire ; discrete et defaut n\'en ont pas', () => {
   const devants = new Set(paires.paires.map((/** @type {any} */ p) => p.devant));
-  const roles = resolveRoles(sem, load('primitives.tokens.json'), load('statuts.tokens.json'));
+  const roles = resolveRoles(sem, load('primitives.tokens.json'), load('statuts.tokens.json'), load('marque.tokens.json'));
   for (const r of roles.keys()) {
     if (r.startsWith('texte.')) assert.ok(devants.has(r), r);
     if (r.startsWith('bordure.') && !['bordure.discrete', 'bordure.defaut'].includes(r)) assert.ok(devants.has(r), r);

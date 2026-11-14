@@ -1,5 +1,5 @@
 {
-  "$description": "Rôles de couleur d'Orbe Café (marque fictive), séance 3a du 14/11/2026. Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json et statuts.tokens.json ; primaire = bleu, accent = terre. Paires de contraste déclarées dans paires.json.",
+  "$description": "Rôles de couleur d'Orbe Café (marque fictive), séance 3a du 14/11/2026. Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json, statuts.tokens.json et marque.tokens.json ; les couleurs de marque passent par marque.primaire.* et marque.accent.* (Orbe Café : primaire = bleu, accent = terre). Paires de contraste déclarées dans paires.json.",
   "fond": {
     "$type": "color",
     "$description": "Surfaces sur lesquelles se posent texte et bordures.",
@@ -35,23 +35,23 @@
     },
     "interactif": {
       "discret": {
-        "$value": "{couleur.bleu.3}",
+        "$value": "{marque.primaire.3}",
         "$description": "Fond teinté d'un élément interactif peu appuyé, comme un bouton léger ou une ligne sélectionnée."
       },
       "fort": {
         "$root": {
-          "$value": "{couleur.bleu.9}",
+          "$value": "{marque.primaire.9}",
           "$description": "Plein de l'action principale, comme le bouton qui valide."
         },
         "survol": {
-          "$value": "{couleur.bleu.10}",
+          "$value": "{marque.primaire.10}",
           "$description": "Plein de l'action principale survolée."
         }
       }
     },
     "accent": {
       "fort": {
-        "$value": "{couleur.terre.10}",
+        "$value": "{marque.accent.10}",
         "$description": "Plein qui met en avant sans appeler à l'action, comme une étiquette ou un bandeau, avec un texte blanc posé dessus."
       }
     },
@@ -108,11 +108,11 @@
       "$description": "Texte d'appoint, comme une aide, une légende ou une date."
     },
     "interactif": {
-      "$value": "{couleur.bleu.11}",
+      "$value": "{marque.primaire.11}",
       "$description": "Texte d'un lien ou d'une action sans fond plein."
     },
     "accent": {
-      "$value": "{couleur.terre.11}",
+      "$value": "{marque.accent.11}",
       "$description": "Texte mis en avant sans être une action."
     },
     "erreur": {
@@ -132,11 +132,11 @@
       "$description": "Texte d'un message d'information."
     },
     "sur-interactif": {
-      "$value": "{couleur.bleu.sur-plein}",
+      "$value": "{marque.primaire.sur-plein}",
       "$description": "Texte posé sur le plein de l'action principale, au repos comme au survol."
     },
     "sur-accent": {
-      "$value": "{couleur.blanc}",
+      "$value": "{marque.accent.sur-plein}",
       "$description": "Texte posé sur le plein d'accent."
     },
     "sur-erreur": {
@@ -176,7 +176,7 @@
       "$description": "Contour qui suffit à repérer un champ ou une case à cocher (3:1)."
     },
     "focus": {
-      "$value": "{couleur.bleu.9}",
+      "$value": "{marque.primaire.9}",
       "$description": "Anneau de focus clavier (3:1)."
     },
     "erreur": {

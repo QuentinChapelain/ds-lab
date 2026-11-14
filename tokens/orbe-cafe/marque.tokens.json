@@ -1,0 +1,117 @@
+{
+  "$description": "Emplacements de marque d'Orbe Café (marque fictive), séance 3b du 15/11/2026. Format DTCG 2025.10. Alias seulement : les rôles de semantique.tokens.json pointent vers marque.primaire.* et marque.accent.*, qui pointent vers une échelle ; changer de marque, c'est changer ce fichier.",
+  "marque": {
+    "$type": "color",
+    "$description": "Deux emplacements, primaire (actions) et accent (mise en avant), de 12 pas et un texte sur-plein chacun.",
+    "primaire": {
+      "1": {
+        "$value": "{couleur.bleu.1}",
+        "$description": "fond d'application"
+      },
+      "2": {
+        "$value": "{couleur.bleu.2}",
+        "$description": "fond discret"
+      },
+      "3": {
+        "$value": "{couleur.bleu.3}",
+        "$description": "fond de composant"
+      },
+      "4": {
+        "$value": "{couleur.bleu.4}",
+        "$description": "fond de composant, survol"
+      },
+      "5": {
+        "$value": "{couleur.bleu.5}",
+        "$description": "fond de composant, appui"
+      },
+      "6": {
+        "$value": "{couleur.bleu.6}",
+        "$description": "bordure discrète"
+      },
+      "7": {
+        "$value": "{couleur.bleu.7}",
+        "$description": "bordure de composant"
+      },
+      "8": {
+        "$value": "{couleur.bleu.8}",
+        "$description": "bordure d'interaction, focus (3:1)"
+      },
+      "9": {
+        "$value": "{couleur.bleu.9}",
+        "$description": "plein, couleur source"
+      },
+      "10": {
+        "$value": "{couleur.bleu.10}",
+        "$description": "plein, survol"
+      },
+      "11": {
+        "$value": "{couleur.bleu.11}",
+        "$description": "texte secondaire (4,5:1)"
+      },
+      "12": {
+        "$value": "{couleur.bleu.12}",
+        "$description": "texte principal"
+      },
+      "$description": "Primaire d'Orbe Café : échelle bleu.",
+      "sur-plein": {
+        "$value": "{couleur.bleu.sur-plein}",
+        "$description": "texte posé sur les pleins de cet emplacement (pas 9 et 10)"
+      }
+    },
+    "accent": {
+      "1": {
+        "$value": "{couleur.terre.1}",
+        "$description": "fond d'application"
+      },
+      "2": {
+        "$value": "{couleur.terre.2}",
+        "$description": "fond discret"
+      },
+      "3": {
+        "$value": "{couleur.terre.3}",
+        "$description": "fond de composant"
+      },
+      "4": {
+        "$value": "{couleur.terre.4}",
+        "$description": "fond de composant, survol"
+      },
+      "5": {
+        "$value": "{couleur.terre.5}",
+        "$description": "fond de composant, appui"
+      },
+      "6": {
+        "$value": "{couleur.terre.6}",
+        "$description": "bordure discrète"
+      },
+      "7": {
+        "$value": "{couleur.terre.7}",
+        "$description": "bordure de composant"
+      },
+      "8": {
+        "$value": "{couleur.terre.8}",
+        "$description": "bordure d'interaction, focus (3:1)"
+      },
+      "9": {
+        "$value": "{couleur.terre.9}",
+        "$description": "plein, couleur source"
+      },
+      "10": {
+        "$value": "{couleur.terre.10}",
+        "$description": "plein, survol"
+      },
+      "11": {
+        "$value": "{couleur.terre.11}",
+        "$description": "texte secondaire (4,5:1)"
+      },
+      "12": {
+        "$value": "{couleur.terre.12}",
+        "$description": "texte principal"
+      },
+      "$description": "Accent d'Orbe Café : échelle terre ; texte sur-plein blanc (décision de la séance 3a : un texte foncé sur un plein moyen vibre).",
+      "sur-plein": {
+        "$value": "{couleur.blanc}",
+        "$description": "texte posé sur les pleins de cet emplacement (pas 9 et 10)"
+      }
+    }
+  }
+}

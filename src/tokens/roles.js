@@ -69,8 +69,14 @@ export function resolveRoles(semantique, ...primitives) {
 }
 
 /**
- * Les quatre fichiers d'un jeu de rôles. `paires` peut pointer vers un autre fichier.
- * @param {string} dir @param {{ paires?: string }} [opts]
+ * @typedef {{ primitives: any, statuts: any, semantique: any, paires: any, marque?: any, echelles?: any[] }} RoleSet
+ */
+
+/**
+ * Les fichiers d'un jeu de rôles. `paires` et `marque` peuvent pointer vers un autre fichier ;
+ * `echelles` ajoute des fichiers d'échelles (couleur.*) vers lesquels une autre marque peut pointer.
+ * @param {string} dir @param {{ paires?: string, marque?: string, echelles?: string[] }} [opts]
+ * @returns {RoleSet}
  */
 export function loadRoles(dir, opts = {}) {
   const read = (/** @type {string} */ p) => JSON.parse(readFileSync(p, 'utf8'));
@@ -79,6 +85,8 @@ export function loadRoles(dir, opts = {}) {
     statuts: read(join(dir, 'statuts.tokens.json')),
     semantique: read(join(dir, 'semantique.tokens.json')),
     paires: read(opts.paires ?? join(dir, 'paires.json')),
+    marque: read(opts.marque ?? join(dir, 'marque.tokens.json')),
+    echelles: (opts.echelles ?? []).map(read),
   };
 }
 
@@ -87,10 +95,10 @@ export function loadRoles(dir, opts = {}) {
  * (phrase non vide) : elle va alors dans `exceptions`. Une paire interdite (`interdites`, avec sa
  * règle) ne se pose pas : mesurée pour mémoire, elle ne compte pas en échec et ne peut pas être
  * déclarée en même temps comme paire.
- * @param {{ primitives: any, statuts: any, semantique: any, paires: any }} set
+ * @param {RoleSet} set
  */
 export function contratRoles(set) {
-  const roles = resolveRoles(set.semantique, set.primitives, set.statuts);
+  const roles = resolveRoles(set.semantique, set.primitives, set.statuts, set.marque ?? {}, ...(set.echelles ?? []));
   const seuils = set.paires.seuils ?? {};
   /** @param {any} p */
   const known = (p) => {
@@ -140,7 +148,7 @@ export function contratRoles(set) {
 
 /**
  * Contrat complet : par échelle (contractOf, inchangé) et par rôle.
- * @param {{ primitives: any, statuts: any, semantique: any, paires: any }} set
+ * @param {RoleSet} set
  */
 export function contrat(set) {
   return { echelles: contractOf(valiseFromTokens(set.primitives, set.statuts)), roles: contratRoles(set) };
