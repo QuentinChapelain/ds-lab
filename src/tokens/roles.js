@@ -84,21 +84,40 @@ export function loadRoles(dir, opts = {}) {
 
 /**
  * Contrat de rôles. Une paire sous son seuil échoue, sauf si elle porte une exception écrite
- * (phrase non vide) : elle va alors dans `exceptions`.
+ * (phrase non vide) : elle va alors dans `exceptions`. Une paire interdite (`interdites`, avec sa
+ * règle) ne se pose pas : mesurée pour mémoire, elle ne compte pas en échec et ne peut pas être
+ * déclarée en même temps comme paire.
  * @param {{ primitives: any, statuts: any, semantique: any, paires: any }} set
  */
 export function contratRoles(set) {
   const roles = resolveRoles(set.semantique, set.primitives, set.statuts);
   const seuils = set.paires.seuils ?? {};
-  const pairs = (set.paires.paires ?? []).map((/** @type {any} */ p) => {
+  /** @param {any} p */
+  const known = (p) => {
     for (const r of [p.devant, p.fond]) if (!roles.has(r)) throw new Error(`paire ${p.devant} sur ${p.fond} : rôle inconnu ${r}`);
+  };
+  /** @param {string} devant @param {string} fond */
+  const measure = (devant, fond) => {
+    const hexDevant = /** @type {any} */ (roles.get(devant)).hex;
+    const hexFond = /** @type {any} */ (roles.get(fond)).hex;
+    return { hexDevant, hexFond, raw: wcagContrast(hexDevant, hexFond) };
+  };
+  const forbidden = new Set();
+  const interdites = (set.paires.interdites ?? []).map((/** @type {any} */ p) => {
+    known(p);
+    if (!(typeof p.regle === 'string' && p.regle.trim())) throw new Error(`paire interdite ${p.devant} sur ${p.fond} : règle vide`);
+    forbidden.add(`${p.devant}|${p.fond}`);
+    const { hexDevant, hexFond, raw } = measure(p.devant, p.fond);
+    return { devant: p.devant, fond: p.fond, regle: p.regle, hexDevant, hexFond, ratio: r4(raw) };
+  });
+  const pairs = (set.paires.paires ?? []).map((/** @type {any} */ p) => {
+    known(p);
+    if (forbidden.has(`${p.devant}|${p.fond}`)) throw new Error(`paire ${p.devant} sur ${p.fond} : déclarée et interdite`);
     const min = seuils[p.type];
     if (typeof min !== 'number') throw new Error(`paire ${p.devant} sur ${p.fond} : type inconnu ${p.type}`);
     if ('exception' in p && !(typeof p.exception === 'string' && p.exception.trim()))
       throw new Error(`paire ${p.devant} sur ${p.fond} : exception vide`);
-    const hexDevant = /** @type {any} */ (roles.get(p.devant)).hex;
-    const hexFond = /** @type {any} */ (roles.get(p.fond)).hex;
-    const ratio = wcagContrast(hexDevant, hexFond);
+    const { hexDevant, hexFond, raw: ratio } = measure(p.devant, p.fond);
     return {
       devant: p.devant,
       fond: p.fond,
@@ -115,6 +134,7 @@ export function contratRoles(set) {
     pairs,
     fails: pairs.filter((/** @type {any} */ p) => !p.ok && !p.exception),
     exceptions: pairs.filter((/** @type {any} */ p) => !p.ok && p.exception),
+    interdites,
   };
 }
 

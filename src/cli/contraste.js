@@ -25,8 +25,9 @@ for (const p of c.roles.pairs) {
   console.log(`  ${mark} ${p.devant} sur ${p.fond} : ${fr(p.ratio)}:1, seuil ${fr(p.min)}:1${p.exception ? ` (exception : ${p.exception})` : ''}`);
 }
 
-console.log(`\n${plural(c.roles.pairs.length, 'paire', 'paires')} de rôles, ${plural(c.roles.fails.length, 'paire en échec', 'paires en échec')}, ${plural(c.roles.exceptions.length, 'exception écrite', 'exceptions écrites')}.`);
+console.log(`\n${plural(c.roles.pairs.length, 'paire', 'paires')} de rôles, ${plural(c.roles.fails.length, 'paire en échec', 'paires en échec')}, ${plural(c.roles.exceptions.length, 'exception écrite', 'exceptions écrites')}, ${plural(c.roles.interdites.length, 'paire interdite', 'paires interdites')}.`);
 for (const p of c.roles.fails) console.log(`  ✗ ${p.devant} sur ${p.fond} : ${fr(p.ratio)}:1 < ${fr(p.min)}:1`);
+for (const p of c.roles.interdites) console.log(`  ⊘ ${p.devant} sur ${p.fond} (${fr(p.ratio)}:1) : interdite, ${p.regle}`);
 
 if (c.echelles.fails.length) {
   console.log(`\nContrat par échelle (contractOf, pour information) : ${plural(c.echelles.fails.length, 'écart', 'écarts')}.`);

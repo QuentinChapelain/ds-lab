@@ -43,8 +43,8 @@
     },
     "accent": {
       "fort": {
-        "$value": "{couleur.terre.9}",
-        "$description": "Plein qui met en avant sans appeler à l'action, comme une étiquette ou un bandeau."
+        "$value": "{couleur.terre.10}",
+        "$description": "Plein qui met en avant sans appeler à l'action, comme une étiquette ou un bandeau, avec un texte blanc posé dessus."
       }
     },
     "erreur": {
@@ -63,8 +63,8 @@
         "$description": "Fond léger d'un message de réussite."
       },
       "fort": {
-        "$value": "{couleur.succes.9}",
-        "$description": "Plein qui signale une réussite."
+        "$value": "{couleur.succes.10}",
+        "$description": "Plein qui signale une réussite, avec un texte blanc posé dessus."
       }
     },
     "avertissement": {
@@ -83,8 +83,8 @@
         "$description": "Fond léger d'un message d'information."
       },
       "fort": {
-        "$value": "{couleur.info.9}",
-        "$description": "Plein qui signale une information, avec un texte foncé posé dessus."
+        "$value": "{couleur.info.10}",
+        "$description": "Plein qui signale une information, avec un texte blanc posé dessus."
       }
     }
   },
@@ -128,7 +128,7 @@
       "$description": "Texte posé sur le plein de l'action principale, au repos comme au survol."
     },
     "sur-accent": {
-      "$value": "{couleur.terre.sur-plein}",
+      "$value": "{couleur.blanc}",
       "$description": "Texte posé sur le plein d'accent."
     },
     "sur-erreur": {
@@ -136,7 +136,7 @@
       "$description": "Texte posé sur le plein d'erreur."
     },
     "sur-succes": {
-      "$value": "{couleur.succes.sur-plein}",
+      "$value": "{couleur.blanc}",
       "$description": "Texte posé sur le plein de réussite."
     },
     "sur-avertissement": {
@@ -144,7 +144,7 @@
       "$description": "Texte posé sur le plein d'avertissement."
     },
     "sur-info": {
-      "$value": "{couleur.info.sur-plein}",
+      "$value": "{couleur.blanc}",
       "$description": "Texte posé sur le plein d'information."
     }
   },
@@ -164,24 +164,24 @@
       "$description": "Contour qui suffit à repérer un champ ou une case à cocher (3:1)."
     },
     "focus": {
-      "$value": "{couleur.bleu.8}",
+      "$value": "{couleur.bleu.9}",
       "$description": "Anneau de focus clavier (3:1)."
     },
     "erreur": {
       "$value": "{couleur.erreur.8}",
-      "$description": "Contour d'un champ en erreur (3:1)."
+      "$description": "Contour d'un champ en erreur (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app."
     },
     "succes": {
       "$value": "{couleur.succes.8}",
-      "$description": "Contour d'un champ validé (3:1)."
+      "$description": "Contour d'un champ validé (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app."
     },
     "avertissement": {
       "$value": "{couleur.avertissement.8}",
-      "$description": "Contour d'un champ ou d'un encadré d'avertissement (3:1)."
+      "$description": "Contour d'un champ ou d'un encadré d'avertissement (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app."
     },
     "info": {
       "$value": "{couleur.info.8}",
-      "$description": "Contour d'un encadré d'information (3:1)."
+      "$description": "Contour d'un encadré d'information (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app."
     }
   }
 }

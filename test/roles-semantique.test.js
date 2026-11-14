@@ -7,8 +7,12 @@
  *   nommage <propriété>.<sens>.<emphase>.<état>, texte sur plein en texte.sur-<sens> ;
  *   aucun nom ne cite une teinte (neutre, bleu, terre, sable) ni un pas ;
  *   primaire = bleu, accent = terre ; statuts = erreur, succes, avertissement, info ;
- *   bordure.<statut> → pas 8 (3:1), pas le pas 7 ;
+ *   bordure.<statut> → pas 8 (3:1), pas le pas 7 ; sa description dit « sur un fond de statut, décorative :
+ *     le texte porte le sens ; un champ en erreur garde fond.app » (décision du 14/11/2026) ;
  *   bordure.discrete et bordure.defaut décoratives : « jamais seule pour repérer un champ ou un état » ;
+ *   décisions du 14/11/2026 : bordure.focus → primaire 9 ; fond.accent.fort, fond.succes.fort et
+ *     fond.info.fort → pas 10, avec texte blanc (texte.sur-accent, .sur-succes, .sur-info → couleur.blanc) ;
+ *     avertissement inchangé ;
  *   un rôle qui a des états (fond.composant, fond.interactif.fort) porte sa valeur de base en $root (DTCG 2025.10) ;
  *   alias seulement, aucune valeur en dur ; $description d'une phrase.
  * Les alias sont résolus ici par un résolveur propre au test, indépendant du code.
@@ -33,23 +37,24 @@ const EXPECTED = /** @type {Record<string, string>} */ ({
   'fond.interactif.discret': 'bleu.3',
   'fond.interactif.fort': 'bleu.9',
   'fond.interactif.fort.survol': 'bleu.10',
-  'fond.accent.fort': 'terre.9',
-  ...Object.fromEntries(STATUTS.flatMap((s) => [[`fond.${s}.discret`, `${s}.3`], [`fond.${s}.fort`, `${s}.9`]])),
+  'fond.accent.fort': 'terre.10',
+  ...Object.fromEntries(STATUTS.flatMap((s) => [[`fond.${s}.discret`, `${s}.3`], [`fond.${s}.fort`, ['succes', 'info'].includes(s) ? `${s}.10` : `${s}.9`]])),
   'texte.principal': 'neutre.12',
   'texte.secondaire': 'neutre.11',
   'texte.interactif': 'bleu.11',
   'texte.accent': 'terre.11',
   ...Object.fromEntries(STATUTS.map((s) => [`texte.${s}`, `${s}.11`])),
   'texte.sur-interactif': 'bleu.sur-plein',
-  'texte.sur-accent': 'terre.sur-plein',
-  ...Object.fromEntries(STATUTS.map((s) => [`texte.sur-${s}`, `${s}.sur-plein`])),
+  'texte.sur-accent': 'blanc',
+  ...Object.fromEntries(STATUTS.map((s) => [`texte.sur-${s}`, ['succes', 'info'].includes(s) ? 'blanc' : `${s}.sur-plein`])),
   'bordure.discrete': 'neutre.6',
   'bordure.defaut': 'neutre.7',
   'bordure.forte': 'neutre.8',
-  'bordure.focus': 'bleu.8',
+  'bordure.focus': 'bleu.9',
   ...Object.fromEntries(STATUTS.map((s) => [`bordure.${s}`, `${s}.8`])),
 });
 const DECORATIVE = 'jamais seule pour repérer un champ ou un état';
+const STATUT_BORDER = 'sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app';
 
 /** Aplatit un fichier DTCG : chemin logique (sans $root) → jeton. @param {any} node @param {string[]} path @param {Map<string, any>} out */
 function flatten(node, path = [], out = new Map()) {
@@ -124,4 +129,12 @@ test('T1 bordures décoratives : discrete et defaut le disent', () => {
   for (const role of ['bordure.discrete', 'bordure.defaut']) assert.ok(roles.get(role).$description.includes(DECORATIVE), role);
   for (const role of ['bordure.forte', 'bordure.focus', ...STATUTS.map((s) => `bordure.${s}`)])
     assert.ok(!roles.get(role).$description.includes(DECORATIVE), role);
+});
+
+test('T1 bordure.<statut> : décorative sur un fond de statut, le texte porte le sens', () => {
+  for (const s of STATUTS) assert.ok(roles.get(`bordure.${s}`).$description.includes(STATUT_BORDER), `bordure.${s}`);
+});
+
+test('T1 un plein à texte blanc ne dit plus « texte foncé »', () => {
+  for (const role of ['fond.accent.fort', 'fond.succes.fort', 'fond.info.fort']) assert.doesNotMatch(roles.get(role).$description, /foncé/, role);
 });

@@ -1,5 +1,5 @@
 {
-  "$description": "Paires de rôles d'Orbe Café (marque fictive), séance 3a du 14/11/2026 : élément devant, fond, type. Seuils WCAG 2.1 : 4,5:1 pour un texte (1.4.3), 3:1 pour une bordure qui repère un composant ou un état et pour le focus (1.4.11). Une paire sous son seuil fait échouer npm run contraste, sauf si elle porte une exception écrite. S'ajoute au contrat par échelle (contractOf) sans le remplacer. bordure.discrete et bordure.defaut sont décoratives et n'ont pas de paire.",
+  "$description": "Paires de rôles d'Orbe Café (marque fictive), séance 3a du 14/11/2026 : élément devant, fond, type. Seuils WCAG 2.1 : 4,5:1 pour un texte (1.4.3), 3:1 pour une bordure qui repère un composant ou un état et pour le focus (1.4.11). Une paire sous son seuil fait échouer npm run contraste, sauf si elle porte une exception écrite. Une paire interdite (interdites) ne se pose pas : elle porte sa règle, est mesurée pour mémoire et ne compte pas en échec. S'ajoute au contrat par échelle (contractOf) sans le remplacer. bordure.discrete et bordure.defaut sont décoratives et n'ont pas de paire.",
   "seuils": {
     "texte": 4.5,
     "bordure": 3,
@@ -15,7 +15,6 @@
     { "devant": "texte.secondaire", "fond": "fond.discret", "type": "texte" },
     { "devant": "texte.secondaire", "fond": "fond.composant", "type": "texte" },
     { "devant": "texte.secondaire", "fond": "fond.composant.survol", "type": "texte" },
-    { "devant": "texte.secondaire", "fond": "fond.composant.appui", "type": "texte" },
     { "devant": "texte.interactif", "fond": "fond.app", "type": "texte" },
     { "devant": "texte.interactif", "fond": "fond.discret", "type": "texte" },
     { "devant": "texte.interactif", "fond": "fond.interactif.discret", "type": "texte" },
@@ -38,17 +37,16 @@
     { "devant": "texte.sur-info", "fond": "fond.info.fort", "type": "texte" },
     { "devant": "bordure.forte", "fond": "fond.app", "type": "bordure" },
     { "devant": "bordure.forte", "fond": "fond.discret", "type": "bordure" },
-    { "devant": "bordure.forte", "fond": "fond.composant", "type": "bordure" },
     { "devant": "bordure.erreur", "fond": "fond.app", "type": "bordure" },
-    { "devant": "bordure.erreur", "fond": "fond.erreur.discret", "type": "bordure" },
     { "devant": "bordure.succes", "fond": "fond.app", "type": "bordure" },
-    { "devant": "bordure.succes", "fond": "fond.succes.discret", "type": "bordure" },
     { "devant": "bordure.avertissement", "fond": "fond.app", "type": "bordure" },
-    { "devant": "bordure.avertissement", "fond": "fond.avertissement.discret", "type": "bordure" },
     { "devant": "bordure.info", "fond": "fond.app", "type": "bordure" },
-    { "devant": "bordure.info", "fond": "fond.info.discret", "type": "bordure" },
     { "devant": "bordure.focus", "fond": "fond.app", "type": "focus" },
     { "devant": "bordure.focus", "fond": "fond.discret", "type": "focus" },
     { "devant": "bordure.focus", "fond": "fond.composant", "type": "focus" }
+  ],
+  "interdites": [
+    { "devant": "texte.secondaire", "fond": "fond.composant.appui", "regle": "sur fond.composant.appui, le texte passe en texte.principal" },
+    { "devant": "bordure.forte", "fond": "fond.composant", "regle": "un champ se pose sur fond.app" }
   ]
 }

@@ -14,6 +14,15 @@
  *       const [,sc,st]=/^\{couleur\.([^.]+)\.([^}]+)\}$/.exec(n.$value); return (P[sc]??S[sc])[st].$value.hex;};
  *     for (const p of pa.paires) console.log(p.devant, p.fond, wcagContrast(hex(p.devant),hex(p.fond)).toFixed(4));'
  * Hypothèse de l'attendu : texte.secondaire sous 4,5:1 sur fond.composant.appui → mesurée à 4,3327 [F].
+ *
+ * Décisions du 14/11/2026 (attendu complété à la main, ratios culori) :
+ *   texte.secondaire sur fond.composant.appui : paire interdite, règle « sur fond.composant.appui, le texte
+ *     passe en texte.principal » (texte.principal sur fond.composant.appui reste déclarée) ;
+ *   bordure.forte sur fond.composant : paire interdite, règle « un champ se pose sur fond.app » ;
+ *   les 4 paires bordure.<statut> sur fond.<statut>.discret sont retirées ;
+ *   bordure.focus → bleu 9 : 8,3247 / 8,1063 / 7,7046 sur neutre 1, 2, 3 ;
+ *   blanc sur terre 10, succes 10, info 10 : 5,1669 / 5,0674 / 4,6220 (attendus annoncés : 5,17, 5,07, 4,62) ;
+ *     commande : wcagContrast('#ffffff', hex du pas 10), même lecture des fichiers que ci-dessus.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -41,7 +50,6 @@ texte.secondaire | fond.app | 5.4241 | 4.5
 texte.secondaire | fond.discret | 5.2818 | 4.5
 texte.secondaire | fond.composant | 5.0200 | 4.5
 texte.secondaire | fond.composant.survol | 4.7112 | 4.5
-texte.secondaire | fond.composant.appui | 4.3327 | 4.5
 texte.interactif | fond.app | 5.4037 | 4.5
 texte.interactif | fond.discret | 5.2619 | 4.5
 texte.interactif | fond.interactif.discret | 5.0335 | 4.5
@@ -57,25 +65,20 @@ texte.info | fond.app | 5.4289 | 4.5
 texte.info | fond.info.discret | 5.0657 | 4.5
 texte.sur-interactif | fond.interactif.fort | 8.6144 | 4.5
 texte.sur-interactif | fond.interactif.fort.survol | 9.1534 | 4.5
-texte.sur-accent | fond.accent.fort | 4.5155 | 4.5
+texte.sur-accent | fond.accent.fort | 5.1669 | 4.5
 texte.sur-erreur | fond.erreur.fort | 4.7443 | 4.5
-texte.sur-succes | fond.succes.fort | 4.5012 | 4.5
+texte.sur-succes | fond.succes.fort | 5.0674 | 4.5
 texte.sur-avertissement | fond.avertissement.fort | 5.3075 | 4.5
-texte.sur-info | fond.info.fort | 5.0967 | 4.5
+texte.sur-info | fond.info.fort | 4.6220 | 4.5
 bordure.forte | fond.app | 3.1030 | 3
 bordure.forte | fond.discret | 3.0216 | 3
-bordure.forte | fond.composant | 2.8718 | 3
 bordure.erreur | fond.app | 3.0963 | 3
-bordure.erreur | fond.erreur.discret | 2.8913 | 3
 bordure.succes | fond.app | 3.0843 | 3
-bordure.succes | fond.succes.discret | 2.8502 | 3
 bordure.avertissement | fond.app | 3.0885 | 3
-bordure.avertissement | fond.avertissement.discret | 2.8689 | 3
 bordure.info | fond.app | 3.0936 | 3
-bordure.info | fond.info.discret | 2.8866 | 3
-bordure.focus | fond.app | 3.1053 | 3
-bordure.focus | fond.discret | 3.0238 | 3
-bordure.focus | fond.composant | 2.8740 | 3
+bordure.focus | fond.app | 8.3247 | 3
+bordure.focus | fond.discret | 8.1063 | 3
+bordure.focus | fond.composant | 7.7046 | 3
 `
   .trim()
   .split('\n')
@@ -83,37 +86,41 @@ bordure.focus | fond.composant | 2.8740 | 3
     const [devant, fond, ratio, min] = l.split(' | ');
     return { devant, fond, ratio: Number(ratio), min: Number(min) };
   });
-/** Paires sous le seuil, aucune exception écrite (dans l'ordre de paires.json). */
-const FAILS = [
-  'texte.secondaire sur fond.composant.appui',
-  'bordure.forte sur fond.composant',
-  'bordure.erreur sur fond.erreur.discret',
-  'bordure.succes sur fond.succes.discret',
-  'bordure.avertissement sur fond.avertissement.discret',
-  'bordure.info sur fond.info.discret',
-  'bordure.focus sur fond.composant',
+/** Paires interdites : devant | fond | ratio culori | règle. */
+const INTERDITES = [
+  { devant: 'texte.secondaire', fond: 'fond.composant.appui', ratio: 4.3327, regle: 'sur fond.composant.appui, le texte passe en texte.principal' },
+  { devant: 'bordure.forte', fond: 'fond.composant', ratio: 2.8718, regle: 'un champ se pose sur fond.app' },
 ];
+const RETIREES = ['erreur', 'succes', 'avertissement', 'info'].map((s) => `bordure.${s}|fond.${s}.discret`);
 
 const paires = load('paires.json');
 const sem = load('semantique.tokens.json');
 
-test('T2 paires.json : seuils 4,5 texte, 3 bordure et focus ; 44 paires, sans doublon', () => {
+test('T2 paires.json : seuils 4,5 texte, 3 bordure et focus ; 38 paires, sans doublon, dans l\'ordre', () => {
   assert.deepEqual(paires.seuils, { texte: 4.5, bordure: 3, focus: 3 });
-  assert.equal(paires.paires.length, 44);
+  assert.equal(paires.paires.length, 38);
   const keys = paires.paires.map((/** @type {any} */ p) => `${p.devant}|${p.fond}`);
   assert.equal(new Set(keys).size, keys.length);
   assert.deepEqual(paires.paires.map((/** @type {any} */ p) => [p.devant, p.fond]), TABLE.map((t) => [t.devant, t.fond]));
+  for (const r of RETIREES) assert.ok(!keys.includes(r), `retirée : ${r}`);
+  assert.ok(keys.includes('texte.principal|fond.composant.appui'));
+});
+
+test('T2 paires.json : deux paires interdites, chacune avec sa règle, absentes des paires', () => {
+  assert.deepEqual(
+    paires.interdites.map((/** @type {any} */ p) => ({ devant: p.devant, fond: p.fond, regle: p.regle })),
+    INTERDITES.map(({ devant, fond, regle }) => ({ devant, fond, regle })),
+  );
 });
 
 test('T2 rôles des paires : existent, texte devant un fond, type selon la propriété', () => {
   const roles = resolveRoles(sem, load('primitives.tokens.json'), load('statuts.tokens.json'));
-  for (const p of paires.paires) {
+  for (const p of [...paires.paires, ...paires.interdites]) {
     assert.ok(roles.has(p.devant), p.devant);
     assert.ok(roles.has(p.fond), p.fond);
     assert.match(p.fond, /^fond\./);
-    const want = p.devant === 'bordure.focus' ? 'focus' : p.devant.split('.')[0];
-    assert.equal(p.type, want, `${p.devant} : type`);
   }
+  for (const p of paires.paires) assert.equal(p.type, p.devant === 'bordure.focus' ? 'focus' : p.devant.split('.')[0], `${p.devant} : type`);
 });
 
 test('T2 couverture : chaque texte et chaque bordure non décorative a une paire ; discrete et defaut n\'en ont pas', () => {
@@ -140,8 +147,26 @@ test('T2 contratRoles : ratios égaux à culori (± 0,0001), seuil par type', ()
   });
 });
 
-test('T2 hypothèse : texte.secondaire sous 4,5:1 sur fond.composant.appui (4,3327)', () => {
-  const p = contratRoles(loadRoles(DIR)).pairs.find((/** @type {any} */ x) => x.devant === 'texte.secondaire' && x.fond === 'fond.composant.appui');
+test('T2 pleins à texte blanc : 5,17 / 5,07 / 4,62 annoncés', () => {
+  const c = contratRoles(loadRoles(DIR));
+  const got = ['accent', 'succes', 'info'].map((s) => c.pairs.find((/** @type {any} */ p) => p.devant === `texte.sur-${s}`));
+  assert.deepEqual(got.map((p) => p.hexDevant), ['#ffffff', '#ffffff', '#ffffff']);
+  assert.deepEqual(got.map((p) => p.ratio.toFixed(2)), ['5.17', '5.07', '4.62']);
+});
+
+test('T2 interdites mesurées et listées à part, hors échecs', () => {
+  const c = contratRoles(loadRoles(DIR));
+  assert.equal(c.interdites.length, INTERDITES.length);
+  c.interdites.forEach((/** @type {any} */ p, /** @type {number} */ i) => {
+    assert.equal(p.devant, INTERDITES[i].devant);
+    assert.equal(p.fond, INTERDITES[i].fond);
+    assert.equal(p.regle, INTERDITES[i].regle);
+    assert.ok(Math.abs(p.ratio - INTERDITES[i].ratio) <= 1e-4, `${p.devant} sur ${p.fond} : ${p.ratio}`);
+  });
+});
+
+test('T2 hypothèse : texte.secondaire sous 4,5:1 sur fond.composant.appui (4,3327), désormais interdite', () => {
+  const p = contratRoles(loadRoles(DIR)).interdites.find((/** @type {any} */ x) => x.devant === 'texte.secondaire' && x.fond === 'fond.composant.appui');
   assert.ok(p && p.ratio < 4.5 && Math.abs(p.ratio - 4.3327) <= 1e-4);
 });
 
@@ -152,55 +177,62 @@ test('T2 contrat : le contrat par échelle reste celui de contractOf, les rôles
   assert.deepEqual(c.roles, contratRoles(set));
 });
 
-test('T3 échecs : les 7 paires sous le seuil, sans exception écrite', () => {
+test('T3 aucun échec, aucune exception écrite', () => {
   const c = contratRoles(loadRoles(DIR));
-  assert.deepEqual(c.fails.map((/** @type {any} */ f) => `${f.devant} sur ${f.fond}`), FAILS);
+  assert.deepEqual(c.fails, []);
   assert.deepEqual(c.exceptions, []);
 });
 
-test('T3 exception écrite : la paire sort des échecs et reste listée ; exception vide refusée', () => {
-  const set = loadRoles(DIR);
-  const withEx = structuredClone(set);
-  const target = withEx.paires.paires.find((/** @type {any} */ p) => p.devant === 'bordure.forte' && p.fond === 'fond.composant');
-  target.exception = 'Champ toujours doublé de son libellé.';
-  const c = contratRoles(withEx);
-  assert.ok(!c.fails.some((/** @type {any} */ f) => f.devant === 'bordure.forte' && f.fond === 'fond.composant'));
-  assert.deepEqual(c.exceptions.map((/** @type {any} */ f) => `${f.devant} sur ${f.fond}`), ['bordure.forte sur fond.composant']);
-  assert.equal(c.fails.length, 6);
-  target.exception = '  ';
-  assert.throws(() => contratRoles(withEx), /exception vide/);
-});
-
-test('T3 paire invalide : rôle inconnu ou type inconnu refusés', () => {
+test('T3 paire sous le seuil : échec sans exception ; exception écrite : listée à part ; exception vide refusée', () => {
   const set = structuredClone(loadRoles(DIR));
-  set.paires.paires.push({ devant: 'texte.inconnu', fond: 'fond.app', type: 'texte' });
-  assert.throws(() => contratRoles(set), /texte\.inconnu/);
-  const set2 = structuredClone(loadRoles(DIR));
-  set2.paires.paires.push({ devant: 'texte.principal', fond: 'fond.app', type: 'ombre' });
-  assert.throws(() => contratRoles(set2), /ombre/);
+  const added = { devant: 'bordure.forte', fond: 'fond.composant.appui', type: 'bordure' };
+  set.paires.paires.push(added);
+  assert.deepEqual(contratRoles(set).fails.map((/** @type {any} */ f) => `${f.devant} sur ${f.fond}`), ['bordure.forte sur fond.composant.appui']);
+  set.paires.paires[set.paires.paires.length - 1] = { ...added, exception: 'Champ toujours doublé de son libellé.' };
+  const c = contratRoles(set);
+  assert.deepEqual(c.fails, []);
+  assert.deepEqual(c.exceptions.map((/** @type {any} */ f) => `${f.devant} sur ${f.fond}`), ['bordure.forte sur fond.composant.appui']);
+  set.paires.paires[set.paires.paires.length - 1] = { ...added, exception: '  ' };
+  assert.throws(() => contratRoles(set), /exception vide/);
 });
 
-test('T3 npm run contraste : sort en 1 et liste les 7 échecs ; sort en 0 quand chaque échec a son exception', () => {
+test('T3 paire invalide : rôle inconnu, type inconnu, interdite déclarée, règle vide refusés', () => {
+  const base = loadRoles(DIR);
+  const a = structuredClone(base);
+  a.paires.paires.push({ devant: 'texte.inconnu', fond: 'fond.app', type: 'texte' });
+  assert.throws(() => contratRoles(a), /texte\.inconnu/);
+  const b = structuredClone(base);
+  b.paires.paires.push({ devant: 'texte.principal', fond: 'fond.app', type: 'ombre' });
+  assert.throws(() => contratRoles(b), /ombre/);
+  const c = structuredClone(base);
+  c.paires.paires.push({ devant: 'texte.secondaire', fond: 'fond.composant.appui', type: 'texte' });
+  assert.throws(() => contratRoles(c), /déclarée et interdite/);
+  const d = structuredClone(base);
+  d.paires.interdites[0].regle = ' ';
+  assert.throws(() => contratRoles(d), /règle vide/);
+});
+
+test('T3 npm run contraste : sort en 0 sur les fichiers du dépôt ; en 1 avec une paire sous le seuil', () => {
   const cli = join(ROOT, 'src', 'cli', 'contraste.js');
+  const ok = execFileSync(process.execPath, [cli], { cwd: ROOT, encoding: 'utf8' });
+  assert.match(ok, /38 paires de rôles, 0 paire en échec, 0 exception écrite, 2 paires interdites\./);
+  for (const p of INTERDITES) assert.ok(ok.includes(`${p.devant} sur ${p.fond}`) && ok.includes(p.regle), `interdite listée : ${p.devant}`);
+
+  const tmp = mkdtempSync(join(tmpdir(), 'contraste-'));
+  const pp = structuredClone(paires);
+  pp.paires.push({ devant: 'bordure.forte', fond: 'fond.composant.appui', type: 'bordure' });
+  writeFileSync(join(tmp, 'paires.json'), JSON.stringify(pp));
   let code = 0;
   let out = '';
   try {
-    execFileSync(process.execPath, [cli], { cwd: ROOT, encoding: 'utf8', stdio: 'pipe' });
+    execFileSync(process.execPath, [cli, '--paires', join(tmp, 'paires.json')], { cwd: ROOT, encoding: 'utf8', stdio: 'pipe' });
   } catch (/** @type {any} */ e) {
     code = e.status;
     out = e.stdout;
   }
   assert.equal(code, 1);
-  for (const f of FAILS) assert.ok(out.includes(f), `sortie : ${f}`);
-  assert.match(out, /7 paires? en échec/);
-
-  const tmp = mkdtempSync(join(tmpdir(), 'contraste-'));
-  const pp = structuredClone(paires);
-  for (const p of pp.paires) if (FAILS.includes(`${p.devant} sur ${p.fond}`)) p.exception = 'Exception de test.';
-  writeFileSync(join(tmp, 'paires.json'), JSON.stringify(pp));
-  const ok = execFileSync(process.execPath, [cli, '--paires', join(tmp, 'paires.json')], { cwd: ROOT, encoding: 'utf8' });
-  assert.match(ok, /0 paire en échec/);
-  assert.match(ok, /7 exceptions écrites/);
+  assert.match(out, /1 paire en échec/);
+  assert.ok(out.includes('bordure.forte sur fond.composant.appui'));
 });
 
 test('T3 package.json : script contraste', () => {
