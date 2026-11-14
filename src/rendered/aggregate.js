@@ -419,6 +419,8 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
   const usagePairs = new Map();
   /** @type {Map<string, { border: string, bg: string, bgUsage: string, threshold: number, n: number }>} */
   const borderPairs = new Map();
+  /** Lot J : bordures hors champ contre leur fond (3:1), pour J1 seulement. @type {Map<string, { border: string, bg: string, bgUsage: string, threshold: number, n: number }>} */
+  const edgePairs = new Map();
   /** Lot M : liens sans soulignement dans du texte courant. @type {Map<string, { color: string, neighbor: string, ratio: number, n: number, selectors: string[], pages: Record<string, number> }>} */
   const proseLinks = new Map();
   /**
@@ -526,15 +528,17 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
         const usage = colorUsage(c.property, plein.has(index));
         const field = usage === 'bordure' && rec.role === 'champ';
         addUsage('colors', c.hex, usage, rec, page, c.property, { content: !!c.content, field, index });
-        if (field && !c.content && isOpaque(c.hex)) {
-          // R9 : bordure de champ contre le fond qui l'entoure (3:1).
+        if (usage === 'bordure' && !c.content && isOpaque(c.hex)) {
+          // R9 : bordure de champ contre le fond qui l'entoure (3:1). Lot J (J1) : les autres
+          // bordures, à part (edgePairs), pour griser un candidat sans changer R9.
           const eff = effectiveBackground(pc.records, rec.parent);
           const src = opaqueSource(pc.records, rec.parent);
           const bgUsage = plein.has(src) ? 'plein' : 'fond';
           const k = `${c.hex}|${eff.bg}|${bgUsage}`;
-          const bp = borderPairs.get(k) ?? { border: c.hex, bg: eff.bg, bgUsage, threshold: 3, n: 0 };
+          const into = field ? borderPairs : edgePairs;
+          const bp = into.get(k) ?? { border: c.hex, bg: eff.bg, bgUsage, threshold: 3, n: 0 };
           bp.n++;
-          borderPairs.set(k, bp);
+          into.set(k, bp);
         }
       }
 
@@ -811,6 +815,7 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
         ),
         pairs: [...usagePairs.values()],
         borderPairs: [...borderPairs.values()],
+        edgePairs: [...edgePairs.values()],
         links: [...proseLinks.values()],
         proximity,
         messages: [...messages.values()],

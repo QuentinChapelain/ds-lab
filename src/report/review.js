@@ -223,7 +223,12 @@ function decisionCard(family, r) {
               ? `<small class="ecart">${esc(gapOf(partnerC))}</small>`
               : '';
       const ctr = v.contrast ? contrastLine(r.usage, v.contrast) : '';
-      return `<button type="button" class="v" data-v="${i}" data-value="${esc(v.value)}" data-court="${esc(short(family, v.value))}" aria-pressed="${i === 0}">${glyph(family, v.value)}<span class="nom"><span>${esc(name)}</span>${note}${ctr}</span></button>`;
+      // Lot J, J1 : candidat qui échoue au contraste alors que l'actuelle passe : grisé, avec sa raison,
+      // toujours cliquable ; le grisé du lot C (marges) ne le touche pas (data-contraste). J2 : pas hors tranche.
+      const c = i === 0 ? null : (r.candidates ?? []).find((/** @type {any} */ x) => x.value === v.value);
+      const fails = c?.fails ? `<small class="raison-contraste">${fr(c.fails.ratio)} sous le seuil de ${fr(c.fails.threshold)}, alors que l’actuelle passe</small>` : '';
+      const out = c?.outOfSlice ? '<small>hors tranche</small>' : '';
+      return `<button type="button" class="v${c?.fails ? ' grise' : ''}" data-v="${i}" data-value="${esc(v.value)}" data-court="${esc(short(family, v.value))}"${c?.fails ? ' data-contraste' : ''} aria-pressed="${i === 0}">${glyph(family, v.value)}<span class="nom"><span>${esc(name)}</span>${note}${out}${ctr}${fails}</span></button>`;
     })
     .join('');
   const shot0 = versions[0].shot;
@@ -248,7 +253,9 @@ function decisionCard(family, r) {
         )
         .join('')}${more > 0 ? `<span class="encore">et ${more} ${more === 1 ? 'autre' : 'autres'}</span>` : ''}</div>`
     : '';
-  return `<div class="versions" role="group" aria-label="Versions">${buttons}</div>
+  // Lot J, J2 : aucun pas de la tranche ne garde le contraste.
+  const hole = r.hole ? `<p class="trou">la cible ne couvre pas ce cas : aucun pas ${esc(r.hole.slice)} de ${esc(r.hole.scale)} ne garde le contraste de l’actuelle ; les pas de ${esc(r.hole.scale)} hors tranche qui passent sont proposés</p>` : '';
+  return `${hole}<div class="versions" role="group" aria-label="Versions">${buttons}</div>
   ${view}${notes}${thumbs}
   <div class="trancher"><button type="button" class="retenir">Choisir cette version</button></div>`;
 }
@@ -659,6 +666,8 @@ ${pleinCards}${byClass}
   .encore { font-size:13px; color:var(--soft); padding-bottom:4px; }
   .vig-bloc { margin:0; max-width:100%; display:flex; flex-direction:column; gap:4px; }
   .absorbe { margin:4px 0 0; font-size:12px; line-height:1.35; color:#7a3a00; } .absorbe[hidden] { display:none; }
+  .raison-contraste { color:#7a3a00; }
+  .trou { margin:6px 0; font-size:13px; line-height:1.35; color:#7a3a00; }
   .sans-capture, .sans-effet { margin:6px 0 0; font-size:12px; line-height:1.35; color:#4a4f59; font-style:italic; }
   .trancher { display:flex; align-items:center; gap:10px; margin-top:10px; }
   .retenir { font:inherit; font-size:14px; font-weight:600; border:0; border-radius:6px; padding:7px 14px; cursor:pointer; background:#16181d; color:#fff; }
@@ -818,6 +827,7 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
       if (!row.classList.contains('decision')) return;
       var m = marks[row.getAttribute('data-key')] || {};
       versionsOf(row).forEach(function (b) {
+        if (b.hasAttribute('data-contraste')) return; // Lot J, J1 : grisé de contraste, fixe
         var why = m[b.getAttribute('data-value')];
         var old = b.querySelector('.raison'); if (old) old.remove();
         b.classList.toggle('grise', !!why && b.getAttribute('data-v') !== '0');

@@ -40,6 +40,21 @@
  */
 import { toLab, deltaE, isOpaque, contrastRatio, relativeLuminance } from '../lib/color.js';
 import { resolveBrand, isGrey } from '../brand/brand.js';
+import { converter } from 'culori';
+
+const toOklch = converter('oklch');
+/** Lot J, J1 (règle 2) : écart de teinte toléré, sans échelles dans la cible. */
+export const SAME_HUE_DEG = 30;
+/**
+ * Lot J, J1 : même teinte, quand la cible n'a pas d'échelles : deux gris (chroma OKLCH < 0,02, G8),
+ * ou deux couleurs dont les teintes OKLCH diffèrent de SAME_HUE_DEG degrés au plus.
+ * @param {string} a @param {string} b
+ */
+export function sameHue(a, b) {
+  if (isGrey(a) || isGrey(b)) return isGrey(a) && isGrey(b);
+  const d = Math.abs((toOklch(a)?.h ?? 0) - (toOklch(b)?.h ?? 0)) % 360;
+  return Math.min(d, 360 - d) <= SAME_HUE_DEG;
+}
 
 export const CLASSES = /** @type {const} */ (['décision', 'proche', 'auto', 'inchangé', 'hors table']);
 
@@ -213,7 +228,14 @@ export function dimensionRow(base, scale, { pill = false, forcePill = false, nea
  * les couleurs gardent l'ordre du plus proche au plus loin (C11).
  * @param {any} r
  */
-export const nearestOf = (r) => (r.candidates ?? []).find((/** @type {any} */ c) => c.nearest) ?? r.candidates?.[0];
+export const nearestOf = (r) => {
+  const cs = r.candidates ?? [];
+  // Lot J, J1 : un candidat qui échoue au contraste n'est jamais « le plus proche » ; c'est alors le
+  // défaut (dans l'échelle du plus proche), ou personne quand la ligne n'a pas de défaut.
+  if (r.noDefault) return undefined;
+  if (cs.some((/** @type {any} */ c) => c.fails)) return cs.find((/** @type {any} */ c) => c.value === r.new && !c.fails) ?? cs.find((/** @type {any} */ c) => !c.fails);
+  return cs.find((/** @type {any} */ c) => c.nearest) ?? cs[0];
+};
 
 /**
  * Égalité tranchée en silence : les deux candidats les plus proches à même écart (non nul).
@@ -734,6 +756,53 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
       const m = c.t && B.status.has(c.t.scale) && r._states < r.count ? ['décision', M_REASONS.M4] : null;
       if (m) Object.assign(r, { class: m[0], reason: m[1] });
     }
+  // Lot J, J1 : un candidat qui échoue au contraste (paire la plus défavorable après la table) alors
+  // que l'actuelle passe porte `fails` ; il n'est ni le défaut ni « le plus proche » (nearestOf).
+  // J2 : aucun candidat de la tranche ne passe : la ligne est un trou de la cible (`hole`), et les pas
+  // de la même échelle hors tranche qui passent (3 au plus, du plus proche au plus loin) s'ajoutent.
+  /** @type {Record<string, string>} */
+  const afterTable = {};
+  for (const r of rows) if (r.usage && r.new && APPLIED.has(r.class)) afterTable[`${r.old}|${r.usage}`] = r.new;
+  for (const r of rows) {
+    if (!r.usage || !r._cands || r._exact || isOut(r.class) || !r.candidates?.length) continue;
+    const today = worstContrast(usages, r, r.old, afterTable);
+    if (!today || today.ratio < today.threshold - 1e-9) continue;
+    /** @param {string} v */
+    const failOf = (v) => {
+      const w = worstContrast(usages, r, v, afterTable);
+      return w && w.ratio < w.threshold - 1e-9 ? { ratio: w.ratio, threshold: w.threshold } : null;
+    };
+    for (const c of r.candidates) {
+      const f = failOf(c.value);
+      if (f) /** @type {any} */ (c).fails = f;
+    }
+    const range = SLICES[r.usage];
+    if (range && r.candidates.every((/** @type {any} */ c) => c.fails)) {
+      const scale = T.find((t) => t.value === r.candidates[0].value)?.scale ?? r._nearest.t.scale;
+      const extra = sorted(toLab(r.old), T.filter((t) => t.scale === scale && t.step !== null && (t.step < range[0] || t.step > range[1])))
+        .filter((c) => !failOf(c.t.value))
+        .slice(0, 3);
+      r.candidates.push(...extra.map((c) => ({ value: c.t.value, name: c.t.name, delta: c.delta, outOfSlice: true, ratio: worstContrast(usages, r, c.t.value, afterTable)?.ratio ?? null })));
+      /** @type {any} */ (r).hole = { scale, slice: r.usage };
+    }
+    // Règle 2 : le nouveau défaut reste dans l'échelle du candidat le plus proche (sans échelles :
+    // sa teinte) ; sans candidat qui passe dans cette échelle, pas de défaut.
+    const home = r.candidates[0];
+    const homeScale = T.find((t) => t.value === home.value)?.scale;
+    /** @param {string} v */
+    const sameHome = (v) => (hasScales ? T.find((t) => t.value === v)?.scale === homeScale : sameHue(v, home.value));
+    const now = r.candidates.find((/** @type {any} */ c) => c.value === r.new);
+    const ok = r.candidates.find((/** @type {any} */ c) => !c.fails && sameHome(c.value));
+    if (now?.fails && ok) {
+      Object.assign(r, { new: ok.value, name: ok.name, delta: ok.delta });
+      if (r.class !== 'décision') Object.assign(r, { class: 'décision', reason: 'la paire passe avant et échoue après (R2)' });
+      const w = worstContrast(usages, r, ok.value, afterTable);
+      if (r.contrast && w) r.contrast.after = w.ratio;
+    } else if (now?.fails) {
+      Object.assign(r, { new: null, name: undefined, class: 'décision', noDefault: true, reason: `aucun candidat ${hasScales ? 'de la même échelle' : 'de la même teinte'} ne garde le contraste de l’actuelle : pas de défaut (J1)` });
+      if (r.contrast) delete r.contrast.after;
+    }
+  }
   for (const r of rows) {
     delete r._cands;
     delete r._nearest;
@@ -941,7 +1010,11 @@ export function worstContrast(usages, r, value, map = {}) {
   /** @type {{ text: string, bg: string, threshold: number, today: string }[]} */
   let list = [];
   if (r.usage === 'texte') list = (usages?.pairs ?? []).filter((/** @type {any} */ p) => p.text === r.old).map((/** @type {any} */ p) => ({ text: value, bg: after(p.bg, p.bgUsage), threshold: p.threshold, today: p.bg }));
-  else if (r.usage === 'bordure') list = (usages?.borderPairs ?? []).filter((/** @type {any} */ p) => p.border === r.old).map((/** @type {any} */ p) => ({ text: value, bg: after(p.bg, p.bgUsage), threshold: p.threshold, today: p.bg }));
+  else if (r.usage === 'bordure') {
+    // Lot J (J1) : une bordure hors champ se mesure contre son fond (edgePairs), à 3:1 comme un champ.
+    const own = (usages?.borderPairs ?? []).filter((/** @type {any} */ p) => p.border === r.old);
+    list = (own.length ? own : (usages?.edgePairs ?? []).filter((/** @type {any} */ p) => p.border === r.old)).map((/** @type {any} */ p) => ({ text: value, bg: after(p.bg, p.bgUsage), threshold: p.threshold, today: p.bg }));
+  }
   else if (r.usage === 'fond' || r.usage === 'plein') list = (usages?.pairs ?? []).filter((/** @type {any} */ p) => p.bg === r.old && p.bgUsage === r.usage).map((/** @type {any} */ p) => ({ text: after(p.text, 'texte'), bg: value, threshold: p.threshold, today: p.text }));
   const fg = r.usage === 'texte' || r.usage === 'bordure';
   /** @type {any} */

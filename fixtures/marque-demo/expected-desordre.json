@@ -178,7 +178,7 @@
       "id": "C18",
       "values": [
         { "value": "#d0563f", "new": "#c8553d", "name": "terre", "deltaE": 1.5888, "class": "auto" },
-        { "value": "#c4513a", "new": "#c8553d", "name": "terre", "deltaE": 1.2101, "class": "auto" , "afterB": { "class": "décision", "rule": "R2", "contrast": { "text": "#ffffff", "before": 4.5799, "after": 4.3544 } } }
+        { "value": "#c4513a", "new": "#c8553d", "name": "terre", "deltaE": 1.2101, "class": "auto" , "afterB": { "class": "décision", "rule": "R2", "new": null, "contrast": { "text": "#ffffff", "before": 4.5799, "after": 4.3544 }, "was": "13/11/2026 : décision R2, défaut terre #c8553d (le blanc y tombe à 4,3544).", "corrected": "14/11/2026, lot J (J1, règle 2) : terre échoue au contraste alors que l'actuelle passe (4,5799) : grisé, jamais défaut ; les autres candidats, gris #767676 (4,5422) et bleu #2b4c7e (8,6144), ne sont pas de la même teinte (cible sans échelles : teinte OKLCH à 30° près, terre 33,4° contre 33,1°) : pas de défaut, la ligne reste décision. Contrastes culori 4.0.2 : node -e 'import(\"culori\").then(({wcagContrast:w})=>console.log(w(\"#ffffff\",\"#c4513a\"),w(\"#ffffff\",\"#c8553d\"),w(\"#ffffff\",\"#767676\"),w(\"#ffffff\",\"#2b4c7e\")))' → 4,5799 ; 4,3544 ; 4,5422 ; 8,6144." } }
       ],
       "uses": [
         { "page": "carte", "value": "#d0563f", "property": "background-color", "role": "texte", "usage": "étiquette « nouveau »" },

@@ -560,17 +560,19 @@
           "page": "compte",
           "property": "background-color",
           "detail": "étiquette « nouveau », texte blanc",
-          "target": "terre-9",
-          "new": "#c8553d",
+          "target": "terre-10",
+          "new": "#ba4834",
           "class": "décision",
-          "reason": "R2 : passe avant, échoue après",
-          "deltaE": 1.2101,
+          "reason": "R2 : passe avant, échoue après ; J1 : terre-9 grisé, défaut terre-10",
+          "deltaE": 2.8736,
           "applied": false,
           "contrast": {
             "text": "#ffffff",
             "before": 4.5799,
-            "after": 4.3544
-          }
+            "after": 5.1669
+          },
+          "was": "13/11/2026 : défaut terre-9 #c8553d (ΔE 1,2101), le blanc y tombe à 4,3544.",
+          "corrected": "14/11/2026, lot J (J1) : terre-9 échoue au contraste alors que l'actuelle passe (4,5799) : grisé, jamais défaut ; le défaut est le premier candidat de la même échelle qui passe, terre-10 #ba4834 (ΔE 2,8736, 5,1669). culori 4.0.2 : node -e 'import(\"culori\").then(({wcagContrast:w,differenceEuclidean:d})=>console.log(w(\"#ffffff\",\"#c4513a\"),w(\"#ffffff\",\"#c8553d\"),w(\"#ffffff\",\"#ba4834\"),100*d(\"oklab\")(\"#c4513a\",\"#ba4834\")))' → 4,5799 ; 4,3544 ; 5,1669 ; 2,8736."
         },
         {
           "value": "#d0563f",

@@ -300,6 +300,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
         elements: r.count,
         reason: r.reason ?? (r.class === 'hors table' ? OUT_REASON : null),
         candidates: r.candidates ?? [],
+        noDefault: !!r.noDefault,
         contrast: r.contrast ?? null,
         tie: tieOf(r.candidates ?? []),
         // Lot V, étape 6 : déclarations sources (unité écrite) et conflits (même déclaration, issues différentes).
@@ -363,6 +364,20 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     outOfSlice.push({ value: r.old, name: exact.name, usage: r.usage, elements: r.count, step, expected: `${r.usage} ${slice[0]}-${slice[1]}`, class: r.class, selectors: r.selectors });
   }
 
+  // Lot J, J2 : trous de la cible : aucun pas de la tranche ne garde le contraste de l'actuelle.
+  const holes = (table.families.colors?.rows ?? [])
+    .filter((/** @type {any} */ r) => r.hole)
+    .map((/** @type {any} */ r) => ({
+      id: r.id ?? '',
+      title: r.title ?? '',
+      value: r.old,
+      usage: r.usage,
+      scale: r.hole.scale,
+      slice: `${r.usage} ${SLICES[r.usage][0]}-${SLICES[r.usage][1]}`,
+      failing: r.candidates.filter((/** @type {any} */ c) => c.fails).map((/** @type {any} */ c) => ({ value: c.value, name: c.name, ratio: c.fails.ratio, threshold: c.fails.threshold })),
+      proposed: r.candidates.filter((/** @type {any} */ c) => c.outOfSlice).map((/** @type {any} */ c) => ({ value: c.value, name: c.name, ratio: c.ratio })),
+    }));
+
   const data = {
     meta,
     rows,
@@ -386,7 +401,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
         new Set(rows.filter((r) => r.status === 'décidée' && !r.plein).map((r) => r.decisionKey)).size + pleins.filter((g) => g.choice).length,
       ignored: pleins.reduce((n, g) => n + (g.ignored?.length ?? 0), 0),
     },
-    exceptions: { links, onSolid, states, injected: null, ties, outOfSlice, messages: rendered.usages?.messages ?? [] },
+    exceptions: { links, onSolid, states, injected: null, ties, outOfSlice, holes, messages: rendered.usages?.messages ?? [] },
     remaining: [...remaining.values()],
     thirdParty: table.thirdParty ?? [],
     ...(table.brand ? { brand: table.brand } : {}),
@@ -499,7 +514,7 @@ function renderMarkdown(d, s) {
   L.push('| ligne | famille | valeur | usage | relation | proposé | candidats | motif | sélecteurs |', '|---|---|---|---|---|---|---|---|---|');
   for (const r of s.pending)
     L.push(
-      `| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.relation)} | ${r.token === 'jeton absent' ? r.token : `\`${r.token}\``} (\`${cell(r.new)}\`) | ${r.candidates.map((/** @type {any} */ c) => `\`${cell(c.value)}\` (${fr(c.delta)}${c.nearest ? `, le plus proche${r.tie && r.tie[0] === c.value ? `, à égalité avec ${shortValue(r.tie[1])}` : ''}` : ''})`).join(', ')} | ${cell(r.reason ?? 'écart au-delà des seuils')}${r.contrast ? ` contraste ${fr(r.contrast.before)} → ${fr(r.contrast.after)} si appliquée` : ''}${cell(m6Text(r))} | ${selectorsOf(r)} |`,
+      `| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.relation)} | ${r.noDefault ? 'aucun défaut' : `${r.token === 'jeton absent' ? r.token : `\`${r.token}\``} (\`${cell(r.new)}\`)`} | ${r.candidates.map((/** @type {any} */ c) => `\`${cell(c.value)}\` (${fr(c.delta)}${c.nearest ? `, le plus proche${r.tie && r.tie[0] === c.value ? `, à égalité avec ${shortValue(r.tie[1])}` : ''}` : ''}${c.fails ? `, échoue au contraste : ${fr(c.fails.ratio)} sous ${fr(c.fails.threshold)}` : ''}${c.outOfSlice ? ', hors tranche' : ''})`).join(', ')} | ${cell(r.reason ?? 'écart au-delà des seuils')}${r.contrast && r.contrast.after !== undefined ? ` contraste ${fr(r.contrast.before)} → ${fr(r.contrast.after)} si appliquée` : ''}${cell(m6Text(r))} | ${selectorsOf(r)} |`,
     );
   L.push('');
 
@@ -566,6 +581,14 @@ function renderMarkdown(d, s) {
   for (const x of e.outOfSlice)
     L.push(`| \`${x.value}\` | ${x.name} | ${x.usage} | ${x.elements} | ${x.expected} | ${x.class} | ${x.selectors.map((/** @type {string} */ y) => `\`${cell(y)}\``).join(', ')} |`);
   if (!e.outOfSlice.length) L.push('| — | | | | | | |');
+  L.push('');
+  L.push(`### Trous de la cible : ${(e.holes ?? []).length}`, '');
+  L.push('Aucun pas de la tranche de l’usage ne garde le contraste que l’actuelle a : la cible ne couvre pas ce cas. La revue propose les pas de la même échelle, hors tranche, qui passent ; à revoir avec le designer (la valise, ou l’usage).', '');
+  for (const h of e.holes ?? [])
+    L.push(
+      `- ${h.id} ${h.title} : \`${h.value}\` (${h.usage}). Tranche ${h.slice} de ${h.scale}, sous le seuil de ${fr(h.failing[0]?.threshold ?? 0)} : ${h.failing.map((/** @type {any} */ c) => `\`${c.value}\` ${c.name} ${fr(c.ratio)}`).join(', ')}. Hors tranche, qui passent : ${h.proposed.length ? h.proposed.map((/** @type {any} */ c) => `\`${c.value}\` ${c.name} ${fr(c.ratio)}`).join(', ') : 'aucun'}.`,
+    );
+  if (!(e.holes ?? []).length) L.push('- Aucun.');
   L.push('');
   return L.join('\n');
 }
