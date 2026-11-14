@@ -377,16 +377,29 @@ test('I5 : valeur hors tranche et inchangée, rattachée et toujours signalée',
   const a = desordre.data.agent.lines;
   const rat = sectionOf(a, 'RATTACHE (') ?? [];
   const sig = sectionOf(a, 'SIGNALE SANS MODIFIER') ?? [];
-  // #2b4c7e (bleu-9) en texte et en bordure, #f0c987 (sable-9) en fond : inchangées ; #f0c987 en texte : correction.
-  for (const [value, usage, attached] of /** @type {const} */ ([['#2b4c7e', 'texte', true], ['#2b4c7e', 'bordure', true], ['#f0c987', 'fond', true], ['#f0c987', 'texte', false]])) {
+  // #2b4c7e (bleu-9) en texte et en bordure, #f0c987 (sable-9) en fond : inchangées, rattachées et signalées.
+  // Lot K (retouche) : #f0c987 en texte est une correction, dans REMPLACEMENTS : plus dans SIGNALE.
+  for (const [value, usage, attached] of /** @type {const} */ ([['#2b4c7e', 'texte', true], ['#2b4c7e', 'bordure', true], ['#f0c987', 'fond', true]])) {
     const r = desordre.data.rows.find((/** @type {any} */ x) => x.family === 'colors' && x.value === value && x.usage === usage);
     const l = sig.find((x) => x.startsWith(`- Valeur hors de sa tranche : ${value} `) && x.includes(` en ${usage},`));
     assert.ok(l, `${value} ${usage} signalée`);
     assert.equal(!!stepOf(rat, r.id), attached, `${value} ${usage} dans RATTACHE`);
     assert.equal(l.endsWith(" ; rattaché, rôle à revoir à l'étape 3."), attached, l);
   }
+  assert.ok(!sig.some((x) => x.includes(' #f0c987 ') && x.includes(' en texte,')), '#f0c987 en texte : remplacée, pas signalée');
   const sigNo = sectionOf(sansJetons.data.agent.lines, 'SIGNALE SANS MODIFIER') ?? [];
   assert.ok(sigNo.every((x) => !x.includes('rattaché')), 'sans jetons : rien de rattaché');
+});
+
+test('Lot K (retouche) : aucune valeur de REMPLACEMENTS dans SIGNALE SANS MODIFIER', () => {
+  for (const run of [desordre, decidee]) {
+    const rep = run.data.rows.filter((/** @type {any} */ r) => (r.status === 'appliquée' || r.status === 'décidée') && r.conflict !== 'total');
+    const sig = sectionOf(run.data.agent.lines, 'SIGNALE SANS MODIFIER') ?? [];
+    for (const x of sig) {
+      const both = rep.filter((/** @type {any} */ r) => x.includes(` ${r.value} `) && (x.includes(` en ${r.usage},`) || x.includes(`(${r.usage})`)));
+      assert.deepEqual(both.map((/** @type {any} */ r) => r.id), [], x);
+    }
+  }
 });
 
 test('I6 : VÉRIFICATION, variables déclarées dans tokens.css, repli retiré en fin de migration', () => {

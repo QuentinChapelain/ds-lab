@@ -7,7 +7,7 @@
  * renvoyées avec le texte, pour les tests.
  */
 import { basename } from 'node:path';
-import { APPLIED, isOut, SLICES, decisionFor, WHERE_TO_FIX, nearestOf, tieOf, onSolidOf } from '../reduce/propose.js';
+import { APPLIED, isOut, SLICES, decisionFor, decisionKeyFor, WHERE_TO_FIX, nearestOf, tieOf, onSolidOf } from '../reduce/propose.js';
 
 export { onSolidOf };
 import { contrastRatio } from '../lib/color.js';
@@ -288,6 +288,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
         new: next,
         status,
         decision: d ?? null,
+        decisionKey: decisionKeyFor(decisions, family, r),
         properties: r.properties ?? [],
         // Lot R : tous les sélecteurs des éléments touchés (capture), sinon les exemples du relevé,
         // signalés comme coupés quand la ligne compte plus d'occurrences que d'exemples.
@@ -377,6 +378,13 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     unchanged: rows.filter((r) => r.status === 'inchangé').length,
     attached: attached.length,
     decided: rows.filter((r) => r.status === 'décidée').length,
+    // Lot K (retouche) : décisions du fichier, comptées par clé ; les décisions de ligne qui suivent
+    // une carte sont comptées à part.
+    decisionKeys: {
+      decided:
+        new Set(rows.filter((r) => r.status === 'décidée' && !r.plein).map((r) => r.decisionKey)).size + pleins.filter((g) => g.choice).length,
+      ignored: pleins.reduce((n, g) => n + (g.ignored?.length ?? 0), 0),
+    },
     exceptions: { links, onSolid, states, injected: null, ties, outOfSlice, messages: rendered.usages?.messages ?? [] },
     remaining: [...remaining.values()],
     thirdParty: table.thirdParty ?? [],
@@ -435,7 +443,12 @@ function renderMarkdown(d, s) {
   L.push(`Pages : ${m.pages.map((/** @type {string} */ p) => `\`${p}\``).join(', ')}.`, '');
   L.push('Ce document se lit sans l’outil. Chaque ligne range une valeur relevée dans le rendu, pour un usage, sur un jeton de la cible.');
   L.push('« Origine CSS » donne la règle d’un élément d’exemple (fichier:ligne de la règle) ; « non tracé » quand elle n’a pas pu être lue (fond de page, pseudo-élément).', '');
-  if (m.decisions) L.push(`Décisions lues : \`${m.decisions}\`, ${d.decided} décidée(s), ${d.sections.refused.total} refusée(s).`, '');
+  if (m.decisions) {
+    const k = d.decisionKeys;
+    const n = (/** @type {number} */ x, /** @type {string} */ one, /** @type {string} */ many) => `${x} ${x > 1 ? many : one}`;
+    const ignored = k.ignored ? `, ${n(k.ignored, 'décision de ligne ignorée : suit une carte', 'décisions de ligne ignorées : suivent une carte')}` : '';
+    L.push(`Décisions lues : \`${m.decisions}\`, ${n(k.decided, 'décidée', 'décidées')}, ${n(d.sections.refused.total, 'refusée', 'refusées')}${ignored}.`, '');
+  }
   L.push('| section | lignes | couleurs | espacements | tailles | rayons |', '|---|---|---|---|---|---|');
   for (const [k, label] of [['applied', 'Appliqué (auto, proche, correction, décidée)'], ['pending', 'Décisions en attente'], ['refused', 'Refusée, laissée telle quelle'], ['outOfTable', 'Hors table']]) {
     const x = d.sections[k];
@@ -747,10 +760,13 @@ function agentBrief(d, s) {
   // Lot I (I5) : une valeur hors tranche et inchangée est rattachée, et reste signalée.
   /** @param {any} x */
   const isAttached = (x) => s.attached.some((r) => r.family === 'colors' && r.value === x.value && r.usage === x.usage);
-  for (const x of d.exceptions.outOfSlice)
+  // Lot K (retouche) : une valeur traitée par REMPLACEMENTS n'est pas aussi à signaler sans modifier.
+  /** @param {any} x */
+  const isReplaced = (x) => replaceable.some((/** @type {any} */ r) => r.family === 'colors' && r.value === x.value && r.usage === x.usage);
+  for (const x of d.exceptions.outOfSlice.filter((/** @type {any} */ x) => !isReplaced(x)))
     lines.push(`- Valeur hors de sa tranche : ${x.value} (${x.name}) en ${x.usage}, ${x.elements} élément(s), tranche attendue ${x.expected} : ${x.selectors.join(', ')}${isAttached(x) ? " ; rattaché, rôle à revoir à l'étape 3" : ''}.`);
   for (const st of d.exceptions.states) lines.push(`- État non lu : ${st.value} (${[...new Set(st.contexts.map((/** @type {any} */ c) => `${c.state} ${c.property}`))].join(', ')}).`);
-  for (const r of d.exceptions.ties) lines.push(`- Égalité tranchée en silence : ${r.value} (${r.usage}) entre ${r.tie[0]} et ${r.tie[1]}, rangée vers ${r.new}.`);
+  for (const r of d.exceptions.ties.filter((/** @type {any} */ r) => !replaceable.some((/** @type {any} */ x) => x.id === r.id))) lines.push(`- Égalité tranchée en silence : ${r.value} (${r.usage}) entre ${r.tie[0]} et ${r.tie[1]}, rangée vers ${r.new}.`);
   lines.push("- Élément injecté après le chargement : non mesuré ; signale-le si tu en trouves.");
   lines.push('');
   lines.push('VÉRIFICATION');

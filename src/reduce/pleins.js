@@ -6,6 +6,8 @@
  *     ou 10 d'une échelle mènent au plein de cette échelle. L'échelle a une carte quand un texte posé
  *     sur l'un de ces fonds, après sa propre ligne, passe sous son seuil sur le pas 9 (ou sur le fond
  *     que la table lui donnerait). La carte couvre tous les éléments portés par ces fonds.
+ *     Retouche : l'échelle n'a pas de carte quand chaque texte passe déjà sur son fond tel qu'il
+ *     est et sur le fond où la table le mène (blanc sur terre-10 après migration).
  * K2. Versions : (a) « onSolid » : l'onSolid de l'échelle sur le pas 9 ; (b) « pas-10 » : le texte
  *     d'origine sur le pas 10, seulement si chaque texte du plein y passe son seuil ; (c) « garder » :
  *     fond au pas 9, texte gardé, sous le seuil. Aucune recommandée.
@@ -82,9 +84,19 @@ export function pleinGroups({ table, rendered, target, decisions = {} }) {
       .filter((/** @type {any} */ p) => p.bgUsage === 'plein' && olds.has(p.bg))
       .map((/** @type {any} */ p) => ({ text: p.text, after: mapped(base, p.text, 'texte'), bg: p.bg, threshold: p.threshold, n: p.n }));
     if (!pairs.length) continue;
-    const concerned = pairs.some(
-      (/** @type {any} */ p) => contrastRatio(p.after, s9.value) < p.threshold || contrastRatio(p.after, mapped(base, p.bg, 'plein')) < p.threshold,
+    // Retouche : pas de carte quand chaque texte passe déjà sur le fond tel qu'il est (texte tel
+    // qu'il est) et sur le fond où la table le mène (texte après sa propre ligne) : ex. blanc sur
+    // terre-10 après migration.
+    /** @param {string} bg */
+    const nextOf = (bg) => rows.find((r) => r.old === bg)?.new ?? bg;
+    const passes = pairs.every(
+      (/** @type {any} */ p) => contrastRatio(p.text, p.bg) >= p.threshold && contrastRatio(p.after, nextOf(p.bg)) >= p.threshold,
     );
+    const concerned =
+      !passes &&
+      pairs.some(
+        (/** @type {any} */ p) => contrastRatio(p.after, s9.value) < p.threshold || contrastRatio(p.after, mapped(base, p.bg, 'plein')) < p.threshold,
+      );
     if (!concerned) continue;
     /** Paire la moins favorable d'un fond donné, et si toutes passent. @param {string} bg @param {(p: any) => string} textOf */
     const worst = (bg, textOf) => {

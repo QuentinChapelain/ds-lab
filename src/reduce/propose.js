@@ -997,8 +997,18 @@ export const rowKey = (family, r) => (r.usage ? `${family}|${r.old}|${r.usage}${
  * @returns {string | false | undefined}
  */
 export function decisionFor(decisions, family, r) {
-  for (const k of [rowKey(family, r), r.usage ? `${family}|${r.old}|${r.usage}` : null, `${family}|${r.old}`]) if (k && k in decisions) return decisions[k];
-  return undefined;
+  const k = decisionKeyFor(decisions, family, r);
+  return k === null ? undefined : decisions[k];
+}
+
+/**
+ * Clé du fichier de décisions qui décide une ligne (la plus précise d'abord), ou null.
+ * @param {Record<string, string | false>} decisions @param {string} family @param {Row} r
+ * @returns {string | null}
+ */
+export function decisionKeyFor(decisions, family, r) {
+  for (const k of [rowKey(family, r), r.usage ? `${family}|${r.old}|${r.usage}` : null, `${family}|${r.old}`]) if (k && k in decisions) return k;
+  return null;
 }
 
 /**

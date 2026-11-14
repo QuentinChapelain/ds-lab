@@ -125,5 +125,6 @@ Règles : marques fictives uniquement ; rien de `local/` ni de `.auth/` dans un 
 - Validé sur des pages fictives et sur un vrai site en lecture seule, pas encore avec une équipe.
 - Le CSS migré garde un repli à retirer en fin de migration : `var(--jeton, ancienne valeur)` reste tant que toutes les pages ne sont pas passées aux jetons.
 - Les pseudo-éléments (icônes) ne sont pas simulés ; le contraste du texte sur image est mesuré mais marqué à vérifier, car le fond réel est incertain.
+- Les contrastes ne sont pas mesurés sur les pages témoins : seules les pages de la table entrent dans les paires texte sur fond et dans la liste des paires sous le seuil.
 
 Licence MIT.

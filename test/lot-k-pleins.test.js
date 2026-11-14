@@ -13,6 +13,12 @@
  *     références et la consigne ; (c) : paire listée « sous 4,5:1, gardée par le designer ».
  *     (a) : l'onSolid sur tous les textes du plein.
  * K5. Non tranchée : rien n'est appliqué, ni texte ni fond ; les lignes de fond sont en attente.
+ * Retouches (attendus écrits avant le code) :
+ * K1 bis. Pas de carte quand chaque texte passe déjà sur le fond tel qu'il est, et sur le fond où la
+ *     table le mène (blanc sur terre-10 après migration : 5,1669). Blanc sur #ba4834 que la table
+ *     mène à terre-9 (4,3544) : carte.
+ * En-tête. migration.md compte les décisions appliquées (clés de ligne qui changent une ligne, et
+ *     cartes tranchées) et, à part, les décisions de ligne ignorées parce qu'elles suivent une carte.
  * Page fictive (cible-valise) : blanc sur #d0563f, #c4513a, #c8553d (terre-9, déjà sur la cible),
  * #f0c987 (sable-9) et #2b4c7e (bleu-9).
  * Contrastes (culori 4.0.2) :
@@ -275,4 +281,24 @@ test('libellés génériques : texte d’origine non blanc ; onSolid clair (« T
   assert.equal(r4(wcagContrast('#f5f5f5', '#ba4834')), 4.7392);
   assert.deepEqual(one('#c8553d', '#f5f5f5'), [['Texte foncé', 'Texte d’origine, fond plus foncé', 'Garder (sous le seuil)']]);
   assert.deepEqual(one('#2b4c7e', '#1a1a1a'), [['Texte clair', 'Garder (sous le seuil)']]);
+});
+
+test('K1 bis : pas de carte quand chaque texte passe déjà sur le fond tel qu’il est (blanc sur terre-10 après migration)', async () => {
+  const { pleinGroups } = await import('../src/reduce/pleins.js');
+  const target = JSON.parse(await readFile(TARGET, 'utf8'));
+  /** @param {string} old @param {string} next @param {string} cls */
+  const scales = (old, next, cls) => {
+    const table = { families: { colors: { rows: [{ id: 'coul-1', old, usage: 'plein', class: cls, new: next }] } } };
+    const rendered = { usages: { pairs: [{ text: '#ffffff', bg: old, bgUsage: 'plein', threshold: 4.5, n: 1 }] } };
+    return pleinGroups({ table, rendered, target }).map((g) => g.scale);
+  };
+  assert.deepEqual(scales('#ba4834', '#ba4834', 'inchangé'), [], 'blanc sur terre-10, déjà migré');
+  assert.deepEqual(scales('#ba4834', '#c8553d', 'proche'), ['terre'], 'passe tel quel, mais la table le mène sur terre-9');
+  assert.deepEqual(scales('#c8553d', '#c8553d', 'inchangé'), ['terre'], 'blanc sur terre-9 tel quel');
+});
+
+test('en-tête : décisions appliquées, et à part les décisions de ligne ignorées (elles suivent une carte)', () => {
+  const line = (/** @type {string} */ name) => R[name].md.split('\n').find((l) => l.startsWith('Décisions lues : '));
+  assert.equal(line('b'), 'Décisions lues : `decisions-b.json`, 1 décidée, 0 refusée, 2 décisions de ligne ignorées : suivent une carte.');
+  assert.equal(line('attente'), 'Décisions lues : `decisions-attente.json`, 0 décidée, 0 refusée, 2 décisions de ligne ignorées : suivent une carte.');
 });
