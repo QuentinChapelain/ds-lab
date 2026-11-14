@@ -166,6 +166,66 @@ export function scanInPage(map) {
   // Pleins : éléments dont le fond opaque porte un texte plus clair que lui (R1), ou l'onSolid de
   // son échelle (lot V, étape 4 : paires de la cible, comme au relevé).
   const solid = new Set(Array.isArray(map.solid) ? map.solid : []);
+
+  // Lot J, J9 : un texte posé sur une image qui couvre son fond opaque (img, video, canvas, picture,
+  // ou background-image url() en cover, à 100 % ou répétée) ne fait pas de ce fond un plein.
+  // Empilement lu par le navigateur (elementsFromPoint au centre du texte, événements forcés) :
+  // l'image doit être sous le texte et au-dessus du fond. Code dupliqué dans src/browser/rendered.js
+  // et src/browser/simulate.js (fonctions sérialisées dans la page).
+  /** @type {Map<Element, Element[]>} */
+  const coverCache = new Map();
+  /** @param {DOMRect} a @param {DOMRect} b */
+  const coversBox = (a, b) => a.left <= b.left + 1 && a.top <= b.top + 1 && a.right >= b.right - 1 && a.bottom >= b.bottom - 1;
+  /** @param {CSSStyleDeclaration} cs */
+  const bgCovers = (cs) => cs.backgroundImage.includes('url(') && (/cover/.test(cs.backgroundSize) || /^100%( 100%)?$/.test(cs.backgroundSize) || cs.backgroundRepeat === 'repeat');
+  /** @param {Element} src */
+  const coversOf = (src) => {
+    const known = coverCache.get(src);
+    if (known) return known;
+    const box = src.getBoundingClientRect();
+    /** @type {Element[]} */
+    const list = [];
+    if (box.width > 0 && box.height > 0) {
+      if (bgCovers(getComputedStyle(src))) list.push(src);
+      for (const d of src.querySelectorAll('*')) {
+        const cs = getComputedStyle(d);
+        if (!/^(IMG|VIDEO|CANVAS|PICTURE)$/.test(d.tagName) && !bgCovers(cs)) continue;
+        if (cs.visibility === 'hidden' || cs.display === 'none' || parseFloat(cs.opacity) === 0) continue;
+        if (coversBox(d.getBoundingClientRect(), box)) list.push(d);
+      }
+    }
+    coverCache.set(src, list);
+    return list;
+  };
+  /** @type {HTMLStyleElement | null} */
+  let forced = null;
+  const scroll0 = [scrollX, scrollY];
+  /** @param {Element} el @param {Element} src */
+  const onImage = (el, src) => {
+    const imgs = coversOf(src);
+    if (!imgs.length) return false;
+    if (imgs.includes(src)) return true;
+    if (!forced) {
+      forced = document.createElement('style');
+      forced.textContent = '*,*::before,*::after{pointer-events:auto!important}';
+      document.documentElement.appendChild(forced);
+    }
+    let r = el.getBoundingClientRect();
+    if (r.top + r.height / 2 < 0 || r.top + r.height / 2 > innerHeight || r.left + r.width / 2 < 0 || r.left + r.width / 2 > innerWidth) {
+      scrollTo(Math.max(0, scrollX + r.left + r.width / 2 - innerWidth / 2), Math.max(0, scrollY + r.top + r.height / 2 - innerHeight / 2));
+      r = el.getBoundingClientRect();
+    }
+    const stack = document.elementsFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    const iText = stack.findIndex((x) => x === el || el.contains(x));
+    const iImg = Math.min(...imgs.map((x) => stack.indexOf(x)).filter((k) => k >= 0));
+    const iSrc = stack.indexOf(src);
+    return iText >= 0 && Number.isFinite(iImg) && iImg > iText && (iSrc < 0 || iImg < iSrc);
+  };
+  const imageDone = () => {
+    if (forced) forced.remove();
+    forced = null;
+    scrollTo(scroll0[0], scroll0[1]);
+  };
   /** @type {Set<Element>} */
   const plein = new Set();
   if (document.body)
@@ -176,10 +236,11 @@ export function scanInPage(map) {
       for (/** @type {Element | null} */ let x = el; x; x = x.parentElement) {
         const bg = hexKey(getComputedStyle(x).backgroundColor);
         if (!bg) continue;
-        if (lum(fg) > lum(bg) || solid.has(`${bg}|${fg}`)) plein.add(x);
+        if ((lum(fg) > lum(bg) || solid.has(`${bg}|${fg}`)) && !onImage(el, x)) plein.add(x);
         break;
       }
     }
+  imageDone();
   /** R7 : côtés en marge auto (même sonde que le relevé). @param {Element} el @param {CSSStyleDeclaration} cs */
   const autoSidesOf = (el, cs) => {
     const margins = () => SIDES.map((s) => parseFloat(getComputedStyle(el).getPropertyValue(`margin-${s}`)) || 0);

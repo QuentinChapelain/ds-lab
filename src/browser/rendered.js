@@ -19,6 +19,7 @@
  * @property {boolean} [imageBox]     boîte d'image : son fond est du contenu, pas de l'interface (R18)
  * @property {boolean} [icon]         pseudo-élément dont le content est un glyphe de police d'icônes (R11 ter)
  * @property {boolean} [overlap]      porteur de texte dont le centre tombe sur un peintre hors de sa lignée (R11 bis)
+ * @property {boolean} [onImage]      porteur de texte posé sur une image qui couvre son fond opaque (lot J, J9)
  * @property {string} [selector]
  * @property {string} [role]
  * @property {string} [label]        lot R : texte visible de l'élément (libellé d'un champ, titre d'un bloc), 31 caractères au plus (R-1)
@@ -479,6 +480,81 @@ export function collectInPage(thirdSelectors = []) {
         r.overlap = true;
     });
   }
+
+
+  // Lot J, J9 : un texte posé sur une image qui couvre son fond opaque (img, video, canvas, picture,
+  // ou background-image url() en cover, à 100 % ou répétée) ne fait pas de ce fond un plein.
+  // Empilement lu par le navigateur (elementsFromPoint au centre du texte, événements forcés) :
+  // l'image doit être sous le texte et au-dessus du fond. Code dupliqué dans src/browser/rendered.js
+  // et src/browser/simulate.js (fonctions sérialisées dans la page).
+  /** @type {Map<Element, Element[]>} */
+  const coverCache = new Map();
+  /** @param {DOMRect} a @param {DOMRect} b */
+  const coversBox = (a, b) => a.left <= b.left + 1 && a.top <= b.top + 1 && a.right >= b.right - 1 && a.bottom >= b.bottom - 1;
+  /** @param {CSSStyleDeclaration} cs */
+  const bgCovers = (cs) => cs.backgroundImage.includes('url(') && (/cover/.test(cs.backgroundSize) || /^100%( 100%)?$/.test(cs.backgroundSize) || cs.backgroundRepeat === 'repeat');
+  /** @param {Element} src */
+  const coversOf = (src) => {
+    const known = coverCache.get(src);
+    if (known) return known;
+    const box = src.getBoundingClientRect();
+    /** @type {Element[]} */
+    const list = [];
+    if (box.width > 0 && box.height > 0) {
+      if (bgCovers(getComputedStyle(src))) list.push(src);
+      for (const d of src.querySelectorAll('*')) {
+        const cs = getComputedStyle(d);
+        if (!/^(IMG|VIDEO|CANVAS|PICTURE)$/.test(d.tagName) && !bgCovers(cs)) continue;
+        if (cs.visibility === 'hidden' || cs.display === 'none' || parseFloat(cs.opacity) === 0) continue;
+        if (coversBox(d.getBoundingClientRect(), box)) list.push(d);
+      }
+    }
+    coverCache.set(src, list);
+    return list;
+  };
+  /** @type {HTMLStyleElement | null} */
+  let forced = null;
+  const scroll0 = [scrollX, scrollY];
+  /** @param {Element} el @param {Element} src */
+  const onImage = (el, src) => {
+    const imgs = coversOf(src);
+    if (!imgs.length) return false;
+    if (imgs.includes(src)) return true;
+    if (!forced) {
+      forced = document.createElement('style');
+      forced.textContent = '*,*::before,*::after{pointer-events:auto!important}';
+      document.documentElement.appendChild(forced);
+    }
+    let r = el.getBoundingClientRect();
+    if (r.top + r.height / 2 < 0 || r.top + r.height / 2 > innerHeight || r.left + r.width / 2 < 0 || r.left + r.width / 2 > innerWidth) {
+      scrollTo(Math.max(0, scrollX + r.left + r.width / 2 - innerWidth / 2), Math.max(0, scrollY + r.top + r.height / 2 - innerHeight / 2));
+      r = el.getBoundingClientRect();
+    }
+    const stack = document.elementsFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    const iText = stack.findIndex((x) => x === el || el.contains(x));
+    const iImg = Math.min(...imgs.map((x) => stack.indexOf(x)).filter((k) => k >= 0));
+    const iSrc = stack.indexOf(src);
+    return iText >= 0 && Number.isFinite(iImg) && iImg > iText && (iSrc < 0 || iImg < iSrc);
+  };
+  const imageDone = () => {
+    if (forced) forced.remove();
+    forced = null;
+    scrollTo(scroll0[0], scroll0[1]);
+  };
+  /** @param {string} c */
+  const opaqueBg = (c) => {
+    const m = /^rgba?\(([^)]*)\)$/.exec(c.trim());
+    if (!m) return false;
+    const parts = m[1].split(/[\s,/]+/).filter(Boolean);
+    return parts.length < 4 || parseFloat(parts[3]) >= 1;
+  };
+  records.forEach((r, i) => {
+    if (!r.retained || !r.text || r.pseudo) return;
+    let s = i;
+    while (s >= 0 && !opaqueBg(records[s].bg ?? '')) s = records[s].parent;
+    if (s >= 0 && onImage(elements[i], elements[s])) r.onImage = true;
+  });
+  imageDone();
 
   // Lot P : relation de chaque marge avec le voisin de son côté (P1, P2), et paires contrôlées (P3).
   // Règles réécrites dans scanInPage (src/browser/simulate.js), la fonction étant sérialisée dans la page.

@@ -375,7 +375,8 @@ export function pleinSources(records, solid = new Set()) {
   /** @type {Set<number>} */
   const out = new Set();
   records.forEach((rec, i) => {
-    if (!rec.retained || !rec.props || !rec.text || rec.pseudo) return;
+    // Lot J, J9 : un texte posé sur une image qui couvre le fond ne fait pas de ce fond un plein.
+    if (!rec.retained || !rec.props || !rec.text || rec.pseudo || rec.onImage) return;
     const fg = normalizeColor(rec.props['color'] ?? '');
     if (!fg) return;
     const s = opaqueSource(records, i);
@@ -701,7 +702,8 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
     const large = isLargeText(parseFloat(p['font-size']), parseFloat(p['font-weight']));
     // R11 ter : une icône se juge au seuil des éléments graphiques (3:1), sans niveau AAA.
     const lv = rec.icon ? { AA: ratio >= 3, AAA: true } : wcagLevels(ratio, large);
-    if (isOpaque(fg.hex) && !rec.pseudo) {
+    // Lot J, J9 : texte sur image : pas de paire contre le fond recouvert (la mesure reste « à vérifier »).
+    if (isOpaque(fg.hex) && !rec.pseudo && !rec.onImage) {
       // Lot B : paire rattachée aux lignes texte et fond (R2, R8, R9).
       const bgUsage = plein.has(opaqueSource(pc.records, index)) ? 'plein' : 'fond';
       const threshold = rec.icon || large ? 3 : 4.5;
@@ -722,7 +724,7 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
         nLarge: 0,
         belowAA: 0,
         belowAAA: 0,
-        uncertain: { value: 0, reasons: { opacity: 0, backgroundImage: 0, overlap: 0 } },
+        uncertain: { value: 0, reasons: /** @type {Record<string, number>} */ ({ opacity: 0, backgroundImage: 0, overlap: 0 }) },
         selectors: [],
         roles: {},
         pages: {},
@@ -734,11 +736,13 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
     else if (large) pair.nLarge++;
     if (!lv.AA) pair.belowAA++;
     if (!lv.AAA) pair.belowAAA++;
-    if (eff.opacity || eff.backgroundImage || rec.overlap) {
+    if (eff.opacity || eff.backgroundImage || rec.overlap || rec.onImage) {
       pair.uncertain.value++;
       if (eff.opacity) pair.uncertain.reasons.opacity++;
       if (eff.backgroundImage) pair.uncertain.reasons.backgroundImage++;
       if (rec.overlap) pair.uncertain.reasons.overlap++;
+      // Lot J, J9 : motif ajouté seulement quand il sert (forme des paires inchangée sinon).
+      if (rec.onImage) pair.uncertain.reasons.image = (pair.uncertain.reasons.image ?? 0) + 1;
     }
     if (pair.selectors.length < MAX_SELECTORS && !pair.selectors.includes(rec.selector)) pair.selectors.push(rec.selector);
     const role = rec.role ?? 'texte';

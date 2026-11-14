@@ -344,7 +344,7 @@ export async function runReduce(opts) {
         files.push(join(dir, 'modifications.json'));
         await writeFile(files[3], JSON.stringify(migration.modifications, null, 2) + '\n');
       }
-      results.push({ host, dir, files, references, table, map, first: hostUrls[0], migration: migration.data, pages });
+      results.push({ host, dir, files, references, table, map, first: hostUrls[0], migration: migration.data, pages, rendered });
     }
   } finally {
     await browser.close();
