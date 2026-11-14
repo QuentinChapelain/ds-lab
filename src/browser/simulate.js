@@ -1001,6 +1001,33 @@ export function frameOf(probes, d) {
 }
 
 /**
+ * Lot J, J5 : masque les éléments tiers (sélecteurs de sources.json) le temps des captures d'une
+ * carte, par une feuille posée sur <html> (visibility: hidden, sans changer la mise en page).
+ * @param {import('playwright-core').Page} page @param {string[]} thirdParty @param {boolean} on
+ */
+async function hideThirdParty(page, thirdParty, on) {
+  await page.evaluate(
+    ({ sels, on: show }) => {
+      document.getElementById('ds-lab-tiers-masques')?.remove();
+      const valid = sels.filter((x) => {
+        try {
+          document.querySelector(x);
+          return true;
+        } catch {
+          return false;
+        }
+      });
+      if (!show || !valid.length) return;
+      const st = document.createElement('style');
+      st.id = 'ds-lab-tiers-masques';
+      st.textContent = `${valid.map((x) => `${x}, ${x} *`).join(', ')} { visibility: hidden !important; }`;
+      document.documentElement.appendChild(st);
+    },
+    { sels: thirdParty ?? [], on },
+  );
+}
+
+/**
  * Lot J, J8 : rectangle entièrement hors du document (au-dessus, à gauche, ou au-delà).
  * @param {{ rect: Rect, doc: { width: number, height: number } }} p
  */
@@ -1067,6 +1094,7 @@ export async function captureDecision(page, d, thirdParty = [], { index, compact
   // Second passage : capture de chaque version dans ce cadre, puis valeur calculée et contexte.
   /** @type {DecisionVersion[]} */
   const out = [];
+  await hideThirdParty(page, thirdParty, true);
   for (const v of versions) {
     await pose(v.value, first.i);
     const buf = await page.screenshot({ fullPage: true, clip, animations: 'disabled' });
@@ -1093,6 +1121,7 @@ export async function captureDecision(page, d, thirdParty = [], { index, compact
     });
   }
   await page.evaluate(showInPage, { on: false });
+  await hideThirdParty(page, thirdParty, false);
   return { page: page.url(), element: { tag: first.tag, index: first.i }, clip, versions: out };
 }
 
@@ -1209,6 +1238,7 @@ export async function capturePlein(page, g, thirdParty, solid, { versions = true
   }
   const scale = await page.evaluate(() => window.devicePixelRatio);
   const out = [];
+  await hideThirdParty(page, thirdParty, true);
   for (const v of g.versions) {
     await page.evaluate(scanInPage, { ...versionMap(g, v.choice, solid), thirdParty });
     await page.evaluate(showInPage, { on: true });
@@ -1216,5 +1246,7 @@ export async function capturePlein(page, g, thirdParty, solid, { versions = true
     out.push({ choice: v.choice, label: v.label, value: v.choice, shot: { png: buf.toString('base64'), width: clip.width, height: clip.height, scale } });
   }
   await page.evaluate(showInPage, { on: false });
-  return { elements, capture: { page: page.url(), clip, versions: out } };
+  await hideThirdParty(page, thirdParty, false);
+  // Lot J, J7 : position du premier élément de la carte, pour le panneau de la revue.
+  return { elements, capture: { page: page.url(), clip, y: Math.round(geo.rects[0].y), versions: out } };
 }

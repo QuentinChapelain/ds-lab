@@ -441,7 +441,7 @@ function usageBilan(table) {
  * recommandée ni présélectionnée. Les lignes de fond qui mènent à ce plein suivent la carte.
  * @param {any} g
  */
-function pleinCard(g) {
+function pleinCard(g, pageIndex = /** @type {Map<string, number>} */ (new Map())) {
   const vs = g.versions;
   const shots = g.capture?.versions ?? [];
   const buttons = vs
@@ -461,7 +461,7 @@ function pleinCard(g) {
   const n = g.elements.length;
   const rows = g.rows.map((/** @type {any} */ r) => `${r.id} (${r.old})`).join(', ');
   const els = g.elements.map((/** @type {any} */ e) => `<li><code>${esc(e.selector)}</code> ${esc(e.text)} <i>fond ${esc(e.bg)}, ${esc(e.page)}</i></li>`).join('');
-  return `<article class="row decision a-trancher plein" data-key="${esc(g.key)}" tabindex="0">
+  return `<article class="row decision a-trancher plein" data-key="${esc(g.key)}" tabindex="0"${anchorOf(g.capture, pageIndex)}>
   <p class="titre"><b class="id">${esc(g.id)}</b> ${esc(g.title)}<span class="choix">Pas encore choisie</span></p>
   <p class="portee">Ce choix s’applique à ${n} ${n === 1 ? 'élément' : 'éléments'} : tous les textes posés sur un plein ${esc(g.scale)}, y compris ceux dont le fond est déjà sur la cible. Les lignes de fond ${esc(rows)} suivent ce choix.</p>
   <div class="versions" role="group" aria-label="Versions">${buttons}</div>
@@ -485,7 +485,22 @@ const followsPlein = (pl) =>
     pl.ignored !== null && pl.ignored !== undefined ? `<p class="suit">décision de ligne ignorée (${esc(pl.ignored === false ? 'false' : pl.ignored)}) : suit la carte</p>` : ''
   }`;
 
+/**
+ * Lot J, J7 : page de la carte (index de son image « avant » dans la revue) et position, en px CSS
+ * de page, de son premier élément ; un élément hors de la page renvoie au haut de la page.
+ * @param {any} capture @param {Map<string, number>} pageIndex
+ */
+function anchorOf(capture, pageIndex) {
+  if (!capture?.page || !pageIndex.has(capture.page)) return '';
+  const y = capture.offPage ? 0 : capture.y ?? (capture.clip?.y ?? 0) + (capture.versions?.[0]?.shot?.box?.y ?? 0);
+  return ` data-page="${pageIndex.get(capture.page)}" data-y="${Math.max(0, Math.round(y))}" data-url="${esc(capture.page)}"`;
+}
+
 export function renderReview(table, pages, meta) {
+  // Lot J, J7 : index des pages entières (image « avant »), pour le panneau.
+  const shown = pages.filter((p) => p.before && p.after);
+  /** @type {Map<string, number>} */
+  const pageIndex = new Map(shown.map((p, i) => [p.url, i]));
   // Lot P, étape 3 : un choix enregistré sans relation (ou sans usage) vaut pour les lignes qui en sont issues ;
   // il est rangé sous la clé de chaque ligne, que l'export reprend.
   /** @type {Record<string, string | false>} */
@@ -546,7 +561,7 @@ export function renderReview(table, pages, meta) {
                   .map(esc)
                   .join(' ; ')})</p>`
               : '';
-            return `<article class="row c-${isOut(cls) ? 'hors' : esc(cls)}${decision ? ' decision a-trancher' : ''}${twoWay ? ' avant-apres' : ''}" data-key="${esc(key)}"${decision || twoWay ? ' tabindex="0"' : ''}>
+            return `<article class="row c-${isOut(cls) ? 'hors' : esc(cls)}${decision ? ' decision a-trancher' : ''}${twoWay ? ' avant-apres' : ''}" data-key="${esc(key)}"${decision || twoWay ? ' tabindex="0"' : ''}${anchorOf(r.capture, pageIndex)}>
   ${head}
   ${conflict}
   <header>${glyph(family, r.old)}<code>${esc(r.old)}</code>${arrow}${usage}${what}</header>
@@ -564,7 +579,7 @@ export function renderReview(table, pages, meta) {
       // Lot K : cartes « Texte sur plein », en tête des couleurs.
       const pleins = family === 'colors' ? /** @type {any[]} */ (/** @type {any} */ (table).pleins ?? []) : [];
       const pleinCards = pleins.length
-        ? `<details open><summary>Texte sur plein <span class="n">${pleins.length}</span></summary><p class="lede">${esc('Un texte posé sur un plein échoue au contraste. Une seule décision par plein : ses lignes de fond suivent le choix. Sans choix, rien n’est appliqué, ni texte ni fond.')}</p>${pleins.map(pleinCard).join('\n')}</details>`
+        ? `<details open><summary>Texte sur plein <span class="n">${pleins.length}</span></summary><p class="lede">${esc('Un texte posé sur un plein échoue au contraste. Une seule décision par plein : ses lignes de fond suivent le choix. Sans choix, rien n’est appliqué, ni texte ni fond.')}</p>${pleins.map((/** @type {any} */ g) => pleinCard(g, pageIndex)).join('\n')}</details>`
         : '';
       return `<section>
 <h2>${esc(FAMILY_LABELS[family] ?? family)}</h2>
@@ -574,11 +589,10 @@ ${pleinCards}${byClass}
     })
     .join('\n');
 
-  const full = pages
-    .filter((p) => p.before && p.after)
+  const full = shown
     .map(
-      (p) =>
-        `<details><summary>${esc(p.url)}</summary><div class="full"><button type="button" class="cmp page" data-etat="avant" title="Cliquer pour basculer entre avant et après"><div class="layer a">${img(/** @type {string} */ (p.before))}</div><div class="layer b">${img(/** @type {string} */ (p.after))}</div><span class="etat"></span></button></div></details>`,
+      (p, i) =>
+        `<details><summary>${esc(p.url)}</summary><div class="full"><button type="button" class="cmp page" data-etat="avant" title="Cliquer pour basculer entre avant et après"><div class="layer a" data-avant="${i}">${img(/** @type {string} */ (p.before))}</div><div class="layer b">${img(/** @type {string} */ (p.after))}</div><span class="etat"></span></button></div></details>`,
     )
     .join('\n');
 
@@ -671,6 +685,14 @@ ${pleinCards}${byClass}
   .sans-capture, .sans-effet { margin:6px 0 0; font-size:12px; line-height:1.35; color:#4a4f59; font-style:italic; }
   .trancher { display:flex; align-items:center; gap:10px; margin-top:10px; }
   .retenir { font:inherit; font-size:14px; font-weight:600; border:0; border-radius:6px; padding:7px 14px; cursor:pointer; background:#16181d; color:#fff; }
+  /* Lot J, J7 : panneau fixe à droite, la page telle qu'elle existe ; sous la carte active sur écran étroit. */
+  .apercu { position:fixed; top:0; right:0; bottom:52px; width:min(34vw, 560px); background:#fff; border-left:1px solid var(--line); display:flex; flex-direction:column; z-index:4; }
+  .apercu[hidden] { display:none; }
+  .apercu-titre { margin:0; padding:6px 12px; font-size:12px; color:var(--soft); border-bottom:1px solid var(--line); overflow-wrap:anywhere; }
+  .apercu-vue { flex:1; overflow:auto; }
+  .apercu-vue img { display:block; width:100%; height:auto; }
+  @media (min-width:1001px) { body.avec-apercu main { margin-right:min(34vw, 560px); } }
+  @media (max-width:1000px) { .apercu { position:static; width:auto; height:50vh; border:1px solid var(--line); border-radius:8px; margin:8px 0 16px; } }
   .barre { position:fixed; left:0; right:0; bottom:0; background:#16181d; color:#fff; padding:10px 24px; display:flex; gap:16px; align-items:center; justify-content:center; font-size:14px; }
   .compte { display:flex; flex-direction:column; gap:2px; }
   #bilan-usages { list-style:none; margin:0; padding:0; font-size:12px; line-height:1.35; color:#d5d8de; display:grid; grid-template-columns:repeat(2, max-content); gap:0 18px; }
@@ -692,6 +714,7 @@ ${sections}
 <p class="lede">Avec toutes les propositions appliquées. Clique dans la page pour basculer.</p>
 ${full || '<p class="lede">Aucune capture de page.</p>'}
 </main>
+<aside class="apercu" id="apercu" aria-label="La page telle qu’elle existe" hidden><p class="apercu-titre"></p><div class="apercu-vue"><img alt="La page telle qu’elle existe"></div></aside>
 <div class="barre"><div class="compte"><span id="bilan"></span><ul id="bilan-usages" aria-label="Valeurs finales par usage" aria-live="polite"></ul></div><span id="ecartees" hidden>décisions du fichier écartées</span><button id="suivante" type="button">Suivante à choisir</button><button id="tout" type="button">Tout basculer</button><label><input id="reperes" type="checkbox" checked> repères</label><button id="export" type="button">Exporter mes décisions</button><button id="raz" type="button" class="raz">Tout remettre à zéro</button></div>
 <script>
 (function () {
@@ -904,6 +927,28 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
     var open = document.querySelectorAll('.row.a-trancher').length;
     document.getElementById('bilan').textContent = (total - open) + ' / ' + total + ' choisies';
   }
+  // Lot J, J7 : la carte active (clic, focus, « Suivante à choisir ») montre sa page dans le panneau,
+  // défilée jusqu'à son premier élément ; sur écran étroit, le panneau passe sous la carte.
+  var apercu = document.getElementById('apercu');
+  var etroit = window.matchMedia('(max-width: 1000px)');
+  function voir(card, y0) {
+    if (!apercu) return;
+    var avant = document.querySelector('[data-avant="' + (card ? card.getAttribute('data-page') : '0') + '"] img');
+    if (!avant) return;
+    var im = apercu.querySelector('img'), vue = apercu.querySelector('.apercu-vue');
+    if (card && etroit.matches) card.after(apercu);
+    else if (apercu.parentNode !== document.body) document.body.appendChild(apercu);
+    apercu.hidden = false;
+    document.body.classList.add('avec-apercu');
+    apercu.querySelector('.apercu-titre').textContent = card ? card.getAttribute('data-url') || '' : '';
+    var y = card ? Number(card.getAttribute('data-y') || 0) : y0 || 0;
+    function aller() { vue.scrollTop = Math.max(0, y * (im.clientWidth / (im.naturalWidth || 1)) - 24); }
+    if (im.getAttribute('src') !== avant.getAttribute('src')) { im.onload = aller; im.src = avant.src; } else aller();
+  }
+  function active(e) { var c = e.target && e.target.closest ? e.target.closest('.row[data-page]') : null; if (c) voir(c); }
+  document.addEventListener('focusin', active);
+  document.addEventListener('click', active);
+  if (!etroit.matches) voir(null, 0);
   // Suivante à choisir : la première carte pas encore choisie après celle qui a le focus.
   document.getElementById('suivante').addEventListener('click', function () {
     var open = Array.prototype.slice.call(document.querySelectorAll('.row.a-trancher'));
