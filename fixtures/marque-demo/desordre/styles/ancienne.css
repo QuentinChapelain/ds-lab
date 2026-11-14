@@ -1,0 +1,224 @@
+/* Orbe Café : ancienne feuille (l'administration). Racine à 14 px, valeurs en
+   px écrites au fil des ans. Pièges du lot E : voir
+   fixtures/marque-demo/expected-desordre.json. */
+
+html {
+  font-size: 87.5%;
+}
+
+body {
+  font-size: 1rem;
+  color: #333333; /* C7 */
+  background-color: #ffffff;
+}
+
+.panneau {
+  padding: 20px; /* E6 */
+}
+
+.entete-page {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 30px; /* E7 */
+}
+
+.titre {
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.meta {
+  color: #808080; /* C3 */
+}
+
+.action {
+  padding: 8px 16px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  background-color: #4990e2; /* C16 */
+  border: 0;
+  border-radius: 3px; /* R1 */
+  cursor: pointer;
+}
+
+.resume {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.resume-bloc {
+  padding: 12px 16px;
+  border: 1px solid #dadada;
+  border-radius: 3px;
+}
+
+.resume dt {
+  margin-bottom: 4px;
+  color: #595959; /* C6 */
+}
+
+.resume dd {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.filtres {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  background-color: #eeeeee; /* C9 */
+  border-radius: 3px;
+}
+
+.filtres-libelle {
+  color: #595959;
+  font-weight: 700;
+}
+
+.filtre {
+  padding: 5px 12px; /* E2 */
+  font-size: 1rem;
+  color: #333333;
+  background-color: #ffffff;
+  border: 1px solid #dadada; /* C10 */
+  border-radius: 6px; /* R3 */
+  cursor: pointer;
+}
+
+.filtre--actif {
+  font-weight: 700;
+}
+
+.recherche {
+  width: 240px;
+  padding: 5px 8px;
+  font-size: 1rem;
+  color: #333333;
+  background-color: #ffffff;
+  border: 1px solid #dadada;
+  border-radius: 3px;
+}
+
+.tableau {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px; /* T1 */
+}
+
+.tableau th,
+.tableau td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #999999; /* C1, en bordure */
+}
+
+.tableau th {
+  color: #595959;
+  background-color: #f2f2f2; /* C8 */
+}
+
+.tableau td {
+  color: #2d2d2d; /* C7 */
+}
+
+.tableau .montant {
+  text-align: right;
+}
+
+.ligne:nth-child(even) {
+  background-color: #f6f5f6; /* C8 : lignes alternées */
+}
+
+.avatar {
+  display: inline-block;
+  vertical-align: middle;
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  border-radius: 50%; /* R5 */
+  overflow: hidden;
+}
+
+.avatar img,
+.vignette img {
+  width: 24px;
+  height: 24px;
+}
+
+.avatar--a {
+  background-color: #c98b5e; /* C20 */
+}
+
+.avatar--b {
+  background-color: #6b7fa8; /* C20 */
+}
+
+.vignette {
+  display: inline-block;
+  vertical-align: middle;
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  background-color: #d8d2c4; /* C20 : fond d'attente d'image */
+  border-radius: 3px;
+}
+
+.pastille {
+  display: inline-block;
+  padding: 4px 8px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 999px; /* R4 */
+}
+
+.pastille--payee {
+  color: #1f2a44;
+  background-color: #e2dccf;
+}
+
+.pastille--attente {
+  color: #1f2a44;
+  background-color: #f0c987;
+}
+
+.pastille--annulee {
+  color: #ffffff;
+  background-color: #c8553d;
+}
+
+.bas-tableau {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.legende {
+  color: #777777; /* C4 */
+}
+
+.pagination {
+  display: flex;
+  gap: 4px;
+}
+
+.pagination a {
+  padding: 4px 8px;
+  color: #2b4c7e;
+  background-color: #ffffff;
+  border: 1px solid #dadada;
+  border-radius: 3px;
+  text-decoration: none;
+}
+
+.pagination .courante {
+  color: #ffffff;
+  background-color: #2b4c7e;
+  border-color: #2b4c7e;
+}

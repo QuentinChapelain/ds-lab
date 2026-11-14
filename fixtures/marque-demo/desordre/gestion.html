@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Orbe Café — gestion des commandes</title>
+  <link rel="stylesheet" href="/desordre/styles/commun.css">
+  <link rel="stylesheet" href="/desordre/styles/ancienne.css">
+  <link rel="stylesheet" href="{{ORIGINE_DISTANTE}}/styles/cookies.css">
+</head>
+<body>
+  <header class="entete">
+    <a class="logo" href="/desordre/carte.html">Orbe Café</a>
+    <nav class="navigation" aria-label="Principale">
+      <a href="/desordre/carte.html">La carte</a>
+      <a href="/desordre/compte.html">Mon compte</a>
+      <a href="/desordre/gestion.html" aria-current="page">Gestion</a>
+    </nav>
+  </header>
+  <main class="panneau">
+    <div class="entete-page">
+      <div>
+        <h1 class="titre">Commandes</h1>
+        <p class="meta">Mis à jour il y a 5 minutes · boutique rue des Tanneurs</p>
+      </div>
+      <button class="action" type="button">Exporter en CSV</button>
+    </div>
+    <dl class="resume">
+      <div class="resume-bloc"><dt>Commandes du jour</dt><dd>128</dd></div>
+      <div class="resume-bloc"><dt>Chiffre du jour</dt><dd>612 €</dd></div>
+      <div class="resume-bloc"><dt>Panier moyen</dt><dd>4,78 €</dd></div>
+      <div class="resume-bloc"><dt>En attente</dt><dd>6</dd></div>
+    </dl>
+    <div class="filtres">
+      <span class="filtres-libelle">Statut</span>
+      <button class="filtre filtre--actif" type="button">Toutes</button>
+      <button class="filtre" type="button">Payées</button>
+      <button class="filtre" type="button">En attente</button>
+      <button class="filtre" type="button">Annulées</button>
+      <input class="recherche" type="text" value="Rue des Tanneurs" aria-label="Rechercher une commande">
+    </div>
+    <table class="tableau">
+      <thead>
+        <tr>
+          <th>N°</th>
+          <th>Client</th>
+          <th>Produits</th>
+          <th class="montant">Montant</th>
+          <th>Statut</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="ligne">
+            <td>1051</td>
+            <td><span class="avatar avatar--a"><img alt="" width="24" height="24" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>Camille R.</td>
+            <td><span class="vignette"><img alt="" width="24" height="24" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>Espresso ×2, cookie</td>
+            <td class="montant">6,90 €</td>
+            <td><span class="pastille pastille--payee">Payée</span></td>
+            <td>11/11 · 9 h 12</td>
+          </tr>
+          <tr class="ligne">
+            <td>1050</td>
+            <td><span class="avatar avatar--b"><img alt="" width="24" height="24" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>Yanis B.</td>
+            <td><span class="vignette"><img alt="" width="24" height="24" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>Cappuccino</td>
+            <td class="montant">3,80 €</td>
+            <td><span class="pastille pastille--attente">En attente</span></td>
+            <td>11/11 · 9 h 05</td>
+          </tr>
+          <tr class="ligne">
+            <td>1049</td>
+            <td><span class="avatar avatar--a"><img alt="" width="24" height="24" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>Inès M.</td>
+            <td><span class="vignette"><img alt="" width="24" height="24" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>Filtre du jour, financier</td>
+            <td class="montant">5,40 €</td>
+            <td><span class="pastille pastille--payee">Payée</span></td>
+            <td>11/11 · 8 h 58</td>
+          </tr>
+          <tr class="ligne">
+            <td>1048</td>
+            <td><span class="avatar avatar--b"><img alt="" width="24" height="24" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>Hugo L.</td>
+            <td><span class="vignette"><img alt="" width="24" height="24" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>Café glacé</td>
+            <td class="montant">3,90 €</td>
+            <td><span class="pastille pastille--annulee">Annulée</span></td>
+            <td>11/11 · 8 h 51</td>
+          </tr>
+          <tr class="ligne">
+            <td>1047</td>
+            <td><span class="avatar avatar--a"><img alt="" width="24" height="24" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>Léonie P.</td>
+            <td><span class="vignette"><img alt="" width="24" height="24" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>Flat white ×2</td>
+            <td class="montant">8,20 €</td>
+            <td><span class="pastille pastille--payee">Payée</span></td>
+            <td>11/11 · 8 h 44</td>
+          </tr>
+          <tr class="ligne">
+            <td>1046</td>
+            <td><span class="avatar avatar--b"><img alt="" width="24" height="24" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>Malo T.</td>
+            <td><span class="vignette"><img alt="" width="24" height="24" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>Chocolat chaud, part de cake</td>
+            <td class="montant">6,50 €</td>
+            <td><span class="pastille pastille--attente">En attente</span></td>
+            <td>11/11 · 8 h 37</td>
+          </tr>
+          <tr class="ligne">
+            <td>1045</td>
+            <td><span class="avatar avatar--a"><img alt="" width="24" height="24" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>Zoé F.</td>
+            <td><span class="vignette"><img alt="" width="24" height="24" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>Espresso</td>
+            <td class="montant">2,20 €</td>
+            <td><span class="pastille pastille--payee">Payée</span></td>
+            <td>11/11 · 8 h 30</td>
+          </tr>
+          <tr class="ligne">
+            <td>1044</td>
+            <td><span class="avatar avatar--b"><img alt="" width="24" height="24" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>Nathan D.</td>
+            <td><span class="vignette"><img alt="" width="24" height="24" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>Cookie ×3</td>
+            <td class="montant">7,50 €</td>
+            <td><span class="pastille pastille--payee">Payée</span></td>
+            <td>11/11 · 8 h 22</td>
+          </tr>
+      </tbody>
+    </table>
+    <div class="bas-tableau">
+      <p class="legende">Montants TTC, en euros. Les commandes annulées ne sont pas facturées.</p>
+      <nav class="pagination" aria-label="Pages">
+        <a class="courante" href="#page-1" aria-current="page">1</a>
+        <a href="#page-2">2</a>
+        <a href="#page-3">3</a>
+        <a href="#page-2">Suivante</a>
+      </nav>
+    </div>
+  </main>
+  <footer class="pied">
+    <p>© 2026 Orbe Café, torréfacteur de quartier (marque fictive)</p>
+    <nav class="pied-liens" aria-label="Pied de page">
+      <a href="#mentions">Mentions légales</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </footer>
+  <div class="tiers-cookies" role="dialog" aria-label="Cookies">
+    <p>Ce site utilise des cookies de mesure d'audience.</p>
+    <button type="button">Tout accepter</button>
+    <button type="button" class="tiers-refuser">Refuser</button>
+  </div>
+</body>
+</html>

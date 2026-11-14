@@ -1,0 +1,29 @@
+{
+  "name": "ds-lab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Laboratoire de design system multi-marque : audit CSS déclaré et rendu",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "apply": "node src/cli/apply.js",
+    "audit": "node src/cli/audit.js",
+    "login": "node src/cli/login.js",
+    "marque": "node src/cli/marque.js",
+    "reduce": "node src/cli/reduce.js",
+    "demo": "node test/helpers/demo.js",
+    "test": "node --test \"test/**/*.test.js\"",
+    "verify": "node src/cli/verify.js"
+  },
+  "dependencies": {
+    "@projectwallace/css-analyzer": "9.9.7",
+    "culori": "4.0.2",
+    "pixelmatch": "8.0.0",
+    "playwright-core": "1.59.1",
+    "pngjs": "7.0.0",
+    "postcss": "8.5.32"
+  }
+}

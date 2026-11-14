@@ -1,0 +1,130 @@
+/* Orbe Café, page de marque (lot M, pièges PM0 à PM8). Marque fictive.
+   Les variables --marque-* sont posées par le back-office fictif sur <html>.
+   Toutes les dimensions sont des pas exacts de la valise : seules les couleurs sont en jeu. */
+html {
+  background: #ffffff;
+}
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  font-size: 16px;
+  color: #363026;
+  background: #ffffff;
+}
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+.titre-page {
+  margin: 0 0 24px;
+  font-size: 30px;
+}
+.bloc {
+  margin: 0 0 32px;
+}
+p {
+  margin: 0 0 8px;
+}
+
+/* PM0 : onglet du gabarit, repli contraire au back-office ; le rendu suit le back-office. */
+.onglets {
+  display: flex;
+  gap: 16px;
+  margin: 0 0 32px;
+}
+.onglet {
+  font-size: 16px;
+  color: #363026;
+  text-decoration: none;
+}
+.onglet-actif {
+  color: #dd3f2b;
+  color: var(--marque-primary-color, #dd3f2b);
+  border-bottom: 2px solid var(--marque-primary-color, #dd3f2b);
+}
+
+/* PM1 : deux emplacements, primaire en plein, secondaire (gris) en texte. */
+.meta {
+  font-size: 14px;
+  color: var(--marque-secondary-color);
+}
+.bouton {
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 4px;
+  font-size: 16px;
+  color: #ffffff;
+  background: var(--marque-primary-color);
+}
+
+/* PM2 : variante darken-4 du primaire, en titre. */
+.titre-bloc {
+  margin: 0 0 16px;
+  font-size: 24px;
+  color: var(--marque-primary-color-darken-4);
+}
+
+/* PM3 : rose de contenu, proche de l'erreur, hors de tout état. */
+.promo {
+  color: #cf1e48;
+}
+
+/* PM4 : vrai message d'erreur (role="alert", relié au champ en aria-invalid). */
+.libelle {
+  display: block;
+  margin: 0 0 4px;
+}
+.champ {
+  display: block;
+  margin: 0 0 4px;
+  padding: 8px;
+  border: 1px solid #958f84;
+  border-radius: 4px;
+  font-size: 16px;
+  color: #363026;
+  background: #ffffff;
+}
+.erreur {
+  font-size: 14px;
+  color: #e0383e;
+}
+
+/* PM5 : accent du back-office en texte, sur blanc seulement. */
+.accroche {
+  color: var(--marque-accent-color);
+}
+
+/* PM6 : teinte claire de l'accent en texte. */
+.legende {
+  font-size: 14px;
+  color: #e39a85;
+}
+
+/* PM7 : couleur du gabarit en dur, sur blanc et dans un seul titre sur gris. */
+.lien-fort {
+  color: #dd3f2b;
+}
+.encart {
+  padding: 16px;
+  border-radius: 8px;
+  background: #e3e3e3;
+}
+.encart-titre {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #dd3f2b;
+}
+
+/* PM8 : orangé proche de l'accent, sur blanc et sur une pastille gris moyen. */
+.lien-reserver {
+  color: #cd5a40;
+}
+.pastille {
+  padding: 4px 8px;
+  border-radius: 9999px;
+  font-size: 14px;
+  color: #cd5a40;
+  background: #d8d6d2;
+}

@@ -1,0 +1,319 @@
+{
+  "$comment": "Attendus du lot P (proximité), écrits à la main le 12/11/2026 avant le code, sur la page fixtures/marque-demo/proximite/proximite.html de la marque fictive Orbe Café, sans aucune valeur reprise d'un site réel. Aucune couleur n'est attendue : seulement des marges, en px, lues sur le CSS de la page. En cas d'écart, ne corriger ni l'outil ni ce fichier : le signaler.",
+  "how": "computedPx : valeur de la marge dans proximite.css. visiblePx : distance entre le bord de l'élément et le bord en regard de son voisin, déduite à la main. Bloc (CSS 2.1 § 8.3.1) : frères en display: block sans retrait ni bordure entre eux, la plus grande des deux marges ; marge d'un premier enfant, sans retrait ni bordure sur le parent, fusionnée avec celle du parent et du frère qui le précède. Flex (CSS Flexbox § 4.2) : pas de fusion, marge + gouttière + marge. Aucun calcul de couleur, donc pas de culori.",
+  "conditions": {
+    "page": "/proximite/proximite.html",
+    "target": "fixtures/marque-demo/cible-valise.json",
+    "viewport": { "width": 1366, "height": 900 }
+  },
+  "rules": {
+    "P1": "Chaque marge est classée « dans le composant » ou « entre composants » selon le voisin du côté de la marge. Sans voisin de ce côté, la marge fusionnant avec celle du parent : relation « inconnue », sans contrôle.",
+    "P2": "Signaux, dans l'ordre : for, aria-describedby, même conteneur de champ, sinon position (texte entre un contrôle et le libellé ou contrôle suivant, sans titre ni contrôle entre). Sans signal : « entre composants ».",
+    "P3": "Contrôle sur l'espace visible (marges fusionnées comprises, gouttière comprise hors fusion) : dans le composant doit rester strictement inférieur à entre composants, sinon les deux lignes sont des décisions, avec le motif P3.",
+    "P3motif": "le message est aussi loin de son champ que du champ suivant : on ne voit pas à quel champ il appartient",
+    "P4": "Le contrôle ne change pas la classe d'une ligne qu'il ne met pas en défaut : il ne fait que lire l'espace visible.",
+    "signals": {
+      "relié": "for ou aria-describedby ; le détail nomme l'attribut : « relié par for » ou « relié par aria-describedby »",
+      "même conteneur de champ": "voisin dans le même conteneur que le contrôle et son libellé",
+      "déduit de la position": "texte entre un contrôle et le libellé ou contrôle suivant, sans titre ni contrôle entre",
+      "null": "aucun signal : entre composants, ou relation inconnue"
+    }
+  },
+  "contract": {
+    "status": "Validé le 12/11/2026 (étape 1).",
+    "record": "collectRendered(page).records : le relevé de l'élément (rec.selector, ici tag#id) porte margins[côté] = { scope, signal, detail, neighbor, visiblePx } pour chaque côté de marge non nulle. scope : « dans le composant », « entre composants » ou « inconnue ». detail : « relié par for » ou « relié par aria-describedby » quand signal vaut « relié ». neighbor : sélecteur du voisin (même forme que rec.selector), null si relation inconnue. visiblePx : null si relation inconnue (aucun contrôle).",
+    "table": "Chaque ligne d'espacement dont l'usage commence par « marge » porte scope. Une ligne par valeur × usage × scope. Une ligne mise en défaut par P3 est une décision et porte reason = P3motif."
+  },
+  "traps": [
+    {
+      "id": "PX1",
+      "title": "formulaire à plat, message juste après le champ",
+      "construction": "Dans un form en display: block, sans conteneur par champ : label[for] (marge basse 4), input, p.message sans id ni aria (marge haute 4), puis label[for] du champ suivant (marge haute 16).",
+      "margins": [
+        { "element": "p#px1-message", "side": "top", "computedPx": 4, "visiblePx": 4, "neighbor": "input#px1-nom", "scope": "dans le composant", "signal": "déduit de la position" },
+        { "element": "label#px1-libelle-nom", "side": "bottom", "computedPx": 4, "visiblePx": 4, "neighbor": "input#px1-nom", "scope": "dans le composant", "signal": "relié", "detail": "relié par for" },
+        { "element": "label#px1-libelle-ville", "side": "top", "computedPx": 16, "visiblePx": 16, "neighbor": "p#px1-message", "scope": "entre composants", "signal": null }
+      ]
+    },
+    {
+      "id": "PX2",
+      "title": "un conteneur par champ et aria-describedby",
+      "construction": "Chaque champ dans un div.groupe ; l'input pointe le message par aria-describedby ; le groupe suivant a une marge haute de 16.",
+      "margins": [
+        { "element": "p#px2-aide-mail", "side": "top", "computedPx": 4, "visiblePx": 4, "neighbor": "input#px2-mail", "scope": "dans le composant", "signal": "relié", "detail": "relié par aria-describedby", "note": "aria-describedby passe avant « même conteneur de champ »" },
+        { "element": "label#px2-libelle-mail", "side": "bottom", "computedPx": 4, "visiblePx": 4, "neighbor": "input#px2-mail", "scope": "dans le composant", "signal": "relié", "detail": "relié par for" },
+        { "element": "div#px2-groupe-tel", "side": "top", "computedPx": 16, "visiblePx": 16, "neighbor": "div#px2-groupe-mail", "scope": "entre composants", "signal": null }
+      ]
+    },
+    {
+      "id": "PX3",
+      "title": "paragraphe après un champ, précédé d'un titre de section",
+      "construction": "Dans un form à plat : label[for], input, h3 (marge haute 24), p.texte (marge haute 8), puis label[for] du champ suivant (marge haute 16). Le paragraphe est entre un contrôle et le libellé suivant, mais un titre les sépare : ce n'est pas un message du champ.",
+      "margins": [
+        { "element": "p#px3-texte", "side": "top", "computedPx": 8, "visiblePx": 8, "neighbor": "h3#px3-titre", "scope": "entre composants", "signal": null },
+        { "element": "h3#px3-titre", "side": "top", "computedPx": 24, "visiblePx": 24, "neighbor": "input#px3-code", "scope": "entre composants", "signal": null },
+        { "element": "label#px3-libelle-mouture", "side": "top", "computedPx": 16, "visiblePx": 16, "neighbor": "p#px3-texte", "scope": "entre composants", "signal": null }
+      ]
+    },
+    {
+      "id": "PX4",
+      "title": "4 px dans le composant, 16 px entre",
+      "construction": "Un div.groupe par champ, message sans aria-describedby (marge haute 4) ; groupe suivant à marge haute 16. Valeurs de la valise : rien à réduire.",
+      "margins": [
+        { "element": "p#px4-aide-carte", "side": "top", "computedPx": 4, "visiblePx": 4, "neighbor": "input#px4-carte", "scope": "dans le composant", "signal": "même conteneur de champ", "note": "seul piège sans for ni aria-describedby dans un conteneur" },
+        { "element": "div#px4-groupe-prenom", "side": "top", "computedPx": 16, "visiblePx": 16, "neighbor": "div#px4-groupe-carte", "scope": "entre composants", "signal": null }
+      ],
+      "table": {
+        "text": "Aucune décision : 4 < 16, les deux valeurs sont dans la valise.",
+        "rows": [
+          { "family": "spacing", "value": "4px", "scope": "dans le composant", "class": "inchangé" },
+          { "family": "spacing", "value": "16px", "scope": null, "class": "inchangé", "note": "13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : aucune marge de 16 px n'est dans le composant, une seule ligne" }
+        ],
+        "noDecisionOn": ["4px", "16px"]
+      }
+    },
+    {
+      "id": "PX5",
+      "title": "aide à marge basse de 10 px, bloc suivant à marge haute de 16 px",
+      "construction": "Dans un form en display: block : label[for], input, p.aide (marge haute 4, marge basse 10), div.actions (marge haute 16). Les deux marges fusionnent : 16 px visibles.",
+      "margins": [
+        { "element": "p#px5-aide", "side": "bottom", "computedPx": 10, "visiblePx": 16, "neighbor": "div#px5-actions", "scope": "entre composants", "signal": null },
+        { "element": "div#px5-actions", "side": "top", "computedPx": 16, "visiblePx": 16, "neighbor": "p#px5-aide", "scope": "entre composants", "signal": null },
+        { "element": "p#px5-aide", "side": "top", "computedPx": 4, "visiblePx": 4, "neighbor": "input#px5-tel", "scope": "dans le composant", "signal": "déduit de la position" }
+      ],
+      "table": {
+        "text": "La ligne 10px garde sa classe d'avant le lot P (décision vers 8, ex aequo 8/12, relevée le 12/11/2026 sur cette page) ; seul l'espace contrôlé change (16 au lieu de 10). Pas de motif P3 : 4 < 16.",
+        "rows": [
+          { "family": "spacing", "value": "10px", "scope": null, "class": "décision", "new": "8px", "reason": null, "note": "13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : aucune marge de 10 px n'est dans le composant, une seule ligne" }
+        ]
+      }
+    },
+    {
+      "id": "PX6",
+      "title": "formulaire à plat, espace dans le composant égal à entre composants",
+      "construction": "Dans un form à plat : label[for], input, p.message sans id ni aria (marge haute 12), puis label[for] du champ suivant (marge haute 12). 12 est une valeur de la valise et n'apparaît nulle part ailleurs en marge.",
+      "margins": [
+        { "element": "p#px6-message", "side": "top", "computedPx": 12, "visiblePx": 12, "neighbor": "input#px6-mot", "scope": "dans le composant", "signal": "déduit de la position" },
+        { "element": "label#px6-libelle-signature", "side": "top", "computedPx": 12, "visiblePx": 12, "neighbor": "p#px6-message", "scope": "entre composants", "signal": null }
+      ],
+      "table": {
+        "text": "12 = 12 : les deux lignes 12px deviennent des décisions, avec le motif P3.",
+        "reasonNote": "13/11/2026, lot P-fin : le motif nomme la page et les éléments de la paire en faute (champ, message, voisin).",
+        "rows": [
+          { "family": "spacing", "value": "12px", "scope": "dans le composant", "class": "décision", "reason": "le message est aussi loin de son champ que du champ suivant : on ne voit pas à quel champ il appartient (page /proximite/proximite.html : input#px6-mot, p#px6-message, label#px6-libelle-signature)" },
+          { "family": "spacing", "value": "12px", "scope": "entre composants", "class": "décision", "reason": "le message est aussi loin de son champ que du champ suivant : on ne voit pas à quel champ il appartient (page /proximite/proximite.html : input#px6-mot, p#px6-message, label#px6-libelle-signature)" }
+        ]
+      }
+    },
+    {
+      "id": "PX7",
+      "title": "champ et message dans une rangée flex avec gouttière",
+      "construction": "div.rangee en display: flex, gap 4 ; input (marge droite 4, aria-describedby vers le message) puis p.message (marge gauche 4). Pas de fusion : 4 + 4 + 4 = 12 px entre le champ et son message. Groupe suivant à marge haute 24.",
+      "margins": [
+        { "element": "p#px7-aide", "side": "left", "computedPx": 4, "visiblePx": 12, "neighbor": "input#px7-code", "scope": "dans le composant", "signal": "relié", "detail": "relié par aria-describedby" },
+        { "element": "input#px7-code", "side": "right", "computedPx": 4, "visiblePx": 12, "neighbor": "p#px7-aide", "scope": "dans le composant", "signal": "relié", "detail": "relié par aria-describedby" },
+        { "element": "div#px7-groupe-filleul", "side": "top", "computedPx": 24, "visiblePx": 24, "neighbor": "div#px7-groupe-code", "scope": "entre composants", "signal": null }
+      ],
+      "table": {
+        "text": "12 < 24 : aucune décision sur les marges de 4 et 24 px.",
+        "noDecisionOn": ["4px", "24px"]
+      }
+    },
+    {
+      "id": "PX8",
+      "title": "élément sans voisin direct, marge fusionnée avec son parent",
+      "construction": "div.encart sans retrait ni bordure, marge 0, dont le seul enfant p.note a une marge haute de 8 ; elle traverse l'encart et fusionne avec la marge basse de 16 du titre qui le précède : 16 px visibles entre le titre et la note.",
+      "margins": [
+        { "element": "p#px8-note", "side": "top", "computedPx": 8, "visiblePx": null, "neighbor": null, "scope": "inconnue", "signal": null, "construction": { "from": "h2#px8-titre", "gapPx": 16 } }
+      ],
+      "table": {
+        "text": "Relation inconnue : aucun contrôle, aucune décision, pas de motif.",
+        "rows": [
+          { "family": "spacing", "value": "8px", "scope": null, "class": "inchangé", "reason": null, "note": "13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : aucune marge de 8 px n'est dans le composant, une seule ligne" }
+        ]
+      }
+    },
+    {
+      "id": "PX9",
+      "added": "13/11/2026, lot P-fin, étape 2 : copie fictive du paginateur de la plateforme A ; attendu écrit avant la correction.",
+      "title": "paginateur : lien, champ, « / », total dans un span, lien",
+      "construction": "Rangée flex sans gouttière : a (marge droite 8), input (marges 4 et 4), nœud texte « / », span « 11 » (marges 4 et 4), a (marge gauche 8). Le span est à droite du champ, pas dessous ; le « / » est du contenu entre les deux.",
+      "rules": [
+        "« déduit de la position » ne vaut que pour un texte sous un contrôle, jamais à gauche ni à droite.",
+        "Un texte non vide entre l'élément et son voisin rend la relation « inconnue » : aucun contrôle, aucun message à relier."
+      ],
+      "margins": [
+        { "element": "a#px9-precedente", "side": "right", "computedPx": 8, "visiblePx": 12, "neighbor": "input#px9-page", "scope": "entre composants", "signal": null },
+        { "element": "input#px9-page", "side": "left", "computedPx": 4, "visiblePx": 12, "neighbor": "a#px9-precedente", "scope": "entre composants", "signal": null },
+        { "element": "input#px9-page", "side": "right", "computedPx": 4, "visiblePx": null, "neighbor": null, "scope": "inconnue", "signal": null, "detail": "texte entre l’élément et son voisin", "construction": { "from": "span#px9-total", "gapMorePx": 8 } },
+        { "element": "span#px9-total", "side": "left", "computedPx": 4, "visiblePx": null, "neighbor": null, "scope": "inconnue", "signal": null, "detail": "texte entre l’élément et son voisin", "construction": { "from": "input#px9-page", "gapMorePx": 8 } },
+        { "element": "span#px9-total", "side": "right", "computedPx": 4, "visiblePx": 12, "neighbor": "a#px9-suivante", "scope": "entre composants", "signal": null },
+        { "element": "a#px9-suivante", "side": "left", "computedPx": 8, "visiblePx": 12, "neighbor": "span#px9-total", "scope": "entre composants", "signal": null }
+      ],
+      "table": {
+        "text": "Aucune relation « dans le composant », aucun avertissement de proximité, aucun message à relier ; aucune décision sur 4 ou 8 px.",
+        "noDecisionOn": ["4px", "8px"],
+        "noInsideFor": "#px9-",
+        "noWarningFor": "#px9-",
+        "noMessageFor": "#px9-"
+      }
+    }
+  ],
+  "oldDecision": {
+    "added": "12/11/2026, étape 2 : règle donnée avant le code de l'étape 2 ; valeurs déduites à la main.",
+    "rule": "Un choix enregistré sans relation (clé « famille|ancien|usage ») s'applique aux lignes issues de la coupure ; le contrôle P3 le signale si la hiérarchie reste égale.",
+    "decisions": { "spacing|12px|marge": "8px" },
+    "map": { "12px|marge": "8px" },
+    "rows": [
+      { "family": "spacing", "value": "12px", "scope": "dans le composant", "after": { "in": 8, "out": 8 }, "signal": "la hiérarchie reste égale après les décisions" },
+      { "family": "spacing", "value": "12px", "scope": "entre composants", "after": { "in": 8, "out": 8 }, "signal": "la hiérarchie reste égale après les décisions" }
+    ]
+  },
+  "notCovered": [
+    "Fusion parent-enfant quand le parent a lui-même une marge non nulle, et marge basse d'un dernier enfant."
+  ],
+  "etapeFin3": {
+    "added": "13/11/2026, lot P-fin, étape 3 : attendus écrits avant le code.",
+    "detail": {
+      "rule": "« Usages : n · écart » est remplacé : l’écart devient une phrase (« Écart »), le nombre d’usages disparaît quand il répète « Ce choix s’applique à n éléments ».",
+      "card": { "value": "10px", "scope": "dans le composant" },
+      "ecart": "2 px avec la valeur la plus proche (8 px)",
+      "noUsages": true
+    },
+    "agent": { "rule": "« à vérifier » n’apparaît pas dans la consigne pour l’agent ; il reste dans la revue. Exception (lot V, étape 6, D3) : « à vérifier sur les pages témoins », pour une déclaration en unité relative.", "absent": "à vérifier", "except": "à vérifier sur les pages témoins" },
+    "absorbed": {
+      "rule": "Une vignette dit quand la marge est absorbée : l’espace visible vient de la marge du voisin, plus grande.",
+      "card": { "value": "10px", "scope": "entre composants" },
+      "element": "p.aide",
+      "text": "espace visible 16 px, la marge du voisin l’emporte"
+    }
+  },
+  "etape3": {
+    "added": "12/11/2026, étape 3 (revue et migration.md) : attendus écrits à la main avant le code, d’après la consigne : titre qui dit la relation, détail qui dit le signal et le lieu de correction, ancien choix sans relation appliqué dans la revue, contrôle qui suit les choix, relation et motif dans migration.md, messages à relier par aria-describedby.",
+    "phrases": {
+      "rule": "Rôle de l’élément et de son voisin : libellé (label), champ (contrôle, ou conteneur de champ), titre, message (texte rattaché à un contrôle : position, même conteneur ou aria-describedby), bloc sinon. Dans le composant : « <rôle> vers son <rôle du voisin> ». Entre composants : libellé, champ et message comptent comme « champ » ; « entre <groupe>s » si les deux groupes sont égaux, sinon « entre <groupe> et <groupe> ». Inconnue : titre par éléments, sans « relation inconnue » (dite dans le détail et dans migration.md). Le titre prend la relation la plus fréquente de la ligne.",
+      "where": {
+        "dans le composant": "dans le composant",
+        "entre composants": "dans la page",
+        "inconnue": "à vérifier"
+      },
+      "signalOut": "aucun lien",
+      "signalUnknown": "aucun voisin"
+    },
+    "px": {
+      "titles": [
+        {
+          "value": "12px",
+          "scope": "dans le composant",
+          "title": "Marge haute · message vers son champ"
+        },
+        {
+          "value": "12px",
+          "scope": "entre composants",
+          "title": "Marge haute · entre champs"
+        },
+        {
+          "value": "10px",
+          "scope": null,
+          "titleStart": "Marge basse · texte « Utilisé seulement",
+          "note": "13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : ligne non coupée, titrée par ses éléments"
+        }
+      ],
+      "messages": [
+        {
+          "message": "p#px1-message",
+          "field": "input#px1-nom"
+        },
+        {
+          "message": "p#px4-aide-carte",
+          "field": "input#px4-carte"
+        },
+        {
+          "message": "p#px5-aide",
+          "field": "input#px5-tel"
+        },
+        {
+          "message": "p#px6-message",
+          "field": "input#px6-mot"
+        }
+      ],
+      "messagesNote": "PX2 et PX7 sont reliés par aria-describedby ; PX3 (paragraphe après un titre) et PX8 (note seule) ne sont pas des messages."
+    },
+    "orbe": {
+      "conditions": "Pages de test/e2e-desordre-valise.test.js (desordre/carte, compte, gestion), cible-valise.json.",
+      "rows": [
+        {
+          "value": "10px",
+          "scope": "dans le composant",
+          "title": "Marge basse · champ vers son message",
+          "signals": "déduit de la position (2)",
+          "where": "dans le composant"
+        },
+        {
+          "value": "10px",
+          "scope": "entre composants",
+          "title": "Marge basse · entre champs",
+          "signals": "aucun lien (3)",
+          "where": "dans la page"
+        },
+        {
+          "value": "4px",
+          "scope": "dans le composant",
+          "title": "Marge basse · libellé vers son champ",
+          "signals": "relié par for (3)",
+          "where": "dans le composant"
+        },
+        {
+          "value": "6px",
+          "scope": null,
+          "titleStart": "Marge gauche · étiquette « Nouveau »", "titleNote": "12/11/2026 : « relation inconnue » retirée des titres à la demande du designer ; elle reste dans le détail et dans migration.md. 13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : ligne non coupée.",
+          "relation": "relation inconnue (4)",
+          "signals": "aucun voisin (4)",
+          "where": "à vérifier"
+        }
+      ],
+      "control": {
+        "wordingNote": "13/11/2026, lot P-fin, étape 3 : une seule formulation dans l’avertissement et le motif, « du champ suivant » (libellé, champ et message comptent comme un champ).",
+        "rule": "Les deux cartes de 10 px disent, en clair, l’espace du message à son champ et au champ suivant, recalculé à chaque choix (une décision sans choix garde l’ancienne valeur).",
+        "initial": "En l’état, le message est à 10 px de son champ et à 10 px du champ suivant : même distance, on ne voit pas à quel champ il appartient.",
+        "same": {
+          "in": "8px",
+          "out": "8px",
+          "text": "Avec ces choix, le message est à 8 px de son champ et à 8 px du champ suivant : même distance, on ne voit pas à quel champ il appartient."
+        },
+        "inverted": {
+          "in": "12px",
+          "out": "8px",
+          "text": "Avec ces choix, le message est à 12 px de son champ et à 8 px du champ suivant : il est plus près du champ suivant que de son champ."
+        },
+        "restored": {
+          "in": "4px",
+          "out": "12px",
+          "text": "Avec ces choix, le message est à 4 px de son champ et à 12 px du champ suivant : on voit à quel champ il appartient."
+        }
+      },
+      "oldChoice": {
+        "file": "decisions-passage-2c.json",
+        "rule": "« spacing|10px|marge »: « 12px », écrit avant la coupure, vaut pour les deux lignes : les deux cartes affichent « Choisie : 12 px », l’export les écrit sous leurs clés avec relation, et le contrôle dit que la distance reste égale.",
+        "choix": "Choisie : 12 px",
+        "export": {
+          "spacing|10px|marge|dans le composant": "12px",
+          "spacing|10px|marge|entre composants": "12px",
+          "spacing|6px|marge": "4px"
+        },
+        "exportNote": "13/11/2026 : lot P-fin, la marge de 6 px n'est plus coupée (aucune ligne dans le composant) : sa clé n'a pas de relation.",
+        "control": "Avec ces choix, le message est à 12 px de son champ et à 12 px du champ suivant : même distance, on ne voit pas à quel champ il appartient."
+      },
+      "migration": {
+        "tableColumns": "| ligne | famille | valeur | usage | jeton | classe | relation | motif | origine CSS | éléments |",
+        "relationCells": {
+          "dans le composant": "dans le composant · champ vers son message · déduit de la position · à corriger dans le composant",
+          "entre composants": "entre composants · entre champs (2), entre champ et bloc (1) · aucun lien · à corriger dans la page"
+        },
+        "motifNote": "13/11/2026, lot P-fin : le motif nomme la page et les éléments de la paire en faute.",
+        "motif": "le message est aussi loin de son champ que du champ suivant : on ne voit pas à quel champ il appartient (page /desordre/compte.html : input#courriel, p.erreur, label.libelle)",
+        "changeAussi": "- Relie chaque message à son champ par aria-describedby (id du message dans l’attribut aria-describedby du champ) : 2 trouvés ici (p.erreur → input#courriel, p.aide → input#telephone)."
+      }
+    }
+  }
+}

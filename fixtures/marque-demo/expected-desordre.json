@@ -1,0 +1,362 @@
+{
+  "$comment": "Attendus du lot E : trois pages en désordre de la marque fictive Orbe Café (desordre/carte.html, desordre/compte.html, desordre/gestion.html). Écrits à la main à partir de l'attendu v1 du 11/11/2026, dans un commit séparé et antérieur aux pages et au test. « class » = ce que la table actuelle (reduce, cible.json inchangée) doit dire ; « answer » = ce qu'un designer devrait décider. Les entrées « lotB » décrivent ce que l'outil ne sait pas encore faire (rangement valeur × usage) : le test les garde en attente (todo), pas en échec. En cas d'écart entre l'outil et ce fichier : ne corriger ni l'un ni l'autre, signaler l'écart.",
+  "how": "ΔE = 100 × distance euclidienne OKLab ; contraste WCAG 2.1. Calculés avec culori 4.0.2 : node -e \"const { differenceEuclidean, wcagContrast } = require('culori'); console.log(100 * differenceEuclidean('oklab')(a, b), wcagContrast(a, b))\". Valeurs arrondies à 4 décimales.",
+  "conditions": {
+    "pages": ["/desordre/carte.html", "/desordre/compte.html", "/desordre/gestion.html"],
+    "target": "fixtures/marque-demo/cible.json",
+    "sources": "fixtures/marque-demo/sources.json",
+    "thirdParty": [".tiers-cookies"],
+    "viewport": { "width": 1366, "height": 900 },
+    "rootPx": { "carte": 16, "compte": 14, "gestion": 14 },
+    "sheets": { "carte": "récente", "compte": "bibliothèque", "gestion": "ancienne" },
+    "thresholds": "auto ≤ 1 px ou ΔE ≤ 2 ; proche ≤ 15 % ou ΔE ≤ 5 ; décision au-delà"
+  },
+  "colors": [
+    {
+      "id": "C1",
+      "values": [{ "value": "#999999", "new": "#767676", "name": "gris", "deltaE": 11.7117, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 2.849 }, "afterB": { "class": "hors table, aucune échelle", "rule": "R4", "why": "ΔE à la valeur la plus proche de la cible supérieur à 10" } }],
+      "uses": [
+        { "page": "compte", "property": "color", "role": "texte", "usage": "texte d'aide sous un champ" },
+        { "page": "gestion", "property": "border-bottom-color", "role": "texte", "usage": "bordure des cellules du tableau" }
+      ],
+      "answer": "En texte : gris. En bordure : rester clair, et la cible n'a pas de bordure moyenne.",
+      "teaches": "Une valeur, deux usages, deux réponses.",
+      "lotB": "La table actuelle n'a qu'une ligne par valeur : il en faudrait une par usage (texte → gris, bordure → autre)."
+    },
+    {
+      "id": "C2",
+      "values": [
+        { "value": "#9a9a9a", "new": "#767676", "name": "gris", "deltaE": 12.0386, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 2.8139 }, "afterB": { "class": "hors table, aucune échelle", "rule": "R4", "why": "ΔE à la valeur la plus proche de la cible supérieur à 10" } },
+        { "value": "#9e9e9e", "new": "#767676", "name": "gris", "deltaE": 13.3424, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 2.6792 }, "afterB": { "class": "hors table, aucune échelle", "rule": "R4", "why": "ΔE à la valeur la plus proche de la cible supérieur à 10" } }
+      ],
+      "uses": [
+        { "page": "carte", "value": "#9a9a9a", "property": "color", "role": "texte", "usage": "description de produit" },
+        { "page": "compte", "value": "#9e9e9e", "property": "color", "role": "texte", "usage": "texte secondaire de la liste de commandes" }
+      ],
+      "answer": "gris",
+      "teaches": "Quasi-doublons trop loin de la cible pour être rangés seuls."
+    },
+    {
+      "id": "C3",
+      "values": [{ "value": "#808080", "new": "#767676", "name": "gris", "deltaE": 3.4034, "class": "proche", "contrast": { "bg": "#ffffff", "ratio": 3.9494 } }],
+      "uses": [{ "page": "gestion", "property": "color", "role": "texte", "usage": "métadonnées" }],
+      "answer": "gris"
+    },
+    {
+      "id": "C4",
+      "values": [
+        { "value": "#757575", "new": "#767676", "name": "gris", "deltaE": 0.3431, "class": "auto", "contrast": { "bg": "#ffffff", "ratio": 4.6075 } },
+        { "value": "#777777", "new": "#767676", "name": "gris", "deltaE": 0.3426, "class": "auto", "contrast": { "bg": "#ffffff", "ratio": 4.4781 } }
+      ],
+      "uses": [
+        { "page": "compte", "value": "#757575", "property": "color", "role": "texte", "usage": "texte courant secondaire (dates)" },
+        { "page": "gestion", "value": "#777777", "property": "color", "role": "texte", "usage": "texte courant secondaire (légende)" }
+      ],
+      "answer": "gris"
+    },
+    {
+      "id": "C5",
+      "values": [{ "value": "#757575", "new": "#767676", "name": "gris", "deltaE": 0.3431, "class": "auto", "contrast": { "bg": "#faf6ef", "ratio": 4.277 }, "contrastAfter": { "text": "#767676", "bg": "#faf6ef", "ratio": 4.2164 } }],
+      "uses": [{ "page": "carte", "property": "color", "role": "texte", "usage": "note d'allergènes sur fond crème" }],
+      "answer": "Échec : la cible doit avoir un gris plus foncé pour le crème.",
+      "teaches": "La cible elle-même échoue. Classe auto ≠ correct."
+    },
+    {
+      "id": "C6",
+      "values": [
+        { "value": "#666666", "new": "#767676", "name": "gris", "deltaE": 5.5558, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 5.7418 } },
+        { "value": "#616161", "new": "#767676", "name": "gris", "deltaE": 7.3227, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 6.1933 } },
+        { "value": "#595959", "new": "#767676", "name": "gris", "deltaE": 10.1834, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 7.0047 }, "afterB": { "class": "hors table, aucune échelle", "rule": "R4", "why": "ΔE à la valeur la plus proche de la cible supérieur à 10" } }
+      ],
+      "uses": [
+        { "page": "carte", "value": "#666666", "property": "color", "role": "texte", "usage": "sous-titre" },
+        { "page": "compte", "value": "#616161", "property": "color", "role": "texte", "usage": "libellés de formulaire" },
+        { "page": "gestion", "value": "#595959", "property": "color", "role": "texte", "usage": "libellés du résumé" }
+      ],
+      "answer": "Il manque un pas entre gris et encre.",
+      "teaches": "Une cible trop courte fait tout tomber en décision."
+    },
+    {
+      "id": "C7",
+      "values": [
+        { "value": "#333333", "new": "#1f2a44", "name": "encre", "deltaE": 6.0032, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 12.6347 } },
+        { "value": "#2d2d2d", "new": "#1f2a44", "name": "encre", "deltaE": 5.1068, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 13.7721 } }
+      ],
+      "uses": [
+        { "page": "gestion", "value": "#333333", "property": "color", "role": "texte", "usage": "texte principal" },
+        { "page": "gestion", "value": "#2d2d2d", "property": "color", "role": "texte", "usage": "cellules du tableau" }
+      ],
+      "answer": "Encre, si l'on accepte le passage du neutre au bleuté.",
+      "teaches": "Un gris neutre très foncé contre une encre bleutée."
+    },
+    {
+      "id": "C8",
+      "values": [
+        { "value": "#f2f2f2", "new": "#faf6ef", "name": "creme", "deltaE": 1.6653, "class": "auto" },
+        { "value": "#f6f5f6", "new": "#faf6ef", "name": "creme", "deltaE": 1.1495, "class": "auto" },
+        { "value": "#f7f3ec", "new": "#faf6ef", "name": "creme", "deltaE": 0.8989, "class": "auto" }
+      ],
+      "uses": [
+        { "page": "gestion", "value": "#f2f2f2", "property": "background-color", "role": "texte", "usage": "fond d'en-tête du tableau" },
+        { "page": "gestion", "value": "#f6f5f6", "property": "background-color", "role": "conteneur", "usage": "lignes alternées du tableau" },
+        { "page": "carte", "value": "#f7f3ec", "property": "background-color", "role": "conteneur", "usage": "fond de l'encart des horaires" }
+      ],
+      "answer": "crème, sauf les lignes alternées : à voir en masse",
+      "teaches": "L'auto est invisible un par un, visible sur un tableau entier."
+    },
+    {
+      "id": "C9",
+      "values": [{ "value": "#eeeeee", "new": "#faf6ef", "name": "creme", "deltaE": 2.7176, "class": "proche" }],
+      "uses": [{ "page": "gestion", "property": "background-color", "role": "conteneur", "usage": "fond de la barre de filtres" }],
+      "answer": "crème"
+    },
+    {
+      "id": "C10",
+      "values": [
+        { "value": "#dadada", "new": "#e2dccf", "name": "bord", "deltaE": 2.006, "class": "proche" },
+        { "value": "#e5e5e5", "new": "#e2dccf", "name": "bord", "deltaE": 3.2213, "class": "proche" }
+      ],
+      "uses": [
+        { "page": "gestion", "value": "#dadada", "property": "border-top-color", "role": "bouton", "usage": "bordure des boutons de filtre" },
+        { "page": "compte", "value": "#e5e5e5", "property": "border-top-color", "role": "conteneur", "usage": "bordure de la carte de profil" }
+      ],
+      "answer": "bord"
+    },
+    {
+      "id": "C11",
+      "values": [{ "value": "#cccccc", "new": "#e2dccf", "name": "bord", "deltaE": 5.3794, "class": "décision", "contrastGraphic": { "bg": "#ffffff", "ratio": 1.6059 } }],
+      "uses": [{ "page": "compte", "property": "border-top-color", "role": "champ", "usage": "bordure de champ" }],
+      "answer": "Bordure de champ : 3:1 exigé (WCAG 2.1, 1.4.11), ni l'un ni l'autre ne suffit.",
+      "teaches": "Le contraste ne vaut pas que pour le texte."
+    },
+    {
+      "id": "C12",
+      "values": [{ "value": "#2c4d7f", "new": "#2b4c7e", "name": "bleu", "deltaE": 0.3541, "class": "auto" }],
+      "uses": [
+        { "page": "carte", "property": "background-color", "role": "conteneur", "usage": "fond du pied de page" },
+        { "page": "compte", "property": "background-color", "role": "conteneur", "usage": "fond du pied de page" },
+        { "page": "gestion", "property": "background-color", "role": "conteneur", "usage": "fond du pied de page" }
+      ],
+      "answer": "bleu",
+      "teaches": "Fond, pas texte (erreur de lecture du 11/11)."
+    },
+    {
+      "id": "C13",
+      "values": [{ "value": "#30548a", "new": "#2b4c7e", "name": "bleu", "deltaE": 2.9688, "class": "proche" }],
+      "uses": [{ "page": "carte", "property": "color", "role": "lien", "usage": "lien discret" }],
+      "answer": "bleu"
+    },
+    {
+      "id": "C14",
+      "values": [{ "value": "#24426f", "new": "#2b4c7e", "name": "bleu", "deltaE": 3.8171, "class": "proche" }],
+      "uses": [{ "page": "carte", "property": "background-color", "role": "bouton", "state": "hover", "usage": "survol du bouton Commander" }],
+      "answer": "Pas de la rampe de bleu (état).",
+      "teaches": "Visible seulement en état forcé."
+    },
+    {
+      "id": "C15",
+      "values": [{ "value": "#2196f3", "new": "#767676", "name": "gris", "deltaE": 19.2536, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 3.1243 }, "deltaEToAnswer": { "value": "#2b4c7e", "deltaE": 25.3684 }, "afterB": { "class": "hors table, aucune échelle", "rule": "R4", "why": "ΔE à la valeur la plus proche de la cible supérieur à 10" } }],
+      "uses": [{ "page": "compte", "property": "color", "role": "lien", "usage": "liens (bleu par défaut de bibliothèque)" }],
+      "answer": "bleu, pas gris",
+      "teaches": "La proximité trompe : usage, puis contraste, puis proximité."
+    },
+    {
+      "id": "C16",
+      "values": [{ "value": "#4990e2", "new": "#767676", "name": "gris", "deltaE": 16.3446, "class": "décision", "contrast": { "text": "#ffffff", "bg": "#4990e2", "ratio": 3.2963 }, "deltaEToAnswer": { "value": "#2b4c7e", "deltaE": 23.4056 }, "afterB": { "class": "hors table, aucune échelle", "rule": "R4", "why": "ΔE à la valeur la plus proche de la cible supérieur à 10" } }],
+      "uses": [{ "page": "gestion", "property": "background-color", "role": "bouton", "usage": "bouton d'action" }],
+      "answer": "bleu",
+      "teaches": "La proximité trompe : usage, puis contraste, puis proximité."
+    },
+    {
+      "id": "C17",
+      "values": [{ "value": "#ef5c56", "new": "#c8553d", "name": "terre", "deltaE": 8.1821, "class": "décision", "contrast": { "bg": "#ffffff", "ratio": 3.3147 }, "contrastAfter": { "text": "#c8553d", "bg": "#ffffff", "ratio": 4.3544 } }],
+      "uses": [{ "page": "compte", "property": "color", "role": "texte", "usage": "message d'erreur" }],
+      "answer": "Il faut une couleur d'erreur dans la cible.",
+      "teaches": "La cible n'a pas de rôle « erreur » ; terre échoue aussi."
+    },
+    {
+      "id": "C18",
+      "values": [
+        { "value": "#d0563f", "new": "#c8553d", "name": "terre", "deltaE": 1.5888, "class": "auto" },
+        { "value": "#c4513a", "new": "#c8553d", "name": "terre", "deltaE": 1.2101, "class": "auto" , "afterB": { "class": "décision", "rule": "R2", "new": null, "contrast": { "text": "#ffffff", "before": 4.5799, "after": 4.3544 }, "was": "13/11/2026 : décision R2, défaut terre #c8553d (le blanc y tombe à 4,3544).", "corrected": "14/11/2026, lot J (J1, règle 2) : terre échoue au contraste alors que l'actuelle passe (4,5799) : grisé, jamais défaut ; les autres candidats, gris #767676 (4,5422) et bleu #2b4c7e (8,6144), ne sont pas de la même teinte (cible sans échelles : teinte OKLCH à 30° près, terre 33,4° contre 33,1°) : pas de défaut, la ligne reste décision. Contrastes culori 4.0.2 : node -e 'import(\"culori\").then(({wcagContrast:w})=>console.log(w(\"#ffffff\",\"#c4513a\"),w(\"#ffffff\",\"#c8553d\"),w(\"#ffffff\",\"#767676\"),w(\"#ffffff\",\"#2b4c7e\")))' → 4,5799 ; 4,3544 ; 4,5422 ; 8,6144." } }
+      ],
+      "uses": [
+        { "page": "carte", "value": "#d0563f", "property": "background-color", "role": "texte", "usage": "étiquette « nouveau »" },
+        { "page": "compte", "value": "#c4513a", "property": "background-color", "role": "texte", "usage": "étiquette « nouveau »" }
+      ],
+      "answer": "terre"
+    },
+    {
+      "id": "C19",
+      "values": [{ "value": "#f0c987", "new": "#f0c987", "name": "sable", "deltaE": 0, "class": "inchangé", "contrast": { "bg": "#ffffff", "ratio": 1.566 } }],
+      "uses": [{ "page": "carte", "property": "color", "role": "texte", "usage": "prix promo en texte sur blanc" }],
+      "answer": "Sable interdit en texte, fond seulement.",
+      "teaches": "« Inchangé » ne veut pas dire correct."
+    },
+    {
+      "id": "C20",
+      "class": "contenu",
+      "values": [
+        { "value": "#8e6c8a", "page": "compte", "usage": "avatar" },
+        { "value": "#5b8c85", "page": "compte", "usage": "avatar" },
+        { "value": "#c98b5e", "page": "gestion", "usage": "avatar" },
+        { "value": "#6b7fa8", "page": "gestion", "usage": "avatar" },
+        { "value": "#cfd8dc", "page": "compte", "usage": "fond d'attente d'image" },
+        { "value": "#d8d2c4", "page": "gestion", "usage": "fond d'attente d'image" }
+      ],
+      "property": "background-color",
+      "expect": "Contenu (R18 b : boîte d'image) : content = count dans l'audit, et aucune ligne dans la table.",
+      "teaches": "Trier interface et contenu avant de compter (R18)."
+    },
+    {
+      "id": "C21",
+      "class": "tiers",
+      "selector": ".tiers-cookies",
+      "pages": ["carte", "compte", "gestion"],
+      "values": ["#1b1b1b", "#f5f5f5", "#00a676"],
+      "expect": "Bandeau de cookies fictif déclaré dans thirdParty (R17) : éléments comptés dans rendered.thirdParty sur les trois pages, couleurs absentes du rendu et de la table.",
+      "teaches": "R17"
+    }
+  ],
+  "spacing": [
+    {
+      "id": "E1",
+      "values": [{ "value": "24px", "new": "24px", "class": "inchangé" }],
+      "uses": [
+        { "page": "carte", "family": "paddings", "usage": "marge intérieure de carte produit" },
+        { "page": "carte", "family": "margins", "usage": "espace entre sections" }
+      ],
+      "teaches": "Deux usages d'une même valeur.",
+      "lotB": "Une ligne par usage (marge intérieure, espace entre sections) : la table actuelle n'en a qu'une."
+    },
+    {
+      "id": "E2",
+      "values": [
+        { "value": "5px", "new": "4px", "class": "auto" },
+        { "value": "15px", "new": "16px", "class": "auto" }
+      ],
+      "uses": [
+        { "page": "gestion", "value": "5px", "family": "paddings", "usage": "boutons de filtre" },
+        { "page": "carte", "value": "15px", "family": "margins", "usage": "sous la description de produit" }
+      ]
+    },
+    {
+      "id": "E3",
+      "values": [{ "value": "6px", "tie": ["4px", "8px"], "class": "décision", "hypothesis": "règle « égalité = décision » à vérifier dans l'outil [H]" }],
+      "uses": [{ "page": "carte", "family": "margins", "usage": "marge d'étiquette" }],
+      "teaches": "Égalité"
+    },
+    {
+      "id": "E4",
+      "values": [{ "value": "10px", "tie": ["8px", "12px"], "class": "décision", "hypothesis": "règle « égalité = décision » à vérifier dans l'outil [H]" }],
+      "uses": [
+        { "page": "compte", "family": "gaps", "usage": "espace entre boutons" },
+        { "page": "compte", "family": "margins", "usage": "marge sous les champs" }
+      ],
+      "teaches": "Égalité, deux usages"
+    },
+    {
+      "id": "E5",
+      "values": [{ "value": "14px", "tie": ["12px", "16px"], "class": "décision", "hypothesis": "règle « égalité = décision » à vérifier dans l'outil [H]" }],
+      "uses": [{ "page": "compte", "family": "margins", "usage": "marge sous les titres de bloc (1rem à 14 px)" }]
+    },
+    {
+      "id": "E6",
+      "values": [{ "value": "20px", "tie": ["16px", "24px"], "class": "décision", "hypothesis": "règle « égalité = décision » à vérifier dans l'outil [H]" }],
+      "uses": [{ "page": "gestion", "family": "paddings", "usage": "marge intérieure du panneau" }]
+    },
+    {
+      "id": "E7",
+      "values": [
+        { "value": "18px", "new": "16px", "class": "proche" },
+        { "value": "27px", "new": "24px", "class": "proche" },
+        { "value": "30px", "new": "32px", "class": "proche" },
+        { "value": "36px", "new": "32px", "class": "proche" }
+      ],
+      "uses": [
+        { "page": "carte", "value": "18px", "family": "margins", "usage": "sous le titre de page" },
+        { "page": "carte", "value": "27px", "family": "paddings", "usage": "en-tête de la carte" },
+        { "page": "gestion", "value": "30px", "family": "margins", "usage": "sous l'en-tête de page" },
+        { "page": "compte", "value": "36px", "family": "paddings", "usage": "carte de profil" }
+      ]
+    }
+  ],
+  "fontSizes": [
+    {
+      "id": "T1",
+      "values": [{ "value": "12px", "new": "14px", "class": "décision", "how": "16,7 % : écart de 2 px rapporté à l’ancienne valeur (12), au-delà de 15 %", "corrected": "11/11/2026 : l’attendu avait tort, pas l’outil (rapport séance 2b, § 3)" }],
+      "uses": [{ "page": "gestion", "usage": "tout le tableau" }],
+      "teaches": "La classe mesure l'écart, pas l'impact : +2 px sur tout le tableau change sa densité."
+    },
+    {
+      "id": "T2",
+      "values": [{ "value": "10.5px", "new": "14px", "class": "décision" }],
+      "uses": [{ "page": "compte", "usage": "mentions légales (0,75 rem)" }],
+      "teaches": "Plus petit que la cible."
+    },
+    {
+      "id": "T3",
+      "values": [{ "value": "11.9px", "new": "14px", "class": ["proche", "décision"], "check": "à la limite des 15 % [V]" }],
+      "uses": [{ "page": "compte", "usage": "dates (0,85 rem)" }],
+      "teaches": "Seuil"
+    },
+    {
+      "id": "T4",
+      "values": [
+        { "value": "13.5px", "new": "14px", "class": "auto" },
+        { "value": "16.8px", "new": "16px", "class": "auto" },
+        { "value": "18.62px", "new": "18px", "class": "auto" }
+      ],
+      "uses": [
+        { "page": "compte", "value": "13.5px", "usage": "texte d'aide" },
+        { "page": "compte", "value": "16.8px", "usage": "salutation (1,2 rem)" },
+        { "page": "compte", "value": "18.62px", "usage": "titres de bloc (1,33 rem)" }
+      ],
+      "teaches": "Nés de la racine à 14 px."
+    },
+    {
+      "id": "T5",
+      "values": [{ "value": "20px", "new": "18px", "class": "proche" }],
+      "uses": [{ "page": "carte", "usage": "titre de bloc (catégorie)" }]
+    },
+    {
+      "id": "T6",
+      "values": [{ "value": "40px", "new": "32px", "class": "décision" }],
+      "uses": [{ "page": "compte", "usage": "titre de page" }]
+    }
+  ],
+  "radii": [
+    {
+      "id": "R1",
+      "values": [{ "value": "3px", "new": "4px", "class": "auto" }],
+      "uses": [{ "page": "gestion", "usage": "ancienne feuille : barre de filtres, champ, bouton d'action" }],
+      "teaches": "Deux générations qui fusionnent."
+    },
+    {
+      "id": "R2",
+      "values": [{ "value": "4px", "new": "4px", "class": "inchangé" }],
+      "uses": [{ "page": "compte", "usage": "bibliothèque : champs, carte de profil, boutons" }]
+    },
+    {
+      "id": "R3",
+      "values": [{ "value": "6px", "tie": ["4px", "8px"], "class": "décision", "hypothesis": "règle « égalité = décision » à vérifier dans l'outil [H]" }],
+      "uses": [{ "page": "gestion", "usage": "boutons de filtre" }],
+      "teaches": "Égalité"
+    },
+    {
+      "id": "R4",
+      "values": [{ "value": "999px", "new": "9999px", "class": "auto" }],
+      "uses": [{ "page": "gestion", "usage": "pastilles de statut" }],
+      "teaches": "Changement invisible."
+    },
+    {
+      "id": "R5",
+      "values": [{ "value": "50%", "new": null, "class": "hors table", "afterB": { "class": "auto", "new": "9999px", "rule": "R7", "corrected": "12/11/2026 : R7 étendue, un rayon en pourcentage de 50 % ou plus est une pilule" } }],
+      "uses": [
+        { "page": "compte", "usage": "avatars" },
+        { "page": "gestion", "usage": "avatars" }
+      ],
+      "teaches": "La cible n'a pas de « cercle »."
+    }
+  ]
+}

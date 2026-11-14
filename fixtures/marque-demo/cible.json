@@ -1,0 +1,16 @@
+{
+  "$comment": "Cible de la marque fictive Orbe Café : les échelles vers lesquelles on ramène l'existant. Écrite à la main, avant toute proposition (la cible d'abord, voir veille du 11/11/2026). Valeurs en px ; 9999 = forme pilule.",
+  "radii": [0, 4, 8, 12, 9999],
+  "spacing": [0, 4, 8, 12, 16, 24, 32, 48],
+  "fontSizes": [14, 16, 18, 24, 32, 56],
+  "colors": [
+    { "name": "blanc", "value": "#ffffff" },
+    { "name": "creme", "value": "#faf6ef" },
+    { "name": "bord", "value": "#e2dccf" },
+    { "name": "gris", "value": "#767676" },
+    { "name": "encre", "value": "#1f2a44" },
+    { "name": "bleu", "value": "#2b4c7e" },
+    { "name": "terre", "value": "#c8553d" },
+    { "name": "sable", "value": "#f0c987" }
+  ]
+}

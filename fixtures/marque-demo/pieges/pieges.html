@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Orbe Café — le café de la semaine</title>
+  <link rel="stylesheet" href="/pieges/styles/pieges.css">
+</head>
+<body>
+  <header class="entete">
+    <a class="logo" href="/pieges/pieges.html">Orbe Café</a>
+    <nav class="navigation" aria-label="Principale">
+      <a href="#carte">La carte</a>
+      <a href="#ateliers">Ateliers</a>
+      <a href="#equipe">L'équipe</a>
+      <a href="#infos">Venir</a>
+    </nav>
+    <div class="recherche" role="search">
+      <input class="recherche-champ" type="search" placeholder="Chercher un café, un atelier…" aria-label="Rechercher">
+      <svg class="loupe" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M11 11l4 4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="une" id="carte">
+      <div class="visuel" role="img" aria-label="Sacs de café vert sur une palette"></div>
+      <div class="une-bandeau">
+        <h1>Le café de la semaine : Huila, Colombie</h1>
+        <p class="secondaire">Lavé, torréfié mardi rue des Tanneurs. Notes de panela, d'orange sanguine et de cacao.</p>
+      </div>
+    </section>
+
+    <section class="tuiles" id="ateliers" aria-label="Ateliers et fidélité">
+      <article class="tuile tuile--description">
+        <h2 class="tuile-titre">Atelier dégustation</h2>
+        <p class="tuile-desc">Samedi à 10 h, six places autour du comptoir.</p>
+      </article>
+      <article class="tuile tuile--seule">
+        <h2 class="tuile-titre">Carte de fidélité</h2>
+      </article>
+    </section>
+
+    <section class="equipe" id="equipe">
+      <h2>L'équipe</h2>
+      <div class="equipe-contenu">
+        <ul class="membres">
+          <li class="membre"><span class="avatar" aria-hidden="true">IM</span><span><span class="membre-nom">Inès Morel</span><br><span class="membre-role">Torréfactrice</span></span></li>
+          <li class="membre"><span class="avatar" aria-hidden="true">BL</span><span><span class="membre-nom">Basile Lenoir</span><br><span class="membre-role">Barista</span></span></li>
+          <li class="membre"><span class="avatar" aria-hidden="true">CF</span><span><span class="membre-nom">Capucine Faure</span><br><span class="membre-role">Pâtissière</span></span></li>
+        </ul>
+        <article class="carte-equipe">
+          <h3>Rejoindre l'équipe</h3>
+          <p>Nous cherchons un ou une barista pour les week-ends.</p>
+          <p class="secondaire">Candidature au comptoir ou par courrier.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="offre">
+      <div class="titre-ligne">
+        <h2>Abonnement Orbe</h2>
+        <span class="badge-violet">Nouveau</span>
+      </div>
+      <p>Un café différent chaque mois, livré chez vous. Voir <a class="lien-violet" href="#origines">les origines du trimestre</a> ou <a class="lien-violet" href="#conditions">les conditions de l'abonnement</a>.</p>
+      <div class="offre-actions">
+        <button type="button" class="bouton bouton-violet">S'abonner</button>
+        <div class="carte-violette">
+          <p><strong>250 g par mois</strong>, en grains ou moulu.</p>
+          <p class="secondaire">Sans engagement, pause possible à tout moment.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="reserver">
+      <h2>Réserver une table</h2>
+      <form class="reservation" action="#reserver">
+        <label>Votre adresse électronique
+          <input class="champ-bleu" type="email" placeholder="vous@exemple.fr">
+        </label>
+        <button type="button" class="bouton bouton-bleu">Réserver</button>
+      </form>
+      <p class="reserver-note">Annulation gratuite jusqu'à la veille au soir, <a class="lien-discret" href="#conditions">selon nos conditions de réservation</a>, par courrier ou au comptoir.</p>
+    </section>
+
+    <section class="infos" id="infos">
+      <h2>Horaires et accès</h2>
+      <p>Du mardi au samedi, de 8 h à 18 h ; le dimanche, de 9 h à 13 h.</p>
+      <p class="secondaire">12, rue des Tanneurs. Accès de plain-pied.</p>
+    </section>
+  </main>
+
+  <footer class="pied">
+    <p>Orbe Café, torréfacteur de quartier (marque fictive)</p>
+    <nav class="pied-liens" aria-label="Pied de page">
+      <a href="#mentions">Mentions légales</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <p class="pied-mentions">© 2026 Orbe Café</p>
+  </footer>
+
+  <div class="tiers-cookies" role="dialog" aria-label="Cookies">
+    <p>Ce site utilise des cookies de mesure d'audience.</p>
+    <button type="button">Tout accepter</button>
+    <button type="button" class="tiers-refuser">Refuser</button>
+  </div>
+</body>
+</html>

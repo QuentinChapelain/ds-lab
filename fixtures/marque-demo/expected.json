@@ -1,0 +1,661 @@
+{
+  "$comment": "Chiffres attendus pour la page de démonstration Orbe Café (marque fictive). Écrits à la main à partir du contenu des fichiers, AVANT le code de l'outil. Chaque chiffre est un objet { value, how }. Les ΔE, contrastes, fusions alpha et hexadécimaux 8 chiffres sont calculés avec culori 4.0.2 (indépendant de src/) : la commande exacte figure dans how, à lancer depuis la racine du dépôt ; le champ verify la rend vérifiable par test/expected.test.js. Les numéros de ligne renvoient aux fichiers de fixtures/marque-demo/. En cas d'écart avec l'outil : corriger l'outil, ou corriger ce fichier avec une justification écrite, jamais le recaler sur la sortie de l'outil.",
+
+  "conditions": {
+    "pages": ["/", "/page-2.html"],
+    "viewport": "1366x900",
+    "sources": "fixtures/marque-demo/sources.json",
+    "serveurs": "page servie par http://127.0.0.1:<p1>/ ; remote.css servie par http://localhost:<p2>/ (autre origine). {{ORIGINE_DISTANTE}} dans index.html est remplacé par http://localhost:<p2>.",
+    "rootPx": { "value": 18, "how": "theme.css l.19 html { font-size: 112.5% } × 16 px (taille initiale) = 18 px, sur les deux pages" }
+  },
+
+  "conventions": {
+    "declare": [
+      "D1. Périmètre : toutes les feuilles de toutes les pages (link, @import, <style>, feuilles construites), dédoublonnées par URL et texte ; ni attributs style, ni feuilles du navigateur.",
+      "D2. Une occurrence = un composant de valeur dans une déclaration, tel qu'écrit : les raccourcis ne sont pas développés (padding: 16px 32px → 16px ×1 et 32px ×1).",
+      "D3. Les déclarations dans @media, @supports et @keyframes comptent.",
+      "D4. Les mots-clés globaux (inherit, initial, unset, revert, revert-layer) sont exclus de toutes les familles.",
+      "D5. Les valeurs à 0 comptent (0 sans unité → 0px).",
+      "D6. Longueurs : px, pt, pc, in, cm, mm, Q et rem (× rootPx) converties en px, arrondies au centième ; em, %, vw, var(), calc() gardées brutes (clé = écriture en minuscules) et comptées dans nonNormalizable.",
+      "D7. Couleurs : tout jeton couleur de toute déclaration, propriétés personnalisées comprises (box-shadow, border, background aussi) ; var(), currentcolor et transparent ne sont pas des couleurs. Clé = hexadécimal minuscule, 6 chiffres si opaque, 8 sinon.",
+      "D8. font-family : clé = liste en minuscules, guillemets retirés, séparateur ', ' ; chaque clé garde ses écritures d'origine avec leur compte.",
+      "D9. font-weight : bold → 700, normal → 400, nombres tels quels.",
+      "D10. line-height : nombre sans unité gardé tel quel (clé '1.5'), longueurs en px.",
+      "D11. Durées en ms (clé '<n>ms'). Dans les raccourcis transition et animation, seule la première durée de chaque élément de liste est une durée (la seconde est un délai). Courbes : minuscules, espaces retirés, zéro ajouté devant .x (cubic-bezier(.2, 0, 0, 1) → cubic-bezier(0.2,0,0,1)) ; pas de courbe implicite si elle n'est pas écrite.",
+      "D12. box-shadow : clé = 'x y flou étalement couleur' en px, étalement 0px s'il est absent, couleur selon D7, préfixe 'inset ' le cas échéant, ombres multiples jointes par ', '.",
+      "D13. opacity : nombre (0.6) ; un pourcentage est divisé par 100.",
+      "D14. Points de rupture : min-width / max-width des @media, em et rem comptés à 16 px (taille initiale, pas rootPx, comme le veut la norme des media queries) ; les @media sans largeur sont comptées dans mediaOther.",
+      "D15. Couleurs par source : nombre de couleurs distinctes et d'occurrences par étiquette de source."
+    ],
+    "rendu": [
+      "R1. Éléments retenus : descendants de body (body exclu, comme en v1) qui ont au moins un rectangle (getClientRects) et dont visibility n'est pas hidden.",
+      "R2. ::before et ::after retenus si content n'est pas none ; porteurs de texte si content est une chaîne non vide ; rôle = celui de l'élément parent ; sélecteur = celui du parent suivi de ::before ou ::after.",
+      "R3. Porteur de texte = au moins un nœud texte enfant direct non vide après trim.",
+      "R4. Propriétés typographiques (color, font-family, font-size, font-weight, line-height, letter-spacing) relevées sur les porteurs de texte seulement. line-height et letter-spacing : 'normal' ignoré ; font-weight toujours relevé.",
+      "R5. Propriétés de boîte relevées sur tous les éléments retenus, valeurs par défaut ignorées : marges et retraits (4 longhands, sauf 0px), row-gap et column-gap (flex et grid, sauf normal), épaisseurs de bordure (4 côtés, si le style n'est pas none et l'épaisseur > 0), rayons (4 coins, sauf 0px), box-shadow (sauf none), opacity (sauf 1), background-color (sauf transparent).",
+      "R6. Couleur de bordure : une seule par élément, celle du premier côté (top, right, bottom, left) qui a une épaisseur > 0 et un style différent de none, comme en v1 ; propriété = longhand de ce côté (border-top-color…).",
+      "R7. Durées et courbes : chaque élément de la liste calculée compte ; une courbe n'est relevée que si la durée correspondante est > 0 ms ; animation relevée seulement si animation-name n'est pas none.",
+      "R8. Contexte d'une valeur rendue : clé (famille, valeur, propriété, rôle) → compte, compte par page, jusqu'à 3 sélecteurs courts distincts (balise#id, sinon balise.classe1.classe2, sinon balise).",
+      "R9. Rôle : attribut role d'abord, puis balise. bouton (button, input button/submit/reset, role=button) ; lien (a[href], role=link) ; champ (input, select, textarea, role textbox/combobox/checkbox/radio/switch/searchbox) ; titre (h1–h6, role=heading) ; image (img, svg, picture, video, canvas, role=img) ; texte (porteur de texte d'aucune catégorie précédente) ; conteneur (le reste).",
+      "R10. Clés de valeur comme au déclaré (D6–D13) ; les valeurs calculées sont déjà en px.",
+      "R11. Contraste : pour chaque porteur de texte, fond effectif = background-color en remontant depuis l'élément lui-même jusqu'à html, fusion alpha des fonds semi-transparents rencontrés jusqu'au premier fond opaque, blanc si aucun. Couleur de texte transparente fusionnée sur ce fond. opacity n'entre pas dans le calcul, mais une occurrence est marquée [V] si l'élément lui-même ou l'un de ses ancêtres a une opacity < 1, ou si une background-image se trouve sur l'élément ou un ancêtre plus proche que le fond opaque retenu ; une paire est marquée [V] dès qu'une de ses occurrences l'est (champ uncertain, absent = 0). Ratio WCAG 2.1. Grand texte : ≥ 24 px, ou ≥ 14 pt (18,666… px) en graisse ≥ 700. Paires agrégées par (texte, fond).",
+      "R12. Comparaison des ratios à ± 0,01 près.",
+      "R13. Gris de texte : voir rendered.textGreys (seuil de chroma 0,02 [H], à valider sur une seconde plateforme).",
+      "R14. Gris de texte sur fond sombre : voir rendered.textGreys.onDark.",
+      "R3 bis, R5 bis, R6 bis (remplace R6), R11 bis, R15, R16 : ajoutées après la relecture externe du 11/11/2026, écrites dans expected-cas-limites.json. Sur les deux pages de cette démonstration, seule R5 bis change un chiffre (couleur de l'ombre de div.carte)."
+    ]
+  },
+
+  "sheets": {
+    "total": { "value": 5, "how": "theme.css + composants.css (via @import de theme.css l.1) + remote.css + <style> de index.html (l.8–13) + feuille construite (index.html l.15–17). page-2.html ne charge que theme.css (→ composants.css) : déjà comptées." },
+    "list": [
+      { "path": "/styles/theme.css", "source": "theme", "pages": ["/", "/page-2.html"], "how": "règle 1 de sources.json" },
+      { "path": "/styles/composants.css", "source": "composants", "pages": ["/", "/page-2.html"], "how": "règle 2 de sources.json, chargée par @import" },
+      { "path": "/styles/remote.css", "source": "distant", "crossOrigin": true, "pages": ["/"], "how": "règle 3 de sources.json ; servie par localhost:<p2>, lue malgré CORS" },
+      { "path": null, "source": "inline", "pages": ["/"], "how": "<style> de index.html" },
+      { "path": null, "source": "injecté", "pages": ["/"], "how": "CSSStyleSheet construite et adoptée, index.html l.15–17" }
+    ]
+  },
+
+  "declared": {
+    "customProperties": { "value": 6, "how": "theme.css l.4–9" },
+
+    "colors": {
+      "total": { "value": 18, "how": "somme des occurrences ci-dessous : 4 + 2 + 10 × 1 + 2 × 1" },
+      "distinct": { "value": 14, "how": "12 opaques + 2 transparentes" },
+      "opaque": { "value": 12, "how": "clés à 6 chiffres ci-dessous" },
+      "opaqueOnce": { "value": 10, "how": "opaques à 1 occurrence : toutes sauf #ffffff (4) et #2b4c7e (2)" },
+      "translucent": { "value": 2, "how": "#1f2a4433 et #00000026" },
+      "varReferences": { "value": 9, "how": "déclarations de propriétés de couleur (color, background*, border*, box-shadow…) dont la valeur passe par var(), non comptées comme couleurs : theme.css l.26, l.27, l.43 ; composants.css l.6, l.14, l.38, l.42, l.50, l.67 (clé renommée depuis notColors au lot 3, valeur inchangée)" },
+      "values": {
+        "#ffffff": { "value": 4, "how": "composants.css l.5 (.entete background-color), l.13 (.bouton color), l.40 (.champ background-color) ; remote.css l.5 (.pied color)" },
+        "#2b4c7e": { "value": 2, "how": "theme.css l.5 (--orbe-bleu) ; composants.css l.15 (.bouton border)" },
+        "#1f2a44": { "value": 1, "how": "theme.css l.4 (--orbe-encre)" },
+        "#faf6ef": { "value": 1, "how": "theme.css l.6 (--orbe-creme)" },
+        "#c8553d": { "value": 1, "how": "theme.css l.7 (--orbe-terre)" },
+        "#e2dccf": { "value": 1, "how": "theme.css l.8 (--orbe-bord)" },
+        "#9a9a9a": { "value": 1, "how": "composants.css l.60 (.note color)" },
+        "#000000": { "value": 1, "how": "composants.css l.29 (.carte::after, content: none : déclaré mais jamais rendu)" },
+        "#2c4d7f": { "value": 1, "how": "remote.css l.6 (.pied background-color)" },
+        "#f0c987": { "value": 1, "how": "remote.css l.10 (.pied a color)" },
+        "#30548a": { "value": 1, "how": "remote.css l.14 (.lien-discret color)" },
+        "#ff00ff": { "value": 1, "how": "index.html l.11 (.invisible color : déclaré, élément jamais rendu)" },
+        "#1f2a4433": {
+          "value": 1,
+          "how": "composants.css l.22 rgba(31, 42, 68, .2) → node --input-type=module -e \"import {parse,formatHex8} from 'culori'; console.log(formatHex8(parse('rgba(31, 42, 68, .2)')))\" → #1f2a4433",
+          "verify": { "culori": "formatHex8", "args": ["rgba(31, 42, 68, .2)"], "result": "#1f2a4433" }
+        },
+        "#00000026": {
+          "value": 1,
+          "how": "composants.css l.24 (dans box-shadow) rgba(0, 0, 0, .15) → node --input-type=module -e \"import {parse,formatHex8} from 'culori'; console.log(formatHex8(parse('rgba(0, 0, 0, .15)')))\" → #00000026",
+          "verify": { "culori": "formatHex8", "args": ["rgba(0, 0, 0, .15)"], "result": "#00000026" }
+        }
+      },
+      "bySource": {
+        "theme": { "distinct": { "value": 5, "how": "theme.css l.4–8" }, "occurrences": { "value": 5, "how": "idem" } },
+        "composants": { "distinct": { "value": 6, "how": "#ffffff, #2b4c7e, #1f2a4433, #00000026, #9a9a9a, #000000" }, "occurrences": { "value": 8, "how": "#ffffff ×3 + 5 autres ×1" } },
+        "distant": { "distinct": { "value": 4, "how": "#ffffff, #2c4d7f, #f0c987, #30548a" }, "occurrences": { "value": 4, "how": "remote.css l.5, l.6, l.10, l.14" } },
+        "inline": { "distinct": { "value": 1, "how": "#ff00ff" }, "occurrences": { "value": 1, "how": "index.html l.11" } },
+        "injecté": { "distinct": { "value": 0, "how": "la feuille construite n'a pas de couleur" }, "occurrences": { "value": 0, "how": "idem" } }
+      },
+      "deltaE": {
+        "$comment": "Seules paires opaques à ΔE×100 < 5, obtenues par : node --input-type=module -e \"import {differenceEuclidean as d} from 'culori'; const c=['#ffffff','#2b4c7e','#1f2a44','#faf6ef','#c8553d','#e2dccf','#9a9a9a','#000000','#2c4d7f','#f0c987','#30548a','#ff00ff']; for(let i=0;i<c.length;i++)for(let j=i+1;j<c.length;j++){const v=100*d('oklab')(c[i],c[j]); if(v<5) console.log(c[i],c[j],v.toFixed(3))}\" → #ffffff #faf6ef 2.765 ; #2b4c7e #2c4d7f 0.354 ; #2b4c7e #30548a 2.969 ; #2c4d7f #30548a 2.626",
+        "pairs": [
+          { "a": "#2b4c7e", "b": "#2c4d7f", "value": 0.3541, "how": "node --input-type=module -e \"import {differenceEuclidean as d} from 'culori'; console.log(100*d('oklab')('#2b4c7e','#2c4d7f'))\" → 0.35409…", "verify": { "culori": "deltaE100", "args": ["#2b4c7e", "#2c4d7f"] } },
+          { "a": "#2b4c7e", "b": "#30548a", "value": 2.9688, "how": "node --input-type=module -e \"import {differenceEuclidean as d} from 'culori'; console.log(100*d('oklab')('#2b4c7e','#30548a'))\" → 2.96882…", "verify": { "culori": "deltaE100", "args": ["#2b4c7e", "#30548a"] } },
+          { "a": "#2c4d7f", "b": "#30548a", "value": 2.6265, "how": "node --input-type=module -e \"import {differenceEuclidean as d} from 'culori'; console.log(100*d('oklab')('#2c4d7f','#30548a'))\" → 2.62645… (corrigé : 2.6260 avait été recopié depuis l'arrondi à 3 décimales de la matrice, sans lancer cette commande)", "verify": { "culori": "deltaE100", "args": ["#2c4d7f", "#30548a"] } },
+          { "a": "#ffffff", "b": "#faf6ef", "value": 2.7655, "how": "node --input-type=module -e \"import {differenceEuclidean as d} from 'culori'; console.log(100*d('oklab')('#ffffff','#faf6ef'))\" → 2.76545…", "verify": { "culori": "deltaE100", "args": ["#ffffff", "#faf6ef"] } }
+        ]
+      },
+      "groupsDE2": {
+        "value": 11,
+        "how": "12 opaques ; ordre glouton par fréquence : #ffffff (4), #2b4c7e (2), puis les 10 couleurs à 1 occurrence. Seule paire < 2 : #2b4c7e–#2c4d7f (0,354) → #2c4d7f rejoint #2b4c7e. 12 − 1 = 11.",
+        "groups": [
+          { "rep": "#2b4c7e", "members": ["#2b4c7e", "#2c4d7f"], "n": 3 }
+        ],
+        "singletons": ["#ffffff", "#1f2a44", "#faf6ef", "#c8553d", "#e2dccf", "#9a9a9a", "#000000", "#f0c987", "#30548a", "#ff00ff"]
+      },
+      "groupsDE5": {
+        "value": 9,
+        "how": "#faf6ef rejoint #ffffff (2,765 < 5) ; #2c4d7f (0,354) et #30548a (2,969) rejoignent #2b4c7e, représentante traitée avant elles (2 occurrences contre 1). La paire #2c4d7f–#30548a (2,626) n'ouvre pas de groupe : les deux sont déjà rattachées. 12 − 3 = 9.",
+        "groups": [
+          { "rep": "#ffffff", "members": ["#ffffff", "#faf6ef"], "n": 5 },
+          { "rep": "#2b4c7e", "members": ["#2b4c7e", "#2c4d7f", "#30548a"], "n": 4 }
+        ],
+        "singletons": ["#1f2a44", "#c8553d", "#e2dccf", "#9a9a9a", "#000000", "#f0c987", "#ff00ff"]
+      }
+    },
+
+    "fontFamilies": {
+      "total": { "value": 2, "how": "theme.css l.23, remote.css l.3 ; composants.css l.41 (inherit) exclu par D4" },
+      "distinct": { "value": 1, "how": "les deux écritures donnent la même clé (D8)" },
+      "values": {
+        "orbe sans, arial, sans-serif": {
+          "value": 2,
+          "how": "theme.css l.23 + remote.css l.3",
+          "originals": {
+            "\"Orbe Sans\", Arial, sans-serif": { "value": 1, "how": "theme.css l.23" },
+            "'orbe sans', arial, sans-serif": { "value": 1, "how": "remote.css l.3" }
+          }
+        }
+      }
+    },
+
+    "fontSizes": {
+      "total": { "value": 8, "how": "theme.css l.19, l.24, l.31, l.49 ; composants.css l.48, l.61 ; remote.css l.4 ; index.html l.10" },
+      "distinct": { "value": 8, "how": "aucune valeur répétée" },
+      "nonNormalizable": { "value": 2, "how": "112.5% et .75em (D6)" },
+      "values": {
+        "18px": { "value": 1, "how": "theme.css l.24 : 1rem × 18" },
+        "45px": { "value": 1, "how": "theme.css l.31 : 2.5rem × 18 (remplacé au rendu par la @media l.47)" },
+        "54px": { "value": 1, "how": "theme.css l.49 : 3rem × 18, dans @media (min-width: 1024px)" },
+        "14px": { "value": 1, "how": "composants.css l.61" },
+        "15.75px": { "value": 1, "how": "remote.css l.4 : .875rem × 18" },
+        "22.5px": { "value": 1, "how": "index.html l.10 : 1.25rem × 18" },
+        "112.5%": { "value": 1, "how": "theme.css l.19, non normalisable" },
+        ".75em": { "value": 1, "how": "composants.css l.48, non normalisable" }
+      }
+    },
+
+    "fontWeights": {
+      "total": { "value": 4, "how": "theme.css l.32 ; composants.css l.12, l.49 ; index.html l.10" },
+      "distinct": { "value": 3, "how": "700, 600, 300" },
+      "values": {
+        "700": { "value": 2, "how": "theme.css l.32 (700) + composants.css l.49 (bold → 700, D9)" },
+        "600": { "value": 1, "how": "composants.css l.12" },
+        "300": { "value": 1, "how": "index.html l.10" }
+      }
+    },
+
+    "lineHeights": {
+      "total": { "value": 3, "how": "theme.css l.25, l.33 ; composants.css l.62" },
+      "values": {
+        "1.5": { "value": 1, "how": "theme.css l.25, sans unité (D10)" },
+        "1.2": { "value": 1, "how": "theme.css l.33, sans unité" },
+        "21px": { "value": 1, "how": "composants.css l.62" }
+      }
+    },
+
+    "letterSpacings": {
+      "total": { "value": 3, "how": "theme.css l.34 ; index.html l.10 ; feuille construite index.html l.16" },
+      "nonNormalizable": { "value": 1, "how": ".02em" },
+      "values": {
+        "-0.5px": { "value": 1, "how": "theme.css l.34" },
+        ".02em": { "value": 1, "how": "index.html l.10, non normalisable" },
+        "1px": { "value": 1, "how": "index.html l.16, feuille construite (source injecté)" }
+      }
+    },
+
+    "margins": {
+      "total": { "value": 4, "how": "theme.css l.13, l.35, l.39 ; index.html l.9" },
+      "nonNormalizable": { "value": 2, "how": "var(--orbe-espace) et 2em" },
+      "values": {
+        "0px": { "value": 1, "how": "theme.css l.13 margin: 0 (D5)" },
+        "24px": { "value": 1, "how": "theme.css l.35" },
+        "var(--orbe-espace)": { "value": 1, "how": "theme.css l.39, non normalisable" },
+        "2em": { "value": 1, "how": "index.html l.9, non normalisable" }
+      }
+    },
+
+    "paddings": {
+      "total": { "value": 14, "how": "theme.css l.14 (1) ; composants.css l.4 (2), l.11 (2), l.21 (1), l.37 (2), l.47 (2) ; remote.css l.2 (1), l.19 (2) ; index.html l.12 (1) = 14" },
+      "values": {
+        "0px": { "value": 1, "how": "theme.css l.14" },
+        "16px": { "value": 1, "how": "composants.css l.4" },
+        "32px": { "value": 3, "how": "composants.css l.4 ; remote.css l.2, l.19" },
+        "12px": { "value": 2, "how": "composants.css l.11, l.37" },
+        "24px": { "value": 2, "how": "composants.css l.11 ; index.html l.12" },
+        "27px": { "value": 1, "how": "composants.css l.21 : 1.5rem × 18" },
+        "8px": { "value": 2, "how": "composants.css l.37, l.47" },
+        "4px": { "value": 1, "how": "composants.css l.47" },
+        "48px": { "value": 1, "how": "remote.css l.19" }
+      }
+    },
+
+    "gaps": {
+      "total": { "value": 3, "how": "composants.css l.3 (1) ; index.html l.9 (2)" },
+      "values": {
+        "24px": { "value": 1, "how": "composants.css l.3" },
+        "18px": { "value": 1, "how": "index.html l.9 : 1rem × 18" },
+        "36px": { "value": 1, "how": "index.html l.9 : 2rem × 18" }
+      }
+    },
+
+    "borderWidths": {
+      "total": { "value": 3, "how": "composants.css l.6, l.15, l.38 (épaisseur extraite des raccourcis border-*)" },
+      "values": {
+        "1px": { "value": 2, "how": "composants.css l.6, l.38" },
+        "2px": { "value": 1, "how": "composants.css l.15" }
+      }
+    },
+
+    "radii": {
+      "total": { "value": 5, "how": "composants.css l.16, l.23, l.33, l.39, l.51" },
+      "nonNormalizable": { "value": 1, "how": "50%" },
+      "values": {
+        "8px": { "value": 1, "how": "composants.css l.16" },
+        "12px": { "value": 1, "how": "composants.css l.23" },
+        "50%": { "value": 1, "how": "composants.css l.33, non normalisable" },
+        "4px": { "value": 1, "how": "composants.css l.39" },
+        "999px": { "value": 1, "how": "composants.css l.51" }
+      }
+    },
+
+    "shadows": {
+      "total": { "value": 1, "how": "composants.css l.24" },
+      "values": {
+        "0px 2px 4px 0px #00000026": { "value": 1, "how": "composants.css l.24 '0 2px 4px rgba(0, 0, 0, .15)' normalisé selon D12 ; couleur : voir declared.colors.values.#00000026" }
+      }
+    },
+
+    "opacities": {
+      "total": { "value": 1, "how": "composants.css l.56 ; les @keyframes l.71–72 n'animent que transform" },
+      "values": {
+        "0.6": { "value": 1, "how": "composants.css l.56" }
+      }
+    },
+
+    "durations": {
+      "total": { "value": 4, "how": "theme.css l.44 ; composants.css l.17, l.52, l.77" },
+      "values": {
+        "150ms": { "value": 1, "how": "theme.css l.44" },
+        "200ms": { "value": 1, "how": "composants.css l.17 : .2s" },
+        "1200ms": { "value": 1, "how": "composants.css l.52 : 1.2s" },
+        "0ms": { "value": 1, "how": "composants.css l.77 : 0s, dans @media (prefers-reduced-motion: reduce)" }
+      }
+    },
+
+    "timingFunctions": {
+      "total": { "value": 3, "how": "theme.css l.44 ; composants.css l.17, l.52" },
+      "values": {
+        "cubic-bezier(0.2,0,0,1)": { "value": 1, "how": "theme.css l.44 cubic-bezier(.2, 0, 0, 1) normalisé selon D11" },
+        "ease": { "value": 1, "how": "composants.css l.17" },
+        "ease-in-out": { "value": 1, "how": "composants.css l.52" }
+      }
+    },
+
+    "breakpoints": {
+      "total": { "value": 3, "how": "theme.css l.47 ; remote.css l.17 ; index.html l.12" },
+      "mediaOther": { "value": 1, "how": "composants.css l.75 (prefers-reduced-motion), sans largeur" },
+      "values": {
+        "480px": { "value": 1, "how": "index.html l.12 (min-width: 480px)" },
+        "768px": { "value": 1, "how": "remote.css l.17 (min-width: 48em) : 48 × 16 (D14 : 16 et non rootPx 18)" },
+        "1024px": { "value": 1, "how": "theme.css l.47 (min-width: 1024px)" }
+      }
+    }
+  },
+
+  "rendered": {
+    "elements": {
+      "value": 22,
+      "how": "index : header.entete, a.logo, a (Carte), main, section.hero, h1, p.accroche, a.bouton, div.carte, img.vignette, label, input#courriel, span.badge.etiquette, span.badge.badge--inactif, p.note, a.lien-discret, footer.pied, p, a (Mentions) = 19 ; page-2 : h1, p, a = 3",
+      "byPage": { "/": { "value": 19, "how": "voir ci-dessus" }, "/page-2.html": { "value": 3, "how": "voir ci-dessus" } }
+    },
+    "pseudoElements": { "value": 1, "how": "p.note::before (composants.css l.65–68) ; .carte::after exclu car content: none (l.28)" },
+    "excluded": { "value": 2, "how": "p.cache (attribut hidden → aucun rectangle) et p.invisible (visibility: hidden, index.html l.11)" },
+    "textBearing": {
+      "value": 16,
+      "how": "index : a.logo, a, h1, p.accroche, a.bouton, label, 2 span.badge, p.note, p.note::before, a.lien-discret, p, a = 13 ; page-2 : h1, p, a = 3"
+    },
+    "roles": {
+      "value": ["bouton", "champ", "conteneur", "image", "lien", "texte", "titre"],
+      "how": "bouton : a.bouton (role=button) ; champ : input ; conteneur : header, main, section, div.carte, footer ; image : img ; lien : a.logo, a ×3, a.lien-discret ; texte : p ×4, label, span ×2 ; titre : h1 ×2"
+    },
+
+    "colors": {
+      "total": { "value": 25, "how": "somme des contextes ci-dessous (24 avant R5 bis, plus la couleur de l'ombre de div.carte)" },
+      "distinct": { "value": 11, "how": "9 opaques + #1f2a4433 + #00000026 (R5 bis, relecture du 11/11/2026)" },
+      "opaque": { "value": 9, "how": "#2b4c7e, #1f2a44, #ffffff, #c8553d, #e2dccf, #9a9a9a, #30548a, #f0c987, #2c4d7f" },
+      "values": {
+        "#2b4c7e": {
+          "value": 5,
+          "how": "theme.css l.43 via --orbe-bleu sur les liens ; composants.css l.14–15 sur a.bouton",
+          "contexts": [
+            { "property": "color", "role": "lien", "count": { "value": 3, "how": "a.logo, a (Carte), a (Retour, page-2)" }, "pages": { "/": 2, "/page-2.html": 1 }, "selectors": ["a.logo", "a"] },
+            { "property": "background-color", "role": "bouton", "count": { "value": 1, "how": "a.bouton, composants.css l.14" }, "pages": { "/": 1 }, "selectors": ["a.bouton"] },
+            { "property": "border-top-color", "role": "bouton", "count": { "value": 1, "how": "a.bouton, composants.css l.15 ; top est le premier côté (R6)" }, "pages": { "/": 1 }, "selectors": ["a.bouton"] }
+          ]
+        },
+        "#1f2a44": {
+          "value": 5,
+          "how": "héritée de body (theme.css l.26)",
+          "contexts": [
+            { "property": "color", "role": "titre", "count": { "value": 2, "how": "h1 des deux pages" }, "pages": { "/": 1, "/page-2.html": 1 }, "selectors": ["h1"] },
+            { "property": "color", "role": "texte", "count": { "value": 3, "how": "p.accroche, label, p (page-2)" }, "pages": { "/": 2, "/page-2.html": 1 }, "selectors": ["p.accroche", "label", "p"] }
+          ]
+        },
+        "#ffffff": {
+          "value": 4,
+          "how": "composants.css l.5, l.13, l.40 ; remote.css l.5",
+          "contexts": [
+            { "property": "color", "role": "bouton", "count": { "value": 1, "how": "a.bouton" }, "pages": { "/": 1 }, "selectors": ["a.bouton"] },
+            { "property": "color", "role": "texte", "count": { "value": 1, "how": "p du pied, hérité de .pied" }, "pages": { "/": 1 }, "selectors": ["p"] },
+            { "property": "background-color", "role": "conteneur", "count": { "value": 1, "how": "header.entete" }, "pages": { "/": 1 }, "selectors": ["header.entete"] },
+            { "property": "background-color", "role": "champ", "count": { "value": 1, "how": "input#courriel" }, "pages": { "/": 1 }, "selectors": ["input#courriel"] }
+          ]
+        },
+        "#c8553d": {
+          "value": 3,
+          "how": "--orbe-terre (theme.css l.7) via composants.css l.50 et l.67",
+          "contexts": [
+            { "property": "color", "role": "texte", "count": { "value": 3, "how": "span.badge.etiquette, span.badge.badge--inactif, p.note::before" }, "pages": { "/": 3 }, "selectors": ["span.badge.etiquette", "span.badge.badge--inactif", "p.note::before"] }
+          ]
+        },
+        "#e2dccf": {
+          "value": 2,
+          "how": "--orbe-bord via composants.css l.6 et l.38",
+          "contexts": [
+            { "property": "border-bottom-color", "role": "conteneur", "count": { "value": 1, "how": "header.entete : seul le côté bottom a une bordure" }, "pages": { "/": 1 }, "selectors": ["header.entete"] },
+            { "property": "border-top-color", "role": "champ", "count": { "value": 1, "how": "input#courriel : 4 côtés, top est le premier" }, "pages": { "/": 1 }, "selectors": ["input#courriel"] }
+          ]
+        },
+        "#9a9a9a": {
+          "value": 1, "how": "composants.css l.60",
+          "contexts": [ { "property": "color", "role": "texte", "count": { "value": 1, "how": "p.note" }, "pages": { "/": 1 }, "selectors": ["p.note"] } ]
+        },
+        "#30548a": {
+          "value": 1, "how": "remote.css l.14",
+          "contexts": [ { "property": "color", "role": "lien", "count": { "value": 1, "how": "a.lien-discret" }, "pages": { "/": 1 }, "selectors": ["a.lien-discret"] } ]
+        },
+        "#f0c987": {
+          "value": 1, "how": "remote.css l.10",
+          "contexts": [ { "property": "color", "role": "lien", "count": { "value": 1, "how": "a (Mentions) du pied" }, "pages": { "/": 1 }, "selectors": ["a"] } ]
+        },
+        "#2c4d7f": {
+          "value": 1, "how": "remote.css l.6",
+          "contexts": [ { "property": "background-color", "role": "conteneur", "count": { "value": 1, "how": "footer.pied" }, "pages": { "/": 1 }, "selectors": ["footer.pied"] } ]
+        },
+        "#1f2a4433": {
+          "value": 1, "how": "composants.css l.22 ; hexadécimal : voir declared.colors.values.#1f2a4433",
+          "contexts": [ { "property": "background-color", "role": "conteneur", "count": { "value": 1, "how": "div.carte" }, "pages": { "/": 1 }, "selectors": ["div.carte"] } ]
+        },
+        "#00000026": {
+          "value": 1, "how": "composants.css l.24, couleur de l'ombre de div.carte, relevée depuis R5 bis ; hexadécimal : voir declared.colors.values.#00000026",
+          "contexts": [ { "property": "box-shadow", "role": "conteneur", "count": { "value": 1, "how": "div.carte" }, "pages": { "/": 1 }, "selectors": ["div.carte"] } ]
+        }
+      },
+      "groupsDE2": {
+        "value": 8,
+        "how": "9 opaques ; seule paire < 2 : #2b4c7e–#2c4d7f (0,354, voir declared.colors.deltaE) → 9 − 1 = 8",
+        "groups": [ { "rep": "#2b4c7e", "members": ["#2b4c7e", "#2c4d7f"], "n": 6 } ]
+      },
+      "groupsDE5": {
+        "value": 7,
+        "how": "#2c4d7f (0,354) et #30548a (2,969) rejoignent #2b4c7e (5 occurrences, traitée avant elles) ; #faf6ef n'est pas rendue (fond de body, body exclu par R1), donc pas de regroupement avec #ffffff → 9 − 2 = 7",
+        "groups": [ { "rep": "#2b4c7e", "members": ["#2b4c7e", "#2c4d7f", "#30548a"], "n": 7 } ]
+      }
+    },
+
+    "fontFamilies": {
+      "total": { "value": 16, "how": "un par porteur de texte (R4)" },
+      "values": {
+        "orbe sans, arial, sans-serif": {
+          "value": 16,
+          "how": "theme.css l.23 hérité partout, sauf p et a du pied (remote.css l.3)",
+          "originals": {
+            "\"Orbe Sans\", Arial, sans-serif": { "value": 14, "how": "16 − 2 du pied" },
+            "\"orbe sans\", arial, sans-serif": { "value": 2, "how": "p et a du pied ; [V] sérialisation de Chromium : guillemets simples convertis en doubles" }
+          }
+        }
+      }
+    },
+
+    "fontSizes": {
+      "total": { "value": 16, "how": "un par porteur de texte" },
+      "values": {
+        "18px": { "value": 7, "how": "a.logo, a (Carte), a.bouton, label, a.lien-discret, p et a de page-2 : 1rem hérité" },
+        "54px": { "value": 2, "how": "h1 ×2 : 3rem × 18 (@media min-width 1024 px active à 1366 px)" },
+        "22.5px": { "value": 1, "how": "p.accroche : 1.25rem × 18" },
+        "13.5px": { "value": 2, "how": "span.badge ×2 : .75em × 18 (parent div.carte à 18 px)" },
+        "14px": { "value": 2, "how": "p.note et p.note::before" },
+        "15.75px": { "value": 2, "how": "p et a du pied : .875rem × 18" }
+      },
+      "v1Keys": {
+        "$comment": "Clé compatible v1 : Math.round(px) + 'px', comme rendered.sizes de l'outil v1 (Math.round arrondit 0,5 vers le haut).",
+        "18px": { "value": 7, "how": "18px ×7, inchangé" },
+        "54px": { "value": 2, "how": "54px ×2, inchangé" },
+        "23px": { "value": 1, "how": "22.5px ×1 → Math.round(22.5) = 23" },
+        "14px": { "value": 4, "how": "13.5px ×2 → Math.round(13.5) = 14, plus 14px ×2" },
+        "16px": { "value": 2, "how": "15.75px ×2 → Math.round(15.75) = 16" }
+      }
+    },
+
+    "fontWeights": {
+      "total": { "value": 16, "how": "un par porteur de texte" },
+      "values": {
+        "400": { "value": 10, "how": "a.logo, a (Carte), label, p.note, p.note::before, a.lien-discret, p et a du pied, p et a de page-2" },
+        "700": { "value": 4, "how": "h1 ×2 (theme.css l.32), span.badge ×2 (composants.css l.49 bold)" },
+        "300": { "value": 1, "how": "p.accroche" },
+        "600": { "value": 1, "how": "a.bouton" }
+      }
+    },
+
+    "lineHeights": {
+      "total": { "value": 16, "how": "un par porteur de texte, aucun à normal ; [V] Chromium renvoie line-height en px pour un nombre sans unité" },
+      "values": {
+        "27px": { "value": 7, "how": "porteurs à 18 px × 1.5" },
+        "64.8px": { "value": 2, "how": "h1 : 54 × 1.2" },
+        "33.75px": { "value": 1, "how": "p.accroche : 22.5 × 1.5" },
+        "20.25px": { "value": 2, "how": "span.badge ×2 : 13.5 × 1.5" },
+        "21px": { "value": 2, "how": "p.note (composants.css l.62) et p.note::before (hérité)" },
+        "23.63px": { "value": 2, "how": "p et a du pied : 15.75 × 1.5 = 23.625, arrondi au centième" }
+      }
+    },
+
+    "letterSpacings": {
+      "total": { "value": 5, "how": "porteurs dont letter-spacing n'est pas normal" },
+      "values": {
+        "-0.5px": { "value": 2, "how": "h1 ×2" },
+        "0.45px": { "value": 1, "how": "p.accroche : .02em × 22.5" },
+        "1px": { "value": 2, "how": "span.badge ×2, classe etiquette (feuille construite)" }
+      }
+    },
+
+    "margins": {
+      "total": { "value": 7, "how": "longhands non nulles des éléments retenus ; p.invisible (16 px) exclu par R1" },
+      "values": {
+        "24px": {
+          "value": 2, "how": "h1 ×2, theme.css l.35",
+          "contexts": [ { "property": "margin-bottom", "role": "titre", "count": { "value": 2, "how": "h1 des deux pages" }, "pages": { "/": 1, "/page-2.html": 1 }, "selectors": ["h1"] } ]
+        },
+        "16px": {
+          "value": 4, "how": "p via var(--orbe-espace), theme.css l.39",
+          "contexts": [ { "property": "margin-bottom", "role": "texte", "count": { "value": 4, "how": "p.accroche, p.note, p du pied, p de page-2" }, "pages": { "/": 3, "/page-2.html": 1 }, "selectors": ["p.accroche", "p.note", "p"] } ]
+        },
+        "36px": {
+          "value": 1, "how": "section.hero : 2em × 18 (index.html l.9)",
+          "contexts": [ { "property": "margin-bottom", "role": "conteneur", "count": { "value": 1, "how": "section.hero" }, "pages": { "/": 1 }, "selectors": ["section.hero"] } ]
+        }
+      }
+    },
+
+    "paddings": {
+      "total": { "value": 32, "how": "8 éléments × 4 côtés : header.entete, section.hero, a.bouton, div.carte, input#courriel, span.badge ×2, footer.pied" },
+      "values": {
+        "16px": { "value": 2, "how": "header.entete top et bottom" },
+        "32px": { "value": 4, "how": "header.entete right et left ; footer.pied right et left (remote.css l.19)" },
+        "24px": { "value": 6, "how": "section.hero ×4 (index.html l.12) ; a.bouton right et left" },
+        "12px": { "value": 4, "how": "a.bouton top et bottom ; input#courriel right et left" },
+        "27px": { "value": 4, "how": "div.carte ×4 : 1.5rem × 18" },
+        "8px": { "value": 6, "how": "input#courriel top et bottom ; span.badge ×2 right et left" },
+        "4px": { "value": 4, "how": "span.badge ×2 top et bottom" },
+        "48px": { "value": 2, "how": "footer.pied top et bottom (@media min-width 48em active)" }
+      }
+    },
+
+    "gaps": {
+      "total": { "value": 4, "how": "header.entete (flex) et section.hero (grid), row-gap et column-gap chacun" },
+      "values": {
+        "24px": { "value": 2, "how": "header.entete row-gap et column-gap" },
+        "18px": { "value": 1, "how": "section.hero row-gap" },
+        "36px": { "value": 1, "how": "section.hero column-gap" }
+      }
+    },
+
+    "borderWidths": {
+      "total": { "value": 9, "how": "header.entete 1 côté ; input#courriel 4 ; a.bouton 4" },
+      "values": {
+        "1px": { "value": 5, "how": "header.entete border-bottom-width + input#courriel ×4" },
+        "2px": { "value": 4, "how": "a.bouton ×4" }
+      }
+    },
+
+    "radii": {
+      "total": { "value": 24, "how": "6 éléments × 4 coins" },
+      "values": {
+        "8px": {
+          "value": 4, "how": "a.bouton",
+          "contexts": [ { "property": "border-*-radius", "role": "bouton", "count": { "value": 4, "how": "4 coins de a.bouton" }, "pages": { "/": 4 }, "selectors": ["a.bouton"] } ]
+        },
+        "12px": {
+          "value": 4, "how": "div.carte",
+          "contexts": [ { "property": "border-*-radius", "role": "conteneur", "count": { "value": 4, "how": "4 coins de div.carte" }, "pages": { "/": 4 }, "selectors": ["div.carte"] } ]
+        },
+        "4px": {
+          "value": 4, "how": "input#courriel",
+          "contexts": [ { "property": "border-*-radius", "role": "champ", "count": { "value": 4, "how": "4 coins" }, "pages": { "/": 4 }, "selectors": ["input#courriel"] } ]
+        },
+        "999px": {
+          "value": 8, "how": "span.badge ×2",
+          "contexts": [ { "property": "border-*-radius", "role": "texte", "count": { "value": 8, "how": "4 coins × 2 badges" }, "pages": { "/": 8 }, "selectors": ["span.badge.etiquette", "span.badge.badge--inactif"] } ]
+        },
+        "50%": {
+          "value": 4, "how": "img.vignette",
+          "contexts": [ { "property": "border-*-radius", "role": "image", "count": { "value": 4, "how": "4 coins" }, "pages": { "/": 4 }, "selectors": ["img.vignette"] } ]
+        }
+      },
+      "$comment": "border-*-radius désigne les quatre longhands (border-top-left-radius…), chacune comptée une fois par élément ; le test somme les quatre."
+    },
+
+    "shadows": {
+      "total": { "value": 1, "how": "div.carte" },
+      "values": {
+        "0px 2px 4px 0px #00000026": { "value": 1, "how": "div.carte ; Chromium renvoie 'rgba(0, 0, 0, 0.15) 0px 2px 4px 0px', normalisé selon D12" }
+      }
+    },
+
+    "opacities": {
+      "total": { "value": 1, "how": "span.badge.badge--inactif" },
+      "values": {
+        "0.6": { "value": 1, "how": "composants.css l.56" }
+      }
+    },
+
+    "durations": {
+      "total": { "value": 8, "how": "5 liens + a.bouton + 2 badges" },
+      "values": {
+        "150ms": {
+          "value": 5, "how": "theme.css l.44 sur a.logo, a (Carte), a.lien-discret, a (Mentions), a (Retour, page-2)",
+          "contexts": [ { "property": "transition-duration", "role": "lien", "count": { "value": 5, "how": "voir ci-dessus" }, "pages": { "/": 4, "/page-2.html": 1 }, "selectors": ["a.logo", "a", "a.lien-discret"] } ]
+        },
+        "200ms": {
+          "value": 1, "how": "composants.css l.17 remplace la transition de a sur a.bouton",
+          "contexts": [ { "property": "transition-duration", "role": "bouton", "count": { "value": 1, "how": "a.bouton" }, "pages": { "/": 1 }, "selectors": ["a.bouton"] } ]
+        },
+        "1200ms": {
+          "value": 2, "how": "composants.css l.52",
+          "contexts": [ { "property": "animation-duration", "role": "texte", "count": { "value": 2, "how": "span.badge ×2" }, "pages": { "/": 2 }, "selectors": ["span.badge.etiquette", "span.badge.badge--inactif"] } ]
+        }
+      }
+    },
+
+    "timingFunctions": {
+      "total": { "value": 8, "how": "une par durée non nulle (R7)" },
+      "values": {
+        "cubic-bezier(0.2,0,0,1)": { "value": 5, "how": "les 5 liens ; Chromium renvoie 'cubic-bezier(0.2, 0, 0, 1)'" },
+        "ease": { "value": 1, "how": "a.bouton" },
+        "ease-in-out": { "value": 2, "how": "span.badge ×2" }
+      }
+    },
+
+    "textGreys": {
+      "$comment": "R13 (ajoutée avant le code) : gris de texte = couleurs rendues utilisées au moins une fois comme color sur un porteur de texte, dont la chroma OKLab √(a² + b²) < 0,02, transparence comprise (chroma calculée sur les canaux, alpha ignoré). Le blanc opaque #ffffff est exclu de la liste et compté à part (white).",
+      "distinct": { "value": 1, "how": "couleurs de texte rendues : #2b4c7e, #1f2a44, #ffffff, #c8553d, #9a9a9a, #30548a, #f0c987 ; chromas par node --input-type=module -e \"import {oklab} from 'culori'; const o=oklab('#1f2a44'); console.log(Math.hypot(o.a,o.b))\" (et de même pour chaque couleur) → 0.0925, 0.0503, 0, 0.1522, 0, 0.0984, 0.0946 ; seules #ffffff et #9a9a9a sont < 0,02, et #ffffff est traité à part" },
+      "total": { "value": 1, "how": "occurrences en color des gris de texte : #9a9a9a ×1" },
+      "values": {
+        "#9a9a9a": { "value": 1, "how": "p.note, seule occurrence en color" }
+      },
+      "white": { "value": 2, "how": "#ffffff en color sur a.bouton et sur le p du pied (rendered.colors.values.#ffffff.contexts)" },
+      "onDark": {
+        "$comment": "R14 (ajoutée avant le code) : une occurrence de gris de texte est « sur fond sombre » si son contraste avec son fond effectif dépasse son contraste avec le blanc (texte inversé). Couleur de texte transparente : fusionnée sur chacun des deux fonds avant le calcul.",
+        "value": 0,
+        "how": "#9a9a9a sur #cecdcd (p.note) : node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#9a9a9a','#cecdcd'))\" → 1.77390… ; sur blanc : node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#9a9a9a','#ffffff'))\" → 2.81393… ; 1,77 < 2,81, donc pas sur fond sombre"
+      }
+    },
+
+    "iframes": {
+      "byPage": {
+        "/": { "value": 0, "how": "index.html ne contient aucune iframe" },
+        "/page-2.html": { "value": 0, "how": "page-2.html ne contient aucune iframe" }
+      },
+      "pageCadres": { "value": 2, "how": "cadres.html (page de test hors marque, pas dans conditions.pages) : une iframe srcdoc et une iframe about:blank" }
+    },
+
+    "trace": {
+      "$comment": "Option --trace-rendered, désactivée par défaut. T1 : pour chaque clé de contexte (famille, valeur, propriété, rôle), un seul élément est tracé : le premier rencontré dans l'ordre du DOM de la première page où la clé apparaît. T2 : règle gagnante = déclarations !important d'abord, puis normales ; feuilles d'auteur avant celles du navigateur ; parmi les règles qui correspondent, la dernière dans l'ordre de cascade ; raccourcis acceptés pour leurs longhands. T3 : si l'élément n'a aucune règle pour la propriété et qu'elle s'hérite, on remonte les ancêtres (inherited = true). T4 : origin = feuille | attribut style | navigateur | initiale ; pour une feuille, source = étiquette de sources.json. T5 : un pseudo-élément n'est pas tracé (origin = non tracé).",
+      "checks": [
+        { "family": "colors", "value": "#2b4c7e", "property": "color", "role": "lien", "element": "a.logo", "origin": "feuille", "source": "theme", "selector": "a", "inherited": false, "how": "theme.css l.42–43 a { color: var(--orbe-bleu) } ; la règle du navigateur pour les liens perd face à l'auteur" },
+        { "family": "colors", "value": "#2b4c7e", "property": "background-color", "role": "bouton", "element": "a.bouton", "origin": "feuille", "source": "composants", "selector": ".bouton", "inherited": false, "how": "composants.css l.14" },
+        { "family": "colors", "value": "#2b4c7e", "property": "border-top-color", "role": "bouton", "element": "a.bouton", "origin": "feuille", "source": "composants", "selector": ".bouton", "inherited": false, "how": "composants.css l.15, raccourci border (T2)" },
+        { "family": "colors", "value": "#1f2a44", "property": "color", "role": "titre", "element": "h1", "origin": "feuille", "source": "theme", "selector": "body", "inherited": true, "how": "aucune règle color sur h1, section, main ; hérité de body, theme.css l.26 (T3)" },
+        { "family": "colors", "value": "#ffffff", "property": "color", "role": "texte", "element": "p (pied)", "origin": "feuille", "source": "distant", "selector": ".pied", "inherited": true, "how": "hérité de footer.pied, remote.css l.5 ; feuille d'une autre origine" },
+        { "family": "colors", "value": "#2c4d7f", "property": "background-color", "role": "conteneur", "element": "footer.pied", "origin": "feuille", "source": "distant", "selector": ".pied", "inherited": false, "how": "remote.css l.6" },
+        { "family": "colors", "value": "#c8553d", "property": "color", "role": "texte", "element": "span.badge.etiquette", "origin": "feuille", "source": "composants", "selector": ".badge", "inherited": false, "how": "composants.css l.50 ; le span vient avant p.note::before dans l'ordre du DOM (T1)" },
+        { "family": "fontSizes", "value": "22.5px", "property": "font-size", "role": "texte", "element": "p.accroche", "origin": "feuille", "source": "inline", "selector": ".hero .accroche", "inherited": false, "how": "<style> de index.html l.10" },
+        { "family": "fontSizes", "value": "54px", "property": "font-size", "role": "titre", "element": "h1", "origin": "feuille", "source": "theme", "selector": "h1", "inherited": false, "how": "theme.css l.49, dans @media (min-width: 1024px) : gagne sur l.31 (2.5rem), venue plus tôt" },
+        { "family": "fontWeights", "value": "400", "property": "font-weight", "role": "lien", "element": "a.logo", "origin": "initiale", "source": null, "selector": null, "inherited": false, "how": "aucune règle font-weight sur a.logo ni sur ses ancêtres, ni côté navigateur : valeur initiale (normal = 400)" },
+        { "family": "fontWeights", "value": "700", "property": "font-weight", "role": "texte", "element": "span.badge.etiquette", "origin": "feuille", "source": "composants", "selector": ".badge", "inherited": false, "how": "composants.css l.49 (bold)" },
+        { "family": "lineHeights", "value": "27px", "property": "line-height", "role": "lien", "element": "a.logo", "origin": "feuille", "source": "theme", "selector": "body", "inherited": true, "how": "hérité de body, theme.css l.25 (1.5)" },
+        { "family": "letterSpacings", "value": "1px", "property": "letter-spacing", "role": "texte", "element": "span.badge.etiquette", "origin": "feuille", "source": "injecté", "selector": ".etiquette", "inherited": false, "how": "feuille construite, index.html l.16" },
+        { "family": "margins", "value": "16px", "property": "margin-bottom", "role": "texte", "element": "p.accroche", "origin": "feuille", "source": "theme", "selector": "p", "inherited": false, "how": "theme.css l.39 ; la règle * l.13 (margin: 0) perd, spécificité plus faible" },
+        { "family": "paddings", "value": "24px", "property": "padding-top", "role": "conteneur", "element": "section.hero", "origin": "feuille", "source": "inline", "selector": ".hero", "inherited": false, "how": "<style> de index.html l.12, dans @media (min-width: 480px)" },
+        { "family": "borderWidths", "value": "1px", "property": "border-bottom-width", "role": "conteneur", "element": "header.entete", "origin": "feuille", "source": "composants", "selector": ".entete", "inherited": false, "how": "composants.css l.6, raccourci border-bottom" },
+        { "family": "radii", "value": "50%", "property": "border-top-left-radius", "role": "image", "element": "img.vignette", "origin": "feuille", "source": "composants", "selector": ".vignette", "inherited": false, "how": "composants.css l.33, raccourci border-radius" }
+      ]
+    }
+  },
+
+  "contrast": {
+    "cardBackground": {
+      "value": "#cecdcd",
+      "how": "fond effectif dans div.carte : rgba(31, 42, 68, .2) sur body #faf6ef → node --input-type=module -e \"import {blend,formatHex} from 'culori'; console.log(formatHex(blend(['#faf6ef','rgba(31, 42, 68, .2)'],'normal','rgb')))\" → #cecdcd (alpha 0,2 = 51/255 exact sur 8 bits : pas d'ambiguïté d'arrondi)",
+      "verify": { "culori": "blendOver", "args": ["#faf6ef", "rgba(31, 42, 68, .2)"], "result": "#cecdcd" }
+    },
+    "pairsTotal": { "value": 10, "how": "paires (texte, fond) distinctes ci-dessous" },
+    "occurrencesTotal": { "value": 16, "how": "un par porteur de texte : 2 + 4 + 1 + 1 + 3 + 1 + 1 + 1 + 1 + 1" },
+    "pairs": [
+      { "text": "#2b4c7e", "bg": "#ffffff", "ratio": 8.6144, "n": 2, "nLarge": 0, "belowAA": 0, "belowAAA": 0, "selectors": ["a.logo", "a"],
+        "how": "liens de header.entete (fond #ffffff) ; node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#2b4c7e','#ffffff'))\" → 8.6144…",
+        "verify": { "culori": "wcagContrast", "args": ["#2b4c7e", "#ffffff"] } },
+      { "text": "#1f2a44", "bg": "#faf6ef", "ratio": 13.2346, "n": 4, "nLarge": 2, "belowAA": 0, "belowAAA": 0, "selectors": ["h1", "p.accroche", "p"],
+        "how": "h1 ×2 (54 px, grand texte), p.accroche, p de page-2 ; fond de body ; node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#1f2a44','#faf6ef'))\" → 13.2346…",
+        "verify": { "culori": "wcagContrast", "args": ["#1f2a44", "#faf6ef"] } },
+      { "text": "#ffffff", "bg": "#2b4c7e", "ratio": 8.6144, "n": 1, "nLarge": 0, "belowAA": 0, "belowAAA": 0, "selectors": ["a.bouton"],
+        "how": "a.bouton sur son propre fond ; node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#ffffff','#2b4c7e'))\" → 8.6144…",
+        "verify": { "culori": "wcagContrast", "args": ["#ffffff", "#2b4c7e"] } },
+      { "text": "#1f2a44", "bg": "#cecdcd", "ratio": 8.9879, "n": 1, "nLarge": 0, "belowAA": 0, "belowAAA": 0, "selectors": ["label"],
+        "how": "label dans div.carte (fond contrast.cardBackground) ; node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#1f2a44','#cecdcd'))\" → 8.9879…",
+        "verify": { "culori": "wcagContrast", "args": ["#1f2a44", "#cecdcd"] } },
+      { "text": "#c8553d", "bg": "#cecdcd", "ratio": 2.7451, "n": 3, "nLarge": 0, "belowAA": 3, "belowAAA": 3, "selectors": ["span.badge.etiquette", "span.badge.badge--inactif", "p.note::before"],
+        "flag": "[V]",
+        "uncertain": { "value": 1, "how": "span.badge.badge--inactif a opacity: .6 (composants.css l.56) : contraste réel plus faible que calculé (R11)", "reasons": { "opacity": 1, "backgroundImage": 0, "overlap": 0 } },
+        "how": "span.badge ×2 (13,5 px gras : pas grand texte) et p.note::before (14 px) ; < 4,5 → sous AA ; opacity du badge inactif hors calcul, occurrence marquée [V] (R11) ; node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#c8553d','#cecdcd'))\" → 2.74505… (arrondi 2.7451)",
+        "verify": { "culori": "wcagContrast", "args": ["#c8553d", "#cecdcd"] } },
+      { "text": "#9a9a9a", "bg": "#cecdcd", "ratio": 1.7739, "n": 1, "nLarge": 0, "belowAA": 1, "belowAAA": 1, "selectors": ["p.note"],
+        "how": "p.note (14 px) ; node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#9a9a9a','#cecdcd'))\" → 1.7739…",
+        "verify": { "culori": "wcagContrast", "args": ["#9a9a9a", "#cecdcd"] } },
+      { "text": "#30548a", "bg": "#faf6ef", "ratio": 7.0608, "n": 1, "nLarge": 0, "belowAA": 0, "belowAAA": 0, "selectors": ["a.lien-discret"],
+        "how": "a.lien-discret dans main (fond de body) ; ≥ 7 → AAA ; node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#30548a','#faf6ef'))\" → 7.0608…",
+        "verify": { "culori": "wcagContrast", "args": ["#30548a", "#faf6ef"] } },
+      { "text": "#ffffff", "bg": "#2c4d7f", "ratio": 8.4845, "n": 1, "nLarge": 0, "belowAA": 0, "belowAAA": 0, "selectors": ["p"],
+        "how": "p du pied ; node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#ffffff','#2c4d7f'))\" → 8.48448… (arrondi 8.4845)",
+        "verify": { "culori": "wcagContrast", "args": ["#ffffff", "#2c4d7f"] } },
+      { "text": "#f0c987", "bg": "#2c4d7f", "ratio": 5.4178, "n": 1, "nLarge": 0, "belowAA": 0, "belowAAA": 1, "selectors": ["a"],
+        "how": "a (Mentions) du pied, 15,75 px ; ≥ 4,5 mais < 7 → AA sans AAA ; node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#f0c987','#2c4d7f'))\" → 5.41777… (arrondi 5.4178)",
+        "verify": { "culori": "wcagContrast", "args": ["#f0c987", "#2c4d7f"] } },
+      { "text": "#2b4c7e", "bg": "#faf6ef", "ratio": 7.9965, "n": 1, "nLarge": 0, "belowAA": 0, "belowAAA": 0, "selectors": ["a"],
+        "how": "a (Retour) de page-2, fond de body ; node --input-type=module -e \"import {wcagContrast} from 'culori'; console.log(wcagContrast('#2b4c7e','#faf6ef'))\" → 7.99646… (arrondi 7.9965)",
+        "verify": { "culori": "wcagContrast", "args": ["#2b4c7e", "#faf6ef"] } }
+    ]
+  }
+}

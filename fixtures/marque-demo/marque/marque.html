@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fr" style="--marque-primary-color: #2B4C7E; --marque-primary-color-darken-4: #1B2333; --marque-secondary-color: #8F8F8F; --marque-accent-color: #C8553D; --orbe-largeur: 100vw;">
+<head>
+  <meta charset="utf-8">
+  <title>Orbe Café — la carte</title>
+  <link rel="stylesheet" href="/marque/styles/marque.css">
+</head>
+<body>
+  <main class="page">
+    <h1 class="titre-page">La carte</h1>
+
+    <!-- PM0 : onglet actif, repli du gabarit (#dd3f2b) contraire au back-office (#2B4C7E). -->
+    <nav class="onglets" aria-label="Rubriques">
+      <a class="onglet onglet-actif" id="pm0-onglet" href="#boissons">Boissons</a>
+      <a class="onglet" id="pm0-onglet-2" href="#patisseries">Pâtisseries</a>
+    </nav>
+
+    <!-- PM1 : deux emplacements, primaire (plein du bouton) et secondaire gris (texte). -->
+    <section class="bloc" id="pm1" aria-label="PM1">
+      <p class="meta" id="pm1-meta">Carte mise à jour ce matin</p>
+      <button class="bouton" id="pm1-bouton" type="button">Commander</button>
+    </section>
+
+    <!-- PM2 : variante darken-4 du primaire, en titre. -->
+    <section class="bloc" id="pm2" aria-label="PM2">
+      <h2 class="titre-bloc" id="pm2-titre">Nos origines</h2>
+      <p id="pm2-texte">Trois fermes, deux continents, un torréfacteur.</p>
+    </section>
+
+    <!-- PM3 : rose de contenu, hors de tout état. -->
+    <section class="bloc" id="pm3" aria-label="PM3">
+      <p class="promo" id="pm3-promo">Nouveau : le moka glacé, tout l'été.</p>
+    </section>
+
+    <!-- PM4 : vrai message d'erreur. -->
+    <section class="bloc" id="pm4" aria-label="PM4">
+      <form id="pm4-form" action="#">
+        <label class="libelle" id="pm4-libelle" for="pm4-mail">E-mail pour la lettre</label>
+        <input class="champ" id="pm4-mail" type="text" value="ada@" aria-invalid="true" aria-describedby="pm4-erreur">
+        <p class="erreur" id="pm4-erreur" role="alert">Adresse incomplète : il manque le domaine.</p>
+      </form>
+    </section>
+
+    <!-- PM5 : accent du back-office en texte, sur blanc seulement. -->
+    <section class="bloc" id="pm5" aria-label="PM5">
+      <p class="accroche" id="pm5-accroche">Torréfié chaque mardi à Lyon.</p>
+    </section>
+
+    <!-- PM6 : teinte claire de l'accent en texte. -->
+    <section class="bloc" id="pm6" aria-label="PM6">
+      <p class="legende" id="pm6-legende">Photo : la brûlerie au petit matin.</p>
+    </section>
+
+    <!-- PM7 : couleur du gabarit en dur, sur blanc et dans un seul titre sur gris. -->
+    <section class="bloc" id="pm7" aria-label="PM7">
+      <p><a class="lien-fort" id="pm7-lien" href="#carte">Voir toute la carte</a></p>
+      <div class="encart" id="pm7-encart">
+        <h2 class="encart-titre" id="pm7-titre">Le café du jour</h2>
+      </div>
+    </section>
+
+    <!-- PM8 : orangé proche de l'accent, sur blanc et sur une pastille gris moyen. -->
+    <section class="bloc" id="pm8" aria-label="PM8">
+      <p><a class="lien-reserver" id="pm8-lien" href="#reserver">Réserver une table</a></p>
+      <p><span class="pastille" id="pm8-pastille">Complet ce soir</span></p>
+    </section>
+  </main>
+</body>
+</html>

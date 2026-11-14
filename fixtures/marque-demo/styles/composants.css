@@ -1,0 +1,79 @@
+.entete {
+  display: flex;
+  gap: 24px;
+  padding: 16px 32px;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--orbe-bord);
+}
+
+.bouton {
+  display: inline-block;
+  padding: 12px 24px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: var(--orbe-bleu);
+  border: 2px solid #2b4c7e;
+  border-radius: 8px;
+  transition: background-color .2s ease;
+}
+
+.carte {
+  padding: 1.5rem;
+  background-color: rgba(31, 42, 68, .2);
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .15);
+}
+
+.carte::after {
+  content: none;
+  color: #000000;
+}
+
+.vignette {
+  border-radius: 50%;
+}
+
+.champ {
+  padding: 8px 12px;
+  border: 1px solid var(--orbe-bord);
+  border-radius: 4px;
+  background-color: #ffffff;
+  font-family: inherit;
+  color: var(--orbe-encre);
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: .75em;
+  font-weight: bold;
+  color: var(--orbe-terre);
+  border-radius: 999px;
+  animation: pulsation 1.2s ease-in-out infinite;
+}
+
+.badge--inactif {
+  opacity: .6;
+}
+
+.note {
+  color: #9a9a9a;
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.note::before {
+  content: "※ ";
+  color: var(--orbe-terre);
+}
+
+@keyframes pulsation {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bouton {
+    transition-duration: 0s;
+  }
+}

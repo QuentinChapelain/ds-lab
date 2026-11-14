@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Orbe Café — page témoin</title>
+  <!-- Lot T : page témoin. Les quatre feuilles des pages en désordre, sans aucune
+       nouvelle valeur CSS (ni feuille, ni style en ligne) : d'autres composants,
+       pour vérifier qu'une migration décidée sur carte, compte et gestion tient ailleurs. -->
+  <link rel="stylesheet" href="/desordre/styles/commun.css">
+  <link rel="stylesheet" href="/desordre/styles/ancienne.css">
+  <link rel="stylesheet" href="/desordre/styles/bibliotheque.css">
+  <link rel="stylesheet" href="/desordre/styles/recente.css">
+  <link rel="stylesheet" href="{{ORIGINE_DISTANTE}}/styles/cookies.css">
+</head>
+<body>
+  <header class="entete">
+    <a class="logo" href="/desordre/carte.html">Orbe Café</a>
+    <nav class="navigation" aria-label="Principale">
+      <a href="/desordre/carte.html">La carte</a>
+      <a href="/desordre/compte.html">Mon compte</a>
+      <a href="/desordre/gestion.html">Gestion</a>
+    </nav>
+  </header>
+  <main class="page">
+    <section class="bandeau">
+      <h1>Ateliers et abonnements</h1>
+      <p class="chapo">Apprendre l'extraction au comptoir, recevoir un café différent chaque mois.</p>
+    </section>
+
+    <section class="categorie">
+      <h2 class="categorie-titre">Ateliers du mois</h2>
+      <div class="produits">
+        <article class="produit">
+          <div class="produit-ligne"><h3 class="produit-nom">Dégustation<span class="etiquette-nouveau">Nouveau</span></h3><span class="prix">18,00 €</span></div>
+          <p class="produit-desc">Trois origines, trois méthodes, une heure au comptoir le samedi matin.</p>
+        </article>
+        <article class="produit">
+          <div class="produit-ligne"><h3 class="produit-nom">Latte art<span class="etiquette-promo">Promo</span></h3><span class="prix"><span class="prix-barre">25,00 €</span> <span class="prix-promo">20,00 €</span></span></div>
+          <p class="produit-desc">Texturer le lait et dessiner un cœur, puis une tulipe.</p>
+        </article>
+        <article class="produit">
+          <div class="produit-ligne"><h3 class="produit-nom">Torréfaction</h3><span class="prix">35,00 €</span></div>
+          <p class="produit-desc">Suivre une fournée de la porte du torréfacteur au refroidissement.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="bloc">
+      <h2 class="titre-bloc">S'inscrire à un atelier</h2>
+      <form class="formulaire" action="#">
+        <label class="libelle" for="atelier-nom">Nom</label>
+        <input id="atelier-nom" class="champ" type="text" value="Grace Hopper">
+        <label class="libelle" for="atelier-courriel">E-mail</label>
+        <input id="atelier-courriel" class="champ" type="text" value="grace@exemple">
+        <p class="erreur">Adresse incomplète : il manque le domaine.</p>
+        <p class="aide">Nous vous écrivons la veille pour confirmer la place.</p>
+        <div class="actions">
+          <button class="bouton-principal" type="button">Réserver ma place</button>
+          <button class="bouton-secondaire" type="button">Plus tard</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="bloc">
+      <h2 class="titre-bloc">Abonnements en cours</h2>
+      <table class="tableau">
+        <thead>
+          <tr>
+            <th>Formule</th>
+            <th>Café du mois</th>
+            <th class="montant">Prix</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="ligne">
+            <td>Découverte</td>
+            <td>Huila, Colombie</td>
+            <td class="montant">14,00 €</td>
+            <td><span class="pastille pastille--payee">Payée</span></td>
+          </tr>
+          <tr class="ligne">
+            <td>Passion</td>
+            <td>Sidamo, Éthiopie</td>
+            <td class="montant">22,00 €</td>
+            <td><span class="pastille pastille--attente">En attente</span></td>
+          </tr>
+          <tr class="ligne">
+            <td>Bureau</td>
+            <td>Cerrado, Brésil</td>
+            <td class="montant">48,00 €</td>
+            <td><span class="pastille pastille--annulee">Annulée</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="legende">Prix mensuels TTC, livraison comprise.</p>
+    </section>
+
+    <section class="bloc">
+      <h2 class="titre-bloc">Conditions</h2>
+      <p>Un abonnement se suspend à tout moment depuis <a class="lien" href="#compte">votre compte</a>, sans frais. Les ateliers annulés la veille sont remboursés ; voir <a class="lien-discret" href="#conditions">les conditions des ateliers</a> pour le détail.</p>
+      <p class="secondaire">Places limitées à six personnes par atelier.</p>
+    </section>
+
+    <div class="actions-carte">
+      <a class="bouton" role="button" href="#abonnement">Choisir un abonnement</a>
+    </div>
+  </main>
+  <footer class="pied">
+    <p>© 2026 Orbe Café, torréfacteur de quartier (marque fictive)</p>
+    <nav class="pied-liens" aria-label="Pied de page">
+      <a href="#mentions">Mentions légales</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </footer>
+  <div class="tiers-cookies" role="dialog" aria-label="Cookies">
+    <p>Ce site utilise des cookies de mesure d'audience.</p>
+    <button type="button">Tout accepter</button>
+    <button type="button" class="tiers-refuser">Refuser</button>
+  </div>
+</body>
+</html>

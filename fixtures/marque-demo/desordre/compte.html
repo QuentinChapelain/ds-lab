@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Orbe Café — mon compte</title>
+  <link rel="stylesheet" href="/desordre/styles/commun.css">
+  <link rel="stylesheet" href="/desordre/styles/bibliotheque.css">
+  <link rel="stylesheet" href="{{ORIGINE_DISTANTE}}/styles/cookies.css">
+</head>
+<body>
+  <header class="entete">
+    <a class="logo" href="/desordre/carte.html">Orbe Café</a>
+    <nav class="navigation" aria-label="Principale">
+      <a href="/desordre/carte.html">La carte</a>
+      <a href="/desordre/compte.html" aria-current="page">Mon compte</a>
+      <a href="/desordre/gestion.html">Gestion</a>
+    </nav>
+  </header>
+  <main class="espace">
+    <h1 class="titre-page">Mon compte</h1>
+    <p class="salutation">Bonjour Ada, ravis de vous revoir.</p>
+    <div class="colonnes">
+      <section class="bloc">
+        <div class="profil-tete">
+          <div class="photo-attente"><img alt="" width="64" height="64" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></div>
+          <h2 class="titre-bloc">Profil</h2>
+        </div>
+        <form class="formulaire" action="#">
+          <label class="libelle" for="nom">Nom</label>
+          <input id="nom" class="champ" type="text" value="Ada Lovelace">
+          <label class="libelle" for="courriel">E-mail</label>
+          <input id="courriel" class="champ" type="text" value="ada@exemple">
+          <p class="erreur">Adresse incomplète : il manque le domaine (par exemple .fr).</p>
+          <label class="libelle" for="telephone">Téléphone</label>
+          <input id="telephone" class="champ" type="text" value="06 12 34 56 78">
+          <p class="aide">Utilisé seulement pour vous prévenir quand votre commande est prête.</p>
+          <div class="actions">
+            <button class="bouton-principal" type="button">Enregistrer</button>
+            <button class="bouton-secondaire" type="button">Annuler</button>
+          </div>
+        </form>
+        <a class="lien lien-bloc" href="#mot-de-passe">Modifier mon mot de passe</a>
+      </section>
+      <section class="bloc">
+        <h2 class="titre-bloc">Mes commandes</h2>
+        <ul class="liste-commandes">
+          <li class="commande">
+            <span class="avatar avatar--lea"><img alt="" width="32" height="32" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>
+            <div class="commande-texte">
+              <p>Espresso ×2, cookie<span class="etiquette-nouveau">Nouveau</span></p>
+              <p class="date">Mardi 10 novembre, 8 h 42 · préparée par Léa</p>
+            </div>
+            <a class="lien" href="#commande-1042">Voir</a>
+          </li>
+          <li class="commande">
+            <span class="avatar avatar--sami"><img alt="" width="32" height="32" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>
+            <div class="commande-texte">
+              <p>Flat white, financier</p>
+              <p class="date">Vendredi 6 novembre, 12 h 15 · préparée par Sami</p>
+            </div>
+            <a class="lien" href="#commande-1017">Voir</a>
+          </li>
+          <li class="commande">
+            <span class="avatar avatar--lea"><img alt="" width="32" height="32" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E"></span>
+            <div class="commande-texte">
+              <p>Filtre du jour</p>
+              <p class="date">Lundi 2 novembre, 7 h 58 · préparée par Léa</p>
+            </div>
+            <a class="lien" href="#commande-0998">Voir</a>
+          </li>
+        </ul>
+        <p class="secondaire">Les commandes de plus de six mois sont archivées.</p>
+      </section>
+    </div>
+    <p class="mentions">Les données de votre compte servent uniquement à la préparation de vos commandes. Vous pouvez demander leur suppression à tout moment depuis la page Contact. Orbe Café est une marque fictive.</p>
+  </main>
+  <footer class="pied">
+    <p>© 2026 Orbe Café, torréfacteur de quartier (marque fictive)</p>
+    <nav class="pied-liens" aria-label="Pied de page">
+      <a href="#mentions">Mentions légales</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </footer>
+  <div class="tiers-cookies" role="dialog" aria-label="Cookies">
+    <p>Ce site utilise des cookies de mesure d'audience.</p>
+    <button type="button">Tout accepter</button>
+    <button type="button" class="tiers-refuser">Refuser</button>
+  </div>
+</body>
+</html>

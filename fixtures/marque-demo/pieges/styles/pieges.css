@@ -1,0 +1,376 @@
+/* Orbe Café : page des pièges du lot E2 (et L1, lot M). Constructions des pièges P1 à P8b et L1 :
+   voir fixtures/marque-demo/expected-pieges.json. Toute autre valeur
+   (couleur, espacement, taille, rayon) est une valeur de
+   fixtures/marque-demo/cible-valise.json. En px seulement. */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: "Orbe Sans", Arial, sans-serif;
+  line-height: 1.5;
+}
+
+body {
+  font-size: 16px;
+  color: #363026; /* neutre-12 */
+  background-color: #ffffff;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+  appearance: none;
+}
+
+input::placeholder {
+  color: #6d675b; /* neutre-11 */
+  opacity: 1;
+}
+
+/* En-tête */
+
+.entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 16px 32px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #d8d6d2; /* neutre-6 */
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 700;
+  color: #103060; /* bleu-12 */
+  text-decoration: none;
+}
+
+.navigation {
+  display: flex;
+  gap: 24px;
+}
+
+.navigation a {
+  color: #2b4c7e; /* bleu-9 */
+  text-decoration: none;
+}
+
+.recherche {
+  display: flex;
+  align-items: center;
+  padding-right: 8px;
+  background-color: #ffffff;
+  border: 1px solid #bfbbb5; /* neutre-7 */
+  border-radius: 8px;
+}
+
+.recherche-champ {
+  width: 240px;
+  padding: 8px 16px 8px 12px;
+  font-size: 14px;
+  color: #363026;
+  background-color: transparent;
+  border: 0;
+}
+
+/* P2 : loupe ramenée dans le champ par une marge négative. */
+.loupe {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-left: -12px;
+  color: #6d675b;
+}
+
+/* P1 : bloc centré par une marge auto (40px de chaque côté à 1366). */
+.page {
+  max-width: 1286px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+}
+
+.page > section + section {
+  margin-top: 48px;
+}
+
+h1 {
+  font-size: 30px;
+  line-height: 1.2;
+}
+
+h2 {
+  margin-bottom: 16px;
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+h3 {
+  margin-bottom: 8px;
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.secondaire {
+  color: #6d675b;
+}
+
+/* P2 : visuel, et bandeau qui le chevauche par une marge négative. */
+.visuel {
+  height: 240px;
+  background-color: #f2d199; /* sable-6 */
+  border-radius: 12px;
+}
+
+.une-bandeau {
+  position: relative;
+  margin: -40px 24px 0;
+  padding: 24px;
+  background-color: #ffffff;
+  border: 1px solid #d8d6d2;
+  border-radius: 12px;
+}
+
+.une-bandeau p {
+  margin-top: 8px;
+}
+
+/* P3 et P3b : tuiles, titre placé par une grande marge. */
+.tuiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.tuile {
+  position: relative;
+  height: 200px;
+  padding: 0 24px;
+  background-color: #f9e8cd; /* sable-4 */
+  border-radius: 12px;
+}
+
+.tuile-titre {
+  position: absolute;
+  top: 0;
+  margin: 96px 0 0;
+  font-size: 20px;
+  line-height: 1.2;
+  color: #4a2900; /* sable-12 */
+}
+
+.tuile-desc {
+  position: absolute;
+  top: 60px;
+  height: 30px;
+  font-size: 14px;
+  color: #4a2900;
+}
+
+.tuile--seule .tuile-titre {
+  margin-top: 52px;
+}
+
+/* P4 : avatars ronds et carte, même rayon de 20px. */
+.equipe-contenu {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+.membres {
+  display: grid;
+  gap: 12px;
+  list-style: none;
+}
+
+.membre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #103060;
+  background-color: #e8ecf2; /* bleu-4 */
+  border-radius: 20px;
+}
+
+.membre-role {
+  font-size: 14px;
+  color: #6d675b;
+}
+
+.carte-equipe {
+  height: 160px;
+  padding: 24px;
+  background-color: #fcf1ef; /* terre-3 */
+  border-radius: 20px;
+}
+
+.carte-equipe p + p {
+  margin-top: 8px;
+}
+
+/* P7 : violet de marque non déclaré, sur cinq éléments. */
+.titre-ligne {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.titre-ligne h2 {
+  margin-bottom: 0;
+}
+
+.badge-violet {
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  background-color: #7c6fe0;
+  border-radius: 9999px;
+}
+
+.lien-violet {
+  color: #7c6fe0;
+}
+
+.offre-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.bouton {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.bouton-violet {
+  background-color: #7c6fe0;
+}
+
+.carte-violette {
+  padding: 16px 24px;
+  border: 1px solid #7c6fe0;
+  border-radius: 12px;
+}
+
+/* P8 et P8b : bleu isolé, et bordure de champ. */
+.reservation {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+}
+
+.reservation label {
+  display: grid;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.champ-bleu {
+  width: 320px;
+  padding: 8px 12px;
+  font-size: 16px;
+  color: #363026;
+  background-color: #ffffff;
+  border: 1px solid #5aa0e6;
+  border-radius: 8px;
+}
+
+.bouton-bleu {
+  background-color: #3d8bfd;
+}
+
+/* L1 : lien bleu-11 sans soulignement dans un paragraphe en neutre-12 (2,34:1 avec le texte voisin). */
+.reserver-note {
+  margin-top: 16px;
+}
+
+.lien-discret {
+  color: #4c6994; /* bleu-11 */
+  text-decoration: none;
+}
+
+/* P6 : section en fond #eeeeee (le même fond que le bandeau tiers). */
+.infos {
+  padding: 24px;
+  background-color: #eeeeee;
+  border-radius: 12px;
+}
+
+.infos p + p {
+  margin-top: 8px;
+}
+
+/* P5 : pied de page sombre. */
+.pied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 32px;
+  font-size: 14px;
+  color: #c8c8c8;
+  background-color: #2e2e2e;
+}
+
+.pied-liens {
+  display: flex;
+  gap: 24px;
+}
+
+.pied-mentions {
+  color: #999999;
+}
+
+/* P6 : bandeau d'un prestataire fictif, déclaré tiers dans sources.json. */
+.tiers-cookies {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 32px;
+  font-size: 14px;
+  color: #555555;
+  background-color: #eeeeee;
+}
+
+.tiers-cookies button {
+  padding: 8px 16px;
+  font-weight: 700;
+  color: #363026;
+  background-color: #ffffff;
+  border: 1px solid #bfbbb5;
+  border-radius: 8px;
+  cursor: pointer;
+}

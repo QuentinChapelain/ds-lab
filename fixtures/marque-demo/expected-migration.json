@@ -1,0 +1,78 @@
+{
+  "$comment": "Attendus du lot M : migration.md, écrit par reduce à chaque réduction, lu par le développeur sans l'outil. Écrits à la main avant le code. Les chiffres des pages en désordre sont un instantané de la table du lot B (réduction du 12/11/2026, hors dépôt), corrigé par R7 étendue (un rayon de 50 % ou plus est une pilule). En cas d'écart entre l'outil et ce fichier : ne corriger ni l'un ni l'autre, signaler l'écart.",
+  "conditions": {
+    "pages": ["/desordre/carte.html", "/desordre/compte.html", "/desordre/gestion.html"],
+    "target": "fixtures/marque-demo/cible-valise.json",
+    "tokens": "tokens/orbe-cafe/primitives.tokens.json",
+    "sources": "fixtures/marque-demo/sources.json",
+    "viewport": { "width": 1366, "height": 900 }
+  },
+  "format": {
+    "table": {
+      "text": "Une ligne par valeur × usage, qui commence par l’identifiant et le titre de la ligne (« esp-17 Marge basse · champ « Nom » et 4 autres ») : valeur, usage, jeton DTCG (chemin exact de tokens/orbe-cafe/primitives.tokens.json, ou « jeton absent »), classe, origine CSS (fichier:ligne de la règle si connue), éléments. Les tables Appliqué et Décisions en attente gardent les sélecteurs en dernière colonne ; chaque remplacement de la consigne commence aussi par l’identifiant et le titre.",
+      "was": "Une ligne par valeur × usage : valeur, usage, jeton DTCG (chemin exact de tokens/orbe-cafe/primitives.tokens.json, ou « jeton absent »), classe, origine CSS (fichier:ligne de la règle si connue), éléments.",
+      "corrected": "12/11/2026 : lot R, R-2, identifiant et titre communs à toutes les sorties"
+    },
+    "sections": ["Appliqué (auto, proche, correction)", "Décisions en attente", "Hors table, avec motif"],
+    "exceptions": [
+      "Liens sans soulignement dans un paragraphe",
+      "Texte sur terre à poser en onSolid",
+      "États non lus",
+      "Élément injecté après le chargement",
+      "Égalité tranchée en silence"
+    ]
+  },
+  "desordre": {
+    "table": { "rows": 89, "unchanged": 34, "corrected": "13/11/2026 : lot K, #c8553d en plein (déjà sur terre-9) suit la carte « Texte sur plein terre », en attente sans décision (35 → 34) ; 12/11/2026 : lot P, lignes de marge coupées par relation (10px, 14px, 8px, 4px, 24px : 5 lignes de plus, dont 3 inchangées) ; 13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : 14px, 8px et 24px réunies (3 lignes de moins, dont 2 inchangées)" },
+    "sections": {
+      "applied": { "total": 41, "colors": 25, "spacing": 7, "fontSizes": 6, "radii": 3, "corrected": "12/11/2026 : lot R, seuil de 2 px pour les tailles de texte ; 12/11/2026 : lot P, 14px marge (proche) coupée en entre composants et inconnue ; 13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : 14px marge réunie en une ligne" },
+      "pending": { "total": 13, "colors": 6, "spacing": 5, "fontSizes": 1, "radii": 1, "corrected": "13/11/2026 : lot K, les trois fonds du plein terre attendent la carte « Texte sur plein terre » (#d0563f et #c4513a déjà en attente, #c8553d en plus) ; 12/11/2026 : lot R, seuil de 2 px pour les tailles de texte ; 12/11/2026 : lot P, 10px marge (décision) coupée en dans le composant et entre composants" },
+      "outOfTable": { "total": 1, "rows": [{ "family": "colors", "value": "#2196f3", "reason": "aucune échelle (R4)" }] }
+    },
+    "tokens": [
+      { "family": "colors", "value": "#999999", "usage": "texte", "token": "couleur.neutre.11" },
+      { "family": "colors", "value": "#999999", "usage": "bordure", "token": "couleur.neutre.8" },
+      { "family": "colors", "value": "#4990e2", "usage": "plein", "token": "couleur.bleu.9" },
+      { "family": "spacing", "value": "15px", "usage": "marge", "token": "espace.16" },
+      { "family": "fontSizes", "value": "13.5px", "token": "taille-texte.14" },
+      { "family": "radii", "value": "50%", "usage": "pilule", "token": "rayon.pilule" },
+      { "family": "radii", "value": "3px", "usage": "rayon", "token": "rayon.2" }
+    ],
+    "origins": [
+      { "family": "colors", "value": "#9a9a9a", "usage": "texte", "origin": "recente.css:96" },
+      { "family": "colors", "value": "#2196f3", "origin": "bibliotheque.css:123" }
+    ],
+    "exceptions": {
+      "ununderlinedLinks": { "count": 0 },
+      "onSolid": {
+        "$comment": "Lot K : couplages de la réduction décidée (passage 2c et « plein|terre » : « onSolid ») ; sans décision, aucun (K5).",
+        "count": 1,
+        "pairs": [
+          { "text": "#ffffff", "bg": "#c8553d", "scale": "terre", "onSolid": "#220000", "befores": ["#d0563f", "#c4513a", "#c8553d"] }
+        ],
+        "corrected": "13/11/2026, lot K : la carte tranchée envoie les trois fonds terre au pas 9 ; une seule paire après la table (avant : blanc sur #d0563f et sur #c8553d, la décision de #d0563f n'étant pas appliquée)."
+      },
+      "unreadStates": {
+        "count": 2,
+        "values": [
+          { "value": "#24426f", "state": "hover", "property": "background-color" },
+          { "value": "#005fcc", "state": "focus", "property": "outline-color", "note": "anneau de focus par défaut du navigateur" }
+        ]
+      },
+      "injected": { "count": null, "note": "limite connue : non détecté, signalé sans compte" },
+      "silentTies": {
+        "count": 2,
+        "corrected": "12/11/2026 : lot P, 14px marge coupée par relation : une égalité par ligne ; 13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : 14px marge réunie, une seule égalité",
+        "rows": [
+          { "family": "spacing", "value": "14px", "usage": "marge", "tie": ["12px", "16px"], "class": "proche", "new": "12px", "id": "E5" },
+          { "family": "radii", "value": "3px", "usage": "rayon", "tie": ["2px", "4px"], "class": "auto", "new": "2px" }
+        ]
+      }
+    }
+  },
+  "pieges": {
+    "exceptions": {
+      "ununderlinedLinks": { "count": 1, "id": "L1", "value": "#4c6994", "neighbor": "#363026", "ratio": 2.3361 }
+    }
+  }
+}

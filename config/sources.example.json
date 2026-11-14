@@ -1,0 +1,11 @@
+{
+  "$comment": "Copier vers local/sources.json (ignoré par git) et adapter. Règles testées dans l'ordre : la première qui correspond donne l'étiquette. \"match\" = sous-chaîne de l'URL de la feuille, \"regex\" = expression régulière JavaScript. Étiquettes réservées, attribuées automatiquement : inline, injecté, même-origine, autre-domaine. Sans \"default\", une feuille qui ne correspond à aucune règle est classée même-origine ou autre-domaine. \"thirdParty\" (facultatif) : sélecteurs CSS des composants tiers (bandeau de cookies, boutons de partage) ; ces éléments et leurs descendants sont écartés du rendu et comptés à part.",
+  "rules": [
+    { "label": "polices", "regex": "^https://fonts\\.example\\.net/" },
+    { "label": "cdn", "regex": "^https://cdn\\.example\\.com/" },
+    { "label": "theme", "match": "/theme/" },
+    { "label": "bundle", "match": "/assets/" }
+  ],
+  "default": "autre",
+  "thirdParty": [".cookie-banner", "[id^='partage-']"]
+}

@@ -1,0 +1,182 @@
+/* Orbe Café : page des pièges de proximité du lot P (PX1 à PX9). Constructions :
+   voir fixtures/marque-demo/expected-proximite.json. Toute valeur est une valeur de
+   fixtures/marque-demo/cible-valise.json, sauf la marge basse de 10 px de .aide (PX5).
+   En px seulement. Tout est en display: block, pour que les marges verticales fusionnent,
+   sauf les rangées flex de PX7 et PX9. */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: "Orbe Sans", Arial, sans-serif;
+  line-height: 1.5;
+}
+
+body {
+  font-size: 16px;
+  color: #363026; /* neutre-12 */
+  background-color: #ffffff;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+  appearance: none;
+}
+
+.page {
+  padding: 24px;
+}
+
+.titre-page {
+  font-size: 30px;
+}
+
+.bloc {
+  margin-top: 32px;
+}
+
+.titre-bloc {
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+.formulaire {
+  display: block;
+}
+
+.libelle {
+  display: block;
+  margin-bottom: 4px; /* dans le composant : libellé relié par for */
+}
+
+.champ {
+  display: block;
+  width: 320px;
+  padding: 8px 12px;
+  border: 1px solid #6d675b; /* neutre-11 */
+  background-color: #ffffff;
+}
+
+.message {
+  margin-top: 4px; /* dans le composant : message du champ */
+  font-size: 14px;
+  color: #6d675b; /* neutre-11 */
+}
+
+/* PX1, PX3 : libellé du champ suivant, entre composants. */
+.libelle-suivant {
+  margin-top: 16px;
+}
+
+/* PX2, PX4 : conteneur du champ suivant, entre composants. */
+.groupe-suivant {
+  margin-top: 16px;
+}
+
+/* PX3 : titre de section puis paragraphe, au milieu du formulaire. */
+.titre-section {
+  margin-top: 24px;
+  font-size: 18px;
+}
+
+.texte {
+  margin-top: 8px;
+}
+
+/* PX5 : 10 px absorbés par les 16 px du bloc suivant. */
+.aide {
+  margin-bottom: 10px;
+}
+
+.actions {
+  margin-top: 16px;
+}
+
+/* PX6 : 12 px dans le composant, 12 px entre : égalité. */
+.message-loin {
+  margin-top: 12px;
+}
+
+.libelle-loin {
+  margin-top: 12px;
+}
+
+/* PX7 : rangée flex, 4 + 4 + 4 = 12 px entre le champ et son message ; groupe suivant à 24. */
+.rangee {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.champ-rangee {
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.message-rangee {
+  margin-top: 0;
+  margin-left: 4px;
+}
+
+.groupe-loin {
+  margin-top: 24px;
+}
+
+/* PX8 : encart sans retrait ni bordure ; la marge haute de 8 px de la note le traverse. */
+.encart {
+  display: block;
+}
+
+.note {
+  margin-top: 8px;
+}
+
+/* PX9 : paginateur en rangée flex sans gouttière ; le « / » est un nœud texte entre le champ et le total. */
+.pagination {
+  display: flex;
+  align-items: center;
+}
+
+.page-precedente,
+.page-suivante {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #6d675b; /* neutre-11 */
+  color: #363026; /* neutre-12 */
+  text-decoration: none;
+}
+
+.page-precedente {
+  margin-right: 8px;
+}
+
+.page-suivante {
+  margin-left: 8px;
+}
+
+.page-champ {
+  width: 32px;
+  padding: 4px;
+  border: 1px solid #6d675b; /* neutre-11 */
+  margin: 0 4px;
+}
+
+.page-total {
+  margin: 0 4px;
+}
+
+.bouton {
+  padding: 8px 16px;
+  border: 1px solid #6d675b; /* neutre-11 */
+  background-color: #ffffff;
+}
