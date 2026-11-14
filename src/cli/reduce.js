@@ -272,10 +272,11 @@ export async function runReduce(opts) {
             if (!here.length) continue;
             for (const t of here) x.touched.push({ page: url, selector: t.selector, text: t.text });
             let rest = here.map((t) => t.index);
-            if (!r.capture) {
+            // Lot J, J8 : une capture hors de la page cède la place à celle d'une page suivante.
+            if (!r.capture || r.capture.offPage) {
               const c = await captureDecision(page, d, table.thirdParty, decision ? {} : { labels: ['avant', 'après'] });
               if (!c) continue;
-              r.capture = c;
+              if (!r.capture || !c.offPage) r.capture = c;
               rest = rest.filter((i) => i !== c.element.index);
             }
             for (const i of decision ? rest : []) {

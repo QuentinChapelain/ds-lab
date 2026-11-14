@@ -119,6 +119,16 @@ function zones(shot, space, { end = false } = {}) {
 }
 
 /**
+ * Lot J : J8, élément hors de la page, sans capture ; J6, toutes les versions donnent la même image.
+ * @param {any} capture @param {any[]} shots  versions capturées
+ */
+function captureNotes(capture, shots) {
+  if (capture?.offPage) return '<p class="sans-capture">hors de la page, visible seulement au focus : pas de capture</p>';
+  const pngs = shots.map((v) => v?.shot?.png).filter(Boolean);
+  return pngs.length > 1 && pngs.length === shots.length && pngs.every((x) => x === pngs[0]) ? '<p class="sans-effet">sans effet visible sur les captures</p>' : '';
+}
+
+/**
  * Lot P-fin : légende d'une version dont la marge est absorbée par celle du voisin, plus grande
  * (« espace visible 16 px, la marge du voisin l'emporte ») ; une par version, qui suit la version affichée.
  * @param {any[]} versions
@@ -164,6 +174,7 @@ function contrastLine(usage, c) {
  */
 function beforeAfter(family, r) {
   const vs = r.capture?.versions;
+  if (r.capture?.offPage) return captureNotes(r.capture, []);
   if (!vs || vs.length < 2) return '';
   const buttons = vs
     .slice(0, 2)
@@ -175,7 +186,7 @@ function beforeAfter(family, r) {
   <div class="vue" style="width:${a.width * scale}px;aspect-ratio:${a.width} / ${a.height}">${vs
     .slice(0, 2)
     .map((/** @type {any} */ v, /** @type {number} */ i) => `<div class="ver" data-v="${i}"${i ? ' hidden' : ''}>${img(v.shot.png)}${zones(v.shot, v.space ?? [])}</div>`)
-    .join('')}</div>${absorbedNotes(vs.slice(0, 2))}`;
+    .join('')}</div>${absorbedNotes(vs.slice(0, 2))}${captureNotes(r.capture, vs.slice(0, 2))}`;
 }
 
 /** Lot R : « Ce choix s'applique à n éléments ». @param {any} r */
@@ -222,6 +233,7 @@ function decisionCard(family, r) {
         .map((/** @type {any} */ v, /** @type {number} */ i) => `<div class="ver" data-v="${i}"${i ? ' hidden' : ''}>${img(v.shot.png)}${zones(v.shot, v.space ?? [])}</div>`)
         .join('')}</div>${absorbedNotes(versions)}`
     : '';
+  const notes = captureNotes(r.capture, versions);
   // Une vignette par autre élément touché, 3 au plus, à la taille CSS de son cadre plafonnée à 240 px ;
   // chacune suit la version affichée.
   const others = r.capture?.others ?? [];
@@ -237,7 +249,7 @@ function decisionCard(family, r) {
         .join('')}${more > 0 ? `<span class="encore">et ${more} ${more === 1 ? 'autre' : 'autres'}</span>` : ''}</div>`
     : '';
   return `<div class="versions" role="group" aria-label="Versions">${buttons}</div>
-  ${view}${thumbs}
+  ${view}${notes}${thumbs}
   <div class="trancher"><button type="button" class="retenir">Choisir cette version</button></div>`;
 }
 
@@ -446,7 +458,7 @@ function pleinCard(g) {
   <p class="titre"><b class="id">${esc(g.id)}</b> ${esc(g.title)}<span class="choix">Pas encore choisie</span></p>
   <p class="portee">Ce choix s’applique à ${n} ${n === 1 ? 'élément' : 'éléments'} : tous les textes posés sur un plein ${esc(g.scale)}, y compris ceux dont le fond est déjà sur la cible. Les lignes de fond ${esc(rows)} suivent ce choix.</p>
   <div class="versions" role="group" aria-label="Versions">${buttons}</div>
-  ${view}
+  ${view}${captureNotes(g.capture, shots)}
   <div class="trancher"><button type="button" class="retenir">Choisir cette version</button></div>
   <details class="detail"><summary>Détail</summary><dl>
     <dt>Éléments</dt><dd><ul class="couverts">${els}</ul></dd>
@@ -647,6 +659,7 @@ ${pleinCards}${byClass}
   .encore { font-size:13px; color:var(--soft); padding-bottom:4px; }
   .vig-bloc { margin:0; max-width:100%; display:flex; flex-direction:column; gap:4px; }
   .absorbe { margin:4px 0 0; font-size:12px; line-height:1.35; color:#7a3a00; } .absorbe[hidden] { display:none; }
+  .sans-capture, .sans-effet { margin:6px 0 0; font-size:12px; line-height:1.35; color:#4a4f59; font-style:italic; }
   .trancher { display:flex; align-items:center; gap:10px; margin-top:10px; }
   .retenir { font:inherit; font-size:14px; font-weight:600; border:0; border-radius:6px; padding:7px 14px; cursor:pointer; background:#16181d; color:#fff; }
   .barre { position:fixed; left:0; right:0; bottom:0; background:#16181d; color:#fff; padding:10px 24px; display:flex; gap:16px; align-items:center; justify-content:center; font-size:14px; }

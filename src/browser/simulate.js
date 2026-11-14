@@ -854,9 +854,9 @@ export const FRAME = { pad: 16, maxHeight: 400, wideRetrait: 600, scale: 2 };
  *   absorbed, visiblePx (lot P-fin) : marge absorbée par celle du voisin, plus grande, et espace visible
  * @property {{ ratio: number, threshold: number, text: string, bg: string }} [contrast]  couleur : contraste le plus faible
  *   des éléments touchés, son seuil et sa paire (texte ou bordure, fond)
- * @property {Shot & { scale: number }} shot  même cadre et même taille pour toutes les versions d'une décision ;
+ * @property {Shot & { scale: number }} [shot]  absente si l'élément est hors de la page (lot J, J8) ; même cadre et même taille pour toutes les versions d'une décision ;
  *   width et height en px CSS, l'image en densité scale
- * @typedef {{ page: string, element: { tag: string, index: number }, clip: Rect, versions: DecisionVersion[] }} DecisionCapture
+ * @typedef {{ page: string, element: { tag: string, index: number }, clip: Rect | null, offPage?: boolean, versions: DecisionVersion[] }} DecisionCapture
  */
 
 /**
@@ -940,6 +940,12 @@ export function frameOf(probes, d) {
 }
 
 /**
+ * Lot J, J8 : rectangle entièrement hors du document (au-dessus, à gauche, ou au-delà).
+ * @param {{ rect: Rect, doc: { width: number, height: number } }} p
+ */
+const offPage = (p) => p.rect.y + p.rect.height <= 0 || p.rect.x + p.rect.width <= 0 || p.rect.y >= p.doc.height || p.rect.x >= p.doc.width;
+
+/**
  * Lot R, R-3 : une capture par version de chaque décision (actuelle, puis chaque candidat).
  * Base : la page d'origine ; chaque version ne change que cette ligne. Un élément par
  * décision, le premier trouvé dans l'ordre des pages ; même cadre pour toutes les versions (R-9).
@@ -961,10 +967,32 @@ export async function captureDecision(page, d, thirdParty = [], { index, compact
     return page.evaluate(versionInPage, { key: d.key, i, family: d.family, usage: d.usage, lines: true });
   };
   // Premier passage : l'élément et son contexte sous chaque version, pour un cadre commun.
-  const first = await pose(versions[0].value, index);
+  let first = await pose(versions[0].value, index);
   if (!first) {
     await page.evaluate(showInPage, { on: false });
     return null;
+  }
+  // Lot J, J8 : un élément hors de la page (ex. lien d'évitement en position fixe au-dessus du
+  // haut, visible seulement au focus) n'est pas capturé : le premier élément touché dans la page
+  // le remplace ; sans aucun, la capture le dit, sans image (une vignette est simplement omise).
+  if (offPage(first)) {
+    if (index !== undefined) {
+      await page.evaluate(showInPage, { on: false });
+      return null;
+    }
+    const off = first;
+    for (const t of await page.evaluate(touchedInPage, { key: d.key })) {
+      if (t.index === off.i) continue;
+      const p = await pose(versions[0].value, t.index);
+      if (p && !offPage(p)) {
+        first = p;
+        break;
+      }
+    }
+    if (offPage(first)) {
+      await page.evaluate(showInPage, { on: false });
+      return { page: page.url(), element: { tag: off.tag, index: off.i }, clip: null, offPage: true, versions: versions.map((v) => ({ label: v.label, value: v.value, ...(v.name ? { name: v.name } : {}) })) };
+    }
   }
   const probes = [first];
   for (const v of versions.slice(1)) {
