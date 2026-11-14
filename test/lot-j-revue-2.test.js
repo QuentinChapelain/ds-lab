@@ -10,6 +10,8 @@
  *    à gauche, sans marge vide entre elles et le panneau (même sur grand écran), la page à droite.
  * 3. Carte de plein : la version « Garder » est marquée « actuelle », placée en premier et affichée
  *    à l'ouverture, comme l'actuelle des cartes de ligne. Son export reste « garder ».
+ *    Retouche de libellé : elle s'appelle « Garder le texte actuel » ; la ligne du dessous dit « le fond
+ *    passe au pas 9 » seulement quand un fond du plein n'y est pas déjà (ici bleu-9 #2b4c7e : non).
  * Page fictive (cible-valise d'Orbe Café), 400 × 700 : bandeau tiers .tiers-cookies #1b1b1b en haut,
  * bloc bleu-9 #2b4c7e portant un texte #c8553d (1,9783 : carte « Texte sur plein bleu », lot K),
  * texte #201d17 plus bas, page de 1600 px.
@@ -165,7 +167,9 @@ test('3. carte de plein : « Garder » marquée « actuelle », en premier, affi
     }, g.key);
     assert.equal(got.values[0], 'garder');
     assert.deepEqual([...got.values].sort(), g.versions.map((/** @type {any} */ v) => v.choice).sort(), 'toutes les versions, une fois');
-    assert.match(got.first ?? '', /actuelle/);
+    assert.match(got.first ?? '', /^Aa?Garder le texte actuel/);
+    assert.ok(!(got.first ?? '').includes('actuelle ·'), got.first ?? '');
+    assert.ok(!(got.first ?? '').includes('le fond passe au pas 9'), 'fond déjà au pas 9 : pas de mention');
     assert.deepEqual(got.pressed, got.values.map((_, i) => String(i === 0)));
     assert.equal(got.shown.length, 1);
     assert.ok(got.shown[0].endsWith(keep.shot.png), 'image de « Garder » affichée');

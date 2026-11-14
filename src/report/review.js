@@ -451,8 +451,11 @@ function pleinCard(g, pageIndex = /** @type {Map<string, number>} */ (new Map())
     .map((/** @type {any} */ v, /** @type {number} */ i) => {
       const pass = v.pass ? `passe le seuil de ${fr(v.threshold)}` : 'sous le seuil';
       const sw = hex(v.bg) && hex(v.text) ? `<span class="g sw paire" style="background:${v.bg};color:${v.text}">Aa</span>` : '<span class="g sw vide"></span>';
-      const name = v.choice === 'garder' ? `actuelle · ${v.label}` : v.label;
-      return `<button type="button" class="v" data-v="${i}" data-value="${esc(v.choice)}" data-court="${esc(v.label)}" aria-pressed="${i === 0}">${sw}<span class="nom"><span>${esc(name)}</span><small>${esc(v.text)} sur ${esc(v.bg)}</small><small>${String(v.ratio).replace('.', ',')} · ${pass}</small></span></button>`;
+      // « Garder le texte actuel » : le fond, lui, passe au pas 9 quand un fond du plein n'y est pas déjà.
+      const keep = v.choice === 'garder';
+      const name = keep ? 'Garder le texte actuel' : v.label;
+      const moves = keep && g.rows.some((/** @type {any} */ r) => r.old !== v.bg) ? ` ; le fond passe au pas 9 (${g.scale}-9)` : '';
+      return `<button type="button" class="v" data-v="${i}" data-value="${esc(v.choice)}" data-court="${esc(name)}" aria-pressed="${i === 0}">${sw}<span class="nom"><span>${esc(name)}</span><small>${esc(v.text)} sur ${esc(v.bg)}${esc(moves)}</small><small>${String(v.ratio).replace('.', ',')} · ${pass}</small></span></button>`;
     })
     .join('');
   const s0 = shots[0]?.shot;
@@ -937,6 +940,8 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
     var total = document.querySelectorAll('.row.decision').length;
     var open = document.querySelectorAll('.row.a-trancher').length;
     document.getElementById('bilan').textContent = (total - open) + ' / ' + total + ' choisies';
+    // Le bilan change la hauteur de la barre : le panneau la suit tout de suite (sans attendre l'observateur).
+    if (barre) hauteurBarre();
   }
   // Lot J, J7 : la carte active (clic, focus, « Suivante à choisir ») montre sa page dans le panneau,
   // défilée jusqu'à son premier élément ; sur écran étroit, le panneau passe sous la carte.

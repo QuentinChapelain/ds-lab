@@ -264,8 +264,10 @@ test('libellés : terre (blanc) et sable, dans la carte et dans la revue', () =>
   assert.deepEqual(card('attente', 'terre').versions.map((/** @type {any} */ x) => x.label), ['Texte foncé', 'Texte blanc, fond plus foncé', 'Garder (sous le seuil)']);
   assert.deepEqual(card('attente', 'sable').versions.map((/** @type {any} */ x) => x.label), ['Texte foncé', 'Garder (sous le seuil)']);
   const a = article(R.attente.html, 'plein|terre');
-  // Retouche de la revue (lot-j-revue-2) : « Garder » marquée « actuelle ».
-  for (const l of ['Texte foncé', 'Texte blanc, fond plus foncé', 'actuelle · Garder (sous le seuil)']) assert.ok(a.includes(`<span>${l}</span>`), l);
+  // Retouche de la revue (lot-j-revue-2) : « Garder » devient « Garder le texte actuel » ; ses fonds #d0563f et
+  // #c4513a ne sont pas sur terre-9 #c8553d : la ligne du dessous dit que le fond passe au pas 9.
+  for (const l of ['Texte foncé', 'Texte blanc, fond plus foncé', 'Garder le texte actuel']) assert.ok(a.includes(`<span>${l}</span>`), l);
+  assert.match(a, /<span>Garder le texte actuel<\/span><small>#[0-9a-f]{6} sur #c8553d ; le fond passe au pas 9 \(terre-9\)<\/small>/);
   assert.ok(!/onSolid sur|texte d’origine sur/.test(a), 'anciens libellés');
   assert.match(a, /<span>Texte foncé<\/span><small>#220000 sur #c8553d<\/small><small>4,5155 · passe le seuil de 4,5<\/small>/);
 });
