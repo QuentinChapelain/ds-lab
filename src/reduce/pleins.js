@@ -8,6 +8,9 @@
  *     que la table lui donnerait). La carte couvre tous les éléments portés par ces fonds.
  *     Retouche : l'échelle n'a pas de carte quand chaque texte passe déjà sur son fond tel qu'il
  *     est et sur le fond où la table le mène (blanc sur terre-10 après migration).
+ * K6. Une carte ne couvre que les lignes de fond certaines : inchangé, auto, proche, correction, ou
+ *     déjà décidées. Une ligne « décision » non tranchée garde sa propre carte et ses candidats ; ses
+ *     éléments n'entrent pas dans la carte. Une échelle sans ligne certaine n'a pas de carte.
  * K2. Versions : (a) « onSolid » : l'onSolid de l'échelle sur le pas 9 ; (b) « pas-10 » : le texte
  *     d'origine sur le pas 10, seulement si chaque texte du plein y passe son seuil ; (c) « garder » :
  *     fond au pas 9, texte gardé, sous le seuil. Aucune recommandée.
@@ -68,6 +71,8 @@ export function pleinGroups({ table, rendered, target, decisions = {} }) {
   const byScale = new Map();
   for (const r of table.families.colors?.rows ?? []) {
     if (r.usage !== 'plein' || isOut(r.class) || !r.new) continue;
+    // K6 : une ligne « décision » non tranchée n'est pas certaine de mener à ce plein.
+    if (r.class === 'décision' && decisionFor(decisions, 'colors', r) === undefined) continue;
     const p = pleinOf(r.new);
     if (!p) continue;
     byScale.set(p.scale, [...(byScale.get(p.scale) ?? []), r]);
