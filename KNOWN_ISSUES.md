@@ -2,7 +2,9 @@
 
 État au 15/11/2026.
 
-- Tests C14 et E5 rouges, dans `test/e2e-desordre.test.js`, depuis avant l'étape 3.
+- Tests C14 et E5 rouges, dans `test/e2e-desordre.test.js`, depuis avant l'étape 3 ; chacun attend une décision, pas seulement du code.
+  - C14 : `#24426f` n'est rendu qu'au survol forcé, et les couleurs d'état vont dans `stateColors` (`src/rendered/aggregate.js`), jamais dans les usages d'où `propose` tire les lignes (`src/reduce/propose.js:1009`), si bien que la valeur n'a pas de ligne [F].
+  - E5 : l'attendu veut « décision » pour une égalité 12/16 px, qu'il écrit lui-même comme hypothèse, alors que l'outil départage l'égalité vers la plus petite valeur et range 14px en « proche » (`src/reduce/propose.js:211`) [F].
 - Tailles de texte en px : `indexTokens` (`src/report/migration.js`) n'indexe que les px ; bascule en rem à faire après adaptation (D12, `docs/decisions.md`).
 - Interlettrage à 0 partout, à régler avec une vraie police.
 - Police du produit (`tokens/commun/police.tokens.json`) : `system-ui, sans-serif`, valeur provisoire [H], à choisir avec une vraie police.
@@ -33,4 +35,20 @@
 - Clair : pour une marque très foncée, `texte.interactif` (pas 11) est plus foncé que la couleur du client et se distingue mal du texte courant (Grenat Papeterie : `#4f0020` contre `texte.principal` `#363026`, 1,19:1).
 - `npm run espacements` et `npm run typo` ne prennent pas `--mode` : ils ne lisent pas de couleur, la largeur y est contrôlée par le contexte étroit.
 - Table des 8 marques par mode (lot 3 de l'étape 4b) : dans `local/lot-4b/` seulement, témoins compris.
-- Trois fichiers source au-delà de 1 000 lignes ; ni lint ni CI ; revue de code prévue après l'étape 4.
+- Trois fichiers source au-delà de 1 000 lignes ; ni lint ni CI.
+- Mode sombre : la carte (`fond.surface`, `#181818`) est jugée peu détachée de la page (`#121212`) sur image ; rapport carte sur page 1,055:1 en sombre contre 1,035:1 en clair [F], donc l'écart de teinte n'explique pas le jugement ; cause non établie [V], à reprendre à l'étape des composants.
+
+## Revue de code du 15/11
+
+Constats de la revue en lecture seule (commit 4341b94), filets posés par le lot 0 (`docs/attendus/revue-lot-0-filets.md`) ; aucun n'est corrigé.
+
+- `apply` tient `border` pour un raccourci des rayons : un `border` écrit après `border-radius` envoie les quatre rayons en écart à tort (`src/apply/apply.js:152`, `covers`) [F].
+- Audit : toute panne pendant la mesure d'une page est rangée en « échec du chargement », et la page reste dans l'agrégat du rendu (`src/audit/run.js:144`, autour de `measureRendered`, `src/rendered/run.js`) [F].
+- Une clé de `decisions.json` qui ne vise aucune ligne ni carte est ignorée sans trace : la carte de simulation est la même qu'avec aucune décision (`src/reduce/propose.js:1106`, `decisionKeyFor`) [F].
+- Une couleur de marque illisible (`#12345`, `rouge`) devient un gris rangé sur l'échelle `neutre` (règle M1) au lieu de lever en nommant l'emplacement (`src/brand/brand.js:41`, `resolveBrand`) [F].
+- Motif R9 « texte sous 4,5:1 » écrit en dur, même quand le seuil de la paire vaut 3 (`src/reduce/propose.js:734, 758` ; relu par `src/report/review.js:276, 278`) [F].
+- `npm run espacements` et `npm run typo` sortent en 1 sur une panne (fichier absent), comme sur une règle en échec, quand `contraste` sort en 2 (`src/cli/espacements.js:55`, `src/cli/typo.js:55`) [F].
+- Quatre blocs JSDoc posés au-dessus de la mauvaise fonction, si bien que `runReduce`, `buildMigration`, `renderMarkdown` et `renderReview` ne sont pas vérifiés par `@ts-check` (`src/cli/reduce.js:73`, `src/report/migration.js:166, 421`, `src/report/review.js:433`) [F].
+- Annotations en retard : 69 des 77 erreurs de TypeScript non strict viennent de types JSDoc qui n'ont pas suivi les lots, surtout dans `src/reduce/propose.js`, `src/rendered/aggregate.js` et `src/browser/simulate.js` [F].
+- Copie figée `fixtures/marque-demo/jetons/primitives.tokens.json` : `reduce --tokens` accepte sans le dire un fichier qui ne donne aucun jeton (le resolver passé tel quel en donne 0), et la copie, seule lue par les tests, masque ce cas (`src/cli/reduce.js:94`, `indexTokens` dans `src/report/migration.js:62`) [F].
+- Une ligne « inchangé » qui reçoit une décision écrite est appliquée par `mapping` (`src/reduce/propose.js:1166`) et dite « inchangé » à sa valeur d'avant par la migration (`src/report/migration.js:269`) [F] ; que la revue puisse produire une telle décision n'est pas établi [V].
