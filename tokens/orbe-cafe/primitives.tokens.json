@@ -1085,6 +1085,22 @@
       }
     }
   },
+  "graisse": {
+    "$type": "fontWeight",
+    "$description": "Graisses de texte (séance 3c, typo)",
+    "400": {
+      "$value": 400,
+      "$description": "normale, corps et mentions"
+    },
+    "600": {
+      "$value": 600,
+      "$description": "demi-grasse, libellés et titre de carte"
+    },
+    "700": {
+      "$value": 700,
+      "$description": "grasse, affichage et titres"
+    }
+  },
   "rayon": {
     "$type": "dimension",
     "$description": "9999 = pilule",

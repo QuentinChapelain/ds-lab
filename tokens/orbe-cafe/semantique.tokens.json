@@ -1,0 +1,455 @@
+{
+  "$description": "Rôles de couleur (séance 3a du 14/11/2026), d'espacement par relation et styles de texte (séance 3c du 15/11/2026) d'Orbe Café (marque fictive). Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json, statuts.tokens.json et marque.tokens.json pour les couleurs, vers espace.* de primitives.tokens.json pour les espacements, vers taille-texte.*, graisse.* et marque.police.* pour les styles de texte (typo, composites DTCG typography, interligne sans unité) ; les couleurs de marque et tous les pleins, statuts compris, passent par marque.<emplacement>.* (Orbe Café : primaire = bleu, accent = terre). Paires de contraste déclarées dans paires.json.",
+  "fond": {
+    "$type": "color",
+    "$description": "Surfaces sur lesquelles se posent texte et bordures.",
+    "app": {
+      "$value": "{couleur.neutre.1}",
+      "$description": "Fond de la page entière, sous tout le reste."
+    },
+    "discret": {
+      "$value": "{couleur.neutre.2}",
+      "$description": "Zone qui se distingue à peine du fond de page, comme un panneau latéral ou une bande."
+    },
+    "surface": {
+      "$value": "{couleur.blanc}",
+      "$description": "Fond blanc d'une carte ou d'un champ, posé sur le fond de page."
+    },
+    "inverse": {
+      "$value": "{couleur.neutre.12}",
+      "$description": "Fond sombre d'une zone inversée, comme un pied de page ou une bulle d'aide."
+    },
+    "composant": {
+      "$root": {
+        "$value": "{couleur.neutre.3}",
+        "$description": "Fond d'un composant au repos, comme un champ, une carte ou un bouton secondaire."
+      },
+      "survol": {
+        "$value": "{couleur.neutre.4}",
+        "$description": "Fond d'un composant survolé par le pointeur."
+      },
+      "appui": {
+        "$value": "{couleur.neutre.5}",
+        "$description": "Fond d'un composant pendant l'appui, ou sélectionné."
+      }
+    },
+    "interactif": {
+      "discret": {
+        "$value": "{marque.primaire.3}",
+        "$description": "Fond teinté d'un élément interactif peu appuyé, comme un bouton léger ou une ligne sélectionnée."
+      },
+      "fort": {
+        "$root": {
+          "$value": "{marque.primaire.plein}",
+          "$description": "Plein de l'action principale, comme le bouton qui valide."
+        },
+        "survol": {
+          "$value": "{marque.primaire.plein-survol}",
+          "$description": "Plein de l'action principale survolée."
+        }
+      }
+    },
+    "accent": {
+      "fort": {
+        "$value": "{marque.accent.plein}",
+        "$description": "Plein qui met en avant sans appeler à l'action, comme une étiquette ou un bandeau, avec un texte blanc posé dessus."
+      }
+    },
+    "erreur": {
+      "discret": {
+        "$value": "{couleur.erreur.3}",
+        "$description": "Fond léger d'un message ou d'un champ en erreur."
+      },
+      "fort": {
+        "$value": "{marque.erreur.plein}",
+        "$description": "Plein qui signale une erreur ou une action destructrice."
+      }
+    },
+    "succes": {
+      "discret": {
+        "$value": "{couleur.succes.3}",
+        "$description": "Fond léger d'un message de réussite."
+      },
+      "fort": {
+        "$value": "{marque.succes.plein}",
+        "$description": "Plein qui signale une réussite, avec un texte blanc posé dessus."
+      }
+    },
+    "avertissement": {
+      "discret": {
+        "$value": "{couleur.avertissement.3}",
+        "$description": "Fond léger d'un message d'avertissement."
+      },
+      "fort": {
+        "$value": "{marque.avertissement.plein}",
+        "$description": "Plein qui signale un avertissement, avec un texte foncé posé dessus."
+      }
+    },
+    "info": {
+      "discret": {
+        "$value": "{couleur.info.3}",
+        "$description": "Fond léger d'un message d'information."
+      },
+      "fort": {
+        "$value": "{marque.info.plein}",
+        "$description": "Plein qui signale une information, avec un texte blanc posé dessus."
+      }
+    }
+  },
+  "texte": {
+    "$type": "color",
+    "$description": "Texte et icônes, posés sur un fond de rôle.",
+    "principal": {
+      "$value": "{couleur.neutre.12}",
+      "$description": "Texte courant et titres."
+    },
+    "secondaire": {
+      "$value": "{couleur.neutre.11}",
+      "$description": "Texte d'appoint, comme une aide, une légende ou une date."
+    },
+    "interactif": {
+      "$value": "{marque.primaire.11}",
+      "$description": "Texte d'un lien ou d'une action sans fond plein."
+    },
+    "accent": {
+      "$value": "{marque.accent.11}",
+      "$description": "Texte mis en avant sans être une action."
+    },
+    "erreur": {
+      "$value": "{couleur.erreur.11}",
+      "$description": "Texte d'un message d'erreur."
+    },
+    "succes": {
+      "$value": "{couleur.succes.11}",
+      "$description": "Texte d'un message de réussite."
+    },
+    "avertissement": {
+      "$value": "{couleur.avertissement.11}",
+      "$description": "Texte d'un message d'avertissement."
+    },
+    "info": {
+      "$value": "{couleur.info.11}",
+      "$description": "Texte d'un message d'information."
+    },
+    "sur-interactif": {
+      "$value": "{marque.primaire.sur-plein}",
+      "$description": "Texte posé sur le plein de l'action principale, au repos comme au survol."
+    },
+    "sur-accent": {
+      "$value": "{marque.accent.sur-plein}",
+      "$description": "Texte posé sur le plein d'accent."
+    },
+    "sur-erreur": {
+      "$value": "{marque.erreur.sur-plein}",
+      "$description": "Texte posé sur le plein d'erreur."
+    },
+    "sur-succes": {
+      "$value": "{marque.succes.sur-plein}",
+      "$description": "Texte posé sur le plein de réussite."
+    },
+    "sur-avertissement": {
+      "$value": "{marque.avertissement.sur-plein}",
+      "$description": "Texte posé sur le plein d'avertissement."
+    },
+    "sur-info": {
+      "$value": "{marque.info.sur-plein}",
+      "$description": "Texte posé sur le plein d'information."
+    },
+    "sur-inverse": {
+      "$value": "{couleur.blanc}",
+      "$description": "Texte posé sur le fond inversé."
+    }
+  },
+  "bordure": {
+    "$type": "color",
+    "$description": "Contours et séparateurs.",
+    "discrete": {
+      "$value": "{couleur.neutre.6}",
+      "$description": "Séparateur léger entre deux zones, décoratif, jamais seule pour repérer un champ ou un état."
+    },
+    "defaut": {
+      "$value": "{couleur.neutre.7}",
+      "$description": "Contour ordinaire d'une carte ou d'un champ, décoratif, jamais seule pour repérer un champ ou un état."
+    },
+    "forte": {
+      "$value": "{couleur.neutre.8}",
+      "$description": "Contour qui suffit à repérer un champ ou une case à cocher (3:1)."
+    },
+    "focus": {
+      "$value": "{marque.primaire.11}",
+      "$description": "Anneau de focus clavier (3:1)."
+    },
+    "erreur": {
+      "$value": "{couleur.erreur.8}",
+      "$description": "Contour d'un champ en erreur (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app."
+    },
+    "succes": {
+      "$value": "{couleur.succes.8}",
+      "$description": "Contour d'un champ validé (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app."
+    },
+    "avertissement": {
+      "$value": "{couleur.avertissement.8}",
+      "$description": "Contour d'un champ ou d'un encadré d'avertissement (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app."
+    },
+    "info": {
+      "$value": "{couleur.info.8}",
+      "$description": "Contour d'un encadré d'information (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app."
+    }
+  },
+  "ecart": {
+    "$type": "dimension",
+    "$description": "Espace entre éléments frères, porté par leur parent (gap) ; strictement croissant de dans-composant à section.",
+    "dans-composant": {
+      "$value": "{espace.4}",
+      "$description": "Écart entre les parties d'un même composant, comme une étiquette et son champ ou un champ et son message d'erreur."
+    },
+    "entre-composants": {
+      "$value": "{espace.16}",
+      "$description": "Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée ; au moins le double de ecart.dans-composant, pour qu'on voie à quel champ appartient un libellé ou un message (régularité observée dans les systèmes lus, pas une norme)."
+    },
+    "entre-groupes": {
+      "$value": "{espace.24}",
+      "$description": "Écart entre deux groupes d'une même section, comme un titre de section et son contenu ou les champs d'un formulaire et ses boutons."
+    },
+    "section": {
+      "$value": "{espace.48}",
+      "$description": "Écart entre deux sections de la page, la plus grande respiration verticale ; en étroit, la valeur de ds-lab.etroit (seuil [H]).",
+      "$extensions": {
+        "ds-lab.etroit": {
+          "valeur": "{espace.32}",
+          "sous": {
+            "value": 600,
+            "unit": "px"
+          },
+          "seuil": "[H]"
+        }
+      }
+    }
+  },
+  "marge-interieure": {
+    "$type": "dimension",
+    "$description": "Espace entre le bord d'un composant et son contenu, porté par le composant lui-même (padding).",
+    "composant": {
+      "$value": "{espace.16}",
+      "$description": "Marge intérieure d'un composant à bord visible, comme une carte, un encadré ou une zone de formulaire."
+    }
+  },
+  "typo": {
+    "$type": "typography",
+    "$description": "Styles de texte : un jeton composite par style, sans couleur ; interligne = hauteur de ligne visée ÷ taille, arrondi à 4 décimales, la hauteur visée est écrite dans la description ; valeur en étroit dans $extensions[\"ds-lab.etroit\"], sous 600 px [H] ; letterSpacing 0 px, exigé par le format, valeur à décider [V].",
+    "affichage": {
+      "grand": {
+        "$value": {
+          "fontFamily": "{marque.police.titre}",
+          "fontSize": "{taille-texte.60}",
+          "fontWeight": "{graisse.700}",
+          "letterSpacing": {
+            "value": 0,
+            "unit": "px"
+          },
+          "lineHeight": 1.1333
+        },
+        "$description": "Hero d'une page d'accueil ; ligne visée 68 px en large, 40 px en étroit.",
+        "$extensions": {
+          "ds-lab.etroit": {
+            "valeur": {
+              "fontSize": "{taille-texte.36}",
+              "lineHeight": 1.1111
+            },
+            "sous": {
+              "value": 600,
+              "unit": "px"
+            },
+            "seuil": "[H]"
+          }
+        }
+      },
+      "moyen": {
+        "$value": {
+          "fontFamily": "{marque.police.titre}",
+          "fontSize": "{taille-texte.48}",
+          "fontWeight": "{graisse.700}",
+          "letterSpacing": {
+            "value": 0,
+            "unit": "px"
+          },
+          "lineHeight": 1.1667
+        },
+        "$description": "Grand chiffre ou bandeau ; ligne visée 56 px en large, 36 px en étroit.",
+        "$extensions": {
+          "ds-lab.etroit": {
+            "valeur": {
+              "fontSize": "{taille-texte.30}",
+              "lineHeight": 1.2
+            },
+            "sous": {
+              "value": 600,
+              "unit": "px"
+            },
+            "seuil": "[H]"
+          }
+        }
+      }
+    },
+    "titre": {
+      "1": {
+        "$value": {
+          "fontFamily": "{marque.police.titre}",
+          "fontSize": "{taille-texte.30}",
+          "fontWeight": "{graisse.700}",
+          "letterSpacing": {
+            "value": 0,
+            "unit": "px"
+          },
+          "lineHeight": 1.2
+        },
+        "$description": "Titre de page ; ligne visée 36 px en large, 32 px en étroit.",
+        "$extensions": {
+          "ds-lab.etroit": {
+            "valeur": {
+              "fontSize": "{taille-texte.24}",
+              "lineHeight": 1.3333
+            },
+            "sous": {
+              "value": 600,
+              "unit": "px"
+            },
+            "seuil": "[H]"
+          }
+        }
+      },
+      "2": {
+        "$value": {
+          "fontFamily": "{marque.police.titre}",
+          "fontSize": "{taille-texte.24}",
+          "fontWeight": "{graisse.700}",
+          "letterSpacing": {
+            "value": 0,
+            "unit": "px"
+          },
+          "lineHeight": 1.3333
+        },
+        "$description": "Titre de section ; ligne visée 32 px en large, 28 px en étroit.",
+        "$extensions": {
+          "ds-lab.etroit": {
+            "valeur": {
+              "fontSize": "{taille-texte.20}",
+              "lineHeight": 1.4
+            },
+            "sous": {
+              "value": 600,
+              "unit": "px"
+            },
+            "seuil": "[H]"
+          }
+        }
+      },
+      "3": {
+        "$value": {
+          "fontFamily": "{marque.police.titre}",
+          "fontSize": "{taille-texte.20}",
+          "fontWeight": "{graisse.600}",
+          "letterSpacing": {
+            "value": 0,
+            "unit": "px"
+          },
+          "lineHeight": 1.4
+        },
+        "$description": "Titre de carte ; ligne visée 28 px en large, 24 px en étroit.",
+        "$extensions": {
+          "ds-lab.etroit": {
+            "valeur": {
+              "fontSize": "{taille-texte.18}",
+              "lineHeight": 1.3333
+            },
+            "sous": {
+              "value": 600,
+              "unit": "px"
+            },
+            "seuil": "[H]"
+          }
+        }
+      },
+      "4": {
+        "$value": {
+          "fontFamily": "{marque.police.texte}",
+          "fontSize": "{taille-texte.16}",
+          "fontWeight": "{graisse.700}",
+          "letterSpacing": {
+            "value": 0,
+            "unit": "px"
+          },
+          "lineHeight": 1.5
+        },
+        "$description": "Titre de sous-groupe, sur les écrans denses ; ligne visée 24 px."
+      }
+    },
+    "corps": {
+      "grand": {
+        "$value": {
+          "fontFamily": "{marque.police.texte}",
+          "fontSize": "{taille-texte.18}",
+          "fontWeight": "{graisse.400}",
+          "letterSpacing": {
+            "value": 0,
+            "unit": "px"
+          },
+          "lineHeight": 1.5556
+        },
+        "$description": "Chapô, sous un titre de page ; ligne visée 28 px."
+      },
+      "moyen": {
+        "$value": {
+          "fontFamily": "{marque.police.texte}",
+          "fontSize": "{taille-texte.16}",
+          "fontWeight": "{graisse.400}",
+          "letterSpacing": {
+            "value": 0,
+            "unit": "px"
+          },
+          "lineHeight": 1.5
+        },
+        "$description": "Texte courant ; ligne visée 24 px."
+      },
+      "petit": {
+        "$value": {
+          "fontFamily": "{marque.police.texte}",
+          "fontSize": "{taille-texte.14}",
+          "fontWeight": "{graisse.400}",
+          "letterSpacing": {
+            "value": 0,
+            "unit": "px"
+          },
+          "lineHeight": 1.4286
+        },
+        "$description": "Texte de tableau ; ligne visée 20 px."
+      }
+    },
+    "libelle": {
+      "$value": {
+        "fontFamily": "{marque.police.texte}",
+        "fontSize": "{taille-texte.14}",
+        "fontWeight": "{graisse.600}",
+        "letterSpacing": {
+          "value": 0,
+          "unit": "px"
+        },
+        "lineHeight": 1.4286
+      },
+      "$description": "Libellé de champ, de bouton ou d'onglet ; ligne visée 20 px."
+    },
+    "mention": {
+      "$value": {
+        "fontFamily": "{marque.police.texte}",
+        "fontSize": "{taille-texte.12}",
+        "fontWeight": "{graisse.400}",
+        "letterSpacing": {
+          "value": 0,
+          "unit": "px"
+        },
+        "lineHeight": 1.3333
+      },
+      "$description": "Aide, message d'erreur ou légende ; ligne visée 16 px."
+    }
+  }
+}

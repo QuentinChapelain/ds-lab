@@ -1,0 +1,343 @@
+{
+  "$description": "Statuts d'Orbe Café (marque fictive), séance 3a du 14/11/2026. Format DTCG 2025.10. Complète primitives.tokens.json sans le modifier.",
+  "couleur": {
+    "$type": "color",
+    "$description": "Statuts complémentaires (avertissement, info), générés par contraste visé contre le blanc ; checkValise passe.",
+    "avertissement": {
+      "1": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9961,
+            0.9882,
+            0.9765
+          ],
+          "hex": "#fefcf9"
+        },
+        "$description": "fond d'application"
+      },
+      "2": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.9725,
+            0.9333
+          ],
+          "hex": "#fff8ee"
+        },
+        "$description": "fond discret"
+      },
+      "3": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9961,
+            0.9451,
+            0.8706
+          ],
+          "hex": "#fef1de"
+        },
+        "$description": "fond de composant"
+      },
+      "4": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9961,
+            0.9098,
+            0.7804
+          ],
+          "hex": "#fee8c7"
+        },
+        "$description": "fond de composant, survol"
+      },
+      "5": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.8706,
+            0.6745
+          ],
+          "hex": "#ffdeac"
+        },
+        "$description": "fond de composant, appui"
+      },
+      "6": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.8118,
+            0.5137
+          ],
+          "hex": "#ffcf83"
+        },
+        "$description": "bordure discrète"
+      },
+      "7": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9529,
+            0.6902,
+            0.2039
+          ],
+          "hex": "#f3b034"
+        },
+        "$description": "bordure de composant"
+      },
+      "8": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.749,
+            0.5216,
+            0.0039
+          ],
+          "hex": "#bf8501"
+        },
+        "$description": "bordure d'interaction, focus (3:1)"
+      },
+      "9": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.898,
+            0.6275,
+            0
+          ],
+          "hex": "#e5a000"
+        },
+        "$description": "plein, couleur source"
+      },
+      "10": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.8275,
+            0.5765,
+            0
+          ],
+          "hex": "#d39300"
+        },
+        "$description": "plein, survol"
+      },
+      "11": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.5451,
+            0.3725,
+            0
+          ],
+          "hex": "#8b5f00"
+        },
+        "$description": "texte secondaire (4,5:1)"
+      },
+      "12": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2667,
+            0.1765,
+            0.0039
+          ],
+          "hex": "#442d01"
+        },
+        "$description": "texte principal"
+      },
+      "$description": "Statut d'avertissement. Pas 9 = #e5a000 exact ; autres pas générés par generateScale (src/valise/generate.js), école « plein clair » : pas 7 et 8 plus foncés que le pas 9, texte sur-plein foncé.",
+      "$extensions": {
+        "ds-lab.valise": {
+          "source": "#e5a000",
+          "ecole": "plein clair",
+          "pas10": "plus foncé",
+          "signaux": [
+            "plein clair"
+          ]
+        }
+      },
+      "sur-plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.298,
+            0.1961,
+            0
+          ],
+          "hex": "#4c3200"
+        },
+        "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
+      }
+    },
+    "info": {
+      "1": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9804,
+            0.9922,
+            1
+          ],
+          "hex": "#fafdff"
+        },
+        "$description": "fond d'application"
+      },
+      "2": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9608,
+            0.9804,
+            0.9961
+          ],
+          "hex": "#f5fafe"
+        },
+        "$description": "fond discret"
+      },
+      "3": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9098,
+            0.9608,
+            1
+          ],
+          "hex": "#e8f5ff"
+        },
+        "$description": "fond de composant"
+      },
+      "4": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.8549,
+            0.9333,
+            0.9961
+          ],
+          "hex": "#daeefe"
+        },
+        "$description": "fond de composant, survol"
+      },
+      "5": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.7843,
+            0.902,
+            0.9961
+          ],
+          "hex": "#c8e6fe"
+        },
+        "$description": "fond de composant, appui"
+      },
+      "6": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.6863,
+            0.8627,
+            1
+          ],
+          "hex": "#afdcff"
+        },
+        "$description": "bordure discrète"
+      },
+      "7": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.4863,
+            0.7647,
+            0.9725
+          ],
+          "hex": "#7cc3f8"
+        },
+        "$description": "bordure de composant"
+      },
+      "8": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1843,
+            0.5922,
+            0.8549
+          ],
+          "hex": "#2f97da"
+        },
+        "$description": "bordure d'interaction, focus (3:1)"
+      },
+      "9": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0078,
+            0.5176,
+            0.7804
+          ],
+          "hex": "#0284c7"
+        },
+        "$description": "plein, couleur source"
+      },
+      "10": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0039,
+            0.4824,
+            0.7294
+          ],
+          "hex": "#017bba"
+        },
+        "$description": "plein, survol"
+      },
+      "11": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0.4275,
+            0.651
+          ],
+          "hex": "#006da6"
+        },
+        "$description": "texte secondaire (4,5:1)"
+      },
+      "12": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0039,
+            0.2039,
+            0.3216
+          ],
+          "hex": "#013452"
+        },
+        "$description": "texte principal"
+      },
+      "$description": "Statut d'information. Pas 9 = #0284c7 exact ; autres pas générés par generateScale (src/valise/generate.js), école « normale », texte sur-plein foncé : le blanc ne tient pas 4,5:1 sur le pas 9.",
+      "$extensions": {
+        "ds-lab.valise": {
+          "source": "#0284c7",
+          "ecole": "normale",
+          "pas10": "plus foncé",
+          "signaux": []
+        }
+      },
+      "sur-plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0.0039,
+            0.0157
+          ],
+          "hex": "#000104"
+        },
+        "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
+      }
+    }
+  }
+}
