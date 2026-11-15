@@ -8,6 +8,11 @@
 - Police du produit (`tokens/commun/police.tokens.json`) : `system-ui, sans-serif`, valeur provisoire [H], à choisir avec une vraie police.
 - Styles de titre (affichage, titres 1 à 3) : hauteurs de ligne relevées à l'étape 4c pour les capitales accentuées (D17) ; interlettrage à reprendre avec de vraies polices.
 - Consigne de hauteur de capitale des titres : rapport 0,7 [H], à juger sur image (D17).
+- Consigne : la hauteur de ligne suit la taille calculée, pas la taille ajustée, mesuré dans Chromium 147 seulement ; Firefox et Safari non mesurés [V] (forme `cap-height <nombre>` : Chrome 127, Firefox 92, Safari 17, selon MDN).
+- Consigne : Oswald est rendu 14 % plus petit que sa taille nominale (capitale 810 sur 1 000 : 0,7 ÷ 0,81 = 0,864) ; EB Garamond 7,7 % plus grand (650 sur 1 000) ; Georgia d'Orbe Café 1 % plus grand. C'est le prix d'une même hauteur de capitale visible.
+- Contrôle d'encre : pire cas sur tout le jeu de caractères, même si cette capitale et cette descendante ne se suivent jamais ; le canvas de Chromium borne l'encre par les points de contrôle des courbes, un peu au-delà du contour (jusqu'à 0,006 em sur les polices d'essai). Le contrôle est prudent, il peut refuser une police qui passerait à l'œil.
+- Police des titres sans fichier (Orbe Café, Georgia) : ni hauteur de capitale ni encre contrôlées ; Georgia touchait déjà avant la consigne avec les lignes de l'étape 3.
+- Image des titres de l'étape 4c (`local/lot-4c/titres.png`) et son script : dans `local/` seulement.
 - Primitives espace 0, 8, 12 et 64 sans rôle, à revoir après les composants.
 - Règle DS10 sans contrôle (`docs/regles.md`).
 - `texte.marque.grand` réservé à l'affichage et aux titres 1 et 2 (D14) : aucun contrôle ne vérifie cette limite, comme DS10.
