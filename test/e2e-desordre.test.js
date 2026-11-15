@@ -4,9 +4,10 @@
  * fictive (desordre/carte, compte, gestion), comparés à
  * fixtures/marque-demo/expected-desordre.json, écrit avant les pages et
  * jamais recalé. Un test par piège et par côté (table, audit) : un écart
- * entre l'outil et l'attendu reste visible, en échec. Les entrées « lotB »
- * (rangement valeur × usage) sont en attente (todo), pas en échec. Une valeur
- * qui porte un « afterB » (lot B : R2, R4) est jugée sur lui.
+ * entre l'outil et l'attendu reste visible, en échec. Une valeur qui porte un
+ * « afterB » (lot B : R2, R4) est jugée sur lui. Une entrée « parUsage »
+ * donne les usages de la table pour sa valeur, une ligne chacun (15/11/2026 :
+ * remplace les entrées « lotB », voir le $comment de l'attendu).
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -146,13 +147,6 @@ for (const e of E.colors.filter((/** @type {any} */ x) => !x.class)) {
       );
     }
   });
-  if (e.lotB) {
-    // Remplacé par l'afterB de la même entrée : R4 range toute la valeur hors table, en une ligne.
-    const by = e.values.find((/** @type {any} */ v) => v.afterB)?.afterB;
-    test(`${e.id} lot B : une ligne par usage`, by ? { skip: `remplacé par ${e.id} afterB (${by.rule})` } : { todo: e.lotB }, () => {
-      assert.ok(rows('colors', e.values[0].value).length >= e.uses.length);
-    });
-  }
 }
 
 test('C20 contenu : avatars et fonds d’attente comptés en contenu, absents de la table (R18)', () => {
@@ -191,9 +185,10 @@ for (const [family, entries] of /** @type {const} */ ([['spacing', E.spacing], [
         assert.ok(contexts(f, value).some((/** @type {any} */ c) => onPage(c, u.page)), `${value} absent de ${f} sur ${u.page} (${u.usage})`);
       }
     });
-    if (e.lotB) {
-      test(`${e.id} lot B : une ligne par usage`, { todo: e.lotB }, () => {
-        assert.ok(rows(family, e.values[0].value).length >= e.uses.length);
+    if (e.parUsage) {
+      test(`${e.id} par usage : ${e.parUsage.usages.join(', ')}, une ligne chacun`, () => {
+        const got = rows(family, e.values[0].value);
+        for (const u of e.parUsage.usages) assert.equal(got.filter((/** @type {any} */ r) => r.usage === u).length, 1, `${e.values[0].value} ${u} : ${e.parUsage.text}`);
       });
     }
   }

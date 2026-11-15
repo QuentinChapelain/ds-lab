@@ -1,5 +1,5 @@
 {
-  "$comment": "Attendus du lot E : trois pages en désordre de la marque fictive Orbe Café (desordre/carte.html, desordre/compte.html, desordre/gestion.html). Écrits à la main à partir de l'attendu v1 du 11/11/2026, dans un commit séparé et antérieur aux pages et au test. « class » = ce que la table actuelle (reduce, cible.json inchangée) doit dire ; « answer » = ce qu'un designer devrait décider. Les entrées « lotB » décrivent ce que l'outil ne sait pas encore faire (rangement valeur × usage) : le test les garde en attente (todo), pas en échec. En cas d'écart entre l'outil et ce fichier : ne corriger ni l'un ni l'autre, signaler l'écart.",
+  "$comment": "Attendus du lot E : trois pages en désordre de la marque fictive Orbe Café (desordre/carte.html, desordre/compte.html, desordre/gestion.html). Écrits à la main à partir de l'attendu v1 du 11/11/2026, dans un commit séparé et antérieur aux pages et au test. « class » = ce que la table actuelle (reduce, cible.json inchangée) doit dire ; « answer » = ce qu'un designer devrait décider. Les entrées « lotB » décrivent ce que l'outil ne sait pas encore faire (rangement valeur × usage) : le test les garde en attente (todo), pas en échec. En cas d'écart entre l'outil et ce fichier : ne corriger ni l'un ni l'autre, signaler l'écart. 15/11/2026 : écarts signalés par la revue de code, tranchés par le propriétaire du dépôt ; C1 perd son entrée « lotB », que remplace son attendu afterB (règle R4 : toute la valeur hors table, en une ligne) ; E1 tenait déjà son entrée « lotB » (une ligne par usage), devenue l'attendu ordinaire « parUsage », vérifié comme les autres.",
   "how": "ΔE = 100 × distance euclidienne OKLab ; contraste WCAG 2.1. Calculés avec culori 4.0.2 : node -e \"const { differenceEuclidean, wcagContrast } = require('culori'); console.log(100 * differenceEuclidean('oklab')(a, b), wcagContrast(a, b))\". Valeurs arrondies à 4 décimales.",
   "conditions": {
     "pages": ["/desordre/carte.html", "/desordre/compte.html", "/desordre/gestion.html"],
@@ -20,8 +20,7 @@
         { "page": "gestion", "property": "border-bottom-color", "role": "texte", "usage": "bordure des cellules du tableau" }
       ],
       "answer": "En texte : gris. En bordure : rester clair, et la cible n'a pas de bordure moyenne.",
-      "teaches": "Une valeur, deux usages, deux réponses.",
-      "lotB": "La table actuelle n'a qu'une ligne par valeur : il en faudrait une par usage (texte → gris, bordure → autre)."
+      "teaches": "Une valeur, deux usages, deux réponses."
     },
     {
       "id": "C2",
@@ -227,7 +226,10 @@
         { "page": "carte", "family": "margins", "usage": "espace entre sections" }
       ],
       "teaches": "Deux usages d'une même valeur.",
-      "lotB": "Une ligne par usage (marge intérieure, espace entre sections) : la table actuelle n'en a qu'une."
+      "parUsage": {
+        "usages": ["retrait", "marge"],
+        "text": "La table range 24px en une ligne par usage : retrait pour la marge intérieure de carte produit, marge pour l'espace entre sections, toutes deux inchangées."
+      }
     },
     {
       "id": "E2",
