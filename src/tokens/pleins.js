@@ -4,26 +4,30 @@
  * décisions de Quentin sur image (15/11/2026, 13 h 18 à 13 h 48). La classe se lit sur l'échelle, dans cet ordre :
  *   1. blanc ≥ 4,5 sur le pas 9 → couleur exacte (plein = pas 9), texte blanc ;
  *        sombre  : blanc ≥ 5,5 → survol = pas 9 + voile blanc 8 % ;
- *        soutenu : blanc entre 4,5 et 5,5 → survol = pas 10 (plus foncé) ;
+ *        soutenu : blanc entre 4,5 et 5,5 → survol = pas 9 sous un voile noir de 15 % (décision du 15/11/2026,
+ *                  13 h 58 : le pas 10 était à ΔE 1,33 du repos, invisible) ;
  *   2. clair : sinon, pas 12 sur le pas 9 ≥ 7 et pas 12 sur le pas 10 ≥ 4,5 → plein = pas 9, texte = pas 12,
  *      survol = pas 10 (seuil 7 calibré à l'œil, KNOWN_ISSUES.md) ;
  *   3. moyen : le reste → plein = pas 11, texte blanc, survol = pas 12.
  * Cette règle vaut pour le primaire et l'accent. Les quatre statuts gardent leur bouton d'avant l'étape 4, figé ici
  * (STATUTS_FIGES), pour que la couche marque d'Orbe Café reste identique.
- * Le voile est la seule valeur calculée de la couche marque : couleur DTCG, formule en $extensions.
+ * Les voiles (blanc du cas sombre, noir du cas soutenu) sont les seules valeurs calculées de la couche marque :
+ * couleur DTCG, formule en $extensions.
  */
 import { wcagContrast, interpolate, formatHex } from 'culori';
 import { colorValue } from './primitives.js';
 
 /** Couleur exacte et texte blanc : contraste du blanc sur le pas 9. */
 export const BLANC_MIN = 4.5;
-/** Survol par voile au-delà de ce contraste du blanc sur le pas 9 ; en dessous, survol au pas 10. */
+/** Survol par voile blanc au-delà de ce contraste du blanc sur le pas 9 ; en dessous, voile noir. */
 export const SOMBRE_BLANC = 5.5;
 /** Texte foncé (pas 12) sur le plein (pas 9) : seuil calibré à l'œil ; sur le survol (pas 10) : 4,5. */
 export const TEXTE_FONCE = 7;
 export const TEXTE_FONCE_SURVOL = 4.5;
 /** Voile blanc du survol sombre. */
 export const VOILE_BLANC = 0.08;
+/** Voile noir du survol soutenu. */
+export const VOILE_NOIR = 0.15;
 
 const WHITE = '#ffffff';
 
@@ -54,9 +58,14 @@ export function voileBlanc(hex, a = VOILE_BLANC) {
   return formatHex(interpolate([hex, WHITE], 'rgb')(a));
 }
 
+/** Noir posé à `a` d'opacité sur `hex` (source-over en sRGB). @param {string} hex @param {number} [a] */
+export function voileNoir(hex, a = VOILE_NOIR) {
+  return formatHex(interpolate([hex, '#000000'], 'rgb')(a));
+}
+
 const REGLES = {
   sombre: 'sombre (blanc ≥ 5,5 sur le pas 9) : plein = pas 9, texte blanc, survol = plein + voile blanc 8 %',
-  soutenu: 'soutenu (blanc ≥ 4,5 et < 5,5 sur le pas 9) : plein = pas 9, texte blanc, survol = pas 10',
+  soutenu: 'soutenu (blanc ≥ 4,5 et < 5,5 sur le pas 9) : plein = pas 9, texte blanc, survol = plein + voile noir 15 %',
   moyen: 'moyen : plein = pas 11, texte blanc, survol = pas 12',
   clair: 'clair (pas 12 ≥ 7 sur le pas 9 et ≥ 4,5 sur le pas 10) : plein = pas 9, texte = pas 12, survol = pas 10',
 };
@@ -96,7 +105,11 @@ export function emplacement(name, { scale, steps }, withSteps) {
     g['sur-plein'] = { $value: '{couleur.blanc}', $description: 'texte sur le plein : blanc' };
   } else if (classe === 'soutenu') {
     g.plein = { $value: ref(9), $description: 'plein : pas 9, couleur exacte' };
-    g['plein-survol'] = { $value: ref(10), $description: 'plein survolé : pas 10, plus foncé' };
+    g['plein-survol'] = {
+      $value: colorValue(voileNoir(steps[8])),
+      $description: 'plein survolé : pas 9 sous un voile noir de 15 %, valeur calculée',
+      $extensions: { 'ds-lab.voile': { base: ref(9), noir: VOILE_NOIR, composition: 'noir posé sur la base, source-over en sRGB' } },
+    };
     g['sur-plein'] = { $value: '{couleur.blanc}', $description: 'texte sur le plein : blanc' };
   } else if (classe === 'moyen') {
     g.plein = { $value: ref(11), $description: 'plein : pas 11' };
@@ -125,7 +138,7 @@ export function marqueTokens({ primaire, accent, statuts, polices, description }
   };
   // Phrase complétée seulement si un emplacement est soutenu, pour qu'Orbe Café reste identique octet par octet.
   if ([m.primaire, m.accent].some((g) => g.$extensions['ds-lab.plein'].classe === 'soutenu'))
-    m.$description += ' Variante soutenue du cas sombre (blanc entre 4,5 et 5,5 sur le pas 9) : survol au pas 10.';
+    m.$description += ' Variante soutenue du cas sombre (blanc entre 4,5 et 5,5 sur le pas 9) : survol par voile noir de 15 %.';
   for (const [name, s] of Object.entries(statuts)) m[name] = emplacement(name, s, false);
   if (polices)
     m.police = {

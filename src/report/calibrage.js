@@ -11,7 +11,7 @@
  */
 import { oklch, wcagContrast, formatHex, clampChroma, differenceEuclidean } from 'culori';
 import { generateScale, HUED_CHROMA } from '../valise/generate.js';
-import { classePlein, voileBlanc, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL } from '../tokens/pleins.js';
+import { classePlein, voileBlanc, voileNoir, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL } from '../tokens/pleins.js';
 import { loadRoles } from '../tokens/roles.js';
 import { saisir, COMMUN } from '../tokens/saisie.js';
 
@@ -31,7 +31,7 @@ const fr = (n, d = 2) => n.toFixed(d).replace('.', ',');
 /** Bouton d'une échelle selon une classe de plein (D04). @param {string[]} steps @param {Classe} classe @returns {Bouton} */
 export function bouton(steps, classe) {
   if (classe === 'sombre') return { plein: steps[8], survol: voileBlanc(steps[8]), texte: WHITE, pas: 9 };
-  if (classe === 'soutenu') return { plein: steps[8], survol: steps[9], texte: WHITE, pas: 9 };
+  if (classe === 'soutenu') return { plein: steps[8], survol: voileNoir(steps[8]), texte: WHITE, pas: 9 };
   if (classe === 'moyen') return { plein: steps[10], survol: steps[11], texte: WHITE, pas: 11 };
   return { plein: steps[8], survol: steps[9], texte: steps[11], pas: 9 };
 }
@@ -131,7 +131,7 @@ const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, 
 /** @param {string} bg @param {string} fg @param {string} txt @param {string} [title] */
 const pastille = (bg, fg, txt, title = '') => `<span class="b" style="background:${bg};color:${fg}"${title ? ` title="${esc(title)}"` : ''}>${esc(txt)}</span>`;
 /** La règle en une phrase. */
-const REGLE = `blanc ≥ ${fr(BLANC_MIN, 1)} sur le pas 9 : couleur exacte, texte blanc (survol par voile si blanc ≥ ${fr(SOMBRE_BLANC, 1)}, sinon au pas 10) ; sinon, pas 12 ≥ ${TEXTE_FONCE} sur le pas 9 et ≥ ${fr(TEXTE_FONCE_SURVOL, 1)} sur le pas 10 : couleur exacte, texte au pas 12 ; sinon pas 11, texte blanc. Primaire et accent seulement ; statuts figés.`;
+const REGLE = `blanc ≥ ${fr(BLANC_MIN, 1)} sur le pas 9 : couleur exacte, texte blanc (survol par voile blanc si blanc ≥ ${fr(SOMBRE_BLANC, 1)}, sinon par voile noir de 15 %) ; sinon, pas 12 ≥ ${TEXTE_FONCE} sur le pas 9 et ≥ ${fr(TEXTE_FONCE_SURVOL, 1)} sur le pas 10 : couleur exacte, texte au pas 12 ; sinon pas 11, texte blanc. Primaire et accent seulement ; statuts figés.`;
 const LETTRE = /** @type {Record<string, string>} */ ({ sombre: 'S', soutenu: 'T', clair: 'C', moyen: 'M' });
 const ouiNon = (/** @type {boolean | null} */ v) => (v === null ? '—' : v ? 'oui' : 'non');
 

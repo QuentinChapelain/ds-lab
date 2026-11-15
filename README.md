@@ -92,7 +92,7 @@ Trois marques fictives sont saisies de la même façon, toutes acceptées :
 
 | Marque | Primaire | Accent | Plein du primaire |
 |---|---|---|---|
-| Atelier Lavandine (`tokens/atelier-lavandine/`) | violet moyen | jaune | soutenu : couleur exacte, texte blanc, survol au pas 10 |
+| Atelier Lavandine (`tokens/atelier-lavandine/`) | violet moyen | jaune | soutenu : couleur exacte, texte blanc, survol par voile noir de 15 % |
 | Écume et Sel (`tokens/ecume-et-sel/`) | cyan clair | orangé | clair : couleur exacte, texte au pas 12 |
 | Grenat Papeterie (`tokens/grenat-papeterie/`) | grenat foncé | aucun, repli sur le neutre | sombre : couleur exacte |
 

@@ -16,6 +16,9 @@
  *   Écume primaire clair (8,33 et 7,08), accent moyen (blanc 3,68, pas 12 : 3,52) ; Grenat inchangé.
  * Les trois sont acceptées (aucun motif) ; leurs fichiers versionnés sont ceux que produit la saisie ;
  * npm run contraste -- --marque <dossier> sort 0.
+ * Survol de la classe soutenu (décision du 15/11/2026, 13 h 58) : couleur exacte sous un voile noir de 15 %, valeur
+ *   calculée, formule en $extensions. Lavandine : culori, formatHex(interpolate(['#8a4fd8', '#000000'], 'rgb')(0.15))
+ *   = #7543b8 ; blanc dessus 6,46:1 ; ΔE OKLab × 100 avec le repos 6,68 (le pas 10 était à 1,33).
  * Lot 4 (contrat de marque) : les quatre statuts ont le même bouton que chez Orbe Café (statuts figés, D04).
  */
 import { test } from 'node:test';
@@ -61,6 +64,13 @@ for (const [slug, [nom, primaire, accent, ecoles, pleins]] of Object.entries(MAR
     assert.equal(marque.primaire['9'].$value, '{couleur.primaire.9}');
     assert.equal(marque.accent['9'].$value, accent ? '{couleur.accent.9}' : '{couleur.neutre.9}');
   });
+
+  if (slug === 'atelier-lavandine')
+    test('Atelier Lavandine : survol soutenu, voile noir de 15 %', () => {
+      const t = JSON.parse(read('marque.tokens.json')).marque.primaire['plein-survol'];
+      assert.equal(t.$value.hex, '#7543b8');
+      assert.deepEqual(t.$extensions['ds-lab.voile'], { base: '{couleur.primaire.9}', noir: 0.15, composition: 'noir posé sur la base, source-over en sRGB' });
+    });
 
   test(`${nom} : statuts identiques à ceux d'Orbe Café`, () => {
     const orbe = JSON.parse(readFileSync(join(ROOT, 'tokens', 'orbe-cafe', 'marque.tokens.json'), 'utf8')).marque;
