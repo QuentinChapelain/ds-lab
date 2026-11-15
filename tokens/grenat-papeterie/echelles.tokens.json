@@ -1,0 +1,174 @@
+{
+  "$description": "Échelles de Grenat Papeterie, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues avec les couches communes de tokens/orbe-cafe/.",
+  "couleur": {
+    "$type": "color",
+    "$description": "Échelles générées de Grenat Papeterie (generateScale, src/valise/generate.js), pas 9 = couleur saisie.",
+    "primaire": {
+      "1": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.9882,
+            0.9922
+          ],
+          "hex": "#fffcfd"
+        },
+        "$description": "fond d'application"
+      },
+      "2": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9961,
+            0.9725,
+            0.9765
+          ],
+          "hex": "#fef8f9"
+        },
+        "$description": "fond discret"
+      },
+      "3": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9882,
+            0.9412,
+            0.949
+          ],
+          "hex": "#fcf0f2"
+        },
+        "$description": "fond de composant"
+      },
+      "4": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9843,
+            0.902,
+            0.9176
+          ],
+          "hex": "#fbe6ea"
+        },
+        "$description": "fond de composant, survol"
+      },
+      "5": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9686,
+            0.8627,
+            0.8824
+          ],
+          "hex": "#f7dce1"
+        },
+        "$description": "fond de composant, appui"
+      },
+      "6": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9529,
+            0.8039,
+            0.8314
+          ],
+          "hex": "#f3cdd4"
+        },
+        "$description": "bordure discrète"
+      },
+      "7": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9059,
+            0.6784,
+            0.7255
+          ],
+          "hex": "#e7adb9"
+        },
+        "$description": "bordure de composant"
+      },
+      "8": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.7882,
+            0.4706,
+            0.5451
+          ],
+          "hex": "#c9788b"
+        },
+        "$description": "bordure d'interaction, focus (3:1)"
+      },
+      "9": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.4784,
+            0.1216,
+            0.2392
+          ],
+          "hex": "#7a1f3d"
+        },
+        "$description": "plein, couleur source"
+      },
+      "10": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.4,
+            0.0392,
+            0.1804
+          ],
+          "hex": "#660a2e"
+        },
+        "$description": "plein, survol"
+      },
+      "11": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.3098,
+            0,
+            0.1255
+          ],
+          "hex": "#4f0020"
+        },
+        "$description": "texte secondaire (4,5:1)"
+      },
+      "12": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1765,
+            0,
+            0.0588
+          ],
+          "hex": "#2d000f"
+        },
+        "$description": "texte principal"
+      },
+      "$description": "Primaire de Grenat Papeterie. Pas 9 = #7a1f3d exact ; autres pas générés par generateScale (src/valise/generate.js), école « foncée ».",
+      "$extensions": {
+        "ds-lab.valise": {
+          "source": "#7a1f3d",
+          "ecole": "foncée",
+          "pas10": "plus foncé",
+          "signaux": []
+        }
+      },
+      "sur-plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            1,
+            1
+          ],
+          "hex": "#ffffff"
+        },
+        "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
+      }
+    }
+  }
+}

@@ -88,6 +88,14 @@ Une marque entre par un fichier, `tokens/orbe-cafe/entree.json` pour Orbe Café 
 
 Sans accent, l'accent se replie sur le neutre (D05). Les couches communes (neutres, statuts, rôles, paires, espaces, typo) sont lues dans `tokens/orbe-cafe/`. Orbe Café nomme ses échelles existantes (`{ "echelle": "bleu" }`), forme réservée à elle seule : sa couche marque est réécrite à l'identique. Les règles et la raison sont dans D13 (`docs/decisions.md`).
 
+Trois marques fictives sont saisies de la même façon, toutes acceptées :
+
+| Marque | Primaire | Accent | Plein du primaire |
+|---|---|---|---|
+| Atelier Lavandine (`tokens/atelier-lavandine/`) | violet moyen | jaune | moyen : le bouton prend le pas 11 |
+| Écume et Sel (`tokens/ecume-et-sel/`) | cyan clair | orangé | moyen : le bouton prend le pas 11 |
+| Grenat Papeterie (`tokens/grenat-papeterie/`) | grenat foncé | aucun, repli sur le neutre | sombre : couleur exacte |
+
 ## Glossaire
 
 ### Le système
@@ -154,6 +162,7 @@ Sans accent, l'accent se replie sur le neutre (D05). Les couches communes (neutr
 |---|---|
 | `src/` | Audit, réduction, simulation, rapports |
 | `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive (entrée, primitives, marque, rôles, paires) et leurs planches ; couches communes à toutes les marques |
+| `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/` | Trois marques fictives saisies par fichier (lot 2 de l'étape 4) |
 | `docs/` | Règles du design system, décisions, attendus des prochains lots |
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles, attendus |
 | `test/` | Tests, dont `noms-interdits` qui refuse tout nom réel dans un fichier ou un message de commit |

@@ -52,6 +52,7 @@ Chaque commande npm a son point d'entrée dans `src/cli/`. Les sorties d'audit e
 | Dossier | Contenu |
 |---|---|
 | `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive et leurs trois planches HTML, générées ; couches communes lues par toutes les marques |
+| `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/` | Trois marques fictives saisies par fichier : entrée, échelles générées, couche marque |
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles et attendus des tests de bout en bout |
 | `test/` | Tests `node --test` ; `test/helpers/` sert la marque fictive en local |
 | `config/` | Exemple de fichier de sources, à copier dans `local/` |

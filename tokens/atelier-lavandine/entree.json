@@ -1,0 +1,6 @@
+{
+  "nom": "Atelier Lavandine",
+  "primaire": "#8a4fd8",
+  "accent": "#f2b705",
+  "polices": { "titre": ["Georgia", "serif"], "texte": ["Arial", "sans-serif"] }
+}
