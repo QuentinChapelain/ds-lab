@@ -71,7 +71,7 @@ Chaque commande npm a son point d'entrée dans `src/cli/`. Les sorties d'audit e
 | Échelles d'Orbe Café | `tokens/orbe-cafe/primitives.tokens.json` (bleu, terre, sable) | à la main | marque |
 | Statuts | `tokens/commun/statuts.tokens.json` | `src/cli/statuts.js`, si `checkValise` passe | marque, rôles |
 | Mode sombre commun | `tokens/commun/mode.sombre.tokens.json` : neutre dessiné sur la page `#121212`, statuts sombres, surface et texte sur inverse | `src/cli/sombre.js`, si `checkValise` passe | contexte sombre de chaque resolver |
-| Police du produit | `tokens/commun/police.tokens.json` : `marque.police.texte`, commune ; une couche marque qui la déclare la remplace | à la main | jeu marque de chaque resolver |
+| Police du produit | `tokens/commun/police.tokens.json` : `marque.police.texte`, commune ; une couche marque qui la déclare la remplace ; `police.titre.hauteur-capitale`, consigne commune des styles de titre, rangée avec les primitives | à la main | jeu marque de chaque resolver |
 | Aplat plein | `tokens/commun/aplat.tokens.json` : `marque.primaire.aplat`, `sur-aplat`, `aplat-survol`, alias du plein | `src/cli/sombre.js` | jeu marque de chaque resolver |
 | Échelles générées | `echelles.tokens.json` à côté de l'entrée (aucune pour Orbe Café) | `npm run saisie` | marque, `npm run contraste` avec `--marque` |
 | Marque | `tokens/orbe-cafe/marque.tokens.json` | `npm run saisie` (`src/cli/saisie.js`) | rôles, styles de texte |

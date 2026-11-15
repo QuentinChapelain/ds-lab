@@ -113,7 +113,8 @@ test('typo sémantique : rapport = hauteur visée ÷ taille, 4 décimales', () =
 test('typo sémantique, 4b lot 1 : valeur en étroit dans le contexte étroit pour affichage et titres 1 à 3, eux seuls, composite entier', () => {
   const etroit = charger('largeur.etroit.tokens.json');
   for (const [style, [, , te, , , , , re]] of Object.entries(STYLES)) {
-    assert.equal(at(sem.typo, style).$extensions, undefined, style);
+    // Étape 4c : la consigne de hauteur de capitale est le seul $extensions permis (police-consigne.test.js).
+    assert.equal(at(sem.typo, style).$extensions?.['ds-lab.etroit'], undefined, style);
     const x = at(etroit.typo, style);
     if (te === null) assert.equal(x, undefined, style);
     else assert.deepEqual(x.$value, { ...at(sem.typo, style).$value, fontSize: `{taille-texte.${te}}`, lineHeight: re }, style);

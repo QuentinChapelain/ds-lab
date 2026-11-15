@@ -72,7 +72,7 @@ Changer de marque, c'est changer la couche marque : les rôles restent les même
 
 - `npm run contraste` : chaque paire de rôles atteint son seuil WCAG 2.1, sauf exception écrite ; les paires interdites sont affichées. `--mode sombre` et `--largeur etroit` choisissent le contexte (clair et large par défaut).
 - `npm run espacements` : écarts strictement croissants, valeurs en étroit, règles de proximité ; les primitives sans rôle sont affichées.
-- `npm run typo` : règles des styles de texte (hauteurs de ligne, hiérarchie en large et en étroit) ; les primitives sans rôle sont affichées.
+- `npm run typo` : règles des styles de texte (hauteurs de ligne, hiérarchie en large et en étroit, consigne de hauteur de capitale des titres) ; les primitives sans rôle sont affichées.
 
 Trois planches montrent la cible en situation : `tokens/orbe-cafe/roles.html`, `tokens/orbe-cafe/espacements.html`, `tokens/orbe-cafe/typo.html`. Les règles et leurs raisons sont dans `docs/regles.md`, les décisions dans `docs/decisions.md`.
 

@@ -1,6 +1,6 @@
 # Règles du design system
 
-Dix règles, chacune avec sa raison et son contrôle. Une règle sans contrôle est une dette (`KNOWN_ISSUES.md`).
+Onze règles, chacune avec sa raison et son contrôle. Une règle sans contrôle est une dette (`KNOWN_ISSUES.md`).
 
 | | Règle | Raison | Contrôle |
 |---|---|---|---|
@@ -14,3 +14,4 @@ Dix règles, chacune avec sa raison et son contrôle. Une règle sans contrôle 
 | DS8 | Affichage et titres strictement décroissants, en large et en étroit | Hiérarchie à toutes les largeurs | `npm run typo` |
 | DS9 | Ne jamais prendre une primitive s'il existe un rôle pour la relation | Sinon les valeurs libres reviennent | Liste « sans rôle » de `npm run espacements` et de `npm run typo` |
 | DS10 | Un style de texte ne porte pas de couleur, et un seul affichage grand par page | Séparer forme et couleur | Contrôle à écrire |
+| DS11 | Affichage et titres 1 à 3 portent une consigne commune de hauteur de capitale (0,7 × la taille [H]), la même pour toutes les polices ; aucun autre style n'en porte | Une police de client change la hauteur visible des titres ; une règle unique, sans réglage par marque (D17) | `npm run typo` |

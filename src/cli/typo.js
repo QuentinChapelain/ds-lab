@@ -2,7 +2,7 @@
 // @ts-check
 /**
  * Séance 3c, typo : contrôle des styles de texte d'Orbe Café.
- * Sort en 1 si l'une des huit règles n'est pas tenue, sinon en 0. Le rapport de chaque style et les primitives
+ * Sort en 1 si l'une des neuf règles n'est pas tenue, sinon en 0. Le rapport de chaque style et les primitives
  * sans rôle sont affichés pour information ; ils ne changent pas le code de sortie.
  * Usage : npm run typo [-- --semantique <fichier>] [--primitives <fichier>] [--marque <fichier>] [--etroit <fichier>]
  */
@@ -18,7 +18,9 @@ const sem = values.semantique ? read(values.semantique) : l.large.semantique;
 const contexte = values.etroit ? [read(values.etroit)] : l.contexte;
 const r = typo(
   sem,
-  values.primitives ? read(values.primitives) : l.large.primitives,
+  // Étape 4c : la consigne de hauteur de capitale (groupe police, tokens/commun/police.tokens.json) vient du resolver
+  // quand le fichier de primitives donné ne la porte pas.
+  values.primitives ? { police: l.large.primitives.police, ...read(values.primitives) } : l.large.primitives,
   values.marque ? read(values.marque) : l.large.marque,
   { ...l.etroit, semantique: enEtroit(sem, contexte) },
 );
@@ -32,10 +34,11 @@ const cols = r.styles.map((s) => [
   s.etroit ? `rapport ${fr(s.etroit.interligne)}` : '',
   String(s.graisse),
   String(s.police).replace(/^\{marque\.(.*)\}$/, '$1'),
+  s.hauteurCapitale !== null ? `capitale ${fr(s.hauteurCapitale)} × taille` : '',
 ]);
 const w = cols[0].map((_, i) => Math.max(...cols.map((c) => c[i].length)));
 const sous = r.styles.find((s) => s.sous !== null);
-console.log(`styles (taille / ligne en px, rapport sans seuil${sous ? ` ; en étroit sous ${sous.sous} px ${sous.seuil}`.trimEnd() : ''} ; graisse ; police)`);
+console.log(`styles (taille / ligne en px, rapport sans seuil${sous ? ` ; en étroit sous ${sous.sous} px ${sous.seuil}`.trimEnd() : ''} ; graisse ; police ; consigne de hauteur de capitale)`);
 for (const c of cols) console.log(`  ${c.map((x, i) => x.padEnd(w[i])).join('  ').trimEnd()}`);
 
 console.log('\nrègles');

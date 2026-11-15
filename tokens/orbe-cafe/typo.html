@@ -9,11 +9,11 @@
       @media (max-width: 599.98px) { :root { --affichage-grand-taille: 36px; --affichage-grand-interligne: 1.1111; --affichage-moyen-taille: 30px; --affichage-moyen-interligne: 1.2; --titre-1-taille: 24px; --titre-1-interligne: 1.3333; --titre-2-taille: 20px; --titre-2-interligne: 1.4; --titre-3-taille: 18px; --titre-3-interligne: 1.3333; --ecart-section: 32px; } }
 
       /* Styles de texte : un par jeton composite du groupe typo. */
-      .t-affichage-grand { font-family: var(--police-titre); font-size: var(--affichage-grand-taille); line-height: var(--affichage-grand-interligne); font-weight: 700; letter-spacing: 0px; }
-      .t-affichage-moyen { font-family: var(--police-titre); font-size: var(--affichage-moyen-taille); line-height: var(--affichage-moyen-interligne); font-weight: 700; letter-spacing: 0px; }
-      .t-titre-1 { font-family: var(--police-titre); font-size: var(--titre-1-taille); line-height: var(--titre-1-interligne); font-weight: 700; letter-spacing: 0px; }
-      .t-titre-2 { font-family: var(--police-titre); font-size: var(--titre-2-taille); line-height: var(--titre-2-interligne); font-weight: 700; letter-spacing: 0px; }
-      .t-titre-3 { font-family: var(--police-titre); font-size: var(--titre-3-taille); line-height: var(--titre-3-interligne); font-weight: 600; letter-spacing: 0px; }
+      .t-affichage-grand { font-family: var(--police-titre); font-size: var(--affichage-grand-taille); line-height: var(--affichage-grand-interligne); font-weight: 700; letter-spacing: 0px; font-size-adjust: cap-height 0.7; }
+      .t-affichage-moyen { font-family: var(--police-titre); font-size: var(--affichage-moyen-taille); line-height: var(--affichage-moyen-interligne); font-weight: 700; letter-spacing: 0px; font-size-adjust: cap-height 0.7; }
+      .t-titre-1 { font-family: var(--police-titre); font-size: var(--titre-1-taille); line-height: var(--titre-1-interligne); font-weight: 700; letter-spacing: 0px; font-size-adjust: cap-height 0.7; }
+      .t-titre-2 { font-family: var(--police-titre); font-size: var(--titre-2-taille); line-height: var(--titre-2-interligne); font-weight: 700; letter-spacing: 0px; font-size-adjust: cap-height 0.7; }
+      .t-titre-3 { font-family: var(--police-titre); font-size: var(--titre-3-taille); line-height: var(--titre-3-interligne); font-weight: 600; letter-spacing: 0px; font-size-adjust: cap-height 0.7; }
       .t-titre-4 { font-family: var(--police-texte); font-size: var(--titre-4-taille); line-height: var(--titre-4-interligne); font-weight: 700; letter-spacing: 0px; }
       .t-corps-grand { font-family: var(--police-texte); font-size: var(--corps-grand-taille); line-height: var(--corps-grand-interligne); font-weight: 400; letter-spacing: 0px; }
       .t-corps-moyen { font-family: var(--police-texte); font-size: var(--corps-moyen-taille); line-height: var(--corps-moyen-interligne); font-weight: 400; letter-spacing: 0px; }
@@ -66,7 +66,7 @@
         <div class="entete">
           <h1 class="t-titre-1" data-style="titre.1">Typographie, Orbe Café</h1>
           <p class="t-corps-moyen secondaire" data-style="corps.moyen">Marque fictive. Onze styles de texte, un jeton composite chacun (groupe typo de semantique.tokens.json) : police de la marque, taille, graisse et interligne sans unité, hauteur de ligne visée multiple de 4 px. Sous 600 px de large [H], affichage et titres 1 à 3 prennent leur valeur en étroit.</p>
-          <p class="t-mention" data-style="mention">8 règles tenues, contrôlées par npm run typo.</p>
+          <p class="t-mention" data-style="mention">9 règles tenues, contrôlées par npm run typo.</p>
         </div>
       </header>
 
@@ -77,23 +77,23 @@
         </div>
         <ol class="specimen">
           <li data-specimen="affichage.grand">
-            <p class="meta"><code>affichage.grand</code> · 60 / 68 px · rapport 1,1333 · étroit 36 / 40 px · rapport 1,1111 · 700 · police.titre</p>
+            <p class="meta"><code>affichage.grand</code> · 60 / 68 px · rapport 1,1333 · étroit 36 / 40 px · rapport 1,1111 · 700 · police.titre · capitale 0,7 × taille</p>
             <p class="t-affichage-grand" data-style="affichage.grand">Orbe Café torréfie le mardi</p>
           </li>
           <li data-specimen="affichage.moyen">
-            <p class="meta"><code>affichage.moyen</code> · 48 / 56 px · rapport 1,1667 · étroit 30 / 36 px · rapport 1,2 · 700 · police.titre</p>
+            <p class="meta"><code>affichage.moyen</code> · 48 / 56 px · rapport 1,1667 · étroit 30 / 36 px · rapport 1,2 · 700 · police.titre · capitale 0,7 × taille</p>
             <p class="t-affichage-moyen" data-style="affichage.moyen">Orbe Café torréfie le mardi</p>
           </li>
           <li data-specimen="titre.1">
-            <p class="meta"><code>titre.1</code> · 30 / 36 px · rapport 1,2 · étroit 24 / 32 px · rapport 1,3333 · 700 · police.titre</p>
+            <p class="meta"><code>titre.1</code> · 30 / 36 px · rapport 1,2 · étroit 24 / 32 px · rapport 1,3333 · 700 · police.titre · capitale 0,7 × taille</p>
             <p class="t-titre-1" data-style="titre.1">Orbe Café torréfie le mardi</p>
           </li>
           <li data-specimen="titre.2">
-            <p class="meta"><code>titre.2</code> · 24 / 32 px · rapport 1,3333 · étroit 20 / 28 px · rapport 1,4 · 700 · police.titre</p>
+            <p class="meta"><code>titre.2</code> · 24 / 32 px · rapport 1,3333 · étroit 20 / 28 px · rapport 1,4 · 700 · police.titre · capitale 0,7 × taille</p>
             <p class="t-titre-2" data-style="titre.2">Orbe Café torréfie le mardi</p>
           </li>
           <li data-specimen="titre.3">
-            <p class="meta"><code>titre.3</code> · 20 / 28 px · rapport 1,4 · étroit 18 / 24 px · rapport 1,3333 · 600 · police.titre</p>
+            <p class="meta"><code>titre.3</code> · 20 / 28 px · rapport 1,4 · étroit 18 / 24 px · rapport 1,3333 · 600 · police.titre · capitale 0,7 × taille</p>
             <p class="t-titre-3" data-style="titre.3">Orbe Café torréfie le mardi</p>
           </li>
           <li data-specimen="titre.4">

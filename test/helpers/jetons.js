@@ -18,7 +18,9 @@ const lire = (d, f) => JSON.parse(readFileSync(join(d, f), 'utf8'));
 export function charger(f) {
   if (COMMUNS.includes(f)) return lire(COMMUN, f);
   if (f === 'primitives.tokens.json') return fusionner(fusionner({}, lire(COMMUN, f)), lire(ORBE, f));
-  if (f === 'marque.tokens.json') return avecAplat(lire(ORBE, f));
+  // Étape 4c : avec le groupe police de police.tokens.json (consigne de hauteur de capitale des titres), lu dans le jeu
+  // marque du resolver.
+  if (f === 'marque.tokens.json') return fusionner(avecAplat(lire(ORBE, f)), { police: lire(COMMUN, 'police.tokens.json').police });
   return lire(ORBE, f);
 }
 

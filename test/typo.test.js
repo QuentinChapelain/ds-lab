@@ -15,7 +15,7 @@
  *      {marque.police.texte}.
  * Affiché sans seuil : le rapport de chaque style (4 décimales, virgule) ; les primitives sans rôle
  *   (taille-texte et graisse ; Orbe Café : aucune depuis que mention cite taille-texte.12, décision du 15/11/2026).
- * Orbe Café : 8 règles, aucune en échec, code 0 ; ligne affichée = taille × rapport arrondie au centième
+ * Orbe Café : 9 règles (8, plus la consigne de hauteur de capitale de l'étape 4c), aucune en échec, code 0 ; ligne affichée = taille × rapport arrondie au centième
  *   (60 × 1,1333 = 67,998 → 68).
  * Rouges, chacun ne fait tomber que sa règle :
  *   R1 titre.2 interligne 1,3 → 24 × 1,3 = 31,2 px ;
@@ -41,7 +41,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');
 const load = charger;
 const marque = load('marque.tokens.json');
-const REGLES = ['multiple-4', 'decroissants', 'etroit-large', 'corps-1-5', 'petits-1-3', 'corps-1rem', 'min-12', 'police'];
+const REGLES = ['multiple-4', 'decroissants', 'etroit-large', 'corps-1-5', 'petits-1-3', 'corps-1rem', 'min-12', 'police', 'hauteur-capitale'];
 
 /** Lance la commande (fichiers temporaires hors dépôt). @param {any} [sem] @param {any} [prims] @param {any} [etroit] */
 function run(sem, prims, etroit) {
@@ -74,10 +74,10 @@ function rouge(sem, prims, id, detail, etroit) {
   const p = run(sem, prims, etroit);
   assert.equal(p.status, 1, p.stdout + p.stderr);
   assert.match(p.stdout, new RegExp(`  ✗ .*\\n {6}${detail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\n`), p.stdout);
-  assert.match(p.stdout, /8 règles, 1 en échec\./);
+  assert.match(p.stdout, /9 règles, 1 en échec\./);
 }
 
-test('typo vert : Orbe Café, 8 règles tenues, rapports affichés, primitives sans rôle, code 0', () => {
+test('typo vert : Orbe Café, 9 règles tenues (étape 4c : consigne de hauteur de capitale), rapports affichés, primitives sans rôle, code 0', () => {
   const r = typo(load('semantique.tokens.json'), load('primitives.tokens.json'), marque, etroite(load('semantique.tokens.json')));
   assert.deepEqual(r.regles.map((g) => g.id), REGLES);
   assert.deepEqual(failing(r), []);
@@ -86,13 +86,13 @@ test('typo vert : Orbe Café, 8 règles tenues, rapports affichés, primitives s
   assert.equal(p.status, 0, p.stdout + p.stderr);
   assert.doesNotMatch(p.stdout, /✗/);
   for (const l of [
-    /affichage\.grand +60 \/ 68 px +rapport 1,1333 +étroit 36 \/ 40 px +rapport 1,1111 +700 +police\.titre\n/,
-    /titre\.3 +20 \/ 28 px +rapport 1,4 +étroit 18 \/ 24 px +rapport 1,3333 +600 +police\.titre\n/,
+    /affichage\.grand +60 \/ 68 px +rapport 1,1333 +étroit 36 \/ 40 px +rapport 1,1111 +700 +police\.titre +capitale 0,7 × taille\n/,
+    /titre\.3 +20 \/ 28 px +rapport 1,4 +étroit 18 \/ 24 px +rapport 1,3333 +600 +police\.titre +capitale 0,7 × taille\n/,
     /titre\.4 +16 \/ 24 px +rapport 1,5 +700 +police\.texte\n/,
     /corps\.grand +18 \/ 28 px +rapport 1,5556 +400 +police\.texte\n/,
     /mention +12 \/ 16 px +rapport 1,3333 +400 +police\.texte\n/,
     /primitives sans rôle \(affiché, non contrôlé\)\n {2}aucune\n/,
-    /8 règles, aucune en échec\./,
+    /9 règles, aucune en échec\./,
   ]) assert.match(p.stdout, l);
 });
 

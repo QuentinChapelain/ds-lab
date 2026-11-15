@@ -4,7 +4,9 @@
  * résolus vers taille-texte.*, graisse.* et marque.police.*. Tailles lues en px ou en rem (16 px = 1 rem).
  * Interligne sans unité ; ligne = taille × interligne. Étape 4b : la valeur en étroit est le style du contexte étroit
  * (largeur.etroit.tokens.json, lu par le resolver) quand il diffère du large ; seuil sur le modificateur largeur.
- * Huit règles (échec, code 1) ; le rapport de chaque style et les primitives sans rôle sont affichés sans seuil.
+ * Étape 4c : affichage et titres 1 à 3 portent la consigne commune de hauteur de capitale ($extensions["ds-lab.hauteur-capitale"],
+ * alias vers police.titre.hauteur-capitale), lue en large et en étroit.
+ * Neuf règles (échec, code 1) ; le rapport de chaque style et les primitives sans rôle sont affichés sans seuil.
  */
 import { flattenTokens, tokenTypes, primitivesSansRole } from './roles.js';
 
@@ -16,6 +18,8 @@ export const MIN_PX = 12;
 export const ORDRE = ['affichage.grand', 'affichage.moyen', 'titre.1', 'titre.2', 'titre.3', 'titre.4'];
 /** Styles sur police.titre ; tous les autres sur police.texte. */
 export const SUR_POLICE_TITRE = ['affichage.grand', 'affichage.moyen', 'titre.1', 'titre.2', 'titre.3'];
+/** Clé de la consigne commune de hauteur de capitale (étape 4c), dans $extensions d'un style de titre. */
+export const CONSIGNE = 'ds-lab.hauteur-capitale';
 /** Interlignes minimaux. */
 export const INTERLIGNES_MIN = [
   { id: 'corps-1-5', styles: ['corps.grand', 'corps.moyen'], min: 1.5 },
@@ -23,8 +27,8 @@ export const INTERLIGNES_MIN = [
 ];
 
 /**
- * @typedef {{ taille: number, interligne: number, ligne: number }} Mesure
- * @typedef {{ style: string, police: string, graisse: number, large: Mesure, etroit: Mesure | null, sous: number | null, seuil: string, description: string }} Style
+ * @typedef {{ taille: number, interligne: number, ligne: number, hauteurCapitale: number | null }} Mesure
+ * @typedef {{ style: string, police: string, graisse: number, large: Mesure, etroit: Mesure | null, sous: number | null, seuil: string, description: string, hauteurCapitale: number | null }} Style
  * @typedef {{ id: string, titre: string, ok: boolean, details: string[] }} Regle
  */
 
@@ -70,8 +74,13 @@ export function typo(semantique, primitives, marque, largeurEtroite) {
     if (typeof n !== 'number') throw new Error(`nombre attendu : ${depuis}`);
     return n;
   };
-  /** @param {number} taille @param {number} interligne @returns {Mesure} */
-  const mesure = (taille, interligne) => ({ taille, interligne, ligne: taille * interligne });
+  /** Consigne de hauteur de capitale d'un jeton, résolue ; null sans consigne. @param {any} tok @param {string} depuis */
+  const consigne = (tok, depuis) => {
+    const c = tok.$extensions?.[CONSIGNE];
+    return c === undefined ? null : nombre(c, `${depuis} (consigne)`);
+  };
+  /** @param {number} taille @param {number} interligne @param {number | null} hauteurCapitale @returns {Mesure} */
+  const mesure = (taille, interligne, hauteurCapitale) => ({ taille, interligne, ligne: taille * interligne, hauteurCapitale });
 
   const types = tokenTypes(semantique);
   /** @type {Style[]} */
@@ -80,12 +89,12 @@ export function typo(semantique, primitives, marque, largeurEtroite) {
     if (path.endsWith('.$root') || types.get(path) !== 'typography') continue;
     const style = path.replace(/^typo\./, '');
     const v = t.$value;
-    const large = mesure(px(v.fontSize, `${style}.fontSize`), nombre(v.lineHeight, `${style}.lineHeight`));
+    const large = mesure(px(v.fontSize, `${style}.fontSize`), nombre(v.lineHeight, `${style}.lineHeight`), consigne(t, style));
     const te = semEtroit?.get(path);
     const x = te && JSON.stringify(te.$value) !== JSON.stringify(v) ? te.$value : null;
-    const etroit = x ? mesure(px(x.fontSize, `${style} (étroit)`), nombre(x.lineHeight, `${style} (étroit)`)) : null;
+    const etroit = x && te ? mesure(px(x.fontSize, `${style} (étroit)`), nombre(x.lineHeight, `${style} (étroit)`), consigne(te, `${style} (étroit)`)) : null;
     const sous = x && largeurEtroite ? largeurEtroite.sous : null;
-    styles.push({ style, police: v.fontFamily, graisse: nombre(v.fontWeight, `${style}.fontWeight`), large, etroit, sous, seuil: x && largeurEtroite ? largeurEtroite.seuil : '', description: t.$description ?? '' });
+    styles.push({ style, police: v.fontFamily, graisse: nombre(v.fontWeight, `${style}.fontWeight`), large, etroit, sous, seuil: x && largeurEtroite ? largeurEtroite.seuil : '', description: t.$description ?? '', hauteurCapitale: large.hauteurCapitale });
   }
   const byName = new Map(styles.map((s) => [s.style, s]));
   /** @param {string} name */
@@ -155,6 +164,24 @@ export function typo(semantique, primitives, marque, largeurEtroite) {
       const attendu = SUR_POLICE_TITRE.includes(s.style) ? '{marque.police.titre}' : '{marque.police.texte}';
       return s.police === attendu ? [] : [`${s.style} : ${s.police}, attendu ${attendu}`];
     }),
+  );
+
+  const valeurs = new Set(styles.flatMap((s) => variantes(s).map(([, m]) => m.hauteurCapitale)).filter((c) => c !== null));
+  regle(
+    'hauteur-capitale',
+    'consigne de hauteur de capitale sur affichage et titres 1 à 3, la même, entre 0 et 1, en large et en étroit ; sur aucun autre style',
+    [
+      ...styles.flatMap((s) =>
+        variantes(s).flatMap(([n, m]) => {
+          const titre = SUR_POLICE_TITRE.includes(s.style);
+          if (titre && m.hauteurCapitale === null) return [`${s.style} en ${n} : consigne absente`];
+          if (!titre && m.hauteurCapitale !== null) return [`${s.style} en ${n} : consigne hors des styles de titre`];
+          if (m.hauteurCapitale !== null && !(m.hauteurCapitale > 0 && m.hauteurCapitale < 1)) return [`${s.style} en ${n} : consigne ${fr(m.hauteurCapitale)} hors de ]0, 1[`];
+          return [];
+        }),
+      ),
+      ...(valeurs.size > 1 ? [`consignes différentes : ${[...valeurs].map(fr).join(', ')}`] : []),
+    ],
   );
 
   return { styles, regles, fails: regles.filter((g) => !g.ok), sansRole: primitivesSansRole([semantique, largeurEtroite?.semantique ?? {}], [primitives], ['taille-texte', 'graisse']) };

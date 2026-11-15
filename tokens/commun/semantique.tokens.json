@@ -285,7 +285,10 @@
           },
           "lineHeight": 1.1333
         },
-        "$description": "Hero d'une page d'accueil ; ligne visée 68 px en large, 40 px en étroit."
+        "$description": "Hero d'une page d'accueil ; ligne visée 68 px en large, 40 px en étroit.",
+        "$extensions": {
+          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
+        }
       },
       "moyen": {
         "$value": {
@@ -298,7 +301,10 @@
           },
           "lineHeight": 1.1667
         },
-        "$description": "Grand chiffre ou bandeau ; ligne visée 56 px en large, 36 px en étroit."
+        "$description": "Grand chiffre ou bandeau ; ligne visée 56 px en large, 36 px en étroit.",
+        "$extensions": {
+          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
+        }
       }
     },
     "titre": {
@@ -313,7 +319,10 @@
           },
           "lineHeight": 1.2
         },
-        "$description": "Titre de page ; ligne visée 36 px en large, 32 px en étroit."
+        "$description": "Titre de page ; ligne visée 36 px en large, 32 px en étroit.",
+        "$extensions": {
+          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
+        }
       },
       "2": {
         "$value": {
@@ -326,7 +335,10 @@
           },
           "lineHeight": 1.3333
         },
-        "$description": "Titre de section ; ligne visée 32 px en large, 28 px en étroit."
+        "$description": "Titre de section ; ligne visée 32 px en large, 28 px en étroit.",
+        "$extensions": {
+          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
+        }
       },
       "3": {
         "$value": {
@@ -339,7 +351,10 @@
           },
           "lineHeight": 1.4
         },
-        "$description": "Titre de carte ; ligne visée 28 px en large, 24 px en étroit."
+        "$description": "Titre de carte ; ligne visée 28 px en large, 24 px en étroit.",
+        "$extensions": {
+          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
+        }
       },
       "4": {
         "$value": {

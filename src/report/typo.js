@@ -66,7 +66,7 @@ export function typoHtml(t, e, roles, extra) {
   const classes = t.styles
     .map((s) => {
       const police = String(s.police).replace(/^\{marque\.police\.(.*)\}$/, '$1');
-      return `      .t-${slug(s.style)} { font-family: var(--police-${police}); font-size: var(--${slug(s.style)}-taille); line-height: var(--${slug(s.style)}-interligne); font-weight: ${s.graisse}; letter-spacing: ${extra.espacementLettres[s.style] ?? '0px'}; }`;
+      return `      .t-${slug(s.style)} { font-family: var(--police-${police}); font-size: var(--${slug(s.style)}-taille); line-height: var(--${slug(s.style)}-interligne); font-weight: ${s.graisse}; letter-spacing: ${extra.espacementLettres[s.style] ?? '0px'};${s.hauteurCapitale !== null ? ` font-size-adjust: cap-height ${s.hauteurCapitale};` : ''} }`;
     })
     .join('\n');
 
@@ -79,6 +79,7 @@ export function typoHtml(t, e, roles, extra) {
         ...(s.etroit ? [`étroit ${fr(s.etroit.taille)} / ${ligne(s.etroit.ligne)} px`, `rapport ${fr(s.etroit.interligne)}`] : []),
         String(s.graisse),
         esc(String(s.police).replace(/^\{marque\.(.*)\}$/, '$1')),
+        ...(s.hauteurCapitale !== null ? [`capitale ${fr(s.hauteurCapitale)} × taille`] : []),
       ].join(' · ');
       return `          <li data-specimen="${s.style}">
             <p class="meta">${meta}</p>
@@ -88,7 +89,7 @@ export function typoHtml(t, e, roles, extra) {
     .join('\n');
 
   const nFails = t.fails.length;
-  const bilan = nFails ? `${nFails} règle${nFails > 1 ? 's' : ''} en échec : voir npm run typo.` : '8 règles tenues, contrôlées par npm run typo.';
+  const bilan = nFails ? `${nFails} règle${nFails > 1 ? 's' : ''} en échec : voir npm run typo.` : `${t.regles.length} règles tenues, contrôlées par npm run typo.`;
 
   return `<!doctype html>
 <html lang="fr">
