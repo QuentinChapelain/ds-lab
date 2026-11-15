@@ -70,7 +70,9 @@ test('S2 entrée invalide : motifs', () => {
   assert.deepEqual(motifs({ ...ok, accnet: '#2b4c7e' }), ['entrée invalide : clé inconnue accnet']);
   assert.deepEqual(motifs({ ...ok, primaire: { echelle: 'bleu' } }), ['entrée invalide : primaire, échelle existante réservée à Orbe Café']);
   assert.deepEqual(motifs({ ...ok, accent: { echelle: 'violet' } }, ORBE), ['entrée invalide : accent, échelle inconnue violet']);
-  assert.deepEqual(motifs({ ...ok, polices: { titre: ['Georgia'] } }), ['entrée invalide : polices.texte, liste de noms de familles attendue']);
+  // Étape 4, dernier lot (D16) : polices.texte est facultative, la police du produit la remplace.
+  assert.deepEqual(motifs({ ...ok, polices: { titre: ['Georgia'] } }), []);
+  assert.deepEqual(motifs({ ...ok, polices: { titre: ['Georgia'], texte: [] } }), ['entrée invalide : polices.texte, liste de noms de familles attendue']);
   assert.deepEqual(motifs({ ...ok, polices: { titre: [], texte: ['Arial'] } }), ['entrée invalide : polices.titre, liste de noms de familles attendue']);
 });
 

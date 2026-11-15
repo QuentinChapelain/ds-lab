@@ -1,0 +1,12 @@
+{
+  "$description": "Police du produit, commune à toutes les marques (étape 4, dernier lot, décision du 15/11/2026). Format DTCG 2025.10. En marque blanche, la police des titres est celle du client (polices.titre de l'entrée) ; celle du texte et des boutons est celle du produit, déclarée ici une fois. Une entrée qui déclare polices.texte la remplace : le système garde la capacité de la changer.",
+  "marque": {
+    "police": {
+      "$type": "fontFamily",
+      "texte": {
+        "$value": ["system-ui", "sans-serif"],
+        "$description": "Police du produit : titres 4, corps, libellés, mentions et boutons. Valeur à choisir avec une vraie police [H]."
+      }
+    }
+  }
+}

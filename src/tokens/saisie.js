@@ -7,7 +7,8 @@
  *   primaire     couleur #rrggbb (échelle générée par generateScale) ou { "echelle": nom } (échelle existante,
  *                réservée à Orbe Café, dont le dossier porte les couches communes) ;
  *   accent       facultatif, même forme ; absent : repli sur le neutre (D05) ;
- *   polices      { titre: [familles], texte: [familles] }, noms de familles seulement (ni chargement ni contrôle) ;
+ *   polices      { titre: [familles], texte?: [familles] }, noms de familles seulement (ni chargement ni contrôle) ;
+ *                texte facultatif (étape 4, dernier lot) : absent, la police du produit (tokens/commun/police.tokens.json) ;
  *   description  facultative, $description de marque.tokens.json.
  *
  * Trois motifs de refus : entrée invalide ; checkValise en échec sur les échelles générées ; paire de rôles en échec.
@@ -113,16 +114,17 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   };
   const primaire = source('primaire');
   const accent = source('accent');
-  /** @type {{ titre: string[], texte: string[] } | undefined} */
+  /** @type {{ titre: string[], texte?: string[] } | undefined} */
   let polices;
   if (entree.polices !== undefined) {
     const p = entree.polices;
     const familles = (/** @type {any} */ l) => Array.isArray(l) && l.length > 0 && l.every((x) => typeof x === 'string' && x.trim());
-    if (!p || typeof p !== 'object' || Array.isArray(p)) invalide('polices, { "titre": [...], "texte": [...] } attendu');
+    if (!p || typeof p !== 'object' || Array.isArray(p)) invalide('polices, { "titre": [...] } attendu, "texte" facultatif');
     else {
       for (const k of Object.keys(p)) if (k !== 'titre' && k !== 'texte') invalide(`clé inconnue polices.${k}`);
-      for (const k of ['titre', 'texte']) if (!familles(p[k])) invalide(`polices.${k}, liste de noms de familles attendue`);
-      if (familles(p.titre) && familles(p.texte)) polices = { titre: p.titre, texte: p.texte };
+      if (!familles(p.titre)) invalide('polices.titre, liste de noms de familles attendue');
+      if ('texte' in p && !familles(p.texte)) invalide('polices.texte, liste de noms de familles attendue');
+      if (familles(p.titre) && (!('texte' in p) || familles(p.texte))) polices = { titre: p.titre, ...('texte' in p ? { texte: p.texte } : {}) };
     }
   }
   if (motifs.length || !primaire || !polices) return vide;

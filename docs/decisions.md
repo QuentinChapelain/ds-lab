@@ -1,6 +1,6 @@
 # Décisions
 
-Quinze décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/commun/` et dans le dossier de chaque marque.
+Seize décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/commun/` et dans le dossier de chaque marque.
 
 ### D01
 - **Décision** : les rôles se nomment propriété.sens.emphase.état.
@@ -76,3 +76,8 @@ Quinze décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'es
 - **Décision** : les couches communes à toutes les marques vivent dans `tokens/commun/` ; chaque marque a un resolver DTCG 2025.10 (`marque.resolver.json`), écrit par la saisie, lu par un lecteur maison (`src/tokens/resolver.js`). Deux modificateurs : mode (clair, sombre) et largeur (large, étroit). Un contexte remplace des jetons entiers ; le seuil de l'étroit est dans `$extensions["ds-lab.largeur"]` du modificateur.
 - **Raison** : une même marque en clair et en sombre, en large et en étroit, sans changer un seul rôle ; un format qu'un outil DTCG standard lit, sans dépendance de plus.
 - **Conséquence** : le fichier des rôles est le même dans tous les contextes ; un style de texte en étroit répète son composite entier. Mode sombre [H] (lot 2 bis) : page `#121212`, chaque surface posée au-dessus plus claire (fond.app, fond.discret, fond.surface, fonds de composant) ; neutres dessinés, textes au rapport du clair (12,75 et 5,49 sur la page) ; échelles de couleur générées depuis le même pas 9, contraste visé contre le noir, pas 11 à 9:1 sur la page et pas 12 à 12,75:1, à la chroma la plus forte que permet le gamut. `fond.surface` et `texte.sur-inverse` pointent vers `couleur.surface` et `couleur.sur-inverse` ; l'aplat plein vers trois emplacements communs, `marque.primaire.aplat`, `sur-aplat`, `aplat-survol` (`tokens/commun/aplat.tokens.json`), alias du plein en clair.
+
+### D16
+- **Décision** : en marque blanche, la police des titres (affichage, titres 1 à 3) est celle du client, entrée par `polices.titre` ; la police du texte (titre 4, corps, libellés, mentions, boutons) est celle du produit, commune à toutes les marques, déclarée une fois dans `tokens/commun/police.tokens.json`. `polices.texte` reste possible dans l'entrée et remplace la police du produit.
+- **Raison** : décision de Quentin du 15/11/2026, 17 h 51 : le client ne change pas la police du texte, le système garde la capacité de la changer.
+- **Conséquence** : une entrée sans `polices.texte` est acceptée ; sa couche marque n'écrit que `police.titre`, le resolver lit la police du produit avant la couche marque. Valeur de la police du produit : hypothèse (`KNOWN_ISSUES.md`).

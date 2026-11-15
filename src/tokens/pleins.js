@@ -143,7 +143,7 @@ export function pasTexteGrand(steps, fonds) {
  * et, si elles sont données, les polices de la marque (séance 3c : police.titre, police.texte, $type fontFamily).
  * Étape 4a, lot 5 : le primaire porte en plus texte-grand (pasTexteGrand), écrit en dernier pour qu'Orbe Café redevienne
  * identique une fois cet ajout retiré.
- * @param {{ primaire: { scale: string, steps: string[] }, accent: { scale: string, steps: string[] }, statuts: Record<string, { scale: string, steps: string[] }>, polices?: { titre: string[], texte: string[] }, fonds: string[], description: string }} spec
+ * @param {{ primaire: { scale: string, steps: string[] }, accent: { scale: string, steps: string[] }, statuts: Record<string, { scale: string, steps: string[] }>, polices?: { titre: string[], texte?: string[] }, fonds: string[], description: string }} spec
  */
 export function marqueTokens({ primaire, accent, statuts, polices, fonds, description }) {
   /** @type {Record<string, any>} */
@@ -162,13 +162,15 @@ export function marqueTokens({ primaire, accent, statuts, polices, fonds, descri
     $description: `texte de marque des grands titres (affichage, titres 1 et 2) : pas ${grand}, premier des pas 9, 10, 11 à tenir 3:1 sur fond.app, fond.surface, fond.discret et fond.marque.discret`,
   };
   for (const [name, s] of Object.entries(statuts)) m[name] = emplacement(name, s, false);
-  if (polices)
+  if (polices) {
     m.police = {
       $type: 'fontFamily',
       $description: 'Polices de la marque : titre pour les styles affichage et titre 1 à 3, texte pour tout le reste.',
       titre: { $value: polices.titre, $description: 'Police des styles affichage et titre 1 à 3.' },
-      texte: { $value: polices.texte, $description: 'Police des titres 4, du corps, des libellés et des mentions.' },
     };
+    // Étape 4, dernier lot : sans police de texte saisie, la police du produit vient du commun (tokens/commun/police.tokens.json).
+    if (polices.texte) m.police.texte = { $value: polices.texte, $description: 'Police des titres 4, du corps, des libellés et des mentions.' };
+  }
   return { $description: description, marque: m };
 }
 

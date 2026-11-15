@@ -235,7 +235,8 @@ export function planche(dir) {
   const police = marque.marque?.police ?? {};
   /** @type {Record<string, string | string[]>} */
   const polices = {};
-  for (const k of Object.keys(police)) if (!k.startsWith('$')) polices[k] = police[k].$value;
+  // Titre puis texte, quel que soit l'ordre de fusion (la police du produit vient du commun, avant la couche marque).
+  for (const k of ['titre', 'texte', ...Object.keys(police).filter((x) => !['titre', 'texte'].includes(x))]) if (!k.startsWith('$') && police[k]) polices[k] = police[k].$value;
   /** @type {Record<string, string>} */
   const espacementLettres = {};
   for (const [path, tok] of flattenTokens(sem.typo ?? {})) {

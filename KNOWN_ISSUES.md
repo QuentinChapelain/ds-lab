@@ -5,6 +5,8 @@
 - Tests C14 et E5 rouges, dans `test/e2e-desordre.test.js`, depuis avant l'étape 3.
 - Tailles de texte en px : `indexTokens` (`src/report/migration.js`) n'indexe que les px ; bascule en rem à faire après adaptation (D12, `docs/decisions.md`).
 - Interlettrage à 0 partout, à régler avec une vraie police.
+- Police du produit (`tokens/commun/police.tokens.json`) : `system-ui, sans-serif`, valeur provisoire [H], à choisir avec une vraie police.
+- Styles de titre (affichage, titres 1 à 3) réglés sans la police du client : hauteurs de ligne et interlettrage à reprendre avec de vraies polices (hors contrat).
 - Primitives espace 0, 8, 12 et 64 sans rôle, à revoir après les composants.
 - Règle DS10 sans contrôle (`docs/regles.md`).
 - `texte.marque.grand` réservé à l'affichage et aux titres 1 et 2 (D14) : aucun contrôle ne vérifie cette limite, comme DS10.

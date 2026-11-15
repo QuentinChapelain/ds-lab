@@ -15,10 +15,13 @@
       ]
     },
     "marque": {
-      "description": "Emplacements communs de l'aplat plein, échelles et couche marque de Écume et Sel.",
+      "description": "Emplacements communs de l'aplat plein, police du produit, échelles et couche marque de Écume et Sel.",
       "sources": [
         {
           "$ref": "../commun/aplat.tokens.json"
+        },
+        {
+          "$ref": "../commun/police.tokens.json"
         },
         {
           "$ref": "echelles.tokens.json"
