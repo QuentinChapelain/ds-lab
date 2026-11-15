@@ -6,14 +6,27 @@
  * Le contrat par échelle (contractOf) est affiché pour information ; il ne change pas le code de sortie.
  * Étape 4, séance a : --marque <dossier> contrôle la marque de ce dossier ; sans l'option, Orbe Café.
  * Étape 4, séance b : la marque se lit par son resolver (marque.resolver.json), avec les couches communes de tokens/commun/.
- * Usage : npm run contraste [-- --paires <fichier>] [--marque <dossier>]
+ * Étape 4b, lot 3 : --mode clair|sombre et --largeur large|etroit choisissent le contexte du resolver (clair et large par
+ * défaut) ; un contexte inconnu sort en 2.
+ * Usage : npm run contraste [-- --paires <fichier>] [--marque <dossier>] [--mode clair|sombre] [--largeur large|etroit]
  */
 import { parseArgs } from 'node:util';
 import { loadRoles, contrat } from '../tokens/roles.js';
 import { ORBE } from '../tokens/resolver.js';
 
-const { values } = parseArgs({ options: { paires: { type: 'string' }, marque: { type: 'string' } } });
-const c = contrat(loadRoles(values.marque ?? ORBE, { paires: values.paires }));
+const { values } = parseArgs({ options: { paires: { type: 'string' }, marque: { type: 'string' }, mode: { type: 'string' }, largeur: { type: 'string' } } });
+/** @type {ReturnType<typeof contrat>} */
+let c;
+try {
+  c = contrat(loadRoles(values.marque ?? ORBE, { paires: values.paires, mode: values.mode, largeur: values.largeur }));
+} catch (e) {
+  console.error(`contraste : ${/** @type {Error} */ (e).message}`);
+  process.exit(2);
+}
+// Étape 4b, lot 3 : hors du contexte par défaut, la sortie nomme le contexte ; par défaut, elle reste celle d'avant.
+const mode = values.mode ?? 'clair';
+const largeur = values.largeur ?? 'large';
+if (mode !== 'clair' || largeur !== 'large') console.log(`mode ${mode}, largeur ${largeur}`);
 
 const fr = (/** @type {number} */ n) => n.toFixed(2).replace('.', ',');
 const plural = (/** @type {number} */ n, /** @type {string} */ one, /** @type {string} */ many) => `${n} ${n > 1 ? many : one}`;

@@ -70,7 +70,7 @@ La cible est écrite en quatre couches de jetons DTCG. Les couches communes à t
 
 Changer de marque, c'est changer la couche marque : les rôles restent les mêmes. Chaque marque a un resolver au format DTCG 2025.10, `marque.resolver.json`, qui réunit ses jeux de jetons et déclare deux contextes : le mode (clair, sombre) et la largeur (large, étroit). Un contexte échange des valeurs sous les rôles sans en changer un seul ; en étroit, seuls l'écart de section et les grands textes changent (`tokens/commun/largeur.etroit.tokens.json`). Trois commandes contrôlent la cible ; chacune sort en 1 si une règle échoue :
 
-- `npm run contraste` : chaque paire de rôles atteint son seuil WCAG 2.1, sauf exception écrite ; les paires interdites sont affichées.
+- `npm run contraste` : chaque paire de rôles atteint son seuil WCAG 2.1, sauf exception écrite ; les paires interdites sont affichées. `--mode sombre` et `--largeur etroit` choisissent le contexte (clair et large par défaut).
 - `npm run espacements` : écarts strictement croissants, valeurs en étroit, règles de proximité ; les primitives sans rôle sont affichées.
 - `npm run typo` : règles des styles de texte (hauteurs de ligne, hiérarchie en large et en étroit) ; les primitives sans rôle sont affichées.
 
@@ -83,7 +83,7 @@ Une marque entre par un fichier, `tokens/orbe-cafe/entree.json` pour Orbe Café 
 | Sortie | Quand | Ce qui est écrit |
 |---|---|---|
 | 0 | Marque acceptée | `marque.tokens.json`, `marque.resolver.json`, et `echelles.tokens.json` si une échelle est générée |
-| 1 | Marque refusée : entrée invalide, `checkValise` en échec sur une échelle générée, ou paire de rôles sous son seuil | Rien ; chaque motif est affiché |
+| 1 | Marque refusée : entrée invalide, `checkValise` en échec sur une échelle générée, ou paire de rôles sous son seuil, en clair ou en sombre | Rien ; chaque motif est affiché avec son mode, `(clair)` ou `(sombre)` |
 | 2 | Aucun fichier donné | Rien |
 
 Sans accent, l'accent se replie sur le neutre (D05). Les couches communes (neutres, statuts, rôles, paires, espaces, typo) sont lues dans `tokens/commun/`. Orbe Café nomme ses échelles existantes (`{ "echelle": "bleu" }`), forme réservée à elle seule : sa couche marque est réécrite à l'identique. Les règles et la raison sont dans D13 (`docs/decisions.md`) ; le contrat tient en une page, `docs/contrat-de-marque.md`.

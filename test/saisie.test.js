@@ -76,7 +76,7 @@ test('S2 entrée invalide : motifs', () => {
 
 test('S3 checkValise en échec sur l\'échelle générée : refus', () => {
   const r = saisir({ nom: 'Essai', primaire: '#00ccff', polices: POLICES }, { dossier: AILLEURS });
-  assert.deepEqual(r.motifs, ['checkValise : primaire : doublon, pas 7 = pas 9 (#00ccff)']);
+  assert.deepEqual(r.motifs, ['checkValise (clair) : primaire : doublon, pas 7 = pas 9 (#00ccff)']);
 });
 
 test('S4 paire de rôles en échec : refus', () => {
@@ -88,7 +88,7 @@ test('S4 paire de rôles en échec : refus', () => {
   paires.seuils.essai = 5.2;
   for (const p of paires.paires) if (p.devant === 'texte.sur-interactif') p.type = 'essai';
   const r = saisir({ nom: 'Essai', primaire: '#8a4fd8', polices: POLICES }, { dossier: AILLEURS, commun: { ...commun, paires } });
-  assert.deepEqual(r.motifs, ['contraste : texte.sur-interactif sur fond.interactif.fort, 5,01:1 < 5,2:1']);
+  assert.deepEqual(r.motifs, ['contraste (clair) : texte.sur-interactif sur fond.interactif.fort, 5,01:1 < 5,2:1']);
   const pas = r.echelles?.couleur.primaire;
   assert.deepEqual([pas['9'].$value.hex, pas['10'].$value.hex], ['#8a4fd8', '#864bd3']);
 });
@@ -113,14 +113,15 @@ test('S6 commande saisie : codes de sortie, motif, fichiers', () => {
   const r1 = run('src/cli/saisie.js', join(refus, 'entree.json'));
   assert.equal(r1.status, 1);
   assert.match(r1.stderr, /marque refusée : Essai/);
-  assert.match(r1.stderr, /checkValise : primaire : doublon, pas 7 = pas 9 \(#00ccff\)/);
+  assert.match(r1.stderr, /checkValise \(clair\) : primaire : doublon, pas 7 = pas 9 \(#00ccff\)/);
   assert.deepEqual(readdirSync(refus), ['entree.json'], 'rien d\'écrit');
   const ok = mkdtempSync(join(tmpdir(), 'ds-lab-saisie-'));
   writeFileSync(join(ok, 'entree.json'), JSON.stringify({ nom: 'Essai', primaire: '#2b4c7e', accent: '#c8553d', polices: POLICES }));
   const r2 = run('src/cli/saisie.js', join(ok, 'entree.json'));
   assert.equal(r2.status, 0, r2.stderr);
   assert.match(r2.stdout, /marque acceptée : Essai/);
-  assert.match(r2.stdout, /0 paire en échec/);
+  assert.match(r2.stdout, /mode sombre, largeur large\n/);
+  assert.equal(r2.stdout.match(/70 paires de rôles, 0 paire en échec/g)?.length, 2, 'les deux modes');
   assert.ok(existsSync(join(ok, 'marque.tokens.json')) && existsSync(join(ok, 'echelles.tokens.json')));
 });
 

@@ -11,6 +11,7 @@
  *   description  facultative, $description de marque.tokens.json.
  *
  * Trois motifs de refus : entrée invalide ; checkValise en échec sur les échelles générées ; paire de rôles en échec.
+ * Étape 4b : checkValise et le contraste sont contrôlés dans les deux modes ; chaque motif dit son mode, (clair) ou (sombre).
  * Les couches communes (neutres, statuts, rôles, paires) sont lues dans tokens/commun/ ; la saisie écrit aussi le resolver
  * de la marque (marque.resolver.json, src/tokens/resolver.js).
  */
@@ -139,7 +140,7 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
       $description: `Échelles de ${entree.nom}, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues avec les couches communes de tokens/commun/.`,
       couleur,
     };
-    for (const f of checkValise(valiseFromTokens(echelles))) motifs.push(`checkValise : ${f}`);
+    for (const f of checkValise(valiseFromTokens(echelles))) motifs.push(`checkValise (clair) : ${f}`);
   }
   const marque = marqueTokens({
     primaire,
@@ -151,12 +152,6 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
       entree.description ??
       `Emplacements de marque de ${entree.nom}, écrits par la saisie depuis entree.json. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers marque.<emplacement>.* ; chaque emplacement pointe vers une échelle (${noms.length ? 'générées dans echelles.tokens.json, ' : ''}communes dans tokens/commun/), et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9.${accent ? '' : ' Sans accent saisi : repli sur le neutre (D05).'}`,
   });
-  try {
-    const c = contratRoles({ ...commun, marque: fusionner(fusionner({}, commun.marque), marque), echelles: echelles ? [echelles] : propres ? [propres] : [] });
-    for (const p of c.fails) motifs.push(`contraste : ${p.devant} sur ${p.fond}, ${fr(p.ratio)}:1 < ${String(p.min).replace('.', ',')}:1`);
-  } catch (e) {
-    motifs.push(`contraste : ${/** @type {Error} */ (e).message}`);
-  }
   // Mode sombre : échelles en miroir du primaire et de l'accent, depuis leur pas 9, sous le même nom.
   /** @type {Record<string, any>} */
   const couleurSombre = {
@@ -188,6 +183,22 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
     fonds: fondsClairs(communSombre),
     description: `Couche marque de ${entree.nom} en mode sombre, écrite par la saisie. Format DTCG 2025.10. Posée sur marque.tokens.json dans le contexte sombre : les boutons gardent leurs valeurs claires (D04), le texte de marque des grands titres est choisi sur l'échelle sombre.`,
   });
+  // Contraste dans les deux modes (lot 3) : chaque motif dit son mode. Même fusion que le resolver : commun, échelles et
+  // couche marque claires, puis, en sombre, le commun sombre, les échelles sombres et la couche marque sombre.
+  const claires = echelles ? [echelles] : propres ? [propres] : [];
+  /** @type {[string, import('./roles.js').RoleSet][]} */
+  const jeux = [
+    ['clair', { ...commun, marque: fusionner(fusionner({}, commun.marque), marque), echelles: claires }],
+    ['sombre', { ...communSombre, marque: fusionner(fusionner(fusionner({}, communSombre.marque), marque), marqueSombre), echelles: [...claires, echellesSombres] }],
+  ];
+  for (const [mode, jeu] of jeux) {
+    try {
+      const c = contratRoles(jeu);
+      for (const p of c.fails) motifs.push(`contraste (${mode}) : ${p.devant} sur ${p.fond}, ${fr(p.ratio)}:1 < ${String(p.min).replace('.', ',')}:1`);
+    } catch (e) {
+      motifs.push(`contraste (${mode}) : ${/** @type {Error} */ (e).message}`);
+    }
+  }
   const resolver = modeleResolver({
     nom: entree.nom,
     dossier,

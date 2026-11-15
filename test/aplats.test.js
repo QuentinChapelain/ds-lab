@@ -63,19 +63,19 @@ test('Orbe Café : sans l\'emplacement texte-grand, la couche marque redevient i
 test('paires.json : 48 paires de l\'étape 3 en tête, 18 ajoutées, 4 interdites ajoutées', () => {
   const p = charger('paires.json');
   assert.equal(p.seuils['grand-texte'], 3);
-  assert.equal(p.paires.length, 66);
-  assert.deepEqual(p.paires.slice(48).map((/** @type {any} */ x) => [x.devant, x.fond, x.type]), PAIRES_AJOUTEES);
+  assert.equal(p.paires.length, 70, 'étape 4b, lot 3 : + 4 bordures de statut sur fond.surface');
+  assert.deepEqual(p.paires.slice(48, 66).map((/** @type {any} */ x) => [x.devant, x.fond, x.type]), PAIRES_AJOUTEES);
   assert.equal(p.interdites.length, 8);
   assert.deepEqual(p.interdites.slice(4).map((/** @type {any} */ x) => [x.devant, x.fond]), INTERDITES_AJOUTEES.map((d) => [d, 'fond.marque.fort']));
   for (const x of p.interdites.slice(4)) assert.ok(x.regle.length > 10, x.devant);
 });
 
-test('les quatre marques fictives : 0 paire en échec, 66 paires, 8 interdites', () => {
+test('les quatre marques fictives : 0 paire en échec, 70 paires, 8 interdites', () => {
   for (const slug of ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie']) {
     const d = join(ROOT, 'tokens', slug);
     const set = { ...loadRoles(DIR), marque: avecAplat(load(d, 'marque.tokens.json')), echelles: slug === 'orbe-cafe' ? [] : [load(d, 'echelles.tokens.json')] };
     const c = contratRoles(set);
-    assert.equal(c.pairs.length, 66, slug);
+    assert.equal(c.pairs.length, 70, slug);
     assert.deepEqual(c.fails, [], slug);
     assert.equal(c.interdites.length, 8, slug);
   }

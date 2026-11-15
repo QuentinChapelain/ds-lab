@@ -14,7 +14,7 @@ Tout part de la couleur du client : chaque rôle prend dans sa palette le pas qu
 
 | Garantie | Commande qui la contrôle |
 |---|---|
-| Chaque paire de rôles atteint son seuil WCAG 2.1 : 4,5:1 pour le texte, 3:1 pour la bordure de champ et le focus ; sinon la marque est refusée | `npm run contraste -- --marque <dossier>`, lancé par `npm run saisie` |
+| Chaque paire de rôles atteint son seuil WCAG 2.1, en clair et en sombre : 4,5:1 pour le texte, 3:1 pour la bordure de champ et le focus ; sinon la marque est refusée, et le motif dit dans quel mode | `npm run contraste -- --marque <dossier> --mode clair|sombre`, lancé par `npm run saisie` dans les deux modes |
 | Chaque échelle générée passe `checkValise` : pas de doublon, teinte tenue, contraste croissant, texte lisible sur les pas 9 et 10 | `npm run saisie` |
 | La couleur exacte du client est sur le bouton dès qu'un texte lisible s'y pose : blanc à 4,5:1, ou texte foncé à 7:1 (D04, DS1) ; sinon le bouton prend le pas 11. Aucun forçage. Le survol se voit : voile blanc de 8 % ou noir de 15 % sur la couleur exacte, pas 10 ou pas 12 sinon | `npm run saisie` (règle appliquée à la génération) |
 | Les rôles sont les mêmes pour toutes les marques ; un rôle de marque pointe vers la couche marque (D02) | `npm test` |

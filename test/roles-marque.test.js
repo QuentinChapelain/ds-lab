@@ -253,5 +253,5 @@ test('M0 une autre marque se branche sans toucher aux rôles (témoin fictif, so
   assert.equal(roles.get('fond.interactif.fort.survol')?.hex, voileBlanc(g.steps[8], 0.08));
   assert.equal(roles.get('texte.sur-interactif')?.hex, '#ffffff');
   assert.equal(roles.get('texte.principal')?.hex, HEX.get('texte.principal'));
-  assert.equal(contratRoles(set).pairs.length, 66);
+  assert.equal(contratRoles(set).pairs.length, 70, 'étape 4b, lot 3 : + 4 bordures de statut sur fond.surface');
 });

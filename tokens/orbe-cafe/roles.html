@@ -45,7 +45,7 @@
     <main>
     <h1>Rôles de couleur, Orbe Café</h1>
     <p>Marque fictive. Paires déclarées dans paires.json, rôles dans semantique.tokens.json ; contraste WCAG 2.1, ratio tronqué à 2 décimales.</p>
-    <p class="bilan">66 paires, 0 en échec, 0 exception écrite, 8 paires interdites.</p>
+    <p class="bilan">70 paires, 0 en échec, 0 exception écrite, 8 paires interdites.</p>
     <section data-propriete="texte">
       <h2>Texte <span class="compte">52 paires, 4 interdites</span></h2>
       <p>Texte posé sur un fond de rôle, seuil 4,5:1 (WCAG 2.1, 1.4.3) ; 3:1 pour le texte de marque des grands titres.</p>
@@ -448,7 +448,7 @@
       </table></div>
     </section>
     <section data-propriete="bordure">
-      <h2>Bordure <span class="compte">14 paires, 3 interdites</span></h2>
+      <h2>Bordure <span class="compte">18 paires, 3 interdites</span></h2>
       <p>Bordure qui repère un composant ou un état, et anneau de focus, seuil 3:1 (WCAG 2.1, 1.4.11). bordure.discrete et bordure.defaut sont décoratives et n'ont pas de paire.</p>
       <div class="table-wrap"><table>
         <thead><tr><th>Fond</th><th>Mot écrit</th><th>Ratio</th><th>Seuil</th><th>Verdict</th></tr></thead>
@@ -548,6 +548,34 @@
           <td data-label="Fond"><span class="pastille" style="background:#2b4c7e"></span><code>fond.marque.fort</code> <span class="hex">#2b4c7e</span></td>
           <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#2b4c7e;border-color:#ffffff">Champ</span><span class="paire"><code>bordure.focus.inverse</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>fond.marque.fort</code></span></span></td>
           <td data-label="Ratio" class="num">8,61:1</td>
+          <td data-label="Seuil" class="num">3:1</td>
+          <td data-label="Verdict"><span class="verdict">conforme</span></td>
+        </tr>
+        <tr data-devant="bordure.erreur" data-fond="fond.surface" class="conforme">
+          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#ffffff;border-color:#e76862">Champ</span><span class="paire"><code>bordure.erreur</code> <span class="hex">#e76862</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+          <td data-label="Ratio" class="num">3,20:1</td>
+          <td data-label="Seuil" class="num">3:1</td>
+          <td data-label="Verdict"><span class="verdict">conforme</span></td>
+        </tr>
+        <tr data-devant="bordure.succes" data-fond="fond.surface" class="conforme">
+          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#ffffff;border-color:#529f76">Champ</span><span class="paire"><code>bordure.succes</code> <span class="hex">#529f76</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+          <td data-label="Ratio" class="num">3,19:1</td>
+          <td data-label="Seuil" class="num">3:1</td>
+          <td data-label="Verdict"><span class="verdict">conforme</span></td>
+        </tr>
+        <tr data-devant="bordure.avertissement" data-fond="fond.surface" class="conforme">
+          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#ffffff;border-color:#bf8501">Champ</span><span class="paire"><code>bordure.avertissement</code> <span class="hex">#bf8501</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+          <td data-label="Ratio" class="num">3,19:1</td>
+          <td data-label="Seuil" class="num">3:1</td>
+          <td data-label="Verdict"><span class="verdict">conforme</span></td>
+        </tr>
+        <tr data-devant="bordure.info" data-fond="fond.surface" class="conforme">
+          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#ffffff;border-color:#2f97da">Champ</span><span class="paire"><code>bordure.info</code> <span class="hex">#2f97da</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+          <td data-label="Ratio" class="num">3,20:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>

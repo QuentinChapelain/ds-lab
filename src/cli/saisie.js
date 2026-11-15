@@ -5,7 +5,7 @@
  * marque, refuse avec motif (entrée invalide, checkValise, paire de rôles en échec) ou écrit marque.tokens.json
  * (et echelles.tokens.json si une échelle est générée), le mode sombre (echelles.sombre.tokens.json,
  * marque.sombre.tokens.json) et le resolver marque.resolver.json dans le dossier de l'entrée,
- * puis lance le contrôle de contraste.
+ * puis lance le contrôle de contraste dans les deux modes (étape 4b, lot 3).
  * Sort en 0 si la marque est acceptée, en 1 si elle est refusée (rien n'est écrit), en 2 sur une erreur d'usage.
  * Usage : npm run saisie -- <entree.json>
  */
@@ -47,5 +47,9 @@ writeFileSync(join(dossier, RESOLVER), serialiser(r.resolver));
 console.log(`marque acceptée : ${nom}`);
 console.log(`écrit : ${join(dossier, 'marque.tokens.json')}${r.echelles ? `, ${echelles}` : ''}, mode sombre, ${join(dossier, RESOLVER)}`);
 const contraste = fileURLToPath(new URL('./contraste.js', import.meta.url));
-const c = spawnSync(process.execPath, [contraste, '--marque', dossier], { stdio: 'inherit' });
-process.exit(c.status ?? 1);
+let code = 0;
+for (const mode of ['clair', 'sombre']) {
+  const c = spawnSync(process.execPath, [contraste, '--marque', dossier, '--mode', mode], { stdio: 'inherit' });
+  code = Math.max(code, c.status ?? 1);
+}
+process.exit(code);

@@ -92,8 +92,8 @@ Changer de marque, c'est changer la couche marque ; les rôles restent les même
 | `npm run verify` | Comparer une page à sa référence (pixels, arbre d'accessibilité) |
 | `npm run login` | Enregistrer une session dans `.auth/` |
 | `npm run demo` | Servir la marque fictive en local |
-| `npm run saisie` | Saisir une marque depuis son entrée : échelles, couche marque, contraste ; sort en 1 si elle est refusée, avec motif |
-| `npm run contraste` | Paires de rôles ; sort en 1 si une paire est sous son seuil sans exception écrite ; `--marque <dossier>` pour une autre marque |
+| `npm run saisie` | Saisir une marque depuis son entrée : échelles, couche marque, mode sombre, resolver, contraste dans les deux modes ; sort en 1 si elle est refusée, avec motif et mode |
+| `npm run contraste` | Paires de rôles ; sort en 1 si une paire est sous son seuil sans exception écrite ; `--marque <dossier>` pour une autre marque, `--mode clair|sombre` et `--largeur large|etroit` pour le contexte |
 | `npm run espacements` | Écarts par relation, valeurs en étroit, règles de proximité ; sort en 1 si l'une échoue |
 | `npm run typo` | Règles des styles de texte ; sort en 1 si l'une échoue |
 | `npm test` | Tous les tests |

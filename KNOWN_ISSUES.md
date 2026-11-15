@@ -20,9 +20,9 @@
 - Générateur, mode sombre seulement : chroma atténuée en luminance du côté du noir ; arrondi cherché à ± 2 par canal pour tenir la teinte (Écume et Sel dérivait de 3,34°) ; la source est exclue des autres pas (Grenat Papeterie : la cible du pas 7, 2,09 contre le noir, tombait sur la source). Pas 11 et 12 au-dessus de la chroma de la source si le gamut le permet.
 - Mode sombre : une source claire (école « foncée » : avertissement, accent jaune, primaire cyan) garde ses pas 10 à 12 au-delà du pas 9 ; son texte de couleur et son bouton montent vers 12 à 17:1.
 - Mode sombre : l'accent fort (`fond.accent.fort`, `texte.sur-accent`) garde ses valeurs claires, comme l'aplat plein (lecture : l'accent n'est pas un bouton, D05).
-- `paires.json` ne déclare les bordures de statut que sur `fond.app` : un champ en erreur posé sur `fond.surface` n'a pas de paire (vu en sombre, 2,97:1 avant correction du pas 8 ; contrôlé par `test/sombre.test.js`).
 - Mode sombre : `couleur.sable` d'Orbe Café n'a pas d'échelle sombre (aucun rôle ne la lit).
-- `npm run contraste` ne lit que le mode clair ; contrôle des deux modes au lot 3 de l'étape 4b.
 - `npm run reduce --tokens` lit un seul fichier : la cible ds-lab est maintenant répartie entre `tokens/commun/` et la marque ; les tests de bout en bout lisent une copie figée des primitives d'avant l'étape 4b (`fixtures/marque-demo/jetons/primitives.tokens.json`). À faire : lire un resolver.
 - Clair : pour une marque très foncée, `texte.interactif` (pas 11) est plus foncé que la couleur du client et se distingue mal du texte courant (Grenat Papeterie : `#4f0020` contre `texte.principal` `#363026`, 1,19:1).
+- `npm run espacements` et `npm run typo` ne prennent pas `--mode` : ils ne lisent pas de couleur, la largeur y est contrôlée par le contexte étroit.
+- Table des 8 marques par mode (lot 3 de l'étape 4b) : dans `local/lot-4b/` seulement, témoins compris.
 - Trois fichiers source au-delà de 1 000 lignes ; ni lint ni CI ; revue de code prévue après l'étape 4.

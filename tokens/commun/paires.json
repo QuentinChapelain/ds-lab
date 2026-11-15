@@ -72,7 +72,11 @@
     { "devant": "texte.sur-marque", "fond": "fond.marque.fort", "type": "texte" },
     { "devant": "texte.sur-interactif.inverse", "fond": "fond.interactif.inverse", "type": "texte" },
     { "devant": "texte.sur-interactif.inverse.survol", "fond": "fond.interactif.inverse", "type": "texte" },
-    { "devant": "bordure.focus.inverse", "fond": "fond.marque.fort", "type": "focus" }
+    { "devant": "bordure.focus.inverse", "fond": "fond.marque.fort", "type": "focus" },
+    { "devant": "bordure.erreur", "fond": "fond.surface", "type": "bordure" },
+    { "devant": "bordure.succes", "fond": "fond.surface", "type": "bordure" },
+    { "devant": "bordure.avertissement", "fond": "fond.surface", "type": "bordure" },
+    { "devant": "bordure.info", "fond": "fond.surface", "type": "bordure" }
   ],
   "interdites": [
     { "devant": "texte.secondaire", "fond": "fond.composant.appui", "regle": "sur fond.composant.appui, le texte passe en texte.principal" },
