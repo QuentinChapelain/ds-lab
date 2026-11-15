@@ -1,5 +1,5 @@
 {
-  "$description": "Rôles de couleur (séance 3a du 14/11/2026), d'espacement par relation et styles de texte (séance 3c du 15/11/2026) d'Orbe Café (marque fictive). Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json, statuts.tokens.json et marque.tokens.json pour les couleurs, vers espace.* de primitives.tokens.json pour les espacements, vers taille-texte.*, graisse.* et marque.police.* pour les styles de texte (typo, composites DTCG typography, interligne sans unité) ; les couleurs de marque et tous les pleins, statuts compris, passent par marque.<emplacement>.* (Orbe Café : primaire = bleu, accent = terre). Paires de contraste déclarées dans paires.json.",
+  "$description": "Rôles de couleur (séance 3a du 14/11/2026), d'espacement par relation et styles de texte (séance 3c du 15/11/2026) communs à toutes les marques. Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json, statuts.tokens.json et marque.tokens.json pour les couleurs, vers espace.* de primitives.tokens.json pour les espacements, vers taille-texte.*, graisse.* et marque.police.* pour les styles de texte (typo, composites DTCG typography, interligne sans unité) ; les couleurs de marque et tous les pleins, statuts compris, passent par marque.<emplacement>.* (Orbe Café : primaire = bleu, accent = terre). Paires de contraste déclarées dans paires.json.",
   "fond": {
     "$type": "color",
     "$description": "Surfaces sur lesquelles se posent texte et bordures.",
@@ -12,7 +12,7 @@
       "$description": "Zone qui se distingue à peine du fond de page, comme un panneau latéral ou une bande."
     },
     "surface": {
-      "$value": "{couleur.blanc}",
+      "$value": "{couleur.surface}",
       "$description": "Fond blanc d'une carte ou d'un champ, posé sur le fond de page."
     },
     "inverse": {
@@ -47,12 +47,30 @@
           "$value": "{marque.primaire.plein-survol}",
           "$description": "Plein de l'action principale survolée."
         }
+      },
+      "inverse": {
+        "$value": "{marque.primaire.sur-aplat}",
+        "$description": "Fond du bouton inversé, réservé à fond.marque.fort : la valeur du texte posé sur le plein de la marque."
       }
     },
     "accent": {
+      "discret": {
+        "$value": "{marque.accent.3}",
+        "$description": "Aplat clair de l'accent, non cliquable, comme un encadré ; sans accent, le neutre."
+      },
       "fort": {
         "$value": "{marque.accent.plein}",
-        "$description": "Plein qui met en avant sans appeler à l'action, comme une étiquette ou un bandeau, avec un texte blanc posé dessus."
+        "$description": "Plein qui met en avant sans appeler à l'action, sur de petites surfaces, comme une étiquette."
+      }
+    },
+    "marque": {
+      "discret": {
+        "$value": "{marque.primaire.3}",
+        "$description": "Aplat clair de la marque, non cliquable, comme un bandeau, une section ou un encadré."
+      },
+      "fort": {
+        "$value": "{marque.primaire.aplat}",
+        "$description": "Aplat plein de la marque, non cliquable, de la valeur du plein du primaire, comme un bandeau qui donne du relief."
       }
     },
     "erreur": {
@@ -115,6 +133,12 @@
       "$value": "{marque.accent.11}",
       "$description": "Texte mis en avant sans être une action."
     },
+    "marque": {
+      "grand": {
+        "$value": "{marque.primaire.texte-grand}",
+        "$description": "Texte de marque des grands titres, styles affichage et titres 1 et 2 seulement, choisi à la saisie pour tenir 3:1 sur les fonds clairs."
+      }
+    },
     "erreur": {
       "$value": "{couleur.erreur.11}",
       "$description": "Texte d'un message d'erreur."
@@ -132,12 +156,28 @@
       "$description": "Texte d'un message d'information."
     },
     "sur-interactif": {
-      "$value": "{marque.primaire.sur-plein}",
-      "$description": "Texte posé sur le plein de l'action principale, au repos comme au survol."
+      "$root": {
+        "$value": "{marque.primaire.sur-plein}",
+        "$description": "Texte posé sur le plein de l'action principale, au repos comme au survol."
+      },
+      "inverse": {
+        "$root": {
+          "$value": "{marque.primaire.aplat}",
+          "$description": "Texte du bouton inversé, de la valeur du plein du primaire."
+        },
+        "survol": {
+          "$value": "{marque.primaire.aplat-survol}",
+          "$description": "Texte du bouton inversé survolé, seul à changer, de la valeur du plein survolé."
+        }
+      }
     },
     "sur-accent": {
       "$value": "{marque.accent.sur-plein}",
       "$description": "Texte posé sur le plein d'accent."
+    },
+    "sur-marque": {
+      "$value": "{marque.primaire.sur-aplat}",
+      "$description": "Texte posé sur fond.marque.fort, titres compris."
     },
     "sur-erreur": {
       "$value": "{marque.erreur.sur-plein}",
@@ -156,7 +196,7 @@
       "$description": "Texte posé sur le plein d'information."
     },
     "sur-inverse": {
-      "$value": "{couleur.blanc}",
+      "$value": "{couleur.sur-inverse}",
       "$description": "Texte posé sur le fond inversé."
     }
   },
@@ -176,8 +216,14 @@
       "$description": "Contour qui suffit à repérer un champ ou une case à cocher (3:1)."
     },
     "focus": {
-      "$value": "{marque.primaire.11}",
-      "$description": "Anneau de focus clavier (3:1)."
+      "$root": {
+        "$value": "{marque.primaire.11}",
+        "$description": "Anneau de focus clavier (3:1)."
+      },
+      "inverse": {
+        "$value": "{marque.primaire.sur-aplat}",
+        "$description": "Anneau de focus clavier sur fond.marque.fort (3:1)."
+      }
     },
     "erreur": {
       "$value": "{couleur.erreur.8}",
@@ -213,17 +259,7 @@
     },
     "section": {
       "$value": "{espace.48}",
-      "$description": "Écart entre deux sections de la page, la plus grande respiration verticale ; en étroit, la valeur de ds-lab.etroit (seuil [H]).",
-      "$extensions": {
-        "ds-lab.etroit": {
-          "valeur": "{espace.32}",
-          "sous": {
-            "value": 600,
-            "unit": "px"
-          },
-          "seuil": "[H]"
-        }
-      }
+      "$description": "Écart entre deux sections de la page, la plus grande respiration verticale ; plus petit en étroit (largeur.etroit.tokens.json)."
     }
   },
   "marge-interieure": {
@@ -236,7 +272,7 @@
   },
   "typo": {
     "$type": "typography",
-    "$description": "Styles de texte : un jeton composite par style, sans couleur ; interligne = hauteur de ligne visée ÷ taille, arrondi à 4 décimales, la hauteur visée est écrite dans la description ; valeur en étroit dans $extensions[\"ds-lab.etroit\"], sous 600 px [H] ; letterSpacing 0 px, exigé par le format, valeur à décider [V].",
+    "$description": "Styles de texte : un jeton composite par style, sans couleur ; interligne = hauteur de ligne visée ÷ taille, arrondi à 4 décimales, la hauteur visée est écrite dans la description ; valeurs en étroit dans largeur.etroit.tokens.json ; letterSpacing 0 px, exigé par le format, valeur à décider [V].",
     "affichage": {
       "grand": {
         "$value": {
@@ -247,21 +283,11 @@
             "value": 0,
             "unit": "px"
           },
-          "lineHeight": 1.1333
+          "lineHeight": 1.2667
         },
-        "$description": "Hero d'une page d'accueil ; ligne visée 68 px en large, 40 px en étroit.",
+        "$description": "Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit.",
         "$extensions": {
-          "ds-lab.etroit": {
-            "valeur": {
-              "fontSize": "{taille-texte.36}",
-              "lineHeight": 1.1111
-            },
-            "sous": {
-              "value": 600,
-              "unit": "px"
-            },
-            "seuil": "[H]"
-          }
+          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
         }
       },
       "moyen": {
@@ -273,21 +299,11 @@
             "value": 0,
             "unit": "px"
           },
-          "lineHeight": 1.1667
+          "lineHeight": 1.25
         },
-        "$description": "Grand chiffre ou bandeau ; ligne visée 56 px en large, 36 px en étroit.",
+        "$description": "Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit.",
         "$extensions": {
-          "ds-lab.etroit": {
-            "valeur": {
-              "fontSize": "{taille-texte.30}",
-              "lineHeight": 1.2
-            },
-            "sous": {
-              "value": 600,
-              "unit": "px"
-            },
-            "seuil": "[H]"
-          }
+          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
         }
       }
     },
@@ -301,21 +317,11 @@
             "value": 0,
             "unit": "px"
           },
-          "lineHeight": 1.2
+          "lineHeight": 1.3333
         },
-        "$description": "Titre de page ; ligne visée 36 px en large, 32 px en étroit.",
+        "$description": "Titre de page ; ligne visée 40 px en large, 32 px en étroit.",
         "$extensions": {
-          "ds-lab.etroit": {
-            "valeur": {
-              "fontSize": "{taille-texte.24}",
-              "lineHeight": 1.3333
-            },
-            "sous": {
-              "value": 600,
-              "unit": "px"
-            },
-            "seuil": "[H]"
-          }
+          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
         }
       },
       "2": {
@@ -331,17 +337,7 @@
         },
         "$description": "Titre de section ; ligne visée 32 px en large, 28 px en étroit.",
         "$extensions": {
-          "ds-lab.etroit": {
-            "valeur": {
-              "fontSize": "{taille-texte.20}",
-              "lineHeight": 1.4
-            },
-            "sous": {
-              "value": 600,
-              "unit": "px"
-            },
-            "seuil": "[H]"
-          }
+          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
         }
       },
       "3": {
@@ -357,17 +353,7 @@
         },
         "$description": "Titre de carte ; ligne visée 28 px en large, 24 px en étroit.",
         "$extensions": {
-          "ds-lab.etroit": {
-            "valeur": {
-              "fontSize": "{taille-texte.18}",
-              "lineHeight": 1.3333
-            },
-            "sous": {
-              "value": 600,
-              "unit": "px"
-            },
-            "seuil": "[H]"
-          }
+          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
         }
       },
       "4": {

@@ -24,11 +24,12 @@ import { join } from 'node:path';
 import { chromium } from 'playwright-core';
 import { loadRoles, contratRoles } from '../src/tokens/roles.js';
 import { rolesHtml } from '../src/report/roles.js';
+import { charger, etroite, COMMUN, ORBE } from './helpers/jetons.js';
 
 const DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'tokens', 'orbe-cafe');
 const FILE = join(DIR, 'roles.html');
 const html = readFileSync(FILE, 'utf8');
-const paires = JSON.parse(readFileSync(join(DIR, 'paires.json'), 'utf8'));
+const paires = charger('paires.json');
 
 const INTERDITES = new Map([
   ['texte.secondaire|fond.composant.appui', { ratio: 4.3327, regle: 'sur fond.composant.appui, le texte passe en texte.principal' }],
@@ -57,11 +58,11 @@ test('T4 page autonome, en français, titrée', () => {
   assert.doesNotMatch(html, /(src|href)="https?:/);
 });
 
-test('T4 groupes par propriété : texte (37 + 2 interdites) puis bordure (11 + 2 interdites)', () => {
+test('T4 groupes par propriété : texte (37 + 15 du lot 5, et 4 interdites) puis bordure (11 + 3 + 4 de l\'étape 4b, et 3 interdites)', () => {
   const sections = [...html.matchAll(/<section data-propriete="([^"]+)">([^]*?)<\/section>/g)];
   assert.deepEqual(sections.map((s) => s[1]), ['texte', 'bordure']);
-  assert.equal(rows(sections[0][2]).length, 39);
-  assert.equal(rows(sections[1][2]).length, 13);
+  assert.equal(rows(sections[0][2]).length, 56);
+  assert.equal(rows(sections[1][2]).length, 21, 'étape 4b, lot 3 : + 4 bordures de statut sur fond.surface');
   for (const r of rows(sections[0][2])) assert.match(r.devant, /^texte\./);
   for (const r of rows(sections[1][2])) assert.match(r.devant, /^bordure\./);
 });
@@ -90,9 +91,12 @@ test('T4 colonnes : fond, mot écrit, ratio, seuil, verdict ; nom du fond aussi 
     assert.ok(mot.includes(`background:${p.hexFond}`), `${r.devant} : échantillon sur son fond`);
     assert.ok(mot.includes(r.devant.startsWith('texte.') ? `color:${p.hexDevant}` : `border-color:${p.hexDevant}`), `${r.devant} : couleur devant`);
     assert.equal(text(ratio), `${trunc(p.ratio)}:1`);
-    assert.equal(text(seuil), r.devant.startsWith('texte.') ? '4,5:1' : '3:1');
+    // Paire : son seuil (3:1 pour texte.marque.grand, lot 5 de l'étape 4a) ; interdite : le seuil de son groupe.
+    const groupe = r.devant.startsWith('texte.') ? '4,5:1' : '3:1';
+    assert.equal(text(seuil), 'min' in p ? `${String(p.min).replace('.', ',')}:1` : groupe);
     const key = `${r.devant}|${r.fond}`;
-    const forbidden = INTERDITES.get(key);
+    // Les 4 interdites de l'étape 3 gardent leurs ratios ; celles du lot 5 sont lues dans contratRoles.
+    const forbidden = INTERDITES.get(key) ?? c.interdites.find((x) => `${x.devant}|${x.fond}` === key);
     if (forbidden) {
       assert.equal(text(verdict), `interdite ${forbidden.regle}`, key);
       assert.equal(text(ratio), `${trunc(forbidden.ratio)}:1`, key);
@@ -142,7 +146,7 @@ test('T4 à 420 px : le nom du fond se lit dans chaque ligne, sans défilement h
     return { vw, scroll: document.documentElement.scrollWidth, rows: out };
   });
   await page.close();
-  assert.equal(res.rows.length, 52);
+  assert.equal(res.rows.length, 77, 'étape 4b, lot 3 : + 4 bordures de statut sur fond.surface');
   for (const r of res.rows) assert.ok(r.seen, `${r.key} : nom du fond visible à 420 px`);
   assert.ok(res.scroll <= res.vw, `défilement horizontal : ${res.scroll} > ${res.vw}`);
 });

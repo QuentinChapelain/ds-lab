@@ -25,9 +25,10 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { resolveRoles } from '../src/tokens/roles.js';
+import { charger, etroite, COMMUN, ORBE } from './helpers/jetons.js';
 
 const DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'tokens', 'orbe-cafe');
-const load = (/** @type {string} */ f) => JSON.parse(readFileSync(join(DIR, f), 'utf8'));
+const load = charger;
 
 const EXPECTED = /** @type {Record<string, string>} */ ({
   'ecart.dans-composant': '{espace.4}',
@@ -65,13 +66,14 @@ test('3c une phrase d\'usage par rôle d\'espacement', () => {
   }
 });
 
-test('3c lot 4 : ecart.section porte sa valeur en étroit (32 px sous 600 px, seuil [H]), lui seul', () => {
-  assert.deepEqual(sem.ecart.section.$extensions, {
-    'ds-lab.etroit': { valeur: '{espace.32}', sous: { value: 600, unit: 'px' }, seuil: '[H]' },
-  });
+test('3c lot 4, 4b lot 1 : ecart.section a sa valeur en étroit (32 px) dans le contexte étroit, lui seul ; aucune extension dans les rôles', () => {
+  const etroit = charger('largeur.etroit.tokens.json');
+  assert.equal(etroit.ecart.section.$value, '{espace.32}');
+  assert.deepEqual(Object.keys(etroit.ecart).filter((k) => !k.startsWith('$')), ['section']);
+  assert.equal(etroit['marge-interieure'], undefined);
   assert.equal(sem.ecart.section.$value, '{espace.48}');
   assert.ok(prims.espace['32']?.$value, 'espace.32 existe');
-  for (const role of Object.keys(EXPECTED)) if (role !== 'ecart.section') assert.equal(at(sem, role).$extensions, undefined, role);
+  for (const role of Object.keys(EXPECTED)) assert.equal(at(sem, role).$extensions, undefined, role);
 });
 
 test('3c description racine : espacements, DTCG 2025.10', () => {
@@ -79,9 +81,9 @@ test('3c description racine : espacements, DTCG 2025.10', () => {
   assert.match(sem.$description, /espacement/i);
 });
 
-test('3c resolveRoles : un rôle de type dimension ne le casse pas, 42 rôles de couleur', () => {
+test('3c resolveRoles : un rôle de type dimension ne le casse pas, 51 rôles de couleur (étape 4a, lot 5 : 42 + 9 rôles ajoutés)', () => {
   const roles = resolveRoles(sem, prims, load('statuts.tokens.json'), load('marque.tokens.json'));
-  assert.equal(roles.size, 42);
+  assert.equal(roles.size, 51);
   for (const r of roles.keys()) assert.match(r, /^(fond|texte|bordure)\./, r);
 });
 

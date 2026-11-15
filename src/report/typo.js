@@ -7,8 +7,7 @@
  * la planche (15/11/2026) sont dans les jetons. gap et padding seulement, avec les rôles d'espacement ; la seule
  * déclaration margin est la remise à zéro. Page autonome, sans ressource externe ni script.
  */
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { largeurs } from '../tokens/resolver.js';
 import { typo, fr } from '../tokens/typo.js';
 import { espacements } from '../tokens/espacements.js';
 import { resolveRoles, flattenTokens } from '../tokens/roles.js';
@@ -67,7 +66,7 @@ export function typoHtml(t, e, roles, extra) {
   const classes = t.styles
     .map((s) => {
       const police = String(s.police).replace(/^\{marque\.police\.(.*)\}$/, '$1');
-      return `      .t-${slug(s.style)} { font-family: var(--police-${police}); font-size: var(--${slug(s.style)}-taille); line-height: var(--${slug(s.style)}-interligne); font-weight: ${s.graisse}; letter-spacing: ${extra.espacementLettres[s.style] ?? '0px'}; }`;
+      return `      .t-${slug(s.style)} { font-family: var(--police-${police}); font-size: var(--${slug(s.style)}-taille); line-height: var(--${slug(s.style)}-interligne); font-weight: ${s.graisse}; letter-spacing: ${extra.espacementLettres[s.style] ?? '0px'};${s.hauteurCapitale !== null ? ` font-size-adjust: cap-height ${s.hauteurCapitale};` : ''} }`;
     })
     .join('\n');
 
@@ -80,6 +79,7 @@ export function typoHtml(t, e, roles, extra) {
         ...(s.etroit ? [`étroit ${fr(s.etroit.taille)} / ${ligne(s.etroit.ligne)} px`, `rapport ${fr(s.etroit.interligne)}`] : []),
         String(s.graisse),
         esc(String(s.police).replace(/^\{marque\.(.*)\}$/, '$1')),
+        ...(s.hauteurCapitale !== null ? [`capitale ${fr(s.hauteurCapitale)} × taille`] : []),
       ].join(' · ');
       return `          <li data-specimen="${s.style}">
             <p class="meta">${meta}</p>
@@ -89,7 +89,7 @@ export function typoHtml(t, e, roles, extra) {
     .join('\n');
 
   const nFails = t.fails.length;
-  const bilan = nFails ? `${nFails} règle${nFails > 1 ? 's' : ''} en échec : voir npm run typo.` : '8 règles tenues, contrôlées par npm run typo.';
+  const bilan = nFails ? `${nFails} règle${nFails > 1 ? 's' : ''} en échec : voir npm run typo.` : `${t.regles.length} règles tenues, contrôlées par npm run typo.`;
 
   return `<!doctype html>
 <html lang="fr">
@@ -230,20 +230,19 @@ ${specimen}
  * @returns {string}
  */
 export function planche(dir) {
-  const read = (/** @type {string} */ f) => JSON.parse(readFileSync(join(dir, f), 'utf8'));
-  const sem = read('semantique.tokens.json');
-  const prims = read('primitives.tokens.json');
-  const marque = read('marque.tokens.json');
-  const roles = resolveRoles(sem, prims, read('statuts.tokens.json'), marque);
+  const { large, etroit } = largeurs(dir);
+  const { semantique: sem, primitives: prims, marque } = large;
+  const roles = resolveRoles(sem, prims, marque);
   const police = marque.marque?.police ?? {};
   /** @type {Record<string, string | string[]>} */
   const polices = {};
-  for (const k of Object.keys(police)) if (!k.startsWith('$')) polices[k] = police[k].$value;
+  // Titre puis texte, quel que soit l'ordre de fusion (la police du produit vient du commun, avant la couche marque).
+  for (const k of ['titre', 'texte', ...Object.keys(police).filter((x) => !['titre', 'texte'].includes(x))]) if (!k.startsWith('$') && police[k]) polices[k] = police[k].$value;
   /** @type {Record<string, string>} */
   const espacementLettres = {};
   for (const [path, tok] of flattenTokens(sem.typo ?? {})) {
     const ls = tok.$value?.letterSpacing;
     if (ls && typeof ls === 'object') espacementLettres[path] = `${ls.value}${ls.unit}`;
   }
-  return typoHtml(typo(sem, prims, marque), espacements(sem, prims), roles, { polices, espacementLettres });
+  return typoHtml(typo(sem, prims, marque, etroit), espacements(sem, prims, etroit), roles, { polices, espacementLettres });
 }

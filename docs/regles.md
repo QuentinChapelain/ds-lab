@@ -1,10 +1,10 @@
 # Règles du design system
 
-Dix règles, chacune avec sa raison et son contrôle. Une règle sans contrôle est une dette (`KNOWN_ISSUES.md`).
+Onze règles, chacune avec sa raison et son contrôle. Une règle sans contrôle est une dette (`KNOWN_ISSUES.md`).
 
 | | Règle | Raison | Contrôle |
 |---|---|---|---|
-| DS1 | Sur un plein moyen, jamais de texte foncé | Conforme au ratio, mais le texte vibre | `npm run contraste` |
+| DS1 | Sur un plein, texte foncé seulement s'il atteint 7:1 sur le plein (et 4,5:1 sur le survol) ; sinon texte blanc | En dessous, conforme au ratio, mais le texte vibre | Appliquée à la saisie, `npm run saisie` (D04) ; statut avertissement hors règle, en dette |
 | DS2 | L'anneau de focus se pose sur le fond de page, décalé de 2 px, jamais sur le plein | Sur une marque moyenne, anneau et plein ont la même couleur | `npm run contraste` |
 | DS3 | Le parent porte l'espace, l'enfant n'a pas de marge | Pas de fusion de marges, responsive simple | Tests des planches (`test/espacements-planche.test.js`) |
 | DS4 | L'écart entre composants vaut au moins le double de l'écart interne | On doit voir à quel champ appartient un message | `npm run espacements` |
@@ -14,3 +14,4 @@ Dix règles, chacune avec sa raison et son contrôle. Une règle sans contrôle 
 | DS8 | Affichage et titres strictement décroissants, en large et en étroit | Hiérarchie à toutes les largeurs | `npm run typo` |
 | DS9 | Ne jamais prendre une primitive s'il existe un rôle pour la relation | Sinon les valeurs libres reviennent | Liste « sans rôle » de `npm run espacements` et de `npm run typo` |
 | DS10 | Un style de texte ne porte pas de couleur, et un seul affichage grand par page | Séparer forme et couleur | Contrôle à écrire |
+| DS11 | Affichage et titres 1 à 3 portent une consigne commune de hauteur de capitale (0,7 × la taille [H]), la même pour toutes les polices ; aucun autre style n'en porte | Une police de client change la hauteur visible des titres ; une règle unique, sans réglage par marque (D17) | `npm run typo` |

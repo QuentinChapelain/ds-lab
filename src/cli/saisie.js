@@ -1,0 +1,76 @@
+#!/usr/bin/env node
+// @ts-check
+/**
+ * Étape 4, séance a, lot 1 : saisie d'une marque. Lit tokens/<marque>/entree.json, génère les échelles et la couche
+ * marque, refuse avec motif (entrée invalide, checkValise, paire de rôles en échec) ou écrit marque.tokens.json
+ * (et echelles.tokens.json si une échelle est générée), le mode sombre (echelles.sombre.tokens.json,
+ * marque.sombre.tokens.json) et le resolver marque.resolver.json dans le dossier de l'entrée,
+ * puis lance le contrôle de contraste dans les deux modes (étape 4b, lot 3).
+ * Étape 4c, lot 3 : si l'entrée donne les fichiers de la police des titres, contrôle d'encre dans Chromium avant
+ * d'écrire ; refus si l'encre de deux lignes se touche ; sinon la table des mesures est affichée.
+ * Sort en 0 si la marque est acceptée, en 1 si elle est refusée (rien n'est écrit), en 2 sur une erreur d'usage.
+ * Usage : npm run saisie -- <entree.json>
+ */
+import { readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { saisir, serialiser, controlerEncre } from '../tokens/saisie.js';
+import { RESOLVER } from '../tokens/resolver.js';
+import { decrirePolice } from '../polices/lecture.js';
+import { tableEncre } from '../polices/encre.js';
+
+const fichier = process.argv[2];
+if (!fichier) {
+  console.error('usage : npm run saisie -- <entree.json>');
+  process.exit(2);
+}
+const dossier = dirname(fichier);
+/** @type {any} */
+let entree;
+try {
+  entree = JSON.parse(readFileSync(fichier, 'utf8'));
+} catch (e) {
+  console.error(`marque refusée : ${fichier}\n  entrée invalide : ${/** @type {Error} */ (e).message}`);
+  process.exit(1);
+}
+const r = saisir(entree, { dossier });
+const nom = typeof entree?.nom === 'string' && entree.nom.trim() ? entree.nom : fichier;
+/** @type {import('../polices/encre.js').LigneEncre[]} */
+let encre = [];
+if (!r.motifs.length && r.policeTitre?.controlee) {
+  const e = await controlerEncre(r.policeTitre, { dossier, commun: r.commun });
+  encre = e.lignes;
+  r.motifs.push(...e.motifs);
+}
+if (r.motifs.length) {
+  console.error(`marque refusée : ${nom}`);
+  for (const m of r.motifs) console.error(`  ${m}`);
+  process.exit(1);
+}
+writeFileSync(join(dossier, 'marque.tokens.json'), serialiser(r.marque));
+const echelles = join(dossier, 'echelles.tokens.json');
+if (r.echelles) writeFileSync(echelles, serialiser(r.echelles));
+else if (existsSync(echelles)) rmSync(echelles);
+writeFileSync(join(dossier, 'echelles.sombre.tokens.json'), serialiser(r.echellesSombres));
+writeFileSync(join(dossier, 'marque.sombre.tokens.json'), serialiser(r.marqueSombre));
+writeFileSync(join(dossier, RESOLVER), serialiser(r.resolver));
+console.log(`marque acceptée : ${nom}`);
+// Étape 4c : la police des titres, contrôlée si l'entrée donne ses fichiers ; « non contrôlée » n'est écrit qu'ici.
+const pt = r.policeTitre;
+if (pt) {
+  console.log(`police des titres : ${pt.familles.join(', ')}, ${pt.controlee ? 'contrôlée' : 'non contrôlée (aucun fichier)'}`);
+  for (const f of pt.fichiers) console.log(`  ${f.chemin} : ${decrirePolice(f.police)}`);
+  if (encre.length) {
+    console.log(`encre de deux lignes, consigne de hauteur de capitale ${String(encre[0].consigne).replace('.', ',')} (aucun écart nul ou négatif) :`);
+    for (const l of tableEncre(encre)) console.log(`  ${l}`);
+  }
+}
+console.log(`écrit : ${join(dossier, 'marque.tokens.json')}${r.echelles ? `, ${echelles}` : ''}, mode sombre, ${join(dossier, RESOLVER)}`);
+const contraste = fileURLToPath(new URL('./contraste.js', import.meta.url));
+let code = 0;
+for (const mode of ['clair', 'sombre']) {
+  const c = spawnSync(process.execPath, [contraste, '--marque', dossier, '--mode', mode], { stdio: 'inherit' });
+  code = Math.max(code, c.status ?? 1);
+}
+process.exit(code);

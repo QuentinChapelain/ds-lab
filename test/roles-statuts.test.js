@@ -25,10 +25,11 @@ import { join } from 'node:path';
 import { wcagContrast, rgb } from 'culori';
 import { generateScale, checkValise } from '../src/valise/generate.js';
 import { valiseFromTokens } from '../src/tokens/primitives.js';
+import { charger, etroite, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');
-const read = (/** @type {string} */ f) => readFileSync(join(DIR, f), 'utf8');
+const read = (/** @type {string} */ f) => readFileSync(join(COMMUN, f), 'utf8');
 
 const PRIMITIVES_SHA256 = 'a6cee106711c62c619d8af653a2c040bccea4d642c5c6cc3805a22cbdd3667ce';
 const SOURCES = { avertissement: '#e5a000', info: '#0284c7' };
@@ -92,7 +93,7 @@ test('T0 sur-plein lisible sur les pas 9 et 10 (culori, ≥ 4,5)', () => {
 });
 
 test('T0 phrases d\'usage : chaque pas a celle de primitives.tokens.json ; sur-plein cite les pas 9 et 10', () => {
-  const prim = JSON.parse(read('primitives.tokens.json')).couleur.bleu;
+  const prim = charger('primitives.tokens.json').couleur.bleu;
   for (const s of Object.keys(SOURCES)) {
     for (const k of KEYS.slice(0, 12)) assert.equal(statuts.couleur[s][k].$description, prim[k].$description, `${s}.${k}`);
     assert.equal(statuts.couleur[s]['sur-plein'].$description, 'texte posé sur les pas 9 et 10 (4,5:1)');
@@ -104,10 +105,24 @@ test('T0 checkValise passe sur les deux échelles', () => {
   assert.deepEqual(checkValise(valiseFromTokens(statuts)), []);
 });
 
-test('T0 primitives.tokens.json inchangé (empreinte de 3fddd72), au bloc graisse près (séance 3c)', () => {
-  const s = readFileSync(join(DIR, 'primitives.tokens.json'), 'utf8');
+test('T0 primitives.tokens.json inchangé (empreinte de 3fddd72), au bloc graisse près (séance 3c) ; copie figée dans fixtures/marque-demo/jetons/ (étape 4b)', () => {
+  const s = readFileSync(join(ROOT, 'fixtures', 'marque-demo', 'jetons', 'primitives.tokens.json'), 'utf8');
   const sansGraisse = s.replace(/ {2}"graisse": \{\n[^]*?\n {2}\},\n/, '');
   assert.notEqual(sansGraisse, s, 'bloc graisse présent');
   const h = createHash('sha256').update(sansGraisse).digest('hex');
   assert.equal(h, PRIMITIVES_SHA256);
+});
+
+test('4b lot 1 : primitives communes et échelles d\'Orbe Café réunies = primitives d\'avant le rangement, descriptions de fichier mises à part', () => {
+  const avant = JSON.parse(readFileSync(join(ROOT, 'fixtures', 'marque-demo', 'jetons', 'primitives.tokens.json'), 'utf8'));
+  const apres = charger('primitives.tokens.json');
+  delete avant.$description;
+  delete apres.$description;
+  // Étape 4b, lot 2 (réponse 1) : deux primitives ajoutées, blanches comme couleur.blanc.
+  assert.equal(apres.couleur.surface.$value.hex, '#ffffff');
+  assert.equal(apres.couleur['sur-inverse'].$value.hex, '#ffffff');
+  delete apres.couleur.surface;
+  delete apres.couleur['sur-inverse'];
+  const tri = (/** @type {any} */ o) => JSON.stringify(o, (_, v) => (v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => a.localeCompare(b))) : v));
+  assert.equal(tri(apres), tri(avant));
 });

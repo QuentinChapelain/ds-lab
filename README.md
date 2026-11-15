@@ -28,7 +28,8 @@ npm run login                                                enregistrer une ses
 npm run verify -- <adresse> --reference <dossier> [--save] [--sources <fichier>]   vérifier qu'une page n'a pas bougé (pixels, arbre d'accessibilité) ; avec --sources, ses éléments tiers sont masqués, comme dans les références de reduce --sources
 npm run apply  -- --modifications <fichier> --racine <dossier> [--essai]   appliquer au CSS la part tranchée
 npm run demo   -- [--racine <dossier>]                       servir la marque fictive en local
-npm run contraste   -- [--paires <fichier>]                  contrôler les paires de rôles de couleur
+npm run saisie     -- <entree.json>                          saisir une marque : échelles, couche marque, contraste ; refus avec motif
+npm run contraste   -- [--paires <fichier>] [--marque <dossier>]   contrôler les paires de rôles de couleur
 npm run espacements -- [--semantique <fichier>]              contrôler les espacements par relation
 npm run typo        -- [--semantique <fichier>] [--primitives <fichier>] [--marque <fichier>]   contrôler les styles de texte
 npm test
@@ -58,22 +59,48 @@ Le site audité n'est jamais modifié : les nouvelles valeurs sont posées dans 
 
 ## Étape 3 : nommer les rôles
 
-La cible d'Orbe Café est écrite en quatre couches de jetons DTCG, dans `tokens/orbe-cafe/` :
+La cible est écrite en quatre couches de jetons DTCG. Les couches communes à toutes les marques sont dans `tokens/commun/` ; chaque marque a son dossier, `tokens/orbe-cafe/` pour Orbe Café :
 
 | Couche | Fichier | Ce qu'elle nomme |
 |---|---|---|
-| Primitives | `tokens/orbe-cafe/primitives.tokens.json` (et `tokens/orbe-cafe/statuts.tokens.json`) | Les valeurs : échelles de couleur, espaces, tailles de texte, graisses, rayons |
+| Primitives | `tokens/commun/primitives.tokens.json` et `tokens/commun/statuts.tokens.json`, communes ; échelles de la marque à part (`tokens/orbe-cafe/primitives.tokens.json`, ou `echelles.tokens.json` générées) | Les valeurs : échelles de couleur, espaces, tailles de texte, graisses, rayons |
 | Marque | `tokens/orbe-cafe/marque.tokens.json` | Les emplacements qu'un client remplit (primaire, accent, statuts, polices) et la règle des pleins |
-| Rôles | `tokens/orbe-cafe/semantique.tokens.json` | Les usages : couleurs de fond, de texte et de bordure, espacements par relation, styles de texte ; chacun en alias vers la marque ou une primitive |
-| Paires | `tokens/orbe-cafe/paires.json` | Les paires de rôles devant / fond et leur seuil de contraste, les exceptions écrites et les paires interdites |
+| Rôles | `tokens/commun/semantique.tokens.json` | Les usages : couleurs de fond, de texte et de bordure, espacements par relation, styles de texte ; chacun en alias vers la marque ou une primitive |
+| Paires | `tokens/commun/paires.json` | Les paires de rôles devant / fond et leur seuil de contraste, les exceptions écrites et les paires interdites |
 
-Changer de marque, c'est changer la couche marque : les rôles restent les mêmes. Trois commandes contrôlent la cible ; chacune sort en 1 si une règle échoue :
+Changer de marque, c'est changer la couche marque : les rôles restent les mêmes. Chaque marque a un resolver au format DTCG 2025.10, `marque.resolver.json`, qui réunit ses jeux de jetons et déclare deux contextes : le mode (clair, sombre) et la largeur (large, étroit). Un contexte échange des valeurs sous les rôles sans en changer un seul ; en étroit, seuls l'écart de section et les grands textes changent (`tokens/commun/largeur.etroit.tokens.json`). Trois commandes contrôlent la cible ; chacune sort en 1 si une règle échoue :
 
-- `npm run contraste` : chaque paire de rôles atteint son seuil WCAG 2.1, sauf exception écrite ; les paires interdites sont affichées.
+- `npm run contraste` : chaque paire de rôles atteint son seuil WCAG 2.1, sauf exception écrite ; les paires interdites sont affichées. `--mode sombre` et `--largeur etroit` choisissent le contexte (clair et large par défaut).
 - `npm run espacements` : écarts strictement croissants, valeurs en étroit, règles de proximité ; les primitives sans rôle sont affichées.
-- `npm run typo` : règles des styles de texte (hauteurs de ligne, hiérarchie en large et en étroit) ; les primitives sans rôle sont affichées.
+- `npm run typo` : règles des styles de texte (hauteurs de ligne, hiérarchie en large et en étroit, consigne de hauteur de capitale des titres) ; les primitives sans rôle sont affichées.
 
 Trois planches montrent la cible en situation : `tokens/orbe-cafe/roles.html`, `tokens/orbe-cafe/espacements.html`, `tokens/orbe-cafe/typo.html`. Les règles et leurs raisons sont dans `docs/regles.md`, les décisions dans `docs/decisions.md`.
+
+## Étape 4 : saisir une marque
+
+Une marque entre par un fichier, `tokens/orbe-cafe/entree.json` pour Orbe Café : un nom, une couleur primaire, un accent facultatif et la police des titres : ses noms de familles, et ses fichiers WOFF2 si le client les donne (`{ "familles": [...], "fichiers": [...] }`, chemins relatifs à l'entrée). Sans fichier, la police est acceptée par ses noms et la saisie l'affiche « non contrôlée » ; avec fichiers, elle lit ses mesures (unités par em, hauteur de capitale, hauteur d'x, ascendante, descendante), ses graisses, sa licence et sa couverture (`src/polices/`), puis mesure dans Chromium l'encre de deux lignes de chaque style de titre, en large et en étroit, avec la consigne de hauteur de capitale (D17) : taille utilisée, hauteur de capitale obtenue, encre (capitale accentuée de la ligne 2 sur descendante de la ligne 1) et écart avec la hauteur de ligne, affichés. La police du texte est celle du produit, commune à toutes les marques (`tokens/commun/police.tokens.json`, D16) ; une entrée peut la remplacer par `polices.texte`. `npm run saisie -- <entree.json>` génère les échelles (pas 9 = couleur saisie), écrit la couche marque et le resolver à côté de l'entrée, puis lance `npm run contraste` sur cette marque.
+
+| Sortie | Quand | Ce qui est écrit |
+|---|---|---|
+| 0 | Marque acceptée | `marque.tokens.json`, `marque.resolver.json`, et `echelles.tokens.json` si une échelle est générée |
+| 1 | Marque refusée : entrée invalide, `checkValise` en échec sur une échelle générée, paire de rôles sous son seuil, en clair ou en sombre, ou police des titres refusée par un garde-fou (format WOFF2, graisses des titres, signes français, licence déclarée, hauteur de capitale) ou par son encre (deux lignes qui se touchent sur un style de titre) | Rien ; chaque motif est affiché avec son mode, `(clair)` ou `(sombre)` |
+| 2 | Aucun fichier donné | Rien |
+
+Sans accent, l'accent se replie sur le neutre (D05). Les couches communes (neutres, statuts, rôles, paires, espaces, typo) sont lues dans `tokens/commun/`. Orbe Café nomme ses échelles existantes (`{ "echelle": "bleu" }`), forme réservée à elle seule : sa couche marque est réécrite à l'identique. Les règles et la raison sont dans D13 (`docs/decisions.md`) ; le contrat tient en une page, `docs/contrat-de-marque.md`.
+
+La saisie écrit aussi le mode sombre de la marque : une échelle sombre pour le primaire et l'accent, générée depuis le même pas 9, et une couche marque sombre. En sombre, la page est un gris très foncé (`#121212`) et chaque surface posée au-dessus est plus claire ; les textes de couleur sont plus lumineux (pas 11 à 9:1 sur la page) ; le bouton prend la version lumineuse de la couleur du client (pas 11, texte au pas 1), l'aplat plein garde la couleur exacte. Neutres et statuts sombres sont communs (`tokens/commun/mode.sombre.tokens.json`, écrit par `node src/cli/sombre.js`). Les rôles ne changent pas d'un mode à l'autre ; les cibles sombres sont des hypothèses jugées sur image.
+
+Trois marques fictives sont saisies de la même façon, toutes acceptées :
+
+| Marque | Primaire | Accent | Plein du primaire |
+|---|---|---|---|
+| Atelier Lavandine (`tokens/atelier-lavandine/`) | violet moyen | jaune | soutenu : couleur exacte, texte blanc, survol par voile noir de 15 % |
+| Écume et Sel (`tokens/ecume-et-sel/`) | cyan clair | orangé | clair : couleur exacte, texte au pas 12 |
+| Grenat Papeterie (`tokens/grenat-papeterie/`) | grenat foncé | aucun, repli sur le neutre | sombre : couleur exacte |
+
+Chaque marque a deux niveaux d'aplat non cliquables, clair (pas 3) et plein (valeur du bouton), et un texte de marque pour les grands titres, choisi à la saisie pour tenir 3:1 sur les fonds clairs. Sur l'aplat plein, texte, bouton et anneau de focus sont retournés (D14).
+
+Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier> <entree.json>...` écrit `calibrage.html` et `calibrage.md`. La table a une colonne par marque : verdict de la saisie, classe selon le générateur, classe selon la règle des pleins, couleur exacte sur le bouton ou non, et trois indicateurs qui ne refusent rien (primaire grise, statut le plus proche, accent proche du primaire). Le balayage montre, pour des teintes de 30° à 140° et des clartés de 0,60 à 0,92, le bouton selon la règle (D04) et, pour une case moyenne, celui du cas clair avec son contraste. Il ne change aucun seuil. Avec des marques témoins, la sortie va dans `local/`.
 
 ## Glossaire
 
@@ -92,7 +119,7 @@ Trois planches montrent la cible en situation : `tokens/orbe-cafe/roles.html`, `
 | Tranche | Les pas réservés à un usage (le texte prend 11 ou 12) |
 | Plein | Un fond coloré qui porte un texte (bouton, étiquette) ; le texte posé dessus s'appelle onSolid |
 | Valise | La cible générique : 12 pas, valeurs générées par contraste visé, règles d'usage. On change de marque en changeant les valeurs derrière les noms |
-| Contrat de marque | Ce qu'un client peut changer, et ce que le système garantit |
+| Contrat de marque | Ce qu'un client peut changer, et ce que le système garantit : [docs/contrat-de-marque.md](docs/contrat-de-marque.md) |
 
 ### La méthode
 
@@ -140,9 +167,12 @@ Trois planches montrent la cible en situation : `tokens/orbe-cafe/roles.html`, `
 | Dossier | Contenu |
 |---|---|
 | `src/` | Audit, réduction, simulation, rapports |
-| `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive (primitives, marque, rôles, paires) et leurs planches |
-| `docs/` | Règles du design system, décisions, attendus des prochains lots |
+| `tokens/commun/` | Couches communes à toutes les marques : primitives, statuts, rôles, paires, contexte étroit |
+| `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive (entrée, échelles, marque, resolver) et les trois planches |
+| `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/` | Trois marques fictives saisies par fichier (lot 2 de l'étape 4) |
+| `docs/` | Règles du design system, décisions, contrat de marque, attendus des prochains lots |
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles, attendus |
+| `fixtures/polices/` | Quatre polices d'essai sous licence libre, chacune avec sa licence (étape 4c) |
 | `test/` | Tests, dont `noms-interdits` qui refuse tout nom réel dans un fichier ou un message de commit |
 
 Dépendances : `playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (couleurs, contraste), `pixelmatch` et `pngjs` (comparaison de captures, lot V).

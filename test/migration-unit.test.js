@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { indexTokens, pickColorToken } from '../src/report/migration.js';
 
-const tokens = JSON.parse(await readFile(new URL('../tokens/orbe-cafe/primitives.tokens.json', import.meta.url), 'utf8'));
+const tokens = JSON.parse(await readFile(new URL('../fixtures/marque-demo/jetons/primitives.tokens.json', import.meta.url), 'utf8'));
 const idx = indexTokens(tokens);
 
 test('jetons : le nom de la valise d’abord (#ffffff → couleur.blanc, jamais un sur-plein)', () => {

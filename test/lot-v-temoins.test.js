@@ -27,7 +27,7 @@ import { runReduce, parseReduceArgs } from '../src/cli/reduce.js';
 import { referenceFiles } from '../src/verify/reference.js';
 
 const TARGET = `${FIXTURE_DIR}cible-valise.json`;
-const TOKENS = new URL('../tokens/orbe-cafe/primitives.tokens.json', import.meta.url).pathname;
+const TOKENS = new URL('../fixtures/marque-demo/jetons/primitives.tokens.json', import.meta.url).pathname;
 const BOX = 'position:absolute;left:40px;width:200px;height:60px;padding:0 8px;font:700 14px/60px Arial,sans-serif';
 const STYLE = `html,body{margin:0;background:#ffffff}.a{${BOX};top:40px;color:#ffffff;background-color:#d0563f}.b{${BOX};top:140px;color:#1f2a44}`;
 const PAGE_A = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>A</title><style>${STYLE}</style></head>

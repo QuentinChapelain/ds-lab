@@ -1,0 +1,103 @@
+{
+  "name": "Écume et Sel",
+  "version": "2025.10",
+  "description": "Jeux de jetons de Écume et Sel et ses deux contextes, mode et largeur. Écrit par la saisie ; les rôles (semantique.tokens.json) sont les mêmes dans tous les contextes.",
+  "sets": {
+    "primitives": {
+      "description": "Primitives communes à toutes les marques : neutres, statuts, espaces, tailles de texte, graisses, rayons.",
+      "sources": [
+        {
+          "$ref": "../commun/primitives.tokens.json"
+        },
+        {
+          "$ref": "../commun/statuts.tokens.json"
+        }
+      ]
+    },
+    "marque": {
+      "description": "Emplacements communs de l'aplat plein, police du produit, échelles et couche marque de Écume et Sel.",
+      "sources": [
+        {
+          "$ref": "../commun/aplat.tokens.json"
+        },
+        {
+          "$ref": "../commun/police.tokens.json"
+        },
+        {
+          "$ref": "echelles.tokens.json"
+        },
+        {
+          "$ref": "marque.tokens.json"
+        }
+      ]
+    },
+    "roles": {
+      "description": "Rôles communs à toutes les marques.",
+      "sources": [
+        {
+          "$ref": "../commun/semantique.tokens.json"
+        }
+      ]
+    }
+  },
+  "modifiers": {
+    "mode": {
+      "description": "Mode de couleur. Clair : valeurs des jeux. Sombre : échelles en miroir sous les mêmes noms, communes puis de la marque, et couche marque sombre (mêmes boutons qu'en clair).",
+      "contexts": {
+        "clair": [],
+        "sombre": [
+          {
+            "$ref": "../commun/mode.sombre.tokens.json"
+          },
+          {
+            "$ref": "echelles.sombre.tokens.json"
+          },
+          {
+            "$ref": "marque.sombre.tokens.json"
+          }
+        ]
+      },
+      "default": "clair"
+    },
+    "largeur": {
+      "description": "Largeur de l'écran. Large : valeurs des jeux. Étroit : grands écarts et grands textes réduits (DS6).",
+      "contexts": {
+        "large": [],
+        "etroit": [
+          {
+            "$ref": "../commun/largeur.etroit.tokens.json"
+          }
+        ]
+      },
+      "default": "large",
+      "$extensions": {
+        "ds-lab.largeur": {
+          "etroit": {
+            "sous": {
+              "value": 600,
+              "unit": "px"
+            },
+            "seuil": "[H]"
+          }
+        }
+      }
+    }
+  },
+  "resolutionOrder": [
+    {
+      "$ref": "#/sets/primitives"
+    },
+    {
+      "$ref": "#/sets/marque"
+    },
+    {
+      "$ref": "#/sets/roles"
+    },
+    {
+      "$ref": "#/modifiers/mode"
+    },
+    {
+      "$ref": "#/modifiers/largeur"
+    }
+  ]
+}

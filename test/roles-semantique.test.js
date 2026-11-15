@@ -15,6 +15,8 @@
  *     avertissement inchangé ;
  *   décisions après T5 (14/11/2026) : fond.surface → couleur.blanc (cartes et champs) ;
  *     fond.inverse → neutre 12 et texte.sur-inverse → couleur.blanc ;
+ *   étape 4b, réponse 1 : fond.surface → couleur.surface et texte.sur-inverse → couleur.sur-inverse, deux primitives
+ *     blanches en clair, noires en sombre ;
  *   un rôle qui a des états (fond.composant, fond.interactif.fort) porte sa valeur de base en $root (DTCG 2025.10) ;
  *   alias seulement, aucune valeur en dur ; $description d'une phrase.
  *   séance 3b (15/11/2026), règle des pleins en trois cas, déclarée dans la couche marque : les pleins et
@@ -31,16 +33,18 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { AJOUTS } from './helpers/lot5.js';
+import { charger, etroite, COMMUN, ORBE } from './helpers/jetons.js';
 
 const DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'tokens', 'orbe-cafe');
-const load = (/** @type {string} */ f) => JSON.parse(readFileSync(join(DIR, f), 'utf8'));
+const load = charger;
 
 const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
 /** Rôle → primitive visée (échelle.pas), ou « voile:<échelle.pas> » pour un survol calculé. 19 fonds, 15 textes, 8 bordures = 42. */
 const EXPECTED = /** @type {Record<string, string>} */ ({
   'fond.app': 'neutre.1',
   'fond.discret': 'neutre.2',
-  'fond.surface': 'blanc',
+  'fond.surface': 'surface',
   'fond.inverse': 'neutre.12',
   'fond.composant': 'neutre.3',
   'fond.composant.survol': 'neutre.4',
@@ -57,7 +61,7 @@ const EXPECTED = /** @type {Record<string, string>} */ ({
   ...Object.fromEntries(STATUTS.map((s) => [`texte.${s}`, `${s}.11`])),
   'texte.sur-interactif': 'blanc',
   'texte.sur-accent': 'blanc',
-  'texte.sur-inverse': 'blanc',
+  'texte.sur-inverse': 'sur-inverse',
   ...Object.fromEntries(STATUTS.map((s) => [`texte.sur-${s}`, s === 'avertissement' ? `${s}.12` : 'blanc'])),
   'bordure.discrete': 'neutre.6',
   'bordure.defaut': 'neutre.7',
@@ -111,9 +115,9 @@ test('T1 description racine et DTCG 2025.10', () => {
   assert.ok(typeof sem.$description === 'string' && /DTCG 2025\.10/.test(sem.$description));
 });
 
-test('T1 liste exacte des 42 rôles', () => {
+test('T1 liste exacte des 42 rôles, plus les 9 du lot 5 (étape 4a)', () => {
   assert.equal(Object.keys(EXPECTED).length, 42);
-  assert.deepEqual([...roles.keys()].sort(), Object.keys(EXPECTED).sort());
+  assert.deepEqual([...roles.keys()].sort(), [...Object.keys(EXPECTED), ...Object.keys(AJOUTS)].sort());
 });
 
 test('T1 chaque rôle est un alias vers la primitive attendue (directement ou par la marque), sans valeur en dur', () => {

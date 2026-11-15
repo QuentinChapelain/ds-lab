@@ -13,7 +13,7 @@
  *   rouge (ordre inversé) : entre-composants → {espace.24}, entre-groupes → {espace.16} ;
  *     4, 24, 16, 48 ; un échec, entre-composants / entre-groupes, rapport 0,67 (16 / 24 arrondi
  *     au centième) ; les deux autres voisins conformes (rapports 6 et 3) ;
- *   lot 4 (décision du 15/11/2026) : une valeur en étroit ($extensions["ds-lab.etroit"]) doit rester
+ *   lot 4 (décision du 15/11/2026) : une valeur en étroit (étape 4b : contexte étroit, largeur.etroit.tokens.json) doit rester
  *     strictement supérieure à la valeur de l'ecart précédent et inférieure ou égale à sa valeur large ;
  *     sinon échec, code de sortie 1 ; Orbe Café : ecart.section 32 px sous 600 px, > 24 et ≤ 48, conforme ;
  *     rouge : étroit → {espace.24} (égal à entre-groupes) ; étroit → {espace.64} (au-dessus de 48) ;
@@ -36,19 +36,25 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { espacements } from '../src/tokens/espacements.js';
+import { charger, etroite, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');
-const load = (/** @type {string} */ f) => JSON.parse(readFileSync(join(DIR, f), 'utf8'));
+const load = charger;
 const prims = load('primitives.tokens.json');
 
-/** Lance la commande sur une couche sémantique donnée (fichier temporaire hors dépôt). @param {any} [sem] */
-function run(sem) {
+/** Lance la commande sur une couche sémantique et un contexte étroit donnés (fichiers temporaires hors dépôt). @param {any} [sem] @param {any} [etroit] */
+function run(sem, etroit) {
   const args = [join(ROOT, 'src', 'cli', 'espacements.js')];
   if (sem) {
     const f = join(mkdtempSync(join(tmpdir(), 'ds-lab-3c-')), 'semantique.tokens.json');
     writeFileSync(f, JSON.stringify(sem));
     args.push('--semantique', f);
+  }
+  if (etroit) {
+    const f = join(mkdtempSync(join(tmpdir(), 'ds-lab-4b-')), 'largeur.etroit.tokens.json');
+    writeFileSync(f, JSON.stringify(etroit));
+    args.push('--etroit', f);
   }
   return spawnSync(process.execPath, args, { encoding: 'utf8' });
 }
@@ -58,11 +64,17 @@ const variant = (edit) => {
   edit(s);
   return s;
 };
+/** @param {(e: any) => void} edit */
+const variantEtroit = (edit) => {
+  const e = load('largeur.etroit.tokens.json');
+  edit(e);
+  return e;
+};
 /** @param {ReturnType<typeof espacements>} r */
 const values = (r) => r.ecarts.map((e) => e.px);
 
 test('3c vert : Orbe Café, 4 < 16 < 24 < 48, rapports affichés, code 0', () => {
-  const r = espacements(load('semantique.tokens.json'), prims);
+  const r = espacements(load('semantique.tokens.json'), prims, etroite(load('semantique.tokens.json')));
   assert.deepEqual(values(r), [4, 16, 24, 48]);
   assert.deepEqual(r.ecarts.map((e) => e.role), ['ecart.dans-composant', 'ecart.entre-composants', 'ecart.entre-groupes', 'ecart.section']);
   assert.deepEqual(r.voisins.map((v) => v.rapport), [4, 1.5, 2]);
@@ -81,7 +93,7 @@ test('3c vert : Orbe Café, 4 < 16 < 24 < 48, rapports affichés, code 0', () =>
 });
 
 test('3c lot 4 vert : ecart.section en étroit, 32 px sous 600 px, > 24 et ≤ 48, code 0', () => {
-  const r = espacements(load('semantique.tokens.json'), prims);
+  const r = espacements(load('semantique.tokens.json'), prims, etroite(load('semantique.tokens.json')));
   assert.deepEqual(
     r.etroits.map((e) => ({ role: e.role, px: e.px, alias: e.alias, sous: e.sous, precedent: e.precedent, large: e.large, ok: e.ok })),
     [{ role: 'ecart.section', px: 32, alias: '{espace.32}', sous: 600, precedent: 24, large: 48, ok: true }],
@@ -95,11 +107,12 @@ test('3c lot 4 vert : ecart.section en étroit, 32 px sous 600 px, > 24 et ≤ 4
 
 test('3c lot 4 rouge : valeur en étroit égale à entre-groupes, ou au-dessus de la valeur large, code 1', () => {
   for (const [alias, px, sup, inf] of /** @type {const} */ ([['{espace.24}', 24, 'non', 'oui'], ['{espace.64}', 64, 'oui', 'non']])) {
-    const sem = variant((s) => { s.ecart.section.$extensions['ds-lab.etroit'].valeur = alias; });
-    const r = espacements(sem, prims);
+    const sem = load('semantique.tokens.json');
+    const etroit = variantEtroit((e) => { e.ecart.section.$value = alias; });
+    const r = espacements(sem, prims, etroite(sem, etroit));
     assert.deepEqual(r.fails, [], `${alias} : les voisins larges restent conformes`);
     assert.deepEqual(r.etroits.map((e) => [e.px, e.ok]), [[px, false]], alias);
-    const p = run(sem);
+    const p = run(undefined, etroit);
     assert.equal(p.status, 1, p.stdout + p.stderr);
     assert.match(p.stdout, new RegExp(`✗ ecart\\.section sous 600 px \\[H\\] : ${px} px \\{espace\\.${px}\\} ; > ecart\\.entre-groupes 24 px : ${sup} ; ≤ 48 px : ${inf}\\n`));
     assert.match(p.stdout, /1 valeur en étroit, 1 en échec\./);
@@ -108,7 +121,7 @@ test('3c lot 4 rouge : valeur en étroit égale à entre-groupes, ou au-dessus d
 
 test('3c rouge : deux rôles égaux (entre-composants = entre-groupes = 16), code 1', () => {
   const sem = variant((s) => { s.ecart['entre-groupes'].$value = '{espace.16}'; });
-  const r = espacements(sem, prims);
+  const r = espacements(sem, prims, etroite(sem));
   assert.deepEqual(values(r), [4, 16, 16, 48]);
   assert.deepEqual(r.fails.map((v) => [v.de, v.vers, v.rapport]), [['ecart.entre-composants', 'ecart.entre-groupes', 1]]);
   const p = run(sem);
@@ -122,7 +135,7 @@ test('3c rouge : ordre inversé (entre-composants 24, entre-groupes 16), code 1'
     s.ecart['entre-composants'].$value = '{espace.24}';
     s.ecart['entre-groupes'].$value = '{espace.16}';
   });
-  const r = espacements(sem, prims);
+  const r = espacements(sem, prims, etroite(sem));
   assert.deepEqual(values(r), [4, 24, 16, 48]);
   assert.deepEqual(r.voisins.map((v) => [v.ok, v.rapport]), [[true, 6], [false, 0.67], [true, 3]]);
   assert.deepEqual(r.fails.map((v) => [v.de, v.vers]), [['ecart.entre-composants', 'ecart.entre-groupes']]);
@@ -136,7 +149,7 @@ const STATUT = 'régularité observée dans les systèmes lus, pas une norme';
 
 test('3c règle de proximité vert : 4 et 16, au moins le double, code 0', () => {
   const sem = load('semantique.tokens.json');
-  const r = espacements(sem, prims);
+  const r = espacements(sem, prims, etroite(sem));
   assert.deepEqual(
     r.regles.map((g) => ({ de: g.de, vers: g.vers, a: g.a, b: g.b, min: g.min, rapport: g.rapport, ok: g.ok, raison: g.raison, statut: g.statut })),
     [{ de: 'ecart.dans-composant', vers: 'ecart.entre-composants', a: 4, b: 16, min: 2, rapport: 4, ok: true, raison: RAISON, statut: STATUT }],
@@ -151,7 +164,7 @@ test('3c règle de proximité vert : 4 et 16, au moins le double, code 0', () =>
 
 test('3c règle de proximité rouge : 12 et 16, rapport 1,33 sous 2, code 1', () => {
   const sem = variant((s) => { s.ecart['dans-composant'].$value = '{espace.12}'; });
-  const r = espacements(sem, prims);
+  const r = espacements(sem, prims, etroite(sem));
   assert.deepEqual(r.fails, [], "l'ordre strict reste conforme");
   assert.deepEqual(r.regles.map((g) => [g.a, g.b, g.rapport, g.ok]), [[12, 16, 1.33, false]]);
   const p = run(sem);

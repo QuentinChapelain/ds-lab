@@ -1,18 +1,18 @@
 {
-  "$description": "Statuts d'Orbe Café (marque fictive), séance 3a du 14/11/2026. Format DTCG 2025.10. Complète primitives.tokens.json sans le modifier.",
+  "$description": "Échelles de Atelier Lavandine en mode sombre, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues dans le contexte sombre de marque.resolver.json, après tokens/commun/mode.sombre.tokens.json.",
   "couleur": {
     "$type": "color",
-    "$description": "Statuts complémentaires (avertissement, info), générés par contraste visé contre le blanc ; checkValise passe.",
-    "avertissement": {
+    "$description": "Échelles de Atelier Lavandine en mode sombre (generateScale, fond sombre [H]), pas 9 = pas 9 clair ; même nom que l'échelle claire, qu'elles remplacent dans le contexte sombre.",
+    "primaire": {
       "1": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.9961,
-            0.9882,
-            0.9765
+            0.0745,
+            0.0627,
+            0.098
           ],
-          "hex": "#fefcf9"
+          "hex": "#131019"
         },
         "$description": "fond d'application"
       },
@@ -20,11 +20,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            1,
-            0.9725,
-            0.9333
+            0.0902,
+            0.0784,
+            0.1137
           ],
-          "hex": "#fff8ee"
+          "hex": "#17141d"
         },
         "$description": "fond discret"
       },
@@ -32,11 +32,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.9961,
-            0.9451,
-            0.8706
+            0.1137,
+            0.098,
+            0.1451
           ],
-          "hex": "#fef1de"
+          "hex": "#1d1925"
         },
         "$description": "fond de composant"
       },
@@ -44,11 +44,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.9961,
-            0.9098,
-            0.7804
+            0.1451,
+            0.1176,
+            0.1961
           ],
-          "hex": "#fee8c7"
+          "hex": "#251e32"
         },
         "$description": "fond de composant, survol"
       },
@@ -56,11 +56,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            1,
-            0.8706,
-            0.6745
+            0.1725,
+            0.1412,
+            0.2314
           ],
-          "hex": "#ffdeac"
+          "hex": "#2c243b"
         },
         "$description": "fond de composant, appui"
       },
@@ -68,11 +68,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            1,
-            0.8118,
-            0.5137
+            0.2118,
+            0.1647,
+            0.2941
           ],
-          "hex": "#ffcf83"
+          "hex": "#362a4b"
         },
         "$description": "bordure discrète"
       },
@@ -80,11 +80,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.9529,
-            0.6902,
-            0.2039
+            0.3059,
+            0.2078,
+            0.4549
           ],
-          "hex": "#f3b034"
+          "hex": "#4e3574"
         },
         "$description": "bordure de composant"
       },
@@ -92,11 +92,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.749,
-            0.5216,
-            0.0039
+            0.502,
+            0.2784,
+            0.7922
           ],
-          "hex": "#bf8501"
+          "hex": "#8047ca"
         },
         "$description": "bordure d'interaction, focus (3:1)"
       },
@@ -104,11 +104,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.898,
-            0.6275,
-            0
+            0.5412,
+            0.3098,
+            0.8471
           ],
-          "hex": "#e5a000"
+          "hex": "#8a4fd8"
         },
         "$description": "plein, couleur source"
       },
@@ -116,11 +116,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.8275,
-            0.5765,
-            0
+            0.5647,
+            0.3412,
+            0.8706
           ],
-          "hex": "#d39300"
+          "hex": "#9057de"
         },
         "$description": "plein, survol"
       },
@@ -128,11 +128,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.5451,
-            0.3725,
-            0
+            0.7686,
+            0.6431,
+            0.9961
           ],
-          "hex": "#8b5f00"
+          "hex": "#c4a4fe"
         },
         "$description": "texte secondaire (4,5:1)"
       },
@@ -140,48 +140,47 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.2667,
-            0.1765,
-            0.0039
+            0.8667,
+            0.8078,
+            0.9922
           ],
-          "hex": "#442d01"
+          "hex": "#ddcefd"
         },
         "$description": "texte principal"
       },
-      "$description": "Statut d'avertissement. Pas 9 = #e5a000 exact ; autres pas générés par generateScale (src/valise/generate.js), école « plein clair » : pas 7 et 8 plus foncés que le pas 9, texte sur-plein foncé.",
+      "$description": "Primaire de Atelier Lavandine, mode sombre. Pas 9 = #8a4fd8 exact ; autres pas générés par generateScale (src/valise/generate.js) en miroir [H] : mêmes cibles, contraste visé contre le noir au lieu du blanc ; école « normale » lue contre le noir.",
       "$extensions": {
         "ds-lab.valise": {
-          "source": "#e5a000",
-          "ecole": "plein clair",
+          "source": "#8a4fd8",
+          "ecole": "normale",
           "pas10": "plus foncé",
-          "signaux": [
-            "plein clair"
-          ]
+          "signaux": [],
+          "fond": "sombre"
         }
       },
       "sur-plein": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.298,
-            0.1961,
-            0
+            0.9961,
+            0.9961,
+            1
           ],
-          "hex": "#4c3200"
+          "hex": "#fefeff"
         },
         "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
       }
     },
-    "info": {
+    "accent": {
       "1": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.9804,
-            0.9922,
-            1
+            0.0706,
+            0.0706,
+            0.0706
           ],
-          "hex": "#fafdff"
+          "hex": "#121212"
         },
         "$description": "fond d'application"
       },
@@ -189,11 +188,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.9608,
-            0.9804,
-            0.9961
+            0.0824,
+            0.0824,
+            0.0824
           ],
-          "hex": "#f5fafe"
+          "hex": "#151515"
         },
         "$description": "fond discret"
       },
@@ -201,11 +200,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.9098,
-            0.9608,
-            1
+            0.1137,
+            0.1059,
+            0.0902
           ],
-          "hex": "#e8f5ff"
+          "hex": "#1d1b17"
         },
         "$description": "fond de composant"
       },
@@ -213,11 +212,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.8549,
-            0.9333,
-            0.9961
+            0.1373,
+            0.1294,
+            0.1137
           ],
-          "hex": "#daeefe"
+          "hex": "#23211d"
         },
         "$description": "fond de composant, survol"
       },
@@ -225,11 +224,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.7843,
-            0.902,
-            0.9961
+            0.1686,
+            0.1529,
+            0.1216
           ],
-          "hex": "#c8e6fe"
+          "hex": "#2b271f"
         },
         "$description": "fond de composant, appui"
       },
@@ -237,11 +236,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.6863,
-            0.8627,
-            1
+            0.2039,
+            0.1882,
+            0.1569
           ],
-          "hex": "#afdcff"
+          "hex": "#343028"
         },
         "$description": "bordure discrète"
       },
@@ -249,11 +248,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.4863,
-            0.7647,
-            0.9725
+            0.2941,
+            0.2549,
+            0.1725
           ],
-          "hex": "#7cc3f8"
+          "hex": "#4b412c"
         },
         "$description": "bordure de composant"
       },
@@ -261,11 +260,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.1843,
-            0.5922,
-            0.8549
+            0.4824,
+            0.3882,
+            0.1882
           ],
-          "hex": "#2f97da"
+          "hex": "#7b6330"
         },
         "$description": "bordure d'interaction, focus (3:1)"
       },
@@ -273,11 +272,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.0078,
-            0.5176,
-            0.7804
+            0.949,
+            0.7176,
+            0.0196
           ],
-          "hex": "#0284c7"
+          "hex": "#f2b705"
         },
         "$description": "plein, couleur source"
       },
@@ -285,11 +284,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.0039,
-            0.4824,
-            0.7294
+            1,
+            0.7961,
+            0.3294
           ],
-          "hex": "#017bba"
+          "hex": "#ffcb54"
         },
         "$description": "plein, survol"
       },
@@ -297,11 +296,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0,
-            0.4275,
-            0.651
+            1,
+            0.8745,
+            0.6157
           ],
-          "hex": "#006da6"
+          "hex": "#ffdf9d"
         },
         "$description": "texte secondaire (4,5:1)"
       },
@@ -309,21 +308,22 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.0039,
-            0.2039,
-            0.3216
+            0.9922,
+            0.9529,
+            0.8745
           ],
-          "hex": "#013452"
+          "hex": "#fdf3df"
         },
         "$description": "texte principal"
       },
-      "$description": "Statut d'information. Pas 9 = #0284c7 exact ; autres pas générés par generateScale (src/valise/generate.js), école « normale », texte sur-plein foncé : le blanc ne tient pas 4,5:1 sur le pas 9.",
+      "$description": "Accent de Atelier Lavandine, mode sombre. Pas 9 = #f2b705 exact ; autres pas générés par generateScale (src/valise/generate.js) en miroir [H] : mêmes cibles, contraste visé contre le noir au lieu du blanc ; école « foncée » lue contre le noir.",
       "$extensions": {
         "ds-lab.valise": {
-          "source": "#0284c7",
-          "ecole": "normale",
+          "source": "#f2b705",
+          "ecole": "foncée",
           "pas10": "plus foncé",
-          "signaux": []
+          "signaux": [],
+          "fond": "sombre"
         }
       },
       "sur-plein": {
@@ -331,10 +331,10 @@
           "colorSpace": "srgb",
           "components": [
             0,
-            0.0039,
-            0.0157
+            0,
+            0
           ],
-          "hex": "#000104"
+          "hex": "#000000"
         },
         "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
       }

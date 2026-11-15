@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { wcagContrast, formatHex } from 'culori';
 import { contractOf } from '../valise/generate.js';
 import { valiseFromTokens } from './primitives.js';
+import { lireResolver, partager, COMMUN, ORBE, RESOLVER } from './resolver.js';
 
 /** @param {number} n */
 const r4 = (n) => Math.round(n * 10000) / 10000;
@@ -108,20 +109,26 @@ export function resolveRoles(semantique, ...primitives) {
  */
 
 /**
- * Les fichiers d'un jeu de rôles. `paires` et `marque` peuvent pointer vers un autre fichier ;
- * `echelles` ajoute des fichiers d'échelles (couleur.*) vers lesquels une autre marque peut pointer.
- * @param {string} dir @param {{ paires?: string, marque?: string, echelles?: string[] }} [opts]
+ * Jeu de rôles d'une marque, lu par son resolver (tokens/<marque>/marque.resolver.json) dans un contexte :
+ * primitives communes et échelles de la marque fusionnées dans `primitives`, rôles dans `semantique`, couche marque
+ * dans `marque`, paires communes (tokens/commun/paires.json, ou `paires`).
+ * @param {string} [dossier] tokens/<marque>/, Orbe Café par défaut
+ * @param {{ paires?: string, mode?: string, largeur?: string }} [opts]
  * @returns {RoleSet}
  */
-export function loadRoles(dir, opts = {}) {
-  const read = (/** @type {string} */ p) => JSON.parse(readFileSync(p, 'utf8'));
+export function loadRoles(dossier = ORBE, opts = {}) {
+  /** @type {Record<string, string>} */
+  const entrees = {};
+  if (opts.mode) entrees.mode = opts.mode;
+  if (opts.largeur) entrees.largeur = opts.largeur;
+  const { semantique, primitives, marque } = partager(lireResolver(join(dossier, RESOLVER), entrees));
   return {
-    primitives: read(join(dir, 'primitives.tokens.json')),
-    statuts: read(join(dir, 'statuts.tokens.json')),
-    semantique: read(join(dir, 'semantique.tokens.json')),
-    paires: read(opts.paires ?? join(dir, 'paires.json')),
-    marque: read(opts.marque ?? join(dir, 'marque.tokens.json')),
-    echelles: (opts.echelles ?? []).map(read),
+    primitives,
+    statuts: {},
+    semantique,
+    paires: JSON.parse(readFileSync(opts.paires ?? join(COMMUN, 'paires.json'), 'utf8')),
+    marque,
+    echelles: [],
   };
 }
 
@@ -186,5 +193,21 @@ export function contratRoles(set) {
  * @param {RoleSet} set
  */
 export function contrat(set) {
-  return { echelles: contractOf(valiseFromTokens(set.primitives, set.statuts)), roles: contratRoles(set) };
+  return { echelles: contractOf(valiseFromTokens({ couleur: ordreEchelles(set.primitives, set.statuts) })), roles: contratRoles(set) };
+}
+
+/** Statuts, dans l'ordre d'affichage. */
+const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
+
+/**
+ * Échelles du contrat par échelle, dans l'ordre d'avant l'étape 4b : neutre, échelles de la marque, statuts.
+ * @param {...any} fichiers
+ */
+export function ordreEchelles(...fichiers) {
+  /** @type {Record<string, any>} */
+  const toutes = {};
+  for (const f of fichiers) for (const [k, v] of Object.entries(f?.couleur ?? {})) if (!k.startsWith('$')) toutes[k] = v;
+  const noms = Object.keys(toutes);
+  const ordre = [...noms.filter((n) => n === 'neutre'), ...noms.filter((n) => n !== 'neutre' && !STATUTS.includes(n)), ...STATUTS.filter((n) => noms.includes(n))];
+  return Object.fromEntries(ordre.map((n) => [n, toutes[n]]));
 }

@@ -1,0 +1,266 @@
+{
+  "$description": "Emplacements de marque de Atelier Lavandine, écrits par la saisie depuis entree.json. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers marque.<emplacement>.* ; chaque emplacement pointe vers une échelle (générées dans echelles.tokens.json, communes dans tokens/commun/), et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9.",
+  "marque": {
+    "$type": "color",
+    "$description": "Emplacements de marque : primaire et accent (12 pas, plein, plein survolé, texte sur plein), statuts (plein, plein survolé, texte sur plein). Règle des pleins en trois cas, lue sur le pas 9 : sombre, moyen, clair. Variante soutenue du cas sombre (blanc entre 4,5 et 5,5 sur le pas 9) : survol par voile noir de 15 %.",
+    "primaire": {
+      "1": {
+        "$value": "{couleur.primaire.1}",
+        "$description": "pas 1 de l'échelle primaire"
+      },
+      "2": {
+        "$value": "{couleur.primaire.2}",
+        "$description": "pas 2 de l'échelle primaire"
+      },
+      "3": {
+        "$value": "{couleur.primaire.3}",
+        "$description": "pas 3 de l'échelle primaire"
+      },
+      "4": {
+        "$value": "{couleur.primaire.4}",
+        "$description": "pas 4 de l'échelle primaire"
+      },
+      "5": {
+        "$value": "{couleur.primaire.5}",
+        "$description": "pas 5 de l'échelle primaire"
+      },
+      "6": {
+        "$value": "{couleur.primaire.6}",
+        "$description": "pas 6 de l'échelle primaire"
+      },
+      "7": {
+        "$value": "{couleur.primaire.7}",
+        "$description": "pas 7 de l'échelle primaire"
+      },
+      "8": {
+        "$value": "{couleur.primaire.8}",
+        "$description": "pas 8 de l'échelle primaire"
+      },
+      "9": {
+        "$value": "{couleur.primaire.9}",
+        "$description": "pas 9 de l'échelle primaire"
+      },
+      "10": {
+        "$value": "{couleur.primaire.10}",
+        "$description": "pas 10 de l'échelle primaire"
+      },
+      "11": {
+        "$value": "{couleur.primaire.11}",
+        "$description": "pas 11 de l'échelle primaire"
+      },
+      "12": {
+        "$value": "{couleur.primaire.12}",
+        "$description": "pas 12 de l'échelle primaire"
+      },
+      "$description": "Primaire (actions) : échelle primaire, plein soutenu.",
+      "$extensions": {
+        "ds-lab.plein": {
+          "classe": "soutenu",
+          "regle": "soutenu (blanc ≥ 4,5 et < 5,5 sur le pas 9) : plein = pas 9, texte blanc, survol = plein + voile noir 15 %"
+        }
+      },
+      "plein": {
+        "$value": "{couleur.primaire.9}",
+        "$description": "plein : pas 9, couleur exacte"
+      },
+      "plein-survol": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.4588,
+            0.2627,
+            0.7216
+          ],
+          "hex": "#7543b8"
+        },
+        "$description": "plein survolé : pas 9 sous un voile noir de 15 %, valeur calculée",
+        "$extensions": {
+          "ds-lab.voile": {
+            "base": "{couleur.primaire.9}",
+            "noir": 0.15,
+            "composition": "noir posé sur la base, source-over en sRGB"
+          }
+        }
+      },
+      "sur-plein": {
+        "$value": "{couleur.blanc}",
+        "$description": "texte sur le plein : blanc"
+      },
+      "texte-grand": {
+        "$value": "{couleur.primaire.9}",
+        "$description": "texte de marque des grands titres (affichage, titres 1 et 2) : pas 9, premier des pas 9, 10, 11 à tenir 3:1 sur fond.app, fond.surface, fond.discret et fond.marque.discret"
+      }
+    },
+    "accent": {
+      "1": {
+        "$value": "{couleur.accent.1}",
+        "$description": "pas 1 de l'échelle accent"
+      },
+      "2": {
+        "$value": "{couleur.accent.2}",
+        "$description": "pas 2 de l'échelle accent"
+      },
+      "3": {
+        "$value": "{couleur.accent.3}",
+        "$description": "pas 3 de l'échelle accent"
+      },
+      "4": {
+        "$value": "{couleur.accent.4}",
+        "$description": "pas 4 de l'échelle accent"
+      },
+      "5": {
+        "$value": "{couleur.accent.5}",
+        "$description": "pas 5 de l'échelle accent"
+      },
+      "6": {
+        "$value": "{couleur.accent.6}",
+        "$description": "pas 6 de l'échelle accent"
+      },
+      "7": {
+        "$value": "{couleur.accent.7}",
+        "$description": "pas 7 de l'échelle accent"
+      },
+      "8": {
+        "$value": "{couleur.accent.8}",
+        "$description": "pas 8 de l'échelle accent"
+      },
+      "9": {
+        "$value": "{couleur.accent.9}",
+        "$description": "pas 9 de l'échelle accent"
+      },
+      "10": {
+        "$value": "{couleur.accent.10}",
+        "$description": "pas 10 de l'échelle accent"
+      },
+      "11": {
+        "$value": "{couleur.accent.11}",
+        "$description": "pas 11 de l'échelle accent"
+      },
+      "12": {
+        "$value": "{couleur.accent.12}",
+        "$description": "pas 12 de l'échelle accent"
+      },
+      "$description": "Accent (mise en avant) : échelle accent, plein clair.",
+      "$extensions": {
+        "ds-lab.plein": {
+          "classe": "clair",
+          "regle": "clair (pas 12 ≥ 7 sur le pas 9 et ≥ 4,5 sur le pas 10) : plein = pas 9, texte = pas 12, survol = pas 10"
+        }
+      },
+      "plein": {
+        "$value": "{couleur.accent.9}",
+        "$description": "plein : pas 9, couleur exacte"
+      },
+      "plein-survol": {
+        "$value": "{couleur.accent.10}",
+        "$description": "plein survolé : pas 10"
+      },
+      "sur-plein": {
+        "$value": "{couleur.accent.12}",
+        "$description": "texte sur le plein : pas 12"
+      }
+    },
+    "erreur": {
+      "$description": "Statut erreur : échelle erreur, plein moyen.",
+      "$extensions": {
+        "ds-lab.plein": {
+          "classe": "moyen",
+          "regle": "moyen : plein = pas 11, texte blanc, survol = pas 12"
+        }
+      },
+      "plein": {
+        "$value": "{couleur.erreur.11}",
+        "$description": "plein : pas 11"
+      },
+      "plein-survol": {
+        "$value": "{couleur.erreur.12}",
+        "$description": "plein survolé : pas 12"
+      },
+      "sur-plein": {
+        "$value": "{couleur.blanc}",
+        "$description": "texte sur le plein : blanc"
+      }
+    },
+    "succes": {
+      "$description": "Statut succès : échelle succes, plein moyen.",
+      "$extensions": {
+        "ds-lab.plein": {
+          "classe": "moyen",
+          "regle": "moyen : plein = pas 11, texte blanc, survol = pas 12"
+        }
+      },
+      "plein": {
+        "$value": "{couleur.succes.11}",
+        "$description": "plein : pas 11"
+      },
+      "plein-survol": {
+        "$value": "{couleur.succes.12}",
+        "$description": "plein survolé : pas 12"
+      },
+      "sur-plein": {
+        "$value": "{couleur.blanc}",
+        "$description": "texte sur le plein : blanc"
+      }
+    },
+    "avertissement": {
+      "$description": "Statut avertissement : échelle avertissement, plein clair.",
+      "$extensions": {
+        "ds-lab.plein": {
+          "classe": "clair",
+          "regle": "clair, jaune ou orangé : plein = pas 9, texte = pas 12, survol = pas 10"
+        }
+      },
+      "plein": {
+        "$value": "{couleur.avertissement.9}",
+        "$description": "plein : pas 9, couleur exacte"
+      },
+      "plein-survol": {
+        "$value": "{couleur.avertissement.10}",
+        "$description": "plein survolé : pas 10"
+      },
+      "sur-plein": {
+        "$value": "{couleur.avertissement.12}",
+        "$description": "texte sur le plein : pas 12"
+      }
+    },
+    "info": {
+      "$description": "Statut information : échelle info, plein moyen.",
+      "$extensions": {
+        "ds-lab.plein": {
+          "classe": "moyen",
+          "regle": "moyen : plein = pas 11, texte blanc, survol = pas 12"
+        }
+      },
+      "plein": {
+        "$value": "{couleur.info.11}",
+        "$description": "plein : pas 11"
+      },
+      "plein-survol": {
+        "$value": "{couleur.info.12}",
+        "$description": "plein survolé : pas 12"
+      },
+      "sur-plein": {
+        "$value": "{couleur.blanc}",
+        "$description": "texte sur le plein : blanc"
+      }
+    },
+    "police": {
+      "$type": "fontFamily",
+      "$description": "Polices de la marque : titre pour les styles affichage et titre 1 à 3, texte pour tout le reste.",
+      "titre": {
+        "$value": [
+          "Georgia",
+          "serif"
+        ],
+        "$description": "Police des styles affichage et titre 1 à 3."
+      },
+      "texte": {
+        "$value": [
+          "Arial",
+          "sans-serif"
+        ],
+        "$description": "Police des titres 4, du corps, des libellés et des mentions."
+      }
+    }
+  }
+}

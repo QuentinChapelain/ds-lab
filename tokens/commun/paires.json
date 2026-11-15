@@ -1,9 +1,10 @@
 {
-  "$description": "Paires de rôles d'Orbe Café (marque fictive), séance 3a du 14/11/2026 : élément devant, fond, type. Seuils WCAG 2.1 : 4,5:1 pour un texte (1.4.3), 3:1 pour une bordure qui repère un composant ou un état et pour le focus (1.4.11). Une paire sous son seuil fait échouer npm run contraste, sauf si elle porte une exception écrite. Une paire interdite (interdites) ne se pose pas : elle porte sa règle, est mesurée pour mémoire et ne compte pas en échec. S'ajoute au contrat par échelle (contractOf) sans le remplacer. bordure.discrete et bordure.defaut sont décoratives et n'ont pas de paire.",
+  "$description": "Paires de rôles communes à toutes les marques, séance 3a du 14/11/2026 : élément devant, fond, type. Seuils WCAG 2.1 : 4,5:1 pour un texte (1.4.3), 3:1 pour une bordure qui repère un composant ou un état et pour le focus (1.4.11), et pour le grand texte (texte.marque.grand, étape 4a, lot 5). Une paire sous son seuil fait échouer npm run contraste, sauf si elle porte une exception écrite. Une paire interdite (interdites) ne se pose pas : elle porte sa règle, est mesurée pour mémoire et ne compte pas en échec. S'ajoute au contrat par échelle (contractOf) sans le remplacer. bordure.discrete et bordure.defaut sont décoratives et n'ont pas de paire.",
   "seuils": {
     "texte": 4.5,
     "bordure": 3,
-    "focus": 3
+    "focus": 3,
+    "grand-texte": 3
   },
   "paires": [
     { "devant": "texte.principal", "fond": "fond.app", "type": "texte" },
@@ -53,12 +54,38 @@
     { "devant": "bordure.focus", "fond": "fond.app", "type": "focus" },
     { "devant": "bordure.focus", "fond": "fond.surface", "type": "focus" },
     { "devant": "bordure.focus", "fond": "fond.discret", "type": "focus" },
-    { "devant": "bordure.focus", "fond": "fond.composant", "type": "focus" }
+    { "devant": "bordure.focus", "fond": "fond.composant", "type": "focus" },
+    { "devant": "texte.principal", "fond": "fond.marque.discret", "type": "texte" },
+    { "devant": "texte.secondaire", "fond": "fond.marque.discret", "type": "texte" },
+    { "devant": "texte.interactif", "fond": "fond.marque.discret", "type": "texte" },
+    { "devant": "texte.marque.grand", "fond": "fond.marque.discret", "type": "grand-texte" },
+    { "devant": "bordure.focus", "fond": "fond.marque.discret", "type": "focus" },
+    { "devant": "texte.principal", "fond": "fond.accent.discret", "type": "texte" },
+    { "devant": "texte.secondaire", "fond": "fond.accent.discret", "type": "texte" },
+    { "devant": "texte.interactif", "fond": "fond.accent.discret", "type": "texte" },
+    { "devant": "texte.marque.grand", "fond": "fond.accent.discret", "type": "grand-texte" },
+    { "devant": "bordure.focus", "fond": "fond.accent.discret", "type": "focus" },
+    { "devant": "texte.accent", "fond": "fond.accent.discret", "type": "texte" },
+    { "devant": "texte.marque.grand", "fond": "fond.app", "type": "grand-texte" },
+    { "devant": "texte.marque.grand", "fond": "fond.surface", "type": "grand-texte" },
+    { "devant": "texte.marque.grand", "fond": "fond.discret", "type": "grand-texte" },
+    { "devant": "texte.sur-marque", "fond": "fond.marque.fort", "type": "texte" },
+    { "devant": "texte.sur-interactif.inverse", "fond": "fond.interactif.inverse", "type": "texte" },
+    { "devant": "texte.sur-interactif.inverse.survol", "fond": "fond.interactif.inverse", "type": "texte" },
+    { "devant": "bordure.focus.inverse", "fond": "fond.marque.fort", "type": "focus" },
+    { "devant": "bordure.erreur", "fond": "fond.surface", "type": "bordure" },
+    { "devant": "bordure.succes", "fond": "fond.surface", "type": "bordure" },
+    { "devant": "bordure.avertissement", "fond": "fond.surface", "type": "bordure" },
+    { "devant": "bordure.info", "fond": "fond.surface", "type": "bordure" }
   ],
   "interdites": [
     { "devant": "texte.secondaire", "fond": "fond.composant.appui", "regle": "sur fond.composant.appui, le texte passe en texte.principal" },
     { "devant": "texte.secondaire", "fond": "fond.interactif.fort", "regle": "sur un plein, le texte est texte.sur-*" },
     { "devant": "bordure.forte", "fond": "fond.composant", "regle": "un champ se pose sur fond.surface" },
-    { "devant": "bordure.focus", "fond": "fond.interactif.fort", "regle": "l’anneau de focus est décalé de 2 px et se pose sur le fond de la page, jamais sur le plein" }
+    { "devant": "bordure.focus", "fond": "fond.interactif.fort", "regle": "l’anneau de focus est décalé de 2 px et se pose sur le fond de la page, jamais sur le plein" },
+    { "devant": "texte.marque.grand", "fond": "fond.marque.fort", "regle": "sur fond.marque.fort, les titres prennent texte.sur-marque" },
+    { "devant": "texte.interactif", "fond": "fond.marque.fort", "regle": "sur fond.marque.fort, un lien prend texte.sur-marque et reste souligné" },
+    { "devant": "fond.interactif.fort", "fond": "fond.marque.fort", "regle": "sur fond.marque.fort, le bouton est inversé : fond.interactif.inverse et texte.sur-interactif.inverse" },
+    { "devant": "bordure.focus", "fond": "fond.marque.fort", "regle": "sur fond.marque.fort, l’anneau de focus prend bordure.focus.inverse" }
   ]
 }

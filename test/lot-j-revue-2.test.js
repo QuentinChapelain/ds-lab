@@ -60,7 +60,7 @@ before(async () => {
   [run] = await runReduce({
     addresses: [url],
     targetPath: `${FIXTURE_DIR}cible-valise.json`,
-    tokensPath: new URL('../tokens/orbe-cafe/primitives.tokens.json', import.meta.url).pathname,
+    tokensPath: new URL('../fixtures/marque-demo/jetons/primitives.tokens.json', import.meta.url).pathname,
     sourcesPath: `${FIXTURE_DIR}sources.json`,
     referencesPath: refs,
     viewport: VIEWPORT,

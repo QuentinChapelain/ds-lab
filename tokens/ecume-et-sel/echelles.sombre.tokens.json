@@ -1,0 +1,345 @@
+{
+  "$description": "Échelles de Écume et Sel en mode sombre, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues dans le contexte sombre de marque.resolver.json, après tokens/commun/mode.sombre.tokens.json.",
+  "couleur": {
+    "$type": "color",
+    "$description": "Échelles de Écume et Sel en mode sombre (generateScale, fond sombre [H]), pas 9 = pas 9 clair ; même nom que l'échelle claire, qu'elles remplacent dans le contexte sombre.",
+    "primaire": {
+      "1": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0706,
+            0.0706,
+            0.0706
+          ],
+          "hex": "#121212"
+        },
+        "$description": "fond d'application"
+      },
+      "2": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0824,
+            0.0824,
+            0.0824
+          ],
+          "hex": "#151515"
+        },
+        "$description": "fond discret"
+      },
+      "3": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1059,
+            0.1059,
+            0.1059
+          ],
+          "hex": "#1b1b1b"
+        },
+        "$description": "fond de composant"
+      },
+      "4": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1294,
+            0.1294,
+            0.1294
+          ],
+          "hex": "#212121"
+        },
+        "$description": "fond de composant, survol"
+      },
+      "5": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1333,
+            0.1608,
+            0.1725
+          ],
+          "hex": "#22292c"
+        },
+        "$description": "fond de composant, appui"
+      },
+      "6": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1647,
+            0.1922,
+            0.2039
+          ],
+          "hex": "#2a3134"
+        },
+        "$description": "bordure discrète"
+      },
+      "7": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2118,
+            0.2667,
+            0.2902
+          ],
+          "hex": "#36444a"
+        },
+        "$description": "bordure de composant"
+      },
+      "8": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.3059,
+            0.4196,
+            0.4667
+          ],
+          "hex": "#4e6b77"
+        },
+        "$description": "bordure d'interaction, focus (3:1)"
+      },
+      "9": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.498,
+            0.8588,
+            1
+          ],
+          "hex": "#7fdbff"
+        },
+        "$description": "plein, couleur source"
+      },
+      "10": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.6627,
+            0.898,
+            0.9961
+          ],
+          "hex": "#a9e5fe"
+        },
+        "$description": "plein, survol"
+      },
+      "11": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.7882,
+            0.9373,
+            1
+          ],
+          "hex": "#c9efff"
+        },
+        "$description": "texte secondaire (4,5:1)"
+      },
+      "12": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9216,
+            0.9765,
+            1
+          ],
+          "hex": "#ebf9ff"
+        },
+        "$description": "texte principal"
+      },
+      "$description": "Primaire de Écume et Sel, mode sombre. Pas 9 = #7fdbff exact ; autres pas générés par generateScale (src/valise/generate.js) en miroir [H] : mêmes cibles, contraste visé contre le noir au lieu du blanc ; école « foncée » lue contre le noir.",
+      "$extensions": {
+        "ds-lab.valise": {
+          "source": "#7fdbff",
+          "ecole": "foncée",
+          "pas10": "plus foncé",
+          "signaux": [
+            "échelle comprimée"
+          ],
+          "fond": "sombre"
+        }
+      },
+      "sur-plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0,
+            0
+          ],
+          "hex": "#000000"
+        },
+        "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
+      }
+    },
+    "accent": {
+      "1": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0941,
+            0.0667,
+            0.0588
+          ],
+          "hex": "#18110f"
+        },
+        "$description": "fond d'application"
+      },
+      "2": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1059,
+            0.0784,
+            0.0706
+          ],
+          "hex": "#1b1412"
+        },
+        "$description": "fond discret"
+      },
+      "3": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1294,
+            0.102,
+            0.0941
+          ],
+          "hex": "#211a18"
+        },
+        "$description": "fond de composant"
+      },
+      "4": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1725,
+            0.1176,
+            0.102
+          ],
+          "hex": "#2c1e1a"
+        },
+        "$description": "fond de composant, survol"
+      },
+      "5": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2196,
+            0.1333,
+            0.1098
+          ],
+          "hex": "#38221c"
+        },
+        "$description": "fond de composant, appui"
+      },
+      "6": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2627,
+            0.1647,
+            0.1373
+          ],
+          "hex": "#432a23"
+        },
+        "$description": "bordure discrète"
+      },
+      "7": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.4,
+            0.2039,
+            0.149
+          ],
+          "hex": "#663426"
+        },
+        "$description": "bordure de composant"
+      },
+      "8": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.6941,
+            0.2588,
+            0.1333
+          ],
+          "hex": "#b14222"
+        },
+        "$description": "bordure d'interaction, focus (3:1)"
+      },
+      "9": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.8941,
+            0.3412,
+            0.1804
+          ],
+          "hex": "#e4572e"
+        },
+        "$description": "plein, couleur source"
+      },
+      "10": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.5647,
+            0.4431
+          ],
+          "hex": "#ff9071"
+        },
+        "$description": "plein, survol"
+      },
+      "11": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.7529,
+            0.6824
+          ],
+          "hex": "#ffc0ae"
+        },
+        "$description": "texte secondaire (4,5:1)"
+      },
+      "12": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9961,
+            0.9137,
+            0.8902
+          ],
+          "hex": "#fee9e3"
+        },
+        "$description": "texte principal"
+      },
+      "$description": "Accent de Écume et Sel, mode sombre. Pas 9 = #e4572e exact ; autres pas générés par generateScale (src/valise/generate.js) en miroir [H] : mêmes cibles, contraste visé contre le noir au lieu du blanc ; école « foncée » lue contre le noir.",
+      "$extensions": {
+        "ds-lab.valise": {
+          "source": "#e4572e",
+          "ecole": "foncée",
+          "pas10": "plus foncé",
+          "signaux": [],
+          "fond": "sombre"
+        }
+      },
+      "sur-plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0,
+            0
+          ],
+          "hex": "#000000"
+        },
+        "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
+      }
+    }
+  }
+}

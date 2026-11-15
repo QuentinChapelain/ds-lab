@@ -18,7 +18,7 @@ const seuilFr = (n) => `${String(n).replace('.', ',')}:1`;
 const plural = (n, one, many) => `${n} ${n > 1 ? many : one}`;
 
 const GROUPS = [
-  { key: 'texte', title: 'Texte', intro: 'Texte posé sur un fond de rôle, seuil 4,5:1 (WCAG 2.1, 1.4.3).', word: 'Réserver une table' },
+  { key: 'texte', title: 'Texte', intro: 'Texte posé sur un fond de rôle, seuil 4,5:1 (WCAG 2.1, 1.4.3) ; 3:1 pour le texte de marque des grands titres.', word: 'Réserver une table' },
   {
     key: 'bordure',
     title: 'Bordure',
