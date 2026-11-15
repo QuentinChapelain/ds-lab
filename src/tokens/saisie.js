@@ -13,7 +13,8 @@
  *   description  facultative, $description de marque.tokens.json.
  *
  * Motifs de refus : entrée invalide ; checkValise en échec sur les échelles générées ; paire de rôles en échec ;
- * étape 4c, police des titres donnée par ses fichiers qui échoue à un garde-fou (src/polices/garde-fous.js).
+ * étape 4c, police des titres donnée par ses fichiers qui échoue à un garde-fou (src/polices/garde-fous.js), ou dont
+ * l'encre de deux lignes se touche sur un style de titre (controlerEncre, dans Chromium, lancé par la commande).
  * Étape 4b : checkValise et le contraste sont contrôlés dans les deux modes ; chaque motif dit son mode, (clair) ou (sombre).
  * Les couches communes (neutres, statuts, rôles, paires) sont lues dans tokens/commun/ ; la saisie écrit aussi le resolver
  * de la marque (marque.resolver.json, src/tokens/resolver.js).
@@ -22,12 +23,13 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { lirePolice } from '../polices/lecture.js';
 import { gardeFous } from '../polices/garde-fous.js';
+import { mesurerEncre, lignesEncre, motifsEncre } from '../polices/encre.js';
 import { typo, SUR_POLICE_TITRE } from './typo.js';
 import { generateScale, checkValise } from '../valise/generate.js';
 import { scaleToDtcg, valiseFromTokens, OPTIONS_COULEUR_SOMBRE } from './primitives.js';
 import { marqueTokens, marqueSombreTokens } from './pleins.js';
 import { contratRoles, resolveRoles } from './roles.js';
-import { COMMUN, ORBE, modeleResolver, resoudre, partager, fusionner } from './resolver.js';
+import { COMMUN, ORBE, modeleResolver, resoudre, partager, fusionner, enEtroit } from './resolver.js';
 
 export { COMMUN };
 const CLES = ['nom', 'description', 'primaire', 'accent', 'polices'];
@@ -71,6 +73,55 @@ export const lirePropresOrbe = () => JSON.parse(readFileSync(join(ORBE, 'primiti
 export function graissesTitres(commun) {
   const { styles } = typo(commun.semantique, commun.primitives, commun.marque);
   return [...new Set(styles.filter((s) => SUR_POLICE_TITRE.includes(s.style)).map((s) => s.graisse))].sort((a, b) => a - b);
+}
+
+/**
+ * Étape 4c, lot 3 : styles sur la police des titres, en large et en étroit (contexte étroit commun), avec leur consigne.
+ * @param {import('./roles.js').RoleSet} commun @returns {import('../polices/encre.js').StyleTitre[]}
+ */
+export function stylesTitres(commun) {
+  const etroit = enEtroit(commun.semantique, [JSON.parse(readFileSync(join(COMMUN, 'largeur.etroit.tokens.json'), 'utf8'))]);
+  const { styles } = typo(commun.semantique, commun.primitives, commun.marque, { semantique: etroit, sous: 0, seuil: '' });
+  return styles
+    .filter((s) => SUR_POLICE_TITRE.includes(s.style))
+    .flatMap((s) =>
+      /** @type {['large' | 'étroit', import('./typo.js').Mesure | null][]} */ ([['large', s.large], ['étroit', s.etroit]])
+        .filter(([, m]) => m)
+        .map(([largeur, m]) => {
+          const x = /** @type {import('./typo.js').Mesure} */ (m);
+          if (x.hauteurCapitale === null) throw new Error(`${s.style} en ${largeur} : consigne absente`);
+          return { style: s.style, largeur, taille: x.taille, ligne: Math.round(x.ligne * 100) / 100, graisse: s.graisse, consigne: x.hauteurCapitale };
+        }),
+    );
+}
+
+/**
+ * Étape 4c, lot 3 : contrôle d'encre d'une police des titres donnée par ses fichiers, dans Chromium.
+ * À lancer après saisir(), quand la marque n'a pas d'autre motif : les garde-fous ont déjà vérifié le format, les
+ * graisses et la hauteur de capitale.
+ * @param {PoliceTitre} policeTitre
+ * @param {{ dossier: string, commun?: import('./roles.js').RoleSet, styles?: import('../polices/encre.js').StyleTitre[] }} opts
+ * @returns {Promise<{ lignes: import('../polices/encre.js').LigneEncre[], motifs: string[] }>}
+ */
+export async function controlerEncre(policeTitre, { dossier, commun = chargerCommun(), styles = stylesTitres(commun) }) {
+  const lisibles = policeTitre.fichiers.flatMap((f) => (f.police.lisible ? [{ chemin: f.chemin, police: f.police }] : []));
+  const premiere = lisibles[0]?.police;
+  if (!premiere) return { lignes: [], motifs: ['police des titres : aucun fichier lisible pour le contrôle d\'encre'] };
+  const consignes = [...new Set(styles.map((s) => s.consigne))];
+  if (consignes.length !== 1) throw new Error(`consignes différentes : ${consignes.join(', ')}`);
+  const graisses = [...new Set(styles.map((s) => s.graisse))].sort((a, b) => a - b);
+  let mesures;
+  try {
+    mesures = await mesurerEncre(
+      lisibles.map((f) => ({ octets: readFileSync(resolve(dossier, f.chemin)), graisses: f.police.graisses })),
+      graisses,
+      consignes[0],
+    );
+  } catch (e) {
+    return { lignes: [], motifs: [`police des titres : contrôle d'encre impossible (${/** @type {Error} */ (e).message.split('\n')[0]})`] };
+  }
+  const lignes = lignesEncre(mesures, styles, premiere);
+  return { lignes, motifs: motifsEncre(lignes).map((m) => `police des titres : ${m}`) };
 }
 
 /** Texte du fichier de jetons, tel qu'il est écrit sur le disque. @param {any} tokens */

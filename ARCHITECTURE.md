@@ -42,7 +42,7 @@ Chaque commande npm a son point d'entrée dans `src/cli/`. Les sorties d'audit e
 | `src/lib/` | Fonctions pures partagées : couleurs (OKLab, ΔE, contraste WCAG), unités, clés de valeurs, adresses, sources |
 | `src/reduce/` | Proposition de la table ancien → nouveau, texte sur plein, déclarations sources et conflits |
 | `src/brand/` | Marque déclarée dans la cible ; lecture rapide de la marque d'un site, avant la réduction |
-| `src/polices/` | Police des titres d'une marque : lecture d'un WOFF2 (mesures, graisses, licence, couverture), sans dépendance |
+| `src/polices/` | Police des titres d'une marque : lecture d'un WOFF2 (mesures, graisses, licence, couverture), sans dépendance ; garde-fous ; contrôle d'encre de deux lignes dans Chromium (`encre.js`, playwright-core déjà présent), lancé par la saisie quand l'entrée donne les fichiers |
 | `src/valise/` | Générateur d'échelles visé par contraste, et son contrôle `checkValise` |
 | `src/tokens/` | Jetons DTCG d'une marque : lecteur de resolver, primitives, pleins, rôles et paires, espacements, styles de texte ; calcul des trois contrôles |
 | `src/report/` | Sorties lisibles : rapport d'audit, revue, `migration.md`, planches des rôles, des espacements et de la typo, calibrage des pleins |
