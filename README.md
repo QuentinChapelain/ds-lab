@@ -83,7 +83,7 @@ Une marque entre par un fichier, `tokens/orbe-cafe/entree.json` pour Orbe Café 
 | Sortie | Quand | Ce qui est écrit |
 |---|---|---|
 | 0 | Marque acceptée | `marque.tokens.json`, `marque.resolver.json`, et `echelles.tokens.json` si une échelle est générée |
-| 1 | Marque refusée : entrée invalide, `checkValise` en échec sur une échelle générée, ou paire de rôles sous son seuil, en clair ou en sombre | Rien ; chaque motif est affiché avec son mode, `(clair)` ou `(sombre)` |
+| 1 | Marque refusée : entrée invalide, `checkValise` en échec sur une échelle générée, paire de rôles sous son seuil, en clair ou en sombre, ou police des titres refusée par un garde-fou (format WOFF2, graisses des titres, signes français, licence déclarée, hauteur de capitale) | Rien ; chaque motif est affiché avec son mode, `(clair)` ou `(sombre)` |
 | 2 | Aucun fichier donné | Rien |
 
 Sans accent, l'accent se replie sur le neutre (D05). Les couches communes (neutres, statuts, rôles, paires, espaces, typo) sont lues dans `tokens/commun/`. Orbe Café nomme ses échelles existantes (`{ "echelle": "bleu" }`), forme réservée à elle seule : sa couche marque est réécrite à l'identique. Les règles et la raison sont dans D13 (`docs/decisions.md`) ; le contrat tient en une page, `docs/contrat-de-marque.md`.

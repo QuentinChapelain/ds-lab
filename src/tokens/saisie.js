@@ -12,7 +12,8 @@
  *                texte facultatif (étape 4, dernier lot) : absent, la police du produit (tokens/commun/police.tokens.json) ;
  *   description  facultative, $description de marque.tokens.json.
  *
- * Trois motifs de refus : entrée invalide ; checkValise en échec sur les échelles générées ; paire de rôles en échec.
+ * Motifs de refus : entrée invalide ; checkValise en échec sur les échelles générées ; paire de rôles en échec ;
+ * étape 4c, police des titres donnée par ses fichiers qui échoue à un garde-fou (src/polices/garde-fous.js).
  * Étape 4b : checkValise et le contraste sont contrôlés dans les deux modes ; chaque motif dit son mode, (clair) ou (sombre).
  * Les couches communes (neutres, statuts, rôles, paires) sont lues dans tokens/commun/ ; la saisie écrit aussi le resolver
  * de la marque (marque.resolver.json, src/tokens/resolver.js).
@@ -20,6 +21,8 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { lirePolice } from '../polices/lecture.js';
+import { gardeFous } from '../polices/garde-fous.js';
+import { typo, SUR_POLICE_TITRE } from './typo.js';
 import { generateScale, checkValise } from '../valise/generate.js';
 import { scaleToDtcg, valiseFromTokens, OPTIONS_COULEUR_SOMBRE } from './primitives.js';
 import { marqueTokens, marqueSombreTokens } from './pleins.js';
@@ -60,6 +63,15 @@ export function chargerCommun({ mode } = {}) {
 
 /** Échelles propres à Orbe Café (bleu, terre, sable), écrites à la main. */
 export const lirePropresOrbe = () => JSON.parse(readFileSync(join(ORBE, 'primitives.tokens.json'), 'utf8'));
+
+/**
+ * Étape 4c, lot 2 : graisses demandées par les styles sur la police des titres (affichage, titres 1 à 3), lues dans les rôles.
+ * @param {import('./roles.js').RoleSet} commun @returns {number[]}
+ */
+export function graissesTitres(commun) {
+  const { styles } = typo(commun.semantique, commun.primitives, commun.marque);
+  return [...new Set(styles.filter((s) => SUR_POLICE_TITRE.includes(s.style)).map((s) => s.graisse))].sort((a, b) => a - b);
+}
 
 /** Texte du fichier de jetons, tel qu'il est écrit sur le disque. @param {any} tokens */
 export const serialiser = (tokens) => JSON.stringify(tokens, null, 2) + '\n';
@@ -148,6 +160,7 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
               motifs.push(`police des titres illisible : ${chemin} (${/** @type {Error} */ (e).message})`);
             }
           policeTitre = { familles: t.familles, controlee: true, fichiers };
+          for (const m of gardeFous(fichiers, graissesTitres(commun))) motifs.push(`police des titres : ${m}`);
         }
       } else if (!familles(t)) invalide('polices.titre, liste de noms de familles attendue');
       else policeTitre = { familles: t, controlee: false, fichiers: [] };
