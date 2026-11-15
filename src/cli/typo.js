@@ -5,51 +5,54 @@
  * Sort en 1 si l'une des neuf règles n'est pas tenue, sinon en 0. Le rapport de chaque style et les primitives
  * sans rôle sont affichés pour information ; ils ne changent pas le code de sortie.
  * Usage : npm run typo [-- --semantique <fichier>] [--primitives <fichier>] [--marque <fichier>] [--etroit <fichier>]
+ * Revue de code du 15/11, lot 1a (D18) : toute panne (option inconnue, fichier absent ou illisible) sort en 2, par la garde
+ * commune (src/cli/garde.js).
  */
-import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import { typo, fr } from '../tokens/typo.js';
 import { largeurs, enEtroit } from '../tokens/resolver.js';
+import { lancer, lireJson } from './garde.js';
 
-const { values } = parseArgs({ options: { semantique: { type: 'string' }, primitives: { type: 'string' }, marque: { type: 'string' }, etroit: { type: 'string' } } });
-const read = (/** @type {string} */ p) => JSON.parse(readFileSync(p, 'utf8'));
-const l = largeurs();
-const sem = values.semantique ? read(values.semantique) : l.large.semantique;
-const contexte = values.etroit ? [read(values.etroit)] : l.contexte;
-const r = typo(
-  sem,
-  // Étape 4c : la consigne de hauteur de capitale (groupe police, tokens/commun/police.tokens.json) vient du resolver
-  // quand le fichier de primitives donné ne la porte pas.
-  values.primitives ? { police: l.large.primitives.police, ...read(values.primitives) } : l.large.primitives,
-  values.marque ? read(values.marque) : l.large.marque,
-  { ...l.etroit, semantique: enEtroit(sem, contexte) },
-);
+await lancer('typo', () => {
+  const { values } = parseArgs({ options: { semantique: { type: 'string' }, primitives: { type: 'string' }, marque: { type: 'string' }, etroit: { type: 'string' } } });
+  const l = largeurs();
+  const sem = values.semantique ? lireJson(values.semantique) : l.large.semantique;
+  const contexte = values.etroit ? [lireJson(values.etroit)] : l.contexte;
+  const r = typo(
+    sem,
+    // Étape 4c : la consigne de hauteur de capitale (groupe police, tokens/commun/police.tokens.json) vient du resolver
+    // quand le fichier de primitives donné ne la porte pas.
+    values.primitives ? { police: l.large.primitives.police, ...lireJson(values.primitives) } : l.large.primitives,
+    values.marque ? lireJson(values.marque) : l.large.marque,
+    { ...l.etroit, semantique: enEtroit(sem, contexte) },
+  );
 
-const ligne = (/** @type {number} */ n) => fr(Math.round(n * 100) / 100);
-const cols = r.styles.map((s) => [
-  s.style,
-  `${fr(s.large.taille)} / ${ligne(s.large.ligne)} px`,
-  `rapport ${fr(s.large.interligne)}`,
-  s.etroit ? `étroit ${fr(s.etroit.taille)} / ${ligne(s.etroit.ligne)} px` : '',
-  s.etroit ? `rapport ${fr(s.etroit.interligne)}` : '',
-  String(s.graisse),
-  String(s.police).replace(/^\{marque\.(.*)\}$/, '$1'),
-  s.hauteurCapitale !== null ? `capitale ${fr(s.hauteurCapitale)} × taille` : '',
-]);
-const w = cols[0].map((_, i) => Math.max(...cols.map((c) => c[i].length)));
-const sous = r.styles.find((s) => s.sous !== null);
-console.log(`styles (taille / ligne en px, rapport sans seuil${sous ? ` ; en étroit sous ${sous.sous} px ${sous.seuil}`.trimEnd() : ''} ; graisse ; police ; consigne de hauteur de capitale)`);
-for (const c of cols) console.log(`  ${c.map((x, i) => x.padEnd(w[i])).join('  ').trimEnd()}`);
+  const ligne = (/** @type {number} */ n) => fr(Math.round(n * 100) / 100);
+  const cols = r.styles.map((s) => [
+    s.style,
+    `${fr(s.large.taille)} / ${ligne(s.large.ligne)} px`,
+    `rapport ${fr(s.large.interligne)}`,
+    s.etroit ? `étroit ${fr(s.etroit.taille)} / ${ligne(s.etroit.ligne)} px` : '',
+    s.etroit ? `rapport ${fr(s.etroit.interligne)}` : '',
+    String(s.graisse),
+    String(s.police).replace(/^\{marque\.(.*)\}$/, '$1'),
+    s.hauteurCapitale !== null ? `capitale ${fr(s.hauteurCapitale)} × taille` : '',
+  ]);
+  const w = cols[0].map((_, i) => Math.max(...cols.map((c) => c[i].length)));
+  const sous = r.styles.find((s) => s.sous !== null);
+  console.log(`styles (taille / ligne en px, rapport sans seuil${sous ? ` ; en étroit sous ${sous.sous} px ${sous.seuil}`.trimEnd() : ''} ; graisse ; police ; consigne de hauteur de capitale)`);
+  for (const c of cols) console.log(`  ${c.map((x, i) => x.padEnd(w[i])).join('  ').trimEnd()}`);
 
-console.log('\nrègles');
-for (const g of r.regles) {
-  console.log(`  ${g.ok ? '✓' : '✗'} ${g.titre}`);
-  for (const d of g.details) console.log(`      ${d}`);
-}
+  console.log('\nrègles');
+  for (const g of r.regles) {
+    console.log(`  ${g.ok ? '✓' : '✗'} ${g.titre}`);
+    for (const d of g.details) console.log(`      ${d}`);
+  }
 
-console.log('\nprimitives sans rôle (affiché, non contrôlé)');
-console.log(`  ${r.sansRole.length ? r.sansRole.join(', ') : 'aucune'}`);
+  console.log('\nprimitives sans rôle (affiché, non contrôlé)');
+  console.log(`  ${r.sansRole.length ? r.sansRole.join(', ') : 'aucune'}`);
 
-const n = r.regles.length;
-console.log(`\n${n} règles, ${r.fails.length ? `${r.fails.length} en échec` : 'aucune en échec'}.`);
-process.exit(r.fails.length ? 1 : 0);
+  const n = r.regles.length;
+  console.log(`\n${n} règles, ${r.fails.length ? `${r.fails.length} en échec` : 'aucune en échec'}.`);
+  return r.fails.length ? 1 : 0;
+});

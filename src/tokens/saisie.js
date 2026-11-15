@@ -23,13 +23,13 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { lirePolice } from '../polices/lecture.js';
 import { gardeFous } from '../polices/garde-fous.js';
-import { mesurerEncre, lignesEncre, motifsEncre } from '../polices/encre.js';
+import { mesurerEncre, lignesEncre, motifsEncre, PoliceRefusee } from '../polices/encre.js';
 import { typo, SUR_POLICE_TITRE } from './typo.js';
 import { generateScale, checkValise } from '../valise/generate.js';
 import { scaleToDtcg, valiseFromTokens, OPTIONS_COULEUR_SOMBRE } from './primitives.js';
 import { marqueTokens, marqueSombreTokens } from './pleins.js';
 import { contratRoles, resolveRoles } from './roles.js';
-import { COMMUN, ORBE, modeleResolver, resoudre, partager, fusionner, enEtroit } from './resolver.js';
+import { COMMUN, ORBE, modeleResolver, resoudre, partager, fusionner, enEtroit, seuilEtroit } from './resolver.js';
 
 export { COMMUN };
 const CLES = ['nom', 'description', 'primaire', 'accent', 'polices'];
@@ -67,11 +67,22 @@ export function chargerCommun({ mode } = {}) {
 export const lirePropresOrbe = () => JSON.parse(readFileSync(join(ORBE, 'primitives.tokens.json'), 'utf8'));
 
 /**
+ * Revue de code du 15/11, lot 1a : contexte étroit commun, lu par le resolver des couches communes (contexte et seuil),
+ * pour typo(), qui l'exige.
+ * @param {import('./roles.js').RoleSet} commun
+ */
+function etroitCommun(commun) {
+  const r = resoudre(modeleResolver({ nom: 'commun', marque: [], dossier: COMMUN }), COMMUN, { largeur: 'etroit' });
+  const contexte = r.sources.filter((x) => x.ensemble === 'largeur:etroit').map((x) => x.doc);
+  return { semantique: enEtroit(commun.semantique, contexte), ...seuilEtroit(r) };
+}
+
+/**
  * Étape 4c, lot 2 : graisses demandées par les styles sur la police des titres (affichage, titres 1 à 3), lues dans les rôles.
  * @param {import('./roles.js').RoleSet} commun @returns {number[]}
  */
 export function graissesTitres(commun) {
-  const { styles } = typo(commun.semantique, commun.primitives, commun.marque);
+  const { styles } = typo(commun.semantique, commun.primitives, commun.marque, etroitCommun(commun));
   return [...new Set(styles.filter((s) => SUR_POLICE_TITRE.includes(s.style)).map((s) => s.graisse))].sort((a, b) => a - b);
 }
 
@@ -80,8 +91,7 @@ export function graissesTitres(commun) {
  * @param {import('./roles.js').RoleSet} commun @returns {import('../polices/encre.js').StyleTitre[]}
  */
 export function stylesTitres(commun) {
-  const etroit = enEtroit(commun.semantique, [JSON.parse(readFileSync(join(COMMUN, 'largeur.etroit.tokens.json'), 'utf8'))]);
-  const { styles } = typo(commun.semantique, commun.primitives, commun.marque, { semantique: etroit, sous: 0, seuil: '' });
+  const { styles } = typo(commun.semantique, commun.primitives, commun.marque, etroitCommun(commun));
   return styles
     .filter((s) => SUR_POLICE_TITRE.includes(s.style))
     .flatMap((s) =>
@@ -118,7 +128,10 @@ export async function controlerEncre(policeTitre, { dossier, commun = chargerCom
       consignes[0],
     );
   } catch (e) {
-    return { lignes: [], motifs: [`police des titres : contrôle d'encre impossible (${/** @type {Error} */ (e).message.split('\n')[0]})`] };
+    // D18 : un fichier que le navigateur refuse de charger est un refus ; Chromium qui ne se lance pas, ou toute autre
+    // erreur de mesure, est une panne.
+    if (e instanceof PoliceRefusee) return { lignes: [], motifs: [`police des titres : ${e.message}`] };
+    throw e;
   }
   const lignes = lignesEncre(mesures, styles, premiere);
   return { lignes, motifs: motifsEncre(lignes).map((m) => `police des titres : ${m}`) };
@@ -290,13 +303,17 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
     ['clair', { ...commun, marque: fusionner(fusionner({}, commun.marque), marque), echelles: claires }],
     ['sombre', { ...communSombre, marque: fusionner(fusionner(fusionner({}, communSombre.marque), marque), marqueSombre), echelles: [...claires, echellesSombres] }],
   ];
+  // Revue de code du 15/11, lot 1a (D18) : une paire sous son seuil est un refus ; un contrat qui ne se calcule pas (paire
+  // vers un rôle inconnu, type inconnu : couche commune cassée) est une panne, qui lève.
   for (const [mode, jeu] of jeux) {
+    /** @type {ReturnType<typeof contratRoles>} */
+    let c;
     try {
-      const c = contratRoles(jeu);
-      for (const p of c.fails) motifs.push(`contraste (${mode}) : ${p.devant} sur ${p.fond}, ${fr(p.ratio)}:1 < ${String(p.min).replace('.', ',')}:1`);
+      c = contratRoles(jeu);
     } catch (e) {
-      motifs.push(`contraste (${mode}) : ${/** @type {Error} */ (e).message}`);
+      throw new Error(`contraste (${mode}) : ${/** @type {Error} */ (e).message}`);
     }
+    for (const p of c.fails) motifs.push(`contraste (${mode}) : ${p.devant} sur ${p.fond}, ${fr(p.ratio)}:1 < ${String(p.min).replace('.', ',')}:1`);
   }
   const resolver = modeleResolver({
     nom: entree.nom,

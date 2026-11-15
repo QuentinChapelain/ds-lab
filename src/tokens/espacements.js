@@ -42,10 +42,12 @@ export const REGLES = [
 
 /**
  * @param {any} semantique @param {any} primitives
- * @param {{ semantique: any, sous: number, seuil: string }} [largeurEtroite] rôles résolus en étroit, seuil de l'étroit
+ * @param {{ semantique: any, sous: number, seuil: string }} largeurEtroite rôles résolus en étroit, seuil de l'étroit (obligatoire)
  * @returns {{ ecarts: Espace[], horsControle: Espace[], voisins: Voisin[], fails: Voisin[], etroits: Etroit[], etroitsFails: Etroit[], regles: Regle[], reglesFails: Regle[], sansRole: string[] }}
  */
 export function espacements(semantique, primitives, largeurEtroite) {
+  // Revue de code du 15/11, lot 1a : sans contexte étroit, les règles en étroit passeraient sans rien contrôler.
+  if (!largeurEtroite) throw new Error('contexte étroit absent : les règles en étroit ne peuvent pas être contrôlées');
   const all = new Map();
   for (const [k, v] of flattenTokens(primitives)) all.set(k, v);
   const sem = flattenTokens(semantique);

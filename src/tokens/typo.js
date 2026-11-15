@@ -42,10 +42,12 @@ const r2 = (n) => Math.round(n * 100) / 100;
  */
 
 /**
- * @param {any} semantique @param {any} primitives @param {any} marque @param {Etroite} [largeurEtroite]
+ * @param {any} semantique @param {any} primitives @param {any} marque @param {Etroite} largeurEtroite contexte étroit (obligatoire)
  * @returns {{ styles: Style[], regles: Regle[], fails: Regle[], sansRole: string[] }}
  */
 export function typo(semantique, primitives, marque, largeurEtroite) {
+  // Revue de code du 15/11, lot 1a : sans contexte étroit, les règles en étroit passeraient sans rien contrôler.
+  if (!largeurEtroite) throw new Error('contexte étroit absent : les règles en étroit ne peuvent pas être contrôlées');
   const semEtroit = largeurEtroite ? flattenTokens(largeurEtroite.semantique) : null;
   const all = new Map();
   for (const f of [primitives, marque]) for (const [k, v] of flattenTokens(f)) all.set(k, v);

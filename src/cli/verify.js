@@ -7,6 +7,9 @@
  * et son arbre d'accessibilité dans le dossier de référence. Sans --save, capture à nouveau
  * et compare : pourcentage de pixels différents, image des différences, arbre identique ou diff.
  * Les fichiers sont ceux de reduce --references : <page>.reference.png, <page>.reference.aria.yml.
+ * Revue de code du 15/11, lot 1a (D18) : sort en 0, même quand des pixels diffèrent (la commande compare, elle ne juge
+ * pas), ou en 2 sur une panne (option inconnue, référence absente, Chromium, navigation), par la garde commune
+ * (src/cli/garde.js).
  */
 import { parseArgs } from 'node:util';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -17,6 +20,7 @@ import { loadSources } from '../lib/sources.js';
 import { stampOf, freeOutputDir } from '../report/json.js';
 import { capturePage } from '../verify/capture.js';
 import { referenceFiles, writeReference, verifyPage } from '../verify/reference.js';
+import { lancer } from './garde.js';
 
 const USAGE = `Usage : npm run verify -- <adresse> --reference <dossier> [--save] [options]
   --reference <dossier>      dossier des références : <page>.reference.png, <page>.reference.aria.yml
@@ -104,4 +108,4 @@ async function main() {
   console.log(`Sorties : ${dir}`);
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) await main();
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) await lancer('verify', main);

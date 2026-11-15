@@ -6,6 +6,8 @@
  * Lot M, M0 : lecture rapide de la marque, avant la réduction. Sort les variables du
  * back-office posées sur <html> (préfixe réglable), les couleurs fortes du rendu et leurs
  * contradictions avec les feuilles. Sert à écrire le bloc brand de la cible ; ne décide rien.
+ * Revue de code du 15/11, lot 1a (D18) : sort en 0, ou en 2 sur une panne (option inconnue, Chromium, navigation), par
+ * la garde commune (src/cli/garde.js).
  */
 import { parseArgs } from 'node:util';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -14,6 +16,7 @@ import { pathToFileURL } from 'node:url';
 import { resolveAddresses, groupByHost } from '../lib/addresses.js';
 import { stampOf, freeOutputDir } from '../report/json.js';
 import { readBrand } from '../brand/read.js';
+import { lancer } from './garde.js';
 
 const USAGE = `Usage : npm run marque -- <adresse> [<chemins…>] --prefix <préfixe> [options]
   --prefix <préfixe>         début du nom des variables posées par le back-office sur <html> (défaut : --, toutes)
@@ -56,4 +59,4 @@ async function main() {
   }
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) await main();
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) await lancer('marque', main);

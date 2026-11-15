@@ -16,6 +16,12 @@ export const JEU = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567
 const FAMILLE = 'ds-lab-encre';
 
 /**
+ * Revue de code du 15/11, lot 1a (D18) : fichier de police que le navigateur refuse de charger. C'est un refus (le client
+ * doit changer son fichier) ; toute autre erreur de mesure est une panne.
+ */
+export class PoliceRefusee extends Error {}
+
+/**
  * @typedef {{ haut: number, hautCar: string, bas: number, basCar: string, capitale: number, facteur: number }} MesureEncre
  *   en em de la taille demandée, sauf facteur (taille utilisée ÷ taille demandée)
  * @typedef {{ style: string, largeur: 'large' | 'étroit', taille: number, ligne: number, graisse: number, consigne: number }} StyleTitre
@@ -32,16 +38,26 @@ const FAMILLE = 'ds-lab-encre';
  */
 export async function mesurerEncre(fichiers, graisses, consigne) {
   const { chromium } = await import('playwright-core');
-  const navigateur = await chromium.launch();
+  /** @type {import('playwright-core').Browser} */
+  let navigateur;
+  try {
+    navigateur = await chromium.launch();
+  } catch (e) {
+    throw new Error(`Chromium ne se lance pas (${/** @type {Error} */ (e).message.split('\n')[0]})`);
+  }
   try {
     const page = await navigateur.newPage();
     await page.setContent('<!doctype html><body></body>');
     const donnees = fichiers.map((f) => ({ b64: f.octets.toString('base64'), poids: f.graisses.min === f.graisses.max ? String(f.graisses.min) : `${f.graisses.min} ${f.graisses.max}` }));
-    return await page.evaluate(
+    const r = await page.evaluate(
       async ({ donnees, graisses, consigne, JEU, FAMILLE }) => {
         for (const { b64, poids } of donnees) {
           const face = new FontFace(FAMILLE, Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)), { weight: poids });
-          await face.load();
+          try {
+            await face.load();
+          } catch (e) {
+            return { refusee: String(/** @type {any} */ (e)?.message ?? e), mesures: null };
+          }
           document.fonts.add(face);
         }
         /** @type {Record<number, any>} */
@@ -67,10 +83,12 @@ export async function mesurerEncre(fichiers, graisses, consigne) {
           };
           out[g] = { haut: haut / 1000, hautCar, bas: bas / 1000, basCar, capitale: capitale / 1000, facteur: largeur(true) / largeur(false) };
         }
-        return out;
+        return { refusee: null, mesures: out };
       },
       { donnees, graisses, consigne, JEU, FAMILLE },
     );
+    if (r.refusee !== null) throw new PoliceRefusee(`le navigateur refuse de charger le fichier (${r.refusee})`);
+    return /** @type {Record<number, MesureEncre>} */ (r.mesures);
   } finally {
     await navigateur.close();
   }
