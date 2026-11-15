@@ -52,24 +52,24 @@
         "$value": "{couleur.primaire.12}",
         "$description": "pas 12 de l'échelle primaire"
       },
-      "$description": "Primaire (actions) : échelle primaire, plein moyen.",
+      "$description": "Primaire (actions) : échelle primaire, plein clair.",
       "$extensions": {
         "ds-lab.plein": {
-          "classe": "moyen",
-          "regle": "moyen : plein = pas 11, texte blanc, survol = pas 12"
+          "classe": "clair",
+          "regle": "clair (pas 12 ≥ 7 sur le pas 9 et ≥ 4,5 sur le pas 10) : plein = pas 9, texte = pas 12, survol = pas 10"
         }
       },
       "plein": {
-        "$value": "{couleur.primaire.11}",
-        "$description": "plein : pas 11"
+        "$value": "{couleur.primaire.9}",
+        "$description": "plein : pas 9, couleur exacte"
       },
       "plein-survol": {
-        "$value": "{couleur.primaire.12}",
-        "$description": "plein survolé : pas 12"
+        "$value": "{couleur.primaire.10}",
+        "$description": "plein survolé : pas 10"
       },
       "sur-plein": {
-        "$value": "{couleur.blanc}",
-        "$description": "texte sur le plein : blanc"
+        "$value": "{couleur.primaire.12}",
+        "$description": "texte sur le plein : pas 12"
       }
     },
     "accent": {

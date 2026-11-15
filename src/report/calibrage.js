@@ -1,6 +1,7 @@
 // @ts-check
 /**
- * Étape 4, séance a, lot 3 : calibrage de la règle des pleins (docs/attendus/etape-4-contrat-de-marque.md).
+ * Étape 4, séance a, lot 3 : calibrage de la règle des pleins (docs/attendus/etape-4-contrat-de-marque.md) ;
+ * lot 3 bis : relancé sur la règle décidée sur image (src/tokens/pleins.js).
  * Table des marques, une colonne par marque, et balayage des teintes près des seuils du cas clair.
  * Ne décide rien et ne change aucun seuil : la table et les planches servent la décision, sur image.
  *
@@ -10,7 +11,7 @@
  */
 import { oklch, wcagContrast, formatHex, clampChroma, differenceEuclidean } from 'culori';
 import { generateScale, HUED_CHROMA } from '../valise/generate.js';
-import { classePlein, voileBlanc, SOMBRE_BLANC, CLAIR_L, CLAIR_H } from '../tokens/pleins.js';
+import { classePlein, voileBlanc, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL } from '../tokens/pleins.js';
 import { loadRoles } from '../tokens/roles.js';
 import { saisir, COMMUN } from '../tokens/saisie.js';
 
@@ -23,13 +24,14 @@ const dE = (a, b) => 100 * dEok(a, b);
 const fr = (n, d = 2) => n.toFixed(d).replace('.', ',');
 
 /**
- * @typedef {'sombre' | 'moyen' | 'clair'} Classe
+ * @typedef {import('../tokens/pleins.js').Classe} Classe
  * @typedef {{ plein: string, survol: string, texte: string, pas: number }} Bouton
  */
 
 /** Bouton d'une échelle selon une classe de plein (D04). @param {string[]} steps @param {Classe} classe @returns {Bouton} */
 export function bouton(steps, classe) {
   if (classe === 'sombre') return { plein: steps[8], survol: voileBlanc(steps[8]), texte: WHITE, pas: 9 };
+  if (classe === 'soutenu') return { plein: steps[8], survol: steps[9], texte: WHITE, pas: 9 };
   if (classe === 'moyen') return { plein: steps[10], survol: steps[11], texte: WHITE, pas: 11 };
   return { plein: steps[8], survol: steps[9], texte: steps[11], pas: 9 };
 }
@@ -39,7 +41,7 @@ function lecture(steps) {
   const hex = steps[8];
   const o = oklch(hex);
   const g = generateScale('x', hex);
-  const classe = classePlein(hex);
+  const classe = classePlein(steps);
   const b = bouton(steps, classe);
   return {
     hex,
@@ -94,8 +96,8 @@ export const TEINTES = Array.from({ length: 23 }, (_, i) => 30 + i * 5);
 
 /**
  * Balayage des teintes près des seuils du cas clair : deux planches (chroma la plus forte du gamut sRGB, chroma 0,10).
- * Chaque case : couleur saisie, classe de la règle, bouton selon la règle, bouton de l'autre cas (clair ↔ moyen) avec
- * ses contrastes, et verdict de la saisie.
+ * Chaque case : couleur saisie, classe de la règle, bouton selon la règle, et pour une case moyenne le bouton du cas
+ * clair (couleur exacte, texte au pas 12) avec ses contrastes ; verdict de la saisie.
  */
 export function balayage() {
   const commun = loadRoles(COMMUN);
@@ -109,10 +111,10 @@ export function balayage() {
       TEINTES.map((h) => {
         const hex = formatHex(clampChroma({ mode: 'oklch', l, c, h }, 'oklch'));
         const steps = generateScale('x', hex).steps;
-        const classe = classePlein(hex);
+        const classe = classePlein(steps);
         const regle = bouton(steps, classe);
         /** @type {Classe | null} */
-        const autreClasse = classe === 'moyen' ? 'clair' : classe === 'clair' ? 'moyen' : null;
+        const autreClasse = classe === 'moyen' ? 'clair' : null;
         const a = autreClasse ? bouton(steps, autreClasse) : null;
         const autre = a && autreClasse
           ? { classe: autreClasse, ...a, ratioPlein: wcagContrast(a.texte, a.plein), ratioSurvol: wcagContrast(a.texte, a.survol) }
@@ -128,6 +130,9 @@ export function balayage() {
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 /** @param {string} bg @param {string} fg @param {string} txt @param {string} [title] */
 const pastille = (bg, fg, txt, title = '') => `<span class="b" style="background:${bg};color:${fg}"${title ? ` title="${esc(title)}"` : ''}>${esc(txt)}</span>`;
+/** La règle en une phrase. */
+const REGLE = `blanc ≥ ${fr(BLANC_MIN, 1)} sur le pas 9 : couleur exacte, texte blanc (survol par voile si blanc ≥ ${fr(SOMBRE_BLANC, 1)}, sinon au pas 10) ; sinon, pas 12 ≥ ${TEXTE_FONCE} sur le pas 9 et ≥ ${fr(TEXTE_FONCE_SURVOL, 1)} sur le pas 10 : couleur exacte, texte au pas 12 ; sinon pas 11, texte blanc. Primaire et accent seulement ; statuts figés.`;
+const LETTRE = /** @type {Record<string, string>} */ ({ sombre: 'S', soutenu: 'T', clair: 'C', moyen: 'M' });
 const ouiNon = (/** @type {boolean | null} */ v) => (v === null ? '—' : v ? 'oui' : 'non');
 
 /** @param {ReturnType<typeof colonne>[]} cols */
@@ -158,7 +163,7 @@ export function calibrageMd(cols, planches = []) {
   const out = [
     '# Calibrage des pleins : table des marques',
     '',
-    `Seuils en vigueur, hypothèses [H] : sombre si blanc ≥ ${fr(SOMBRE_BLANC, 1)} sur le pas 9 ; clair si L ≥ ${fr(CLAIR_L)} et h dans [${CLAIR_H[0]}°, ${CLAIR_H[1]}°] ; moyen sinon. Aucun seuil n'a changé.`,
+    `Règle en vigueur (décidée sur image le 15/11/2026) : ${REGLE}`,
     '',
     `| | ${cols.map((c) => c.nom).join(' | ')} |`,
     `|---|${cols.map(() => '---').join('|')}|`,
@@ -168,11 +173,10 @@ export function calibrageMd(cols, planches = []) {
   if (planches.length) out.push('## Balayage', '', `Teintes ${TEINTES[0]}° à ${TEINTES.at(-1)}°, clartés ${fr(CLARTES[0])} à ${fr(/** @type {number} */ (CLARTES.at(-1)))}.`, '');
   for (const pl of planches) {
     const n = (/** @type {(x: any) => boolean} */ f) => pl.cases.filter(f).length;
-    const passe = (/** @type {any} */ x) => x.autre && Math.min(x.autre.ratioPlein, x.autre.ratioSurvol) >= 4.5;
     const refus = pl.cases.filter((x) => x.motifs.length);
     out.push(
-      `- ${pl.titre} [F] : ${pl.cases.length} cases, clair ${n((x) => x.classe === 'clair')}, moyen ${n((x) => x.classe === 'moyen')}, sombre ${n((x) => x.classe === 'sombre')} ; ` +
-        `moyen dont le cas clair passerait 4,5 (plein et survol) : ${n((x) => x.classe === 'moyen' && passe(x))} ; ` +
+      `- ${pl.titre} [F] : ${pl.cases.length} cases ; sombre ${n((x) => x.classe === 'sombre')}, soutenu ${n((x) => x.classe === 'soutenu')}, clair ${n((x) => x.classe === 'clair')}, moyen ${n((x) => x.classe === 'moyen')} ; ` +
+        `gardent la couleur exacte : ${n((x) => x.exacte)}, dont acceptées à la saisie : ${n((x) => x.exacte && !x.motifs.length)} ; ` +
         `refusées à la saisie : ${refus.length} (clair : ${refus.filter((x) => x.classe === 'clair').map((x) => `${fr(x.l)}/${x.h}°`).join(', ') || 'aucune'} ; moyen : ${refus.filter((x) => x.classe === 'moyen').map((x) => `${fr(x.l)}/${x.h}°`).join(', ') || 'aucune'}).`,
     );
   }
@@ -197,16 +201,16 @@ export function calibrageHtml(cols, planches) {
     .join('')}</tr>
 <tr><th>Couleur saisie, seule</th>${cols.map((c) => `<td>${c.primaire ? `<span class="sw" style="background:${c.primaire.hex}"></span>` : '—'}</td>`).join('')}</tr>`;
   const grille = (/** @type {ReturnType<typeof balayage>[number]} */ pl) => {
-    const head = `<tr><th>L \\ h</th>${TEINTES.map((h) => `<th class="${h >= CLAIR_H[0] && h <= CLAIR_H[1] ? 'in' : ''}">${h}°</th>`).join('')}</tr>`;
+    const head = `<tr><th>L \\ h</th>${TEINTES.map((h) => `<th>${h}°</th>`).join('')}</tr>`;
     const rows = CLARTES.map((l) => {
       const cells = TEINTES.map((h) => {
         const x = /** @type {any} */ (pl.cases.find((k) => k.l === l && k.h === h));
         const a = x.autre;
-        const ratio = a ? Math.min(a.ratioPlein, a.ratioSurvol) : null;
+        const ratio = a ? a.ratioPlein : null;
         const titre = `${x.hex} · règle : ${x.classe}, bouton pas ${x.regle.pas}${x.exacte ? ' (couleur exacte)' : ''}${a ? ` · autre cas : ${a.classe}, texte ${fr(a.ratioPlein)} sur le plein, ${fr(a.ratioSurvol)} sur le survol` : ''}${x.motifs.length ? ` · saisie refusée : ${x.motifs.join(' ; ')}` : ''}`;
-        return `<td class="c ${x.classe}${x.motifs.length ? ' refus' : ''}" title="${esc(titre)}"><span class="sw2" style="background:${x.hex}"></span>${pastille(x.regle.plein, x.regle.texte, 'Aa')}${a ? `${pastille(a.plein, a.texte, 'Aa')}<small class="${/** @type {number} */ (ratio) < 4.5 ? 'ko' : ''}">${fr(/** @type {number} */ (ratio), 1)}</small>` : '<small>—</small>'}<small>${x.classe[0].toUpperCase()}${x.motifs.length ? ' ✗' : ''}</small></td>`;
+        return `<td class="c${x.exacte ? ' exacte' : ''}${x.motifs.length ? ' refus' : ''}" title="${esc(titre)}"><span class="sw2" style="background:${x.hex}"></span>${pastille(x.regle.plein, x.regle.texte, 'Aa')}${a ? `${pastille(a.plein, a.texte, 'Aa')}<small class="${/** @type {number} */ (ratio) < TEXTE_FONCE ? 'ko' : ''}">${fr(/** @type {number} */ (ratio), 1)}</small>` : '<small>—</small>'}<small>${LETTRE[x.classe]}${x.motifs.length ? ' ✗' : ''}</small></td>`;
       }).join('');
-      return `<tr><th class="${l >= CLAIR_L ? 'in' : ''}">${fr(l)}</th>${cells}</tr>`;
+      return `<tr><th>${fr(l)}</th>${cells}</tr>`;
     }).join('\n');
     return `<h3>${esc(pl.titre)}</h3><div class="scroll"><table class="grille">${head}\n${rows}</table></div>`;
   };
@@ -226,18 +230,17 @@ table{border-collapse:collapse}th,td{border:1px solid var(--ligne);padding:6px 8
 .grille .b{padding:2px 5px;font-size:12px;display:block;margin:2px 0}
 .sw2{display:block;height:8px;border-radius:2px}
 .grille small{display:block;line-height:1.2}.grille small.ko{color:var(--ko);font-weight:700}
-.grille td.clair{outline:3px solid var(--seuil);outline-offset:-3px}
+.grille td.exacte{outline:3px solid var(--seuil);outline-offset:-3px}
 .grille td.refus{background:#fff0ee}
-.grille th.in{background:#e8eef7}
 </style></head><body>
 <h1>Calibrage des pleins</h1>
-<p>Étape 4, séance a, lot 3. Seuils en vigueur, hypothèses [H] : sombre si le blanc atteint ${fr(SOMBRE_BLANC, 1)}:1 sur le pas 9 ; clair si L ≥ ${fr(CLAIR_L)} et h dans [${CLAIR_H[0]}°, ${CLAIR_H[1]}°] ; moyen sinon. Aucun seuil n'a changé : cette page sert la décision.</p>
+<p>Étape 4, séance a, lot 3 bis. Règle en vigueur, décidée sur image le 15/11/2026 : ${esc(REGLE)}</p>
 <h2>Table des marques</h2>
 <div class="scroll"><table class="marques">${tete}
 ${corps}
 ${rendu}</table></div>
-<h2>Balayage des teintes près des seuils du cas clair</h2>
-<p>Chaque case : en haut la couleur saisie ; puis le bouton selon la règle actuelle ; puis le bouton de l'autre cas (clair si la règle dit moyen, moyen si elle dit clair), avec le plus faible contraste de son texte (plein et survol), en rouge sous 4,5 ; enfin la classe de la règle (S, M, C) et ✗ si la saisie refuse la couleur (fond rosé). Encadré : classe clair. En-têtes bleutés : dans la bande des seuils. Le détail est dans l'infobulle de chaque case.</p>
+<h2>Balayage des teintes</h2>
+<p>Chaque case : en haut la couleur saisie ; puis le bouton selon la règle ; pour une case moyenne, le bouton du cas clair (couleur exacte, texte au pas 12) avec le contraste de ce texte sur le plein, en rouge sous ${TEXTE_FONCE} ; enfin la classe (S sombre, T soutenu, C clair, M moyen) et ✗ si la saisie refuse la couleur (fond rosé). Encadré : la couleur exacte est sur le bouton. Le détail est dans l'infobulle de chaque case.</p>
 ${planches.map(grille).join('\n')}
 </body></html>
 `;

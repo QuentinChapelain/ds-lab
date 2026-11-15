@@ -24,6 +24,12 @@
  * (node local/scripts/ratios-pleins.mjs : voile #3c5a88, terre 11 #b3422b, erreur 11 #cb1d2a, succes 11 #00774a,
  * info 11 #006da6, avertissement 12 #442d01).
  * Décision du 15/11/2026 : bordure.focus → marque.primaire.11 pour toutes les marques (bleu 11 #4c6994).
+ * Étape 4a, lot 3 bis (15/11/2026, décisions sur image) : nouvelle règle pour le primaire et l'accent, lue sur
+ *   l'échelle : blanc ≥ 5,5 sombre (voile) ; blanc ≥ 4,5 soutenu (pas 9, blanc, survol pas 10) ; pas 12 ≥ 7 sur le
+ *   pas 9 et ≥ 4,5 sur le pas 10 clair ; sinon moyen. Statuts figés (STATUTS_FIGES), Orbe Café inchangé.
+ *   Cas limites fictifs, échelles de generateScale, culori wcagContrast (commande : node --input-type=module -e) :
+ *   #ffffff clair (pas 12 sur 9 : 13,01) ; #000000 sombre ; #ffe14d clair (9,96 / 8,47) ; #8a6a00 soutenu
+ *   (blanc 5,07, 5,31 sur le pas 10) ; #4dd2ff clair (7,41 / 6,26) ; #9d5bd2 moyen (blanc 4,32, pas 12 sur 9 : 3,02).
  * Séance 3c, typo (15/11/2026) : la couche marque porte aussi marque.police (titre, texte ; $type fontFamily),
  * produite par marqueTokens (paramètre polices) ; les tests ci-dessous portent sur les six emplacements de couleur.
  */
@@ -35,7 +41,7 @@ import { join } from 'node:path';
 import { interpolate, formatHex, rgb } from 'culori';
 import { generateScale } from '../src/valise/generate.js';
 import { loadRoles, resolveRoles, contratRoles } from '../src/tokens/roles.js';
-import { classePlein, voileBlanc, marqueTokens, SOMBRE_BLANC, CLAIR_L, CLAIR_H, VOILE_BLANC } from '../src/tokens/pleins.js';
+import { classePlein, voileBlanc, marqueTokens, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL, STATUTS_FIGES, VOILE_BLANC } from '../src/tokens/pleins.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');
@@ -123,23 +129,29 @@ const prim = load('primitives.tokens.json').couleur;
 const stat = load('statuts.tokens.json').couleur;
 const stepsOf = (/** @type {string} */ s) => STEPS.map((k) => (prim[s] ?? stat[s])[k].$value.hex);
 
-test('Pleins : seuils du critère (sombre 5,5 [H] ; clair L ≥ 0,70 et h dans [55°, 115°] [H] ; voile 8 %)', () => {
+test('Pleins : seuils de la règle (blanc 4,5 et 5,5 ; texte foncé 7 et 4,5 sur le survol ; voile 8 %)', () => {
+  assert.equal(BLANC_MIN, 4.5);
   assert.equal(SOMBRE_BLANC, 5.5);
-  assert.equal(CLAIR_L, 0.7);
-  assert.deepEqual(CLAIR_H, [55, 115]);
+  assert.equal(TEXTE_FONCE, 7);
+  assert.equal(TEXTE_FONCE_SURVOL, 4.5);
   assert.equal(VOILE_BLANC, 0.08);
 });
 
-test('Pleins : classe des six emplacements d\'Orbe Café', () => {
-  for (const [, [scale, classe]] of Object.entries(EMPLACEMENTS)) assert.equal(classePlein(stepsOf(scale)[8]), classe, scale);
+test('Pleins : classe des six emplacements d\'Orbe Café (primaire et accent par la règle, statuts figés)', () => {
+  for (const [slot, [scale, classe]] of Object.entries(EMPLACEMENTS)) {
+    if (STATUTS.includes(slot)) assert.equal(STATUTS_FIGES[slot].classe, classe, slot);
+    else assert.equal(classePlein(stepsOf(scale)), classe, scale);
+  }
 });
 
 test('Pleins : cas limites fictifs', () => {
-  assert.equal(classePlein('#ffffff'), 'moyen', 'blanc : sans teinte mesurable');
-  assert.equal(classePlein('#000000'), 'sombre');
-  assert.equal(classePlein('#ffe14d'), 'clair', 'jaune clair');
-  assert.equal(classePlein('#8a6a00'), 'moyen', 'jaune trop foncé pour être clair');
-  assert.equal(classePlein('#4dd2ff'), 'moyen', 'clair mais hors teinte');
+  const c = (/** @type {string} */ hex) => classePlein(generateScale('t', hex).steps);
+  assert.equal(c('#ffffff'), 'clair', 'blanc : pas 12 à 13,01 sur le pas 9');
+  assert.equal(c('#000000'), 'sombre');
+  assert.equal(c('#ffe14d'), 'clair', 'jaune clair');
+  assert.equal(c('#8a6a00'), 'soutenu', 'blanc entre 4,5 et 5,5');
+  assert.equal(c('#4dd2ff'), 'clair', 'cyan clair : 7,41 sur le pas 9');
+  assert.equal(c('#9d5bd2'), 'moyen', 'ni blanc 4,5 ni pas 12 à 7');
 });
 
 test('Pleins : voile blanc 8 % recalculé avec culori (sRGB)', () => {
@@ -224,7 +236,7 @@ test('Pleins : les 42 rôles se résolvent vers les hex attendus', () => {
 
 test('M0 une autre marque se branche sans toucher aux rôles (témoin fictif, sombre)', () => {
   const g = generateScale('temoin', '#4a2a80');
-  assert.equal(classePlein(g.steps[8]), 'sombre');
+  assert.equal(classePlein(g.steps), 'sombre');
   const statuts = Object.fromEntries(STATUTS.map((s) => [s, { scale: s, steps: stepsOf(s) }]));
   const m = marqueTokens({ primaire: { scale: 'temoin', steps: g.steps }, accent: { scale: 'temoin', steps: g.steps }, statuts, description: 'témoin fictif' });
   const echelle = { couleur: { $type: 'color', temoin: Object.fromEntries(g.steps.map((hex, i) => [String(i + 1), { $value: { colorSpace: 'srgb', components: [0, 0, 0], hex } }])) } };

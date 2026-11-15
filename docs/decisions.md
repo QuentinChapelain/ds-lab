@@ -18,9 +18,9 @@ Treize décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'es
 - **Conséquence** : une marque qui échoue est refusée avant d'entrer.
 
 ### D04
-- **Décision** : pleins en trois cas. Sombre : couleur exacte, texte blanc, survol par voile blanc. Moyen : pas 11, texte blanc, survol au pas 12. Clair : couleur exacte, texte au pas 12, survol au pas 10.
-- **Raison** : lisibilité jugée sur image ; seuil du cas sombre et seuils du cas clair encore à calibrer (hypothèses).
-- **Conséquence** : sur une marque moyenne, le bouton ne porte pas la couleur exacte du client.
+- **Décision** : pleins du primaire et de l'accent, lus sur l'échelle, dans cet ordre. 1. Blanc ≥ 4,5 sur le pas 9 : couleur exacte, texte blanc ; survol par voile blanc si le blanc atteint 5,5 (sombre), sinon au pas 10, plus foncé (soutenu). 2. Sinon, pas 12 ≥ 7 sur le pas 9 et ≥ 4,5 sur le pas 10 : couleur exacte, texte au pas 12, survol au pas 10 (clair). 3. Sinon : pas 11, texte blanc, survol au pas 12 (moyen). Les quatre statuts gardent leur bouton d'avant l'étape 4, figé dans `src/tokens/pleins.js`. Aucun forçage de la couleur exacte.
+- **Raison** : lisibilité jugée sur image le 15/11/2026 ; seuil 7 : un jaune saturé à 7,18, une turquoise à 7,19 et un vert à 7,22 jugés bons, 6,57 et 5,33 jugés mauvais. L'accessibilité est une obligation légale : pas d'option hors garantie.
+- **Conséquence** : la couleur exacte du client est sur le bouton dès qu'un texte lisible s'y pose ; sinon le bouton prend le pas 11. Statuts figés pour que la couche marque d'Orbe Café reste identique ; le bouton d'avertissement garde un texte foncé à 5,77 (`KNOWN_ISSUES.md`).
 
 ### D05
 - **Décision** : primaire = ce qui se clique ; accent = identité, rare, jamais porteur d'un sens ; sans accent saisi, repli sur un neutre.

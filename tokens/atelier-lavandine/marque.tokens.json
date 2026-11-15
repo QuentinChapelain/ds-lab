@@ -2,7 +2,7 @@
   "$description": "Emplacements de marque de Atelier Lavandine, écrits par la saisie depuis entree.json. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers marque.<emplacement>.* ; chaque emplacement pointe vers une échelle (générées dans echelles.tokens.json, communes dans tokens/orbe-cafe/), et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9.",
   "marque": {
     "$type": "color",
-    "$description": "Emplacements de marque : primaire et accent (12 pas, plein, plein survolé, texte sur plein), statuts (plein, plein survolé, texte sur plein). Règle des pleins en trois cas, lue sur le pas 9 : sombre, moyen, clair.",
+    "$description": "Emplacements de marque : primaire et accent (12 pas, plein, plein survolé, texte sur plein), statuts (plein, plein survolé, texte sur plein). Règle des pleins en trois cas, lue sur le pas 9 : sombre, moyen, clair. Variante soutenue du cas sombre (blanc entre 4,5 et 5,5 sur le pas 9) : survol au pas 10.",
     "primaire": {
       "1": {
         "$value": "{couleur.primaire.1}",
@@ -52,20 +52,20 @@
         "$value": "{couleur.primaire.12}",
         "$description": "pas 12 de l'échelle primaire"
       },
-      "$description": "Primaire (actions) : échelle primaire, plein moyen.",
+      "$description": "Primaire (actions) : échelle primaire, plein soutenu.",
       "$extensions": {
         "ds-lab.plein": {
-          "classe": "moyen",
-          "regle": "moyen : plein = pas 11, texte blanc, survol = pas 12"
+          "classe": "soutenu",
+          "regle": "soutenu (blanc ≥ 4,5 et < 5,5 sur le pas 9) : plein = pas 9, texte blanc, survol = pas 10"
         }
       },
       "plein": {
-        "$value": "{couleur.primaire.11}",
-        "$description": "plein : pas 11"
+        "$value": "{couleur.primaire.9}",
+        "$description": "plein : pas 9, couleur exacte"
       },
       "plein-survol": {
-        "$value": "{couleur.primaire.12}",
-        "$description": "plein survolé : pas 12"
+        "$value": "{couleur.primaire.10}",
+        "$description": "plein survolé : pas 10, plus foncé"
       },
       "sur-plein": {
         "$value": "{couleur.blanc}",
@@ -125,7 +125,7 @@
       "$extensions": {
         "ds-lab.plein": {
           "classe": "clair",
-          "regle": "clair, jaune ou orangé : plein = pas 9, texte = pas 12, survol = pas 10"
+          "regle": "clair (pas 12 ≥ 7 sur le pas 9 et ≥ 4,5 sur le pas 10) : plein = pas 9, texte = pas 12, survol = pas 10"
         }
       },
       "plein": {

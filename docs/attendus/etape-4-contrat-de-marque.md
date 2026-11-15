@@ -43,3 +43,12 @@ Ajouts :
 - Table du lot 3 : une colonne par marque ; pour chacune, la classe selon le générateur, la classe selon la règle des pleins, et si la couleur exacte du client apparaît sur le bouton.
 - Lot 5 : attend un complément d'attendu.
 - Lot 6 (les 12 échecs checkValise d'Orbe Café) retiré de la séance ; la dette reste dans KNOWN_ISSUES.md.
+
+## Décisions sur image
+
+Quentin, 15/11/2026, de 13 h 18 à 13 h 48.
+
+- Règle des pleins, pour le primaire et l'accent, lue sur l'échelle, dans cet ordre : 1. blanc ≥ 4,5 sur le pas 9 : couleur exacte, texte blanc ; survol par voile blanc si blanc ≥ 5,5, sinon au pas 10, plus foncé. 2. Sinon, pas 12 ≥ 7 sur le pas 9 et ≥ 4,5 sur le pas 10 : couleur exacte, texte au pas 12, survol au pas 10. 3. Sinon : pas 11, texte blanc, survol au pas 12. Le seuil 7 remplace la condition de clarté et de teinte.
+- Les quatre statuts gardent leur bouton actuel, figé ; Orbe Café reste identique octet par octet.
+- Aucun forçage : l'option « forcer la couleur exacte » du lot 5 est retirée, l'accessibilité est une obligation légale. Au lot 4, la colonne « forçable hors garantie » devient « hors contrat » : texte posé sur une image.
+- Lot 3 bis : D04, DS1 et KNOWN_ISSUES mis à jour, calibrage relancé.

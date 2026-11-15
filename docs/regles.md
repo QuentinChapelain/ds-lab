@@ -4,7 +4,7 @@ Dix règles, chacune avec sa raison et son contrôle. Une règle sans contrôle 
 
 | | Règle | Raison | Contrôle |
 |---|---|---|---|
-| DS1 | Sur un plein moyen, jamais de texte foncé | Conforme au ratio, mais le texte vibre | `npm run contraste` |
+| DS1 | Sur un plein, texte foncé seulement s'il atteint 7:1 sur le plein (et 4,5:1 sur le survol) ; sinon texte blanc | En dessous, conforme au ratio, mais le texte vibre | Appliquée à la saisie, `npm run saisie` (D04) ; statut avertissement hors règle, en dette |
 | DS2 | L'anneau de focus se pose sur le fond de page, décalé de 2 px, jamais sur le plein | Sur une marque moyenne, anneau et plein ont la même couleur | `npm run contraste` |
 | DS3 | Le parent porte l'espace, l'enfant n'a pas de marge | Pas de fusion de marges, responsive simple | Tests des planches (`test/espacements-planche.test.js`) |
 | DS4 | L'écart entre composants vaut au moins le double de l'écart interne | On doit voir à quel champ appartient un message | `npm run espacements` |
