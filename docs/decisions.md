@@ -1,6 +1,6 @@
 # Décisions
 
-Douze décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/orbe-cafe/`.
+Treize décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/orbe-cafe/`.
 
 ### D01
 - **Décision** : les rôles se nomment propriété.sens.emphase.état.
@@ -19,7 +19,7 @@ Douze décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est
 
 ### D04
 - **Décision** : pleins en trois cas. Sombre : couleur exacte, texte blanc, survol par voile blanc. Moyen : pas 11, texte blanc, survol au pas 12. Clair : couleur exacte, texte au pas 12, survol au pas 10.
-- **Raison** : lisibilité jugée sur image ; seuils du cas clair encore à calibrer.
+- **Raison** : lisibilité jugée sur image ; seuil du cas sombre et seuils du cas clair encore à calibrer (hypothèses).
 - **Conséquence** : sur une marque moyenne, le bouton ne porte pas la couleur exacte du client.
 
 ### D05
@@ -61,3 +61,8 @@ Douze décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est
 - **Décision** : les tailles de texte restent en px pour l'instant.
 - **Raison** : l'outil de migration n'indexe pas le rem.
 - **Conséquence** : voir `KNOWN_ISSUES.md`.
+
+### D13
+- **Décision** : une marque entre par un fichier d'entrée et `npm run saisie` ; une couleur saisie donne une échelle générée (pas 9 = couleur saisie), le nom d'une échelle existante est réservé à Orbe Café. Trois motifs de refus : entrée invalide, `checkValise` en échec sur une échelle générée, paire de rôles sous son seuil.
+- **Raison** : D03, la paire est vérifiée à la saisie ; Orbe Café garde ses échelles écrites à la main.
+- **Conséquence** : une marque refusée n'écrit rien. Primaire grise, primaire proche d'un statut et accent proche du primaire ne sont pas des refus : ils sont montrés dans la table de calibrage.

@@ -1,0 +1,120 @@
+// @ts-check
+/**
+ * Étape 4, séance a, lot 1 : saisie d'une marque (docs/attendus/etape-4-contrat-de-marque.md).
+ *
+ * Attendus écrits à la main avant le code (15/11/2026) :
+ *   S1 Orbe Café passe par la saisie sans changer de valeur : tokens/orbe-cafe/entree.json nomme les échelles
+ *      existantes bleu et terre ; aucune échelle n'est générée ; marque.tokens.json est réécrit à l'identique,
+ *      octet par octet. Empreinte du fichier versionné, commande : git show b5783d3:tokens/orbe-cafe/marque.tokens.json | shasum -a 256
+ *      → b479882e1a159e9c429805f44eefd7178e569d8f833edbacb5c6102c57016461.
+ *   S2 Motif « entrée invalide » : nom, primaire ou polices manquants ; couleur qui n'est pas #rrggbb ;
+ *      clé inconnue ; échelle existante hors d'Orbe Café (réservée) ; échelle inconnue.
+ *   S3 Motif « checkValise » : primaire #00ccff. Essai avant le code (generateScale, script d'essai hors dépôt) :
+ *      pas 7 = pas 9 = #00ccff → « primaire : doublon, pas 7 = pas 9 (#00ccff) ».
+ *   S4 Motif « contraste » : primaire #cc9900, plein clair (pas 9 #cc9900, pas 10 #bb8c00, pas 12 #402e01).
+ *      culori, wcagContrast('#402e01', '#bb8c00') = 4,2655 → texte.sur-interactif sur fond.interactif.fort.survol,
+ *      4,27:1 < 4,5:1.
+ *   S5 Sans accent : repli sur le neutre (D05) ; marque.accent.* → couleur.neutre.* ; texte.accent = texte.secondaire
+ *      = #6d675b (neutre 11).
+ *   S6 Commande : sans fichier → code 2 ; refusée → code 1, motif sur la sortie d'erreur, rien d'écrit ;
+ *      acceptée → code 0, marque.tokens.json et echelles.tokens.json écrits, contrôle de contraste lancé (0 paire en échec).
+ *   S7 npm run contraste -- --marque tokens/orbe-cafe/ : même sortie que sans l'option.
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync, mkdtempSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+import { wcagContrast } from 'culori';
+import { saisir, serialiser, COMMUN } from '../src/tokens/saisie.js';
+import { resolveRoles } from '../src/tokens/roles.js';
+
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
+const ORBE = join(ROOT, 'tokens', 'orbe-cafe');
+const ORBE_SHA = 'b479882e1a159e9c429805f44eefd7178e569d8f833edbacb5c6102c57016461';
+const POLICES = { titre: ['Georgia', 'serif'], texte: ['Arial', 'sans-serif'] };
+const AILLEURS = join(tmpdir(), 'ds-lab-ailleurs');
+const sha = (/** @type {string} */ s) => createHash('sha256').update(s).digest('hex');
+
+test('S1 Orbe Café : échelles existantes, marque.tokens.json identique octet par octet', () => {
+  const entree = JSON.parse(readFileSync(join(ORBE, 'entree.json'), 'utf8'));
+  assert.deepEqual(entree.primaire, { echelle: 'bleu' });
+  assert.deepEqual(entree.accent, { echelle: 'terre' });
+  const r = saisir(entree, { dossier: ORBE });
+  assert.deepEqual(r.motifs, []);
+  assert.equal(r.echelles, null, 'aucune échelle générée');
+  const texte = serialiser(r.marque);
+  assert.equal(sha(texte), ORBE_SHA);
+  assert.equal(texte, readFileSync(join(ORBE, 'marque.tokens.json'), 'utf8'));
+});
+
+test('S2 entrée invalide : motifs', () => {
+  const motifs = (/** @type {any} */ e, dossier = AILLEURS) => saisir(e, { dossier }).motifs;
+  assert.deepEqual(motifs({}), ['entrée invalide : nom manquant', 'entrée invalide : primaire manquante', 'entrée invalide : polices manquantes']);
+  assert.deepEqual(motifs([]), ['entrée invalide : objet JSON attendu']);
+  const ok = { nom: 'Essai', primaire: '#2b4c7e', polices: POLICES };
+  assert.deepEqual(motifs(ok), []);
+  assert.deepEqual(motifs({ ...ok, primaire: '#12345' }), ['entrée invalide : primaire, couleur #rrggbb ou { "echelle": nom } attendue']);
+  assert.deepEqual(motifs({ ...ok, accent: 'bleu' }), ['entrée invalide : accent, couleur #rrggbb ou { "echelle": nom } attendue']);
+  assert.deepEqual(motifs({ ...ok, accnet: '#2b4c7e' }), ['entrée invalide : clé inconnue accnet']);
+  assert.deepEqual(motifs({ ...ok, primaire: { echelle: 'bleu' } }), ['entrée invalide : primaire, échelle existante réservée à Orbe Café']);
+  assert.deepEqual(motifs({ ...ok, accent: { echelle: 'violet' } }, ORBE), ['entrée invalide : accent, échelle inconnue violet']);
+  assert.deepEqual(motifs({ ...ok, polices: { titre: ['Georgia'] } }), ['entrée invalide : polices.texte, liste de noms de familles attendue']);
+  assert.deepEqual(motifs({ ...ok, polices: { titre: [], texte: ['Arial'] } }), ['entrée invalide : polices.titre, liste de noms de familles attendue']);
+});
+
+test('S3 checkValise en échec sur l\'échelle générée : refus', () => {
+  const r = saisir({ nom: 'Essai', primaire: '#00ccff', polices: POLICES }, { dossier: AILLEURS });
+  assert.deepEqual(r.motifs, ['checkValise : primaire : doublon, pas 7 = pas 9 (#00ccff)']);
+});
+
+test('S4 paire de rôles en échec : refus', () => {
+  assert.equal(Math.round(wcagContrast('#402e01', '#bb8c00') * 100) / 100, 4.27);
+  const r = saisir({ nom: 'Essai', primaire: '#cc9900', polices: POLICES }, { dossier: AILLEURS });
+  assert.deepEqual(r.motifs, ['contraste : texte.sur-interactif sur fond.interactif.fort.survol, 4,27:1 < 4,5:1']);
+  const pas = r.echelles?.couleur.primaire;
+  assert.deepEqual([pas['9'].$value.hex, pas['10'].$value.hex, pas['12'].$value.hex], ['#cc9900', '#bb8c00', '#402e01']);
+});
+
+test('S5 sans accent : repli sur le neutre (D05)', () => {
+  const r = saisir({ nom: 'Essai', primaire: '#2b4c7e', polices: POLICES }, { dossier: AILLEURS });
+  assert.deepEqual(r.motifs, []);
+  assert.equal(r.marque.marque.accent['9'].$value, '{couleur.neutre.9}');
+  assert.deepEqual(Object.keys(r.echelles?.couleur ?? {}).filter((k) => !k.startsWith('$')), ['primaire']);
+  const roles = resolveRoles(r.commun.semantique, r.commun.primitives, r.commun.statuts, r.marque, r.echelles);
+  assert.equal(roles.get('texte.accent')?.hex, '#6d675b');
+  assert.equal(roles.get('texte.accent')?.hex, roles.get('texte.secondaire')?.hex);
+});
+
+/** @param {string[]} args */
+const run = (...args) => spawnSync(process.execPath, args, { cwd: ROOT, encoding: 'utf8' });
+
+test('S6 commande saisie : codes de sortie, motif, fichiers', () => {
+  assert.equal(run('src/cli/saisie.js').status, 2);
+  const refus = mkdtempSync(join(tmpdir(), 'ds-lab-saisie-'));
+  writeFileSync(join(refus, 'entree.json'), JSON.stringify({ nom: 'Essai', primaire: '#cc9900', polices: POLICES }));
+  const r1 = run('src/cli/saisie.js', join(refus, 'entree.json'));
+  assert.equal(r1.status, 1);
+  assert.match(r1.stderr, /marque refusée : Essai/);
+  assert.match(r1.stderr, /contraste : texte\.sur-interactif sur fond\.interactif\.fort\.survol, 4,27:1 < 4,5:1/);
+  assert.deepEqual(readdirSync(refus), ['entree.json'], 'rien d\'écrit');
+  const ok = mkdtempSync(join(tmpdir(), 'ds-lab-saisie-'));
+  writeFileSync(join(ok, 'entree.json'), JSON.stringify({ nom: 'Essai', primaire: '#2b4c7e', accent: '#c8553d', polices: POLICES }));
+  const r2 = run('src/cli/saisie.js', join(ok, 'entree.json'));
+  assert.equal(r2.status, 0, r2.stderr);
+  assert.match(r2.stdout, /marque acceptée : Essai/);
+  assert.match(r2.stdout, /0 paire en échec/);
+  assert.ok(existsSync(join(ok, 'marque.tokens.json')) && existsSync(join(ok, 'echelles.tokens.json')));
+});
+
+test('S7 contraste --marque tokens/orbe-cafe/ : même sortie que sans l\'option', () => {
+  const a = run('src/cli/contraste.js');
+  const b = run('src/cli/contraste.js', '--marque', 'tokens/orbe-cafe/');
+  assert.equal(a.status, 0);
+  assert.equal(b.status, 0);
+  assert.equal(b.stdout, a.stdout);
+  assert.equal(COMMUN, ORBE + '/');
+});

@@ -15,8 +15,10 @@ Migration d'un site existant (phases 2 et 3 du README)
 
 Jetons d'une marque (phase 1)
 
-  primitives ──► marque ──► sémantique (rôles) ──► paires
-       └────────────┴──────────── src/tokens/ ────────┘
+  entree.json ──► npm run saisie ──► échelles générées ──┐
+                  refus avec motif                       ▼
+  primitives ──────────────────────────────────────► marque ──► sémantique (rôles) ──► paires
+       └───────────────────────── src/tokens/ ──────────┴──────────────────────────────┘
                                       │
                ┌──────────────────────┴───────────────────────┐
          contrôles, sortie 0 ou 1                      planches HTML
@@ -49,7 +51,7 @@ Chaque commande npm a son point d'entrée dans `src/cli/`. Les sorties d'audit e
 
 | Dossier | Contenu |
 |---|---|
-| `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive et leurs trois planches HTML, générées |
+| `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive et leurs trois planches HTML, générées ; couches communes lues par toutes les marques |
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles et attendus des tests de bout en bout |
 | `test/` | Tests `node --test` ; `test/helpers/` sert la marque fictive en local |
 | `config/` | Exemple de fichier de sources, à copier dans `local/` |
@@ -60,9 +62,11 @@ Chaque commande npm a son point d'entrée dans `src/cli/`. Les sorties d'audit e
 
 | Couche | Fichier | Écrit par | Lu par |
 |---|---|---|---|
+| Entrée | `tokens/orbe-cafe/entree.json`, un par marque | à la main | `npm run saisie` |
 | Primitives | `tokens/orbe-cafe/primitives.tokens.json` | à la main | `src/tokens/`, `npm run reduce` avec `--tokens` |
 | Statuts | `tokens/orbe-cafe/statuts.tokens.json` | `src/cli/statuts.js`, si `checkValise` passe | marque, rôles |
-| Marque | `tokens/orbe-cafe/marque.tokens.json` | `src/cli/emplacements.js` | rôles, styles de texte |
+| Échelles générées | `echelles.tokens.json` à côté de l'entrée (aucune pour Orbe Café) | `npm run saisie` | marque, `npm run contraste` avec `--marque` |
+| Marque | `tokens/orbe-cafe/marque.tokens.json` | `npm run saisie` (`src/cli/saisie.js`) | rôles, styles de texte |
 | Sémantique (rôles) | `tokens/orbe-cafe/semantique.tokens.json` | à la main | les trois contrôles, les planches |
 | Paires | `tokens/orbe-cafe/paires.json` | à la main | `npm run contraste`, planche des rôles |
 
@@ -79,12 +83,13 @@ Changer de marque, c'est changer la couche marque ; les rôles restent les même
 | `npm run verify` | Comparer une page à sa référence (pixels, arbre d'accessibilité) |
 | `npm run login` | Enregistrer une session dans `.auth/` |
 | `npm run demo` | Servir la marque fictive en local |
-| `npm run contraste` | Paires de rôles ; sort en 1 si une paire est sous son seuil sans exception écrite |
+| `npm run saisie` | Saisir une marque depuis son entrée : échelles, couche marque, contraste ; sort en 1 si elle est refusée, avec motif |
+| `npm run contraste` | Paires de rôles ; sort en 1 si une paire est sous son seuil sans exception écrite ; `--marque <dossier>` pour une autre marque |
 | `npm run espacements` | Écarts par relation, valeurs en étroit, règles de proximité ; sort en 1 si l'une échoue |
 | `npm run typo` | Règles des styles de texte ; sort en 1 si l'une échoue |
 | `npm test` | Tous les tests |
 
-Générateurs sans commande npm, lancés avec `node` : `src/cli/statuts.js`, `src/cli/emplacements.js`, `src/cli/planche.js`, `src/cli/planche-espaces.js`, `src/cli/planche-typo.js`.
+Générateurs sans commande npm, lancés avec `node` : `src/cli/statuts.js`, `src/cli/planche.js`, `src/cli/planche-espaces.js`, `src/cli/planche-typo.js`.
 
 ## Invariants
 
@@ -95,6 +100,7 @@ Chacun est tenu par le code ou par un test, cité.
 - Un rôle de couleur ou d'espacement est un alias vers la couche marque ou vers une primitive, jamais une valeur brute (`test/roles-semantique.test.js`, `test/espacements-semantique.test.js`). Dans un style de texte, police, taille et graisse sont des alias ; interligne et interlettrage sont écrits en nombre (`test/typo-jetons.test.js`).
 - Les jetons suivent le format DTCG 2025.10 (`test/roles-semantique.test.js`).
 - Les trois contrôles sortent en 0 ou en 1 ; un lot les laisse à 0.
+- Une marque refusée par `npm run saisie` n'écrit rien ; la couche marque d'Orbe Café en sort identique, octet par octet (`test/saisie.test.js`).
 - Aucun nom réel dans un fichier versionné, un chemin ou un message de commit (`test/noms-interdits.test.js`).
 - Rien de `local/` ni de `.auth/` n'est versionné (`.gitignore`).
 - Chaque commande et chaque chemin cités dans la documentation existent (`test/derive-docs.test.js`).

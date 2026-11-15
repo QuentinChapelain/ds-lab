@@ -22,7 +22,7 @@ Validées par Quentin le 15/11/2026.
 Constats de la confrontation :
 
 - [F] Générer l'échelle d'Orbe Café depuis son pas 9 change 11 pas sur 12 de bleu, terre et succes (et le texte sur plein de terre) : « sans changer de valeur » demande qu'une entrée puisse nommer une échelle existante.
-- [F] Aucune marque n'est refusée aujourd'hui : sur dix primaires d'essai (les quatre témoins, gris, cyan clair, quasi noir, rouge proche du statut erreur, jaune vif, vert clair), checkValise et le contrôle de contraste passent par construction. Les motifs de refus sont à poser.
+- [F] Aucune commande ne refuse une marque aujourd'hui. Sur dix primaires d'essai (les quatre témoins, gris, cyan clair, quasi noir, rouge proche du statut erreur, jaune vif, vert clair), checkValise et le contrôle de contraste passent. Correction du lot 1 : ce n'est pas par construction ; sur une grille de 216 couleurs (canaux 00, 33, 66, 99, cc, ff), 14 échouent à checkValise et 3 au contraste. Les motifs de refus sont à poser.
 - [F] Deux règles disent « clair » différemment : le générateur (contraste du pas 9 sur blanc < 3,2 : plein clair, texte foncé) et la règle des pleins (clarté et teinte jaune ou orangée). Un cyan clair, un vert clair ou le témoin T-moyenne sont « plein clair » pour le générateur et « moyen » pour la règle : le bouton prend le pas 11 et la couleur exacte du client n'y apparaît pas.
 - [F] Sans accent, le repli sur le neutre (D05) donne à texte.accent la couleur de texte.secondaire (neutre 11).
 

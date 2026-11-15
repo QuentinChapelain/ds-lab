@@ -7,7 +7,7 @@
  *
  * Règle des pleins en trois cas (décision du 15/11/2026), déclarée dans la couche marque, jamais dans les rôles ;
  * classe lue sur le pas 9 de l'échelle :
- *   sombre : blanc ≥ 5,5 sur le pas 9 → plein = pas 9, texte blanc, survol = pas 9 + voile blanc 8 % ;
+ *   sombre : blanc ≥ 5,5 sur le pas 9 [H] → plein = pas 9, texte blanc, survol = pas 9 + voile blanc 8 % ;
  *   clair  : sinon, clarté OKLCH ≥ 0,70 et teinte OKLCH dans [55°, 115°] (jaune ou orangé) [H]
  *            → plein = pas 9, texte = pas 12, survol = pas 10 ;
  *   moyen  : le reste → plein = pas 11, texte blanc, survol = pas 12.
@@ -123,7 +123,7 @@ const prim = load('primitives.tokens.json').couleur;
 const stat = load('statuts.tokens.json').couleur;
 const stepsOf = (/** @type {string} */ s) => STEPS.map((k) => (prim[s] ?? stat[s])[k].$value.hex);
 
-test('Pleins : seuils du critère (sombre 5,5 ; clair L ≥ 0,70 et h dans [55°, 115°] [H] ; voile 8 %)', () => {
+test('Pleins : seuils du critère (sombre 5,5 [H] ; clair L ≥ 0,70 et h dans [55°, 115°] [H] ; voile 8 %)', () => {
   assert.equal(SOMBRE_BLANC, 5.5);
   assert.equal(CLAIR_L, 0.7);
   assert.deepEqual(CLAIR_H, [55, 115]);

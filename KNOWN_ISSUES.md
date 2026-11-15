@@ -9,5 +9,6 @@
 - Primitives espace 0, 8, 12 et 64 sans rôle, à revoir après les composants.
 - Règle DS10 sans contrôle (`docs/regles.md`).
 - `checkValise` : 12 échecs sur les échelles de `primitives.tokens.json` (écart de teinte, contraste non croissant, texte sur le pas 10) ; les statuts générés passent.
-- Seuils du cas « clair » de la règle des pleins : hypothèse, à calibrer sur plus de marques.
+- Seuil du cas « sombre » (blanc ≥ 5,5 sur le pas 9) et seuils du cas « clair » de la règle des pleins : hypothèses, à calibrer sur plus de marques.
+- Couches communes (neutres, statuts, rôles, paires, espaces, typo) lues dans `tokens/orbe-cafe/` par toutes les marques, mêlées aux échelles d'Orbe Café : à séparer en séance b.
 - Trois fichiers source au-delà de 1 000 lignes ; ni lint ni CI ; revue de code prévue après l'étape 4.

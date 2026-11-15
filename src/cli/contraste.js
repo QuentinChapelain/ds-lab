@@ -4,15 +4,26 @@
  * Séance 3a, T3 : contrôle des paires de rôles d'Orbe Café.
  * Sort en 1 si une paire est sous son seuil sans exception écrite, sinon en 0.
  * Le contrat par échelle (contractOf) est affiché pour information ; il ne change pas le code de sortie.
- * Usage : npm run contraste [-- --paires <fichier>]
+ * Étape 4, séance a : --marque <dossier> contrôle la marque de ce dossier (marque.tokens.json, et echelles.tokens.json
+ * s'il existe) avec les couches communes de tokens/orbe-cafe/ ; sans l'option, Orbe Café.
+ * Usage : npm run contraste [-- --paires <fichier>] [--marque <dossier>]
  */
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { loadRoles, contrat } from '../tokens/roles.js';
 
-const { values } = parseArgs({ options: { paires: { type: 'string' } } });
+const { values } = parseArgs({ options: { paires: { type: 'string' }, marque: { type: 'string' } } });
 const dir = fileURLToPath(new URL('../../tokens/orbe-cafe/', import.meta.url));
-const c = contrat(loadRoles(dir, { paires: values.paires }));
+const echelles = values.marque ? join(values.marque, 'echelles.tokens.json') : undefined;
+const c = contrat(
+  loadRoles(dir, {
+    paires: values.paires,
+    marque: values.marque ? join(values.marque, 'marque.tokens.json') : undefined,
+    echelles: echelles && existsSync(echelles) ? [echelles] : [],
+  }),
+);
 
 const fr = (/** @type {number} */ n) => n.toFixed(2).replace('.', ',');
 const plural = (/** @type {number} */ n, /** @type {string} */ one, /** @type {string} */ many) => `${n} ${n > 1 ? many : one}`;

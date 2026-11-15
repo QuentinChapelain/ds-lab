@@ -28,7 +28,8 @@ npm run login                                                enregistrer une ses
 npm run verify -- <adresse> --reference <dossier> [--save] [--sources <fichier>]   vérifier qu'une page n'a pas bougé (pixels, arbre d'accessibilité) ; avec --sources, ses éléments tiers sont masqués, comme dans les références de reduce --sources
 npm run apply  -- --modifications <fichier> --racine <dossier> [--essai]   appliquer au CSS la part tranchée
 npm run demo   -- [--racine <dossier>]                       servir la marque fictive en local
-npm run contraste   -- [--paires <fichier>]                  contrôler les paires de rôles de couleur
+npm run saisie     -- <entree.json>                          saisir une marque : échelles, couche marque, contraste ; refus avec motif
+npm run contraste   -- [--paires <fichier>] [--marque <dossier>]   contrôler les paires de rôles de couleur
 npm run espacements -- [--semantique <fichier>]              contrôler les espacements par relation
 npm run typo        -- [--semantique <fichier>] [--primitives <fichier>] [--marque <fichier>]   contrôler les styles de texte
 npm test
@@ -74,6 +75,18 @@ Changer de marque, c'est changer la couche marque : les rôles restent les même
 - `npm run typo` : règles des styles de texte (hauteurs de ligne, hiérarchie en large et en étroit) ; les primitives sans rôle sont affichées.
 
 Trois planches montrent la cible en situation : `tokens/orbe-cafe/roles.html`, `tokens/orbe-cafe/espacements.html`, `tokens/orbe-cafe/typo.html`. Les règles et leurs raisons sont dans `docs/regles.md`, les décisions dans `docs/decisions.md`.
+
+## Étape 4 : saisir une marque
+
+Une marque entre par un fichier, `tokens/orbe-cafe/entree.json` pour Orbe Café : un nom, une couleur primaire, un accent facultatif et les noms des familles de polices (titre, texte). `npm run saisie -- <entree.json>` génère les échelles (pas 9 = couleur saisie), écrit la couche marque à côté de l'entrée, puis lance `npm run contraste` sur cette marque.
+
+| Sortie | Quand | Ce qui est écrit |
+|---|---|---|
+| 0 | Marque acceptée | `marque.tokens.json`, et `echelles.tokens.json` si une échelle est générée |
+| 1 | Marque refusée : entrée invalide, `checkValise` en échec sur une échelle générée, ou paire de rôles sous son seuil | Rien ; chaque motif est affiché |
+| 2 | Aucun fichier donné | Rien |
+
+Sans accent, l'accent se replie sur le neutre (D05). Les couches communes (neutres, statuts, rôles, paires, espaces, typo) sont lues dans `tokens/orbe-cafe/`. Orbe Café nomme ses échelles existantes (`{ "echelle": "bleu" }`), forme réservée à elle seule : sa couche marque est réécrite à l'identique. Les règles et la raison sont dans D13 (`docs/decisions.md`).
 
 ## Glossaire
 
@@ -140,7 +153,7 @@ Trois planches montrent la cible en situation : `tokens/orbe-cafe/roles.html`, `
 | Dossier | Contenu |
 |---|---|
 | `src/` | Audit, réduction, simulation, rapports |
-| `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive (primitives, marque, rôles, paires) et leurs planches |
+| `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive (entrée, primitives, marque, rôles, paires) et leurs planches ; couches communes à toutes les marques |
 | `docs/` | Règles du design system, décisions, attendus des prochains lots |
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles, attendus |
 | `test/` | Tests, dont `noms-interdits` qui refuse tout nom réel dans un fichier ou un message de commit |

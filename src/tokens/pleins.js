@@ -2,7 +2,7 @@
 /**
  * Séance 3b : règle des pleins en trois cas, déclarée dans la couche marque (jamais dans les rôles).
  * La classe se lit sur le pas 9 de l'échelle :
- *   sombre : blanc ≥ 5,5 sur le pas 9 → plein = pas 9, texte blanc, survol = pas 9 + voile blanc 8 % ;
+ *   sombre : blanc ≥ 5,5 sur le pas 9 [H] → plein = pas 9, texte blanc, survol = pas 9 + voile blanc 8 % ;
  *   clair  : sinon, clarté OKLCH ≥ 0,70 et teinte OKLCH dans [55°, 115°] (jaune ou orangé) [H]
  *            → plein = pas 9 (couleur exacte), texte = pas 12, survol = pas 10 ;
  *   moyen  : le reste → plein = pas 11, texte blanc, survol = pas 12.
@@ -11,7 +11,7 @@
 import { oklch, wcagContrast, interpolate, formatHex } from 'culori';
 import { colorValue } from './primitives.js';
 
-/** Seuil du cas sombre : contraste du blanc sur le pas 9. */
+/** Seuil du cas sombre : contraste du blanc sur le pas 9 [H] (étape 4 : hypothèse, au même titre que le cas clair). */
 export const SOMBRE_BLANC = 5.5;
 /** Seuils du cas clair, en OKLCH [H]. */
 export const CLAIR_L = 0.7;
