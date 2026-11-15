@@ -1,6 +1,6 @@
 # Contrat de marque
 
-Tout part de la couleur du client : chaque rôle prend dans sa palette le pas qui convient. Le client remplit un fichier d'entrée ; `npm run saisie -- <entree.json>` génère le reste, ou refuse la marque avec son motif et n'écrit rien (D13, `docs/decisions.md`).
+Tout part de la couleur du client : chaque rôle prend dans sa palette le pas qui convient. Le client remplit un fichier d'entrée ; `npm run saisie -- <entree.json>` génère le reste, ou refuse la marque avec son motif et n'écrit rien (D13, `docs/decisions.md`). Une panne de l'outil (fichier illisible, couche commune cassée, Chromium qui ne se lance pas) n'est pas un refus : la saisie sort en 2 et ne dit rien de la marque (D18).
 
 | Entré par le client | Généré | Refusé à la saisie | Hors contrat |
 |---|---|---|---|

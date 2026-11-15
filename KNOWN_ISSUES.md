@@ -36,6 +36,7 @@
 - `npm run espacements` et `npm run typo` ne prennent pas `--mode` : ils ne lisent pas de couleur, la largeur y est contrôlée par le contexte étroit.
 - Table des 8 marques par mode (lot 3 de l'étape 4b) : dans `local/lot-4b/` seulement, témoins compris.
 - Trois fichiers source au-delà de 1 000 lignes ; ni lint ni CI.
+- Saisie, exception à « rien n'est écrit » (D18) : le contrôle `contraste` est relancé sur les fichiers déjà écrits ; s'il ne conclut pas, ou trouve une paire en échec, la saisie sort en 2 avec les fichiers en place (`src/cli/saisie.js`). Remède (écrire à côté, contrôler, puis remplacer) renvoyé au lot de la fusion unique du contexte de marque.
 - Mode sombre : la carte (`fond.surface`, `#181818`) est jugée peu détachée de la page (`#121212`) sur image ; rapport carte sur page 1,055:1 en sombre contre 1,035:1 en clair [F], donc l'écart de teinte n'explique pas le jugement ; cause non établie [V], à reprendre à l'étape des composants.
 
 ## Revue de code du 15/11
@@ -47,7 +48,6 @@ Constats de la revue en lecture seule (commit 4341b94), filets posés par le lot
 - Une clé de `decisions.json` qui ne vise aucune ligne ni carte est ignorée sans trace : la carte de simulation est la même qu'avec aucune décision (`src/reduce/propose.js:1106`, `decisionKeyFor`) [F].
 - Une couleur de marque illisible (`#12345`, `rouge`) devient un gris rangé sur l'échelle `neutre` (règle M1) au lieu de lever en nommant l'emplacement (`src/brand/brand.js:41`, `resolveBrand`) [F].
 - Motif R9 « texte sous 4,5:1 » écrit en dur, même quand le seuil de la paire vaut 3 (`src/reduce/propose.js:734, 758` ; relu par `src/report/review.js:276, 278`) [F].
-- `npm run espacements` et `npm run typo` sortent en 1 sur une panne (fichier absent), comme sur une règle en échec, quand `contraste` sort en 2 (`src/cli/espacements.js:55`, `src/cli/typo.js:55`) [F].
 - Quatre blocs JSDoc posés au-dessus de la mauvaise fonction, si bien que `runReduce`, `buildMigration`, `renderMarkdown` et `renderReview` ne sont pas vérifiés par `@ts-check` (`src/cli/reduce.js:73`, `src/report/migration.js:166, 421`, `src/report/review.js:433`) [F].
 - Annotations en retard : 69 des 77 erreurs de TypeScript non strict viennent de types JSDoc qui n'ont pas suivi les lots, surtout dans `src/reduce/propose.js`, `src/rendered/aggregate.js` et `src/browser/simulate.js` [F].
 - Copie figée `fixtures/marque-demo/jetons/primitives.tokens.json` : `reduce --tokens` accepte sans le dire un fichier qui ne donne aucun jeton (le resolver passé tel quel en donne 0), et la copie, seule lue par les tests, masque ce cas (`src/cli/reduce.js:94`, `indexTokens` dans `src/report/migration.js:62`) [F].

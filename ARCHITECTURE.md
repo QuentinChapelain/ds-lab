@@ -22,19 +22,19 @@ Jetons d'une marque (phase 1)
                      réunis par marque.resolver.json : jeux, contextes mode et largeur
                                       │
                ┌──────────────────────┴───────────────────────┐
-         contrôles, sortie 0 ou 1                      planches HTML
+         contrôles, sortie 0, 1 ou 2                   planches HTML
          npm run contraste                             src/report/roles.js
          npm run espacements                           src/report/espacements.js
          npm run typo                                  src/report/typo.js
 ```
 
-Chaque commande npm a son point d'entrée dans `src/cli/`. Les sorties d'audit et de réduction sur un vrai site vont dans `local/`, jamais versionné.
+Chaque commande npm a son point d'entrée dans `src/cli/`. Toute commande a trois issues (D18) : 0 tout passe, 1 l'entrée a été lue et jugée (règle en échec, marque refusée avec son motif), 2 l'entrée n'a pas pu être jugée (fichier absent ou illisible, option inconnue, panne), message d'une ligne préfixé par le nom de la commande ; la garde commune est `src/cli/garde.js`. Les sorties d'audit et de réduction sur un vrai site vont dans `local/`, jamais versionné.
 
 ## src/, un dossier par ligne
 
 | Dossier | Rôle |
 |---|---|
-| `src/cli/` | Points d'entrée : un fichier par commande npm, plus les générateurs de jetons et de planches |
+| `src/cli/` | Points d'entrée : un fichier par commande npm, plus les générateurs de jetons et de planches ; `garde.js`, lancement commun et codes de sortie (D18) |
 | `src/audit/` | Orchestration d'un audit (navigateur, une session par hôte, pages, rapports) ; exécution facultative du script v1 |
 | `src/browser/` | Ce qui tourne dans le navigateur : chargement, feuilles de style, relevé du rendu, états forcés, simulation d'une table |
 | `src/declared/` | Audit du déclaré : toutes les feuilles de toutes les pages, dédoublonnées et comptées |
@@ -88,16 +88,16 @@ Changer de marque, c'est changer la couche marque ; les rôles restent les même
 | Commande | Ce qu'elle fait |
 |---|---|
 | `npm run audit` | Mesurer un site : déclaré et rendu |
-| `npm run marque` | Lire la marque d'un site avant la réduction ; ne décide rien |
+| `npm run marque` | Lire la marque d'un site avant la réduction ; ne décide rien : sort en 0, ou en 2 sur une panne |
 | `npm run reduce` | Ranger l'existant dans la cible : table, revue, consigne ; `modifications.json` avec `--tokens` |
 | `npm run apply` | Appliquer `modifications.json` aux feuilles d'une copie du site |
-| `npm run verify` | Comparer une page à sa référence (pixels, arbre d'accessibilité) |
+| `npm run verify` | Comparer une page à sa référence (pixels, arbre d'accessibilité) ; sort en 0 même si des pixels diffèrent, en 2 sur une panne |
 | `npm run login` | Enregistrer une session dans `.auth/` |
 | `npm run demo` | Servir la marque fictive en local |
-| `npm run saisie` | Saisir une marque depuis son entrée : échelles, couche marque, mode sombre, resolver, contraste dans les deux modes ; sort en 1 si elle est refusée, avec motif et mode |
-| `npm run contraste` | Paires de rôles ; sort en 1 si une paire est sous son seuil sans exception écrite ; `--marque <dossier>` pour une autre marque, `--mode clair|sombre` et `--largeur large|etroit` pour le contexte |
-| `npm run espacements` | Écarts par relation, valeurs en étroit, règles de proximité ; sort en 1 si l'une échoue |
-| `npm run typo` | Règles des styles de texte ; sort en 1 si l'une échoue |
+| `npm run saisie` | Saisir une marque depuis son entrée : échelles, couche marque, mode sombre, resolver, contraste dans les deux modes ; sort en 1 si elle est refusée, avec motif et mode, en 2 sur une panne |
+| `npm run contraste` | Paires de rôles ; sort en 1 si une paire est sous son seuil sans exception écrite, en 2 sur une panne ; `--marque <dossier>` pour une autre marque, `--mode clair|sombre` et `--largeur large|etroit` pour le contexte |
+| `npm run espacements` | Écarts par relation, valeurs en étroit, règles de proximité ; sort en 1 si l'une échoue, en 2 sur une panne |
+| `npm run typo` | Règles des styles de texte ; sort en 1 si l'une échoue, en 2 sur une panne |
 | `npm test` | Tous les tests |
 
 Générateurs sans commande npm, lancés avec `node` : `src/cli/statuts.js`, `src/cli/sombre.js`, `src/cli/calibrage.js`, `src/cli/planche.js`, `src/cli/planche-espaces.js`, `src/cli/planche-typo.js`.
