@@ -55,7 +55,7 @@ Chaque commande npm a son point d'entrée dans `src/cli/`. Les sorties d'audit e
 | `tokens/commun/` | Couches communes à toutes les marques : primitives, statuts, rôles, paires, contexte étroit |
 | `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive (entrée, échelles écrites à la main, marque, resolver) et ses trois planches HTML, générées |
 | `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/` | Trois marques fictives saisies par fichier : entrée, échelles générées, couche marque, resolver |
-| `fixtures/marque-demo/` | Pages fictives, pièges, cibles et attendus des tests de bout en bout ; `fixtures/marque-demo/jetons/primitives.tokens.json`, primitives d'Orbe Café d'avant l'étape 4b, figées comme cible de `npm run reduce` |
+| `fixtures/marque-demo/` | Pages fictives, pièges, cibles et attendus des tests de bout en bout ; `fixtures/marque-demo/jetons/primitives.tokens.json`, primitives d'Orbe Café d'avant l'étape 4b, figées comme cible de `npm run reduce` ; `fixtures/polices/`, quatre polices d'essai sous licence libre, chacune avec sa licence |
 | `test/` | Tests `node --test` ; `test/helpers/` sert la marque fictive en local |
 | `config/` | Exemple de fichier de sources, à copier dans `local/` |
 | `docs/` | Règles du design system, décisions, contrat de marque, attendus des prochains lots |
