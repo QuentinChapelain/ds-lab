@@ -46,6 +46,21 @@ export function tokenTypes(node, path = [], type = undefined, out = new Map()) {
   return out;
 }
 
+/**
+ * Primitives sans rôle (séance 3c) : jetons des groupes donnés qu'aucun alias de la couche sémantique ne cite,
+ * valeurs, composites et $extensions compris (une valeur en étroit compte comme un usage). Ordre du fichier.
+ * @param {any} semantique @param {any[]} primitives fichiers de primitives @param {string[]} groupes
+ * @returns {string[]}
+ */
+export function primitivesSansRole(semantique, primitives, groupes) {
+  const cites = new Set([...JSON.stringify(semantique).matchAll(/\{([^{}"]+)\}/g)].map((m) => m[1]));
+  const out = [];
+  for (const f of primitives)
+    for (const g of groupes)
+      for (const k of Object.keys(f?.[g] ?? {})) if (!k.startsWith('$') && !cites.has(`${g}.${k}`)) out.push(`${g}.${k}`);
+  return out;
+}
+
 /** Hex d'une valeur de couleur DTCG (objet 2025.10 ou chaîne). @param {any} v */
 function hexOf(v) {
   if (typeof v === 'string') return formatHex(v);

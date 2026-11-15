@@ -41,6 +41,9 @@ if (r.regles.length) {
 console.log('\nhors contrôle');
 for (const e of r.horsControle) console.log(line(e));
 
+console.log('\nprimitives sans rôle (affiché, non contrôlé)');
+console.log(`  ${r.sansRole.length ? r.sansRole.join(', ') : 'aucune'}`);
+
 const n = r.voisins.length;
 console.log(`\n${n} ${n > 1 ? 'paires' : 'paire'} de voisins, ${r.fails.length ? `${r.fails.length} en échec` : 'aucune en échec'}.`);
 const k = r.etroits.length;

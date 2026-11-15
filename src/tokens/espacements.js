@@ -11,7 +11,7 @@
  * voie à quel champ appartient un libellé ou un message ; régularité observée dans les systèmes lus, pas
  * une norme. Les autres rapports entre voisins n'ont pas de seuil.
  */
-import { flattenTokens } from './roles.js';
+import { flattenTokens, primitivesSansRole } from './roles.js';
 
 /** Ordre des relations, du plus proche au plus lointain. */
 export const ORDRE = ['ecart.dans-composant', 'ecart.entre-composants', 'ecart.entre-groupes', 'ecart.section'];
@@ -45,7 +45,7 @@ export const ETROIT = 'ds-lab.etroit';
 
 /**
  * @param {any} semantique @param {...any} primitives
- * @returns {{ ecarts: Espace[], horsControle: Espace[], voisins: Voisin[], fails: Voisin[], etroits: Etroit[], etroitsFails: Etroit[], regles: Regle[], reglesFails: Regle[] }}
+ * @returns {{ ecarts: Espace[], horsControle: Espace[], voisins: Voisin[], fails: Voisin[], etroits: Etroit[], etroitsFails: Etroit[], regles: Regle[], reglesFails: Regle[], sansRole: string[] }}
  */
 export function espacements(semantique, ...primitives) {
   const all = new Map();
@@ -109,5 +109,6 @@ export function espacements(semantique, ...primitives) {
     ecarts, horsControle, voisins, fails: voisins.filter((v) => !v.ok),
     etroits, etroitsFails: etroits.filter((t) => !t.ok),
     regles, reglesFails: regles.filter((g) => !g.ok),
+    sansRole: primitivesSansRole(semantique, primitives, ['espace']),
   };
 }

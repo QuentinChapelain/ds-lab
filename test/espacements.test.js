@@ -23,7 +23,10 @@
  *     écrits dans la sortie et dans la $description de ecart.entre-composants ; échec et code 1 si le
  *     rapport est sous 2 ; les autres rapports restent affichés sans seuil ;
  *     vert : 4 et 16, rapport 4 ; rouge : dans-composant → {espace.12}, 12 et 16, rapport 1,33, l'ordre
- *     strict reste conforme (12 < 16 < 24 < 48).
+ *     strict reste conforme (12 < 16 < 24 < 48) ;
+ *   séance 3c, typo (15/11/2026) : la sortie liste aussi les primitives espace.* sans rôle, affichées, non
+ *     contrôlées ; une primitive citée seulement par une valeur en étroit compte comme utilisée ;
+ *     Orbe Café : espace.0, espace.8, espace.12, espace.64 (espace.32 sert à ecart.section en étroit).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -73,6 +76,8 @@ test('3c vert : Orbe Café, 4 < 16 < 24 < 48, rapports affichés, code 0', () =>
   assert.match(p.stdout, /marge-interieure\.composant +16 px/);
   assert.match(p.stdout, /3 paires de voisins, aucune en échec\./);
   assert.doesNotMatch(p.stdout, /✗/);
+  assert.deepEqual(r.sansRole, ['espace.0', 'espace.8', 'espace.12', 'espace.64']);
+  assert.match(p.stdout, /primitives sans rôle \(affiché, non contrôlé\)\n {2}espace\.0, espace\.8, espace\.12, espace\.64\n/);
 });
 
 test('3c lot 4 vert : ecart.section en étroit, 32 px sous 600 px, > 24 et ≤ 48, code 0', () => {
