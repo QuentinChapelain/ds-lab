@@ -133,6 +133,6 @@ test('typo sémantique : une phrase d\'usage, hauteur visée en px, sans couleur
   }
 });
 
-test('typo : la couche couleur ne change pas, 42 rôles', () => {
-  assert.equal(resolveRoles(sem, prims, load('statuts.tokens.json'), marque).size, 42);
+test('typo : la couche couleur ne change pas, 42 rôles plus les 9 du lot 5 de l\'étape 4a', () => {
+  assert.equal(resolveRoles(sem, prims, load('statuts.tokens.json'), marque).size, 51);
 });

@@ -123,12 +123,29 @@ export function emplacement(name, { scale, steps }, withSteps) {
   return g;
 }
 
+/** Texte de marque des grands titres : contraste visé sur chaque fond clair (grand texte, WCAG 1.4.3). */
+export const GRAND_TEXTE = 3;
+
+/**
+ * Étape 4a, lot 5 : pas du texte de marque des grands titres (affichage, titres 1 et 2). Pas 9 du primaire s'il atteint
+ * 3:1 sur chacun des fonds donnés et sur son propre pas 3 (fond.marque.discret) ; sinon pas 10 ; sinon pas 11.
+ * @param {string[]} steps échelle du primaire @param {string[]} fonds hex de fond.app, fond.surface, fond.discret
+ * @returns {9 | 10 | 11}
+ */
+export function pasTexteGrand(steps, fonds) {
+  const tous = [...fonds, steps[2]];
+  for (const pas of /** @type {(9 | 10)[]} */ ([9, 10])) if (tous.every((f) => wcagContrast(steps[pas - 1], f) >= GRAND_TEXTE)) return pas;
+  return 11;
+}
+
 /**
  * Fichier marque.tokens.json : primaire et accent (12 pas + cases de plein), statuts (cases de plein),
  * et, si elles sont données, les polices de la marque (séance 3c : police.titre, police.texte, $type fontFamily).
- * @param {{ primaire: { scale: string, steps: string[] }, accent: { scale: string, steps: string[] }, statuts: Record<string, { scale: string, steps: string[] }>, polices?: { titre: string[], texte: string[] }, description: string }} spec
+ * Étape 4a, lot 5 : le primaire porte en plus texte-grand (pasTexteGrand), écrit en dernier pour qu'Orbe Café redevienne
+ * identique une fois cet ajout retiré.
+ * @param {{ primaire: { scale: string, steps: string[] }, accent: { scale: string, steps: string[] }, statuts: Record<string, { scale: string, steps: string[] }>, polices?: { titre: string[], texte: string[] }, fonds: string[], description: string }} spec
  */
-export function marqueTokens({ primaire, accent, statuts, polices, description }) {
+export function marqueTokens({ primaire, accent, statuts, polices, fonds, description }) {
   /** @type {Record<string, any>} */
   const m = {
     $type: 'color',
@@ -139,6 +156,11 @@ export function marqueTokens({ primaire, accent, statuts, polices, description }
   // Phrase complétée seulement si un emplacement est soutenu, pour qu'Orbe Café reste identique octet par octet.
   if ([m.primaire, m.accent].some((g) => g.$extensions['ds-lab.plein'].classe === 'soutenu'))
     m.$description += ' Variante soutenue du cas sombre (blanc entre 4,5 et 5,5 sur le pas 9) : survol par voile noir de 15 %.';
+  const grand = pasTexteGrand(primaire.steps, fonds);
+  m.primaire['texte-grand'] = {
+    $value: `{couleur.${primaire.scale}.${grand}}`,
+    $description: `texte de marque des grands titres (affichage, titres 1 et 2) : pas ${grand}, premier des pas 9, 10, 11 à tenir 3:1 sur fond.app, fond.surface, fond.discret et fond.marque.discret`,
+  };
   for (const [name, s] of Object.entries(statuts)) m[name] = emplacement(name, s, false);
   if (polices)
     m.police = {

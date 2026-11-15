@@ -52,6 +52,7 @@ import { join } from 'node:path';
 import { contractOf } from '../src/valise/generate.js';
 import { valiseFromTokens } from '../src/tokens/primitives.js';
 import { loadRoles, resolveRoles, contratRoles, contrat } from '../src/tokens/roles.js';
+import { PAIRES_AJOUTEES, INTERDITES_AJOUTEES } from './helpers/lot5.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');
@@ -126,19 +127,19 @@ const RETIREES = ['erreur', 'succes', 'avertissement', 'info'].map((s) => `bordu
 const paires = load('paires.json');
 const sem = load('semantique.tokens.json');
 
-test('T2 paires.json : seuils 4,5 texte, 3 bordure et focus ; 48 paires, sans doublon, dans l\'ordre', () => {
-  assert.deepEqual(paires.seuils, { texte: 4.5, bordure: 3, focus: 3 });
-  assert.equal(paires.paires.length, 48);
+test('T2 paires.json : seuils 4,5 texte, 3 bordure et focus (et grand texte, lot 5) ; 48 paires en tête, sans doublon, dans l\'ordre', () => {
+  assert.deepEqual(paires.seuils, { texte: 4.5, bordure: 3, focus: 3, 'grand-texte': 3 });
+  assert.equal(paires.paires.length, 48 + PAIRES_AJOUTEES.length);
   const keys = paires.paires.map((/** @type {any} */ p) => `${p.devant}|${p.fond}`);
   assert.equal(new Set(keys).size, keys.length);
-  assert.deepEqual(paires.paires.map((/** @type {any} */ p) => [p.devant, p.fond]), TABLE.map((t) => [t.devant, t.fond]));
+  assert.deepEqual(paires.paires.slice(0, 48).map((/** @type {any} */ p) => [p.devant, p.fond]), TABLE.map((t) => [t.devant, t.fond]));
   for (const r of RETIREES) assert.ok(!keys.includes(r), `retirée : ${r}`);
   assert.ok(keys.includes('texte.principal|fond.composant.appui'));
 });
 
 test('T2 paires.json : quatre paires interdites, chacune avec sa règle, absentes des paires', () => {
   assert.deepEqual(
-    paires.interdites.map((/** @type {any} */ p) => ({ devant: p.devant, fond: p.fond, regle: p.regle })),
+    paires.interdites.slice(0, 4).map((/** @type {any} */ p) => ({ devant: p.devant, fond: p.fond, regle: p.regle })),
     INTERDITES.map(({ devant, fond, regle }) => ({ devant, fond, regle })),
   );
 });
@@ -150,7 +151,8 @@ test('T2 rôles des paires : existent, texte devant un fond, type selon la propr
     assert.ok(roles.has(p.fond), p.fond);
     assert.match(p.fond, /^fond\./);
   }
-  for (const p of paires.paires) assert.equal(p.type, p.devant === 'bordure.focus' ? 'focus' : p.devant.split('.')[0], `${p.devant} : type`);
+  const type = (/** @type {string} */ d) => (d.startsWith('bordure.focus') ? 'focus' : d === 'texte.marque.grand' ? 'grand-texte' : d.split('.')[0]);
+  for (const p of paires.paires) assert.equal(p.type, type(p.devant), `${p.devant} : type`);
 });
 
 test('T2 couverture : chaque texte et chaque bordure non décorative a une paire ; discrete et defaut n\'en ont pas', () => {
@@ -165,8 +167,8 @@ test('T2 couverture : chaque texte et chaque bordure non décorative a une paire
 
 test('T2 contratRoles : ratios égaux à culori (± 0,0001), seuil par type', () => {
   const c = contratRoles(loadRoles(DIR));
-  assert.equal(c.pairs.length, TABLE.length);
-  c.pairs.forEach((/** @type {any} */ p, /** @type {number} */ i) => {
+  assert.equal(c.pairs.length, TABLE.length + PAIRES_AJOUTEES.length);
+  c.pairs.slice(0, TABLE.length).forEach((/** @type {any} */ p, /** @type {number} */ i) => {
     assert.equal(p.devant, TABLE[i].devant);
     assert.equal(p.fond, TABLE[i].fond);
     assert.equal(p.min, TABLE[i].min, `${p.devant} sur ${p.fond} : seuil`);
@@ -186,8 +188,8 @@ test('T2 pleins moyens au pas 11, texte blanc : accent 5,63, erreur 5,60, succè
 
 test('T2 interdites mesurées et listées à part, hors échecs', () => {
   const c = contratRoles(loadRoles(DIR));
-  assert.equal(c.interdites.length, INTERDITES.length);
-  c.interdites.forEach((/** @type {any} */ p, /** @type {number} */ i) => {
+  assert.equal(c.interdites.length, INTERDITES.length + INTERDITES_AJOUTEES.length);
+  c.interdites.slice(0, INTERDITES.length).forEach((/** @type {any} */ p, /** @type {number} */ i) => {
     assert.equal(p.devant, INTERDITES[i].devant);
     assert.equal(p.fond, INTERDITES[i].fond);
     assert.equal(p.regle, INTERDITES[i].regle);
@@ -245,7 +247,7 @@ test('T3 paire invalide : rôle inconnu, type inconnu, interdite déclarée, rè
 test('T3 npm run contraste : sort en 0 sur les fichiers du dépôt ; en 1 avec une paire sous le seuil', () => {
   const cli = join(ROOT, 'src', 'cli', 'contraste.js');
   const ok = execFileSync(process.execPath, [cli], { cwd: ROOT, encoding: 'utf8' });
-  assert.match(ok, /48 paires de rôles, 0 paire en échec, 0 exception écrite, 4 paires interdites\./);
+  assert.match(ok, /66 paires de rôles, 0 paire en échec, 0 exception écrite, 8 paires interdites\./);
   for (const p of INTERDITES) assert.ok(ok.includes(`${p.devant} sur ${p.fond}`) && ok.includes(p.regle), `interdite listée : ${p.devant}`);
 
   const tmp = mkdtempSync(join(tmpdir(), 'contraste-'));

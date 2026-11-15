@@ -34,6 +34,7 @@ import { join } from 'node:path';
 import { wcagContrast } from 'culori';
 import { saisir, serialiser, COMMUN } from '../src/tokens/saisie.js';
 import { resolveRoles, loadRoles } from '../src/tokens/roles.js';
+import { fondsClairs } from '../src/tokens/saisie.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const ORBE = join(ROOT, 'tokens', 'orbe-cafe');
@@ -50,8 +51,12 @@ test('S1 Orbe Café : échelles existantes, marque.tokens.json identique octet p
   assert.deepEqual(r.motifs, []);
   assert.equal(r.echelles, null, 'aucune échelle générée');
   const texte = serialiser(r.marque);
-  assert.equal(sha(texte), ORBE_SHA);
   assert.equal(texte, readFileSync(join(ORBE, 'marque.tokens.json'), 'utf8'));
+  // Étape 4a, lot 5 : seul ajout, l'emplacement texte-grand ; retiré, le fichier redevient identique octet par octet.
+  const sans = structuredClone(r.marque);
+  delete sans.marque.primaire['texte-grand'];
+  assert.equal(sha(serialiser(sans)), ORBE_SHA);
+  assert.deepEqual(fondsClairs(r.commun), ['#fbfbfb', '#ffffff', '#f8f8f7']);
 });
 
 test('S2 entrée invalide : motifs', () => {

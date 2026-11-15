@@ -41,6 +41,8 @@ import { join } from 'node:path';
 import { interpolate, formatHex, rgb } from 'culori';
 import { generateScale } from '../src/valise/generate.js';
 import { loadRoles, resolveRoles, contratRoles } from '../src/tokens/roles.js';
+import { fondsClairs } from '../src/tokens/saisie.js';
+import { AJOUTS } from './helpers/lot5.js';
 import { classePlein, voileBlanc, marqueTokens, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL, STATUTS_FIGES, VOILE_BLANC } from '../src/tokens/pleins.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -165,7 +167,9 @@ test('M0 marque.tokens.json : DTCG 2025.10, six emplacements', () => {
   assert.equal(marque.marque.$type, 'color');
   assert.deepEqual(couleurs(marque.marque).map(([k]) => k), Object.keys(EMPLACEMENTS));
   assert.deepEqual(Object.keys(marque.marque).filter((k) => !k.startsWith('$')), [...Object.keys(EMPLACEMENTS), 'police']);
-  for (const slot of ['primaire', 'accent']) assert.deepEqual(Object.keys(marque.marque[slot]).filter((k) => !k.startsWith('$')), [...STEPS, ...CASES], slot);
+  // Étape 4a, lot 5 : le primaire porte en dernier texte-grand.
+  assert.deepEqual(Object.keys(marque.marque.primaire).filter((k) => !k.startsWith('$')), [...STEPS, ...CASES, 'texte-grand']);
+  assert.deepEqual(Object.keys(marque.marque.accent).filter((k) => !k.startsWith('$')), [...STEPS, ...CASES]);
   for (const s of STATUTS) assert.deepEqual(Object.keys(marque.marque[s]).filter((k) => !k.startsWith('$')), CASES, s);
   for (const [slot, g] of Object.entries(marque.marque)) {
     if (slot.startsWith('$')) continue;
@@ -209,7 +213,7 @@ test('Pleins : seule valeur calculée du fichier, le voile', () => {
 
 test('Pleins : le fichier versionné est celui que produit marqueTokens', () => {
   const statuts = Object.fromEntries(STATUTS.map((s) => [s, { scale: s, steps: stepsOf(s) }]));
-  const want = marqueTokens({ primaire: { scale: 'bleu', steps: stepsOf('bleu') }, accent: { scale: 'terre', steps: stepsOf('terre') }, statuts, polices: POLICES, description: marque.$description });
+  const want = marqueTokens({ primaire: { scale: 'bleu', steps: stepsOf('bleu') }, accent: { scale: 'terre', steps: stepsOf('terre') }, statuts, polices: POLICES, fonds: fondsClairs(loadRoles(DIR)), description: marque.$description });
   assert.deepEqual(marque, want);
 });
 
@@ -228,17 +232,18 @@ test('M0 rôles : les pleins et les couleurs de marque passent par marque.* ; au
   for (const [role, slot] of Object.entries(VIA_MARQUE)) assert.equal(tokenOf(role).$value, `{${slot}}`, role);
 });
 
-test('Pleins : les 42 rôles se résolvent vers les hex attendus', () => {
+test('Pleins : les 42 rôles se résolvent vers les hex attendus, plus les 9 du lot 5 (étape 4a)', () => {
   const roles = resolveRoles(load('semantique.tokens.json'), load('primitives.tokens.json'), load('statuts.tokens.json'), marque);
-  assert.deepEqual([...roles.keys()].sort(), [...HEX.keys()].sort());
-  for (const [role, hex] of HEX) assert.equal(roles.get(role)?.hex, hex, role);
+  const all = new Map([...HEX, ...Object.entries(AJOUTS).map(([r, [, hex]]) => /** @type {[string, string]} */ ([r, hex]))]);
+  assert.deepEqual([...roles.keys()].sort(), [...all.keys()].sort());
+  for (const [role, hex] of all) assert.equal(roles.get(role)?.hex, hex, role);
 });
 
 test('M0 une autre marque se branche sans toucher aux rôles (témoin fictif, sombre)', () => {
   const g = generateScale('temoin', '#4a2a80');
   assert.equal(classePlein(g.steps), 'sombre');
   const statuts = Object.fromEntries(STATUTS.map((s) => [s, { scale: s, steps: stepsOf(s) }]));
-  const m = marqueTokens({ primaire: { scale: 'temoin', steps: g.steps }, accent: { scale: 'temoin', steps: g.steps }, statuts, description: 'témoin fictif' });
+  const m = marqueTokens({ primaire: { scale: 'temoin', steps: g.steps }, accent: { scale: 'temoin', steps: g.steps }, statuts, fonds: fondsClairs(loadRoles(DIR)), description: 'témoin fictif' });
   const echelle = { couleur: { $type: 'color', temoin: Object.fromEntries(g.steps.map((hex, i) => [String(i + 1), { $value: { colorSpace: 'srgb', components: [0, 0, 0], hex } }])) } };
   const set = { ...loadRoles(DIR), marque: m, echelles: [echelle] };
   const roles = resolveRoles(set.semantique, set.primitives, set.statuts, set.marque, ...set.echelles);
@@ -246,5 +251,5 @@ test('M0 une autre marque se branche sans toucher aux rôles (témoin fictif, so
   assert.equal(roles.get('fond.interactif.fort.survol')?.hex, voileBlanc(g.steps[8], 0.08));
   assert.equal(roles.get('texte.sur-interactif')?.hex, '#ffffff');
   assert.equal(roles.get('texte.principal')?.hex, HEX.get('texte.principal'));
-  assert.equal(contratRoles(set).pairs.length, 48);
+  assert.equal(contratRoles(set).pairs.length, 66);
 });

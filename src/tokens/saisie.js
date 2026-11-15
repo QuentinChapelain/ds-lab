@@ -18,7 +18,7 @@ import { resolve } from 'node:path';
 import { generateScale, checkValise } from '../valise/generate.js';
 import { scaleToDtcg, valiseFromTokens } from './primitives.js';
 import { marqueTokens } from './pleins.js';
-import { loadRoles, contratRoles } from './roles.js';
+import { loadRoles, contratRoles, resolveRoles } from './roles.js';
 
 /** Dossier des couches communes, qui est aussi celui d'Orbe Café. */
 export const COMMUN = fileURLToPath(new URL('../../tokens/orbe-cafe/', import.meta.url));
@@ -31,6 +31,17 @@ const LABELS = { primaire: 'Primaire', accent: 'Accent' };
 const fr = (n) => n.toFixed(2).replace('.', ',');
 /** @param {string} a @param {string} b */
 const memeDossier = (a, b) => resolve(a) === resolve(b);
+
+/**
+ * Fonds clairs communs sur lesquels le texte de marque des grands titres doit tenir 3:1 (lot 5) :
+ * hex de fond.app, fond.surface et fond.discret, résolus dans les couches communes.
+ * @param {import('./roles.js').RoleSet} commun
+ */
+export function fondsClairs(commun) {
+  const f = commun.semantique.fond;
+  const roles = resolveRoles({ fond: { $type: 'color', app: f.app, surface: f.surface, discret: f.discret } }, commun.primitives, commun.statuts);
+  return ['fond.app', 'fond.surface', 'fond.discret'].map((r) => /** @type {any} */ (roles.get(r)).hex);
+}
 
 /** Texte du fichier de jetons, tel qu'il est écrit sur le disque. @param {any} tokens */
 export const serialiser = (tokens) => JSON.stringify(tokens, null, 2) + '\n';
@@ -117,6 +128,7 @@ export function saisir(entree, { dossier, commun = loadRoles(COMMUN) }) {
     accent: accent ?? commune('neutre'),
     statuts: Object.fromEntries(STATUTS.map((s) => [s, commune(s)])),
     polices,
+    fonds: fondsClairs(commun),
     description:
       entree.description ??
       `Emplacements de marque de ${entree.nom}, écrits par la saisie depuis entree.json. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers marque.<emplacement>.* ; chaque emplacement pointe vers une échelle (${noms.length ? 'générées dans echelles.tokens.json, ' : ''}communes dans tokens/orbe-cafe/), et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9.${accent ? '' : ' Sans accent saisi : repli sur le neutre (D05).'}`,

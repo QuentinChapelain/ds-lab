@@ -79,9 +79,9 @@ test('3c description racine : espacements, DTCG 2025.10', () => {
   assert.match(sem.$description, /espacement/i);
 });
 
-test('3c resolveRoles : un rôle de type dimension ne le casse pas, 42 rôles de couleur', () => {
+test('3c resolveRoles : un rôle de type dimension ne le casse pas, 51 rôles de couleur (étape 4a, lot 5 : 42 + 9 rôles ajoutés)', () => {
   const roles = resolveRoles(sem, prims, load('statuts.tokens.json'), load('marque.tokens.json'));
-  assert.equal(roles.size, 42);
+  assert.equal(roles.size, 51);
   for (const r of roles.keys()) assert.match(r, /^(fond|texte|bordure)\./, r);
 });
 

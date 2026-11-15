@@ -70,6 +70,10 @@
       "sur-plein": {
         "$value": "{couleur.primaire.12}",
         "$description": "texte sur le plein : pas 12"
+      },
+      "texte-grand": {
+        "$value": "{couleur.primaire.11}",
+        "$description": "texte de marque des grands titres (affichage, titres 1 et 2) : pas 11, premier des pas 9, 10, 11 à tenir 3:1 sur fond.app, fond.surface, fond.discret et fond.marque.discret"
       }
     },
     "accent": {

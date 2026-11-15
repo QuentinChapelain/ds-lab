@@ -47,12 +47,30 @@
           "$value": "{marque.primaire.plein-survol}",
           "$description": "Plein de l'action principale survolée."
         }
+      },
+      "inverse": {
+        "$value": "{marque.primaire.sur-plein}",
+        "$description": "Fond du bouton inversé, réservé à fond.marque.fort : la valeur du texte posé sur le plein de la marque."
       }
     },
     "accent": {
+      "discret": {
+        "$value": "{marque.accent.3}",
+        "$description": "Aplat clair de l'accent, non cliquable, comme un encadré ; sans accent, le neutre."
+      },
       "fort": {
         "$value": "{marque.accent.plein}",
-        "$description": "Plein qui met en avant sans appeler à l'action, comme une étiquette ou un bandeau, avec un texte blanc posé dessus."
+        "$description": "Plein qui met en avant sans appeler à l'action, sur de petites surfaces, comme une étiquette."
+      }
+    },
+    "marque": {
+      "discret": {
+        "$value": "{marque.primaire.3}",
+        "$description": "Aplat clair de la marque, non cliquable, comme un bandeau, une section ou un encadré."
+      },
+      "fort": {
+        "$value": "{marque.primaire.plein}",
+        "$description": "Aplat plein de la marque, non cliquable, de la valeur du plein du primaire, comme un bandeau qui donne du relief."
       }
     },
     "erreur": {
@@ -115,6 +133,12 @@
       "$value": "{marque.accent.11}",
       "$description": "Texte mis en avant sans être une action."
     },
+    "marque": {
+      "grand": {
+        "$value": "{marque.primaire.texte-grand}",
+        "$description": "Texte de marque des grands titres, styles affichage et titres 1 et 2 seulement, choisi à la saisie pour tenir 3:1 sur les fonds clairs."
+      }
+    },
     "erreur": {
       "$value": "{couleur.erreur.11}",
       "$description": "Texte d'un message d'erreur."
@@ -132,12 +156,28 @@
       "$description": "Texte d'un message d'information."
     },
     "sur-interactif": {
-      "$value": "{marque.primaire.sur-plein}",
-      "$description": "Texte posé sur le plein de l'action principale, au repos comme au survol."
+      "$root": {
+        "$value": "{marque.primaire.sur-plein}",
+        "$description": "Texte posé sur le plein de l'action principale, au repos comme au survol."
+      },
+      "inverse": {
+        "$root": {
+          "$value": "{marque.primaire.plein}",
+          "$description": "Texte du bouton inversé, de la valeur du plein du primaire."
+        },
+        "survol": {
+          "$value": "{marque.primaire.plein-survol}",
+          "$description": "Texte du bouton inversé survolé, seul à changer, de la valeur du plein survolé."
+        }
+      }
     },
     "sur-accent": {
       "$value": "{marque.accent.sur-plein}",
       "$description": "Texte posé sur le plein d'accent."
+    },
+    "sur-marque": {
+      "$value": "{marque.primaire.sur-plein}",
+      "$description": "Texte posé sur fond.marque.fort, titres compris."
     },
     "sur-erreur": {
       "$value": "{marque.erreur.sur-plein}",
@@ -176,8 +216,14 @@
       "$description": "Contour qui suffit à repérer un champ ou une case à cocher (3:1)."
     },
     "focus": {
-      "$value": "{marque.primaire.11}",
-      "$description": "Anneau de focus clavier (3:1)."
+      "$root": {
+        "$value": "{marque.primaire.11}",
+        "$description": "Anneau de focus clavier (3:1)."
+      },
+      "inverse": {
+        "$value": "{marque.primaire.sur-plein}",
+        "$description": "Anneau de focus clavier sur fond.marque.fort (3:1)."
+      }
     },
     "erreur": {
       "$value": "{couleur.erreur.8}",

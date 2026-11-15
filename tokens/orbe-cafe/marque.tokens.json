@@ -85,6 +85,10 @@
       "sur-plein": {
         "$value": "{couleur.blanc}",
         "$description": "texte sur le plein : blanc"
+      },
+      "texte-grand": {
+        "$value": "{couleur.bleu.9}",
+        "$description": "texte de marque des grands titres (affichage, titres 1 et 2) : pas 9, premier des pas 9, 10, 11 à tenir 3:1 sur fond.app, fond.surface, fond.discret et fond.marque.discret"
       }
     },
     "accent": {

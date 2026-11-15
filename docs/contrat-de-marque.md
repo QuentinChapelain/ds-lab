@@ -4,8 +4,8 @@ Tout part de la couleur du client : chaque rôle prend dans sa palette le pas qu
 
 | Entré par le client | Généré | Refusé à la saisie | Hors contrat |
 |---|---|---|---|
-| **Couleur primaire**, `#rrggbb` : ce qui se clique (D05) | Échelle de 12 pas, pas 9 = couleur saisie ; bouton, survol, texte sur le bouton, texte interactif, anneau de focus | Couleur absente ou illisible ; échelle qui échoue à `checkValise` (doublon, teinte qui dérive, contraste non croissant, texte sur le plein) | Primaire grise ou proche d'un statut : montrée par le calibrage, ni refusée ni garantie distincte |
-| **Accent**, facultatif, `#rrggbb` : identité, jamais porteur d'un sens | Échelle de 12 pas et son plein ; sans accent, repli sur le neutre (D05) | Mêmes motifs que le primaire | Accent proche du primaire : montré, pas refusé |
+| **Couleur primaire**, `#rrggbb` : ce qui se clique (D05) | Échelle de 12 pas, pas 9 = couleur saisie ; bouton, survol, texte sur le bouton, texte interactif, anneau de focus ; deux niveaux d'aplat, clair et plein, et le texte de marque des grands titres (D14) | Couleur absente ou illisible ; échelle qui échoue à `checkValise` (doublon, teinte qui dérive, contraste non croissant, texte sur le plein) | Primaire grise ou proche d'un statut : montrée par le calibrage, ni refusée ni garantie distincte |
+| **Accent**, facultatif, `#rrggbb` : identité, jamais porteur d'un sens | Échelle de 12 pas, son plein pour les petites surfaces et son aplat clair ; sans accent, repli sur le neutre (D05) | Mêmes motifs que le primaire | Accent proche du primaire : montré, pas refusé ; l'harmonie entre le primaire et l'accent n'est pas jugée |
 | **Polices** : noms de familles pour les titres et pour le texte | `marque.police`, lue par les styles de texte | Liste absente ou vide | Chargement, métriques et rendu de la police (séance c) |
 | **Nom** de la marque | Descriptions des fichiers de jetons | Nom absent ; clé inconnue dans l'entrée | |
 | Rien d'autre : neutres, statuts, rôles, paires, espacements, tailles de texte sont communs à toutes les marques | Couche marque `marque.tokens.json` et échelles `echelles.tokens.json`, à côté de l'entrée | Paire de rôles sous son seuil | Texte posé sur une image : le contrôle mesure une couleur, pas une photo |
@@ -20,5 +20,6 @@ Tout part de la couleur du client : chaque rôle prend dans sa palette le pas qu
 | Les rôles sont les mêmes pour toutes les marques ; un rôle de marque pointe vers la couche marque (D02) | `npm test` |
 | Espacements par relation et styles de texte tiennent leurs règles (DS4 à DS8), communs à toutes les marques | `npm run espacements`, `npm run typo` |
 | Les statuts (erreur, succès, avertissement, information) gardent le même bouton pour toutes les marques | `npm test` |
+| Sur l'aplat clair, texte, liens, anneau et titres de marque (3:1) restent lisibles ; sur l'aplat plein, texte, bouton inversé et anneau sont retournés, au ratio du bouton | `npm run contraste -- --marque <dossier>` |
 
-Exception connue : le bouton d'avertissement porte un texte foncé à 5,77:1, conforme au WCAG mais sous le seuil de 7 de DS1 (`KNOWN_ISSUES.md`).
+Exceptions connues (`KNOWN_ISSUES.md`) : le bouton d'avertissement porte un texte foncé à 5,77:1, conforme au WCAG mais sous le seuil de 7 de DS1 ; la limite du texte de marque aux grands titres n'a pas de contrôle.

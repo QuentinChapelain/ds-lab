@@ -31,6 +31,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { AJOUTS } from './helpers/lot5.js';
 
 const DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'tokens', 'orbe-cafe');
 const load = (/** @type {string} */ f) => JSON.parse(readFileSync(join(DIR, f), 'utf8'));
@@ -111,9 +112,9 @@ test('T1 description racine et DTCG 2025.10', () => {
   assert.ok(typeof sem.$description === 'string' && /DTCG 2025\.10/.test(sem.$description));
 });
 
-test('T1 liste exacte des 42 rôles', () => {
+test('T1 liste exacte des 42 rôles, plus les 9 du lot 5 (étape 4a)', () => {
   assert.equal(Object.keys(EXPECTED).length, 42);
-  assert.deepEqual([...roles.keys()].sort(), Object.keys(EXPECTED).sort());
+  assert.deepEqual([...roles.keys()].sort(), [...Object.keys(EXPECTED), ...Object.keys(AJOUTS)].sort());
 });
 
 test('T1 chaque rôle est un alias vers la primitive attendue (directement ou par la marque), sans valeur en dur', () => {

@@ -1,6 +1,6 @@
 # Décisions
 
-Treize décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/orbe-cafe/`.
+Quatorze décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/orbe-cafe/`.
 
 ### D01
 - **Décision** : les rôles se nomment propriété.sens.emphase.état.
@@ -66,3 +66,8 @@ Treize décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'es
 - **Décision** : une marque entre par un fichier d'entrée et `npm run saisie` ; une couleur saisie donne une échelle générée (pas 9 = couleur saisie), le nom d'une échelle existante est réservé à Orbe Café. Trois motifs de refus : entrée invalide, `checkValise` en échec sur une échelle générée, paire de rôles sous son seuil.
 - **Raison** : D03, la paire est vérifiée à la saisie ; Orbe Café garde ses échelles écrites à la main.
 - **Conséquence** : une marque refusée n'écrit rien. Primaire grise, primaire proche d'un statut et accent proche du primaire ne sont pas des refus : ils sont montrés dans la table de calibrage.
+
+### D14
+- **Décision** : deux niveaux d'aplat de marque, non cliquables : clair (`fond.marque.discret`, pas 3 du primaire ; `fond.accent.discret`, pas 3 de l'accent) et plein (`fond.marque.fort`, valeur du plein du primaire). Sur l'aplat plein, tout passe en retourné : texte `texte.sur-marque`, bouton inversé (`fond.interactif.inverse`, `texte.sur-interactif.inverse`, dont seul le texte change au survol), anneau `bordure.focus.inverse`. Titres de marque : `texte.marque.grand`, pour l'affichage et les titres 1 et 2 seulement, pas 9 du primaire s'il tient 3:1 sur les fonds clairs, sinon 10, sinon 11, choisi à la saisie.
+- **Raison** : créer du relief dans une page avec la couleur du client ; sur l'aplat plein, l'anneau au pas 11 tombait entre 1,00 et 1,55:1 pour six marques sur huit.
+- **Conséquence** : sur `fond.marque.fort`, `texte.marque.grand`, `texte.interactif`, le bouton principal et `bordure.focus` sont des paires interdites, chacune avec sa règle (D06). `fond.accent.fort` reste aux petites surfaces.

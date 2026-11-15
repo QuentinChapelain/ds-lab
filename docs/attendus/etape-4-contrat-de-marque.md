@@ -52,3 +52,27 @@ Quentin, 15/11/2026, de 13 h 18 à 13 h 48.
 - Les quatre statuts gardent leur bouton actuel, figé ; Orbe Café reste identique octet par octet.
 - Aucun forçage : l'option « forcer la couleur exacte » du lot 5 est retirée, l'accessibilité est une obligation légale. Au lot 4, la colonne « forçable hors garantie » devient « hors contrat » : texte posé sur une image.
 - Lot 3 bis : D04, DS1 et KNOWN_ISSUES mis à jour, calibrage relancé.
+
+## Complément : lot 5, aplats et titres de marque
+
+Décisions de Quentin sur image, 15/11/2026, de 13 h 58 à 14 h 07. Deux niveaux d'aplat de marque, clair et plein, pour créer du relief dans une page.
+
+1. fond.marque.discret, non cliquable : pas 3 du primaire. Usage : bandeau, section, encadré.
+2. fond.accent.discret, non cliquable : pas 3 de l'accent ; sans accent, repli neutre comme D05.
+3. fond.marque.fort, non cliquable : même valeur que le plein du primaire (marque.primaire.plein). Le texte posé dessus, titres compris, prend la valeur de marque.primaire.sur-plein, par un rôle de texte nommé selon D01.
+4. fond.accent.fort ne change pas ; sa description précise « petites surfaces, comme une étiquette ».
+5. texte.marque.grand, pour les styles affichage et titres 1 et 2 seulement : pas 9 du primaire s'il atteint 3:1 sur chacun des fonds fond.app, fond.surface, fond.discret et fond.marque.discret ; sinon pas 10 ; sinon pas 11. Le choix se fait à la saisie, dans la couche marque ; le rôle est un alias.
+6. Bouton inversé, réservé à fond.marque.fort : son fond prend la valeur de sur-plein, son texte la valeur du plein. C'est la paire du bouton retournée, donc le même ratio. Rôles : fond.interactif.inverse, texte.sur-interactif.inverse ; au survol, seul le texte change (texte.sur-interactif.inverse.survol, valeur de marque.primaire.plein-survol).
+7. Paires déclarées.
+   - Sur fond.marque.discret et fond.accent.discret : texte.principal, texte.secondaire, texte.interactif, texte.marque.grand (3:1, grand texte), bordure.focus (3:1) ; texte.accent sur fond.accent.discret. Le bouton principal s'y pose tel quel.
+   - Sur fond.marque.fort : le texte du point 3 (texte.sur-marque), le bouton inversé, l'anneau de focus bordure.focus.inverse (valeur de marque.primaire.sur-plein). texte.marque.grand, texte.interactif, le bouton principal et bordure.focus y sont des paires interdites, avec leur règle de remplacement (D06).
+8. Orbe Café : ses rôles existants et leurs valeurs ne changent pas ; les ajouts sont les seuls écarts.
+9. Documentation : décision D14 ; contrat (deux niveaux d'aplat ; hors contrat : l'harmonie entre le primaire et l'accent du client) ; KNOWN_ISSUES (la limite « grands titres seulement » n'a pas de contrôle, comme DS10).
+10. Pour Quentin : une image local/lot-4a/aplats.png, largeur 420 px. Pour chaque marque fictive, le bandeau clair puis le bandeau plein, l'un sous l'autre : titre avec la police de titre (texte.marque.grand sur le clair), une ligne de texte, le bouton (principal sur le clair, inversé sur le plein), et le ratio du titre sous chaque bandeau.
+
+Confrontation et réponses de Quentin (14 h 18) :
+
+- [F] bordure.focus (pas 11 du primaire) sur fond.marque.fort : 1,00 à 1,55:1 pour six des huit marques, Orbe Café compris. Réponse : bordure.focus.inverse sur fond.marque.fort, bordure.focus y devient une paire interdite (point 7 corrigé).
+- [F] Bouton principal sur l'aplat clair d'une marque claire : 1,40:1 (Écume et Sel) et 1,08:1 (T-claire) entre le bouton et l'aplat. Réponse : dette notée, sans paire ni refus ; jugé suffisant sur image ; piste pour l'étape des composants, un contour très léger de la teinte du bouton.
+- Noms des rôles et survol du bouton inversé (seul le texte change) : validés.
+- Orbe Café : la couche marque gagne l'emplacement texte-grand ; retiré, le fichier redevient identique octet par octet.
