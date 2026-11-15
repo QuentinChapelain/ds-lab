@@ -86,7 +86,7 @@ Une marque entre par un fichier, `tokens/orbe-cafe/entree.json` pour Orbe Café 
 | 1 | Marque refusée : entrée invalide, `checkValise` en échec sur une échelle générée, ou paire de rôles sous son seuil | Rien ; chaque motif est affiché |
 | 2 | Aucun fichier donné | Rien |
 
-Sans accent, l'accent se replie sur le neutre (D05). Les couches communes (neutres, statuts, rôles, paires, espaces, typo) sont lues dans `tokens/orbe-cafe/`. Orbe Café nomme ses échelles existantes (`{ "echelle": "bleu" }`), forme réservée à elle seule : sa couche marque est réécrite à l'identique. Les règles et la raison sont dans D13 (`docs/decisions.md`).
+Sans accent, l'accent se replie sur le neutre (D05). Les couches communes (neutres, statuts, rôles, paires, espaces, typo) sont lues dans `tokens/orbe-cafe/`. Orbe Café nomme ses échelles existantes (`{ "echelle": "bleu" }`), forme réservée à elle seule : sa couche marque est réécrite à l'identique. Les règles et la raison sont dans D13 (`docs/decisions.md`) ; le contrat tient en une page, `docs/contrat-de-marque.md`.
 
 Trois marques fictives sont saisies de la même façon, toutes acceptées :
 
@@ -115,7 +115,7 @@ Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier
 | Tranche | Les pas réservés à un usage (le texte prend 11 ou 12) |
 | Plein | Un fond coloré qui porte un texte (bouton, étiquette) ; le texte posé dessus s'appelle onSolid |
 | Valise | La cible générique : 12 pas, valeurs générées par contraste visé, règles d'usage. On change de marque en changeant les valeurs derrière les noms |
-| Contrat de marque | Ce qu'un client peut changer, et ce que le système garantit |
+| Contrat de marque | Ce qu'un client peut changer, et ce que le système garantit : [docs/contrat-de-marque.md](docs/contrat-de-marque.md) |
 
 ### La méthode
 
@@ -165,7 +165,7 @@ Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier
 | `src/` | Audit, réduction, simulation, rapports |
 | `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive (entrée, primitives, marque, rôles, paires) et leurs planches ; couches communes à toutes les marques |
 | `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/` | Trois marques fictives saisies par fichier (lot 2 de l'étape 4) |
-| `docs/` | Règles du design system, décisions, attendus des prochains lots |
+| `docs/` | Règles du design system, décisions, contrat de marque, attendus des prochains lots |
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles, attendus |
 | `test/` | Tests, dont `noms-interdits` qui refuse tout nom réel dans un fichier ou un message de commit |
 

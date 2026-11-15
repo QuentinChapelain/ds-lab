@@ -56,7 +56,7 @@ Chaque commande npm a son point d'entrée dans `src/cli/`. Les sorties d'audit e
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles et attendus des tests de bout en bout |
 | `test/` | Tests `node --test` ; `test/helpers/` sert la marque fictive en local |
 | `config/` | Exemple de fichier de sources, à copier dans `local/` |
-| `docs/` | Règles du design system, décisions, attendus des prochains lots |
+| `docs/` | Règles du design system, décisions, contrat de marque, attendus des prochains lots |
 | `local/`, `.auth/` | Données de vrais sites et sessions enregistrées : jamais versionnés |
 
 ## Couches de jetons

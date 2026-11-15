@@ -16,6 +16,7 @@
  *   Écume primaire clair (8,33 et 7,08), accent moyen (blanc 3,68, pas 12 : 3,52) ; Grenat inchangé.
  * Les trois sont acceptées (aucun motif) ; leurs fichiers versionnés sont ceux que produit la saisie ;
  * npm run contraste -- --marque <dossier> sort 0.
+ * Lot 4 (contrat de marque) : les quatre statuts ont le même bouton que chez Orbe Café (statuts figés, D04).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -59,6 +60,12 @@ for (const [slug, [nom, primaire, accent, ecoles, pleins]] of Object.entries(MAR
     assert.equal(marque.accent.$extensions['ds-lab.plein'].classe, pleins[1]);
     assert.equal(marque.primaire['9'].$value, '{couleur.primaire.9}');
     assert.equal(marque.accent['9'].$value, accent ? '{couleur.accent.9}' : '{couleur.neutre.9}');
+  });
+
+  test(`${nom} : statuts identiques à ceux d'Orbe Café`, () => {
+    const orbe = JSON.parse(readFileSync(join(ROOT, 'tokens', 'orbe-cafe', 'marque.tokens.json'), 'utf8')).marque;
+    const marque = JSON.parse(read('marque.tokens.json')).marque;
+    for (const s of ['erreur', 'succes', 'avertissement', 'info']) assert.deepEqual(marque[s], orbe[s], s);
   });
 
   test(`${nom} : npm run contraste -- --marque sort 0`, () => {
