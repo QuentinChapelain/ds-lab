@@ -6,8 +6,9 @@
  * recalé. Chaque piège a deux tests :
  *   today   ce que l'outil actuel produit (classes, cibles, et ce qui se voit
  *           après simulation) : il prouve que le piège reproduit le défaut ;
- *   afterB  le critère de fin du lot B (en attente jusqu'au lot B, actif depuis) ;
- *           depuis le lot B, les tests today sont ignorés (P3b excepté, identique).
+ *   afterB  le critère de fin du lot B, actif depuis le lot B.
+ * Revue de code du 15/11, lot 0 : les tests today sautés depuis le lot B sont supprimés ; restent P3b et L1,
+ * identiques avant et après. Le défaut d'origine reste écrit dans expected-pieges.json (bloc today).
  * La simulation est relue ici avec scanInPage, comme reduce la pose : table
  * proposée, appliquée telle quelle, relevé avant puis après.
  */
@@ -25,10 +26,6 @@ import { scanInPage, showInPage } from '../src/browser/simulate.js';
 const E = JSON.parse(await readFile(new URL('../fixtures/marque-demo/expected-pieges.json', import.meta.url), 'utf8'));
 const TOL = 0.01;
 const PX = 0.5;
-// Lot B fait : les tests afterB ne sont plus en attente, et les tests today
-// (l'outil d'avant le lot B) sont gardés mais ignorés.
-const TODO = false;
-const SKIP_TODAY = 'ignoré, remplacé par afterB (lot B)';
 const [WIDE, NARROW] = E.conditions.viewports.map((/** @type {any} */ v) => v.width);
 /** @type {Record<string, any>} */
 const T = Object.fromEntries(E.traps.map((/** @type {any} */ t) => [t.id, t]));
@@ -200,11 +197,7 @@ test('la page est mesurée, le tiers écarté, la cible lue', () => {
 });
 
 // P1 : marge auto.
-test(`P1 today : ${T.P1.today.text}`, { skip: SKIP_TODAY }, () => {
-  checkTodayRows(T.P1);
-  assert.ok(marginGap(WIDE) > T.P1.today.marginGapPx.greaterThan, `écart des marges après simulation à ${WIDE} : ${marginGap(WIDE)} px`);
-});
-test(`P1 afterB : ${T.P1.afterB.text}`, { todo: TODO }, () => {
+test(`P1 afterB : ${T.P1.afterB.text}`, () => {
   for (const w of [WIDE, NARROW]) {
     assert.equal(rowsOf(w, 'spacing', '40px').length, 0, `${w} : ligne 40px`);
     assert.ok(marginGap(w) <= T.P1.afterB.marginGapPx.atMost, `${w} : écart des marges ${marginGap(w)} px`);
@@ -212,24 +205,14 @@ test(`P1 afterB : ${T.P1.afterB.text}`, { todo: TODO }, () => {
 });
 
 // P2 : marges négatives.
-test(`P2 today : ${T.P2.today.text}`, { skip: SKIP_TODAY }, () => {
-  checkTodayRows(T.P2);
-  near(Math.abs(moved(WIDE, 'loupe', 'champ').dx), T.P2.today.movesPx.loupe, 'déplacement de la loupe');
-  near(Math.abs(moved(WIDE, 'bandeau', 'visuel').dy), T.P2.today.movesPx.bandeau, 'déplacement du bandeau');
-});
-test(`P2 afterB : ${T.P2.afterB.text}`, { todo: TODO }, () => {
+test(`P2 afterB : ${T.P2.afterB.text}`, () => {
   checkAfterBRows(T.P2);
   near(Math.abs(moved(WIDE, 'loupe', 'champ').dx), 0, 'déplacement de la loupe');
   near(Math.abs(moved(WIDE, 'bandeau', 'visuel').dy), 0, 'déplacement du bandeau');
 });
 
 // P3 : titre placé par une grande marge.
-test(`P3 today : ${T.P3.today.text}`, { skip: SKIP_TODAY }, () => {
-  checkTodayRows(T.P3);
-  assert.equal(overlap(at[WIDE].before.titreP3, at[WIDE].before.descP3), false, 'superposition avant simulation');
-  assert.equal(overlap(at[WIDE].after.titreP3, at[WIDE].after.descP3), true, 'superposition après simulation');
-});
-test(`P3 afterB : ${T.P3.afterB.text}`, { todo: TODO }, () => {
+test(`P3 afterB : ${T.P3.afterB.text}`, () => {
   checkAfterBRows(T.P3);
   assert.equal(overlap(at[WIDE].after.titreP3, at[WIDE].after.descP3), false, 'superposition après simulation');
 });
@@ -239,61 +222,31 @@ test(`P3b today : ${T.P3b.today.text}`, () => {
   checkTodayRows(T.P3b);
   near(Math.abs(moved(WIDE, 'titreP3b', 'tuileP3b').dy), T.P3b.today.movesPx.titre, 'déplacement du titre');
 });
-test(`P3b afterB : ${T.P3b.afterB.text}`, { todo: TODO }, () => {
+test(`P3b afterB : ${T.P3b.afterB.text}`, () => {
   checkTodayRows({ id: 'P3b', today: T.P3b.afterB });
   near(Math.abs(moved(WIDE, 'titreP3b', 'tuileP3b').dy), T.P3b.afterB.movesPx.titre, 'déplacement du titre');
 });
 
 // P4 : avatar rond.
-test(`P4 today : ${T.P4.today.text}`, { skip: SKIP_TODAY }, () => {
-  checkTodayRows(T.P4);
-  near(at[WIDE].before.avatar.radius, 20, 'rayon de l’avatar avant');
-  near(at[WIDE].after.avatar.radius, T.P4.today.avatarRadiusPx, 'rayon de l’avatar après');
-});
-test(`P4 afterB : ${T.P4.afterB.text}`, { todo: TODO }, () => {
+test(`P4 afterB : ${T.P4.afterB.text}`, () => {
   checkAfterBRows(T.P4);
   assert.ok(at[WIDE].after.avatar.radius >= T.P4.afterB.avatarRadiusPx.atLeast, `rayon de l’avatar après : ${at[WIDE].after.avatar.radius}`);
   near(at[WIDE].after.carte.radius, 20, 'rayon de la carte après');
 });
 
 // P5 : pied de page sombre.
-test(`P5 today : ${T.P5.today.text}`, { skip: SKIP_TODAY }, () => {
-  checkTodayRows(T.P5);
-  for (const v of T.P5.values.filter((/** @type {any} */ x) => x.contrast)) {
-    const p = audit.rendered.contrast.pairs.find((/** @type {any} */ x) => x.text === v.contrast.text && x.bg === v.contrast.bg);
-    assert.ok(p, `paire ${v.contrast.text} / ${v.contrast.bg} absente de l'audit`);
-    assert.ok(Math.abs(p.ratio - v.contrast.ratio) <= TOL, `contraste ${p.ratio}, attendu ${v.contrast.ratio}`);
-  }
-  assert.notDeepEqual(at[WIDE].after.piedStyle, at[WIDE].before.piedStyle, 'le pied de page change à la simulation');
-  assert.equal(at[WIDE].after.pied.bg, 'rgb(54, 48, 38)', 'fond du pied de page après');
-});
-test(`P5 afterB : ${T.P5.afterB.text}`, { todo: TODO }, () => {
+test(`P5 afterB : ${T.P5.afterB.text}`, () => {
   checkAfterBRows(T.P5);
   assert.deepEqual(at[WIDE].after.piedStyle, at[WIDE].before.piedStyle);
 });
 
 // P6 : tiers repeint.
-test(`P6 today : ${T.P6.today.text}`, { skip: SKIP_TODAY }, () => {
-  checkTodayRows(T.P6);
-  assert.equal(audit.rendered.families.colors.values['#555555'], undefined, '#555555 (texte du bandeau) mesuré');
-  assert.equal(at[WIDE].before.tiers.bg, 'rgb(238, 238, 238)', 'fond du bandeau avant');
-  assert.equal(at[WIDE].after.tiers.bg, 'rgb(236, 235, 233)', 'fond du bandeau après');
-});
-test(`P6 afterB : ${T.P6.afterB.text}`, { todo: TODO }, () => {
+test(`P6 afterB : ${T.P6.afterB.text}`, () => {
   assert.deepEqual(at[WIDE].after.tiersStyle, at[WIDE].before.tiersStyle);
 });
 
 // P7 : couleur de marque non déclarée.
-test(`P7 today : ${T.P7.today.text}`, { skip: SKIP_TODAY }, () => {
-  checkTodayRows(T.P7);
-  const [v] = T.P7.values;
-  assert.equal(rowsOf(WIDE, 'colors', v.value)[0].count, v.elements, 'éléments violets');
-  const p = audit.rendered.contrast.pairs.find((/** @type {any} */ x) => x.text === v.contrast.text && x.bg === v.contrast.bg);
-  assert.ok(p, 'paire blanc sur violet absente de l’audit');
-  assert.ok(Math.abs(p.ratio - v.contrast.ratio) <= TOL, `contraste ${p.ratio}, attendu ${v.contrast.ratio}`);
-  assert.ok(p.belowAA > 0, 'blanc sur violet signalé sous AA');
-});
-test(`P7 afterB : ${T.P7.afterB.text}`, { todo: TODO }, () => {
+test(`P7 afterB : ${T.P7.afterB.text}`, () => {
   checkAfterBRows(T.P7);
   const w = T.P7.afterB.auditBelowAA;
   const p = audit.rendered.contrast.pairs.find((/** @type {any} */ x) => x.text === w.text && x.bg === w.bg);
@@ -303,11 +256,7 @@ test(`P7 afterB : ${T.P7.afterB.text}`, { todo: TODO }, () => {
 
 // P8 et P8b : bleu isolé, et son contrôle.
 for (const id of ['P8', 'P8b']) {
-  test(`${id} today : ${T[id].today.text}`, { skip: SKIP_TODAY }, () => {
-    checkTodayRows(T[id]);
-    assert.equal(rowsOf(WIDE, 'colors', T[id].values[0].value)[0].count, T[id].values[0].elements, 'éléments');
-  });
-  test(`${id} afterB : ${T[id].afterB.text}`, { todo: TODO }, () => checkAfterBRows(T[id]));
+  test(`${id} afterB : ${T[id].afterB.text}`, () => checkAfterBRows(T[id]));
 }
 
 // L1 (lot M) : lien sans soulignement dans un paragraphe ; l'exception est testée dans e2e-migration.

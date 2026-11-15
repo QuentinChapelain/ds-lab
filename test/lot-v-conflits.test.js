@@ -47,7 +47,7 @@ const CSS = [
   'input { color: inherit; }',
   '.champ { display: block; margin: 0 0 10px; padding: 0; border: 0; font-size: 14px; background-color: transparent; }',
   '.msg { margin: 0 0 10px; }',
-  '.note { margin: 0 0 10px; border-bottom: 1px solid #d8d6d2; }',
+  '.note { margin: 0 0 10px; border-bottom: 1px solid #D8D6D2; }',
   '.x { font-size: 1.2rem; }',
   '',
 ].join('\n');
@@ -200,8 +200,9 @@ test('revue : lignes en conflit marquées, déclaration à l’appui', async () 
   assert.ok(inside.id);
 });
 
-test('déclarations : couleur écrite dans un raccourci (border-bottom: 1px solid #d8d6d2) lue telle quelle', () => {
+// Revue de code du 15/11, lot 0 : la feuille écrit #D8D6D2, pas la forme normalisée #d8d6d2 de la ligne.
+test('déclarations : couleur écrite dans un raccourci (border-bottom: 1px solid #D8D6D2) lue telle quelle', () => {
   const r = rowOf('colors', '#d8d6d2');
   assert.ok(r?.declarations?.length, 'ligne de la bordure');
-  assert.deepEqual(r.declarations.map((/** @type {any} */ d) => `${d.selector}|${d.written}`), ['.note|#d8d6d2']);
+  assert.deepEqual(r.declarations.map((/** @type {any} */ d) => `${d.selector}|${d.written}`), ['.note|#D8D6D2']);
 });

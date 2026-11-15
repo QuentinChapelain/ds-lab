@@ -35,12 +35,18 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { typo } from '../src/tokens/typo.js';
-import { charger, etroite, COMMUN, ORBE } from './helpers/jetons.js';
+import { largeurs, enEtroit } from '../src/tokens/resolver.js';
+import { charger, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');
 const load = charger;
-const marque = load('marque.tokens.json');
+// Revue de code du 15/11, lot 0 : jetons lus par le resolver (largeurs), seuil de l'étroit compris ; l'aide ne sert plus
+// qu'aux jeux modifiés exprès.
+const l = largeurs(DIR);
+const marque = l.large.marque;
+/** Contexte étroit d'une couche donnée, seuil lu dans les jetons. @param {any} sem @param {any} [etroit] contexte modifié */
+const etroitDe = (sem, etroit) => ({ ...l.etroit, semantique: enEtroit(sem, etroit ? [etroit] : l.contexte) });
 const REGLES = ['multiple-4', 'decroissants', 'etroit-large', 'corps-1-5', 'petits-1-3', 'corps-1rem', 'min-12', 'police', 'hauteur-capitale'];
 
 /** Lance la commande (fichiers temporaires hors dépôt). @param {any} [sem] @param {any} [prims] @param {any} [etroit] */
@@ -57,7 +63,7 @@ function run(sem, prims, etroit) {
 }
 /** @param {(s: any) => void} edit */
 const variant = (edit) => {
-  const s = load('semantique.tokens.json');
+  const s = structuredClone(l.large.semantique);
   edit(s);
   return s;
 };
@@ -69,7 +75,7 @@ const failing = (r) => r.regles.filter((g) => !g.ok).map((g) => g.id);
  * @param {any} sem @param {any} prims @param {string} id @param {string} detail @param {any} [etroit] contexte étroit
  */
 function rouge(sem, prims, id, detail, etroit) {
-  const r = typo(sem, prims ?? load('primitives.tokens.json'), marque, etroite(sem, etroit));
+  const r = typo(sem, prims ?? l.large.primitives, marque, etroitDe(sem, etroit));
   assert.deepEqual(failing(r), [id]);
   const p = run(sem, prims, etroit);
   assert.equal(p.status, 1, p.stdout + p.stderr);
@@ -78,7 +84,7 @@ function rouge(sem, prims, id, detail, etroit) {
 }
 
 test('typo vert : Orbe Café, 9 règles tenues (étape 4c : consigne de hauteur de capitale), rapports affichés, primitives sans rôle, code 0', () => {
-  const r = typo(load('semantique.tokens.json'), load('primitives.tokens.json'), marque, etroite(load('semantique.tokens.json')));
+  const r = typo(l.large.semantique, l.large.primitives, marque, l.etroit);
   assert.deepEqual(r.regles.map((g) => g.id), REGLES);
   assert.deepEqual(failing(r), []);
   assert.deepEqual(r.sansRole, []);
@@ -105,7 +111,7 @@ test('typo rouge R2 : titre.3 à 24 px, égal à titre.2', () => {
 });
 
 test('typo rouge R3 : corps.grand plus grand en étroit qu\'en large', () => {
-  const sem = load('semantique.tokens.json');
+  const sem = structuredClone(l.large.semantique);
   const etroit = load('largeur.etroit.tokens.json');
   etroit.typo.corps = { grand: { $value: { ...sem.typo.corps.grand.$value, fontSize: '{taille-texte.20}', lineHeight: 1.6 } } };
   rouge(sem, undefined, 'etroit-large', 'corps.grand : étroit 20 / 32 px, large 18 / 28 px', etroit);
@@ -124,7 +130,7 @@ test('typo rouge R6 : corps.moyen à 14 px', () => {
 });
 
 test('typo rouge R7 : mention à 10 px', () => {
-  const prims = load('primitives.tokens.json');
+  const prims = structuredClone(l.large.primitives);
   prims['taille-texte']['10'] = { $value: { value: 10, unit: 'px' } };
   const sem = variant((s) => { Object.assign(s.typo.mention.$value, { fontSize: '{taille-texte.10}', lineHeight: 1.6 }); });
   rouge(sem, prims, 'min-12', 'mention en large : 10 px < 12 px');

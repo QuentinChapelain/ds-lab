@@ -24,7 +24,7 @@ import { join } from 'node:path';
 import { chromium } from 'playwright-core';
 import { loadRoles, contratRoles } from '../src/tokens/roles.js';
 import { rolesHtml } from '../src/report/roles.js';
-import { charger, etroite, COMMUN, ORBE } from './helpers/jetons.js';
+import { charger, COMMUN, ORBE } from './helpers/jetons.js';
 
 const DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'tokens', 'orbe-cafe');
 const FILE = join(DIR, 'roles.html');

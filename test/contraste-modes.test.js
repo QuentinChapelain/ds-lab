@@ -9,14 +9,22 @@
  *   C3 bordure.erreur, .succes, .avertissement, .info sur fond.surface : paires de type bordure (3:1), déclarées ;
  *   C4 la saisie dit le mode d'un refus : avec un seuil de 3,15 sur bordure.forte sur fond.surface (clair 3,21:1,
  *      sombre 3,10:1 pour une marque quelconque), le seul motif est « contraste (sombre) : bordure.forte sur
- *      fond.surface, 3,10:1 < 3,15:1 » ; le contrat sombre de la saisie est celui que lit le resolver.
+ *      fond.surface, 3,10:1 < 3,15:1 ».
+ *   C5 (revue de code du 15/11, lot 0) : pour les 4 marques fictives, en clair et en sombre, le contrat calculé sur les
+ *      couches que rend saisir(), fusionnées comme le dit src/tokens/saisie.js (commun, échelles et couche marque, puis en
+ *      sombre le commun sombre, les échelles sombres et la couche marque sombre), est égal au contrat de
+ *      loadRoles(dossier, { mode }). Ce que le test ne voit pas : saisir() ne rend pas sa propre fusion ; le test la refait.
+ *      Il prouve que les couches générées, fusionnées ainsi, donnent le contrat du resolver, pas que saisir() fusionne ainsi.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { saisir, chargerCommun } from '../src/tokens/saisie.js';
+import { saisir, chargerCommun, lirePropresOrbe } from '../src/tokens/saisie.js';
+import { loadRoles, contratRoles } from '../src/tokens/roles.js';
+import { fusionner } from '../src/tokens/resolver.js';
 import { charger } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -56,7 +64,7 @@ test('C3 bordures de statut sur fond.surface : paires déclarées, type bordure'
   assert.equal(paires.length, 70);
 });
 
-test('C4 la saisie dit le mode du refus ; contrat sombre de la saisie = contrat du resolver', () => {
+test('C4 la saisie dit le mode du refus', () => {
   const commun = chargerCommun();
   const communSombre = chargerCommun({ mode: 'sombre' });
   /** @param {any} c */
@@ -68,4 +76,25 @@ test('C4 la saisie dit le mode du refus ; contrat sombre de la saisie = contrat 
   };
   const r = saisir({ nom: 'Essai', primaire: '#2b4c7e', polices: POLICES }, { dossier: '/ailleurs', commun: durci(commun), communSombre: durci(communSombre) });
   assert.deepEqual(r.motifs, ['contraste (sombre) : bordure.forte sur fond.surface, 3,10:1 < 3,15:1']);
+});
+
+test('C5 contrat des couches de la saisie = contrat du resolver, 4 marques, clair et sombre', () => {
+  const commun = chargerCommun();
+  const communSombre = chargerCommun({ mode: 'sombre' });
+  for (const m of MARQUES) {
+    const dossier = join(ROOT, 'tokens', m);
+    const s = saisir(JSON.parse(readFileSync(join(dossier, 'entree.json'), 'utf8')), { dossier });
+    assert.deepEqual(s.motifs, [], m);
+    // Recette de src/tokens/saisie.js, recopiée : saisir() ne rend pas sa fusion.
+    const claires = s.echelles ? [s.echelles] : m === 'orbe-cafe' ? [lirePropresOrbe()] : [];
+    const jeux = {
+      clair: { ...commun, marque: fusionner(fusionner({}, commun.marque), s.marque), echelles: claires },
+      sombre: { ...communSombre, marque: fusionner(fusionner(fusionner({}, communSombre.marque), s.marque), s.marqueSombre), echelles: [...claires, s.echellesSombres] },
+    };
+    for (const mode of /** @type {const} */ (['clair', 'sombre'])) {
+      const saisie = contratRoles(jeux[mode]);
+      assert.equal(saisie.pairs.length, 70, `${m} ${mode}`);
+      assert.deepEqual(saisie, contratRoles(loadRoles(dossier, { mode })), `${m} ${mode}`);
+    }
+  }
 });

@@ -34,7 +34,7 @@ let target;
 const BOX = 'position:absolute;left:40px;width:200px;height:60px;line-height:60px;padding:0 8px;font:700 14px/60px Arial,sans-serif';
 // Avant migration : blanc sur un plein terre qui change (#d0563f, décidé vers terre-9) et sur terre-9 déjà sur la cible.
 const AVANT = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>avant</title>
-<style>html,body{margin:0;background:#ffffff}.nouveau{${BOX};top:40px;color:#ffffff;background-color:#d0563f}.annulee{${BOX};top:140px;color:#ffffff;background-color:#c8553d}.pied{${BOX};top:240px;color:#ffffff;background-color:#2b4c7e}</style></head>
+<style>html,body{margin:0;background:#ffffff}.nouveau{${BOX};top:40px;color:#ffffff;background-color:#d0563f}.annulee{${BOX};top:140px;color:#ffffff;background-color:#c8553d}.pied{${BOX};top:240px;color:#FFF;background-color:#2b4c7e}</style></head>
 <body><span class="nouveau">Nouveau</span><span class="annulee">Annulée</span><span class="pied">Pied</span></body></html>`;
 // Après migration : onSolid terre sur terre-9 ; bleu-12 sur sable-9 (pas l'onSolid de sable).
 const APRES = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>apres</title>
@@ -206,10 +206,11 @@ test('consigne, RATTACHE : le blanc exclut les éléments couplés et le dit', (
   assert.ok(!toAttach.includes('.nouveau') && !toAttach.includes('.annulee'), `couplés hors des déclarations à rattacher : ${toAttach}`);
 });
 
-test('déclarations : la valeur écrite est celle de la source (#ffffff), pas la valeur normalisée', () => {
+// Revue de code du 15/11, lot 0 : .pied écrit #FFF, pas la forme normalisée #ffffff de la ligne.
+test('déclarations : la valeur écrite est celle de la source (#FFF), pas la valeur normalisée (#ffffff)', () => {
   const a = /** @type {string[]} */ (run.migration.agent.lines);
   const white = run.migration.rows.find((/** @type {any} */ r) => r.value === '#ffffff' && r.usage === 'texte');
   const line = a.slice(a.findIndex((l) => l.startsWith('RATTACHE ('))).find((l) => l.includes(`${white.id} `)) ?? '';
-  assert.match(line, /\.pied \(#ffffff\)/, line);
+  assert.match(line, /\.pied \(#FFF\)/, line);
   assert.ok(!line.includes('rgb('), line);
 });

@@ -25,7 +25,7 @@ import { join } from 'node:path';
 import { wcagContrast, rgb } from 'culori';
 import { generateScale, checkValise } from '../src/valise/generate.js';
 import { valiseFromTokens } from '../src/tokens/primitives.js';
-import { charger, etroite, COMMUN, ORBE } from './helpers/jetons.js';
+import { charger, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');

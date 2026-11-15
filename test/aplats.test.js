@@ -29,7 +29,7 @@ import { join } from 'node:path';
 import { loadRoles, resolveRoles, contratRoles } from '../src/tokens/roles.js';
 import { serialiser } from '../src/tokens/saisie.js';
 import { AJOUTS, PAIRES_AJOUTEES, INTERDITES_AJOUTEES } from './helpers/lot5.js';
-import { charger, etroite, avecAplat, COMMUN, ORBE } from './helpers/jetons.js';
+import { charger, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');
@@ -73,8 +73,9 @@ test('paires.json : 48 paires de l\'étape 3 en tête, 18 ajoutées, 4 interdite
 test('les quatre marques fictives : 0 paire en échec, 70 paires, 8 interdites', () => {
   for (const slug of ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie']) {
     const d = join(ROOT, 'tokens', slug);
-    const set = { ...loadRoles(DIR), marque: avecAplat(load(d, 'marque.tokens.json')), echelles: slug === 'orbe-cafe' ? [] : [load(d, 'echelles.tokens.json')] };
-    const c = contratRoles(set);
+    // Revue de code du 15/11, lot 0 : le jeu de chaque marque, lu par son resolver (avant : rôles et primitives d'Orbe Café
+    // pour les quatre, couche marque et échelles fusionnées à la main).
+    const c = contratRoles(loadRoles(d));
     assert.equal(c.pairs.length, 70, slug);
     assert.deepEqual(c.fails, [], slug);
     assert.equal(c.interdites.length, 8, slug);

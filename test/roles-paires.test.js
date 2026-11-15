@@ -49,11 +49,9 @@ import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { contractOf } from '../src/valise/generate.js';
-import { valiseFromTokens } from '../src/tokens/primitives.js';
-import { loadRoles, resolveRoles, contratRoles, contrat, ordreEchelles } from '../src/tokens/roles.js';
+import { loadRoles, resolveRoles, contratRoles, contrat } from '../src/tokens/roles.js';
 import { PAIRES_AJOUTEES, INTERDITES_AJOUTEES } from './helpers/lot5.js';
-import { charger, etroite, COMMUN, ORBE } from './helpers/jetons.js';
+import { charger, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');
@@ -203,11 +201,27 @@ test('T2 hypothèse : texte.secondaire sous 4,5:1 sur fond.composant.appui (4,33
   assert.ok(p && p.ratio < 4.5 && Math.abs(p.ratio - 4.3327) <= 1e-4);
 });
 
-test('T2 contrat : le contrat par échelle reste celui de contractOf, les rôles s\'y ajoutent', () => {
+/**
+ * Revue de code du 15/11, lot 0 : le contrat par échelle d'Orbe Café, écrit à la main (avant : comparé à
+ * contractOf(valiseFromTokens({ couleur: ordreEchelles(…) })), recopie de src/tokens/roles.js).
+ * Ordre : neutre, échelles de la marque (bleu, terre, sable, dans l'ordre de tokens/orbe-cafe/primitives.tokens.json),
+ * statuts (erreur, succès, avertissement, info) ; 10 paires par échelle. Rapports recalculés avec culori sur les
+ * valeurs des jetons (neutre 1 #fbfbfb, 10 #7d776c, 11 #6d675b, sur-plein #201d17 ; bleu 9 #2b4c7e, sur-plein #ffffff) :
+ *   node -e 'import("culori").then(({wcagContrast:w})=>console.log(w("#6d675b","#fbfbfb"),w("#ffffff","#2b4c7e"),w("#201d17","#7d776c")))'
+ *   → 5.424088602627833 8.614442961097723 3.7832254575552007
+ */
+test('T2 contrat : par échelle (ordre, 80 paires, trois échecs, trois rapports écrits à la main), les rôles s\'y ajoutent', () => {
   const set = loadRoles(DIR);
-  const c = contrat(set);
-  assert.deepEqual(c.echelles, contractOf(valiseFromTokens({ couleur: ordreEchelles(set.primitives, set.statuts) })));
-  assert.deepEqual(c.roles, contratRoles(set));
+  const tout = contrat(set);
+  assert.deepEqual(tout.roles, contratRoles(set));
+  const c = tout.echelles;
+  assert.deepEqual([...new Set(c.pairs.map((/** @type {any} */ p) => p.scale))], ['neutre', 'bleu', 'terre', 'sable', 'erreur', 'succes', 'avertissement', 'info']);
+  assert.equal(c.pairs.length, 80);
+  assert.deepEqual(c.fails, ['neutre : onSolid sur 10, 3,7832 < 4,5', 'terre : onSolid sur 10, 3,8055 < 4,5', 'succes : onSolid sur 10, 3,8503 < 4,5']);
+  /** @param {string} scale @param {string} fg @param {string} bg */
+  const ratio = (scale, fg, bg) => c.pairs.find((/** @type {any} */ p) => p.scale === scale && p.fg === fg && p.bg === bg)?.ratio;
+  for (const [scale, fg, bg, want] of /** @type {const} */ ([['neutre', '11', '1', 5.424088602627833], ['bleu', 'onSolid', '9', 8.614442961097723], ['neutre', 'onSolid', '10', 3.7832254575552007]]))
+    assert.ok(Math.abs(/** @type {number} */ (ratio(scale, fg, bg)) - want) <= 1e-4, `${scale} ${fg} sur ${bg} : ${ratio(scale, fg, bg)}`);
 });
 
 test('T3 aucun échec, aucune exception écrite', () => {

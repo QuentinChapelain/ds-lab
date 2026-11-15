@@ -147,7 +147,12 @@ test('mode --live : barre avant / après dans la page, interrupteur par famille,
     // Page suivante : la barre revient.
     await page.goto(servers.origin + '/page-2.html');
     await page.locator('[data-ds-lab="barre"]').waitFor({ state: 'attached' });
-    assert.ok(await page.evaluate(() => /** @type {any} */ (window).__dsSim.ops.length) >= 0);
+    // Revue de code du 15/11, lot 0 : la carte est relue sur la page suivante. Le titre de /page-2.html est à 54px
+    // (3rem × 18, @media min-width 1024 px, fixtures/marque-demo/expected.json) ; la table le porte à 56px (cible.json).
+    const titre = () => page.evaluate(() => getComputedStyle(/** @type {Element} */ (document.querySelector('h1'))).fontSize);
+    assert.equal(await titre(), '56px', 'page suivante : après');
+    await page.locator('[data-ds-lab="barre"]').getByRole('button', { name: 'Avant' }).click();
+    assert.equal(await titre(), '54px', 'page suivante : avant');
   } finally {
     await browser.close();
   }

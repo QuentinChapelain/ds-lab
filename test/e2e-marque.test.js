@@ -6,8 +6,8 @@
  * fixtures/marque-demo/expected-marque.json, écrit avant le code et jamais recalé.
  *   construction   la page est bien celle décrite (couleurs, fonds, contrastes et
  *                  variables du back-office mesurés ici, sans l'outil) : passe dès que la page existe ;
- *   aujourd'hui    ce que l'outil d'avant le lot M produit (le piège reproduit le défaut) ;
- *                  ignoré une fois le lot M fait (AFTER_M) ;
+ *   aujourd'hui    ce que l'outil d'avant le lot M produisait : tests supprimés à la revue de code du 15/11
+ *                  (sautés depuis le lot M) ; le défaut reste écrit dans expected-marque.json (bloc today) ;
  *   PM0 à PM8      ce que la lecture rapide et la table doivent produire après le lot M ;
  *   garde-fou      Orbe Café sans bloc brand : 12 décisions, inchangé.
  */
@@ -24,8 +24,6 @@ import { gotoAndSettle } from '../src/browser/navigate.js';
 const E = JSON.parse(await readFile(new URL('../fixtures/marque-demo/expected-marque.json', import.meta.url), 'utf8'));
 const CSS = (await readFile(new URL('../fixtures/marque-demo/marque/styles/marque.css', import.meta.url), 'utf8')).split('\n');
 const TOL = 0.001;
-// Lot M fait (étape 2, 13/11/2026) : les tests « aujourd'hui » décrivent l'outil d'avant, gardés mais ignorés.
-const AFTER_M = true;
 
 /**
  * Exécutée dans la page : couleur du texte, fond opaque le plus proche (ancêtres
@@ -152,16 +150,6 @@ test('construction : variables du back-office, couleurs, fonds et contrastes con
     assert.match(CSS[line - 1], /#dd3f2b/, `marque.css:${line} ne porte pas #dd3f2b`);
   }
 });
-
-for (const trap of E.traps.filter((/** @type {any} */ t) => t.rows))
-  test(`aujourd’hui ${trap.id} : le piège reproduit le défaut`, { skip: AFTER_M && 'lot M fait' }, () => {
-    for (const row of trap.rows) {
-      const r = rowOf(row.value, row.usage);
-      assert.ok(r, `${row.value} ${row.usage} : pas de ligne`);
-      assert.equal(r.class, row.today.class, `${row.value} ${row.usage} : classe`);
-      assert.equal(r.name, row.today.name, `${row.value} ${row.usage} : pas`);
-    }
-  });
 
 /** @param {any} trap */
 function checkRows(trap) {
