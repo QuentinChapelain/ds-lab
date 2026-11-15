@@ -17,6 +17,10 @@
  *     fond.inverse → neutre 12 et texte.sur-inverse → couleur.blanc ;
  *   un rôle qui a des états (fond.composant, fond.interactif.fort) porte sa valeur de base en $root (DTCG 2025.10) ;
  *   alias seulement, aucune valeur en dur ; $description d'une phrase.
+ *   séance 3b (15/11/2026), règle des pleins en trois cas, déclarée dans la couche marque : les pleins et
+ *     leur texte passent par marque.<emplacement>.plein / .plein-survol / .sur-plein ; Orbe Café :
+ *     primaire sombre (bleu 9, survol = bleu 9 + voile blanc 8 %, texte blanc), accent, erreur, succès et
+ *     info moyens (pas 11, survol pas 12, texte blanc), avertissement clair (pas 9, survol pas 10, texte pas 12).
  * Les alias sont résolus ici par un résolveur propre au test, indépendant du code.
  */
 import { test } from 'node:test';
@@ -29,7 +33,7 @@ const DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'tokens', 'orbe-
 const load = (/** @type {string} */ f) => JSON.parse(readFileSync(join(DIR, f), 'utf8'));
 
 const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
-/** Rôle → primitive visée (échelle.pas). 19 fonds, 15 textes, 8 bordures = 42. */
+/** Rôle → primitive visée (échelle.pas), ou « voile:<échelle.pas> » pour un survol calculé. 19 fonds, 15 textes, 8 bordures = 42. */
 const EXPECTED = /** @type {Record<string, string>} */ ({
   'fond.app': 'neutre.1',
   'fond.discret': 'neutre.2',
@@ -40,18 +44,18 @@ const EXPECTED = /** @type {Record<string, string>} */ ({
   'fond.composant.appui': 'neutre.5',
   'fond.interactif.discret': 'bleu.3',
   'fond.interactif.fort': 'bleu.9',
-  'fond.interactif.fort.survol': 'bleu.10',
-  'fond.accent.fort': 'terre.10',
-  ...Object.fromEntries(STATUTS.flatMap((s) => [[`fond.${s}.discret`, `${s}.3`], [`fond.${s}.fort`, ['succes', 'info'].includes(s) ? `${s}.10` : `${s}.9`]])),
+  'fond.interactif.fort.survol': 'voile:bleu.9',
+  'fond.accent.fort': 'terre.11',
+  ...Object.fromEntries(STATUTS.flatMap((s) => [[`fond.${s}.discret`, `${s}.3`], [`fond.${s}.fort`, s === 'avertissement' ? `${s}.9` : `${s}.11`]])),
   'texte.principal': 'neutre.12',
   'texte.secondaire': 'neutre.11',
   'texte.interactif': 'bleu.11',
   'texte.accent': 'terre.11',
   ...Object.fromEntries(STATUTS.map((s) => [`texte.${s}`, `${s}.11`])),
-  'texte.sur-interactif': 'bleu.sur-plein',
+  'texte.sur-interactif': 'blanc',
   'texte.sur-accent': 'blanc',
   'texte.sur-inverse': 'blanc',
-  ...Object.fromEntries(STATUTS.map((s) => [`texte.sur-${s}`, ['succes', 'info'].includes(s) ? 'blanc' : `${s}.sur-plein`])),
+  ...Object.fromEntries(STATUTS.map((s) => [`texte.sur-${s}`, s === 'avertissement' ? `${s}.12` : 'blanc'])),
   'bordure.discrete': 'neutre.6',
   'bordure.defaut': 'neutre.7',
   'bordure.forte': 'neutre.8',
@@ -88,9 +92,10 @@ const prims = new Map([...flatten(load('primitives.tokens.json')), ...flatten(lo
 const marque = flatten(load('marque.tokens.json'));
 const VIA_MARQUE = /** @type {Record<string, string>} */ ({
   'fond.interactif.discret': 'marque.primaire.3',
-  'fond.interactif.fort': 'marque.primaire.9',
-  'fond.interactif.fort.survol': 'marque.primaire.10',
-  'fond.accent.fort': 'marque.accent.10',
+  'fond.interactif.fort': 'marque.primaire.plein',
+  'fond.interactif.fort.survol': 'marque.primaire.plein-survol',
+  'fond.accent.fort': 'marque.accent.plein',
+  ...Object.fromEntries(STATUTS.flatMap((s) => [[`fond.${s}.fort`, `marque.${s}.plein`], [`texte.sur-${s}`, `marque.${s}.sur-plein`]])),
   'texte.interactif': 'marque.primaire.11',
   'texte.accent': 'marque.accent.11',
   'texte.sur-interactif': 'marque.primaire.sur-plein',
@@ -111,6 +116,12 @@ test('T1 chaque rôle est un alias vers la primitive attendue (directement ou pa
   for (const [role, target] of Object.entries(EXPECTED)) {
     const v = roles.get(role)?.$value;
     const slot = VIA_MARQUE[role];
+    if (target.startsWith('voile:')) {
+      assert.equal(v, `{${slot}}`, `${role} : par la marque`);
+      const x = marque.get(slot)?.$extensions?.['ds-lab.voile'];
+      assert.deepEqual(x && { base: x.base, blanc: x.blanc }, { base: `{couleur.${target.slice(6)}}`, blanc: 0.08 }, `${role} : voile`);
+      continue;
+    }
     if (slot) {
       assert.equal(v, `{${slot}}`, `${role} : par la marque`);
       assert.equal(marque.get(slot)?.$value, `{couleur.${target}}`, `${role} : ${slot} → {couleur.${target}}`);

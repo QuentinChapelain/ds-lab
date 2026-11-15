@@ -32,6 +32,11 @@
  *   texte.sur-inverse (blanc) sur fond.inverse (neutre 12) : 13,0628 ;
  *   interdite texte.secondaire sur fond.interactif.fort : 1,5348, règle « sur un plein, le texte est texte.sur-* » ;
  *   règle de bordure.forte sur fond.composant : « un champ se pose sur fond.surface ».
+ *
+ * Séance 3b (15/11/2026), règle des pleins en trois cas, ratios culori, commande : node local/scripts/ratios-pleins.mjs
+ * (wcagContrast sur les pas lus dans primitives et statuts ; voile = interpolate([bleu 9, blanc], 'rgb')(0,08) = #3c5a88) :
+ *   blanc sur bleu 9 + voile 8 % : 6,9765 ; blanc sur terre 11 : 5,6287 ; sur erreur 11 : 5,6023 ;
+ *   sur succes 11 : 5,6186 ; sur info 11 : 5,6178 ; avertissement 12 sur avertissement 9 : 5,7721.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -80,12 +85,12 @@ texte.info | fond.app | 5.4289 | 4.5
 texte.info | fond.surface | 5.6178 | 4.5
 texte.info | fond.info.discret | 5.0657 | 4.5
 texte.sur-interactif | fond.interactif.fort | 8.6144 | 4.5
-texte.sur-interactif | fond.interactif.fort.survol | 9.1534 | 4.5
-texte.sur-accent | fond.accent.fort | 5.1669 | 4.5
-texte.sur-erreur | fond.erreur.fort | 4.7443 | 4.5
-texte.sur-succes | fond.succes.fort | 5.0674 | 4.5
-texte.sur-avertissement | fond.avertissement.fort | 5.3075 | 4.5
-texte.sur-info | fond.info.fort | 4.6220 | 4.5
+texte.sur-interactif | fond.interactif.fort.survol | 6.9765 | 4.5
+texte.sur-accent | fond.accent.fort | 5.6287 | 4.5
+texte.sur-erreur | fond.erreur.fort | 5.6023 | 4.5
+texte.sur-succes | fond.succes.fort | 5.6186 | 4.5
+texte.sur-avertissement | fond.avertissement.fort | 5.7721 | 4.5
+texte.sur-info | fond.info.fort | 5.6178 | 4.5
 texte.sur-inverse | fond.inverse | 13.0628 | 4.5
 bordure.forte | fond.app | 3.1030 | 3
 bordure.forte | fond.surface | 3.2110 | 3
@@ -167,11 +172,11 @@ test('T2 contratRoles : ratios égaux à culori (± 0,0001), seuil par type', ()
   });
 });
 
-test('T2 pleins à texte blanc : 5,17 / 5,07 / 4,62 annoncés', () => {
+test('T2 pleins moyens au pas 11, texte blanc : accent 5,63, erreur 5,60, succès 5,62, info 5,62 ; avertissement clair, texte pas 12 : 5,77', () => {
   const c = contratRoles(loadRoles(DIR));
-  const got = ['accent', 'succes', 'info'].map((s) => c.pairs.find((/** @type {any} */ p) => p.devant === `texte.sur-${s}`));
-  assert.deepEqual(got.map((p) => p.hexDevant), ['#ffffff', '#ffffff', '#ffffff']);
-  assert.deepEqual(got.map((p) => p.ratio.toFixed(2)), ['5.17', '5.07', '4.62']);
+  const got = ['accent', 'erreur', 'succes', 'info', 'avertissement'].map((s) => c.pairs.find((/** @type {any} */ p) => p.devant === `texte.sur-${s}`));
+  assert.deepEqual(got.map((p) => p.hexDevant), ['#ffffff', '#ffffff', '#ffffff', '#ffffff', '#442d01']);
+  assert.deepEqual(got.map((p) => p.ratio.toFixed(2)), ['5.63', '5.60', '5.62', '5.62', '5.77']);
 });
 
 test('T2 interdites mesurées et listées à part, hors échecs', () => {

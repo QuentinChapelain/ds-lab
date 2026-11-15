@@ -1,5 +1,5 @@
 {
-  "$description": "Rôles de couleur d'Orbe Café (marque fictive), séance 3a du 14/11/2026. Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json, statuts.tokens.json et marque.tokens.json ; les couleurs de marque passent par marque.primaire.* et marque.accent.* (Orbe Café : primaire = bleu, accent = terre). Paires de contraste déclarées dans paires.json.",
+  "$description": "Rôles de couleur d'Orbe Café (marque fictive), séance 3a du 14/11/2026. Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json, statuts.tokens.json et marque.tokens.json ; les couleurs de marque et tous les pleins, statuts compris, passent par marque.<emplacement>.* (Orbe Café : primaire = bleu, accent = terre). Paires de contraste déclarées dans paires.json.",
   "fond": {
     "$type": "color",
     "$description": "Surfaces sur lesquelles se posent texte et bordures.",
@@ -40,18 +40,18 @@
       },
       "fort": {
         "$root": {
-          "$value": "{marque.primaire.9}",
+          "$value": "{marque.primaire.plein}",
           "$description": "Plein de l'action principale, comme le bouton qui valide."
         },
         "survol": {
-          "$value": "{marque.primaire.10}",
+          "$value": "{marque.primaire.plein-survol}",
           "$description": "Plein de l'action principale survolée."
         }
       }
     },
     "accent": {
       "fort": {
-        "$value": "{marque.accent.10}",
+        "$value": "{marque.accent.plein}",
         "$description": "Plein qui met en avant sans appeler à l'action, comme une étiquette ou un bandeau, avec un texte blanc posé dessus."
       }
     },
@@ -61,7 +61,7 @@
         "$description": "Fond léger d'un message ou d'un champ en erreur."
       },
       "fort": {
-        "$value": "{couleur.erreur.9}",
+        "$value": "{marque.erreur.plein}",
         "$description": "Plein qui signale une erreur ou une action destructrice."
       }
     },
@@ -71,7 +71,7 @@
         "$description": "Fond léger d'un message de réussite."
       },
       "fort": {
-        "$value": "{couleur.succes.10}",
+        "$value": "{marque.succes.plein}",
         "$description": "Plein qui signale une réussite, avec un texte blanc posé dessus."
       }
     },
@@ -81,7 +81,7 @@
         "$description": "Fond léger d'un message d'avertissement."
       },
       "fort": {
-        "$value": "{couleur.avertissement.9}",
+        "$value": "{marque.avertissement.plein}",
         "$description": "Plein qui signale un avertissement, avec un texte foncé posé dessus."
       }
     },
@@ -91,7 +91,7 @@
         "$description": "Fond léger d'un message d'information."
       },
       "fort": {
-        "$value": "{couleur.info.10}",
+        "$value": "{marque.info.plein}",
         "$description": "Plein qui signale une information, avec un texte blanc posé dessus."
       }
     }
@@ -140,19 +140,19 @@
       "$description": "Texte posé sur le plein d'accent."
     },
     "sur-erreur": {
-      "$value": "{couleur.erreur.sur-plein}",
+      "$value": "{marque.erreur.sur-plein}",
       "$description": "Texte posé sur le plein d'erreur."
     },
     "sur-succes": {
-      "$value": "{couleur.blanc}",
+      "$value": "{marque.succes.sur-plein}",
       "$description": "Texte posé sur le plein de réussite."
     },
     "sur-avertissement": {
-      "$value": "{couleur.avertissement.sur-plein}",
+      "$value": "{marque.avertissement.sur-plein}",
       "$description": "Texte posé sur le plein d'avertissement."
     },
     "sur-info": {
-      "$value": "{couleur.blanc}",
+      "$value": "{marque.info.sur-plein}",
       "$description": "Texte posé sur le plein d'information."
     },
     "sur-inverse": {
