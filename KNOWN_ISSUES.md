@@ -10,5 +10,6 @@
 - Règle DS10 sans contrôle (`docs/regles.md`).
 - `checkValise` : 12 échecs sur les échelles de `primitives.tokens.json` (écart de teinte, contraste non croissant, texte sur le pas 10) ; les statuts générés passent.
 - Seuil du cas « sombre » (blanc ≥ 5,5 sur le pas 9) et seuils du cas « clair » de la règle des pleins : hypothèses, à calibrer sur plus de marques.
+- Bas de la bande du cas « clair » : à L 0,72, de 55° à 100° (et au-delà à chroma 0,10), la saisie refuse la couleur, car le texte au pas 12 passe sous 4,5:1 sur le survol au pas 10 ; quelques autres cases claires ou très claires échouent à `checkValise`. Décision sur image attendue (calibrage, étape 4a, lot 3).
 - Couches communes (neutres, statuts, rôles, paires, espaces, typo) lues dans `tokens/orbe-cafe/` par toutes les marques, mêlées aux échelles d'Orbe Café : à séparer en séance b.
 - Trois fichiers source au-delà de 1 000 lignes ; ni lint ni CI ; revue de code prévue après l'étape 4.

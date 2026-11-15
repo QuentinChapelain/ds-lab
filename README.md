@@ -96,6 +96,8 @@ Trois marques fictives sont saisies de la même façon, toutes acceptées :
 | Écume et Sel (`tokens/ecume-et-sel/`) | cyan clair | orangé | moyen : le bouton prend le pas 11 |
 | Grenat Papeterie (`tokens/grenat-papeterie/`) | grenat foncé | aucun, repli sur le neutre | sombre : couleur exacte |
 
+Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier> <entree.json>...` écrit `calibrage.html` et `calibrage.md`. La table a une colonne par marque : verdict de la saisie, classe selon le générateur, classe selon la règle des pleins, couleur exacte sur le bouton ou non, et trois indicateurs qui ne refusent rien (primaire grise, statut le plus proche, accent proche du primaire). Le balayage montre, pour des teintes de 30° à 140° et des clartés de 0,60 à 0,92, le bouton selon la règle et celui de l'autre cas. Il ne change aucun seuil. Avec des marques témoins, la sortie va dans `local/`.
+
 ## Glossaire
 
 ### Le système

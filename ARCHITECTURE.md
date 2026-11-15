@@ -43,7 +43,7 @@ Chaque commande npm a son point d'entrée dans `src/cli/`. Les sorties d'audit e
 | `src/brand/` | Marque déclarée dans la cible ; lecture rapide de la marque d'un site, avant la réduction |
 | `src/valise/` | Générateur d'échelles visé par contraste, et son contrôle `checkValise` |
 | `src/tokens/` | Jetons DTCG d'une marque : primitives, pleins, rôles et paires, espacements, styles de texte ; calcul des trois contrôles |
-| `src/report/` | Sorties lisibles : rapport d'audit, revue, `migration.md`, planches des rôles, des espacements et de la typo |
+| `src/report/` | Sorties lisibles : rapport d'audit, revue, `migration.md`, planches des rôles, des espacements et de la typo, calibrage des pleins |
 | `src/apply/` | Application de `modifications.json` aux feuilles d'une copie du site |
 | `src/verify/` | Captures, références et comparaisons (pixels, arbre d'accessibilité), partagées par reduce et verify |
 
@@ -90,7 +90,7 @@ Changer de marque, c'est changer la couche marque ; les rôles restent les même
 | `npm run typo` | Règles des styles de texte ; sort en 1 si l'une échoue |
 | `npm test` | Tous les tests |
 
-Générateurs sans commande npm, lancés avec `node` : `src/cli/statuts.js`, `src/cli/planche.js`, `src/cli/planche-espaces.js`, `src/cli/planche-typo.js`.
+Générateurs sans commande npm, lancés avec `node` : `src/cli/statuts.js`, `src/cli/calibrage.js`, `src/cli/planche.js`, `src/cli/planche-espaces.js`, `src/cli/planche-typo.js`.
 
 ## Invariants
 
