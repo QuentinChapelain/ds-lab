@@ -21,8 +21,9 @@ const tokens = marqueTokens({
   primaire: src('bleu'),
   accent: src('terre'),
   statuts: { erreur: src('erreur'), succes: src('succes'), avertissement: src('avertissement'), info: src('info') },
+  polices: { titre: ['Georgia', 'serif'], texte: ['Orbe Sans', 'Arial', 'sans-serif'] },
   description:
-    "Emplacements de marque d'Orbe Café (marque fictive), séance 3b du 15/11/2026. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers marque.<emplacement>.* ; chaque emplacement pointe vers une échelle, et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9. Alias seulement, sauf le survol d'un plein sombre (voile blanc 8 %, valeur calculée, formule en $extensions). Changer de marque, c'est changer ce fichier.",
+    "Emplacements de marque d'Orbe Café (marque fictive), séance 3b du 15/11/2026. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers marque.<emplacement>.* ; chaque emplacement pointe vers une échelle, et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9. Alias seulement, sauf le survol d'un plein sombre (voile blanc 8 %, valeur calculée, formule en $extensions). Polices de la marque en marque.police (titre, texte ; séance 3c). Changer de marque, c'est changer ce fichier.",
 });
 const out = join(dir, 'marque.tokens.json');
 writeFileSync(out, JSON.stringify(tokens, null, 2) + '\n');

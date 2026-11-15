@@ -11,7 +11,9 @@
  *     how : node --input-type=module -e "import { generateScale } from './src/valise/generate.js';
  *           console.log(generateScale('avertissement', '#e5a000'), generateScale('info', '#0284c7'))"
  *     (essai du 14/11/2026, avant le code de T0) ;
- *   empreinte de primitives.tokens.json à 3fddd72 : shasum -a 256 tokens/orbe-cafe/primitives.tokens.json.
+ *   empreinte de primitives.tokens.json à 3fddd72 : shasum -a 256 tokens/orbe-cafe/primitives.tokens.json ;
+ *   séance 3c, typo (15/11/2026) : le bloc graisse est ajouté ; l'empreinte de 3fddd72 doit tenir une fois
+ *   ce seul bloc retiré (rien d'autre ne change dans le fichier).
  * Les contrastes sont recalculés ici avec culori (wcagContrast), indépendamment du générateur.
  */
 import { test } from 'node:test';
@@ -102,7 +104,10 @@ test('T0 checkValise passe sur les deux échelles', () => {
   assert.deepEqual(checkValise(valiseFromTokens(statuts)), []);
 });
 
-test('T0 primitives.tokens.json inchangé (empreinte de 3fddd72)', () => {
-  const h = createHash('sha256').update(readFileSync(join(DIR, 'primitives.tokens.json'))).digest('hex');
+test('T0 primitives.tokens.json inchangé (empreinte de 3fddd72), au bloc graisse près (séance 3c)', () => {
+  const s = readFileSync(join(DIR, 'primitives.tokens.json'), 'utf8');
+  const sansGraisse = s.replace(/ {2}"graisse": \{\n[^]*?\n {2}\},\n/, '');
+  assert.notEqual(sansGraisse, s, 'bloc graisse présent');
+  const h = createHash('sha256').update(sansGraisse).digest('hex');
   assert.equal(h, PRIMITIVES_SHA256);
 });

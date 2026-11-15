@@ -24,6 +24,8 @@
  * (node local/scripts/ratios-pleins.mjs : voile #3c5a88, terre 11 #b3422b, erreur 11 #cb1d2a, succes 11 #00774a,
  * info 11 #006da6, avertissement 12 #442d01).
  * Décision du 15/11/2026 : bordure.focus → marque.primaire.11 pour toutes les marques (bleu 11 #4c6994).
+ * Séance 3c, typo (15/11/2026) : la couche marque porte aussi marque.police (titre, texte ; $type fontFamily),
+ * produite par marqueTokens (paramètre polices) ; les tests ci-dessous portent sur les six emplacements de couleur.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -41,6 +43,10 @@ const load = (/** @type {string} */ f) => JSON.parse(readFileSync(join(DIR, f), 
 const STEPS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 const CASES = ['plein', 'plein-survol', 'sur-plein'];
 const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
+/** Polices d'Orbe Café (séance 3c, typo). */
+const POLICES = { titre: ['Georgia', 'serif'], texte: ['Orbe Sans', 'Arial', 'sans-serif'] };
+/** Emplacements de couleur seulement (sans marque.police). @param {any} m */
+const couleurs = (m) => Object.entries(m).filter(([k, g]) => !k.startsWith('$') && g.$type !== 'fontFamily');
 
 /** Emplacement → [échelle, classe, plein, plein-survol (alias ou « voile »), sur-plein]. */
 const EMPLACEMENTS = {
@@ -145,7 +151,8 @@ test('Pleins : voile blanc 8 % recalculé avec culori (sRGB)', () => {
 test('M0 marque.tokens.json : DTCG 2025.10, six emplacements', () => {
   assert.match(marque.$description, /DTCG 2025\.10/);
   assert.equal(marque.marque.$type, 'color');
-  assert.deepEqual(Object.keys(marque.marque).filter((k) => !k.startsWith('$')), Object.keys(EMPLACEMENTS));
+  assert.deepEqual(couleurs(marque.marque).map(([k]) => k), Object.keys(EMPLACEMENTS));
+  assert.deepEqual(Object.keys(marque.marque).filter((k) => !k.startsWith('$')), [...Object.keys(EMPLACEMENTS), 'police']);
   for (const slot of ['primaire', 'accent']) assert.deepEqual(Object.keys(marque.marque[slot]).filter((k) => !k.startsWith('$')), [...STEPS, ...CASES], slot);
   for (const s of STATUTS) assert.deepEqual(Object.keys(marque.marque[s]).filter((k) => !k.startsWith('$')), CASES, s);
   for (const [slot, g] of Object.entries(marque.marque)) {
@@ -182,8 +189,7 @@ test('Pleins : classe, plein, survol et sur-plein de chaque emplacement', () => 
 
 test('Pleins : seule valeur calculée du fichier, le voile', () => {
   const computed = [];
-  for (const [slot, g] of Object.entries(marque.marque)) {
-    if (slot.startsWith('$')) continue;
+  for (const [slot, g] of couleurs(marque.marque)) {
     for (const [k, t] of Object.entries(g)) if (!k.startsWith('$') && typeof t.$value !== 'string') computed.push(`${slot}.${k}`);
   }
   assert.deepEqual(computed, ['primaire.plein-survol']);
@@ -191,7 +197,7 @@ test('Pleins : seule valeur calculée du fichier, le voile', () => {
 
 test('Pleins : le fichier versionné est celui que produit marqueTokens', () => {
   const statuts = Object.fromEntries(STATUTS.map((s) => [s, { scale: s, steps: stepsOf(s) }]));
-  const want = marqueTokens({ primaire: { scale: 'bleu', steps: stepsOf('bleu') }, accent: { scale: 'terre', steps: stepsOf('terre') }, statuts, description: marque.$description });
+  const want = marqueTokens({ primaire: { scale: 'bleu', steps: stepsOf('bleu') }, accent: { scale: 'terre', steps: stepsOf('terre') }, statuts, polices: POLICES, description: marque.$description });
   assert.deepEqual(marque, want);
 });
 

@@ -84,10 +84,11 @@ export function emplacement(name, { scale, steps }, withSteps) {
 }
 
 /**
- * Fichier marque.tokens.json : primaire et accent (12 pas + cases de plein), statuts (cases de plein).
- * @param {{ primaire: { scale: string, steps: string[] }, accent: { scale: string, steps: string[] }, statuts: Record<string, { scale: string, steps: string[] }>, description: string }} spec
+ * Fichier marque.tokens.json : primaire et accent (12 pas + cases de plein), statuts (cases de plein),
+ * et, si elles sont données, les polices de la marque (séance 3c : police.titre, police.texte, $type fontFamily).
+ * @param {{ primaire: { scale: string, steps: string[] }, accent: { scale: string, steps: string[] }, statuts: Record<string, { scale: string, steps: string[] }>, polices?: { titre: string[], texte: string[] }, description: string }} spec
  */
-export function marqueTokens({ primaire, accent, statuts, description }) {
+export function marqueTokens({ primaire, accent, statuts, polices, description }) {
   /** @type {Record<string, any>} */
   const m = {
     $type: 'color',
@@ -96,5 +97,12 @@ export function marqueTokens({ primaire, accent, statuts, description }) {
     accent: emplacement('accent', accent, true),
   };
   for (const [name, s] of Object.entries(statuts)) m[name] = emplacement(name, s, false);
+  if (polices)
+    m.police = {
+      $type: 'fontFamily',
+      $description: 'Polices de la marque : titre pour les styles affichage et titre 1 à 3, texte pour tout le reste.',
+      titre: { $value: polices.titre, $description: 'Police des styles affichage et titre 1 à 3.' },
+      texte: { $value: polices.texte, $description: 'Police des titres 4, du corps, des libellés et des mentions.' },
+    };
   return { $description: description, marque: m };
 }
