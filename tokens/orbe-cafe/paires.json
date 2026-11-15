@@ -58,6 +58,7 @@
   "interdites": [
     { "devant": "texte.secondaire", "fond": "fond.composant.appui", "regle": "sur fond.composant.appui, le texte passe en texte.principal" },
     { "devant": "texte.secondaire", "fond": "fond.interactif.fort", "regle": "sur un plein, le texte est texte.sur-*" },
-    { "devant": "bordure.forte", "fond": "fond.composant", "regle": "un champ se pose sur fond.surface" }
+    { "devant": "bordure.forte", "fond": "fond.composant", "regle": "un champ se pose sur fond.surface" },
+    { "devant": "bordure.focus", "fond": "fond.interactif.fort", "regle": "l’anneau de focus est décalé de 2 px et se pose sur le fond de la page, jamais sur le plein" }
   ]
 }

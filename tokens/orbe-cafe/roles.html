@@ -45,7 +45,7 @@
     <main>
     <h1>Rôles de couleur, Orbe Café</h1>
     <p>Marque fictive. Paires déclarées dans paires.json, rôles dans semantique.tokens.json ; contraste WCAG 2.1, ratio tronqué à 2 décimales.</p>
-    <p class="bilan">48 paires, 0 en échec, 0 exception écrite, 3 paires interdites.</p>
+    <p class="bilan">48 paires, 0 en échec, 0 exception écrite, 4 paires interdites.</p>
     <section data-propriete="texte">
       <h2>Texte <span class="compte">37 paires, 2 interdites</span></h2>
       <p>Texte posé sur un fond de rôle, seuil 4,5:1 (WCAG 2.1, 1.4.3).</p>
@@ -329,7 +329,7 @@
       </table></div>
     </section>
     <section data-propriete="bordure">
-      <h2>Bordure <span class="compte">11 paires, 1 interdite</span></h2>
+      <h2>Bordure <span class="compte">11 paires, 2 interdites</span></h2>
       <p>Bordure qui repère un composant ou un état, et anneau de focus, seuil 3:1 (WCAG 2.1, 1.4.11). bordure.discrete et bordure.defaut sont décoratives et n'ont pas de paire.</p>
       <div class="table-wrap"><table>
         <thead><tr><th>Fond</th><th>Mot écrit</th><th>Ratio</th><th>Seuil</th><th>Verdict</th></tr></thead>
@@ -417,6 +417,13 @@
           <td data-label="Ratio" class="num">2,87:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">interdite</span> <span class="motif">un champ se pose sur fond.surface</span></td>
+        </tr>
+        <tr data-devant="bordure.focus" data-fond="fond.interactif.fort" class="interdite">
+          <td data-label="Fond"><span class="pastille" style="background:#2b4c7e"></span><code>fond.interactif.fort</code> <span class="hex">#2b4c7e</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#2b4c7e;border-color:#4c6994">Champ</span><span class="paire"><code>bordure.focus</code> <span class="hex">#4c6994</span> <span class="sur">sur <code>fond.interactif.fort</code></span></span></td>
+          <td data-label="Ratio" class="num">1,54:1</td>
+          <td data-label="Seuil" class="num">3:1</td>
+          <td data-label="Verdict"><span class="verdict">interdite</span> <span class="motif">l’anneau de focus est décalé de 2 px et se pose sur le fond de la page, jamais sur le plein</span></td>
         </tr>
         </tbody>
       </table></div>

@@ -39,6 +39,8 @@
  *   sur succes 11 : 5,6186 ; sur info 11 : 5,6178 ; avertissement 12 sur avertissement 9 : 5,7721.
  * Décision du 15/11/2026 : bordure.focus → marque.primaire.11 (bleu 11 #4c6994) ; ratios culori
  *   (wcagContrast('#4c6994', fond)) : fond.app 5,4037, fond.surface 5,5917, fond.discret 5,2619, fond.composant 5,0011.
+ * Décision du 15/11/2026 : interdite bordure.focus sur fond.interactif.fort (bleu 11 sur bleu 9 :
+ *   wcagContrast('#4c6994', '#2b4c7e') = 1,5406), règle « l’anneau de focus est décalé de 2 px et se pose sur le fond de la page, jamais sur le plein ».
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -117,6 +119,7 @@ const INTERDITES = [
   { devant: 'texte.secondaire', fond: 'fond.composant.appui', ratio: 4.3327, regle: 'sur fond.composant.appui, le texte passe en texte.principal' },
   { devant: 'texte.secondaire', fond: 'fond.interactif.fort', ratio: 1.5348, regle: 'sur un plein, le texte est texte.sur-*' },
   { devant: 'bordure.forte', fond: 'fond.composant', ratio: 2.8718, regle: 'un champ se pose sur fond.surface' },
+  { devant: 'bordure.focus', fond: 'fond.interactif.fort', ratio: 1.5406, regle: 'l’anneau de focus est décalé de 2 px et se pose sur le fond de la page, jamais sur le plein' },
 ];
 const RETIREES = ['erreur', 'succes', 'avertissement', 'info'].map((s) => `bordure.${s}|fond.${s}.discret`);
 
@@ -133,7 +136,7 @@ test('T2 paires.json : seuils 4,5 texte, 3 bordure et focus ; 48 paires, sans do
   assert.ok(keys.includes('texte.principal|fond.composant.appui'));
 });
 
-test('T2 paires.json : trois paires interdites, chacune avec sa règle, absentes des paires', () => {
+test('T2 paires.json : quatre paires interdites, chacune avec sa règle, absentes des paires', () => {
   assert.deepEqual(
     paires.interdites.map((/** @type {any} */ p) => ({ devant: p.devant, fond: p.fond, regle: p.regle })),
     INTERDITES.map(({ devant, fond, regle }) => ({ devant, fond, regle })),
@@ -242,7 +245,7 @@ test('T3 paire invalide : rôle inconnu, type inconnu, interdite déclarée, rè
 test('T3 npm run contraste : sort en 0 sur les fichiers du dépôt ; en 1 avec une paire sous le seuil', () => {
   const cli = join(ROOT, 'src', 'cli', 'contraste.js');
   const ok = execFileSync(process.execPath, [cli], { cwd: ROOT, encoding: 'utf8' });
-  assert.match(ok, /48 paires de rôles, 0 paire en échec, 0 exception écrite, 3 paires interdites\./);
+  assert.match(ok, /48 paires de rôles, 0 paire en échec, 0 exception écrite, 4 paires interdites\./);
   for (const p of INTERDITES) assert.ok(ok.includes(`${p.devant} sur ${p.fond}`) && ok.includes(p.regle), `interdite listée : ${p.devant}`);
 
   const tmp = mkdtempSync(join(tmpdir(), 'contraste-'));
