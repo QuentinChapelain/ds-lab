@@ -11,8 +11,8 @@
  *   police de son style ; à 420 px la valeur en étroit quand le style en a une (sous 600 px), à 1 200 px la
  *   valeur large ;
  *   polices calculées : 'Georgia, serif' (police.titre), '"Orbe Sans", Arial, sans-serif' (police.texte) ;
- *   trois réglages sans script : hero à 68 ou 72 px de ligne (en large ; à 420 px le hero garde 40 px) ;
- *   corps.petit à 20 ou 24 px de ligne ; mention à 14 / 20 ou 12 / 16 ; par défaut, la valeur des jetons ;
+ *   décisions du 15/11/2026 prises sur la planche : mention à 12 / 16 dans les jetons ; hero et corps.petit
+ *   inchangés ; plus aucun réglage (ni bouton radio, ni « réglage ») : la planche lit ses valeurs dans les jetons ;
  *   gap et padding seulement : marge calculée nulle partout, une seule déclaration margin (la remise à zéro),
  *   chaque gap vaut un rôle d'espacement (var(--ecart-…) ou var(--marge-interieure-…)) ;
  *   rendue à 420 et à 1 200 px sans défilement horizontal ; page autonome, aucun script ni ressource externe ;
@@ -44,7 +44,7 @@ const STYLES = /** @type {Record<string, [number, number, number | null, number 
   'corps.moyen': [16, 24, null, null, 400, TEXTE],
   'corps.petit': [14, 20, null, null, 400, TEXTE],
   libelle: [14, 20, null, null, 600, TEXTE],
-  mention: [14, 20, null, null, 400, TEXTE],
+  mention: [12, 16, null, null, 400, TEXTE],
 });
 /** @param {string} style @param {number} width @returns {[number, number]} */
 const attendu = (style, width) => {
@@ -90,6 +90,13 @@ test('typo planche : page autonome, sans script, fichier à jour', () => {
   assert.equal(html, planche(DIR));
   assert.doesNotMatch(html, /<script|<link|@import|url\(|https?:\/\//i);
   assert.match(html, /Orbe Café/);
+});
+
+test('typo planche : aucun réglage, valeurs lues dans les jetons', () => {
+  assert.doesNotMatch(html, /type="radio"|<input type="radio"|réglage|reglage|:has\(/i);
+  assert.match(html, /--mention-taille: 12px; --mention-interligne: 1\.3333;/);
+  assert.match(html, /--affichage-grand-interligne: 1\.1333;/);
+  assert.match(html, /--corps-petit-interligne: 1\.4286;/);
 });
 
 test('typo planche : une seule déclaration margin, chaque gap est un rôle d\'espacement', () => {
@@ -156,26 +163,6 @@ for (const width of [420, 1200]) {
     assert.equal(long.style, 'titre.1');
     assert.ok(long.lignes >= 2, `titre long : ${long.lignes} ligne(s)`);
     assert.ok(Math.abs(long.hauteur - long.lignes * long.ligne) < 1, 'titre long : hauteur = lignes × ligne');
-    await page.close();
-  });
-
-  test(`typo planche à ${width} px : trois réglages, valeur des jetons par défaut`, async () => {
-    const page = await open(width);
-    for (const id of ['reglage-hero-68', 'reglage-corps-petit-20', 'reglage-mention-14']) assert.ok(await page.isChecked(`#${id}`), id);
-    for (const id of ['reglage-hero-72', 'reglage-corps-petit-24', 'reglage-mention-12']) assert.ok(await page.isVisible(`#${id}`), id);
-    await page.check('#reglage-hero-72');
-    await page.check('#reglage-corps-petit-24');
-    await page.check('#reglage-mention-12');
-    const m = await mesures(page);
-    const hero = /** @type {any} */ (m.find((e) => e.id === 'hero-titre'));
-    assert.ok(Math.abs(hero.ligne - (width < 600 ? 40 : 72)) <= 0.01, `hero : ${hero.ligne}`);
-    for (const e of m.filter((x) => x.style === 'corps.petit')) assert.ok(Math.abs(e.ligne - 24) <= 0.01, `corps.petit : ${e.ligne}`);
-    for (const e of m.filter((x) => x.style === 'mention')) {
-      assert.equal(e.taille, 12, 'mention : taille');
-      assert.ok(Math.abs(e.ligne - 16) <= 0.01, `mention : ${e.ligne}`);
-    }
-    const autre = /** @type {any} */ (m.find((e) => e.style === 'corps.moyen'));
-    assert.equal(autre.ligne, 24, 'les autres styles ne bougent pas');
     await page.close();
   });
 }

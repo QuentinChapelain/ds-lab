@@ -14,7 +14,7 @@
  *   R8 bonne police par rôle : affichage et titres 1 à 3 sur {marque.police.titre}, le reste sur
  *      {marque.police.texte}.
  * Affiché sans seuil : le rapport de chaque style (4 décimales, virgule) ; les primitives sans rôle
- *   (taille-texte et graisse ; Orbe Café : taille-texte.12 seulement).
+ *   (taille-texte et graisse ; Orbe Café : aucune depuis que mention cite taille-texte.12, décision du 15/11/2026).
  * Orbe Café : 8 règles, aucune en échec, code 0 ; ligne affichée = taille × rapport arrondie au centième
  *   (60 × 1,1333 = 67,998 → 68).
  * Rouges, chacun ne fait tomber que sa règle :
@@ -80,7 +80,7 @@ test('typo vert : Orbe Café, 8 règles tenues, rapports affichés, primitives s
   const r = typo(load('semantique.tokens.json'), load('primitives.tokens.json'), marque);
   assert.deepEqual(r.regles.map((g) => g.id), REGLES);
   assert.deepEqual(failing(r), []);
-  assert.deepEqual(r.sansRole, ['taille-texte.12']);
+  assert.deepEqual(r.sansRole, []);
   const p = run();
   assert.equal(p.status, 0, p.stdout + p.stderr);
   assert.doesNotMatch(p.stdout, /✗/);
@@ -89,8 +89,8 @@ test('typo vert : Orbe Café, 8 règles tenues, rapports affichés, primitives s
     /titre\.3 +20 \/ 28 px +rapport 1,4 +étroit 18 \/ 24 px +rapport 1,3333 +600 +police\.titre\n/,
     /titre\.4 +16 \/ 24 px +rapport 1,5 +700 +police\.texte\n/,
     /corps\.grand +18 \/ 28 px +rapport 1,5556 +400 +police\.texte\n/,
-    /mention +14 \/ 20 px +rapport 1,4286 +400 +police\.texte\n/,
-    /primitives sans rôle \(affiché, non contrôlé\)\n {2}taille-texte\.12\n/,
+    /mention +12 \/ 16 px +rapport 1,3333 +400 +police\.texte\n/,
+    /primitives sans rôle \(affiché, non contrôlé\)\n {2}aucune\n/,
     /8 règles, aucune en échec\./,
   ]) assert.match(p.stdout, l);
 });

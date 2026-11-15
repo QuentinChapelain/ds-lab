@@ -24,7 +24,8 @@
  *   titre.2 24/32 ; 20/28 ; 700 ; titre de section
  *   titre.3 20/28 ; 18/24 ; 600 ; titre de carte
  *   titre.4 16/24 ; — ; 700 ; sous-groupe, écrans denses
- *   corps.grand 18/28 ; corps.moyen 16/24 ; corps.petit 14/20 (400) ; libelle 14/20 (600) ; mention 14/20 (400).
+ *   corps.grand 18/28 ; corps.moyen 16/24 ; corps.petit 14/20 (400) ; libelle 14/20 (600) ; mention 12/16 (400,
+ *   décision du 15/11/2026 prise sur la planche : {taille-texte.12}, rapport 1,3333 ; aucun autre jeton ne change).
  * Rapports attendus (hauteur ÷ taille, 4 décimales) : 68/60 1,1333 ; 40/36 1,1111 ; 56/48 1,1667 ; 36/30 1,2 ;
  *   32/24 1,3333 ; 28/20 1,4 ; 24/18 1,3333 ; 24/16 1,5 ; 28/18 1,5556 ; 20/14 1,4286.
  */
@@ -53,7 +54,7 @@ const STYLES = /** @type {Record<string, [number, number, number | null, number 
   'corps.moyen': [16, 24, null, null, 400, 'texte', 1.5, null, 'Texte courant'],
   'corps.petit': [14, 20, null, null, 400, 'texte', 1.4286, null, 'Texte de tableau'],
   libelle: [14, 20, null, null, 600, 'texte', 1.4286, null, 'Libellé de champ'],
-  mention: [14, 20, null, null, 400, 'texte', 1.4286, null, 'Aide'],
+  mention: [12, 16, null, null, 400, 'texte', 1.3333, null, 'Aide'],
 });
 
 /** @param {any} node @param {string} path */

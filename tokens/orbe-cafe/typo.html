@@ -5,11 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Typographie Orbe Café</title>
     <style>
-      :root { --police-titre: Georgia, serif; --police-texte: "Orbe Sans", Arial, sans-serif; --affichage-grand-taille: 60px; --affichage-grand-interligne: 1.1333; --affichage-moyen-taille: 48px; --affichage-moyen-interligne: 1.1667; --titre-1-taille: 30px; --titre-1-interligne: 1.2; --titre-2-taille: 24px; --titre-2-interligne: 1.3333; --titre-3-taille: 20px; --titre-3-interligne: 1.4; --titre-4-taille: 16px; --titre-4-interligne: 1.5; --corps-grand-taille: 18px; --corps-grand-interligne: 1.5556; --corps-moyen-taille: 16px; --corps-moyen-interligne: 1.5; --corps-petit-taille: 14px; --corps-petit-interligne: 1.4286; --libelle-taille: 14px; --libelle-interligne: 1.4286; --mention-taille: 14px; --mention-interligne: 1.4286; --ecart-dans-composant: 4px; --ecart-entre-composants: 16px; --ecart-entre-groupes: 24px; --ecart-section: 48px; --marge-interieure-composant: 16px; }
+      :root { --police-titre: Georgia, serif; --police-texte: "Orbe Sans", Arial, sans-serif; --affichage-grand-taille: 60px; --affichage-grand-interligne: 1.1333; --affichage-moyen-taille: 48px; --affichage-moyen-interligne: 1.1667; --titre-1-taille: 30px; --titre-1-interligne: 1.2; --titre-2-taille: 24px; --titre-2-interligne: 1.3333; --titre-3-taille: 20px; --titre-3-interligne: 1.4; --titre-4-taille: 16px; --titre-4-interligne: 1.5; --corps-grand-taille: 18px; --corps-grand-interligne: 1.5556; --corps-moyen-taille: 16px; --corps-moyen-interligne: 1.5; --corps-petit-taille: 14px; --corps-petit-interligne: 1.4286; --libelle-taille: 14px; --libelle-interligne: 1.4286; --mention-taille: 12px; --mention-interligne: 1.3333; --ecart-dans-composant: 4px; --ecart-entre-composants: 16px; --ecart-entre-groupes: 24px; --ecart-section: 48px; --marge-interieure-composant: 16px; }
       @media (max-width: 599.98px) { :root { --affichage-grand-taille: 36px; --affichage-grand-interligne: 1.1111; --affichage-moyen-taille: 30px; --affichage-moyen-interligne: 1.2; --titre-1-taille: 24px; --titre-1-interligne: 1.3333; --titre-2-taille: 20px; --titre-2-interligne: 1.4; --titre-3-taille: 18px; --titre-3-interligne: 1.3333; --ecart-section: 32px; } }
-      @media (min-width: 600px) { :root:has(#reglage-hero-72:checked) { --affichage-grand-interligne: 1.2; } }
-      :root:has(#reglage-corps-petit-24:checked) { --corps-petit-interligne: 1.7143; }
-      :root:has(#reglage-mention-12:checked) { --mention-taille: 12px; --mention-interligne: 1.3333; }
 
       /* Styles de texte : un par jeton composite du groupe typo. */
       .t-affichage-grand { font-family: var(--police-titre); font-size: var(--affichage-grand-taille); line-height: var(--affichage-grand-interligne); font-weight: 700; letter-spacing: 0px; }
@@ -38,11 +35,6 @@
       .meta { font: 13px/20px ui-monospace, Menlo, monospace; color: #6d675b; overflow-wrap: anywhere; }
       code { font: inherit; }
 
-      .reglages { display: flex; flex-wrap: wrap; gap: var(--ecart-entre-composants); }
-      .reglage { flex: 1 1 280px; display: flex; flex-direction: column; gap: var(--ecart-dans-composant); padding: var(--marge-interieure-composant); background: #ffffff; border: 1px solid #d8d6d2; border-radius: 8px; }
-      .choix-liste { display: flex; flex-wrap: wrap; gap: var(--ecart-entre-composants); }
-      .choix { display: inline-flex; align-items: center; gap: var(--ecart-dans-composant); cursor: pointer; }
-      .choix input { width: 18px; height: 18px; accent-color: #2b4c7e; }
 
       .specimen { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--ecart-entre-composants); }
       .specimen li { display: flex; flex-direction: column; gap: var(--ecart-dans-composant); padding-bottom: var(--ecart-entre-composants); border-bottom: 1px solid #d8d6d2; overflow-wrap: anywhere; }
@@ -54,7 +46,7 @@
       .hero .chapo { max-width: 36em; color: #6d675b; }
       .actions { display: flex; flex-wrap: wrap; gap: var(--ecart-entre-composants); }
       .actions button { padding: var(--ecart-dans-composant) var(--marge-interieure-composant); min-height: 40px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; background: #2b4c7e; color: #ffffff; }
-      .actions button:focus-visible, .champ input:focus-visible, .choix input:focus-visible { outline: 2px solid #4c6994; outline-offset: 2px; }
+      .actions button:focus-visible, .champ input:focus-visible { outline: 2px solid #4c6994; outline-offset: 2px; }
 
       .article { max-width: 40rem; }
       .bloc { display: flex; flex-direction: column; gap: var(--ecart-entre-composants); }
@@ -77,36 +69,6 @@
           <p class="t-mention" data-style="mention">8 règles tenues, contrôlées par npm run typo.</p>
         </div>
       </header>
-
-      <section aria-labelledby="titre-reglages">
-        <div class="entete">
-          <h2 class="t-titre-2" data-style="titre.2" id="titre-reglages">Réglages</h2>
-          <p class="t-mention" data-style="mention">Pour juger un interligne sur la planche ; les jetons ne changent pas.</p>
-        </div>
-        <div class="reglages">
-          <div class="reglage" role="radiogroup" aria-labelledby="titre-reglage-hero">
-            <p class="t-libelle" data-style="libelle" id="titre-reglage-hero">affichage.grand (hero), ligne en large ; sous 600 px, la valeur en étroit reste</p>
-            <div class="choix-liste">
-              <label class="choix"><input type="radio" name="reglage-hero" id="reglage-hero-68" checked><span class="t-libelle" data-style="libelle">68 px, jeton</span></label>
-              <label class="choix"><input type="radio" name="reglage-hero" id="reglage-hero-72"><span class="t-libelle" data-style="libelle">72 px</span></label>
-            </div>
-          </div>
-          <div class="reglage" role="radiogroup" aria-labelledby="titre-reglage-corps-petit">
-            <p class="t-libelle" data-style="libelle" id="titre-reglage-corps-petit">corps.petit (tableaux), ligne</p>
-            <div class="choix-liste">
-              <label class="choix"><input type="radio" name="reglage-corps-petit" id="reglage-corps-petit-20" checked><span class="t-libelle" data-style="libelle">20 px, jeton</span></label>
-              <label class="choix"><input type="radio" name="reglage-corps-petit" id="reglage-corps-petit-24"><span class="t-libelle" data-style="libelle">24 px</span></label>
-            </div>
-          </div>
-          <div class="reglage" role="radiogroup" aria-labelledby="titre-reglage-mention">
-            <p class="t-libelle" data-style="libelle" id="titre-reglage-mention">mention (aide, erreur, légende), taille / ligne</p>
-            <div class="choix-liste">
-              <label class="choix"><input type="radio" name="reglage-mention" id="reglage-mention-14" checked><span class="t-libelle" data-style="libelle">14 / 20 px, jeton</span></label>
-              <label class="choix"><input type="radio" name="reglage-mention" id="reglage-mention-12"><span class="t-libelle" data-style="libelle">12 / 16 px</span></label>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <section aria-labelledby="titre-specimen">
         <div class="entete">
@@ -155,7 +117,7 @@
             <p class="t-libelle" data-style="libelle">Orbe Café torréfie le mardi</p>
           </li>
           <li data-specimen="mention">
-            <p class="meta"><code>mention</code> · 14 / 20 px · rapport 1,4286 · 400 · police.texte</p>
+            <p class="meta"><code>mention</code> · 12 / 16 px · rapport 1,3333 · 400 · police.texte</p>
             <p class="t-mention" data-style="mention">Orbe Café torréfie le mardi</p>
           </li>
         </ol>

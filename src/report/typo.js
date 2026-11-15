@@ -3,9 +3,8 @@
  * Séance 3c, typo : planche des styles de texte d'Orbe Café (tokens/orbe-cafe/typo.html).
  * Spécimen des onze styles (taille, ligne, rapport), puis trois situations : hero de page d'accueil,
  * page de contenu, écran dense. Toutes les valeurs viennent des jetons (typo, polices de marque,
- * espacements, couleurs) ; valeurs en étroit sous leur seuil ([H]). Trois réglages sans script (:has),
- * qui ne touchent pas aux jetons : hero à 68 ou 72 px de ligne en large, corps.petit à 20 ou 24 px,
- * mention à 14 / 20 ou 12 / 16. gap et padding seulement, avec les rôles d'espacement ; la seule
+ * espacements, couleurs) ; valeurs en étroit sous leur seuil ([H]). Aucun réglage : les décisions prises sur
+ * la planche (15/11/2026) sont dans les jetons. gap et padding seulement, avec les rôles d'espacement ; la seule
  * déclaration margin est la remise à zéro. Page autonome, sans ressource externe ni script.
  */
 import { readFileSync } from 'node:fs';
@@ -19,23 +18,9 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => /** @type {Record<string,
 /** Nom CSS d'un style ou d'un rôle. @param {string} s */
 const slug = (s) => s.replace(/\./g, '-');
 /** @param {number} n */
-const r4 = (n) => Math.round(n * 10000) / 10000;
-/** @param {number} n */
 const ligne = (n) => fr(Math.round(n * 100) / 100);
 /** Liste de polices DTCG → valeur CSS. @param {string | string[]} v */
 const famille = (v) => (Array.isArray(v) ? v : [v]).map((f) => (/[\s"]/.test(f) ? `"${f.replace(/"/g, '\\"')}"` : f)).join(', ');
-
-/**
- * Réglages de la planche (essais, hors jetons) : style, taille essayée (null si elle ne change pas), ligne
- * essayée, en large seulement ou non. L'identifiant d'un choix est reglage-<id>-<cle>, où la clé est la ligne
- * (hero, corps-petit) ou la taille (mention) ; le choix par défaut porte la valeur du jeton.
- * @type {{ id: string, style: string, titre: string, taille: number | null, ligne: number, cle: 'ligne' | 'taille', largeSeulement: boolean }[]}
- */
-const REGLAGES = [
-  { id: 'hero', style: 'affichage.grand', titre: 'affichage.grand (hero), ligne en large', taille: null, ligne: 72, cle: 'ligne', largeSeulement: true },
-  { id: 'corps-petit', style: 'corps.petit', titre: 'corps.petit (tableaux), ligne', taille: null, ligne: 24, cle: 'ligne', largeSeulement: false },
-  { id: 'mention', style: 'mention', titre: 'mention (aide, erreur, légende), taille / ligne', taille: 12, ligne: 16, cle: 'taille', largeSeulement: false },
-];
 
 /**
  * Élément de texte dans un style (input : sans contenu ni balise fermante).
@@ -79,46 +64,11 @@ export function typoHtml(t, e, roles, extra) {
     if (s.etroit && s.sous !== null)
       etroits.set(s.sous, [...(etroits.get(s.sous) ?? []), `--${slug(s.style)}-taille: ${s.etroit.taille}px;`, `--${slug(s.style)}-interligne: ${s.etroit.interligne};`]);
   for (const x of e.etroits) etroits.set(x.sous, [...(etroits.get(x.sous) ?? []), `--${slug(x.role)}: ${x.px}px;`]);
-  const seuilLarge = Math.min(...[...etroits.keys(), Infinity]);
-
-  const reglagesCss = REGLAGES.map((g) => {
-    const s = get(g.style);
-    const taille = g.taille ?? s.large.taille;
-    const decl = `${g.taille !== null ? `--${slug(g.style)}-taille: ${g.taille}px; ` : ''}--${slug(g.style)}-interligne: ${r4(g.ligne / taille)};`;
-    const regle = `:root:has(#reglage-${g.id}-${g.cle === 'taille' ? g.taille : g.ligne}:checked) { ${decl} }`;
-    return g.largeSeulement && Number.isFinite(seuilLarge) ? `      @media (min-width: ${seuilLarge}px) { ${regle} }` : `      ${regle}`;
-  }).join('\n');
-
   const classes = t.styles
     .map((s) => {
       const police = String(s.police).replace(/^\{marque\.police\.(.*)\}$/, '$1');
       return `      .t-${slug(s.style)} { font-family: var(--police-${police}); font-size: var(--${slug(s.style)}-taille); line-height: var(--${slug(s.style)}-interligne); font-weight: ${s.graisse}; letter-spacing: ${extra.espacementLettres[s.style] ?? '0px'}; }`;
     })
-    .join('\n');
-
-  // Réglages : trois groupes de deux choix.
-  /** @param {string} id @param {string} valeur @param {boolean} checked @param {string} texte */
-  const choix = (id, valeur, checked, texte) =>
-    `<label class="choix"><input type="radio" name="reglage-${id}" id="reglage-${id}-${valeur}"${checked ? ' checked' : ''}>${el('span', 'libelle', texte)}</label>`;
-  const hero = get('affichage.grand');
-  const reglagesHtml = REGLAGES.map((g) => {
-    const s = get(g.style);
-    const jeton = g.cle === 'taille' ? String(s.large.taille) : String(Math.round(s.large.ligne));
-    const essai = g.cle === 'taille' ? String(g.taille) : String(g.ligne);
-    const texteJeton = g.cle === 'taille' ? `${fr(s.large.taille)} / ${ligne(s.large.ligne)} px, jeton` : `${ligne(s.large.ligne)} px, jeton`;
-    const texteEssai = g.cle === 'taille' ? `${g.taille} / ${g.ligne} px` : `${g.ligne} px`;
-    const titre = g.largeSeulement && Number.isFinite(seuilLarge) && hero.etroit ? `${g.titre} ; sous ${seuilLarge} px, la valeur en étroit reste` : g.titre;
-    return { id: g.id, titre, a: [jeton, texteJeton], b: [essai, texteEssai] };
-  })
-    .map(
-      (g) => `          <div class="reglage" role="radiogroup" aria-labelledby="titre-reglage-${g.id}">
-            ${el('p', 'libelle', esc(g.titre), ` id="titre-reglage-${g.id}"`)}
-            <div class="choix-liste">
-              ${choix(g.id, g.a[0], true, esc(g.a[1]))}
-              ${choix(g.id, g.b[0], false, esc(g.b[1]))}
-            </div>
-          </div>`,
-    )
     .join('\n');
 
   const specimen = t.styles
@@ -150,7 +100,6 @@ export function typoHtml(t, e, roles, extra) {
     <style>
       :root { ${varsRacine.join(' ')} }
 ${[...etroits.entries()].map(([n, decl]) => `      @media (max-width: ${n - 0.02}px) { :root { ${decl.join(' ')} } }`).join('\n')}
-${reglagesCss}
 
       /* Styles de texte : un par jeton composite du groupe typo. */
 ${classes}
@@ -169,11 +118,6 @@ ${classes}
       .meta { font: 13px/20px ui-monospace, Menlo, monospace; color: ${hex('texte.secondaire')}; overflow-wrap: anywhere; }
       code { font: inherit; }
 
-      .reglages { display: flex; flex-wrap: wrap; gap: var(--ecart-entre-composants); }
-      .reglage { flex: 1 1 280px; display: flex; flex-direction: column; gap: var(--ecart-dans-composant); padding: var(--marge-interieure-composant); background: ${hex('fond.surface')}; border: 1px solid ${hex('bordure.discrete')}; border-radius: 8px; }
-      .choix-liste { display: flex; flex-wrap: wrap; gap: var(--ecart-entre-composants); }
-      .choix { display: inline-flex; align-items: center; gap: var(--ecart-dans-composant); cursor: pointer; }
-      .choix input { width: 18px; height: 18px; accent-color: ${hex('fond.interactif.fort')}; }
 
       .specimen { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--ecart-entre-composants); }
       .specimen li { display: flex; flex-direction: column; gap: var(--ecart-dans-composant); padding-bottom: var(--ecart-entre-composants); border-bottom: 1px solid ${hex('bordure.discrete')}; overflow-wrap: anywhere; }
@@ -185,7 +129,7 @@ ${classes}
       .hero .chapo { max-width: 36em; color: ${hex('texte.secondaire')}; }
       .actions { display: flex; flex-wrap: wrap; gap: var(--ecart-entre-composants); }
       .actions button { padding: var(--ecart-dans-composant) var(--marge-interieure-composant); min-height: 40px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; background: ${hex('fond.interactif.fort')}; color: ${hex('texte.sur-interactif')}; }
-      .actions button:focus-visible, .champ input:focus-visible, .choix input:focus-visible { outline: 2px solid ${hex('bordure.focus')}; outline-offset: 2px; }
+      .actions button:focus-visible, .champ input:focus-visible { outline: 2px solid ${hex('bordure.focus')}; outline-offset: 2px; }
 
       .article { max-width: 40rem; }
       .bloc { display: flex; flex-direction: column; gap: var(--ecart-entre-composants); }
@@ -208,16 +152,6 @@ ${classes}
           ${el('p', 'mention', esc(bilan))}
         </div>
       </header>
-
-      <section aria-labelledby="titre-reglages">
-        <div class="entete">
-          ${el('h2', 'titre.2', 'Réglages', ' id="titre-reglages"')}
-          ${el('p', 'mention', 'Pour juger un interligne sur la planche ; les jetons ne changent pas.')}
-        </div>
-        <div class="reglages">
-${reglagesHtml}
-        </div>
-      </section>
 
       <section aria-labelledby="titre-specimen">
         <div class="entete">

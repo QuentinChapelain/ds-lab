@@ -441,15 +441,15 @@
     "mention": {
       "$value": {
         "fontFamily": "{marque.police.texte}",
-        "fontSize": "{taille-texte.14}",
+        "fontSize": "{taille-texte.12}",
         "fontWeight": "{graisse.400}",
         "letterSpacing": {
           "value": 0,
           "unit": "px"
         },
-        "lineHeight": 1.4286
+        "lineHeight": 1.3333
       },
-      "$description": "Aide, message d'erreur ou légende ; ligne visée 20 px."
+      "$description": "Aide, message d'erreur ou légende ; ligne visée 16 px."
     }
   }
 }
