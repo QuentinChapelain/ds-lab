@@ -32,9 +32,10 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { AJOUTS } from './helpers/lot5.js';
+import { charger, etroite, COMMUN, ORBE } from './helpers/jetons.js';
 
 const DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'tokens', 'orbe-cafe');
-const load = (/** @type {string} */ f) => JSON.parse(readFileSync(join(DIR, f), 'utf8'));
+const load = charger;
 
 const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
 /** Rôle → primitive visée (échelle.pas), ou « voile:<échelle.pas> » pour un survol calculé. 19 fonds, 15 textes, 8 bordures = 42. */

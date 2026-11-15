@@ -4,8 +4,8 @@
  * résolus vers espace.* (primitives.tokens.json).
  * Les quatre ecart, du plus proche au plus lointain, doivent être strictement croissants ; le rapport
  * entre voisins est calculé pour information, jamais contrôlé. marge-interieure.* est hors contrôle.
- * Lot 4 : un ecart peut porter une valeur en étroit dans $extensions["ds-lab.etroit"]
- * ({ valeur: alias, sous: dimension px, seuil }) ; elle doit rester strictement supérieure à l'ecart
+ * Lot 4 : un ecart peut avoir une valeur en étroit (étape 4b : le rôle du contexte étroit, largeur.etroit.tokens.json,
+ * quand il diffère du large ; seuil sur le modificateur largeur) ; elle doit rester strictement supérieure à l'ecart
  * précédent (sa valeur en étroit s'il en a une) et inférieure ou égale à sa propre valeur large.
  * Règle de proximité : ecart.entre-composants vaut au moins le double de ecart.dans-composant, pour qu'on
  * voie à quel champ appartient un libellé ou un message ; régularité observée dans les systèmes lus, pas
@@ -40,16 +40,14 @@ export const REGLES = [
   },
 ];
 
-/** Clé d'extension de la valeur en étroit. */
-export const ETROIT = 'ds-lab.etroit';
-
 /**
- * @param {any} semantique @param {...any} primitives
+ * @param {any} semantique @param {any} primitives
+ * @param {{ semantique: any, sous: number, seuil: string }} [largeurEtroite] rôles résolus en étroit, seuil de l'étroit
  * @returns {{ ecarts: Espace[], horsControle: Espace[], voisins: Voisin[], fails: Voisin[], etroits: Etroit[], etroitsFails: Etroit[], regles: Regle[], reglesFails: Regle[], sansRole: string[] }}
  */
-export function espacements(semantique, ...primitives) {
+export function espacements(semantique, primitives, largeurEtroite) {
   const all = new Map();
-  for (const f of primitives) for (const [k, v] of flattenTokens(f)) all.set(k, v);
+  for (const [k, v] of flattenTokens(primitives)) all.set(k, v);
   const sem = flattenTokens(semantique);
   for (const [k, v] of sem) all.set(k, v);
 
@@ -85,12 +83,13 @@ export function espacements(semantique, ...primitives) {
   });
   /** @type {Etroit[]} */
   const etroits = [];
+  const semEtroit = largeurEtroite ? flattenTokens(largeurEtroite.semantique) : null;
   ecarts.forEach((e, i) => {
-    const x = sem.get(e.role)?.$extensions?.[ETROIT];
-    if (!x) return;
-    const sous = x.sous;
-    if (!sous || typeof sous.value !== 'number' || sous.unit !== 'px') throw new Error(`seuil illisible (px attendu) : ${e.role}`);
-    const { cible, px } = resolveAlias(x.valeur, `${e.role} (${ETROIT})`);
+    const te = semEtroit?.get(e.role);
+    if (!te || !largeurEtroite || JSON.stringify(te.$value) === JSON.stringify(sem.get(e.role)?.$value)) return;
+    const x = { valeur: te.$value, seuil: largeurEtroite.seuil };
+    const sous = { value: largeurEtroite.sous };
+    const { cible, px } = resolveAlias(x.valeur, `${e.role} (étroit)`);
     const prev = i > 0 ? ecarts[i - 1] : null;
     const prevEtroit = prev ? etroits.find((t) => t.role === prev.role) : undefined;
     const precedent = prev ? (prevEtroit?.px ?? prev.px) : null;
@@ -109,6 +108,6 @@ export function espacements(semantique, ...primitives) {
     ecarts, horsControle, voisins, fails: voisins.filter((v) => !v.ok),
     etroits, etroitsFails: etroits.filter((t) => !t.ok),
     regles, reglesFails: regles.filter((g) => !g.ok),
-    sansRole: primitivesSansRole(semantique, primitives, ['espace']),
+    sansRole: primitivesSansRole([semantique, largeurEtroite?.semantique ?? {}], [primitives], ['espace']),
   };
 }

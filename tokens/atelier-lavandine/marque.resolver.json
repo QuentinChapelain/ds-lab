@@ -1,0 +1,87 @@
+{
+  "name": "Atelier Lavandine",
+  "version": "2025.10",
+  "description": "Jeux de jetons de Atelier Lavandine et ses deux contextes, mode et largeur. Écrit par la saisie ; les rôles (semantique.tokens.json) sont les mêmes dans tous les contextes.",
+  "sets": {
+    "primitives": {
+      "description": "Primitives communes à toutes les marques : neutres, statuts, espaces, tailles de texte, graisses, rayons.",
+      "sources": [
+        {
+          "$ref": "../commun/primitives.tokens.json"
+        },
+        {
+          "$ref": "../commun/statuts.tokens.json"
+        }
+      ]
+    },
+    "marque": {
+      "description": "Échelles et couche marque de Atelier Lavandine.",
+      "sources": [
+        {
+          "$ref": "echelles.tokens.json"
+        },
+        {
+          "$ref": "marque.tokens.json"
+        }
+      ]
+    },
+    "roles": {
+      "description": "Rôles communs à toutes les marques.",
+      "sources": [
+        {
+          "$ref": "../commun/semantique.tokens.json"
+        }
+      ]
+    }
+  },
+  "modifiers": {
+    "mode": {
+      "description": "Mode de couleur. Clair : valeurs des jeux. Sombre : à venir (lot 2).",
+      "contexts": {
+        "clair": [],
+        "sombre": []
+      },
+      "default": "clair"
+    },
+    "largeur": {
+      "description": "Largeur de l'écran. Large : valeurs des jeux. Étroit : grands écarts et grands textes réduits (DS6).",
+      "contexts": {
+        "large": [],
+        "etroit": [
+          {
+            "$ref": "../commun/largeur.etroit.tokens.json"
+          }
+        ]
+      },
+      "default": "large",
+      "$extensions": {
+        "ds-lab.largeur": {
+          "etroit": {
+            "sous": {
+              "value": 600,
+              "unit": "px"
+            },
+            "seuil": "[H]"
+          }
+        }
+      }
+    }
+  },
+  "resolutionOrder": [
+    {
+      "$ref": "#/sets/primitives"
+    },
+    {
+      "$ref": "#/sets/marque"
+    },
+    {
+      "$ref": "#/sets/roles"
+    },
+    {
+      "$ref": "#/modifiers/mode"
+    },
+    {
+      "$ref": "#/modifiers/largeur"
+    }
+  ]
+}

@@ -7,8 +7,7 @@
  * la planche (15/11/2026) sont dans les jetons. gap et padding seulement, avec les rôles d'espacement ; la seule
  * déclaration margin est la remise à zéro. Page autonome, sans ressource externe ni script.
  */
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { largeurs } from '../tokens/resolver.js';
 import { typo, fr } from '../tokens/typo.js';
 import { espacements } from '../tokens/espacements.js';
 import { resolveRoles, flattenTokens } from '../tokens/roles.js';
@@ -230,11 +229,9 @@ ${specimen}
  * @returns {string}
  */
 export function planche(dir) {
-  const read = (/** @type {string} */ f) => JSON.parse(readFileSync(join(dir, f), 'utf8'));
-  const sem = read('semantique.tokens.json');
-  const prims = read('primitives.tokens.json');
-  const marque = read('marque.tokens.json');
-  const roles = resolveRoles(sem, prims, read('statuts.tokens.json'), marque);
+  const { large, etroit } = largeurs(dir);
+  const { semantique: sem, primitives: prims, marque } = large;
+  const roles = resolveRoles(sem, prims, marque);
   const police = marque.marque?.police ?? {};
   /** @type {Record<string, string | string[]>} */
   const polices = {};
@@ -245,5 +242,5 @@ export function planche(dir) {
     const ls = tok.$value?.letterSpacing;
     if (ls && typeof ls === 'object') espacementLettres[path] = `${ls.value}${ls.unit}`;
   }
-  return typoHtml(typo(sem, prims, marque), espacements(sem, prims), roles, { polices, espacementLettres });
+  return typoHtml(typo(sem, prims, marque, etroit), espacements(sem, prims, etroit), roles, { polices, espacementLettres });
 }

@@ -35,18 +35,19 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { typo } from '../src/tokens/typo.js';
+import { charger, etroite, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');
-const load = (/** @type {string} */ f) => JSON.parse(readFileSync(join(DIR, f), 'utf8'));
+const load = charger;
 const marque = load('marque.tokens.json');
 const REGLES = ['multiple-4', 'decroissants', 'etroit-large', 'corps-1-5', 'petits-1-3', 'corps-1rem', 'min-12', 'police'];
 
-/** Lance la commande (fichiers temporaires hors dépôt). @param {any} [sem] @param {any} [prims] */
-function run(sem, prims) {
+/** Lance la commande (fichiers temporaires hors dépôt). @param {any} [sem] @param {any} [prims] @param {any} [etroit] */
+function run(sem, prims, etroit) {
   const args = [join(ROOT, 'src', 'cli', 'typo.js')];
   const tmp = mkdtempSync(join(tmpdir(), 'ds-lab-typo-'));
-  for (const [opt, data] of /** @type {const} */ ([['--semantique', sem], ['--primitives', prims]])) {
+  for (const [opt, data] of /** @type {const} */ ([['--semantique', sem], ['--primitives', prims], ['--etroit', etroit]])) {
     if (!data) continue;
     const f = join(tmp, `${opt.slice(2)}.tokens.json`);
     writeFileSync(f, JSON.stringify(data));
@@ -65,19 +66,19 @@ const failing = (r) => r.regles.filter((g) => !g.ok).map((g) => g.id);
 
 /**
  * Un rouge : une seule règle tombe, code 1, ligne ✗ et détail attendus.
- * @param {any} sem @param {any} prims @param {string} id @param {string} detail
+ * @param {any} sem @param {any} prims @param {string} id @param {string} detail @param {any} [etroit] contexte étroit
  */
-function rouge(sem, prims, id, detail) {
-  const r = typo(sem, prims ?? load('primitives.tokens.json'), marque);
+function rouge(sem, prims, id, detail, etroit) {
+  const r = typo(sem, prims ?? load('primitives.tokens.json'), marque, etroite(sem, etroit));
   assert.deepEqual(failing(r), [id]);
-  const p = run(sem, prims);
+  const p = run(sem, prims, etroit);
   assert.equal(p.status, 1, p.stdout + p.stderr);
   assert.match(p.stdout, new RegExp(`  ✗ .*\\n {6}${detail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\n`), p.stdout);
   assert.match(p.stdout, /8 règles, 1 en échec\./);
 }
 
 test('typo vert : Orbe Café, 8 règles tenues, rapports affichés, primitives sans rôle, code 0', () => {
-  const r = typo(load('semantique.tokens.json'), load('primitives.tokens.json'), marque);
+  const r = typo(load('semantique.tokens.json'), load('primitives.tokens.json'), marque, etroite(load('semantique.tokens.json')));
   assert.deepEqual(r.regles.map((g) => g.id), REGLES);
   assert.deepEqual(failing(r), []);
   assert.deepEqual(r.sansRole, []);
@@ -104,10 +105,10 @@ test('typo rouge R2 : titre.3 à 24 px, égal à titre.2', () => {
 });
 
 test('typo rouge R3 : corps.grand plus grand en étroit qu\'en large', () => {
-  const sem = variant((s) => {
-    s.typo.corps.grand.$extensions = { 'ds-lab.etroit': { valeur: { fontSize: '{taille-texte.20}', lineHeight: 1.6 }, sous: { value: 600, unit: 'px' }, seuil: '[H]' } };
-  });
-  rouge(sem, undefined, 'etroit-large', 'corps.grand : étroit 20 / 32 px, large 18 / 28 px');
+  const sem = load('semantique.tokens.json');
+  const etroit = load('largeur.etroit.tokens.json');
+  etroit.typo.corps = { grand: { $value: { ...sem.typo.corps.grand.$value, fontSize: '{taille-texte.20}', lineHeight: 1.6 } } };
+  rouge(sem, undefined, 'etroit-large', 'corps.grand : étroit 20 / 32 px, large 18 / 28 px', etroit);
 });
 
 test('typo rouge R4 : corps.moyen interligne 1,25', () => {

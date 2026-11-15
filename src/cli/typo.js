@@ -4,21 +4,23 @@
  * Séance 3c, typo : contrôle des styles de texte d'Orbe Café.
  * Sort en 1 si l'une des huit règles n'est pas tenue, sinon en 0. Le rapport de chaque style et les primitives
  * sans rôle sont affichés pour information ; ils ne changent pas le code de sortie.
- * Usage : npm run typo [-- --semantique <fichier>] [--primitives <fichier>] [--marque <fichier>]
+ * Usage : npm run typo [-- --semantique <fichier>] [--primitives <fichier>] [--marque <fichier>] [--etroit <fichier>]
  */
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { typo, fr } from '../tokens/typo.js';
+import { largeurs, enEtroit } from '../tokens/resolver.js';
 
-const { values } = parseArgs({ options: { semantique: { type: 'string' }, primitives: { type: 'string' }, marque: { type: 'string' } } });
-const dir = fileURLToPath(new URL('../../tokens/orbe-cafe/', import.meta.url));
+const { values } = parseArgs({ options: { semantique: { type: 'string' }, primitives: { type: 'string' }, marque: { type: 'string' }, etroit: { type: 'string' } } });
 const read = (/** @type {string} */ p) => JSON.parse(readFileSync(p, 'utf8'));
+const l = largeurs();
+const sem = values.semantique ? read(values.semantique) : l.large.semantique;
+const contexte = values.etroit ? [read(values.etroit)] : l.contexte;
 const r = typo(
-  read(values.semantique ?? join(dir, 'semantique.tokens.json')),
-  read(values.primitives ?? join(dir, 'primitives.tokens.json')),
-  read(values.marque ?? join(dir, 'marque.tokens.json')),
+  sem,
+  values.primitives ? read(values.primitives) : l.large.primitives,
+  values.marque ? read(values.marque) : l.large.marque,
+  { ...l.etroit, semantique: enEtroit(sem, contexte) },
 );
 
 const ligne = (/** @type {number} */ n) => fr(Math.round(n * 100) / 100);

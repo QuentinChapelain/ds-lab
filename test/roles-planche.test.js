@@ -24,11 +24,12 @@ import { join } from 'node:path';
 import { chromium } from 'playwright-core';
 import { loadRoles, contratRoles } from '../src/tokens/roles.js';
 import { rolesHtml } from '../src/report/roles.js';
+import { charger, etroite, COMMUN, ORBE } from './helpers/jetons.js';
 
 const DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'tokens', 'orbe-cafe');
 const FILE = join(DIR, 'roles.html');
 const html = readFileSync(FILE, 'utf8');
-const paires = JSON.parse(readFileSync(join(DIR, 'paires.json'), 'utf8'));
+const paires = charger('paires.json');
 
 const INTERDITES = new Map([
   ['texte.secondaire|fond.composant.appui', { ratio: 4.3327, regle: 'sur fond.composant.appui, le texte passe en texte.principal' }],

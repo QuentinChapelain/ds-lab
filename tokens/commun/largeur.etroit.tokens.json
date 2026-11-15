@@ -1,0 +1,82 @@
+{
+  "$description": "Contexte étroit du modificateur largeur (marque.resolver.json) : sous 600 px [H], seuls l'écart de section et les grands textes changent (DS6). Chaque jeton remplace en entier celui de semantique.tokens.json. Format DTCG 2025.10.",
+  "ecart": {
+    "$type": "dimension",
+    "section": {
+      "$value": "{espace.32}",
+      "$description": "Écart entre deux sections de la page, la plus grande respiration verticale ; plus petit en étroit (largeur.etroit.tokens.json)."
+    }
+  },
+  "typo": {
+    "$type": "typography",
+    "affichage": {
+      "grand": {
+        "$value": {
+          "fontFamily": "{marque.police.titre}",
+          "fontSize": "{taille-texte.36}",
+          "fontWeight": "{graisse.700}",
+          "letterSpacing": {
+            "value": 0,
+            "unit": "px"
+          },
+          "lineHeight": 1.1111
+        },
+        "$description": "Hero d'une page d'accueil ; ligne visée 68 px en large, 40 px en étroit."
+      },
+      "moyen": {
+        "$value": {
+          "fontFamily": "{marque.police.titre}",
+          "fontSize": "{taille-texte.30}",
+          "fontWeight": "{graisse.700}",
+          "letterSpacing": {
+            "value": 0,
+            "unit": "px"
+          },
+          "lineHeight": 1.2
+        },
+        "$description": "Grand chiffre ou bandeau ; ligne visée 56 px en large, 36 px en étroit."
+      }
+    },
+    "titre": {
+      "1": {
+        "$value": {
+          "fontFamily": "{marque.police.titre}",
+          "fontSize": "{taille-texte.24}",
+          "fontWeight": "{graisse.700}",
+          "letterSpacing": {
+            "value": 0,
+            "unit": "px"
+          },
+          "lineHeight": 1.3333
+        },
+        "$description": "Titre de page ; ligne visée 36 px en large, 32 px en étroit."
+      },
+      "2": {
+        "$value": {
+          "fontFamily": "{marque.police.titre}",
+          "fontSize": "{taille-texte.20}",
+          "fontWeight": "{graisse.700}",
+          "letterSpacing": {
+            "value": 0,
+            "unit": "px"
+          },
+          "lineHeight": 1.4
+        },
+        "$description": "Titre de section ; ligne visée 32 px en large, 28 px en étroit."
+      },
+      "3": {
+        "$value": {
+          "fontFamily": "{marque.police.titre}",
+          "fontSize": "{taille-texte.18}",
+          "fontWeight": "{graisse.600}",
+          "letterSpacing": {
+            "value": 0,
+            "unit": "px"
+          },
+          "lineHeight": 1.3333
+        },
+        "$description": "Titre de carte ; ligne visée 28 px en large, 24 px en étroit."
+      }
+    }
+  }
+}

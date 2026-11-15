@@ -1,5 +1,5 @@
 {
-  "$description": "Échelles de Écume et Sel, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues avec les couches communes de tokens/orbe-cafe/.",
+  "$description": "Échelles de Écume et Sel, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues avec les couches communes de tokens/commun/.",
   "couleur": {
     "$type": "color",
     "$description": "Échelles générées de Écume et Sel (generateScale, src/valise/generate.js), pas 9 = couleur saisie.",

@@ -29,6 +29,7 @@ import { join } from 'node:path';
 import { loadRoles, resolveRoles, contratRoles } from '../src/tokens/roles.js';
 import { serialiser } from '../src/tokens/saisie.js';
 import { AJOUTS, PAIRES_AJOUTEES, INTERDITES_AJOUTEES } from './helpers/lot5.js';
+import { charger, etroite, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');
@@ -45,7 +46,7 @@ test('Orbe Café : les 9 rôles ajoutés, en alias vers la couche marque, et leu
 });
 
 test('fond.accent.fort : petites surfaces, comme une étiquette', () => {
-  assert.match(load(DIR, 'semantique.tokens.json').fond.accent.fort.$description, /[Pp]etites surfaces, comme une étiquette/);
+  assert.match(charger('semantique.tokens.json').fond.accent.fort.$description, /[Pp]etites surfaces, comme une étiquette/);
 });
 
 test('texte-grand choisi à la saisie : pas 9, 10 ou 11', () => {
@@ -60,7 +61,7 @@ test('Orbe Café : sans l\'emplacement texte-grand, la couche marque redevient i
 });
 
 test('paires.json : 48 paires de l\'étape 3 en tête, 18 ajoutées, 4 interdites ajoutées', () => {
-  const p = load(DIR, 'paires.json');
+  const p = charger('paires.json');
   assert.equal(p.seuils['grand-texte'], 3);
   assert.equal(p.paires.length, 66);
   assert.deepEqual(p.paires.slice(48).map((/** @type {any} */ x) => [x.devant, x.fond, x.type]), PAIRES_AJOUTEES);

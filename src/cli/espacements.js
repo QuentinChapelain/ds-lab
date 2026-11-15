@@ -3,21 +3,23 @@
 /**
  * Séance 3c : contrôle des espacements par relation d'Orbe Café.
  * Sort en 1 si les quatre ecart ne sont pas strictement croissants, ou si une valeur en étroit
- * (ds-lab.etroit) n'est pas strictement supérieure à l'ecart précédent et au plus égale à sa valeur large ;
+ * (contexte étroit du resolver d'Orbe Café) n'est pas strictement supérieure à l'ecart précédent et au plus égale à sa valeur large ;
  * ou si une règle de proximité (REGLES : entre-composants ≥ 2 × dans-composant) n'est pas tenue ; sinon en 0.
  * Les autres rapports entre voisins sont affichés pour information ; ils ne changent pas le code de sortie.
- * Usage : npm run espacements [-- --semantique <fichier>]
+ * Usage : npm run espacements [-- --semantique <fichier>] [--etroit <fichier>]
+ *   --semantique remplace semantique.tokens.json, --etroit le contexte étroit (largeur.etroit.tokens.json).
  */
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { espacements } from '../tokens/espacements.js';
+import { largeurs, enEtroit } from '../tokens/resolver.js';
 
-const { values } = parseArgs({ options: { semantique: { type: 'string' } } });
-const dir = fileURLToPath(new URL('../../tokens/orbe-cafe/', import.meta.url));
+const { values } = parseArgs({ options: { semantique: { type: 'string' }, etroit: { type: 'string' } } });
 const read = (/** @type {string} */ p) => JSON.parse(readFileSync(p, 'utf8'));
-const r = espacements(read(values.semantique ?? join(dir, 'semantique.tokens.json')), read(join(dir, 'primitives.tokens.json')));
+const l = largeurs();
+const sem = values.semantique ? read(values.semantique) : l.large.semantique;
+const contexte = values.etroit ? [read(values.etroit)] : l.contexte;
+const r = espacements(sem, l.large.primitives, { ...l.etroit, semantique: enEtroit(sem, contexte) });
 
 const fr = (/** @type {number | null} */ n) => (n === null ? '—' : String(n).replace('.', ','));
 const w = Math.max(...[...r.ecarts, ...r.horsControle].map((e) => e.role.length));

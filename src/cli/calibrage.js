@@ -10,15 +10,14 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { colonne, balayage, calibrageHtml, calibrageMd } from '../report/calibrage.js';
-import { loadRoles } from '../tokens/roles.js';
-import { COMMUN } from '../tokens/saisie.js';
+import { chargerCommun } from '../tokens/saisie.js';
 
 const { values, positionals } = parseArgs({ options: { sortie: { type: 'string' } }, allowPositionals: true });
 if (!values.sortie || !positionals.length) {
   console.error('usage : node src/cli/calibrage.js --sortie <dossier> <entree.json>...');
   process.exit(2);
 }
-const commun = loadRoles(COMMUN);
+const commun = chargerCommun();
 const cols = positionals.map((f) => colonne({ dossier: dirname(f), entree: JSON.parse(readFileSync(f, 'utf8')) }, commun));
 mkdirSync(values.sortie, { recursive: true });
 const planches = balayage();

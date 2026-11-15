@@ -11,17 +11,18 @@
  *   description  facultative, $description de marque.tokens.json.
  *
  * Trois motifs de refus : entrée invalide ; checkValise en échec sur les échelles générées ; paire de rôles en échec.
- * Les couches communes (neutres, statuts, rôles, paires) sont lues dans tokens/orbe-cafe/ (dette, KNOWN_ISSUES.md).
+ * Les couches communes (neutres, statuts, rôles, paires) sont lues dans tokens/commun/ ; la saisie écrit aussi le resolver
+ * de la marque (marque.resolver.json, src/tokens/resolver.js).
  */
-import { fileURLToPath } from 'node:url';
-import { resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { generateScale, checkValise } from '../valise/generate.js';
 import { scaleToDtcg, valiseFromTokens } from './primitives.js';
 import { marqueTokens } from './pleins.js';
-import { loadRoles, contratRoles, resolveRoles } from './roles.js';
+import { contratRoles, resolveRoles } from './roles.js';
+import { COMMUN, ORBE, modeleResolver, resoudre, partager } from './resolver.js';
 
-/** Dossier des couches communes, qui est aussi celui d'Orbe Café. */
-export const COMMUN = fileURLToPath(new URL('../../tokens/orbe-cafe/', import.meta.url));
+export { COMMUN };
 const CLES = ['nom', 'description', 'primaire', 'accent', 'polices'];
 const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
 const HEX = /^#[0-9a-f]{6}$/i;
@@ -43,12 +44,25 @@ export function fondsClairs(commun) {
   return ['fond.app', 'fond.surface', 'fond.discret'].map((r) => /** @type {any} */ (roles.get(r)).hex);
 }
 
+/**
+ * Couches communes seules, sans marque, dans un contexte : le resolver d'une marque sans fichier de marque.
+ * @param {{ mode?: string }} [opts] @returns {import('./roles.js').RoleSet}
+ */
+export function chargerCommun({ mode } = {}) {
+  const r = resoudre(modeleResolver({ nom: 'commun', marque: [], dossier: COMMUN }), COMMUN, mode ? { mode } : {});
+  const { semantique, primitives } = partager(r);
+  return { primitives, statuts: {}, semantique, paires: JSON.parse(readFileSync(join(COMMUN, 'paires.json'), 'utf8')), marque: {}, echelles: [] };
+}
+
+/** Échelles propres à Orbe Café (bleu, terre, sable), écrites à la main. */
+export const lirePropresOrbe = () => JSON.parse(readFileSync(join(ORBE, 'primitives.tokens.json'), 'utf8'));
+
 /** Texte du fichier de jetons, tel qu'il est écrit sur le disque. @param {any} tokens */
 export const serialiser = (tokens) => JSON.stringify(tokens, null, 2) + '\n';
 
 /**
  * @typedef {{ scale: string, steps: string[] }} Source
- * @typedef {{ motifs: string[], marque: any, echelles: any, commun: import('./roles.js').RoleSet }} Saisie
+ * @typedef {{ motifs: string[], marque: any, echelles: any, resolver: any, commun: import('./roles.js').RoleSet }} Saisie
  */
 
 /**
@@ -57,11 +71,11 @@ export const serialiser = (tokens) => JSON.stringify(tokens, null, 2) + '\n';
  * @param {{ dossier: string, commun?: import('./roles.js').RoleSet }} opts dossier de la marque ; couches communes
  * @returns {Saisie}
  */
-export function saisir(entree, { dossier, commun = loadRoles(COMMUN) }) {
+export function saisir(entree, { dossier, commun = chargerCommun() }) {
   /** @type {string[]} */
   const motifs = [];
   const invalide = (/** @type {string} */ m) => motifs.push(`entrée invalide : ${m}`);
-  const vide = { motifs, marque: null, echelles: null, commun };
+  const vide = { motifs, marque: null, echelles: null, resolver: null, commun };
   if (!entree || typeof entree !== 'object' || Array.isArray(entree)) {
     invalide('objet JSON attendu');
     return vide;
@@ -72,8 +86,9 @@ export function saisir(entree, { dossier, commun = loadRoles(COMMUN) }) {
   if (entree.polices === undefined) invalide('polices manquantes');
   if ('description' in entree && typeof entree.description !== 'string') invalide('description, texte attendu');
 
-  const orbe = memeDossier(dossier, COMMUN);
-  const existantes = { ...commun.primitives.couleur, ...commun.statuts.couleur };
+  const orbe = memeDossier(dossier, ORBE);
+  const propres = orbe ? lirePropresOrbe() : null;
+  const existantes = { ...commun.primitives.couleur, ...commun.statuts.couleur, ...propres?.couleur };
   /** @type {Record<string, ReturnType<typeof generateScale>>} */
   const generees = {};
   /** @param {'primaire' | 'accent'} slot @returns {Source | undefined} */
@@ -118,7 +133,7 @@ export function saisir(entree, { dossier, commun = loadRoles(COMMUN) }) {
     const couleur = { $type: 'color', $description: `Échelles générées de ${entree.nom} (generateScale, src/valise/generate.js), pas 9 = couleur saisie.` };
     for (const n of noms) couleur[n] = scaleToDtcg(generees[n], `${LABELS[/** @type {'primaire' | 'accent'} */ (n)]} de ${entree.nom}`);
     echelles = {
-      $description: `Échelles de ${entree.nom}, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues avec les couches communes de tokens/orbe-cafe/.`,
+      $description: `Échelles de ${entree.nom}, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues avec les couches communes de tokens/commun/.`,
       couleur,
     };
     for (const f of checkValise(valiseFromTokens(echelles))) motifs.push(`checkValise : ${f}`);
@@ -131,13 +146,14 @@ export function saisir(entree, { dossier, commun = loadRoles(COMMUN) }) {
     fonds: fondsClairs(commun),
     description:
       entree.description ??
-      `Emplacements de marque de ${entree.nom}, écrits par la saisie depuis entree.json. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers marque.<emplacement>.* ; chaque emplacement pointe vers une échelle (${noms.length ? 'générées dans echelles.tokens.json, ' : ''}communes dans tokens/orbe-cafe/), et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9.${accent ? '' : ' Sans accent saisi : repli sur le neutre (D05).'}`,
+      `Emplacements de marque de ${entree.nom}, écrits par la saisie depuis entree.json. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers marque.<emplacement>.* ; chaque emplacement pointe vers une échelle (${noms.length ? 'générées dans echelles.tokens.json, ' : ''}communes dans tokens/commun/), et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9.${accent ? '' : ' Sans accent saisi : repli sur le neutre (D05).'}`,
   });
   try {
-    const c = contratRoles({ ...commun, marque, echelles: echelles ? [echelles] : [] });
+    const c = contratRoles({ ...commun, marque, echelles: echelles ? [echelles] : propres ? [propres] : [] });
     for (const p of c.fails) motifs.push(`contraste : ${p.devant} sur ${p.fond}, ${fr(p.ratio)}:1 < ${String(p.min).replace('.', ',')}:1`);
   } catch (e) {
     motifs.push(`contraste : ${/** @type {Error} */ (e).message}`);
   }
-  return { motifs, marque, echelles, commun };
+  const resolver = modeleResolver({ nom: entree.nom, dossier, marque: [...(orbe ? ['primitives.tokens.json'] : echelles ? ['echelles.tokens.json'] : []), 'marque.tokens.json'] });
+  return { motifs, marque, echelles, resolver, commun };
 }

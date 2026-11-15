@@ -1,6 +1,6 @@
 # Décisions
 
-Quatorze décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/orbe-cafe/`.
+Quinze décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/commun/` et dans le dossier de chaque marque.
 
 ### D01
 - **Décision** : les rôles se nomment propriété.sens.emphase.état.
@@ -71,3 +71,8 @@ Quatorze décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'
 - **Décision** : deux niveaux d'aplat de marque, non cliquables : clair (`fond.marque.discret`, pas 3 du primaire ; `fond.accent.discret`, pas 3 de l'accent) et plein (`fond.marque.fort`, valeur du plein du primaire). Sur l'aplat plein, tout passe en retourné : texte `texte.sur-marque`, bouton inversé (`fond.interactif.inverse`, `texte.sur-interactif.inverse`, dont seul le texte change au survol), anneau `bordure.focus.inverse`. Titres de marque : `texte.marque.grand`, pour l'affichage et les titres 1 et 2 seulement, pas 9 du primaire s'il tient 3:1 sur les fonds clairs, sinon 10, sinon 11, choisi à la saisie.
 - **Raison** : créer du relief dans une page avec la couleur du client ; sur l'aplat plein, l'anneau au pas 11 tombait entre 1,00 et 1,55:1 pour six marques sur huit.
 - **Conséquence** : sur `fond.marque.fort`, `texte.marque.grand`, `texte.interactif`, le bouton principal et `bordure.focus` sont des paires interdites, chacune avec sa règle (D06). `fond.accent.fort` reste aux petites surfaces.
+
+### D15
+- **Décision** : les couches communes à toutes les marques vivent dans `tokens/commun/` ; chaque marque a un resolver DTCG 2025.10 (`marque.resolver.json`), écrit par la saisie, lu par un lecteur maison (`src/tokens/resolver.js`). Deux modificateurs : mode (clair, sombre) et largeur (large, étroit). Un contexte remplace des jetons entiers ; le seuil de l'étroit est dans `$extensions["ds-lab.largeur"]` du modificateur.
+- **Raison** : une même marque en clair et en sombre, en large et en étroit, sans changer un seul rôle ; un format qu'un outil DTCG standard lit, sans dépendance de plus.
+- **Conséquence** : le fichier des rôles est le même dans tous les contextes ; un style de texte en étroit répète son composite entier.

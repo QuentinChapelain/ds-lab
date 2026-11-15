@@ -35,9 +35,10 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { resolveRoles } from '../src/tokens/roles.js';
+import { charger, etroite, COMMUN, ORBE } from './helpers/jetons.js';
 
 const DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'tokens', 'orbe-cafe');
-const load = (/** @type {string} */ f) => JSON.parse(readFileSync(join(DIR, f), 'utf8'));
+const load = charger;
 const prims = load('primitives.tokens.json');
 const marque = load('marque.tokens.json');
 const sem = load('semantique.tokens.json');
@@ -109,11 +110,13 @@ test('typo sémantique : rapport = hauteur visée ÷ taille, 4 décimales', () =
   }
 });
 
-test('typo sémantique : valeur en étroit ds-lab.etroit pour affichage et titres 1 à 3, eux seuls', () => {
+test('typo sémantique, 4b lot 1 : valeur en étroit dans le contexte étroit pour affichage et titres 1 à 3, eux seuls, composite entier', () => {
+  const etroit = charger('largeur.etroit.tokens.json');
   for (const [style, [, , te, , , , , re]] of Object.entries(STYLES)) {
-    const x = at(sem.typo, style).$extensions;
+    assert.equal(at(sem.typo, style).$extensions, undefined, style);
+    const x = at(etroit.typo, style);
     if (te === null) assert.equal(x, undefined, style);
-    else assert.deepEqual(x, { 'ds-lab.etroit': { valeur: { fontSize: `{taille-texte.${te}}`, lineHeight: re }, sous: { value: 600, unit: 'px' }, seuil: '[H]' } }, style);
+    else assert.deepEqual(x.$value, { ...at(sem.typo, style).$value, fontSize: `{taille-texte.${te}}`, lineHeight: re }, style);
   }
 });
 

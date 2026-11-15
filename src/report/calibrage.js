@@ -12,8 +12,7 @@
 import { oklch, wcagContrast, formatHex, clampChroma, differenceEuclidean } from 'culori';
 import { generateScale, HUED_CHROMA } from '../valise/generate.js';
 import { classePlein, voileBlanc, voileNoir, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL } from '../tokens/pleins.js';
-import { loadRoles } from '../tokens/roles.js';
-import { saisir, COMMUN } from '../tokens/saisie.js';
+import { saisir, chargerCommun, lirePropresOrbe } from '../tokens/saisie.js';
 
 const WHITE = '#ffffff';
 const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
@@ -62,9 +61,9 @@ function lecture(steps) {
  * Une colonne de la table : la marque passée par la saisie (mêmes motifs que npm run saisie), puis lue.
  * @param {{ dossier: string, entree: any }} m @param {import('../tokens/roles.js').RoleSet} [commun]
  */
-export function colonne({ dossier, entree }, commun = loadRoles(COMMUN)) {
+export function colonne({ dossier, entree }, commun = chargerCommun()) {
   const r = saisir(entree, { dossier, commun });
-  const existantes = { ...commun.primitives.couleur, ...commun.statuts.couleur };
+  const existantes = { ...commun.primitives.couleur, ...commun.statuts.couleur, ...lirePropresOrbe().couleur };
   const pasDe = (/** @type {string} */ s) => Array.from({ length: 12 }, (_, i) => existantes[s][String(i + 1)].$value.hex);
   /** @param {any} v @returns {string[] | null} */
   const steps = (v) => {
@@ -100,7 +99,7 @@ export const TEINTES = Array.from({ length: 23 }, (_, i) => 30 + i * 5);
  * clair (couleur exacte, texte au pas 12) avec ses contrastes ; verdict de la saisie.
  */
 export function balayage() {
-  const commun = loadRoles(COMMUN);
+  const commun = chargerCommun();
   const polices = { titre: ['serif'], texte: ['sans-serif'] };
   return [
     { titre: 'Chroma la plus forte dans le gamut sRGB', c: 0.4 },

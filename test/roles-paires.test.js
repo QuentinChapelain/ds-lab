@@ -51,12 +51,13 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { contractOf } from '../src/valise/generate.js';
 import { valiseFromTokens } from '../src/tokens/primitives.js';
-import { loadRoles, resolveRoles, contratRoles, contrat } from '../src/tokens/roles.js';
+import { loadRoles, resolveRoles, contratRoles, contrat, ordreEchelles } from '../src/tokens/roles.js';
 import { PAIRES_AJOUTEES, INTERDITES_AJOUTEES } from './helpers/lot5.js';
+import { charger, etroite, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');
-const load = (/** @type {string} */ f) => JSON.parse(readFileSync(join(DIR, f), 'utf8'));
+const load = charger;
 
 /** devant | fond | ratio culori (4 décimales) | seuil. */
 const TABLE = `
@@ -205,7 +206,7 @@ test('T2 hypothèse : texte.secondaire sous 4,5:1 sur fond.composant.appui (4,33
 test('T2 contrat : le contrat par échelle reste celui de contractOf, les rôles s\'y ajoutent', () => {
   const set = loadRoles(DIR);
   const c = contrat(set);
-  assert.deepEqual(c.echelles, contractOf(valiseFromTokens(set.primitives, set.statuts)));
+  assert.deepEqual(c.echelles, contractOf(valiseFromTokens({ couleur: ordreEchelles(set.primitives, set.statuts) })));
   assert.deepEqual(c.roles, contratRoles(set));
 });
 

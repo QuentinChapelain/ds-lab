@@ -4,7 +4,6 @@
 
 - Tests C14 et E5 rouges, dans `test/e2e-desordre.test.js`, depuis avant l'étape 3.
 - Tailles de texte en px : `indexTokens` (`src/report/migration.js`) n'indexe que les px ; bascule en rem à faire après adaptation (D12, `docs/decisions.md`).
-- Valeurs en étroit rangées dans `$extensions["ds-lab.etroit"]`, invisibles pour un outil DTCG standard ; seuil de largeur encore une hypothèse.
 - Interlettrage à 0 partout, à régler avec une vraie police.
 - Primitives espace 0, 8, 12 et 64 sans rôle, à revoir après les composants.
 - Règle DS10 sans contrôle (`docs/regles.md`).
@@ -16,5 +15,6 @@
 - Bouton d'avertissement (statut figé) : texte foncé à 5,77:1 sur le plein, sous le seuil de 7 retenu pour les couleurs du client (DS1).
 - DS1 est appliquée par construction à la saisie ; aucun contrôle ne relit la règle sur les jetons écrits.
 - Balayage du calibrage (étape 4a, lot 3 bis) : les refus restants sont des échecs de `checkValise` (doublons, écart de teinte) sur des couleurs très claires ; aucun refus pour le contraste.
-- Couches communes (neutres, statuts, rôles, paires, espaces, typo) lues dans `tokens/orbe-cafe/` par toutes les marques, mêlées aux échelles d'Orbe Café : à séparer en séance b.
+- Seuil de largeur (600 px) encore une hypothèse.
+- `npm run reduce --tokens` lit un seul fichier : la cible ds-lab est maintenant répartie entre `tokens/commun/` et la marque ; les tests de bout en bout lisent une copie figée des primitives d'avant l'étape 4b (`fixtures/marque-demo/jetons/primitives.tokens.json`). À faire : lire un resolver.
 - Trois fichiers source au-delà de 1 000 lignes ; ni lint ni CI ; revue de code prévue après l'étape 4.

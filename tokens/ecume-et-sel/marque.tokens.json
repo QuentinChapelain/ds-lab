@@ -1,5 +1,5 @@
 {
-  "$description": "Emplacements de marque de Écume et Sel, écrits par la saisie depuis entree.json. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers marque.<emplacement>.* ; chaque emplacement pointe vers une échelle (générées dans echelles.tokens.json, communes dans tokens/orbe-cafe/), et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9.",
+  "$description": "Emplacements de marque de Écume et Sel, écrits par la saisie depuis entree.json. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers marque.<emplacement>.* ; chaque emplacement pointe vers une échelle (générées dans echelles.tokens.json, communes dans tokens/commun/), et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9.",
   "marque": {
     "$type": "color",
     "$description": "Emplacements de marque : primaire et accent (12 pas, plein, plein survolé, texte sur plein), statuts (plein, plein survolé, texte sur plein). Règle des pleins en trois cas, lue sur le pas 9 : sombre, moyen, clair.",

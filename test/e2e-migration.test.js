@@ -15,7 +15,7 @@ import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
 import { runReduce } from '../src/cli/reduce.js';
 
 const E = JSON.parse(await readFile(new URL('../fixtures/marque-demo/expected-migration.json', import.meta.url), 'utf8'));
-const TOKENS = new URL('../tokens/orbe-cafe/primitives.tokens.json', import.meta.url).pathname;
+const TOKENS = new URL('../fixtures/marque-demo/jetons/primitives.tokens.json', import.meta.url).pathname;
 const TOL = 0.01;
 
 /** @type {Awaited<ReturnType<typeof startFixtureServers>>} */

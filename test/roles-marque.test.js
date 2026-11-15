@@ -44,10 +44,11 @@ import { loadRoles, resolveRoles, contratRoles } from '../src/tokens/roles.js';
 import { fondsClairs } from '../src/tokens/saisie.js';
 import { AJOUTS } from './helpers/lot5.js';
 import { classePlein, voileBlanc, marqueTokens, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL, STATUTS_FIGES, VOILE_BLANC } from '../src/tokens/pleins.js';
+import { charger, etroite, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');
-const load = (/** @type {string} */ f) => JSON.parse(readFileSync(join(DIR, f), 'utf8'));
+const load = charger;
 const STEPS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 const CASES = ['plein', 'plein-survol', 'sur-plein'];
 const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
@@ -218,7 +219,7 @@ test('Pleins : le fichier versionné est celui que produit marqueTokens', () => 
 });
 
 test('M0 rôles : les pleins et les couleurs de marque passent par marque.* ; aucun ne cite bleu, terre ni un plein de statut', () => {
-  const s = readFileSync(join(DIR, 'semantique.tokens.json'), 'utf8');
+  const s = readFileSync(join(COMMUN, 'semantique.tokens.json'), 'utf8');
   assert.doesNotMatch(s, /\{couleur\.(bleu|terre)\./);
   // texte.<statut> vise le pas 11 de son statut (rôle de texte) : seuls 9, 10, 12 et sur-plein sont des pleins.
   assert.doesNotMatch(s, /\{couleur\.(erreur|succes|avertissement|info)\.(9|10|12|sur-plein)\}/);

@@ -2,7 +2,7 @@
 /**
  * Séance 3a, T0 : échelles de couleur en jetons DTCG 2025.10, et lecture inverse pour checkValise.
  * Les statuts avertissement et info d'Orbe Café sont générés par generateScale et rangés à part
- * (tokens/orbe-cafe/statuts.tokens.json) ; primitives.tokens.json n'est pas modifié.
+ * (tokens/commun/statuts.tokens.json) ; primitives.tokens.json n'est pas modifié.
  */
 import { rgb, formatHex } from 'culori';
 import { generateScale } from '../valise/generate.js';
@@ -73,7 +73,7 @@ export function statutsTokens() {
   };
   for (const s of STATUTS) couleur[s.name] = scaleToDtcg(generateScale(s.name, s.source), s.label);
   return {
-    $description: "Statuts d'Orbe Café (marque fictive), séance 3a du 14/11/2026. Format DTCG 2025.10. Complète primitives.tokens.json sans le modifier.",
+    $description: "Statuts complémentaires communs à toutes les marques (avertissement, info), séance 3a du 14/11/2026. Format DTCG 2025.10. Complète primitives.tokens.json sans le modifier.",
     couleur,
   };
 }

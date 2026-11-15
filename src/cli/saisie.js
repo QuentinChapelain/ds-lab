@@ -3,7 +3,8 @@
 /**
  * Étape 4, séance a, lot 1 : saisie d'une marque. Lit tokens/<marque>/entree.json, génère les échelles et la couche
  * marque, refuse avec motif (entrée invalide, checkValise, paire de rôles en échec) ou écrit marque.tokens.json
- * (et echelles.tokens.json si une échelle est générée) dans le dossier de l'entrée, puis lance le contrôle de contraste.
+ * (et echelles.tokens.json si une échelle est générée) et le resolver marque.resolver.json dans le dossier de l'entrée,
+ * puis lance le contrôle de contraste.
  * Sort en 0 si la marque est acceptée, en 1 si elle est refusée (rien n'est écrit), en 2 sur une erreur d'usage.
  * Usage : npm run saisie -- <entree.json>
  */
@@ -12,6 +13,7 @@ import { dirname, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { saisir, serialiser } from '../tokens/saisie.js';
+import { RESOLVER } from '../tokens/resolver.js';
 
 const fichier = process.argv[2];
 if (!fichier) {
@@ -38,8 +40,9 @@ writeFileSync(join(dossier, 'marque.tokens.json'), serialiser(r.marque));
 const echelles = join(dossier, 'echelles.tokens.json');
 if (r.echelles) writeFileSync(echelles, serialiser(r.echelles));
 else if (existsSync(echelles)) rmSync(echelles);
+writeFileSync(join(dossier, RESOLVER), serialiser(r.resolver));
 console.log(`marque acceptée : ${nom}`);
-console.log(`écrit : ${join(dossier, 'marque.tokens.json')}${r.echelles ? `, ${echelles}` : ''}`);
+console.log(`écrit : ${join(dossier, 'marque.tokens.json')}${r.echelles ? `, ${echelles}` : ''}, ${join(dossier, RESOLVER)}`);
 const contraste = fileURLToPath(new URL('./contraste.js', import.meta.url));
 const c = spawnSync(process.execPath, [contraste, '--marque', dossier], { stdio: 'inherit' });
 process.exit(c.status ?? 1);

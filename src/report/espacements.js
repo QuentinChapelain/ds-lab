@@ -5,11 +5,10 @@
  * plusieurs sections) bâtie sur les cinq rôles d'espacement, chacun coté et nommé une fois.
  * Le parent porte l'espace : gap et padding uniquement, la seule déclaration margin est la remise à zéro.
  * Toutes les valeurs viennent des jetons, valeur en étroit comprise (lot 4 : ecart.section, 48 px, et 32 px
- * sous 600 px par ds-lab.etroit, seuil [H]). Couleurs : rôles de semantique.tokens.json ; les cotes ont leur propre
+ * sous 600 px dans le contexte étroit, seuil [H]). Couleurs : rôles de semantique.tokens.json ; les cotes ont leur propre
  * palette d'annotation, hors du design system. Page autonome, sans ressource externe ni script.
  */
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { largeurs } from '../tokens/resolver.js';
 import { espacements } from '../tokens/espacements.js';
 import { resolveRoles } from '../tokens/roles.js';
 
@@ -244,9 +243,7 @@ ${legende}
  * @returns {string}
  */
 export function planche(dir) {
-  const read = (/** @type {string} */ f) => JSON.parse(readFileSync(join(dir, f), 'utf8'));
-  const sem = read('semantique.tokens.json');
-  const prims = read('primitives.tokens.json');
-  const roles = resolveRoles(sem, prims, read('statuts.tokens.json'), read('marque.tokens.json'));
-  return espacementsHtml(espacements(sem, prims), roles);
+  const { large, etroit } = largeurs(dir);
+  const roles = resolveRoles(large.semantique, large.primitives, large.marque);
+  return espacementsHtml(espacements(large.semantique, large.primitives, etroit), roles);
 }

@@ -32,7 +32,7 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { wcagContrast } from 'culori';
-import { saisir, serialiser, COMMUN } from '../src/tokens/saisie.js';
+import { saisir, serialiser, COMMUN, chargerCommun } from '../src/tokens/saisie.js';
 import { resolveRoles, loadRoles } from '../src/tokens/roles.js';
 import { fondsClairs } from '../src/tokens/saisie.js';
 
@@ -83,7 +83,7 @@ test('S4 paire de rôles en échec : refus', () => {
   assert.equal(Math.round(wcagContrast('#ffffff', '#8a4fd8') * 100) / 100, 5.01);
   assert.equal(Math.round(wcagContrast('#ffffff', '#864bd3') * 100) / 100, 5.3);
   assert.deepEqual(saisir({ nom: 'Essai', primaire: '#cc9900', polices: POLICES }, { dossier: AILLEURS }).motifs, []);
-  const commun = loadRoles(COMMUN);
+  const commun = chargerCommun();
   const paires = structuredClone(commun.paires);
   paires.seuils.essai = 5.2;
   for (const p of paires.paires) if (p.devant === 'texte.sur-interactif') p.type = 'essai';
@@ -130,5 +130,5 @@ test('S7 contraste --marque tokens/orbe-cafe/ : même sortie que sans l\'option'
   assert.equal(a.status, 0);
   assert.equal(b.status, 0);
   assert.equal(b.stdout, a.stdout);
-  assert.equal(COMMUN, ORBE + '/');
+  assert.equal(COMMUN, join(ROOT, 'tokens', 'commun') + '/');
 });
