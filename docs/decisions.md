@@ -1,6 +1,6 @@
 # Décisions
 
-Seize décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/commun/` et dans le dossier de chaque marque.
+Dix-sept décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/commun/` et dans le dossier de chaque marque.
 
 ### D01
 - **Décision** : les rôles se nomment propriété.sens.emphase.état.
@@ -81,3 +81,8 @@ Seize décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est
 - **Décision** : en marque blanche, la police des titres (affichage, titres 1 à 3) est celle du client, entrée par `polices.titre` ; la police du texte (titre 4, corps, libellés, mentions, boutons) est celle du produit, commune à toutes les marques, déclarée une fois dans `tokens/commun/police.tokens.json`. `polices.texte` reste possible dans l'entrée et remplace la police du produit.
 - **Raison** : décision de Quentin du 15/11/2026, 17 h 51 : le client ne change pas la police du texte, le système garde la capacité de la changer.
 - **Conséquence** : une entrée sans `polices.texte` est acceptée ; sa couche marque n'écrit que `police.titre`, le resolver lit la police du produit avant la couche marque. Valeur de la police du produit : hypothèse (`KNOWN_ISSUES.md`).
+
+### D17
+- **Décision** : affichage et titres 1 à 3 portent une consigne commune de hauteur de capitale, `police.titre.hauteur-capitale` (`tokens/commun/police.tokens.json`), écrite sur chaque style dans `$extensions["ds-lab.hauteur-capitale"]` et rendue en CSS par `font-size-adjust: cap-height` ; la même pour toutes les marques, aucun réglage par police. Les hauteurs de ligne de ces styles sont relevées, sur la grille de 4 px : affichage grand 76 px en large et 48 px en étroit, affichage moyen 60 et 40, titre 1 40 en large ; titres 2 et 3 inchangés.
+- **Raison** : décisions de Quentin du 15/11/2026, 18 h 10 et 19 h 59. La police du client change la hauteur visible des titres ; une consigne commune la ramène à la même hauteur de capitale. Les hauteurs de ligne de l'étape 3 avaient été calées sur des références sans capitales accentuées ; en français, É, À et Ê montent au-dessus de la ligne, et l'encre de deux lignes se touchait avec les trois polices d'essai (Oswald, EB Garamond, Cinzel). Georgia touchait déjà avant la consigne.
+- **Conséquence** : le format DTCG n'a pas de propriété pour cette consigne : un outil DTCG standard lit le style sans elle. Une police dont l'encre de deux lignes se touche encore, ou dont le fichier n'a pas de hauteur de capitale, est refusée à la saisie. Rapport 0,7 : hypothèse, à juger sur image (`KNOWN_ISSUES.md`).

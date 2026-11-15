@@ -19,9 +19,9 @@
             "value": 0,
             "unit": "px"
           },
-          "lineHeight": 1.1111
+          "lineHeight": 1.3333
         },
-        "$description": "Hero d'une page d'accueil ; ligne visée 68 px en large, 40 px en étroit.",
+        "$description": "Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit.",
         "$extensions": {
           "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
         }
@@ -35,9 +35,9 @@
             "value": 0,
             "unit": "px"
           },
-          "lineHeight": 1.2
+          "lineHeight": 1.3333
         },
-        "$description": "Grand chiffre ou bandeau ; ligne visée 56 px en large, 36 px en étroit.",
+        "$description": "Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit.",
         "$extensions": {
           "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
         }
@@ -55,7 +55,7 @@
           },
           "lineHeight": 1.3333
         },
-        "$description": "Titre de page ; ligne visée 36 px en large, 32 px en étroit.",
+        "$description": "Titre de page ; ligne visée 40 px en large, 32 px en étroit.",
         "$extensions": {
           "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
         }

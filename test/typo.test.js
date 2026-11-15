@@ -16,7 +16,7 @@
  * Affiché sans seuil : le rapport de chaque style (4 décimales, virgule) ; les primitives sans rôle
  *   (taille-texte et graisse ; Orbe Café : aucune depuis que mention cite taille-texte.12, décision du 15/11/2026).
  * Orbe Café : 9 règles (8, plus la consigne de hauteur de capitale de l'étape 4c), aucune en échec, code 0 ; ligne affichée = taille × rapport arrondie au centième
- *   (60 × 1,1333 = 67,998 → 68).
+ *   (60 × 1,2667 = 76,002 → 76 ; lignes des titres relevées à l'étape 4c, D17).
  * Rouges, chacun ne fait tomber que sa règle :
  *   R1 titre.2 interligne 1,3 → 24 × 1,3 = 31,2 px ;
  *   R2 titre.3 → {taille-texte.24}, interligne 1,3333 (32 px) : 30, 24, 24 en large ;
@@ -86,7 +86,7 @@ test('typo vert : Orbe Café, 9 règles tenues (étape 4c : consigne de hauteur 
   assert.equal(p.status, 0, p.stdout + p.stderr);
   assert.doesNotMatch(p.stdout, /✗/);
   for (const l of [
-    /affichage\.grand +60 \/ 68 px +rapport 1,1333 +étroit 36 \/ 40 px +rapport 1,1111 +700 +police\.titre +capitale 0,7 × taille\n/,
+    /affichage\.grand +60 \/ 76 px +rapport 1,2667 +étroit 36 \/ 48 px +rapport 1,3333 +700 +police\.titre +capitale 0,7 × taille\n/,
     /titre\.3 +20 \/ 28 px +rapport 1,4 +étroit 18 \/ 24 px +rapport 1,3333 +600 +police\.titre +capitale 0,7 × taille\n/,
     /titre\.4 +16 \/ 24 px +rapport 1,5 +700 +police\.texte\n/,
     /corps\.grand +18 \/ 28 px +rapport 1,5556 +400 +police\.texte\n/,

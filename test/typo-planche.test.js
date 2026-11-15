@@ -17,6 +17,7 @@
  *   chaque gap vaut un rôle d'espacement (var(--ecart-…) ou var(--marge-interieure-…)) ;
  *   rendue à 420 et à 1 200 px sans défilement horizontal ; page autonome, aucun script ni ressource externe ;
  *   le fichier versionné est à jour.
+ * Étape 4c (D17) : lignes d'affichage.grand 76 / 48, d'affichage.moyen 60 / 40, de titre.1 40 en large.
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -34,9 +35,9 @@ const TITRE = 'Georgia, serif';
 const TEXTE = '"Orbe Sans", Arial, sans-serif';
 /** style → [taille, ligne, taille étroit, ligne étroit, graisse, police] */
 const STYLES = /** @type {Record<string, [number, number, number | null, number | null, number, string]>} */ ({
-  'affichage.grand': [60, 68, 36, 40, 700, TITRE],
-  'affichage.moyen': [48, 56, 30, 36, 700, TITRE],
-  'titre.1': [30, 36, 24, 32, 700, TITRE],
+  'affichage.grand': [60, 76, 36, 48, 700, TITRE],
+  'affichage.moyen': [48, 60, 30, 40, 700, TITRE],
+  'titre.1': [30, 40, 24, 32, 700, TITRE],
   'titre.2': [24, 32, 20, 28, 700, TITRE],
   'titre.3': [20, 28, 18, 24, 600, TITRE],
   'titre.4': [16, 24, null, null, 700, TEXTE],
@@ -95,7 +96,7 @@ test('typo planche : page autonome, sans script, fichier à jour', () => {
 test('typo planche : aucun réglage, valeurs lues dans les jetons', () => {
   assert.doesNotMatch(html, /type="radio"|<input type="radio"|réglage|reglage|:has\(/i);
   assert.match(html, /--mention-taille: 12px; --mention-interligne: 1\.3333;/);
-  assert.match(html, /--affichage-grand-interligne: 1\.1333;/);
+  assert.match(html, /--affichage-grand-interligne: 1\.2667;/);
   assert.match(html, /--corps-petit-interligne: 1\.4286;/);
 });
 

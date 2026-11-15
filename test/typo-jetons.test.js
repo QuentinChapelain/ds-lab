@@ -28,6 +28,9 @@
  *   décision du 15/11/2026 prise sur la planche : {taille-texte.12}, rapport 1,3333 ; aucun autre jeton ne change).
  * Rapports attendus (hauteur ÷ taille, 4 décimales) : 68/60 1,1333 ; 40/36 1,1111 ; 56/48 1,1667 ; 36/30 1,2 ;
  *   32/24 1,3333 ; 28/20 1,4 ; 24/18 1,3333 ; 24/16 1,5 ; 28/18 1,5556 ; 20/14 1,4286.
+ * Étape 4c (D17, décision du 15/11/2026, 19 h 59) : lignes relevées pour que l'encre de deux lignes ne se touche pas,
+ *   en gardant DS7 ; affichage.grand 60/76 (76/60 = 1,26667 → 1,2667) et 36/48 (1,3333) ; affichage.moyen 48/60
+ *   (1,25) et 30/40 (1,3333) ; titre.1 30/40 (1,3333) en large, inchangé en étroit ; le reste inchangé.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -45,9 +48,9 @@ const sem = load('semantique.tokens.json');
 
 /** style → [taille, ligne, taille étroit, ligne étroit, graisse, police, rapport, rapport étroit, usage (début de la description)] */
 const STYLES = /** @type {Record<string, [number, number, number | null, number | null, number, 'titre' | 'texte', number, number | null, string]>} */ ({
-  'affichage.grand': [60, 68, 36, 40, 700, 'titre', 1.1333, 1.1111, "Hero d'une page d'accueil"],
-  'affichage.moyen': [48, 56, 30, 36, 700, 'titre', 1.1667, 1.2, 'Grand chiffre ou bandeau'],
-  'titre.1': [30, 36, 24, 32, 700, 'titre', 1.2, 1.3333, 'Titre de page'],
+  'affichage.grand': [60, 76, 36, 48, 700, 'titre', 1.2667, 1.3333, "Hero d'une page d'accueil"],
+  'affichage.moyen': [48, 60, 30, 40, 700, 'titre', 1.25, 1.3333, 'Grand chiffre ou bandeau'],
+  'titre.1': [30, 40, 24, 32, 700, 'titre', 1.3333, 1.3333, 'Titre de page'],
   'titre.2': [24, 32, 20, 28, 700, 'titre', 1.3333, 1.4, 'Titre de section'],
   'titre.3': [20, 28, 18, 24, 600, 'titre', 1.4, 1.3333, 'Titre de carte'],
   'titre.4': [16, 24, null, null, 700, 'texte', 1.5, null, 'Titre de sous-groupe'],
