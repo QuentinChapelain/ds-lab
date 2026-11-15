@@ -4,14 +4,14 @@
  * Une page complète (formulaire avec un message d'erreur sur deux lignes, rangée de trois cartes,
  * plusieurs sections) bâtie sur les cinq rôles d'espacement, chacun coté et nommé une fois.
  * Le parent porte l'espace : gap et padding uniquement, la seule déclaration margin est la remise à zéro.
- * Deux réglages sans script (:has) : ecart.dans-composant à 4 ou 8 px, ecart.section à 48 ou 32 px en
- * étroit (sous 600 px, seuil [H]). Couleurs : rôles de semantique.tokens.json ; les cotes ont leur propre
+ * Toutes les valeurs viennent des jetons, valeur en étroit comprise (lot 4 : ecart.section, 48 px, et 32 px
+ * sous 600 px par ds-lab.etroit, seuil [H]). Couleurs : rôles de semantique.tokens.json ; les cotes ont leur propre
  * palette d'annotation, hors du design system. Page autonome, sans ressource externe ni script.
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { espacements } from '../tokens/espacements.js';
-import { resolveRoles, flattenTokens } from '../tokens/roles.js';
+import { resolveRoles } from '../tokens/roles.js';
 
 /** @param {string} s */
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => /** @type {Record<string, string>} */ ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -29,18 +29,9 @@ const COTE = /** @type {Record<string, string>} */ ({
   'marge-interieure.composant': '#7048e8',
 });
 
-/** Réglages essayés sur la planche, sans toucher aux tokens. */
-const REGLAGES = [
-  { role: 'ecart.dans-composant', cle: 'dans-composant', alias: '{espace.8}', etroit: false },
-  { role: 'ecart.section', cle: 'section', alias: '{espace.32}', etroit: true },
-];
-
-/** Seuil de l'étroit [H]. */
-const ETROIT = 600;
-
 /**
  * Cote d'un écart : bande posée sous son hôte, de la hauteur de l'écart, avec le nom et la valeur.
- * @param {string} role @param {string} valeur texte de la valeur (peut contenir le réglage)
+ * @param {string} role @param {string} valeur texte de la valeur (large, et en étroit s'il y a lieu)
  */
 const cote = (role, valeur) =>
   `<span class="cote" data-cote="${role}" aria-hidden="true" style="--c:${COTE[role]};height:var(${cssVar(role)})"><span class="etiquette">${role} · ${valeur}</span></span>`;
@@ -48,10 +39,9 @@ const cote = (role, valeur) =>
 /**
  * @param {ReturnType<typeof espacements>} r
  * @param {ReturnType<typeof resolveRoles>} roles
- * @param {Record<string, number>} reglages role → px du réglage
  * @returns {string}
  */
-export function espacementsHtml(r, roles, reglages) {
+export function espacementsHtml(r, roles) {
   const hex = (/** @type {string} */ role) => {
     const v = roles.get(role);
     if (!v) throw new Error(`rôle de couleur absent : ${role}`);
@@ -59,8 +49,14 @@ export function espacementsHtml(r, roles, reglages) {
   };
   const tous = [...r.ecarts, ...r.horsControle];
   const px = Object.fromEntries(tous.map((e) => [e.role, e.px]));
-  const valeurDc = `<span class="si-dc-token">${px['ecart.dans-composant']} px</span><span class="si-dc-reglage">${reglages['ecart.dans-composant']} px, réglage</span>`;
-  const valeurSec = `<span class="si-sec-token">${px['ecart.section']} px</span><span class="si-sec-reglage">${reglages['ecart.section']} px, réglage en étroit</span>`;
+  const etroit = new Map(r.etroits.map((t) => [t.role, t]));
+  /** Valeur affichée d'un rôle : large, et en étroit sous son seuil s'il en a une. @param {string} role */
+  const valeur = (role) => {
+    const t = etroit.get(role);
+    if (!t) return `${px[role]} px`;
+    return `<span class="dessus-${t.sous}">${px[role]} px</span><span class="sous-${t.sous}">${t.px} px en étroit, sous ${t.sous} px ${esc(t.seuil)}</span>`;
+  };
+  const seuils = [...new Set(r.etroits.map((t) => t.sous))];
 
   const legende = tous
     .map(
@@ -68,29 +64,16 @@ export function espacementsHtml(r, roles, reglages) {
             <span class="barre-case"><span class="barre" style="--c:${COTE[e.role]};width:var(${cssVar(e.role)})"></span></span>
             <div class="legende-texte">
               <code>${e.role}</code>
-              <span class="valeur">${e.px} px · ${esc(e.alias)}</span>
+              <span class="valeur">${e.px} px · ${esc(e.alias)}${etroit.has(e.role) ? ` ; en étroit, sous ${etroit.get(e.role)?.sous} px ${esc(etroit.get(e.role)?.seuil ?? '')} : ${etroit.get(e.role)?.px} px · ${esc(etroit.get(e.role)?.alias ?? '')}` : ''}</span>
               <span class="usage">${esc(e.description)}</span>
             </div>
           </li>`,
     )
     .join('\n');
-  const bilan = r.fails.length
-    ? `<strong>${r.fails.length} voisin${r.fails.length > 1 ? 's' : ''} en échec</strong> : les ecart doivent être strictement croissants.`
-    : 'Strictement croissants, contrôlé par <code>npm run espacements</code>.';
-  const choix = (/** @type {string} */ cle, /** @type {number} */ v, /** @type {boolean} */ checked, /** @type {string} */ texte) =>
-    `<label class="choix"><input type="radio" name="reglage-${cle}" id="reglage-${cle}-${v}"${checked ? ' checked' : ''}><span>${texte}</span></label>`;
-  const reglagesHtml = REGLAGES.map((g) => {
-    const token = px[g.role];
-    const autre = reglages[g.role];
-    return `          <div class="reglage" role="radiogroup" aria-labelledby="titre-reglage-${g.cle}">
-            <span class="reglage-titre" id="titre-reglage-${g.cle}"><code>${g.role}</code>${g.etroit ? ` en étroit (moins de ${ETROIT} px de large [H])` : ''}</span>
-            <div class="choix-liste">
-              ${choix(g.cle, token, true, `${token} px, token`)}
-              ${choix(g.cle, autre, false, `${autre} px, ${esc(g.alias)}`)}
-            </div>
-          </div>`;
-  }).join('\n');
-
+  const nFails = r.fails.length + r.etroitsFails.length;
+  const bilan = nFails
+    ? `<strong>${nFails} contrôle${nFails > 1 ? 's' : ''} en échec</strong> : voir <code>npm run espacements</code>.`
+    : 'Strictement croissants, valeurs en étroit comprises, contrôlé par <code>npm run espacements</code>.';
   const vars = tous.map((e) => `${cssVar(e.role)}: ${e.px}px;`).join(' ');
   return `<!doctype html>
 <html lang="fr">
@@ -100,16 +83,15 @@ export function espacementsHtml(r, roles, reglages) {
     <title>Espacements Orbe Café</title>
     <style>
       :root { ${vars} }
-      :root:has(#reglage-dans-composant-${reglages['ecart.dans-composant']}:checked) { ${cssVar('ecart.dans-composant')}: ${reglages['ecart.dans-composant']}px; }
-      .si-dc-reglage, .si-sec-reglage { display: none; }
-      :root:has(#reglage-dans-composant-${reglages['ecart.dans-composant']}:checked) .si-dc-token { display: none; }
-      :root:has(#reglage-dans-composant-${reglages['ecart.dans-composant']}:checked) .si-dc-reglage { display: inline; }
-      @media (max-width: ${ETROIT - 0.02}px) {
-        :root:has(#reglage-section-${reglages['ecart.section']}:checked) { ${cssVar('ecart.section')}: ${reglages['ecart.section']}px; }
-        :root:has(#reglage-section-${reglages['ecart.section']}:checked) .si-sec-token { display: none; }
-        :root:has(#reglage-section-${reglages['ecart.section']}:checked) .si-sec-reglage { display: inline; }
-      }
-
+${seuils
+  .map((n) => {
+    const decl = r.etroits.filter((t) => t.sous === n).map((t) => `${cssVar(t.role)}: ${t.px}px;`).join(' ');
+    return `      .sous-${n} { display: none; }
+      @media (max-width: ${n - 0.02}px) { :root { ${decl} } }
+      @media (max-width: ${n - 0.02}px) { .sous-${n} { display: inline; } .dessus-${n} { display: none; } }
+`;
+  })
+  .join('')}
       /* Le parent porte l'espace : gap et padding ; aucun enfant n'a de marge. */
       * { margin: 0; box-sizing: border-box; }
       body {
@@ -136,11 +118,6 @@ export function espacementsHtml(r, roles, reglages) {
       .usage { font-size: 14px; }
       .rapports { font-variant-numeric: tabular-nums; }
 
-      .reglages { display: flex; flex-wrap: wrap; gap: var(${cssVar('ecart.entre-composants')}); }
-      .reglage { flex: 1 1 280px; display: flex; flex-direction: column; gap: var(${cssVar('ecart.dans-composant')}); padding: var(${cssVar('marge-interieure.composant')}); background: ${hex('fond.surface')}; border: 1px solid ${hex('bordure.discrete')}; border-radius: 8px; }
-      .choix-liste { display: flex; flex-wrap: wrap; gap: var(${cssVar('ecart.entre-composants')}); }
-      .choix { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
-      .choix input { width: 18px; height: 18px; accent-color: ${hex('fond.interactif.fort')}; }
 
       .formulaire { max-width: 560px; display: flex; flex-direction: column; gap: var(${cssVar('ecart.entre-groupes')}); padding: var(${cssVar('marge-interieure.composant')}); background: ${hex('fond.surface')}; border: 1px solid ${hex('bordure.discrete')}; border-radius: 8px; }
       .champs { display: flex; flex-direction: column; gap: var(${cssVar('ecart.entre-composants')}); }
@@ -148,7 +125,7 @@ export function espacementsHtml(r, roles, reglages) {
       .champ label { position: relative; font-weight: 600; font-size: 14px; }
       .champ input { font: inherit; width: 100%; min-height: 40px; padding: 8px 12px; color: ${hex('texte.principal')}; background: ${hex('fond.surface')}; border: 1px solid ${hex('bordure.forte')}; border-radius: 6px; }
       .champ.erreur input { border: 2px solid ${hex('bordure.erreur')}; }
-      .champ input:focus-visible, .actions button:focus-visible, .choix input:focus-visible { outline: 2px solid ${hex('bordure.focus')}; outline-offset: 2px; }
+      .champ input:focus-visible, .actions button:focus-visible { outline: 2px solid ${hex('bordure.focus')}; outline-offset: 2px; }
       .message-erreur { color: ${hex('texte.erreur')}; font-size: 14px; line-height: 20px; }
       .actions { display: flex; flex-wrap: wrap; gap: var(${cssVar('ecart.entre-composants')}); }
       .actions button { font: inherit; font-weight: 600; padding: 10px 16px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; }
@@ -186,9 +163,6 @@ export function espacementsHtml(r, roles, reglages) {
         <ul class="legende">
 ${legende}
         </ul>
-        <div class="reglages">
-${reglagesHtml}
-        </div>
       </section>
 
       <section aria-labelledby="titre-reservation">
@@ -204,7 +178,7 @@ ${reglagesHtml}
               ${cote('ecart.entre-composants', `${px['ecart.entre-composants']} px`)}
             </div>
             <div class="champ erreur">
-              <label for="courriel">Adresse e-mail${cote('ecart.dans-composant', valeurDc)}</label>
+              <label for="courriel">Adresse e-mail${cote('ecart.dans-composant', valeur('ecart.dans-composant'))}</label>
               <input id="courriel" name="courriel" type="email" value="camille.arnaud" autocomplete="off" aria-invalid="true" aria-describedby="courriel-erreur">
               <p class="message-erreur" id="courriel-erreur">Il manque la partie après @.<br>Exemple : prenom@domaine.fr</p>
             </div>
@@ -218,7 +192,7 @@ ${reglagesHtml}
             <button type="button" class="secondaire">Annuler</button>
           </div>
         </form>
-        ${cote('ecart.section', valeurSec)}
+        ${cote('ecart.section', valeur('ecart.section'))}
       </section>
 
       <section aria-labelledby="titre-salles">
@@ -274,13 +248,5 @@ export function planche(dir) {
   const sem = read('semantique.tokens.json');
   const prims = read('primitives.tokens.json');
   const roles = resolveRoles(sem, prims, read('statuts.tokens.json'), read('marque.tokens.json'));
-  const flat = flattenTokens(prims);
-  /** @type {Record<string, number>} */
-  const reglages = {};
-  for (const g of REGLAGES) {
-    const v = flat.get(g.alias.slice(1, -1))?.$value;
-    if (v?.unit !== 'px') throw new Error(`réglage illisible : ${g.alias}`);
-    reglages[g.role] = v.value;
-  }
-  return espacementsHtml(espacements(sem, prims), roles, reglages);
+  return espacementsHtml(espacements(sem, prims), roles);
 }

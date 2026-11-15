@@ -14,7 +14,10 @@
  *   resolveRoles ne garde que les jetons de type color (type hérité du groupe le plus proche) :
  *     un rôle de type dimension dans semantique.tokens.json ne le casse pas, et le compte reste
  *     à 42 rôles de couleur, aucun sous ecart.* ni marge-interieure.* ;
- *   un jeton sans aucun $type reste traité comme avant (couleur attendue, erreur si illisible).
+ *   un jeton sans aucun $type reste traité comme avant (couleur attendue, erreur si illisible) ;
+ *   lot 4 (décision du 15/11/2026) : ecart.section garde 48 px et porte sa valeur en étroit dans
+ *     $extensions["ds-lab.etroit"] = { valeur: "{espace.32}", sous: 600 px, seuil: "[H]" } ;
+ *     aucun autre rôle n'en porte ; ecart.dans-composant reste à {espace.4}.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -60,6 +63,15 @@ test('3c une phrase d\'usage par rôle d\'espacement', () => {
     assert.match(d, /^[A-ZÀ-Ý«][^]*[.]$/u, `${role} : majuscule et point final`);
     assert.doesNotMatch(d.slice(0, -1), /[.!?] /, `${role} : une seule phrase`);
   }
+});
+
+test('3c lot 4 : ecart.section porte sa valeur en étroit (32 px sous 600 px, seuil [H]), lui seul', () => {
+  assert.deepEqual(sem.ecart.section.$extensions, {
+    'ds-lab.etroit': { valeur: '{espace.32}', sous: { value: 600, unit: 'px' }, seuil: '[H]' },
+  });
+  assert.equal(sem.ecart.section.$value, '{espace.48}');
+  assert.ok(prims.espace['32']?.$value, 'espace.32 existe');
+  for (const role of Object.keys(EXPECTED)) if (role !== 'ecart.section') assert.equal(at(sem, role).$extensions, undefined, role);
 });
 
 test('3c description racine : espacements, DTCG 2025.10', () => {

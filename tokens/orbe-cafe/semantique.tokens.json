@@ -213,7 +213,17 @@
     },
     "section": {
       "$value": "{espace.48}",
-      "$description": "Écart entre deux sections de la page, la plus grande respiration verticale."
+      "$description": "Écart entre deux sections de la page, la plus grande respiration verticale ; en étroit, la valeur de ds-lab.etroit (seuil [H]).",
+      "$extensions": {
+        "ds-lab.etroit": {
+          "valeur": "{espace.32}",
+          "sous": {
+            "value": 600,
+            "unit": "px"
+          },
+          "seuil": "[H]"
+        }
+      }
     }
   },
   "marge-interieure": {

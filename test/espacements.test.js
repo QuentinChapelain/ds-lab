@@ -12,7 +12,11 @@
  *     entre-composants / entre-groupes, rapport 1 ;
  *   rouge (ordre inversé) : entre-composants → {espace.24}, entre-groupes → {espace.16} ;
  *     4, 24, 16, 48 ; un échec, entre-composants / entre-groupes, rapport 0,67 (16 / 24 arrondi
- *     au centième) ; les deux autres voisins conformes (rapports 6 et 3).
+ *     au centième) ; les deux autres voisins conformes (rapports 6 et 3) ;
+ *   lot 4 (décision du 15/11/2026) : une valeur en étroit ($extensions["ds-lab.etroit"]) doit rester
+ *     strictement supérieure à la valeur de l'ecart précédent et inférieure ou égale à sa valeur large ;
+ *     sinon échec, code de sortie 1 ; Orbe Café : ecart.section 32 px sous 600 px, > 24 et ≤ 48, conforme ;
+ *     rouge : étroit → {espace.24} (égal à entre-groupes) ; étroit → {espace.64} (au-dessus de 48).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -62,6 +66,32 @@ test('3c vert : Orbe Café, 4 < 16 < 24 < 48, rapports affichés, code 0', () =>
   assert.match(p.stdout, /marge-interieure\.composant +16 px/);
   assert.match(p.stdout, /3 paires de voisins, aucune en échec\./);
   assert.doesNotMatch(p.stdout, /✗/);
+});
+
+test('3c lot 4 vert : ecart.section en étroit, 32 px sous 600 px, > 24 et ≤ 48, code 0', () => {
+  const r = espacements(load('semantique.tokens.json'), prims);
+  assert.deepEqual(
+    r.etroits.map((e) => ({ role: e.role, px: e.px, alias: e.alias, sous: e.sous, precedent: e.precedent, large: e.large, ok: e.ok })),
+    [{ role: 'ecart.section', px: 32, alias: '{espace.32}', sous: 600, precedent: 24, large: 48, ok: true }],
+  );
+  assert.equal(r.ecarts.find((e) => e.role === 'ecart.section')?.px, 48, 'la valeur large ne change pas');
+  const p = run();
+  assert.equal(p.status, 0, p.stdout + p.stderr);
+  assert.match(p.stdout, /✓ ecart\.section sous 600 px \[H\] : 32 px \{espace\.32\} ; > ecart\.entre-groupes 24 px : oui ; ≤ 48 px : oui\n/);
+  assert.match(p.stdout, /1 valeur en étroit, aucune en échec\./);
+});
+
+test('3c lot 4 rouge : valeur en étroit égale à entre-groupes, ou au-dessus de la valeur large, code 1', () => {
+  for (const [alias, px, sup, inf] of /** @type {const} */ ([['{espace.24}', 24, 'non', 'oui'], ['{espace.64}', 64, 'oui', 'non']])) {
+    const sem = variant((s) => { s.ecart.section.$extensions['ds-lab.etroit'].valeur = alias; });
+    const r = espacements(sem, prims);
+    assert.deepEqual(r.fails, [], `${alias} : les voisins larges restent conformes`);
+    assert.deepEqual(r.etroits.map((e) => [e.px, e.ok]), [[px, false]], alias);
+    const p = run(sem);
+    assert.equal(p.status, 1, p.stdout + p.stderr);
+    assert.match(p.stdout, new RegExp(`✗ ecart\\.section sous 600 px \\[H\\] : ${px} px \\{espace\\.${px}\\} ; > ecart\\.entre-groupes 24 px : ${sup} ; ≤ 48 px : ${inf}\\n`));
+    assert.match(p.stdout, /1 valeur en étroit, 1 en échec\./);
+  }
 });
 
 test('3c rouge : deux rôles égaux (entre-composants = entre-groupes = 16), code 1', () => {

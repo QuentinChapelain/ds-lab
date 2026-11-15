@@ -6,15 +6,9 @@
     <title>Espacements Orbe Café</title>
     <style>
       :root { --ecart-dans-composant: 4px; --ecart-entre-composants: 16px; --ecart-entre-groupes: 24px; --ecart-section: 48px; --marge-interieure-composant: 16px; }
-      :root:has(#reglage-dans-composant-8:checked) { --ecart-dans-composant: 8px; }
-      .si-dc-reglage, .si-sec-reglage { display: none; }
-      :root:has(#reglage-dans-composant-8:checked) .si-dc-token { display: none; }
-      :root:has(#reglage-dans-composant-8:checked) .si-dc-reglage { display: inline; }
-      @media (max-width: 599.98px) {
-        :root:has(#reglage-section-32:checked) { --ecart-section: 32px; }
-        :root:has(#reglage-section-32:checked) .si-sec-token { display: none; }
-        :root:has(#reglage-section-32:checked) .si-sec-reglage { display: inline; }
-      }
+      .sous-600 { display: none; }
+      @media (max-width: 599.98px) { :root { --ecart-section: 32px; } }
+      @media (max-width: 599.98px) { .sous-600 { display: inline; } .dessus-600 { display: none; } }
 
       /* Le parent porte l'espace : gap et padding ; aucun enfant n'a de marge. */
       * { margin: 0; box-sizing: border-box; }
@@ -42,11 +36,6 @@
       .usage { font-size: 14px; }
       .rapports { font-variant-numeric: tabular-nums; }
 
-      .reglages { display: flex; flex-wrap: wrap; gap: var(--ecart-entre-composants); }
-      .reglage { flex: 1 1 280px; display: flex; flex-direction: column; gap: var(--ecart-dans-composant); padding: var(--marge-interieure-composant); background: #ffffff; border: 1px solid #d8d6d2; border-radius: 8px; }
-      .choix-liste { display: flex; flex-wrap: wrap; gap: var(--ecart-entre-composants); }
-      .choix { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
-      .choix input { width: 18px; height: 18px; accent-color: #2b4c7e; }
 
       .formulaire { max-width: 560px; display: flex; flex-direction: column; gap: var(--ecart-entre-groupes); padding: var(--marge-interieure-composant); background: #ffffff; border: 1px solid #d8d6d2; border-radius: 8px; }
       .champs { display: flex; flex-direction: column; gap: var(--ecart-entre-composants); }
@@ -54,7 +43,7 @@
       .champ label { position: relative; font-weight: 600; font-size: 14px; }
       .champ input { font: inherit; width: 100%; min-height: 40px; padding: 8px 12px; color: #363026; background: #ffffff; border: 1px solid #958f84; border-radius: 6px; }
       .champ.erreur input { border: 2px solid #e76862; }
-      .champ input:focus-visible, .actions button:focus-visible, .choix input:focus-visible { outline: 2px solid #4c6994; outline-offset: 2px; }
+      .champ input:focus-visible, .actions button:focus-visible { outline: 2px solid #4c6994; outline-offset: 2px; }
       .message-erreur { color: #cb1d2a; font-size: 14px; line-height: 20px; }
       .actions { display: flex; flex-wrap: wrap; gap: var(--ecart-entre-composants); }
       .actions button { font: inherit; font-weight: 600; padding: 10px 16px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; }
@@ -87,7 +76,7 @@
       <section aria-labelledby="titre-legende">
         <div class="entete">
           <h2 id="titre-legende">Les cinq espaces</h2>
-          <p class="rapports">4 → 16 → 24 → 48 px ; rapports entre voisins 4 ; 1,5 ; 2 (affichés, non contrôlés). Strictement croissants, contrôlé par <code>npm run espacements</code>.</p>
+          <p class="rapports">4 → 16 → 24 → 48 px ; rapports entre voisins 4 ; 1,5 ; 2 (affichés, non contrôlés). Strictement croissants, valeurs en étroit comprises, contrôlé par <code>npm run espacements</code>.</p>
         </div>
         <ul class="legende">
           <li>
@@ -118,8 +107,8 @@
             <span class="barre-case"><span class="barre" style="--c:#d9480f;width:var(--ecart-section)"></span></span>
             <div class="legende-texte">
               <code>ecart.section</code>
-              <span class="valeur">48 px · {espace.48}</span>
-              <span class="usage">Écart entre deux sections de la page, la plus grande respiration verticale.</span>
+              <span class="valeur">48 px · {espace.48} ; en étroit, sous 600 px [H] : 32 px · {espace.32}</span>
+              <span class="usage">Écart entre deux sections de la page, la plus grande respiration verticale ; en étroit, la valeur de ds-lab.etroit (seuil [H]).</span>
             </div>
           </li>
           <li>
@@ -131,22 +120,6 @@
             </div>
           </li>
         </ul>
-        <div class="reglages">
-          <div class="reglage" role="radiogroup" aria-labelledby="titre-reglage-dans-composant">
-            <span class="reglage-titre" id="titre-reglage-dans-composant"><code>ecart.dans-composant</code></span>
-            <div class="choix-liste">
-              <label class="choix"><input type="radio" name="reglage-dans-composant" id="reglage-dans-composant-4" checked><span>4 px, token</span></label>
-              <label class="choix"><input type="radio" name="reglage-dans-composant" id="reglage-dans-composant-8"><span>8 px, {espace.8}</span></label>
-            </div>
-          </div>
-          <div class="reglage" role="radiogroup" aria-labelledby="titre-reglage-section">
-            <span class="reglage-titre" id="titre-reglage-section"><code>ecart.section</code> en étroit (moins de 600 px de large [H])</span>
-            <div class="choix-liste">
-              <label class="choix"><input type="radio" name="reglage-section" id="reglage-section-48" checked><span>48 px, token</span></label>
-              <label class="choix"><input type="radio" name="reglage-section" id="reglage-section-32"><span>32 px, {espace.32}</span></label>
-            </div>
-          </div>
-        </div>
       </section>
 
       <section aria-labelledby="titre-reservation">
@@ -162,7 +135,7 @@
               <span class="cote" data-cote="ecart.entre-composants" aria-hidden="true" style="--c:#1971c2;height:var(--ecart-entre-composants)"><span class="etiquette">ecart.entre-composants · 16 px</span></span>
             </div>
             <div class="champ erreur">
-              <label for="courriel">Adresse e-mail<span class="cote" data-cote="ecart.dans-composant" aria-hidden="true" style="--c:#c2255c;height:var(--ecart-dans-composant)"><span class="etiquette">ecart.dans-composant · <span class="si-dc-token">4 px</span><span class="si-dc-reglage">8 px, réglage</span></span></span></label>
+              <label for="courriel">Adresse e-mail<span class="cote" data-cote="ecart.dans-composant" aria-hidden="true" style="--c:#c2255c;height:var(--ecart-dans-composant)"><span class="etiquette">ecart.dans-composant · 4 px</span></span></label>
               <input id="courriel" name="courriel" type="email" value="camille.arnaud" autocomplete="off" aria-invalid="true" aria-describedby="courriel-erreur">
               <p class="message-erreur" id="courriel-erreur">Il manque la partie après @.<br>Exemple : prenom@domaine.fr</p>
             </div>
@@ -176,7 +149,7 @@
             <button type="button" class="secondaire">Annuler</button>
           </div>
         </form>
-        <span class="cote" data-cote="ecart.section" aria-hidden="true" style="--c:#d9480f;height:var(--ecart-section)"><span class="etiquette">ecart.section · <span class="si-sec-token">48 px</span><span class="si-sec-reglage">32 px, réglage en étroit</span></span></span>
+        <span class="cote" data-cote="ecart.section" aria-hidden="true" style="--c:#d9480f;height:var(--ecart-section)"><span class="etiquette">ecart.section · <span class="dessus-600">48 px</span><span class="sous-600">32 px en étroit, sous 600 px [H]</span></span></span>
       </section>
 
       <section aria-labelledby="titre-salles">

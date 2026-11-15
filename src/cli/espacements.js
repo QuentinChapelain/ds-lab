@@ -2,7 +2,9 @@
 // @ts-check
 /**
  * Séance 3c : contrôle des espacements par relation d'Orbe Café.
- * Sort en 1 si les quatre ecart ne sont pas strictement croissants, sinon en 0.
+ * Sort en 1 si les quatre ecart ne sont pas strictement croissants, ou si une valeur en étroit
+ * (ds-lab.etroit) n'est pas strictement supérieure à l'ecart précédent et au plus égale à sa valeur large ;
+ * sinon en 0.
  * Le rapport entre voisins est affiché pour information ; il ne change pas le code de sortie.
  * Usage : npm run espacements [-- --semantique <fichier>]
  */
@@ -25,9 +27,17 @@ console.log('ecart (strictement croissants, du plus proche au plus lointain)');
 for (const e of r.ecarts) console.log(line(e));
 console.log('\nvoisins (rapport affiché, non contrôlé)');
 for (const v of r.voisins) console.log(`  ${v.ok ? '✓' : '✗'} ${v.de} < ${v.vers} : ${v.a} → ${v.b} px, rapport ${fr(v.rapport)}`);
+if (r.etroits.length) {
+  console.log('\nen étroit (> ecart précédent, ≤ valeur large)');
+  const ouiNon = (/** @type {boolean} */ b) => (b ? 'oui' : 'non');
+  for (const t of r.etroits)
+    console.log(`  ${t.ok ? '✓' : '✗'} ${t.role} sous ${t.sous} px${t.seuil ? ` ${t.seuil}` : ''} : ${t.px} px ${t.alias}${t.de ? ` ; > ${t.de} ${t.precedent} px : ${ouiNon(t.superieur)}` : ''} ; ≤ ${t.large} px : ${ouiNon(t.auPlusLarge)}`);
+}
 console.log('\nhors contrôle');
 for (const e of r.horsControle) console.log(line(e));
 
 const n = r.voisins.length;
 console.log(`\n${n} ${n > 1 ? 'paires' : 'paire'} de voisins, ${r.fails.length ? `${r.fails.length} en échec` : 'aucune en échec'}.`);
-process.exit(r.fails.length ? 1 : 0);
+const k = r.etroits.length;
+if (k) console.log(`${k} ${k > 1 ? 'valeurs' : 'valeur'} en étroit, ${r.etroitsFails.length ? `${r.etroitsFails.length} en échec` : 'aucune en échec'}.`);
+process.exit(r.fails.length || r.etroitsFails.length ? 1 : 0);

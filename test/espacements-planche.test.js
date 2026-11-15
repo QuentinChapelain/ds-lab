@@ -15,9 +15,10 @@
  *   rendue dans Chromium à 420 et à 1 200 px de large : aucun défilement horizontal, cotes dans la fenêtre ;
  *     les trois cartes sur une ligne à 1 200 px, une par ligne à 420 px ; le message d'erreur sur deux lignes
  *     aux deux largeurs ;
- *   deux réglages visibles, sans script : ecart.dans-composant à 4 ou 8 px (4 par défaut, le token) ;
- *     ecart.section à 48 ou 32 px en étroit (48 par défaut ; 32 ne s'applique que sous 600 px de large,
- *     seuil [H]) ; la cote suit le réglage ;
+ *   lot 4 (décision du 15/11/2026) : plus aucun réglage (ni bouton radio, ni « réglage ») ; la planche
+ *     lit ses valeurs dans les jetons : ecart.section vaut 48 px, et 32 px sous 600 px (valeur en étroit
+ *     de ds-lab.etroit, seuil [H]) ; à 420 px la cote de section mesure et affiche 32 px, en étroit ;
+ *     à 1 200 px, 48 px ; ecart.dans-composant reste à 4 px ;
  *   page autonome : aucune ressource externe, aucun script ; le fichier versionné est à jour.
  */
 import { test, before, after } from 'node:test';
@@ -32,11 +33,12 @@ const DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'tokens', 'orbe-
 const FILE = join(DIR, 'espacements.html');
 const html = readFileSync(FILE, 'utf8');
 
-const ATTENDU = /** @type {Record<string, number>} */ ({
+/** Valeur attendue par rôle à une largeur donnée (section : 32 px sous 600 px). @param {number} width */
+const attendu = (width) => /** @type {Record<string, number>} */ ({
   'ecart.dans-composant': 4,
   'ecart.entre-composants': 16,
   'ecart.entre-groupes': 24,
-  'ecart.section': 48,
+  'ecart.section': width < 600 ? 32 : 48,
   'marge-interieure.composant': 16,
 });
 
@@ -91,6 +93,12 @@ test('3c planche : page autonome, sans script, fichier à jour', () => {
   assert.match(html, /Orbe Café/);
 });
 
+test('3c lot 4 planche : aucun réglage, valeurs lues dans les jetons', () => {
+  assert.doesNotMatch(html, /type="radio"|réglage|reglage/i);
+  assert.match(html, /--ecart-section: 48px;/);
+  assert.match(html, /@media \(max-width: 599\.98px\) \{ :root \{ --ecart-section: 32px; \} \}/);
+});
+
 test('3c planche : une seule déclaration margin, la remise à zéro', () => {
   const decl = html.match(/margin[\w-]*\s*:[^;}]*/g) ?? [];
   assert.deepEqual(decl, ['margin: 0']);
@@ -132,36 +140,17 @@ for (const width of [420, 1200]) {
   test(`3c planche à ${width} px : cinq cotes nommées, chacune couvre l'espace réel`, async () => {
     const page = await open(width);
     const m = await mesures(page);
+    const ATTENDU = attendu(width);
     assert.deepEqual(m.map((c) => c.role).sort(), Object.keys(ATTENDU).sort());
     for (const c of m) {
       const px = ATTENDU[/** @type {string} */ (c.role)];
       assert.ok(c.texte.includes(/** @type {string} */ (c.role)) && c.texte.includes(`${px} px`), `${c.role} : texte « ${c.texte} »`);
-      assert.doesNotMatch(c.texte, /réglage/, `${c.role} : aucun réglage par défaut`);
+      if (c.role === 'ecart.section') assert.equal(/étroit/.test(c.texte), width < 600, `section : « ${c.texte} »`);
       assert.ok(c.visible && c.gauche >= 0 && c.droite <= width, `${c.role} : dans la fenêtre`);
       if (Array.isArray(c.reel)) assert.deepEqual(c.reel, [px, px, px, px], `${c.role} : padding`);
       else assert.equal(c.reel, px, `${c.role} : espace réel`);
       assert.equal(c.bande, px, `${c.role} : bande cotée`);
     }
-    await page.close();
-  });
-
-  test(`3c planche à ${width} px : réglages dans-composant 4 / 8 et section 48 / 32 en étroit`, async () => {
-    const page = await open(width);
-    assert.ok(await page.isChecked('#reglage-dans-composant-4'));
-    assert.ok(await page.isChecked('#reglage-section-48'));
-    assert.ok(await page.isVisible('#reglage-dans-composant-8'));
-    await page.check('#reglage-dans-composant-8');
-    await page.check('#reglage-section-32');
-    const m = Object.fromEntries((await mesures(page)).map((c) => [c.role, c]));
-    const dc = m['ecart.dans-composant'];
-    assert.equal(dc.reel, 8);
-    assert.equal(dc.bande, 8);
-    assert.match(dc.texte, /8 px/);
-    const sec = width < 600 ? 32 : 48;
-    assert.equal(m['ecart.section'].reel, sec, 'section après réglage');
-    assert.equal(m['ecart.section'].bande, sec);
-    assert.match(m['ecart.section'].texte, new RegExp(`${sec} px`));
-    assert.equal(m['ecart.entre-composants'].reel, 16, 'les autres espaces ne bougent pas');
     await page.close();
   });
 }
