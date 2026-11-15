@@ -23,9 +23,14 @@ Sur les pages fictives d'Orbe Café, une fois la cible posée : 87 lignes, dont 
 ```
 npm run audit  -- <adresse> [options]                        mesurer l'existant
 npm run reduce -- <adresse> --target <cible.json> [options]  ranger, revoir, produire la consigne
+npm run marque -- <adresse> --prefix <préfixe> [options]     lire la marque d'un site avant la réduction (ne décide rien)
 npm run login                                                enregistrer une session (dans .auth/)
 npm run verify -- <adresse> --reference <dossier> [--save] [--sources <fichier>]   vérifier qu'une page n'a pas bougé (pixels, arbre d'accessibilité) ; avec --sources, ses éléments tiers sont masqués, comme dans les références de reduce --sources
 npm run apply  -- --modifications <fichier> --racine <dossier> [--essai]   appliquer au CSS la part tranchée
+npm run demo   -- [--racine <dossier>]                       servir la marque fictive en local
+npm run contraste   -- [--paires <fichier>]                  contrôler les paires de rôles de couleur
+npm run espacements -- [--semantique <fichier>]              contrôler les espacements par relation
+npm run typo        -- [--semantique <fichier>] [--primitives <fichier>] [--marque <fichier>]   contrôler les styles de texte
 npm test
 ```
 
@@ -51,6 +56,25 @@ Le site audité n'est jamais modifié : les nouvelles valeurs sont posées dans 
 5. **Consigne** : `migration.md`, avec les mêmes identifiants que la revue ; ce qui n'est pas choisi est marqué « ne touche pas ».
 6. **Contrôle** : l'outil relancé sur le CSS modifié, sur les pages de la table et sur des pages témoins jamais vues.
 
+## Étape 3 : nommer les rôles
+
+La cible d'Orbe Café est écrite en quatre couches de jetons DTCG, dans `tokens/orbe-cafe/` :
+
+| Couche | Fichier | Ce qu'elle nomme |
+|---|---|---|
+| Primitives | `tokens/orbe-cafe/primitives.tokens.json` (et `tokens/orbe-cafe/statuts.tokens.json`) | Les valeurs : échelles de couleur, espaces, tailles de texte, graisses, rayons |
+| Marque | `tokens/orbe-cafe/marque.tokens.json` | Les emplacements qu'un client remplit (primaire, accent, statuts, polices) et la règle des pleins |
+| Rôles | `tokens/orbe-cafe/semantique.tokens.json` | Les usages : couleurs de fond, de texte et de bordure, espacements par relation, styles de texte ; chacun en alias vers la marque ou une primitive |
+| Paires | `tokens/orbe-cafe/paires.json` | Les paires de rôles devant / fond et leur seuil de contraste, les exceptions écrites et les paires interdites |
+
+Changer de marque, c'est changer la couche marque : les rôles restent les mêmes. Trois commandes contrôlent la cible ; chacune sort en 1 si une règle échoue :
+
+- `npm run contraste` : chaque paire de rôles atteint son seuil WCAG 2.1, sauf exception écrite ; les paires interdites sont affichées.
+- `npm run espacements` : écarts strictement croissants, valeurs en étroit, règles de proximité ; les primitives sans rôle sont affichées.
+- `npm run typo` : règles des styles de texte (hauteurs de ligne, hiérarchie en large et en étroit) ; les primitives sans rôle sont affichées.
+
+Trois planches montrent la cible en situation : `tokens/orbe-cafe/roles.html`, `tokens/orbe-cafe/espacements.html`, `tokens/orbe-cafe/typo.html`. Les règles et leurs raisons sont dans `docs/regles.md`, les décisions dans `docs/decisions.md`.
+
 ## Glossaire
 
 ### Le système
@@ -62,7 +86,7 @@ Le site audité n'est jamais modifié : les nouvelles valeurs sont posées dans 
 | Jeton (token) | Une valeur nommée, écrite une fois dans un format neutre (`espace.8`) ; la variable CSS ou Dart en est la traduction |
 | DTCG | Le format standard des jetons (2025.10) |
 | Primitive | Un jeton qui nomme une valeur : `couleur.bleu.11`, `espace.8` (dans la valise, le pas s'appelle `bleu-11`) |
-| Rôle | Un jeton qui nomme un usage : `texte.secondaire`, `espace.entre-composants` |
+| Rôle | Un jeton qui nomme un usage : `texte.secondaire`, `ecart.entre-composants` |
 | Échelle | Une suite ordonnée de valeurs pour une famille |
 | Pas | Une position dans l'échelle. Pour une couleur, le pas dit l'usage : 1-2 fonds, 3-5 composants, 6-8 bordures, 9-10 pleins, 11-12 texte |
 | Tranche | Les pas réservés à un usage (le texte prend 11 ou 12) |
@@ -116,13 +140,14 @@ Le site audité n'est jamais modifié : les nouvelles valeurs sont posées dans 
 | Dossier | Contenu |
 |---|---|
 | `src/` | Audit, réduction, simulation, rapports |
-| `tokens/orbe-cafe/` | Primitives DTCG de la marque fictive |
+| `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive (primitives, marque, rôles, paires) et leurs planches |
+| `docs/` | Règles du design system, décisions, attendus des prochains lots |
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles, attendus |
 | `test/` | Tests, dont `noms-interdits` qui refuse tout nom réel dans un fichier ou un message de commit |
 
 Dépendances : `playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (couleurs, contraste), `pixelmatch` et `pngjs` (comparaison de captures, lot V).
 
-Règles : marques fictives uniquement ; rien de `local/` ni de `.auth/` dans un fichier versionné ; attendu avant le code.
+Règles : marques fictives uniquement ; rien de `local/` ni de `.auth/` dans un fichier versionné ; attendu avant le code. Carte du code : [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Limites
 
@@ -131,5 +156,6 @@ Règles : marques fictives uniquement ; rien de `local/` ni de `.auth/` dans un 
 - Les pseudo-éléments (icônes) ne sont pas simulés ; le contraste du texte sur image est mesuré mais marqué à vérifier, car le fond réel est incertain.
 - `npm run apply` vaut là où la feuille servie est le fichier source : une feuille compilée, minifiée ou assemblée par un outil de build n'a pas les lignes du fichier qu'on modifie.
 - Les contrastes ne sont pas mesurés sur les pages témoins : seules les pages de la table entrent dans les paires texte sur fond et dans la liste des paires sous le seuil.
+- La dette connue est tenue à jour dans [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 Licence MIT.
