@@ -22,6 +22,8 @@
  *     primaire sombre (bleu 9, survol = bleu 9 + voile blanc 8 %, texte blanc), accent, erreur, succès et
  *     info moyens (pas 11, survol pas 12, texte blanc), avertissement clair (pas 9, survol pas 10, texte pas 12).
  *   décision du 15/11/2026 : bordure.focus → marque.primaire.11 pour toutes les marques ;
+ *   séance 3c (15/11/2026) : le fichier porte aussi des rôles d'espacement (type dimension) ; les tests
+ *     ci-dessous portent sur les rôles de type color, toujours 42.
  * Les alias sont résolus ici par un résolveur propre au test, indépendant du code.
  */
 import { test } from 'node:test';
@@ -87,7 +89,8 @@ function typesOf(node, path = /** @type {string[]} */ ([]), type = /** @type {st
 }
 
 const sem = load('semantique.tokens.json');
-const roles = flatten(sem);
+/** Rôles de couleur seulement (séance 3c : les rôles d'espacement sont de type dimension). */
+const roles = new Map([...flatten(sem)].filter(([k]) => typesOf(sem).get(k) === 'color'));
 const prims = new Map([...flatten(load('primitives.tokens.json')), ...flatten(load('statuts.tokens.json'))]);
 /** Séance 3b, M0 : les rôles de marque passent par marque.tokens.json (primaire → bleu, accent → terre). */
 const marque = flatten(load('marque.tokens.json'));

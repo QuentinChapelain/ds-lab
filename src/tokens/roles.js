@@ -30,6 +30,22 @@ export function flattenTokens(node, path = [], out = new Map()) {
   return out;
 }
 
+/**
+ * Type DTCG de chaque jeton : celui du jeton, sinon celui du groupe le plus proche (undefined si aucun).
+ * Clés comme flattenTokens, sans « groupe.$root ».
+ * @param {any} node @param {string[]} [path] @param {string} [type] @param {Map<string, string | undefined>} [out]
+ */
+export function tokenTypes(node, path = [], type = undefined, out = new Map()) {
+  const t = node?.$type ?? type;
+  for (const [k, v] of Object.entries(node ?? {})) {
+    if (k.startsWith('$') && k !== '$root') continue;
+    if (!v || typeof v !== 'object') continue;
+    if ('$value' in v) out.set((k === '$root' ? path : [...path, k]).join('.'), v.$type ?? t);
+    else tokenTypes(v, [...path, k], t, out);
+  }
+  return out;
+}
+
 /** Hex d'une valeur de couleur DTCG (objet 2025.10 ou chaîne). @param {any} v */
 function hexOf(v) {
   if (typeof v === 'string') return formatHex(v);
@@ -39,7 +55,8 @@ function hexOf(v) {
 
 /**
  * Rôles de la couche sémantique, résolus : rôle → { alias, cible, hex, description }.
- * Les alias peuvent s'enchaîner ; une boucle ou une cible absente lève une erreur.
+ * Seuls les jetons de type color (ou sans type) sont des rôles de couleur ; les autres (séance 3c :
+ * espacements, type dimension) sont ignorés ici. Les alias peuvent s'enchaîner ; une boucle ou une cible absente lève une erreur.
  * @param {any} semantique @param {...any} primitives
  * @returns {Map<string, { alias: string, cible: string, hex: string, description: string }>}
  */
@@ -61,8 +78,11 @@ export function resolveRoles(semantique, ...primitives) {
   };
   /** @type {Map<string, { alias: string, cible: string, hex: string, description: string }>} */
   const out = new Map();
+  const types = tokenTypes(semantique);
   for (const [role, t] of sem) {
     if (role.endsWith('.$root')) continue;
+    const type = types.get(role);
+    if (type !== undefined && type !== 'color') continue; // séance 3c : espacements (dimension) hors des rôles de couleur
     out.set(role, { alias: t.$value, ...resolve(role, []), description: t.$description ?? '' });
   }
   return out;

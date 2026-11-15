@@ -1,5 +1,5 @@
 {
-  "$description": "Rôles de couleur d'Orbe Café (marque fictive), séance 3a du 14/11/2026. Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json, statuts.tokens.json et marque.tokens.json ; les couleurs de marque et tous les pleins, statuts compris, passent par marque.<emplacement>.* (Orbe Café : primaire = bleu, accent = terre). Paires de contraste déclarées dans paires.json.",
+  "$description": "Rôles de couleur (séance 3a du 14/11/2026) et d'espacement par relation (séance 3c du 15/11/2026) d'Orbe Café (marque fictive). Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json, statuts.tokens.json et marque.tokens.json pour les couleurs, vers espace.* de primitives.tokens.json pour les espacements ; les couleurs de marque et tous les pleins, statuts compris, passent par marque.<emplacement>.* (Orbe Café : primaire = bleu, accent = terre). Paires de contraste déclarées dans paires.json.",
   "fond": {
     "$type": "color",
     "$description": "Surfaces sur lesquelles se posent texte et bordures.",
@@ -194,6 +194,34 @@
     "info": {
       "$value": "{couleur.info.8}",
       "$description": "Contour d'un encadré d'information (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app."
+    }
+  },
+  "ecart": {
+    "$type": "dimension",
+    "$description": "Espace entre éléments frères, porté par leur parent (gap) ; strictement croissant de dans-composant à section.",
+    "dans-composant": {
+      "$value": "{espace.4}",
+      "$description": "Écart entre les parties d'un même composant, comme une étiquette et son champ ou un champ et son message d'erreur."
+    },
+    "entre-composants": {
+      "$value": "{espace.16}",
+      "$description": "Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée."
+    },
+    "entre-groupes": {
+      "$value": "{espace.24}",
+      "$description": "Écart entre deux groupes d'une même section, comme un titre de section et son contenu ou les champs d'un formulaire et ses boutons."
+    },
+    "section": {
+      "$value": "{espace.48}",
+      "$description": "Écart entre deux sections de la page, la plus grande respiration verticale."
+    }
+  },
+  "marge-interieure": {
+    "$type": "dimension",
+    "$description": "Espace entre le bord d'un composant et son contenu, porté par le composant lui-même (padding).",
+    "composant": {
+      "$value": "{espace.16}",
+      "$description": "Marge intérieure d'un composant à bord visible, comme une carte, un encadré ou une zone de formulaire."
     }
   }
 }
