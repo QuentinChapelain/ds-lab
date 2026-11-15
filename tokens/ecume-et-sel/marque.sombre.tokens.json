@@ -1,0 +1,259 @@
+{
+  "$description": "Couche marque de Écume et Sel en mode sombre, écrite par la saisie. Format DTCG 2025.10. Posée sur marque.tokens.json dans le contexte sombre : les boutons gardent leurs valeurs claires (D04), le texte de marque des grands titres est choisi sur l'échelle sombre.",
+  "marque": {
+    "primaire": {
+      "plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.498,
+            0.8588,
+            1
+          ],
+          "hex": "#7fdbff"
+        },
+        "$description": "plein : pas 9, couleur exacte, valeur du mode clair : mêmes boutons en sombre (D04)",
+        "$extensions": {
+          "ds-lab.mode": {
+            "clair": "{couleur.primaire.9}"
+          }
+        }
+      },
+      "plein-survol": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.4353,
+            0.7961,
+            0.9333
+          ],
+          "hex": "#6fcbee"
+        },
+        "$description": "plein survolé : pas 10, valeur du mode clair : mêmes boutons en sombre (D04)",
+        "$extensions": {
+          "ds-lab.mode": {
+            "clair": "{couleur.primaire.10}"
+          }
+        }
+      },
+      "sur-plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0.2118,
+            0.2784
+          ],
+          "hex": "#003647"
+        },
+        "$description": "texte sur le plein : pas 12, valeur du mode clair : mêmes boutons en sombre (D04)",
+        "$extensions": {
+          "ds-lab.mode": {
+            "clair": "{couleur.primaire.12}"
+          }
+        }
+      },
+      "texte-grand": {
+        "$value": "{couleur.primaire.9}",
+        "$description": "texte de marque des grands titres en sombre : pas 9 de l'échelle sombre, premier des pas 9, 10, 11 à tenir 3:1 sur fond.app, fond.surface, fond.discret et fond.marque.discret sombres"
+      }
+    },
+    "accent": {
+      "plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.749,
+            0.2157,
+            0.0157
+          ],
+          "hex": "#bf3704"
+        },
+        "$description": "plein : pas 11, valeur du mode clair : mêmes boutons en sombre (D04)",
+        "$extensions": {
+          "ds-lab.mode": {
+            "clair": "{couleur.accent.11}"
+          }
+        }
+      },
+      "plein-survol": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.3765,
+            0.0902,
+            0.0039
+          ],
+          "hex": "#601701"
+        },
+        "$description": "plein survolé : pas 12, valeur du mode clair : mêmes boutons en sombre (D04)",
+        "$extensions": {
+          "ds-lab.mode": {
+            "clair": "{couleur.accent.12}"
+          }
+        }
+      }
+    },
+    "erreur": {
+      "plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.7961,
+            0.1137,
+            0.1647
+          ],
+          "hex": "#cb1d2a"
+        },
+        "$description": "plein : pas 11, valeur du mode clair : mêmes boutons en sombre (D04)",
+        "$extensions": {
+          "ds-lab.mode": {
+            "clair": "{couleur.erreur.11}"
+          }
+        }
+      },
+      "plein-survol": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.4157,
+            0,
+            0
+          ],
+          "hex": "#6a0000"
+        },
+        "$description": "plein survolé : pas 12, valeur du mode clair : mêmes boutons en sombre (D04)",
+        "$extensions": {
+          "ds-lab.mode": {
+            "clair": "{couleur.erreur.12}"
+          }
+        }
+      }
+    },
+    "succes": {
+      "plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0.4667,
+            0.2902
+          ],
+          "hex": "#00774a"
+        },
+        "$description": "plein : pas 11, valeur du mode clair : mêmes boutons en sombre (D04)",
+        "$extensions": {
+          "ds-lab.mode": {
+            "clair": "{couleur.succes.11}"
+          }
+        }
+      },
+      "plein-survol": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0.2275,
+            0.0706
+          ],
+          "hex": "#003a12"
+        },
+        "$description": "plein survolé : pas 12, valeur du mode clair : mêmes boutons en sombre (D04)",
+        "$extensions": {
+          "ds-lab.mode": {
+            "clair": "{couleur.succes.12}"
+          }
+        }
+      }
+    },
+    "avertissement": {
+      "plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.898,
+            0.6275,
+            0
+          ],
+          "hex": "#e5a000"
+        },
+        "$description": "plein : pas 9, couleur exacte, valeur du mode clair : mêmes boutons en sombre (D04)",
+        "$extensions": {
+          "ds-lab.mode": {
+            "clair": "{couleur.avertissement.9}"
+          }
+        }
+      },
+      "plein-survol": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.8275,
+            0.5765,
+            0
+          ],
+          "hex": "#d39300"
+        },
+        "$description": "plein survolé : pas 10, valeur du mode clair : mêmes boutons en sombre (D04)",
+        "$extensions": {
+          "ds-lab.mode": {
+            "clair": "{couleur.avertissement.10}"
+          }
+        }
+      },
+      "sur-plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2667,
+            0.1765,
+            0.0039
+          ],
+          "hex": "#442d01"
+        },
+        "$description": "texte sur le plein : pas 12, valeur du mode clair : mêmes boutons en sombre (D04)",
+        "$extensions": {
+          "ds-lab.mode": {
+            "clair": "{couleur.avertissement.12}"
+          }
+        }
+      }
+    },
+    "info": {
+      "plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0.4275,
+            0.651
+          ],
+          "hex": "#006da6"
+        },
+        "$description": "plein : pas 11, valeur du mode clair : mêmes boutons en sombre (D04)",
+        "$extensions": {
+          "ds-lab.mode": {
+            "clair": "{couleur.info.11}"
+          }
+        }
+      },
+      "plein-survol": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0039,
+            0.2039,
+            0.3216
+          ],
+          "hex": "#013452"
+        },
+        "$description": "plein survolé : pas 12, valeur du mode clair : mêmes boutons en sombre (D04)",
+        "$extensions": {
+          "ds-lab.mode": {
+            "clair": "{couleur.info.12}"
+          }
+        }
+      }
+    }
+  }
+}

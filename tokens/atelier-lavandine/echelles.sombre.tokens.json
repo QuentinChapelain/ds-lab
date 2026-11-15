@@ -1,0 +1,343 @@
+{
+  "$description": "Échelles de Atelier Lavandine en mode sombre, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues dans le contexte sombre de marque.resolver.json, après tokens/commun/mode.sombre.tokens.json.",
+  "couleur": {
+    "$type": "color",
+    "$description": "Échelles de Atelier Lavandine en mode sombre (generateScale, fond sombre [H]), pas 9 = pas 9 clair ; même nom que l'échelle claire, qu'elles remplacent dans le contexte sombre.",
+    "primaire": {
+      "1": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0157,
+            0.0157,
+            0.0157
+          ],
+          "hex": "#040404"
+        },
+        "$description": "fond d'application"
+      },
+      "2": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0353,
+            0.0314,
+            0.0431
+          ],
+          "hex": "#09080b"
+        },
+        "$description": "fond discret"
+      },
+      "3": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0706,
+            0.0627,
+            0.0863
+          ],
+          "hex": "#121016"
+        },
+        "$description": "fond de composant"
+      },
+      "4": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.102,
+            0.0902,
+            0.1294
+          ],
+          "hex": "#1a1721"
+        },
+        "$description": "fond de composant, survol"
+      },
+      "5": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1373,
+            0.1137,
+            0.1804
+          ],
+          "hex": "#231d2e"
+        },
+        "$description": "fond de composant, appui"
+      },
+      "6": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1804,
+            0.1451,
+            0.2431
+          ],
+          "hex": "#2e253e"
+        },
+        "$description": "bordure discrète"
+      },
+      "7": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2745,
+            0.1922,
+            0.4078
+          ],
+          "hex": "#463168"
+        },
+        "$description": "bordure de composant"
+      },
+      "8": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.4588,
+            0.2549,
+            0.7255
+          ],
+          "hex": "#7541b9"
+        },
+        "$description": "bordure d'interaction, focus (3:1)"
+      },
+      "9": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.5412,
+            0.3098,
+            0.8471
+          ],
+          "hex": "#8a4fd8"
+        },
+        "$description": "plein, couleur source"
+      },
+      "10": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.5686,
+            0.3412,
+            0.8745
+          ],
+          "hex": "#9157df"
+        },
+        "$description": "plein, survol"
+      },
+      "11": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.6196,
+            0.4,
+            0.9333
+          ],
+          "hex": "#9e66ee"
+        },
+        "$description": "texte secondaire (4,5:1)"
+      },
+      "12": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.8392,
+            0.7608,
+            0.9961
+          ],
+          "hex": "#d6c2fe"
+        },
+        "$description": "texte principal"
+      },
+      "$description": "Primaire de Atelier Lavandine, mode sombre. Pas 9 = #8a4fd8 exact ; autres pas générés par generateScale (src/valise/generate.js) en miroir [H] : mêmes cibles, contraste visé contre le noir au lieu du blanc ; école « normale » lue contre le noir.",
+      "$extensions": {
+        "ds-lab.valise": {
+          "source": "#8a4fd8",
+          "ecole": "normale",
+          "pas10": "plus foncé",
+          "signaux": [],
+          "fond": "sombre"
+        }
+      },
+      "sur-plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.9961,
+            1
+          ],
+          "hex": "#fffeff"
+        },
+        "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
+      }
+    },
+    "accent": {
+      "1": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0118,
+            0.0118,
+            0.0118
+          ],
+          "hex": "#030303"
+        },
+        "$description": "fond d'application"
+      },
+      "2": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0314,
+            0.0314,
+            0.0314
+          ],
+          "hex": "#080808"
+        },
+        "$description": "fond discret"
+      },
+      "3": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0706,
+            0.0667,
+            0.0588
+          ],
+          "hex": "#12110f"
+        },
+        "$description": "fond de composant"
+      },
+      "4": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.102,
+            0.098,
+            0.0863
+          ],
+          "hex": "#1a1916"
+        },
+        "$description": "fond de composant, survol"
+      },
+      "5": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1333,
+            0.1255,
+            0.1098
+          ],
+          "hex": "#22201c"
+        },
+        "$description": "fond de composant, appui"
+      },
+      "6": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1765,
+            0.1608,
+            0.1294
+          ],
+          "hex": "#2d2921"
+        },
+        "$description": "bordure discrète"
+      },
+      "7": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2588,
+            0.2314,
+            0.1765
+          ],
+          "hex": "#423b2d"
+        },
+        "$description": "bordure de composant"
+      },
+      "8": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.4314,
+            0.3569,
+            0.2
+          ],
+          "hex": "#6e5b33"
+        },
+        "$description": "bordure d'interaction, focus (3:1)"
+      },
+      "9": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.949,
+            0.7176,
+            0.0196
+          ],
+          "hex": "#f2b705"
+        },
+        "$description": "plein, couleur source"
+      },
+      "10": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.7961,
+            0.3216
+          ],
+          "hex": "#ffcb52"
+        },
+        "$description": "plein, survol"
+      },
+      "11": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.8745,
+            0.6078
+          ],
+          "hex": "#ffdf9b"
+        },
+        "$description": "texte secondaire (4,5:1)"
+      },
+      "12": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9961,
+            0.9529,
+            0.8667
+          ],
+          "hex": "#fef3dd"
+        },
+        "$description": "texte principal"
+      },
+      "$description": "Accent de Atelier Lavandine, mode sombre. Pas 9 = #f2b705 exact ; autres pas générés par generateScale (src/valise/generate.js) en miroir [H] : mêmes cibles, contraste visé contre le noir au lieu du blanc ; école « foncée » lue contre le noir.",
+      "$extensions": {
+        "ds-lab.valise": {
+          "source": "#f2b705",
+          "ecole": "foncée",
+          "pas10": "plus foncé",
+          "signaux": [],
+          "fond": "sombre"
+        }
+      },
+      "sur-plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0,
+            0
+          ],
+          "hex": "#000000"
+        },
+        "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
+      }
+    }
+  }
+}

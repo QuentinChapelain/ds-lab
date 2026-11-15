@@ -14,6 +14,30 @@
         "hex": "#ffffff"
       }
     },
+    "surface": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          1,
+          1,
+          1
+        ],
+        "hex": "#ffffff"
+      },
+      "$description": "Surface posée sur le fond de page (fond.surface) : blanc en clair ; en sombre, la référence du miroir (tokens/commun/mode.sombre.tokens.json)."
+    },
+    "sur-inverse": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          1,
+          1,
+          1
+        ],
+        "hex": "#ffffff"
+      },
+      "$description": "Texte posé sur fond.inverse (texte.sur-inverse) : blanc en clair ; en sombre, la référence du miroir."
+    },
     "neutre": {
       "1": {
         "$value": {

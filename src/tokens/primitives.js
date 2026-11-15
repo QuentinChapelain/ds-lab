@@ -5,7 +5,7 @@
  * (tokens/commun/statuts.tokens.json) ; primitives.tokens.json n'est pas modifié.
  */
 import { rgb, formatHex } from 'culori';
-import { generateScale } from '../valise/generate.js';
+import { generateScale, sourceMiroir } from '../valise/generate.js';
 
 /** Phrases d'usage par pas, reprises de primitives.tokens.json. */
 export const STEP_USAGES = /** @type {Record<string, string>} */ ({
@@ -40,6 +40,8 @@ export function colorValue(hex) {
 
 /** Phrase d'échelle selon l'école du générateur. @param {ReturnType<typeof generateScale>} g @param {string} label */
 function scaleDescription(g, label) {
+  if (g.fond === 'sombre')
+    return `${label}, mode sombre. Pas 9 = ${g.source} exact ; autres pas générés par generateScale (src/valise/generate.js) en miroir [H] : mêmes cibles, contraste visé contre le noir au lieu du blanc ; école « ${g.school} » lue contre le noir.`;
   const school =
     g.school === 'plein clair'
       ? 'école « plein clair » : pas 7 et 8 plus foncés que le pas 9, texte sur-plein foncé'
@@ -57,7 +59,7 @@ export function scaleToDtcg(g, label) {
   /** @type {Record<string, any>} */
   const group = {
     $description: scaleDescription(g, label),
-    $extensions: { 'ds-lab.valise': { source: g.source, ecole: g.school, pas10: g.step10, signaux: g.signals } },
+    $extensions: { 'ds-lab.valise': { source: g.source, ecole: g.school, pas10: g.step10, signaux: g.signals, ...(g.fond === 'sombre' ? { fond: 'sombre' } : {}) } },
   };
   g.steps.forEach((hex, i) => (group[String(i + 1)] = { $value: colorValue(hex), $description: STEP_USAGES[i + 1] }));
   group['sur-plein'] = { $value: colorValue(g.onSolid), $description: ON_SOLID_USAGE };
@@ -86,7 +88,7 @@ export function statutsTokens() {
  */
 export function valiseFromTokens(...files) {
   /** @type {any} */
-  const valise = { generator: { schools: {}, sources: {}, step10: {} }, signals: {}, onSolid: {}, colors: [] };
+  const valise = { generator: { schools: {}, sources: {}, step10: {}, fonds: {} }, signals: {}, onSolid: {}, colors: [] };
   for (const f of files) {
     for (const [name, g] of Object.entries(f.couleur ?? {})) {
       if (name.startsWith('$') || !g?.['1'] || !g?.['12']) continue;
@@ -97,9 +99,44 @@ export function valiseFromTokens(...files) {
         valise.generator.schools[name] = x.ecole;
         valise.generator.sources[name] = x.source;
         valise.generator.step10[name] = x.pas10;
+        if (x.fond) valise.generator.fonds[name] = x.fond;
         if (x.signaux?.length) valise.signals[name] = x.signaux;
       }
     }
   }
   return valise;
 }
+
+/** Étape 4b : échelles communes du mode sombre, générées depuis le pas 9 de leur échelle claire ; le neutre depuis la source miroir de ce pas 9 (sourceMiroir). */
+export const ECHELLES_SOMBRES = [
+  { name: 'neutre', label: 'Neutre', miroir: true },
+  { name: 'erreur', label: "Statut d'erreur" },
+  { name: 'succes', label: 'Statut de succès' },
+  { name: 'avertissement', label: "Statut d'avertissement" },
+  { name: 'info', label: "Statut d'information" },
+];
+
+/**
+ * Fichier tokens/commun/mode.sombre.tokens.json : neutre et statuts en miroir (generateScale, fond sombre [H]),
+ * surface et texte sur inverse à la référence du miroir, le noir.
+ * @param {any} primitives tokens/commun/primitives.tokens.json @param {any} statuts tokens/commun/statuts.tokens.json
+ */
+export function sombreTokens(primitives, statuts) {
+  const claires = { ...primitives.couleur, ...statuts.couleur };
+  /** @type {Record<string, any>} */
+  const couleur = {
+    $type: 'color',
+    $description: 'Mode sombre, commun à toutes les marques : chaque échelle est générée en miroir depuis le pas 9 de son échelle claire (le neutre depuis sa source miroir, même contraste contre le noir que le pas 9 clair contre le blanc), même nom, mêmes pas ; le contexte sombre la met à la place de la claire.',
+    surface: { $value: colorValue('#000000'), $description: 'Surface en sombre : le noir, référence du miroir, comme la surface claire est au blanc [H].' },
+    'sur-inverse': { $value: colorValue('#000000'), $description: 'Texte sur fond.inverse en sombre : le noir, référence du miroir [H].' },
+  };
+  for (const e of ECHELLES_SOMBRES) {
+    const pas9 = claires[e.name]['9'].$value.hex;
+    couleur[e.name] = scaleToDtcg(generateScale(e.name, e.miroir ? sourceMiroir(pas9) : pas9, { fond: 'sombre' }), e.label);
+  }
+  return {
+    $description: "Contexte sombre du modificateur mode (marque.resolver.json), commun à toutes les marques. Écrit par src/cli/sombre.js si checkValise passe. Format DTCG 2025.10. Chaque jeton remplace en entier celui du mode clair.",
+    couleur,
+  };
+}
+

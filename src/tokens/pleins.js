@@ -171,3 +171,42 @@ export function marqueTokens({ primaire, accent, statuts, polices, fonds, descri
     };
   return { $description: description, marque: m };
 }
+
+/**
+ * Étape 4b, lot 2 : couche marque du mode sombre, posée par-dessus la claire dans le contexte sombre.
+ * Les boutons restent ceux du clair (réponse 2, D04) : plein, plein survolé et texte sur le plein qui pointent vers un
+ * pas d'échelle prennent la valeur claire, écrite telle quelle ; voiles et blanc ne changent pas. texte-grand est choisi de nouveau sur l'échelle sombre du primaire, contre
+ * les fonds sombres (pasTexteGrand).
+ * @param {{ marque: any, clairs: Record<string, string[]>, primaireSombre: { scale: string, steps: string[] }, fonds: string[], description: string }} spec
+ *   marque claire (marqueTokens) ; pas clairs par emplacement ; échelle sombre du primaire ; fonds sombres
+ */
+export function marqueSombreTokens({ marque, clairs, primaireSombre, fonds, description }) {
+  /** @type {Record<string, any>} */
+  const m = {};
+  for (const [name, g] of Object.entries(marque.marque)) {
+    if (name.startsWith('$') || name === 'police') continue;
+    /** @type {Record<string, any>} */
+    const out = {};
+    for (const k of ['plein', 'plein-survol', 'sur-plein']) {
+      const v = g[k]?.$value;
+      const mm = typeof v === 'string' ? /^\{couleur\.[^.]+\.(\d+)\}$/.exec(v) : null;
+      if (!mm) continue;
+      out[k] = {
+        $value: colorValue(clairs[name][Number(mm[1]) - 1]),
+        $description: `${g[k].$description}, valeur du mode clair : mêmes boutons en sombre (D04)`,
+        $extensions: { 'ds-lab.mode': { clair: v } },
+      };
+    }
+    if (Object.keys(out).length) m[name] = out;
+  }
+  const grand = pasTexteGrand(primaireSombre.steps, fonds);
+  m.primaire = {
+    ...(m.primaire ?? {}),
+    'texte-grand': {
+      $value: `{couleur.${primaireSombre.scale}.${grand}}`,
+      $description: `texte de marque des grands titres en sombre : pas ${grand} de l'échelle sombre, premier des pas 9, 10, 11 à tenir 3:1 sur fond.app, fond.surface, fond.discret et fond.marque.discret sombres`,
+    },
+  };
+  return { $description: description, marque: m };
+}
+

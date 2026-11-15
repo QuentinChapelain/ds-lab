@@ -36,10 +36,20 @@
   },
   "modifiers": {
     "mode": {
-      "description": "Mode de couleur. Clair : valeurs des jeux. Sombre : à venir (lot 2).",
+      "description": "Mode de couleur. Clair : valeurs des jeux. Sombre : échelles en miroir sous les mêmes noms, communes puis de la marque, et couche marque sombre (mêmes boutons qu'en clair).",
       "contexts": {
         "clair": [],
-        "sombre": []
+        "sombre": [
+          {
+            "$ref": "../commun/mode.sombre.tokens.json"
+          },
+          {
+            "$ref": "echelles.sombre.tokens.json"
+          },
+          {
+            "$ref": "marque.sombre.tokens.json"
+          }
+        ]
       },
       "default": "clair"
     },

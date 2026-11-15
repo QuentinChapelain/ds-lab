@@ -12,7 +12,7 @@
       "$description": "Zone qui se distingue à peine du fond de page, comme un panneau latéral ou une bande."
     },
     "surface": {
-      "$value": "{couleur.blanc}",
+      "$value": "{couleur.surface}",
       "$description": "Fond blanc d'une carte ou d'un champ, posé sur le fond de page."
     },
     "inverse": {
@@ -196,7 +196,7 @@
       "$description": "Texte posé sur le plein d'information."
     },
     "sur-inverse": {
-      "$value": "{couleur.blanc}",
+      "$value": "{couleur.sur-inverse}",
       "$description": "Texte posé sur le fond inversé."
     }
   },

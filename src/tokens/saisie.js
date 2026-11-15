@@ -18,7 +18,7 @@ import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { generateScale, checkValise } from '../valise/generate.js';
 import { scaleToDtcg, valiseFromTokens } from './primitives.js';
-import { marqueTokens } from './pleins.js';
+import { marqueTokens, marqueSombreTokens } from './pleins.js';
 import { contratRoles, resolveRoles } from './roles.js';
 import { COMMUN, ORBE, modeleResolver, resoudre, partager } from './resolver.js';
 
@@ -62,20 +62,23 @@ export const serialiser = (tokens) => JSON.stringify(tokens, null, 2) + '\n';
 
 /**
  * @typedef {{ scale: string, steps: string[] }} Source
- * @typedef {{ motifs: string[], marque: any, echelles: any, resolver: any, commun: import('./roles.js').RoleSet }} Saisie
+ * @typedef {{ motifs: string[], marque: any, echelles: any, echellesSombres: any, marqueSombre: any, resolver: any, commun: import('./roles.js').RoleSet }} Saisie
  */
 
 /**
  * Saisie d'une marque, sans rien écrire. Une marque est acceptée si `motifs` est vide.
  * @param {any} entree contenu de entree.json
- * @param {{ dossier: string, commun?: import('./roles.js').RoleSet }} opts dossier de la marque ; couches communes
+ * Étape 4b, lot 2 : la saisie génère aussi le mode sombre de la marque (échelles en miroir depuis le pas 9, couche marque
+ * sombre) ; checkValise en échec sur une échelle sombre est un motif de refus.
+ * @param {{ dossier: string, commun?: import('./roles.js').RoleSet, communSombre?: import('./roles.js').RoleSet }} opts dossier de la
+ *   marque ; couches communes, en clair et en sombre
  * @returns {Saisie}
  */
-export function saisir(entree, { dossier, commun = chargerCommun() }) {
+export function saisir(entree, { dossier, commun = chargerCommun(), communSombre = chargerCommun({ mode: 'sombre' }) }) {
   /** @type {string[]} */
   const motifs = [];
   const invalide = (/** @type {string} */ m) => motifs.push(`entrée invalide : ${m}`);
-  const vide = { motifs, marque: null, echelles: null, resolver: null, commun };
+  const vide = { motifs, marque: null, echelles: null, echellesSombres: null, marqueSombre: null, resolver: null, commun };
   if (!entree || typeof entree !== 'object' || Array.isArray(entree)) {
     invalide('objet JSON attendu');
     return vide;
@@ -154,6 +157,41 @@ export function saisir(entree, { dossier, commun = chargerCommun() }) {
   } catch (e) {
     motifs.push(`contraste : ${/** @type {Error} */ (e).message}`);
   }
-  const resolver = modeleResolver({ nom: entree.nom, dossier, marque: [...(orbe ? ['primitives.tokens.json'] : echelles ? ['echelles.tokens.json'] : []), 'marque.tokens.json'] });
-  return { motifs, marque, echelles, resolver, commun };
+  // Mode sombre : échelles en miroir du primaire et de l'accent, depuis leur pas 9, sous le même nom.
+  /** @type {Record<string, any>} */
+  const couleurSombre = {
+    $type: 'color',
+    $description: `Échelles de ${entree.nom} en mode sombre (generateScale, fond sombre [H]), pas 9 = pas 9 clair ; même nom que l'échelle claire, qu'elles remplacent dans le contexte sombre.`,
+  };
+  /** @type {Record<string, string[]>} */
+  const sombres = {};
+  for (const [slot, src] of /** @type {const} */ ([['primaire', primaire], ['accent', accent]])) {
+    if (!src) continue;
+    const g = generateScale(src.scale, src.steps[8], { fond: 'sombre' });
+    sombres[slot] = g.steps;
+    couleurSombre[src.scale] = scaleToDtcg(g, `${LABELS[slot]} de ${entree.nom}`);
+  }
+  const echellesSombres = {
+    $description: `Échelles de ${entree.nom} en mode sombre, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues dans le contexte sombre de marque.resolver.json, après tokens/commun/mode.sombre.tokens.json.`,
+    couleur: couleurSombre,
+  };
+  for (const f of checkValise(valiseFromTokens(echellesSombres))) motifs.push(`checkValise (sombre) : ${f}`);
+  const marqueSombre = marqueSombreTokens({
+    marque,
+    clairs: {
+      primaire: primaire.steps,
+      accent: (accent ?? commune('neutre')).steps,
+      ...Object.fromEntries(STATUTS.map((s) => [s, commune(s).steps])),
+    },
+    primaireSombre: { scale: primaire.scale, steps: sombres.primaire },
+    fonds: fondsClairs(communSombre),
+    description: `Couche marque de ${entree.nom} en mode sombre, écrite par la saisie. Format DTCG 2025.10. Posée sur marque.tokens.json dans le contexte sombre : les boutons gardent leurs valeurs claires (D04), le texte de marque des grands titres est choisi sur l'échelle sombre.`,
+  });
+  const resolver = modeleResolver({
+    nom: entree.nom,
+    dossier,
+    marque: [...(orbe ? ['primitives.tokens.json'] : echelles ? ['echelles.tokens.json'] : []), 'marque.tokens.json'],
+    sombre: ['echelles.sombre.tokens.json', 'marque.sombre.tokens.json'],
+  });
+  return { motifs, marque, echelles, echellesSombres, marqueSombre, resolver, commun };
 }

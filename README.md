@@ -88,6 +88,8 @@ Une marque entre par un fichier, `tokens/orbe-cafe/entree.json` pour Orbe Café 
 
 Sans accent, l'accent se replie sur le neutre (D05). Les couches communes (neutres, statuts, rôles, paires, espaces, typo) sont lues dans `tokens/commun/`. Orbe Café nomme ses échelles existantes (`{ "echelle": "bleu" }`), forme réservée à elle seule : sa couche marque est réécrite à l'identique. Les règles et la raison sont dans D13 (`docs/decisions.md`) ; le contrat tient en une page, `docs/contrat-de-marque.md`.
 
+La saisie écrit aussi le mode sombre de la marque : une échelle en miroir pour le primaire et l'accent, générée depuis le même pas 9 avec les mêmes cibles de contraste visées contre le noir, et une couche marque sombre où les boutons gardent leurs valeurs claires. Neutres et statuts sombres sont communs (`tokens/commun/mode.sombre.tokens.json`, écrit par `node src/cli/sombre.js`). Les rôles ne changent pas d'un mode à l'autre ; le miroir est une hypothèse, à juger sur image.
+
 Trois marques fictives sont saisies de la même façon, toutes acceptées :
 
 | Marque | Primaire | Accent | Plein du primaire |

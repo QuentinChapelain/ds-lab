@@ -16,5 +16,9 @@
 - DS1 est appliquée par construction à la saisie ; aucun contrôle ne relit la règle sur les jetons écrits.
 - Balayage du calibrage (étape 4a, lot 3 bis) : les refus restants sont des échecs de `checkValise` (doublons, écart de teinte) sur des couleurs très claires ; aucun refus pour le contraste.
 - Seuil de largeur (600 px) encore une hypothèse.
+- Mode sombre en miroir, hypothèse à juger sur image : fond de page presque noir (`#030303`), surface au noir pur, plus foncée que le fond de page ; du côté du noir, la chroma s'atténue en luminance (sinon la teinte des pas 1 et 2 dérive à l'arrondi) ; neutre sombre généré depuis sa source miroir, pas depuis son pas 9.
+- Mode sombre : une source claire (avertissement, accent jaune, primaire cyan) donne une échelle d'école « foncée » contre le noir, dont le texte (pas 11) monte vers 13 à 15:1, plus clair que le texte secondaire neutre.
+- Mode sombre : `couleur.sable` d'Orbe Café n'a pas d'échelle sombre (aucun rôle ne la lit).
+- `npm run contraste` ne lit que le mode clair ; contrôle des deux modes au lot 3 de l'étape 4b.
 - `npm run reduce --tokens` lit un seul fichier : la cible ds-lab est maintenant répartie entre `tokens/commun/` et la marque ; les tests de bout en bout lisent une copie figée des primitives d'avant l'étape 4b (`fixtures/marque-demo/jetons/primitives.tokens.json`). À faire : lire un resolver.
 - Trois fichiers source au-delà de 1 000 lignes ; ni lint ni CI ; revue de code prévue après l'étape 4.

@@ -1,0 +1,177 @@
+{
+  "$description": "Échelles de Grenat Papeterie en mode sombre, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues dans le contexte sombre de marque.resolver.json, après tokens/commun/mode.sombre.tokens.json.",
+  "couleur": {
+    "$type": "color",
+    "$description": "Échelles de Grenat Papeterie en mode sombre (generateScale, fond sombre [H]), pas 9 = pas 9 clair ; même nom que l'échelle claire, qu'elles remplacent dans le contexte sombre.",
+    "primaire": {
+      "1": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0157,
+            0.0157,
+            0.0157
+          ],
+          "hex": "#040404"
+        },
+        "$description": "fond d'application"
+      },
+      "2": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.051,
+            0.0275,
+            0.0314
+          ],
+          "hex": "#0d0708"
+        },
+        "$description": "fond discret"
+      },
+      "3": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.102,
+            0.051,
+            0.0627
+          ],
+          "hex": "#1a0d10"
+        },
+        "$description": "fond de composant"
+      },
+      "4": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1608,
+            0.0667,
+            0.0902
+          ],
+          "hex": "#291117"
+        },
+        "$description": "fond de composant, survol"
+      },
+      "5": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2157,
+            0.0824,
+            0.1176
+          ],
+          "hex": "#37151e"
+        },
+        "$description": "fond de composant, appui"
+      },
+      "6": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.298,
+            0.0863,
+            0.149
+          ],
+          "hex": "#4c1626"
+        },
+        "$description": "bordure discrète"
+      },
+      "7": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.4431,
+            0.098,
+            0.2157
+          ],
+          "hex": "#711937"
+        },
+        "$description": "bordure de composant"
+      },
+      "8": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.6,
+            0.2471,
+            0.3451
+          ],
+          "hex": "#993f58"
+        },
+        "$description": "bordure d'interaction, focus (3:1)"
+      },
+      "9": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.4784,
+            0.1216,
+            0.2392
+          ],
+          "hex": "#7a1f3d"
+        },
+        "$description": "plein, couleur source"
+      },
+      "10": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.5255,
+            0.1725,
+            0.2784
+          ],
+          "hex": "#862c47"
+        },
+        "$description": "plein, survol"
+      },
+      "11": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.7451,
+            0.4196,
+            0.498
+          ],
+          "hex": "#be6b7f"
+        },
+        "$description": "texte secondaire (4,5:1)"
+      },
+      "12": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9333,
+            0.7529,
+            0.7882
+          ],
+          "hex": "#eec0c9"
+        },
+        "$description": "texte principal"
+      },
+      "$description": "Primaire de Grenat Papeterie, mode sombre. Pas 9 = #7a1f3d exact ; autres pas générés par generateScale (src/valise/generate.js) en miroir [H] : mêmes cibles, contraste visé contre le noir au lieu du blanc ; école « plein clair » lue contre le noir.",
+      "$extensions": {
+        "ds-lab.valise": {
+          "source": "#7a1f3d",
+          "ecole": "plein clair",
+          "pas10": "plus foncé",
+          "signaux": [
+            "plein clair"
+          ],
+          "fond": "sombre"
+        }
+      },
+      "sur-plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9059,
+            0.6824,
+            0.7255
+          ],
+          "hex": "#e7aeb9"
+        },
+        "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
+      }
+    }
+  }
+}

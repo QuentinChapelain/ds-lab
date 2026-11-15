@@ -121,10 +121,11 @@ export function lireResolver(chemin, entrees = {}) {
 /**
  * Resolver d'une marque. Les chemins se lisent depuis le dossier de la marque : les couches communes par leur chemin
  * relatif vers tokens/commun/ (« ../commun/ » pour tokens/<marque>/).
- * @param {{ nom: string, marque: string[], dossier?: string }} opts nom de la marque ; fichiers du jeu marque, dans
- *   l'ordre ; dossier de la marque (tokens/<marque>/ par défaut)
+ * @param {{ nom: string, marque: string[], sombre?: string[], dossier?: string }} opts nom de la marque ; fichiers du jeu
+ *   marque, dans l'ordre ; fichiers de la marque en sombre, après le commun sombre ; dossier de la marque
+ *   (tokens/<marque>/ par défaut)
  */
-export function modeleResolver({ nom, marque, dossier }) {
+export function modeleResolver({ nom, marque, sombre = [], dossier }) {
   const vers = dossier ? relative(dossier, COMMUN).split(sep).join('/') : '../commun';
   const commun = (/** @type {string} */ f) => ({ $ref: `${vers ? `${vers}/` : ''}${f}` });
   const ref = (/** @type {string} */ f) => ({ $ref: f });
@@ -142,8 +143,8 @@ export function modeleResolver({ nom, marque, dossier }) {
     },
     modifiers: {
       mode: {
-        description: 'Mode de couleur. Clair : valeurs des jeux. Sombre : à venir (lot 2).',
-        contexts: { clair: [], sombre: [] },
+        description: 'Mode de couleur. Clair : valeurs des jeux. Sombre : échelles en miroir sous les mêmes noms, communes puis de la marque, et couche marque sombre (mêmes boutons qu\'en clair).',
+        contexts: { clair: [], sombre: [commun('mode.sombre.tokens.json'), ...sombre.map(ref)] },
         default: 'clair',
       },
       largeur: {

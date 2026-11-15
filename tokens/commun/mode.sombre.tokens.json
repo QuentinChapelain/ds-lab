@@ -1,0 +1,877 @@
+{
+  "$description": "Contexte sombre du modificateur mode (marque.resolver.json), commun à toutes les marques. Écrit par src/cli/sombre.js si checkValise passe. Format DTCG 2025.10. Chaque jeton remplace en entier celui du mode clair.",
+  "couleur": {
+    "$type": "color",
+    "$description": "Mode sombre, commun à toutes les marques : chaque échelle est générée en miroir depuis le pas 9 de son échelle claire (le neutre depuis sa source miroir, même contraste contre le noir que le pas 9 clair contre le blanc), même nom, mêmes pas ; le contexte sombre la met à la place de la claire.",
+    "surface": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0,
+          0,
+          0
+        ],
+        "hex": "#000000"
+      },
+      "$description": "Surface en sombre : le noir, référence du miroir, comme la surface claire est au blanc [H]."
+    },
+    "sur-inverse": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0,
+          0,
+          0
+        ],
+        "hex": "#000000"
+      },
+      "$description": "Texte sur fond.inverse en sombre : le noir, référence du miroir [H]."
+    },
+    "neutre": {
+      "1": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0118,
+            0.0118,
+            0.0118
+          ],
+          "hex": "#030303"
+        },
+        "$description": "fond d'application"
+      },
+      "2": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0314,
+            0.0314,
+            0.0314
+          ],
+          "hex": "#080808"
+        },
+        "$description": "fond discret"
+      },
+      "3": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0667,
+            0.0627,
+            0.0588
+          ],
+          "hex": "#11100f"
+        },
+        "$description": "fond de composant"
+      },
+      "4": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.102,
+            0.098,
+            0.0902
+          ],
+          "hex": "#1a1917"
+        },
+        "$description": "fond de composant, survol"
+      },
+      "5": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1294,
+            0.1255,
+            0.1176
+          ],
+          "hex": "#21201e"
+        },
+        "$description": "fond de composant, appui"
+      },
+      "6": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1686,
+            0.1608,
+            0.149
+          ],
+          "hex": "#2b2926"
+        },
+        "$description": "bordure discrète"
+      },
+      "7": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.251,
+            0.2314,
+            0.2078
+          ],
+          "hex": "#403b35"
+        },
+        "$description": "bordure de composant"
+      },
+      "8": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.3882,
+            0.3608,
+            0.3255
+          ],
+          "hex": "#635c53"
+        },
+        "$description": "bordure d'interaction, focus (3:1)"
+      },
+      "9": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.4275,
+            0.4,
+            0.3569
+          ],
+          "hex": "#6d665b"
+        },
+        "$description": "plein, couleur source"
+      },
+      "10": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.4706,
+            0.4431,
+            0.4
+          ],
+          "hex": "#787166"
+        },
+        "$description": "plein, survol"
+      },
+      "11": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.5412,
+            0.5137,
+            0.4706
+          ],
+          "hex": "#8a8378"
+        },
+        "$description": "texte secondaire (4,5:1)"
+      },
+      "12": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.8118,
+            0.7961,
+            0.7725
+          ],
+          "hex": "#cfcbc5"
+        },
+        "$description": "texte principal"
+      },
+      "$description": "Neutre, mode sombre. Pas 9 = #6d665b exact ; autres pas générés par generateScale (src/valise/generate.js) en miroir [H] : mêmes cibles, contraste visé contre le noir au lieu du blanc ; école « normale » lue contre le noir.",
+      "$extensions": {
+        "ds-lab.valise": {
+          "source": "#6d665b",
+          "ecole": "normale",
+          "pas10": "plus foncé",
+          "signaux": [],
+          "fond": "sombre"
+        }
+      },
+      "sur-plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9725,
+            0.9686,
+            0.9608
+          ],
+          "hex": "#f8f7f5"
+        },
+        "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
+      }
+    },
+    "erreur": {
+      "1": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0157,
+            0.0157,
+            0.0157
+          ],
+          "hex": "#040404"
+        },
+        "$description": "fond d'application"
+      },
+      "2": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0431,
+            0.0275,
+            0.0275
+          ],
+          "hex": "#0b0707"
+        },
+        "$description": "fond discret"
+      },
+      "3": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0902,
+            0.0588,
+            0.0549
+          ],
+          "hex": "#170f0e"
+        },
+        "$description": "fond de composant"
+      },
+      "4": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1294,
+            0.0863,
+            0.0824
+          ],
+          "hex": "#211615"
+        },
+        "$description": "fond de composant, survol"
+      },
+      "5": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1843,
+            0.1059,
+            0.098
+          ],
+          "hex": "#2f1b19"
+        },
+        "$description": "fond de composant, appui"
+      },
+      "6": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2471,
+            0.1294,
+            0.1216
+          ],
+          "hex": "#3f211f"
+        },
+        "$description": "bordure discrète"
+      },
+      "7": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.4039,
+            0.1569,
+            0.149
+          ],
+          "hex": "#672826"
+        },
+        "$description": "bordure de composant"
+      },
+      "8": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.698,
+            0.1451,
+            0.1647
+          ],
+          "hex": "#b2252a"
+        },
+        "$description": "bordure d'interaction, focus (3:1)"
+      },
+      "9": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.851,
+            0.1882,
+            0.2118
+          ],
+          "hex": "#d93036"
+        },
+        "$description": "plein, couleur source"
+      },
+      "10": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.7804,
+            0.149,
+            0.1804
+          ],
+          "hex": "#c7262e"
+        },
+        "$description": "plein, survol"
+      },
+      "11": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9255,
+            0.2863,
+            0.2863
+          ],
+          "hex": "#ec4949"
+        },
+        "$description": "texte secondaire (4,5:1)"
+      },
+      "12": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9961,
+            0.7333,
+            0.7098
+          ],
+          "hex": "#febbb5"
+        },
+        "$description": "texte principal"
+      },
+      "$description": "Statut d'erreur, mode sombre. Pas 9 = #d93036 exact ; autres pas générés par generateScale (src/valise/generate.js) en miroir [H] : mêmes cibles, contraste visé contre le noir au lieu du blanc ; école « normale » lue contre le noir.",
+      "$extensions": {
+        "ds-lab.valise": {
+          "source": "#d93036",
+          "ecole": "normale",
+          "pas10": "plus clair",
+          "signaux": [
+            "pas 10 plus clair que le 9"
+          ],
+          "fond": "sombre"
+        }
+      },
+      "sur-plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.9725,
+            0.9686
+          ],
+          "hex": "#fff8f7"
+        },
+        "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
+      }
+    },
+    "succes": {
+      "1": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0118,
+            0.0118,
+            0.0118
+          ],
+          "hex": "#030303"
+        },
+        "$description": "fond d'application"
+      },
+      "2": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0314,
+            0.0314,
+            0.0314
+          ],
+          "hex": "#080808"
+        },
+        "$description": "fond discret"
+      },
+      "3": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.051,
+            0.0706,
+            0.0588
+          ],
+          "hex": "#0d120f"
+        },
+        "$description": "fond de composant"
+      },
+      "4": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0745,
+            0.102,
+            0.0863
+          ],
+          "hex": "#131a16"
+        },
+        "$description": "fond de composant, survol"
+      },
+      "5": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0941,
+            0.1333,
+            0.1098
+          ],
+          "hex": "#18221c"
+        },
+        "$description": "fond de composant, appui"
+      },
+      "6": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1137,
+            0.1765,
+            0.1412
+          ],
+          "hex": "#1d2d24"
+        },
+        "$description": "bordure discrète"
+      },
+      "7": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1333,
+            0.2588,
+            0.1922
+          ],
+          "hex": "#224231"
+        },
+        "$description": "bordure de composant"
+      },
+      "8": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0941,
+            0.4157,
+            0.2706
+          ],
+          "hex": "#186a45"
+        },
+        "$description": "bordure d'interaction, focus (3:1)"
+      },
+      "9": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1216,
+            0.5412,
+            0.3569
+          ],
+          "hex": "#1f8a5b"
+        },
+        "$description": "plein, couleur source"
+      },
+      "10": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1569,
+            0.5608,
+            0.3765
+          ],
+          "hex": "#288f60"
+        },
+        "$description": "plein, survol"
+      },
+      "11": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1843,
+            0.5843,
+            0.3961
+          ],
+          "hex": "#2f9565"
+        },
+        "$description": "texte secondaire (4,5:1)"
+      },
+      "12": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.6235,
+            0.8471,
+            0.7176
+          ],
+          "hex": "#9fd8b7"
+        },
+        "$description": "texte principal"
+      },
+      "$description": "Statut de succès, mode sombre. Pas 9 = #1f8a5b exact ; autres pas générés par generateScale (src/valise/generate.js) en miroir [H] : mêmes cibles, contraste visé contre le noir au lieu du blanc ; école « normale » lue contre le noir.",
+      "$extensions": {
+        "ds-lab.valise": {
+          "source": "#1f8a5b",
+          "ecole": "normale",
+          "pas10": "plus foncé",
+          "signaux": [
+            "10 ↔ 11 < ΔE 2"
+          ],
+          "fond": "sombre"
+        }
+      },
+      "sur-plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0,
+            0
+          ],
+          "hex": "#000000"
+        },
+        "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
+      }
+    },
+    "avertissement": {
+      "1": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0118,
+            0.0118,
+            0.0118
+          ],
+          "hex": "#030303"
+        },
+        "$description": "fond d'application"
+      },
+      "2": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0314,
+            0.0314,
+            0.0314
+          ],
+          "hex": "#080808"
+        },
+        "$description": "fond discret"
+      },
+      "3": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0706,
+            0.0667,
+            0.0588
+          ],
+          "hex": "#12110f"
+        },
+        "$description": "fond de composant"
+      },
+      "4": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.102,
+            0.0941,
+            0.0824
+          ],
+          "hex": "#1a1815"
+        },
+        "$description": "fond de composant, survol"
+      },
+      "5": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1373,
+            0.1255,
+            0.1059
+          ],
+          "hex": "#23201b"
+        },
+        "$description": "fond de composant, appui"
+      },
+      "6": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1804,
+            0.1608,
+            0.1294
+          ],
+          "hex": "#2e2921"
+        },
+        "$description": "bordure discrète"
+      },
+      "7": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2706,
+            0.2275,
+            0.1647
+          ],
+          "hex": "#453a2a"
+        },
+        "$description": "bordure de composant"
+      },
+      "8": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.4549,
+            0.349,
+            0.1765
+          ],
+          "hex": "#74592d"
+        },
+        "$description": "bordure d'interaction, focus (3:1)"
+      },
+      "9": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.898,
+            0.6275,
+            0
+          ],
+          "hex": "#e5a000"
+        },
+        "$description": "plein, couleur source"
+      },
+      "10": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9804,
+            0.7333,
+            0.3098
+          ],
+          "hex": "#fabb4f"
+        },
+        "$description": "plein, survol"
+      },
+      "11": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.8353,
+            0.5804
+          ],
+          "hex": "#ffd594"
+        },
+        "$description": "texte secondaire (4,5:1)"
+      },
+      "12": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.9373,
+            0.8471
+          ],
+          "hex": "#ffefd8"
+        },
+        "$description": "texte principal"
+      },
+      "$description": "Statut d'avertissement, mode sombre. Pas 9 = #e5a000 exact ; autres pas générés par generateScale (src/valise/generate.js) en miroir [H] : mêmes cibles, contraste visé contre le noir au lieu du blanc ; école « foncée » lue contre le noir.",
+      "$extensions": {
+        "ds-lab.valise": {
+          "source": "#e5a000",
+          "ecole": "foncée",
+          "pas10": "plus foncé",
+          "signaux": [],
+          "fond": "sombre"
+        }
+      },
+      "sur-plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0,
+            0
+          ],
+          "hex": "#000000"
+        },
+        "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
+      }
+    },
+    "info": {
+      "1": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0118,
+            0.0118,
+            0.0118
+          ],
+          "hex": "#030303"
+        },
+        "$description": "fond d'application"
+      },
+      "2": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0275,
+            0.0314,
+            0.0353
+          ],
+          "hex": "#070809"
+        },
+        "$description": "fond discret"
+      },
+      "3": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0549,
+            0.0667,
+            0.0784
+          ],
+          "hex": "#0e1114"
+        },
+        "$description": "fond de composant"
+      },
+      "4": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0745,
+            0.098,
+            0.1176
+          ],
+          "hex": "#13191e"
+        },
+        "$description": "fond de composant, survol"
+      },
+      "5": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0941,
+            0.1294,
+            0.1569
+          ],
+          "hex": "#182128"
+        },
+        "$description": "fond de composant, appui"
+      },
+      "6": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1137,
+            0.1686,
+            0.2118
+          ],
+          "hex": "#1d2b36"
+        },
+        "$description": "bordure discrète"
+      },
+      "7": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1255,
+            0.2471,
+            0.3333
+          ],
+          "hex": "#203f55"
+        },
+        "$description": "bordure de composant"
+      },
+      "8": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0431,
+            0.3843,
+            0.5804
+          ],
+          "hex": "#0b6294"
+        },
+        "$description": "bordure d'interaction, focus (3:1)"
+      },
+      "9": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0078,
+            0.5176,
+            0.7804
+          ],
+          "hex": "#0284c7"
+        },
+        "$description": "plein, couleur source"
+      },
+      "10": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.051,
+            0.5294,
+            0.7922
+          ],
+          "hex": "#0d87ca"
+        },
+        "$description": "plein, survol"
+      },
+      "11": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0863,
+            0.5451,
+            0.8078
+          ],
+          "hex": "#168bce"
+        },
+        "$description": "texte secondaire (4,5:1)"
+      },
+      "12": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.6,
+            0.8235,
+            0.9961
+          ],
+          "hex": "#99d2fe"
+        },
+        "$description": "texte principal"
+      },
+      "$description": "Statut d'information, mode sombre. Pas 9 = #0284c7 exact ; autres pas générés par generateScale (src/valise/generate.js) en miroir [H] : mêmes cibles, contraste visé contre le noir au lieu du blanc ; école « normale » lue contre le noir.",
+      "$extensions": {
+        "ds-lab.valise": {
+          "source": "#0284c7",
+          "ecole": "normale",
+          "pas10": "plus foncé",
+          "signaux": [
+            "10 ↔ 11 < ΔE 2"
+          ],
+          "fond": "sombre"
+        }
+      },
+      "sur-plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0,
+            0
+          ],
+          "hex": "#000000"
+        },
+        "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
+      }
+    }
+  }
+}

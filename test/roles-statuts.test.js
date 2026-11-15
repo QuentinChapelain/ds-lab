@@ -118,6 +118,11 @@ test('4b lot 1 : primitives communes et échelles d\'Orbe Café réunies = primi
   const apres = charger('primitives.tokens.json');
   delete avant.$description;
   delete apres.$description;
+  // Étape 4b, lot 2 (réponse 1) : deux primitives ajoutées, blanches comme couleur.blanc.
+  assert.equal(apres.couleur.surface.$value.hex, '#ffffff');
+  assert.equal(apres.couleur['sur-inverse'].$value.hex, '#ffffff');
+  delete apres.couleur.surface;
+  delete apres.couleur['sur-inverse'];
   const tri = (/** @type {any} */ o) => JSON.stringify(o, (_, v) => (v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => a.localeCompare(b))) : v));
   assert.equal(tri(apres), tri(avant));
 });
