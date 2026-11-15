@@ -7,6 +7,9 @@
  * Lot 4 : un ecart peut porter une valeur en étroit dans $extensions["ds-lab.etroit"]
  * ({ valeur: alias, sous: dimension px, seuil }) ; elle doit rester strictement supérieure à l'ecart
  * précédent (sa valeur en étroit s'il en a une) et inférieure ou égale à sa propre valeur large.
+ * Règle de proximité : ecart.entre-composants vaut au moins le double de ecart.dans-composant, pour qu'on
+ * voie à quel champ appartient un libellé ou un message ; régularité observée dans les systèmes lus, pas
+ * une norme. Les autres rapports entre voisins n'ont pas de seuil.
  */
 import { flattenTokens } from './roles.js';
 
@@ -20,14 +23,29 @@ export const HORS_CONTROLE = ['marge-interieure.composant'];
  * @typedef {{ de: string, vers: string, a: number, b: number, rapport: number | null, ok: boolean }} Voisin
  * @typedef {{ role: string, alias: string, cible: string, px: number, sous: number, seuil: string,
  *   de: string | null, precedent: number | null, large: number, superieur: boolean, auPlusLarge: boolean, ok: boolean }} Etroit
+ * @typedef {{ de: string, vers: string, min: number, raison: string, statut: string, a: number, b: number, rapport: number | null, ok: boolean }} Regle
  */
+
+/**
+ * Règles de rapport minimal entre deux ecart (b ≥ min × a), avec leur raison et leur statut.
+ * @type {{ de: string, vers: string, min: number, raison: string, statut: string }[]}
+ */
+export const REGLES = [
+  {
+    de: 'ecart.dans-composant',
+    vers: 'ecart.entre-composants',
+    min: 2,
+    raison: "pour qu'on voie à quel champ appartient un libellé ou un message",
+    statut: 'régularité observée dans les systèmes lus, pas une norme',
+  },
+];
 
 /** Clé d'extension de la valeur en étroit. */
 export const ETROIT = 'ds-lab.etroit';
 
 /**
  * @param {any} semantique @param {...any} primitives
- * @returns {{ ecarts: Espace[], horsControle: Espace[], voisins: Voisin[], fails: Voisin[], etroits: Etroit[], etroitsFails: Etroit[] }}
+ * @returns {{ ecarts: Espace[], horsControle: Espace[], voisins: Voisin[], fails: Voisin[], etroits: Etroit[], etroitsFails: Etroit[], regles: Regle[], reglesFails: Regle[] }}
  */
 export function espacements(semantique, ...primitives) {
   const all = new Map();
@@ -80,5 +98,16 @@ export function espacements(semantique, ...primitives) {
     const auPlusLarge = px <= e.px;
     etroits.push({ role: e.role, alias: x.valeur, cible, px, sous: sous.value, seuil: x.seuil ?? '', de: prev?.role ?? null, precedent, large: e.px, superieur, auPlusLarge, ok: superieur && auPlusLarge });
   });
-  return { ecarts, horsControle, voisins, fails: voisins.filter((v) => !v.ok), etroits, etroitsFails: etroits.filter((t) => !t.ok) };
+  const pxOf = (/** @type {string} */ role) => /** @type {Espace} */ (ecarts.find((e) => e.role === role)).px;
+  /** @type {Regle[]} */
+  const regles = REGLES.map((g) => {
+    const a = pxOf(g.de);
+    const b = pxOf(g.vers);
+    return { ...g, a, b, rapport: a ? Math.round((b / a) * 100) / 100 : null, ok: b >= g.min * a };
+  });
+  return {
+    ecarts, horsControle, voisins, fails: voisins.filter((v) => !v.ok),
+    etroits, etroitsFails: etroits.filter((t) => !t.ok),
+    regles, reglesFails: regles.filter((g) => !g.ok),
+  };
 }

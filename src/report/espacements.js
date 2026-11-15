@@ -70,10 +70,10 @@ export function espacementsHtml(r, roles) {
           </li>`,
     )
     .join('\n');
-  const nFails = r.fails.length + r.etroitsFails.length;
+  const nFails = r.fails.length + r.etroitsFails.length + r.reglesFails.length;
   const bilan = nFails
     ? `<strong>${nFails} contrôle${nFails > 1 ? 's' : ''} en échec</strong> : voir <code>npm run espacements</code>.`
-    : 'Strictement croissants, valeurs en étroit comprises, contrôlé par <code>npm run espacements</code>.';
+    : `Strictement croissants, valeurs en étroit comprises ; ${r.regles.map((g) => `${esc(g.vers)} ≥ ${g.min} × ${esc(g.de)}, ${esc(g.raison)} (${esc(g.statut)})`).join(' ; ')} ; contrôlé par <code>npm run espacements</code>.`;
   const vars = tous.map((e) => `${cssVar(e.role)}: ${e.px}px;`).join(' ');
   return `<!doctype html>
 <html lang="fr">

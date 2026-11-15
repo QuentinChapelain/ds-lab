@@ -205,7 +205,7 @@
     },
     "entre-composants": {
       "$value": "{espace.16}",
-      "$description": "Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée."
+      "$description": "Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée ; au moins le double de ecart.dans-composant, pour qu'on voie à quel champ appartient un libellé ou un message (régularité observée dans les systèmes lus, pas une norme)."
     },
     "entre-groupes": {
       "$value": "{espace.24}",

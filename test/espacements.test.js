@@ -16,7 +16,14 @@
  *   lot 4 (décision du 15/11/2026) : une valeur en étroit ($extensions["ds-lab.etroit"]) doit rester
  *     strictement supérieure à la valeur de l'ecart précédent et inférieure ou égale à sa valeur large ;
  *     sinon échec, code de sortie 1 ; Orbe Café : ecart.section 32 px sous 600 px, > 24 et ≤ 48, conforme ;
- *     rouge : étroit → {espace.24} (égal à entre-groupes) ; étroit → {espace.64} (au-dessus de 48).
+ *     rouge : étroit → {espace.24} (égal à entre-groupes) ; étroit → {espace.64} (au-dessus de 48) ;
+ *   règle de proximité (décision du 15/11/2026) : ecart.entre-composants vaut au moins le double de
+ *     ecart.dans-composant, « pour qu'on voie à quel champ appartient un libellé ou un message » ;
+ *     statut : régularité observée dans les systèmes lus, pas une norme ; la raison et le statut sont
+ *     écrits dans la sortie et dans la $description de ecart.entre-composants ; échec et code 1 si le
+ *     rapport est sous 2 ; les autres rapports restent affichés sans seuil ;
+ *     vert : 4 et 16, rapport 4 ; rouge : dans-composant → {espace.12}, 12 et 16, rapport 1,33, l'ordre
+ *     strict reste conforme (12 < 16 < 24 < 48).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -117,4 +124,34 @@ test('3c rouge : ordre inversé (entre-composants 24, entre-groupes 16), code 1'
   const p = run(sem);
   assert.equal(p.status, 1, p.stdout + p.stderr);
   assert.match(p.stdout, /✗ ecart\.entre-composants < ecart\.entre-groupes : 24 → 16 px, rapport 0,67\n/);
+});
+
+const RAISON = "pour qu'on voie à quel champ appartient un libellé ou un message";
+const STATUT = 'régularité observée dans les systèmes lus, pas une norme';
+
+test('3c règle de proximité vert : 4 et 16, au moins le double, code 0', () => {
+  const sem = load('semantique.tokens.json');
+  const r = espacements(sem, prims);
+  assert.deepEqual(
+    r.regles.map((g) => ({ de: g.de, vers: g.vers, a: g.a, b: g.b, min: g.min, rapport: g.rapport, ok: g.ok, raison: g.raison, statut: g.statut })),
+    [{ de: 'ecart.dans-composant', vers: 'ecart.entre-composants', a: 4, b: 16, min: 2, rapport: 4, ok: true, raison: RAISON, statut: STATUT }],
+  );
+  const d = sem.ecart['entre-composants'].$description;
+  assert.ok(d.includes(RAISON) && d.includes(STATUT), `description : ${d}`);
+  const p = run();
+  assert.equal(p.status, 0, p.stdout + p.stderr);
+  assert.ok(p.stdout.includes(`  ✓ ecart.entre-composants ≥ 2 × ecart.dans-composant : 16 px pour 4 px, rapport 4 ; ${RAISON} (${STATUT})\n`), p.stdout);
+  assert.match(p.stdout, /1 règle de proximité, aucune en échec\./);
+});
+
+test('3c règle de proximité rouge : 12 et 16, rapport 1,33 sous 2, code 1', () => {
+  const sem = variant((s) => { s.ecart['dans-composant'].$value = '{espace.12}'; });
+  const r = espacements(sem, prims);
+  assert.deepEqual(r.fails, [], "l'ordre strict reste conforme");
+  assert.deepEqual(r.regles.map((g) => [g.a, g.b, g.rapport, g.ok]), [[12, 16, 1.33, false]]);
+  const p = run(sem);
+  assert.equal(p.status, 1, p.stdout + p.stderr);
+  assert.ok(p.stdout.includes(`  ✗ ecart.entre-composants ≥ 2 × ecart.dans-composant : 16 px pour 12 px, rapport 1,33 ; ${RAISON} (${STATUT})\n`), p.stdout);
+  assert.match(p.stdout, /1 règle de proximité, 1 en échec\./);
+  assert.match(p.stdout, /✓ ecart\.entre-composants < ecart\.entre-groupes : 16 → 24 px, rapport 1,5\n/, 'les autres rapports restent affichés sans seuil');
 });

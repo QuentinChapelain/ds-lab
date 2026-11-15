@@ -76,7 +76,7 @@
       <section aria-labelledby="titre-legende">
         <div class="entete">
           <h2 id="titre-legende">Les cinq espaces</h2>
-          <p class="rapports">4 → 16 → 24 → 48 px ; rapports entre voisins 4 ; 1,5 ; 2 (affichés, non contrôlés). Strictement croissants, valeurs en étroit comprises, contrôlé par <code>npm run espacements</code>.</p>
+          <p class="rapports">4 → 16 → 24 → 48 px ; rapports entre voisins 4 ; 1,5 ; 2 (affichés, non contrôlés). Strictement croissants, valeurs en étroit comprises ; ecart.entre-composants ≥ 2 × ecart.dans-composant, pour qu'on voie à quel champ appartient un libellé ou un message (régularité observée dans les systèmes lus, pas une norme) ; contrôlé par <code>npm run espacements</code>.</p>
         </div>
         <ul class="legende">
           <li>
@@ -92,7 +92,7 @@
             <div class="legende-texte">
               <code>ecart.entre-composants</code>
               <span class="valeur">16 px · {espace.16}</span>
-              <span class="usage">Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée.</span>
+              <span class="usage">Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée ; au moins le double de ecart.dans-composant, pour qu'on voie à quel champ appartient un libellé ou un message (régularité observée dans les systèmes lus, pas une norme).</span>
             </div>
           </li>
           <li>
