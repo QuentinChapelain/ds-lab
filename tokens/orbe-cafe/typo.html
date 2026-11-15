@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Typographie Orbe Café</title>
+    <style>
+      :root { --police-titre: Georgia, serif; --police-texte: "Orbe Sans", Arial, sans-serif; --affichage-grand-taille: 60px; --affichage-grand-interligne: 1.1333; --affichage-moyen-taille: 48px; --affichage-moyen-interligne: 1.1667; --titre-1-taille: 30px; --titre-1-interligne: 1.2; --titre-2-taille: 24px; --titre-2-interligne: 1.3333; --titre-3-taille: 20px; --titre-3-interligne: 1.4; --titre-4-taille: 16px; --titre-4-interligne: 1.5; --corps-grand-taille: 18px; --corps-grand-interligne: 1.5556; --corps-moyen-taille: 16px; --corps-moyen-interligne: 1.5; --corps-petit-taille: 14px; --corps-petit-interligne: 1.4286; --libelle-taille: 14px; --libelle-interligne: 1.4286; --mention-taille: 14px; --mention-interligne: 1.4286; --ecart-dans-composant: 4px; --ecart-entre-composants: 16px; --ecart-entre-groupes: 24px; --ecart-section: 48px; --marge-interieure-composant: 16px; }
+      @media (max-width: 599.98px) { :root { --affichage-grand-taille: 36px; --affichage-grand-interligne: 1.1111; --affichage-moyen-taille: 30px; --affichage-moyen-interligne: 1.2; --titre-1-taille: 24px; --titre-1-interligne: 1.3333; --titre-2-taille: 20px; --titre-2-interligne: 1.4; --titre-3-taille: 18px; --titre-3-interligne: 1.3333; --ecart-section: 32px; } }
+      @media (min-width: 600px) { :root:has(#reglage-hero-72:checked) { --affichage-grand-interligne: 1.2; } }
+      :root:has(#reglage-corps-petit-24:checked) { --corps-petit-interligne: 1.7143; }
+      :root:has(#reglage-mention-12:checked) { --mention-taille: 12px; --mention-interligne: 1.3333; }
+
+      /* Styles de texte : un par jeton composite du groupe typo. */
+      .t-affichage-grand { font-family: var(--police-titre); font-size: var(--affichage-grand-taille); line-height: var(--affichage-grand-interligne); font-weight: 700; letter-spacing: 0px; }
+      .t-affichage-moyen { font-family: var(--police-titre); font-size: var(--affichage-moyen-taille); line-height: var(--affichage-moyen-interligne); font-weight: 700; letter-spacing: 0px; }
+      .t-titre-1 { font-family: var(--police-titre); font-size: var(--titre-1-taille); line-height: var(--titre-1-interligne); font-weight: 700; letter-spacing: 0px; }
+      .t-titre-2 { font-family: var(--police-titre); font-size: var(--titre-2-taille); line-height: var(--titre-2-interligne); font-weight: 700; letter-spacing: 0px; }
+      .t-titre-3 { font-family: var(--police-titre); font-size: var(--titre-3-taille); line-height: var(--titre-3-interligne); font-weight: 600; letter-spacing: 0px; }
+      .t-titre-4 { font-family: var(--police-texte); font-size: var(--titre-4-taille); line-height: var(--titre-4-interligne); font-weight: 700; letter-spacing: 0px; }
+      .t-corps-grand { font-family: var(--police-texte); font-size: var(--corps-grand-taille); line-height: var(--corps-grand-interligne); font-weight: 400; letter-spacing: 0px; }
+      .t-corps-moyen { font-family: var(--police-texte); font-size: var(--corps-moyen-taille); line-height: var(--corps-moyen-interligne); font-weight: 400; letter-spacing: 0px; }
+      .t-corps-petit { font-family: var(--police-texte); font-size: var(--corps-petit-taille); line-height: var(--corps-petit-interligne); font-weight: 400; letter-spacing: 0px; }
+      .t-libelle { font-family: var(--police-texte); font-size: var(--libelle-taille); line-height: var(--libelle-interligne); font-weight: 600; letter-spacing: 0px; }
+      .t-mention { font-family: var(--police-texte); font-size: var(--mention-taille); line-height: var(--mention-interligne); font-weight: 400; letter-spacing: 0px; }
+
+      /* Le parent porte l'espace : gap et padding, avec les rôles d'espacement ; aucun enfant n'a de marge. */
+      * { margin: 0; box-sizing: border-box; }
+      body {
+        display: grid; grid-template-columns: minmax(0, 1040px); justify-content: center;
+        padding: 32px 16px 64px; /* gouttière de page, hors des rôles */
+        background: #fbfbfb; color: #363026;
+      }
+      main { display: flex; flex-direction: column; gap: var(--ecart-section); }
+      main > header, main > section { display: flex; flex-direction: column; gap: var(--ecart-entre-groupes); }
+      .entete { display: flex; flex-direction: column; gap: var(--ecart-dans-composant); }
+      .secondaire, .t-mention { color: #6d675b; }
+      .meta { font: 13px/20px ui-monospace, Menlo, monospace; color: #6d675b; overflow-wrap: anywhere; }
+      code { font: inherit; }
+
+      .reglages { display: flex; flex-wrap: wrap; gap: var(--ecart-entre-composants); }
+      .reglage { flex: 1 1 280px; display: flex; flex-direction: column; gap: var(--ecart-dans-composant); padding: var(--marge-interieure-composant); background: #ffffff; border: 1px solid #d8d6d2; border-radius: 8px; }
+      .choix-liste { display: flex; flex-wrap: wrap; gap: var(--ecart-entre-composants); }
+      .choix { display: inline-flex; align-items: center; gap: var(--ecart-dans-composant); cursor: pointer; }
+      .choix input { width: 18px; height: 18px; accent-color: #2b4c7e; }
+
+      .specimen { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--ecart-entre-composants); }
+      .specimen li { display: flex; flex-direction: column; gap: var(--ecart-dans-composant); padding-bottom: var(--ecart-entre-composants); border-bottom: 1px solid #d8d6d2; overflow-wrap: anywhere; }
+
+      .cadre { display: flex; flex-direction: column; gap: var(--ecart-entre-groupes); padding: var(--marge-interieure-composant); background: #ffffff; border: 1px solid #d8d6d2; border-radius: 8px; }
+      .hero { padding-block: var(--ecart-section); }
+      .hero-texte { display: flex; flex-direction: column; gap: var(--ecart-entre-composants); }
+      #hero-titre { max-width: 8.5em; }
+      .hero .chapo { max-width: 36em; color: #6d675b; }
+      .actions { display: flex; flex-wrap: wrap; gap: var(--ecart-entre-composants); }
+      .actions button { padding: var(--ecart-dans-composant) var(--marge-interieure-composant); min-height: 40px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; background: #2b4c7e; color: #ffffff; }
+      .actions button:focus-visible, .champ input:focus-visible, .choix input:focus-visible { outline: 2px solid #4c6994; outline-offset: 2px; }
+
+      .article { max-width: 40rem; }
+      .bloc { display: flex; flex-direction: column; gap: var(--ecart-entre-composants); }
+      .bloc-titre { display: flex; flex-direction: column; gap: var(--ecart-entre-composants); }
+
+      .dense-entete { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--ecart-entre-composants); }
+      .champ { display: flex; flex-direction: column; gap: var(--ecart-dans-composant); min-width: 0; flex: 0 1 280px; }
+      .champ input { width: 100%; min-height: 40px; padding: var(--ecart-dans-composant) var(--ecart-entre-composants); color: #363026; background: #ffffff; border: 1px solid #958f84; border-radius: 6px; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { text-align: left; vertical-align: top; padding: var(--ecart-dans-composant) var(--ecart-entre-composants) var(--ecart-dans-composant) 0; border-bottom: 1px solid #d8d6d2; }
+      td.num, th.num { text-align: right; padding-right: 0; font-variant-numeric: tabular-nums; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="entete">
+          <h1 class="t-titre-1" data-style="titre.1">Typographie, Orbe Café</h1>
+          <p class="t-corps-moyen secondaire" data-style="corps.moyen">Marque fictive. Onze styles de texte, un jeton composite chacun (groupe typo de semantique.tokens.json) : police de la marque, taille, graisse et interligne sans unité, hauteur de ligne visée multiple de 4 px. Sous 600 px de large [H], affichage et titres 1 à 3 prennent leur valeur en étroit.</p>
+          <p class="t-mention" data-style="mention">8 règles tenues, contrôlées par npm run typo.</p>
+        </div>
+      </header>
+
+      <section aria-labelledby="titre-reglages">
+        <div class="entete">
+          <h2 class="t-titre-2" data-style="titre.2" id="titre-reglages">Réglages</h2>
+          <p class="t-mention" data-style="mention">Pour juger un interligne sur la planche ; les jetons ne changent pas.</p>
+        </div>
+        <div class="reglages">
+          <div class="reglage" role="radiogroup" aria-labelledby="titre-reglage-hero">
+            <p class="t-libelle" data-style="libelle" id="titre-reglage-hero">affichage.grand (hero), ligne en large ; sous 600 px, la valeur en étroit reste</p>
+            <div class="choix-liste">
+              <label class="choix"><input type="radio" name="reglage-hero" id="reglage-hero-68" checked><span class="t-libelle" data-style="libelle">68 px, jeton</span></label>
+              <label class="choix"><input type="radio" name="reglage-hero" id="reglage-hero-72"><span class="t-libelle" data-style="libelle">72 px</span></label>
+            </div>
+          </div>
+          <div class="reglage" role="radiogroup" aria-labelledby="titre-reglage-corps-petit">
+            <p class="t-libelle" data-style="libelle" id="titre-reglage-corps-petit">corps.petit (tableaux), ligne</p>
+            <div class="choix-liste">
+              <label class="choix"><input type="radio" name="reglage-corps-petit" id="reglage-corps-petit-20" checked><span class="t-libelle" data-style="libelle">20 px, jeton</span></label>
+              <label class="choix"><input type="radio" name="reglage-corps-petit" id="reglage-corps-petit-24"><span class="t-libelle" data-style="libelle">24 px</span></label>
+            </div>
+          </div>
+          <div class="reglage" role="radiogroup" aria-labelledby="titre-reglage-mention">
+            <p class="t-libelle" data-style="libelle" id="titre-reglage-mention">mention (aide, erreur, légende), taille / ligne</p>
+            <div class="choix-liste">
+              <label class="choix"><input type="radio" name="reglage-mention" id="reglage-mention-14" checked><span class="t-libelle" data-style="libelle">14 / 20 px, jeton</span></label>
+              <label class="choix"><input type="radio" name="reglage-mention" id="reglage-mention-12"><span class="t-libelle" data-style="libelle">12 / 16 px</span></label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="titre-specimen">
+        <div class="entete">
+          <h2 class="t-titre-2" data-style="titre.2" id="titre-specimen">Spécimen</h2>
+          <p class="t-mention" data-style="mention">Taille / ligne en px et rapport (ligne ÷ taille), en large puis en étroit ; graisse ; police.</p>
+        </div>
+        <ol class="specimen">
+          <li data-specimen="affichage.grand">
+            <p class="meta"><code>affichage.grand</code> · 60 / 68 px · rapport 1,1333 · étroit 36 / 40 px · rapport 1,1111 · 700 · police.titre</p>
+            <p class="t-affichage-grand" data-style="affichage.grand">Orbe Café torréfie le mardi</p>
+          </li>
+          <li data-specimen="affichage.moyen">
+            <p class="meta"><code>affichage.moyen</code> · 48 / 56 px · rapport 1,1667 · étroit 30 / 36 px · rapport 1,2 · 700 · police.titre</p>
+            <p class="t-affichage-moyen" data-style="affichage.moyen">Orbe Café torréfie le mardi</p>
+          </li>
+          <li data-specimen="titre.1">
+            <p class="meta"><code>titre.1</code> · 30 / 36 px · rapport 1,2 · étroit 24 / 32 px · rapport 1,3333 · 700 · police.titre</p>
+            <p class="t-titre-1" data-style="titre.1">Orbe Café torréfie le mardi</p>
+          </li>
+          <li data-specimen="titre.2">
+            <p class="meta"><code>titre.2</code> · 24 / 32 px · rapport 1,3333 · étroit 20 / 28 px · rapport 1,4 · 700 · police.titre</p>
+            <p class="t-titre-2" data-style="titre.2">Orbe Café torréfie le mardi</p>
+          </li>
+          <li data-specimen="titre.3">
+            <p class="meta"><code>titre.3</code> · 20 / 28 px · rapport 1,4 · étroit 18 / 24 px · rapport 1,3333 · 600 · police.titre</p>
+            <p class="t-titre-3" data-style="titre.3">Orbe Café torréfie le mardi</p>
+          </li>
+          <li data-specimen="titre.4">
+            <p class="meta"><code>titre.4</code> · 16 / 24 px · rapport 1,5 · 700 · police.texte</p>
+            <p class="t-titre-4" data-style="titre.4">Orbe Café torréfie le mardi</p>
+          </li>
+          <li data-specimen="corps.grand">
+            <p class="meta"><code>corps.grand</code> · 18 / 28 px · rapport 1,5556 · 400 · police.texte</p>
+            <p class="t-corps-grand" data-style="corps.grand">Orbe Café torréfie le mardi</p>
+          </li>
+          <li data-specimen="corps.moyen">
+            <p class="meta"><code>corps.moyen</code> · 16 / 24 px · rapport 1,5 · 400 · police.texte</p>
+            <p class="t-corps-moyen" data-style="corps.moyen">Orbe Café torréfie le mardi</p>
+          </li>
+          <li data-specimen="corps.petit">
+            <p class="meta"><code>corps.petit</code> · 14 / 20 px · rapport 1,4286 · 400 · police.texte</p>
+            <p class="t-corps-petit" data-style="corps.petit">Orbe Café torréfie le mardi</p>
+          </li>
+          <li data-specimen="libelle">
+            <p class="meta"><code>libelle</code> · 14 / 20 px · rapport 1,4286 · 600 · police.texte</p>
+            <p class="t-libelle" data-style="libelle">Orbe Café torréfie le mardi</p>
+          </li>
+          <li data-specimen="mention">
+            <p class="meta"><code>mention</code> · 14 / 20 px · rapport 1,4286 · 400 · police.texte</p>
+            <p class="t-mention" data-style="mention">Orbe Café torréfie le mardi</p>
+          </li>
+        </ol>
+      </section>
+
+      <section data-situation="hero" aria-labelledby="titre-hero">
+        <h2 class="t-titre-2" data-style="titre.2" id="titre-hero">Hero d'une page d'accueil</h2>
+        <div class="cadre hero">
+          <div class="hero-texte">
+            <p class="t-affichage-grand" data-style="affichage.grand" id="hero-titre">Prenez le temps d'un café</p>
+            <p class="t-corps-grand chapo" data-style="corps.grand">Trois salles, un torréfacteur sur place et une carte qui change avec les arrivages, du mardi au dimanche.</p>
+          </div>
+          <div class="actions">
+            <button class="t-libelle" data-style="libelle" type="button">Réserver une table</button>
+          </div>
+        </div>
+      </section>
+
+      <section data-situation="contenu" aria-labelledby="titre-contenu">
+        <h2 class="t-titre-2" data-style="titre.2" id="titre-contenu">Page de contenu</h2>
+        <article class="cadre article">
+          <div class="bloc-titre">
+            <h3 class="t-titre-1" data-style="titre.1" id="titre-long">Du grain à la tasse : comment nous choisissons, torréfions et servons chaque café de la maison</h3>
+            <p class="t-corps-grand secondaire" data-style="corps.grand">Chaque mardi, la machine tourne avant l'ouverture ; voici ce qui se passe entre le sac de café vert et la tasse posée sur le comptoir.</p>
+          </div>
+          <div class="bloc">
+            <h4 class="t-titre-2" data-style="titre.2">D'où viennent nos grains</h4>
+            <p class="t-corps-moyen" data-style="corps.moyen">Nous achetons à quatre coopératives, par petits lots, et nous goûtons chaque lot avant de le commander. Un lot qui ne passe pas la dégustation ne passe pas la porte, même s'il est déjà payé.</p>
+            <p class="t-corps-moyen" data-style="corps.moyen">Les sacs arrivent au fil des saisons ; la carte suit, et un café peut disparaître pendant plusieurs mois.</p>
+          </div>
+          <div class="bloc">
+            <h5 class="t-titre-3" data-style="titre.3">La torréfaction du mardi</h5>
+            <p class="t-corps-moyen" data-style="corps.moyen">Douze minutes en moyenne, une courbe notée pour chaque lot, et trois jours de repos avant la première tasse.</p>
+            <p class="t-mention" data-style="mention">Mis à jour le 15 novembre 2026.</p>
+          </div>
+        </article>
+      </section>
+
+      <section data-situation="dense" aria-labelledby="titre-dense">
+        <h2 class="t-titre-2" data-style="titre.2" id="titre-dense">Écran dense</h2>
+        <div class="cadre">
+          <div class="dense-entete">
+            <h3 class="t-titre-4" data-style="titre.4">Commandes du jour</h3>
+            <div class="champ">
+              <label class="t-libelle" data-style="libelle" for="filtre-table">Table</label>
+              <input class="t-corps-moyen" data-style="corps.moyen" id="filtre-table" type="text" value="T3" autocomplete="off" aria-describedby="filtre-aide">
+              <p class="t-mention" data-style="mention" id="filtre-aide">Numéro de table, ou vide pour tout voir.</p>
+            </div>
+          </div>
+          <table class="t-corps-petit" data-style="corps.petit">
+            <thead><tr><th class="t-libelle" data-style="libelle" scope="col">Heure</th><th class="t-libelle" data-style="libelle" scope="col">Table</th><th class="t-libelle" data-style="libelle" scope="col">Commande</th><th class="t-libelle num" data-style="libelle" scope="col">Montant</th></tr></thead>
+            <tbody>
+              <tr><td>8 h 05</td><td>T3</td><td>2 allongés, 1 tartine beurre</td><td class="num">7,40 €</td></tr>
+              <tr><td>8 h 12</td><td>T3</td><td>1 filtre du moment</td><td class="num">4,20 €</td></tr>
+              <tr><td>8 h 31</td><td>T3</td><td>1 cappuccino, 1 brioche, 1 jus pressé</td><td class="num">11,90 €</td></tr>
+            </tbody>
+          </table>
+          <p class="t-mention" data-style="mention">Montants TTC ; la liste se met à jour à chaque commande validée en caisse.</p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
