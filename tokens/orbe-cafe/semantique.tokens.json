@@ -176,7 +176,7 @@
       "$description": "Contour qui suffit à repérer un champ ou une case à cocher (3:1)."
     },
     "focus": {
-      "$value": "{marque.primaire.9}",
+      "$value": "{marque.primaire.11}",
       "$description": "Anneau de focus clavier (3:1)."
     },
     "erreur": {

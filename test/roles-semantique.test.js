@@ -21,6 +21,7 @@
  *     leur texte passent par marque.<emplacement>.plein / .plein-survol / .sur-plein ; Orbe Café :
  *     primaire sombre (bleu 9, survol = bleu 9 + voile blanc 8 %, texte blanc), accent, erreur, succès et
  *     info moyens (pas 11, survol pas 12, texte blanc), avertissement clair (pas 9, survol pas 10, texte pas 12).
+ *   décision du 15/11/2026 : bordure.focus → marque.primaire.11 pour toutes les marques ;
  * Les alias sont résolus ici par un résolveur propre au test, indépendant du code.
  */
 import { test } from 'node:test';
@@ -59,7 +60,7 @@ const EXPECTED = /** @type {Record<string, string>} */ ({
   'bordure.discrete': 'neutre.6',
   'bordure.defaut': 'neutre.7',
   'bordure.forte': 'neutre.8',
-  'bordure.focus': 'bleu.9',
+  'bordure.focus': 'bleu.11',
   ...Object.fromEntries(STATUTS.map((s) => [`bordure.${s}`, `${s}.8`])),
 });
 const DECORATIVE = 'jamais seule pour repérer un champ ou un état';
@@ -100,7 +101,7 @@ const VIA_MARQUE = /** @type {Record<string, string>} */ ({
   'texte.accent': 'marque.accent.11',
   'texte.sur-interactif': 'marque.primaire.sur-plein',
   'texte.sur-accent': 'marque.accent.sur-plein',
-  'bordure.focus': 'marque.primaire.9',
+  'bordure.focus': 'marque.primaire.11',
 });
 
 test('T1 description racine et DTCG 2025.10', () => {

@@ -37,6 +37,8 @@
  * (wcagContrast sur les pas lus dans primitives et statuts ; voile = interpolate([bleu 9, blanc], 'rgb')(0,08) = #3c5a88) :
  *   blanc sur bleu 9 + voile 8 % : 6,9765 ; blanc sur terre 11 : 5,6287 ; sur erreur 11 : 5,6023 ;
  *   sur succes 11 : 5,6186 ; sur info 11 : 5,6178 ; avertissement 12 sur avertissement 9 : 5,7721.
+ * Décision du 15/11/2026 : bordure.focus → marque.primaire.11 (bleu 11 #4c6994) ; ratios culori
+ *   (wcagContrast('#4c6994', fond)) : fond.app 5,4037, fond.surface 5,5917, fond.discret 5,2619, fond.composant 5,0011.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -99,10 +101,10 @@ bordure.erreur | fond.app | 3.0963 | 3
 bordure.succes | fond.app | 3.0843 | 3
 bordure.avertissement | fond.app | 3.0885 | 3
 bordure.info | fond.app | 3.0936 | 3
-bordure.focus | fond.app | 8.3247 | 3
-bordure.focus | fond.surface | 8.6144 | 3
-bordure.focus | fond.discret | 8.1063 | 3
-bordure.focus | fond.composant | 7.7046 | 3
+bordure.focus | fond.app | 5.4037 | 3
+bordure.focus | fond.surface | 5.5917 | 3
+bordure.focus | fond.discret | 5.2619 | 3
+bordure.focus | fond.composant | 5.0011 | 3
 `
   .trim()
   .split('\n')

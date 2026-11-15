@@ -23,6 +23,7 @@
  * Hex des 42 rôles : relevés à a618e47 (commande de M0), puis, pour les pleins, d'après la règle ci-dessus
  * (node local/scripts/ratios-pleins.mjs : voile #3c5a88, terre 11 #b3422b, erreur 11 #cb1d2a, succes 11 #00774a,
  * info 11 #006da6, avertissement 12 #442d01).
+ * Décision du 15/11/2026 : bordure.focus → marque.primaire.11 pour toutes les marques (bleu 11 #4c6994).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -61,7 +62,7 @@ const VIA_MARQUE = {
   'texte.accent': 'marque.accent.11',
   'texte.sur-interactif': 'marque.primaire.sur-plein',
   'texte.sur-accent': 'marque.accent.sur-plein',
-  'bordure.focus': 'marque.primaire.9',
+  'bordure.focus': 'marque.primaire.11',
   ...Object.fromEntries(STATUTS.flatMap((s) => [[`fond.${s}.fort`, `marque.${s}.plein`], [`texte.sur-${s}`, `marque.${s}.sur-plein`]])),
 };
 
@@ -104,7 +105,7 @@ const HEX = new Map([
   ['bordure.discrete', '#d8d6d2'],
   ['bordure.defaut', '#bfbbb5'],
   ['bordure.forte', '#958f84'],
-  ['bordure.focus', '#2b4c7e'],
+  ['bordure.focus', '#4c6994'],
   ['bordure.erreur', '#e76862'],
   ['bordure.succes', '#529f76'],
   ['bordure.avertissement', '#bf8501'],
