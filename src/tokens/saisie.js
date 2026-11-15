@@ -17,10 +17,10 @@
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { generateScale, checkValise } from '../valise/generate.js';
-import { scaleToDtcg, valiseFromTokens } from './primitives.js';
+import { scaleToDtcg, valiseFromTokens, OPTIONS_COULEUR_SOMBRE } from './primitives.js';
 import { marqueTokens, marqueSombreTokens } from './pleins.js';
 import { contratRoles, resolveRoles } from './roles.js';
-import { COMMUN, ORBE, modeleResolver, resoudre, partager } from './resolver.js';
+import { COMMUN, ORBE, modeleResolver, resoudre, partager, fusionner } from './resolver.js';
 
 export { COMMUN };
 const CLES = ['nom', 'description', 'primaire', 'accent', 'polices'];
@@ -50,8 +50,8 @@ export function fondsClairs(commun) {
  */
 export function chargerCommun({ mode } = {}) {
   const r = resoudre(modeleResolver({ nom: 'commun', marque: [], dossier: COMMUN }), COMMUN, mode ? { mode } : {});
-  const { semantique, primitives } = partager(r);
-  return { primitives, statuts: {}, semantique, paires: JSON.parse(readFileSync(join(COMMUN, 'paires.json'), 'utf8')), marque: {}, echelles: [] };
+  const { semantique, primitives, marque } = partager(r);
+  return { primitives, statuts: {}, semantique, paires: JSON.parse(readFileSync(join(COMMUN, 'paires.json'), 'utf8')), marque, echelles: [] };
 }
 
 /** Échelles propres à Orbe Café (bleu, terre, sable), écrites à la main. */
@@ -152,7 +152,7 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
       `Emplacements de marque de ${entree.nom}, écrits par la saisie depuis entree.json. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers marque.<emplacement>.* ; chaque emplacement pointe vers une échelle (${noms.length ? 'générées dans echelles.tokens.json, ' : ''}communes dans tokens/commun/), et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9.${accent ? '' : ' Sans accent saisi : repli sur le neutre (D05).'}`,
   });
   try {
-    const c = contratRoles({ ...commun, marque, echelles: echelles ? [echelles] : propres ? [propres] : [] });
+    const c = contratRoles({ ...commun, marque: fusionner(fusionner({}, commun.marque), marque), echelles: echelles ? [echelles] : propres ? [propres] : [] });
     for (const p of c.fails) motifs.push(`contraste : ${p.devant} sur ${p.fond}, ${fr(p.ratio)}:1 < ${String(p.min).replace('.', ',')}:1`);
   } catch (e) {
     motifs.push(`contraste : ${/** @type {Error} */ (e).message}`);
@@ -167,7 +167,7 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   const sombres = {};
   for (const [slot, src] of /** @type {const} */ ([['primaire', primaire], ['accent', accent]])) {
     if (!src) continue;
-    const g = generateScale(src.scale, src.steps[8], { fond: 'sombre' });
+    const g = generateScale(src.scale, src.steps[8], OPTIONS_COULEUR_SOMBRE);
     sombres[slot] = g.steps;
     couleurSombre[src.scale] = scaleToDtcg(g, `${LABELS[slot]} de ${entree.nom}`);
   }
@@ -183,6 +183,7 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
       accent: (accent ?? commune('neutre')).steps,
       ...Object.fromEntries(STATUTS.map((s) => [s, commune(s).steps])),
     },
+    echelles: { primaire: primaire.scale, ...Object.fromEntries(STATUTS.map((s) => [s, s])) },
     primaireSombre: { scale: primaire.scale, steps: sombres.primaire },
     fonds: fondsClairs(communSombre),
     description: `Couche marque de ${entree.nom} en mode sombre, écrite par la saisie. Format DTCG 2025.10. Posée sur marque.tokens.json dans le contexte sombre : les boutons gardent leurs valeurs claires (D04), le texte de marque des grands titres est choisi sur l'échelle sombre.`,

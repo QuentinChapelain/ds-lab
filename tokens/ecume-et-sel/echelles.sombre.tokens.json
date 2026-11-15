@@ -8,11 +8,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.0118,
-            0.0118,
-            0.0118
+            0.0706,
+            0.0706,
+            0.0706
           ],
-          "hex": "#030303"
+          "hex": "#121212"
         },
         "$description": "fond d'application"
       },
@@ -20,11 +20,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.0314,
-            0.0314,
-            0.0314
+            0.0824,
+            0.0824,
+            0.0824
           ],
-          "hex": "#080808"
+          "hex": "#151515"
         },
         "$description": "fond discret"
       },
@@ -32,11 +32,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.0627,
-            0.0667,
-            0.0667
+            0.1059,
+            0.1059,
+            0.1059
           ],
-          "hex": "#101111"
+          "hex": "#1b1b1b"
         },
         "$description": "fond de composant"
       },
@@ -44,11 +44,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.0902,
-            0.098,
-            0.102
+            0.1294,
+            0.1294,
+            0.1294
           ],
-          "hex": "#17191a"
+          "hex": "#212121"
         },
         "$description": "fond de composant, survol"
       },
@@ -56,11 +56,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.1176,
-            0.1255,
-            0.1294
+            0.1333,
+            0.1608,
+            0.1725
           ],
-          "hex": "#1e2021"
+          "hex": "#22292c"
         },
         "$description": "fond de composant, appui"
       },
@@ -68,11 +68,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.1451,
             0.1647,
-            0.1725
+            0.1922,
+            0.2039
           ],
-          "hex": "#252a2c"
+          "hex": "#2a3134"
         },
         "$description": "bordure discrète"
       },
@@ -80,11 +80,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.2078,
-            0.2392,
-            0.2549
+            0.2118,
+            0.2667,
+            0.2902
           ],
-          "hex": "#353d41"
+          "hex": "#36444a"
         },
         "$description": "bordure de composant"
       },
@@ -92,11 +92,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.2863,
-            0.3804,
-            0.4196
+            0.3059,
+            0.4196,
+            0.4667
           ],
-          "hex": "#49616b"
+          "hex": "#4e6b77"
         },
         "$description": "bordure d'interaction, focus (3:1)"
       },
@@ -116,11 +116,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.6588,
+            0.6627,
             0.898,
             0.9961
           ],
-          "hex": "#a8e5fe"
+          "hex": "#a9e5fe"
         },
         "$description": "plein, survol"
       },
@@ -128,11 +128,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.7843,
+            0.7882,
             0.9373,
             1
           ],
-          "hex": "#c8efff"
+          "hex": "#c9efff"
         },
         "$description": "texte secondaire (4,5:1)"
       },
@@ -178,11 +178,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.0118,
-            0.0118,
-            0.0118
+            0.0941,
+            0.0667,
+            0.0588
           ],
-          "hex": "#030303"
+          "hex": "#18110f"
         },
         "$description": "fond d'application"
       },
@@ -190,11 +190,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.0392,
-            0.0314,
-            0.0275
+            0.1059,
+            0.0784,
+            0.0706
           ],
-          "hex": "#0a0807"
+          "hex": "#1b1412"
         },
         "$description": "fond discret"
       },
@@ -202,11 +202,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.0784,
-            0.0627,
-            0.0588
+            0.1294,
+            0.102,
+            0.0941
           ],
-          "hex": "#14100f"
+          "hex": "#211a18"
         },
         "$description": "fond de composant"
       },
@@ -214,11 +214,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
+            0.1725,
             0.1176,
-            0.0902,
-            0.0824
+            0.102
           ],
-          "hex": "#1e1715"
+          "hex": "#2c1e1a"
         },
         "$description": "fond de composant, survol"
       },
@@ -226,11 +226,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.1647,
-            0.1137,
-            0.098
+            0.2196,
+            0.1333,
+            0.1098
           ],
-          "hex": "#2a1d19"
+          "hex": "#38221c"
         },
         "$description": "fond de composant, appui"
       },
@@ -238,11 +238,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.2157,
-            0.1451,
-            0.1255
+            0.2627,
+            0.1647,
+            0.1373
           ],
-          "hex": "#372520"
+          "hex": "#432a23"
         },
         "$description": "bordure discrète"
       },
@@ -250,11 +250,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.349,
-            0.1922,
+            0.4,
+            0.2039,
             0.149
           ],
-          "hex": "#593126"
+          "hex": "#663426"
         },
         "$description": "bordure de composant"
       },
@@ -262,11 +262,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.6157,
-            0.251,
-            0.149
+            0.6941,
+            0.2588,
+            0.1333
           ],
-          "hex": "#9d4026"
+          "hex": "#b14222"
         },
         "$description": "bordure d'interaction, focus (3:1)"
       },

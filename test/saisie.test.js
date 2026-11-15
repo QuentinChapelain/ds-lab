@@ -98,7 +98,7 @@ test('S5 sans accent : repli sur le neutre (D05)', () => {
   assert.deepEqual(r.motifs, []);
   assert.equal(r.marque.marque.accent['9'].$value, '{couleur.neutre.9}');
   assert.deepEqual(Object.keys(r.echelles?.couleur ?? {}).filter((k) => !k.startsWith('$')), ['primaire']);
-  const roles = resolveRoles(r.commun.semantique, r.commun.primitives, r.commun.statuts, r.marque, r.echelles);
+  const roles = resolveRoles(r.commun.semantique, r.commun.primitives, r.commun.statuts, r.commun.marque, r.marque, r.echelles);
   assert.equal(roles.get('texte.accent')?.hex, '#6d675b');
   assert.equal(roles.get('texte.accent')?.hex, roles.get('texte.secondaire')?.hex);
 });

@@ -49,7 +49,7 @@
         }
       },
       "inverse": {
-        "$value": "{marque.primaire.sur-plein}",
+        "$value": "{marque.primaire.sur-aplat}",
         "$description": "Fond du bouton inversé, réservé à fond.marque.fort : la valeur du texte posé sur le plein de la marque."
       }
     },
@@ -69,7 +69,7 @@
         "$description": "Aplat clair de la marque, non cliquable, comme un bandeau, une section ou un encadré."
       },
       "fort": {
-        "$value": "{marque.primaire.plein}",
+        "$value": "{marque.primaire.aplat}",
         "$description": "Aplat plein de la marque, non cliquable, de la valeur du plein du primaire, comme un bandeau qui donne du relief."
       }
     },
@@ -162,11 +162,11 @@
       },
       "inverse": {
         "$root": {
-          "$value": "{marque.primaire.plein}",
+          "$value": "{marque.primaire.aplat}",
           "$description": "Texte du bouton inversé, de la valeur du plein du primaire."
         },
         "survol": {
-          "$value": "{marque.primaire.plein-survol}",
+          "$value": "{marque.primaire.aplat-survol}",
           "$description": "Texte du bouton inversé survolé, seul à changer, de la valeur du plein survolé."
         }
       }
@@ -176,7 +176,7 @@
       "$description": "Texte posé sur le plein d'accent."
     },
     "sur-marque": {
-      "$value": "{marque.primaire.sur-plein}",
+      "$value": "{marque.primaire.sur-aplat}",
       "$description": "Texte posé sur fond.marque.fort, titres compris."
     },
     "sur-erreur": {
@@ -221,7 +221,7 @@
         "$description": "Anneau de focus clavier (3:1)."
       },
       "inverse": {
-        "$value": "{marque.primaire.sur-plein}",
+        "$value": "{marque.primaire.sur-aplat}",
         "$description": "Anneau de focus clavier sur fond.marque.fort (3:1)."
       }
     },

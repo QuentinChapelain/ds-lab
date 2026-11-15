@@ -92,13 +92,22 @@ function hueModel(source, { hueShift = 0, l9, fond = 'clair' } = {}) {
  * tenu (± 0,5 %) et chroma jamais au-dessus de la source ; sinon le plus proche du contraste visé.
  * @param {any} color  OKLCH dans le gamut @param {number} target  contraste visé sur blanc
  * @param {number} hue  teinte voulue @param {number} cMax  chroma de la source
+ * Étape 4b, lot 2 bis (mode sombre seulement) : `rayon` élargit le voisinage de ± rayon par canal autour des arrondis,
+ * pour tenir la teinte des pas peu saturés près du noir ; `exclure` écarte une couleur déjà prise (la source, pas 9).
+ * @param {{ rayon?: number, exclure?: string[] }} [voisinage]
  */
-function quantize(color, target, hue, cMax, k = kOf) {
+function quantize(color, target, hue, cMax, k = kOf, { rayon = 0, exclure = [] } = {}) {
   const c = rgb(color);
   const ch = [c.r, c.g, c.b].map((x) => Math.min(255, Math.max(0, x * 255)));
   /** @param {number[][]} lists */
   const combos = (lists) => lists[0].flatMap((r) => lists[1].flatMap((g) => lists[2].map((b) => '#' + [r, g, b].map((n) => n.toString(16).padStart(2, '0')).join(''))));
-  const cands = combos(ch.map((x) => [...new Set([Math.floor(x), Math.min(255, Math.ceil(x))])]));
+  /** @param {number} x */
+  const autour = (x) => {
+    const lo = Math.floor(x) - rayon;
+    const hi = Math.ceil(x) + rayon;
+    return Array.from({ length: hi - lo + 1 }, (_, i) => lo + i).filter((n) => n >= 0 && n <= 255);
+  };
+  const cands = combos(ch.map((x) => (rayon ? autour(x) : [...new Set([Math.floor(x), Math.min(255, Math.ceil(x))])]))).filter((h) => !exclure.includes(h));
   const scored = [...new Set(cands)].map((hex) => {
     const o = oklch(hex);
     return { hex, err: Math.abs(k(hex) - target) / target, dh: (o.c ?? 0) < 1e-4 ? 0 : Math.abs(dh(hue, o.h ?? hue)), over: (o.c ?? 0) > cMax + 1e-4 };
@@ -111,7 +120,7 @@ function quantize(color, target, hue, cMax, k = kOf) {
  * G0 et G2 : couleur de la teinte voulue au contraste visé sur blanc (dichotomie sur la clarté).
  * @param {ReturnType<typeof hueModel>} m @param {number} target
  */
-function atContrast(m, target, fond = /** @type {'clair' | 'sombre'} */ ('clair')) {
+function atContrast(m, target, fond = /** @type {'clair' | 'sombre'} */ ('clair'), voisinage = {}) {
   const ref = referenceDe(fond);
   const k = (/** @type {string} */ hex) => wcagContrast(hex, ref);
   /** @param {number} l */
@@ -125,7 +134,7 @@ function atContrast(m, target, fond = /** @type {'clair' | 'sombre'} */ ('clair'
     else hi = l;
   }
   const l = (lo + hi) / 2;
-  return quantize(color(l), target, m.hue(l), m.c9, k);
+  return quantize(color(l), target, m.hue(l), m.c9, k, voisinage);
 }
 
 /**
@@ -171,7 +180,9 @@ const MIN_9_10 = 2;
  * Étape 4b : `fond: 'sombre'` génère l'échelle en miroir [H] : même dichotomie, mêmes cibles, contraste visé contre le
  * noir au lieu du blanc ; pas 9 = la source ; le texte sur le plein est clair. Les écoles se lisent contre le noir
  * (« foncée » : source très claire ; « plein clair » : source très foncée) ; « plus foncé » se lit « plus loin du noir ».
- * @param {{ school?: 'teinte', hueShift?: number, fond?: 'clair' | 'sombre' }} [opts]
+ * Étape 4b, lot 2 bis : `cibles` remplace des cibles de TARGETS (pas → contraste contre la référence) ; `chromaTextes: 'max'`
+ * donne aux pas 11 et 12 la plus forte chroma que permet le gamut sRGB à leur teinte, au-dessus de la source si besoin.
+ * @param {{ school?: 'teinte', hueShift?: number, fond?: 'clair' | 'sombre', cibles?: Record<number, number>, chromaTextes?: 'max' }} [opts]
  * @returns {{ name: string, source: string, school: 'normale' | 'foncée' | 'plein clair' | 'teinte seulement', steps: string[], onSolid: string, step10: 'plus foncé' | 'plus clair', signals: string[], hueShift: number, fond: 'clair' | 'sombre' }}
  */
 export function generateScale(name, source, opts = {}) {
@@ -179,16 +190,16 @@ export function generateScale(name, source, opts = {}) {
   const ref = referenceDe(fond);
   const kOf = (/** @type {string} */ hex) => wcagContrast(hex, ref);
   /** @param {ReturnType<typeof hueModel>} mm @param {number} t */
-  const atContrastF = (mm, t) => atContrast(mm, t, fond);
   const src = formatHex(source);
+  const atContrastF = (mm, t) => atContrast(mm, t, fond, fond === 'sombre' ? { rayon: 2, exclure: [src] } : {});
   const k9 = kOf(src);
   const hueShift = opts.hueShift ?? 0;
   /** @type {string[]} */
   const signals = [];
   /** @type {'normale' | 'foncée' | 'plein clair' | 'teinte seulement'} */
-  let school = opts.school === 'teinte' ? 'teinte seulement' : k9 >= DARK_K ? 'foncée' : k9 < TARGETS[8] ? 'plein clair' : 'normale';
   /** @type {Record<number, number>} */
-  const want = { ...TARGETS };
+  const want = { ...TARGETS, ...opts.cibles };
+  let school = opts.school === 'teinte' ? 'teinte seulement' : k9 >= DARK_K ? 'foncée' : k9 < want[8] ? 'plein clair' : 'normale';
   let m;
   /** @type {Record<number, string>} */
   const fixed = {};
@@ -209,13 +220,14 @@ export function generateScale(name, source, opts = {}) {
       [0.25, 0.5, 0.8].forEach((x, i) => (want[10 + i] = k9 + (21 - k9) * x));
       if (k9 > COMPRESSED_K) signals.push('échelle comprimée');
     } else {
-      want[10] = Math.min(k9 * 1.18, Math.sqrt(k9 * TARGETS[11]));
+      want[10] = Math.min(k9 * 1.18, Math.sqrt(k9 * want[11]));
       if (school === 'plein clair') signals.push('plein clair');
     }
   }
   /** @type {string[]} */
   const steps = [];
-  for (let i = 0; i < 12; i++) if (i !== 9) steps[i] = fixed[i + 1] ?? atContrastF(m, want[i + 1]);
+  const mMax = { ...m, c9: 1, chroma: () => 1 };
+  for (let i = 0; i < 12; i++) if (i !== 9) steps[i] = fixed[i + 1] ?? atContrastF(opts.chromaTextes === 'max' && i >= 10 ? mMax : m, want[i + 1]);
   // G4 corrigé : un seul onSolid pour 9 et 10. Texte blanc : le pas 10 suit sa cible (plus foncé).
   // Texte foncé : le pas 10 plus foncé s'arrête où ce texte reste lisible (21 / 4,5) ; s'il ne se
   // distingue plus du 9 (ΔE < 2), il passe un cran plus clair (k9 / 1,18).
@@ -243,14 +255,13 @@ export function generateScale(name, source, opts = {}) {
 }
 
 /**
- * Étape 4b [H] : source miroir d'une couleur, même teinte et même chroma, au même contraste contre le noir que la
- * couleur contre le blanc. Sert au neutre sombre, dessiné une fois : sa source claire (3,72 contre le blanc) serait
- * d'école « foncée » contre le noir (5,65) et ses textes ne seraient plus le miroir des textes clairs.
- * @param {string} source
+ * Étape 4b : couleur de la teinte d'une source au contraste visé contre la référence du fond. Chroma de la source,
+ * constante, ou (`echelle`) celle de la courbe d'une échelle dont la source serait le pas 9.
+ * @param {string} source @param {number} cible @param {{ fond?: 'clair' | 'sombre', echelle?: boolean }} [opts]
  */
-export function sourceMiroir(source) {
-  const m = hueModel(formatHex(source));
-  return atContrast({ ...m, chroma: () => m.c9 }, kOf(formatHex(source)), 'sombre');
+export function couleurAuContraste(source, cible, { fond = 'clair', echelle = false } = {}) {
+  const m = hueModel(formatHex(source), { fond });
+  return atContrast(echelle ? m : { ...m, chroma: () => m.c9 }, cible, fond);
 }
 
 /** Pas de l'échelle `scale` dans une valise, indexés de 1 à 12. @param {any} valise @param {string} scale */

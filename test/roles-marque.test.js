@@ -44,7 +44,7 @@ import { loadRoles, resolveRoles, contratRoles } from '../src/tokens/roles.js';
 import { fondsClairs } from '../src/tokens/saisie.js';
 import { AJOUTS } from './helpers/lot5.js';
 import { classePlein, voileBlanc, marqueTokens, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL, STATUTS_FIGES, VOILE_BLANC } from '../src/tokens/pleins.js';
-import { charger, etroite, COMMUN, ORBE } from './helpers/jetons.js';
+import { charger, etroite, avecAplat, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');
@@ -127,7 +127,8 @@ const HEX = new Map([
   ['bordure.info', '#2f97da'],
 ]);
 
-const marque = load('marque.tokens.json');
+/** Fichier versionné, tel quel ; les rôles se résolvent avec les emplacements communs de l'aplat (étape 4b, lot 2 bis). */
+const marque = JSON.parse(readFileSync(join(ORBE, 'marque.tokens.json'), 'utf8'));
 const prim = load('primitives.tokens.json').couleur;
 const stat = load('statuts.tokens.json').couleur;
 const stepsOf = (/** @type {string} */ s) => STEPS.map((k) => (prim[s] ?? stat[s])[k].$value.hex);
@@ -234,7 +235,7 @@ test('M0 rôles : les pleins et les couleurs de marque passent par marque.* ; au
 });
 
 test('Pleins : les 42 rôles se résolvent vers les hex attendus, plus les 9 du lot 5 (étape 4a)', () => {
-  const roles = resolveRoles(load('semantique.tokens.json'), load('primitives.tokens.json'), load('statuts.tokens.json'), marque);
+  const roles = resolveRoles(load('semantique.tokens.json'), load('primitives.tokens.json'), load('statuts.tokens.json'), avecAplat(marque));
   const all = new Map([...HEX, ...Object.entries(AJOUTS).map(([r, [, hex]]) => /** @type {[string, string]} */ ([r, hex]))]);
   assert.deepEqual([...roles.keys()].sort(), [...all.keys()].sort());
   for (const [role, hex] of all) assert.equal(roles.get(role)?.hex, hex, role);
@@ -246,7 +247,7 @@ test('M0 une autre marque se branche sans toucher aux rôles (témoin fictif, so
   const statuts = Object.fromEntries(STATUTS.map((s) => [s, { scale: s, steps: stepsOf(s) }]));
   const m = marqueTokens({ primaire: { scale: 'temoin', steps: g.steps }, accent: { scale: 'temoin', steps: g.steps }, statuts, fonds: fondsClairs(loadRoles(DIR)), description: 'témoin fictif' });
   const echelle = { couleur: { $type: 'color', temoin: Object.fromEntries(g.steps.map((hex, i) => [String(i + 1), { $value: { colorSpace: 'srgb', components: [0, 0, 0], hex } }])) } };
-  const set = { ...loadRoles(DIR), marque: m, echelles: [echelle] };
+  const set = { ...loadRoles(DIR), marque: avecAplat(m), echelles: [echelle] };
   const roles = resolveRoles(set.semantique, set.primitives, set.statuts, set.marque, ...set.echelles);
   assert.equal(roles.get('fond.interactif.fort')?.hex, g.steps[8]);
   assert.equal(roles.get('fond.interactif.fort.survol')?.hex, voileBlanc(g.steps[8], 0.08));

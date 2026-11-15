@@ -15,8 +15,11 @@
       ]
     },
     "marque": {
-      "description": "Échelles et couche marque de Atelier Lavandine.",
+      "description": "Emplacements communs de l'aplat plein, échelles et couche marque de Atelier Lavandine.",
       "sources": [
+        {
+          "$ref": "../commun/aplat.tokens.json"
+        },
         {
           "$ref": "echelles.tokens.json"
         },

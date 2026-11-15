@@ -4,8 +4,8 @@
  * Les statuts avertissement et info d'Orbe Café sont générés par generateScale et rangés à part
  * (tokens/commun/statuts.tokens.json) ; primitives.tokens.json n'est pas modifié.
  */
-import { rgb, formatHex } from 'culori';
-import { generateScale, sourceMiroir } from '../valise/generate.js';
+import { rgb, formatHex, wcagContrast } from 'culori';
+import { generateScale, couleurAuContraste, TARGETS } from '../valise/generate.js';
 
 /** Phrases d'usage par pas, reprises de primitives.tokens.json. */
 export const STEP_USAGES = /** @type {Record<string, string>} */ ({
@@ -107,9 +107,34 @@ export function valiseFromTokens(...files) {
   return valise;
 }
 
-/** Étape 4b : échelles communes du mode sombre, générées depuis le pas 9 de leur échelle claire ; le neutre depuis la source miroir de ce pas 9 (sourceMiroir). */
+/**
+ * Étape 4b, lot 2 bis [H] : cibles du mode sombre, contraste contre le noir, calées sur la page (PAGE_SOMBRE).
+ * Pas 1 à 7 (et 8 des couleurs) au même rapport à la page que les cibles claires au pas 1 (cible ÷ 1,02 × page).
+ * Pas 8 (bordures de champ et de statut, 3:1) à 3,1 × fond.surface, pour tenir 3:1 sur la surface où se pose un champ.
+ * Neutre : pas 11 et 12 au rapport clair (5,49 et 12,75 sur la page),
+ * pas 9 au milieu géométrique des pas 8 et 11. Couleurs : pas 11 à 9:1 sur la page (repères #8bb9ff et #c4a3ff),
+ * pas 12 à 12,75:1. fond.surface entre les pas 2 et 3 (milieu géométrique).
+ */
+export const PAGE_SOMBRE = '#121212';
+const KP = wcagContrast(PAGE_SOMBRE, '#000000');
+const surPage = (/** @type {number} */ t) => (t / TARGETS[1]) * KP;
+/** Contraste de fond.surface sombre contre le noir. */
+export const SURFACE_SOMBRE = Math.sqrt(surPage(TARGETS[2]) * surPage(TARGETS[3]));
+const BASE_SOMBRE = Object.fromEntries([1, 2, 3, 4, 5, 6, 7].map((i) => [i, surPage(TARGETS[i])]));
+const NEUTRE_8 = 3.1 * SURFACE_SOMBRE;
+const NEUTRE_11 = surPage(TARGETS[11]);
+export const CIBLES_SOMBRES = {
+  couleur: /** @type {Record<number, number>} */ ({ ...BASE_SOMBRE, 8: NEUTRE_8, 11: 9 * KP, 12: surPage(TARGETS[12]) }),
+  neutre: /** @type {Record<number, number>} */ ({ ...BASE_SOMBRE, 8: NEUTRE_8, 11: NEUTRE_11, 12: surPage(TARGETS[12]) }),
+  /** Contraste du pas 9 neutre contre le noir. */
+  neutre9: Math.sqrt(NEUTRE_8 * NEUTRE_11),
+};
+/** Options de generateScale pour une échelle de couleur sombre (marques et statuts). */
+export const OPTIONS_COULEUR_SOMBRE = /** @type {const} */ ({ fond: 'sombre', cibles: CIBLES_SOMBRES.couleur, chromaTextes: 'max' });
+
+/** Étape 4b : échelles communes du mode sombre ; statuts depuis le pas 9 de leur échelle claire, neutre dessiné. */
 export const ECHELLES_SOMBRES = [
-  { name: 'neutre', label: 'Neutre', miroir: true },
+  { name: 'neutre', label: 'Neutre' },
   { name: 'erreur', label: "Statut d'erreur" },
   { name: 'succes', label: 'Statut de succès' },
   { name: 'avertissement', label: "Statut d'avertissement" },
@@ -117,26 +142,33 @@ export const ECHELLES_SOMBRES = [
 ];
 
 /**
- * Fichier tokens/commun/mode.sombre.tokens.json : neutre et statuts en miroir (generateScale, fond sombre [H]),
- * surface et texte sur inverse à la référence du miroir, le noir.
+ * Fichier tokens/commun/mode.sombre.tokens.json (lot 2 bis) : neutre dessiné sur la page #121212 (teinte du neutre
+ * clair, cibles CIBLES_SOMBRES.neutre), surface entre ses pas 2 et 3, texte sur inverse = pas 1 du neutre ; statuts en
+ * échelles de couleur sombres (OPTIONS_COULEUR_SOMBRE) depuis le pas 9 de leur échelle claire.
  * @param {any} primitives tokens/commun/primitives.tokens.json @param {any} statuts tokens/commun/statuts.tokens.json
  */
 export function sombreTokens(primitives, statuts) {
   const claires = { ...primitives.couleur, ...statuts.couleur };
+  const neutre9 = couleurAuContraste(claires.neutre['9'].$value.hex, CIBLES_SOMBRES.neutre9, { fond: 'sombre' });
   /** @type {Record<string, any>} */
   const couleur = {
     $type: 'color',
-    $description: 'Mode sombre, commun à toutes les marques : chaque échelle est générée en miroir depuis le pas 9 de son échelle claire (le neutre depuis sa source miroir, même contraste contre le noir que le pas 9 clair contre le blanc), même nom, mêmes pas ; le contexte sombre la met à la place de la claire.',
-    surface: { $value: colorValue('#000000'), $description: 'Surface en sombre : le noir, référence du miroir, comme la surface claire est au blanc [H].' },
-    'sur-inverse': { $value: colorValue('#000000'), $description: 'Texte sur fond.inverse en sombre : le noir, référence du miroir [H].' },
+    $description: `Mode sombre, commun à toutes les marques [H] : page ${PAGE_SOMBRE}, chaque surface posée au-dessus plus claire. Neutre dessiné (teinte du neutre clair, cibles calées sur la page) ; statuts générés depuis le pas 9 de leur échelle claire, pas 11 à 9:1 sur la page, pas 12 au-dessus, chroma la plus forte possible. Même nom que l'échelle claire, que le contexte sombre remplace.`,
+    surface: {
+      $value: colorValue(couleurAuContraste(neutre9, SURFACE_SOMBRE, { fond: 'sombre', echelle: true })),
+      $description: 'Surface en sombre : plus claire que fond.discret, plus foncée que les fonds de composant, jamais plus foncée que la page [H].',
+    },
+    'sur-inverse': { $value: '{couleur.neutre.1}', $description: 'Texte sur fond.inverse en sombre : la page, pas 1 du neutre.' },
   };
   for (const e of ECHELLES_SOMBRES) {
-    const pas9 = claires[e.name]['9'].$value.hex;
-    couleur[e.name] = scaleToDtcg(generateScale(e.name, e.miroir ? sourceMiroir(pas9) : pas9, { fond: 'sombre' }), e.label);
+    const g =
+      e.name === 'neutre'
+        ? generateScale('neutre', neutre9, { fond: 'sombre', cibles: CIBLES_SOMBRES.neutre })
+        : generateScale(e.name, claires[e.name]['9'].$value.hex, OPTIONS_COULEUR_SOMBRE);
+    couleur[e.name] = scaleToDtcg(g, e.label);
   }
   return {
     $description: "Contexte sombre du modificateur mode (marque.resolver.json), commun à toutes les marques. Écrit par src/cli/sombre.js si checkValise passe. Format DTCG 2025.10. Chaque jeton remplace en entier celui du mode clair.",
     couleur,
   };
 }
-

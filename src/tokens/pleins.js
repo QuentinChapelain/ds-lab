@@ -172,41 +172,55 @@ export function marqueTokens({ primaire, accent, statuts, polices, fonds, descri
   return { $description: description, marque: m };
 }
 
+/** Étape 4b, lot 2 bis : emplacements de l'aplat plein du primaire, alias du plein en clair (tokens/commun/aplat.tokens.json). */
+export const APLAT = /** @type {const} */ ({ aplat: 'plein', 'sur-aplat': 'sur-plein', 'aplat-survol': 'plein-survol' });
+
+/** Fichier tokens/commun/aplat.tokens.json : les trois emplacements de l'aplat plein, alias du plein du primaire. */
+export function aplatTokens() {
+  /** @type {Record<string, any>} */
+  const primaire = {};
+  for (const [k, v] of Object.entries(APLAT)) primaire[k] = { $value: `{marque.primaire.${v}}`, $description: `aplat plein (fond.marque.fort et bouton inversé) : ${v} du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json)` };
+  return {
+    $description: "Emplacements de l'aplat plein, communs à toutes les marques (étape 4b, lot 2 bis). Format DTCG 2025.10. En clair, alias du plein du primaire ; en sombre, la couche marque sombre les fige aux valeurs claires, pendant que le bouton prend la version lumineuse de la couleur du client (D04).",
+    marque: { $type: 'color', primaire },
+  };
+}
+
 /**
- * Étape 4b, lot 2 : couche marque du mode sombre, posée par-dessus la claire dans le contexte sombre.
- * Les boutons restent ceux du clair (réponse 2, D04) : plein, plein survolé et texte sur le plein qui pointent vers un
- * pas d'échelle prennent la valeur claire, écrite telle quelle ; voiles et blanc ne changent pas. texte-grand est choisi de nouveau sur l'échelle sombre du primaire, contre
- * les fonds sombres (pasTexteGrand).
- * @param {{ marque: any, clairs: Record<string, string[]>, primaireSombre: { scale: string, steps: string[] }, fonds: string[], description: string }} spec
- *   marque claire (marqueTokens) ; pas clairs par emplacement ; échelle sombre du primaire ; fonds sombres
+ * Étape 4b, lot 2 bis : couche marque du mode sombre, posée par-dessus la claire dans le contexte sombre (D04).
+ *   Bouton du primaire et des quatre statuts, règle unique : plein = pas 11 de l'échelle sombre, survol = pas 12, texte =
+ *   pas 1, en alias, sans valeur calculée.
+ *   Aplat plein du primaire (aplat, sur-aplat, aplat-survol) et accent fort : valeurs du clair, écrites telles quelles
+ *   (le blanc reste un alias).
+ *   texte-grand : choisi de nouveau sur l'échelle sombre du primaire, contre les fonds sombres (pasTexteGrand).
+ * @param {{ marque: any, clairs: Record<string, string[]>, echelles: Record<string, string>, primaireSombre: { scale: string, steps: string[] }, fonds: string[], description: string }} spec
+ *   marque claire (marqueTokens) ; pas clairs par emplacement ; nom de l'échelle sombre par emplacement à bouton ;
+ *   échelle sombre du primaire ; fonds sombres
  */
-export function marqueSombreTokens({ marque, clairs, primaireSombre, fonds, description }) {
+export function marqueSombreTokens({ marque, clairs, echelles, primaireSombre, fonds, description }) {
+  const m0 = marque.marque;
+  /** Valeur claire d'un emplacement, à figer. @param {string} name @param {string} k */
+  const figee = (name, k) => {
+    const t = m0[name][k];
+    const v = t.$value;
+    const mm = typeof v === 'string' ? /^\{couleur\.[^.]+\.(\d+)\}$/.exec(v) : null;
+    const $value = mm ? colorValue(clairs[name][Number(mm[1]) - 1]) : structuredClone(v);
+    return { $value, $description: `${t.$description}, valeur du mode clair, figée en sombre`, ...(mm ? { $extensions: { 'ds-lab.mode': { clair: v } } } : {}) };
+  };
   /** @type {Record<string, any>} */
   const m = {};
-  for (const [name, g] of Object.entries(marque.marque)) {
-    if (name.startsWith('$') || name === 'police') continue;
-    /** @type {Record<string, any>} */
-    const out = {};
-    for (const k of ['plein', 'plein-survol', 'sur-plein']) {
-      const v = g[k]?.$value;
-      const mm = typeof v === 'string' ? /^\{couleur\.[^.]+\.(\d+)\}$/.exec(v) : null;
-      if (!mm) continue;
-      out[k] = {
-        $value: colorValue(clairs[name][Number(mm[1]) - 1]),
-        $description: `${g[k].$description}, valeur du mode clair : mêmes boutons en sombre (D04)`,
-        $extensions: { 'ds-lab.mode': { clair: v } },
-      };
-    }
-    if (Object.keys(out).length) m[name] = out;
-  }
+  for (const [name, scale] of Object.entries(echelles))
+    m[name] = {
+      plein: { $value: `{couleur.${scale}.11}`, $description: "plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur" },
+      'plein-survol': { $value: `{couleur.${scale}.12}`, $description: "plein survolé en sombre : pas 12 de l'échelle sombre" },
+      'sur-plein': { $value: `{couleur.${scale}.1}`, $description: "texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1)" },
+    };
+  for (const [k, v] of Object.entries(APLAT)) m.primaire[k] = { ...figee('primaire', v), $description: `aplat plein en sombre : ${v} du primaire en clair, figé (couleur exacte du client)` };
+  m.accent = Object.fromEntries(['plein', 'plein-survol', 'sur-plein'].map((k) => [k, figee('accent', k)]));
   const grand = pasTexteGrand(primaireSombre.steps, fonds);
-  m.primaire = {
-    ...(m.primaire ?? {}),
-    'texte-grand': {
-      $value: `{couleur.${primaireSombre.scale}.${grand}}`,
-      $description: `texte de marque des grands titres en sombre : pas ${grand} de l'échelle sombre, premier des pas 9, 10, 11 à tenir 3:1 sur fond.app, fond.surface, fond.discret et fond.marque.discret sombres`,
-    },
+  m.primaire['texte-grand'] = {
+    $value: `{couleur.${primaireSombre.scale}.${grand}}`,
+    $description: `texte de marque des grands titres en sombre : pas ${grand} de l'échelle sombre, premier des pas 9, 10, 11 à tenir 3:1 sur fond.app, fond.surface, fond.discret et fond.marque.discret sombres`,
   };
   return { $description: description, marque: m };
 }
-

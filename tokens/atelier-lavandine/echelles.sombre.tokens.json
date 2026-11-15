@@ -8,11 +8,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.0157,
-            0.0157,
-            0.0157
+            0.0745,
+            0.0627,
+            0.098
           ],
-          "hex": "#040404"
+          "hex": "#131019"
         },
         "$description": "fond d'application"
       },
@@ -20,11 +20,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.0353,
-            0.0314,
-            0.0431
+            0.0902,
+            0.0784,
+            0.1137
           ],
-          "hex": "#09080b"
+          "hex": "#17141d"
         },
         "$description": "fond discret"
       },
@@ -32,11 +32,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.0706,
-            0.0627,
-            0.0863
+            0.1137,
+            0.098,
+            0.1451
           ],
-          "hex": "#121016"
+          "hex": "#1d1925"
         },
         "$description": "fond de composant"
       },
@@ -44,11 +44,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.102,
-            0.0902,
-            0.1294
+            0.1451,
+            0.1176,
+            0.1961
           ],
-          "hex": "#1a1721"
+          "hex": "#251e32"
         },
         "$description": "fond de composant, survol"
       },
@@ -56,11 +56,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.1373,
-            0.1137,
-            0.1804
+            0.1725,
+            0.1412,
+            0.2314
           ],
-          "hex": "#231d2e"
+          "hex": "#2c243b"
         },
         "$description": "fond de composant, appui"
       },
@@ -68,11 +68,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.1804,
-            0.1451,
-            0.2431
+            0.2118,
+            0.1647,
+            0.2941
           ],
-          "hex": "#2e253e"
+          "hex": "#362a4b"
         },
         "$description": "bordure discrète"
       },
@@ -80,11 +80,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.2745,
-            0.1922,
-            0.4078
+            0.3059,
+            0.2078,
+            0.4549
           ],
-          "hex": "#463168"
+          "hex": "#4e3574"
         },
         "$description": "bordure de composant"
       },
@@ -92,11 +92,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.4588,
-            0.2549,
-            0.7255
+            0.502,
+            0.2784,
+            0.7922
           ],
-          "hex": "#7541b9"
+          "hex": "#8047ca"
         },
         "$description": "bordure d'interaction, focus (3:1)"
       },
@@ -116,11 +116,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.5686,
+            0.5647,
             0.3412,
-            0.8745
+            0.8706
           ],
-          "hex": "#9157df"
+          "hex": "#9057de"
         },
         "$description": "plein, survol"
       },
@@ -128,11 +128,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.6196,
-            0.4,
-            0.9333
+            0.7686,
+            0.6431,
+            0.9961
           ],
-          "hex": "#9e66ee"
+          "hex": "#c4a4fe"
         },
         "$description": "texte secondaire (4,5:1)"
       },
@@ -140,11 +140,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.8392,
-            0.7608,
-            0.9961
+            0.8667,
+            0.8078,
+            0.9922
           ],
-          "hex": "#d6c2fe"
+          "hex": "#ddcefd"
         },
         "$description": "texte principal"
       },
@@ -162,11 +162,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            1,
+            0.9961,
             0.9961,
             1
           ],
-          "hex": "#fffeff"
+          "hex": "#fefeff"
         },
         "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
       }
@@ -176,11 +176,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.0118,
-            0.0118,
-            0.0118
+            0.0706,
+            0.0706,
+            0.0706
           ],
-          "hex": "#030303"
+          "hex": "#121212"
         },
         "$description": "fond d'application"
       },
@@ -188,11 +188,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.0314,
-            0.0314,
-            0.0314
+            0.0824,
+            0.0824,
+            0.0824
           ],
-          "hex": "#080808"
+          "hex": "#151515"
         },
         "$description": "fond discret"
       },
@@ -200,11 +200,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.0706,
-            0.0667,
-            0.0588
+            0.1137,
+            0.1059,
+            0.0902
           ],
-          "hex": "#12110f"
+          "hex": "#1d1b17"
         },
         "$description": "fond de composant"
       },
@@ -212,11 +212,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.102,
-            0.098,
-            0.0863
+            0.1373,
+            0.1294,
+            0.1137
           ],
-          "hex": "#1a1916"
+          "hex": "#23211d"
         },
         "$description": "fond de composant, survol"
       },
@@ -224,11 +224,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.1333,
-            0.1255,
-            0.1098
+            0.1686,
+            0.1529,
+            0.1216
           ],
-          "hex": "#22201c"
+          "hex": "#2b271f"
         },
         "$description": "fond de composant, appui"
       },
@@ -236,11 +236,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.1765,
-            0.1608,
-            0.1294
+            0.2039,
+            0.1882,
+            0.1569
           ],
-          "hex": "#2d2921"
+          "hex": "#343028"
         },
         "$description": "bordure discrète"
       },
@@ -248,11 +248,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.2588,
-            0.2314,
-            0.1765
+            0.2941,
+            0.2549,
+            0.1725
           ],
-          "hex": "#423b2d"
+          "hex": "#4b412c"
         },
         "$description": "bordure de composant"
       },
@@ -260,11 +260,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.4314,
-            0.3569,
-            0.2
+            0.4824,
+            0.3882,
+            0.1882
           ],
-          "hex": "#6e5b33"
+          "hex": "#7b6330"
         },
         "$description": "bordure d'interaction, focus (3:1)"
       },
@@ -286,9 +286,9 @@
           "components": [
             1,
             0.7961,
-            0.3216
+            0.3294
           ],
-          "hex": "#ffcb52"
+          "hex": "#ffcb54"
         },
         "$description": "plein, survol"
       },
@@ -298,9 +298,9 @@
           "components": [
             1,
             0.8745,
-            0.6078
+            0.6157
           ],
-          "hex": "#ffdf9b"
+          "hex": "#ffdf9d"
         },
         "$description": "texte secondaire (4,5:1)"
       },
@@ -308,11 +308,11 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.9961,
+            0.9922,
             0.9529,
-            0.8667
+            0.8745
           ],
-          "hex": "#fef3dd"
+          "hex": "#fdf3df"
         },
         "$description": "texte principal"
       },

@@ -8,13 +8,14 @@
 export const AJOUTS = {
   'fond.marque.discret': ['marque.primaire.3', '#f1f3f7'],
   'fond.accent.discret': ['marque.accent.3', '#fcf1ef'],
-  'fond.marque.fort': ['marque.primaire.plein', '#2b4c7e'],
-  'texte.sur-marque': ['marque.primaire.sur-plein', '#ffffff'],
+  // Étape 4b, lot 2 bis : l'aplat plein passe par trois emplacements communs (tokens/commun/aplat.tokens.json), alias du plein.
+  'fond.marque.fort': ['marque.primaire.aplat', '#2b4c7e'],
+  'texte.sur-marque': ['marque.primaire.sur-aplat', '#ffffff'],
   'texte.marque.grand': ['marque.primaire.texte-grand', '#2b4c7e'],
-  'fond.interactif.inverse': ['marque.primaire.sur-plein', '#ffffff'],
-  'texte.sur-interactif.inverse': ['marque.primaire.plein', '#2b4c7e'],
-  'texte.sur-interactif.inverse.survol': ['marque.primaire.plein-survol', '#3c5a88'],
-  'bordure.focus.inverse': ['marque.primaire.sur-plein', '#ffffff'],
+  'fond.interactif.inverse': ['marque.primaire.sur-aplat', '#ffffff'],
+  'texte.sur-interactif.inverse': ['marque.primaire.aplat', '#2b4c7e'],
+  'texte.sur-interactif.inverse.survol': ['marque.primaire.aplat-survol', '#3c5a88'],
+  'bordure.focus.inverse': ['marque.primaire.sur-aplat', '#ffffff'],
 };
 
 /** Paires ajoutées, dans l'ordre de paires.json. */

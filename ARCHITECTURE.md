@@ -69,11 +69,12 @@ Chaque commande npm a son point d'entrée dans `src/cli/`. Les sorties d'audit e
 | Primitives communes | `tokens/commun/primitives.tokens.json` | à la main | `src/tokens/` |
 | Échelles d'Orbe Café | `tokens/orbe-cafe/primitives.tokens.json` (bleu, terre, sable) | à la main | marque |
 | Statuts | `tokens/commun/statuts.tokens.json` | `src/cli/statuts.js`, si `checkValise` passe | marque, rôles |
-| Mode sombre commun | `tokens/commun/mode.sombre.tokens.json` : neutre et statuts en miroir, surface et texte sur inverse | `src/cli/sombre.js`, si `checkValise` passe | contexte sombre de chaque resolver |
+| Mode sombre commun | `tokens/commun/mode.sombre.tokens.json` : neutre dessiné sur la page `#121212`, statuts sombres, surface et texte sur inverse | `src/cli/sombre.js`, si `checkValise` passe | contexte sombre de chaque resolver |
+| Aplat plein | `tokens/commun/aplat.tokens.json` : `marque.primaire.aplat`, `sur-aplat`, `aplat-survol`, alias du plein | `src/cli/sombre.js` | jeu marque de chaque resolver |
 | Échelles générées | `echelles.tokens.json` à côté de l'entrée (aucune pour Orbe Café) | `npm run saisie` | marque, `npm run contraste` avec `--marque` |
 | Marque | `tokens/orbe-cafe/marque.tokens.json` | `npm run saisie` (`src/cli/saisie.js`) | rôles, styles de texte |
 | Sémantique (rôles) | `tokens/commun/semantique.tokens.json` | à la main | les trois contrôles, les planches |
-| Mode sombre de la marque | `echelles.sombre.tokens.json`, `marque.sombre.tokens.json` à côté de l'entrée : échelles en miroir, mêmes boutons qu'en clair, texte de marque choisi sur les fonds sombres | `npm run saisie` | contexte sombre du resolver |
+| Mode sombre de la marque | `echelles.sombre.tokens.json`, `marque.sombre.tokens.json` à côté de l'entrée : échelles sombres, bouton aux pas 11, 12 et 1, aplat plein et accent fort aux valeurs claires, texte de marque choisi sur les fonds sombres | `npm run saisie` | contexte sombre du resolver |
 | Contexte étroit | `tokens/commun/largeur.etroit.tokens.json` : rôles qui changent sous 600 px, jeton entier | à la main | `npm run espacements`, `npm run typo`, planches |
 | Paires | `tokens/commun/paires.json` | à la main | `npm run contraste`, planche des rôles |
 | Resolver | `tokens/orbe-cafe/marque.resolver.json`, un par marque : jeux primitives, marque, rôles ; modificateurs mode et largeur | `npm run saisie` | `src/tokens/resolver.js`, lecteur maison |

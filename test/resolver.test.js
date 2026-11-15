@@ -33,7 +33,7 @@ test('R1 resolver de chaque marque fictive : version, jeux, modificateurs, seuil
     assert.deepEqual(Object.keys(r.sets), ['primitives', 'marque', 'roles'], m);
     assert.deepEqual(r.sets.primitives.sources, [ref('../commun/primitives.tokens.json'), ref('../commun/statuts.tokens.json')], m);
     assert.deepEqual(r.sets.roles.sources, [ref('../commun/semantique.tokens.json')], m);
-    assert.deepEqual(r.sets.marque.sources, [ref(m === 'orbe-cafe' ? 'primitives.tokens.json' : 'echelles.tokens.json'), ref('marque.tokens.json')], m);
+    assert.deepEqual(r.sets.marque.sources, [ref('../commun/aplat.tokens.json'), ref(m === 'orbe-cafe' ? 'primitives.tokens.json' : 'echelles.tokens.json'), ref('marque.tokens.json')], m);
     assert.deepEqual(r.modifiers.mode.contexts, { clair: [], sombre: [ref('../commun/mode.sombre.tokens.json'), ref('echelles.sombre.tokens.json'), ref('marque.sombre.tokens.json')] }, m);
     assert.equal(r.modifiers.mode.default, 'clair', m);
     assert.deepEqual(r.modifiers.largeur.contexts, { large: [], etroit: [ref('../commun/largeur.etroit.tokens.json')] }, m);

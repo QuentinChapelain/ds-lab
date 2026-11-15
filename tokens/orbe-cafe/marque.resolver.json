@@ -15,8 +15,11 @@
       ]
     },
     "marque": {
-      "description": "Échelles et couche marque de Orbe Café.",
+      "description": "Emplacements communs de l'aplat plein, échelles et couche marque de Orbe Café.",
       "sources": [
+        {
+          "$ref": "../commun/aplat.tokens.json"
+        },
         {
           "$ref": "primitives.tokens.json"
         },
