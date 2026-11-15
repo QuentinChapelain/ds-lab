@@ -78,7 +78,7 @@ Trois planches montrent la cible en situation : `tokens/orbe-cafe/roles.html`, `
 
 ## Étape 4 : saisir une marque
 
-Une marque entre par un fichier, `tokens/orbe-cafe/entree.json` pour Orbe Café : un nom, une couleur primaire, un accent facultatif et les noms des familles de la police des titres. La police du texte est celle du produit, commune à toutes les marques (`tokens/commun/police.tokens.json`, D16) ; une entrée peut la remplacer par `polices.texte`. `npm run saisie -- <entree.json>` génère les échelles (pas 9 = couleur saisie), écrit la couche marque et le resolver à côté de l'entrée, puis lance `npm run contraste` sur cette marque.
+Une marque entre par un fichier, `tokens/orbe-cafe/entree.json` pour Orbe Café : un nom, une couleur primaire, un accent facultatif et la police des titres : ses noms de familles, et ses fichiers WOFF2 si le client les donne (`{ "familles": [...], "fichiers": [...] }`, chemins relatifs à l'entrée). Sans fichier, la police est acceptée par ses noms et la saisie l'affiche « non contrôlée » ; avec fichiers, elle lit ses mesures (unités par em, hauteur de capitale, hauteur d'x, ascendante, descendante), ses graisses, sa licence et sa couverture (`src/polices/`). La police du texte est celle du produit, commune à toutes les marques (`tokens/commun/police.tokens.json`, D16) ; une entrée peut la remplacer par `polices.texte`. `npm run saisie -- <entree.json>` génère les échelles (pas 9 = couleur saisie), écrit la couche marque et le resolver à côté de l'entrée, puis lance `npm run contraste` sur cette marque.
 
 | Sortie | Quand | Ce qui est écrit |
 |---|---|---|

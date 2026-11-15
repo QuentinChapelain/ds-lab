@@ -7,7 +7,8 @@
  *   primaire     couleur #rrggbb (échelle générée par generateScale) ou { "echelle": nom } (échelle existante,
  *                réservée à Orbe Café, dont le dossier porte les couches communes) ;
  *   accent       facultatif, même forme ; absent : repli sur le neutre (D05) ;
- *   polices      { titre: [familles], texte?: [familles] }, noms de familles seulement (ni chargement ni contrôle) ;
+ *   polices      { titre, texte?: [familles] } ; titre : [familles], noms seulement, police « non contrôlée », ou
+ *                { familles: [...], fichiers: [chemins] } (étape 4c), fichiers relatifs à l'entrée, lus par src/polices/ ;
  *                texte facultatif (étape 4, dernier lot) : absent, la police du produit (tokens/commun/police.tokens.json) ;
  *   description  facultative, $description de marque.tokens.json.
  *
@@ -16,8 +17,9 @@
  * Les couches communes (neutres, statuts, rôles, paires) sont lues dans tokens/commun/ ; la saisie écrit aussi le resolver
  * de la marque (marque.resolver.json, src/tokens/resolver.js).
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { lirePolice } from '../polices/lecture.js';
 import { generateScale, checkValise } from '../valise/generate.js';
 import { scaleToDtcg, valiseFromTokens, OPTIONS_COULEUR_SOMBRE } from './primitives.js';
 import { marqueTokens, marqueSombreTokens } from './pleins.js';
@@ -64,7 +66,9 @@ export const serialiser = (tokens) => JSON.stringify(tokens, null, 2) + '\n';
 
 /**
  * @typedef {{ scale: string, steps: string[] }} Source
- * @typedef {{ motifs: string[], marque: any, echelles: any, echellesSombres: any, marqueSombre: any, resolver: any, commun: import('./roles.js').RoleSet }} Saisie
+ * @typedef {{ chemin: string, police: import('../polices/lecture.js').Police | import('../polices/lecture.js').Illisible }} FichierPolice
+ * @typedef {{ familles: string[], controlee: boolean, fichiers: FichierPolice[] }} PoliceTitre
+ * @typedef {{ motifs: string[], marque: any, echelles: any, echellesSombres: any, marqueSombre: any, resolver: any, commun: import('./roles.js').RoleSet, policeTitre: PoliceTitre | null }} Saisie
  */
 
 /**
@@ -80,7 +84,7 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   /** @type {string[]} */
   const motifs = [];
   const invalide = (/** @type {string} */ m) => motifs.push(`entrée invalide : ${m}`);
-  const vide = { motifs, marque: null, echelles: null, echellesSombres: null, marqueSombre: null, resolver: null, commun };
+  const vide = { motifs, marque: null, echelles: null, echellesSombres: null, marqueSombre: null, resolver: null, commun, policeTitre: null };
   if (!entree || typeof entree !== 'object' || Array.isArray(entree)) {
     invalide('objet JSON attendu');
     return vide;
@@ -114,20 +118,49 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   };
   const primaire = source('primaire');
   const accent = source('accent');
-  /** @type {{ titre: string[], texte?: string[] } | undefined} */
+  /** @type {{ titre: string[], texte?: string[], fichiersTitre?: string[] } | undefined} */
   let polices;
+  /** @type {PoliceTitre | null} */
+  let policeTitre = null;
   if (entree.polices !== undefined) {
     const p = entree.polices;
     const familles = (/** @type {any} */ l) => Array.isArray(l) && l.length > 0 && l.every((x) => typeof x === 'string' && x.trim());
     if (!p || typeof p !== 'object' || Array.isArray(p)) invalide('polices, { "titre": [...] } attendu, "texte" facultatif');
     else {
       for (const k of Object.keys(p)) if (k !== 'titre' && k !== 'texte') invalide(`clé inconnue polices.${k}`);
-      if (!familles(p.titre)) invalide('polices.titre, liste de noms de familles attendue');
+      // Étape 4c : la police des titres s'entre par ses noms (non contrôlée) ou par ses noms et ses fichiers.
+      const t = p.titre;
+      if (t && typeof t === 'object' && !Array.isArray(t)) {
+        const avant = motifs.length;
+        for (const k of Object.keys(t)) if (k !== 'familles' && k !== 'fichiers') invalide(`clé inconnue polices.titre.${k}`);
+        if (!familles(t.familles)) invalide('polices.titre.familles, liste de noms de familles attendue');
+        if (!familles(t.fichiers)) invalide('polices.titre.fichiers, liste de chemins attendue');
+        else
+          for (const chemin of t.fichiers)
+            if (!existsSync(resolve(dossier, chemin))) invalide(`polices.titre, fichier introuvable : ${chemin}`);
+        if (motifs.length === avant) {
+          /** @type {FichierPolice[]} */
+          const fichiers = [];
+          for (const chemin of t.fichiers)
+            try {
+              fichiers.push({ chemin, police: lirePolice(readFileSync(resolve(dossier, chemin))) });
+            } catch (e) {
+              motifs.push(`police des titres illisible : ${chemin} (${/** @type {Error} */ (e).message})`);
+            }
+          policeTitre = { familles: t.familles, controlee: true, fichiers };
+        }
+      } else if (!familles(t)) invalide('polices.titre, liste de noms de familles attendue');
+      else policeTitre = { familles: t, controlee: false, fichiers: [] };
       if ('texte' in p && !familles(p.texte)) invalide('polices.texte, liste de noms de familles attendue');
-      if (familles(p.titre) && (!('texte' in p) || familles(p.texte))) polices = { titre: p.titre, ...('texte' in p ? { texte: p.texte } : {}) };
+      if (policeTitre && (!('texte' in p) || familles(p.texte)))
+        polices = {
+          titre: policeTitre.familles,
+          ...('texte' in p ? { texte: p.texte } : {}),
+          ...(policeTitre.controlee ? { fichiersTitre: policeTitre.fichiers.map((f) => f.chemin) } : {}),
+        };
     }
   }
-  if (motifs.length || !primaire || !polices) return vide;
+  if (motifs.length || !primaire || !polices) return { ...vide, policeTitre };
 
   /** @param {string} s @returns {Source} */
   const commune = (s) => ({ scale: s, steps: Array.from({ length: 12 }, (_, i) => existantes[s][String(i + 1)].$value.hex) });
@@ -207,5 +240,5 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
     marque: [...(orbe ? ['primitives.tokens.json'] : echelles ? ['echelles.tokens.json'] : []), 'marque.tokens.json'],
     sombre: ['echelles.sombre.tokens.json', 'marque.sombre.tokens.json'],
   });
-  return { motifs, marque, echelles, echellesSombres, marqueSombre, resolver, commun };
+  return { motifs, marque, echelles, echellesSombres, marqueSombre, resolver, commun, policeTitre };
 }

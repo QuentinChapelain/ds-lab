@@ -143,7 +143,7 @@ export function pasTexteGrand(steps, fonds) {
  * et, si elles sont données, les polices de la marque (séance 3c : police.titre, police.texte, $type fontFamily).
  * Étape 4a, lot 5 : le primaire porte en plus texte-grand (pasTexteGrand), écrit en dernier pour qu'Orbe Café redevienne
  * identique une fois cet ajout retiré.
- * @param {{ primaire: { scale: string, steps: string[] }, accent: { scale: string, steps: string[] }, statuts: Record<string, { scale: string, steps: string[] }>, polices?: { titre: string[], texte?: string[] }, fonds: string[], description: string }} spec
+ * @param {{ primaire: { scale: string, steps: string[] }, accent: { scale: string, steps: string[] }, statuts: Record<string, { scale: string, steps: string[] }>, polices?: { titre: string[], texte?: string[], fichiersTitre?: string[] }, fonds: string[], description: string }} spec
  */
 export function marqueTokens({ primaire, accent, statuts, polices, fonds, description }) {
   /** @type {Record<string, any>} */
@@ -166,7 +166,12 @@ export function marqueTokens({ primaire, accent, statuts, polices, fonds, descri
     m.police = {
       $type: 'fontFamily',
       $description: 'Polices de la marque : titre pour les styles affichage et titre 1 à 3, texte pour tout le reste.',
-      titre: { $value: polices.titre, $description: 'Police des styles affichage et titre 1 à 3.' },
+      titre: {
+        $value: polices.titre,
+        $description: 'Police des styles affichage et titre 1 à 3.',
+        // Étape 4c : fichiers de la police, relatifs à l'entrée, seulement s'ils sont donnés (les marques sans fichier ne changent pas).
+        ...(polices.fichiersTitre?.length ? { $extensions: { 'ds-lab.police': { fichiers: polices.fichiersTitre } } } : {}),
+      },
     };
     // Étape 4, dernier lot : sans police de texte saisie, la police du produit vient du commun (tokens/commun/police.tokens.json).
     if (polices.texte) m.police.texte = { $value: polices.texte, $description: 'Police des titres 4, du corps, des libellés et des mentions.' };

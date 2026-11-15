@@ -15,6 +15,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { saisir, serialiser } from '../tokens/saisie.js';
 import { RESOLVER } from '../tokens/resolver.js';
+import { decrirePolice } from '../polices/lecture.js';
 
 const fichier = process.argv[2];
 if (!fichier) {
@@ -45,6 +46,12 @@ writeFileSync(join(dossier, 'echelles.sombre.tokens.json'), serialiser(r.echelle
 writeFileSync(join(dossier, 'marque.sombre.tokens.json'), serialiser(r.marqueSombre));
 writeFileSync(join(dossier, RESOLVER), serialiser(r.resolver));
 console.log(`marque acceptée : ${nom}`);
+// Étape 4c : la police des titres, contrôlée si l'entrée donne ses fichiers ; « non contrôlée » n'est écrit qu'ici.
+const pt = r.policeTitre;
+if (pt) {
+  console.log(`police des titres : ${pt.familles.join(', ')}, ${pt.controlee ? 'contrôlée' : 'non contrôlée (aucun fichier)'}`);
+  for (const f of pt.fichiers) console.log(`  ${f.chemin} : ${decrirePolice(f.police)}`);
+}
 console.log(`écrit : ${join(dossier, 'marque.tokens.json')}${r.echelles ? `, ${echelles}` : ''}, mode sombre, ${join(dossier, RESOLVER)}`);
 const contraste = fileURLToPath(new URL('./contraste.js', import.meta.url));
 let code = 0;
