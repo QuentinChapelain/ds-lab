@@ -113,11 +113,14 @@ test('T0 copie figée des primitives d’origine intacte (empreinte de 3fddd72),
   assert.equal(h, PRIMITIVES_SHA256);
 });
 
-test('primitives communes et échelles d\'Orbe Café réunies = primitives d\'avant le rangement, descriptions de fichier mises à part', () => {
+test('primitives communes et échelles d\'Orbe Café réunies = primitives d\'avant le rangement, descriptions de fichier et du groupe graisse mises à part', () => {
   const avant = JSON.parse(readFileSync(join(ROOT, 'fixtures', 'marque-demo', 'jetons', 'primitives.tokens.json'), 'utf8'));
   const apres = charger('primitives.tokens.json');
   delete avant.$description;
   delete apres.$description;
+  // La copie figée garde sa description du groupe graisse ; celle des primitives communes l'a perdue.
+  delete avant.graisse.$description;
+  delete apres.graisse.$description;
   // Deux primitives ajoutées, blanches comme couleur.blanc.
   assert.equal(apres.couleur.surface.$value.hex, '#ffffff');
   assert.equal(apres.couleur['sur-inverse'].$value.hex, '#ffffff');

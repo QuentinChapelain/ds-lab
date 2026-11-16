@@ -99,7 +99,7 @@ test('écarts v1 et limites : contenu convenu', () => {
   assert.equal(V1_DIFFERENCES.length, 23);
   assert.deepEqual(V1_DIFFERENCES.map((d) => d.n), Array.from({ length: 23 }, (_, i) => i + 1));
   const alpha = V1_DIFFERENCES.find((d) => /alpha/i.test(d.point));
-  assert.equal(alpha?.effet, 'effet sur les chiffres de l’étape 1 à mesurer');
+  assert.equal(alpha?.effet, 'effet sur les chiffres de l’audit à mesurer');
   assert.ok(!V1_DIFFERENCES.some((d) => /hidden/.test(d.point + d.v1)), 'écart « bordure hidden » retiré');
   const limits = LIMITS.map((l) => l.text).join('\n');
   for (const re of [/opacity/, /<slot>/, /pseudo-éléments ne sont pas tracés/, /iframes/, /rootPx/, /une seule fenêtre/, /États/, /overlap/]) assert.match(limits, re);

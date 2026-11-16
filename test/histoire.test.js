@@ -5,8 +5,10 @@
  * tests, ni dans les noms de fichiers de test. L'histoire est écrite dans docs/attendus/ et docs/decisions.md ; un
  * commentaire renvoie à une décision par son numéro (D12).
  *
- * Hors de la garde : les chaînes du code. Un texte écrit par l'outil (page, migration, jetons) est une
- * sortie, que la garde ne change pas ; un commentaire placé dans le gabarit d'une page en est une aussi.
+ * Les textes que l'outil écrit sont gardés aussi : les chaînes de src/ (pages, migration, jetons, y compris
+ * un commentaire placé dans le gabarit d'une page), les descriptions des jetons de tokens/ et le $comment
+ * des cibles de fixtures/marque-demo/, que les sorties recopient. Hors de la garde : les attendus de
+ * fixtures/ (notes datées) et la copie figée fixtures/marque-demo/jetons/, qui est une empreinte.
  * Le mot « étape » sans numéro (étape de chargement d'une page) n'est pas une mention d'histoire.
  */
 import { test } from 'node:test';
@@ -98,6 +100,31 @@ test('aucune mention d’histoire dans les commentaires et les titres de test/',
     const { code } = lex(readFileSync(join(ROOT, f), 'utf8'));
     return [...mentions(f), ...titres(code).filter((t) => mentionne(t.text)).map((t) => `${f}:${t.line}  titre « ${t.text} »`)];
   });
+  assert.deepEqual(out, []);
+});
+
+test('aucune mention d’histoire dans les chaînes de src/ (textes écrits par l’outil)', () => {
+  const out = fichiersJs('src').flatMap((f) =>
+    lex(readFileSync(join(ROOT, f), 'utf8'))
+      .code.split('\n')
+      .flatMap((l, i) => (mentionne(l) ? [`${f}:${i + 1}  ${l.trim()}`] : [])),
+  );
+  assert.deepEqual(out, []);
+});
+
+test('aucune mention d’histoire dans les jetons de tokens/ ni dans le $comment des cibles de fixtures', () => {
+  const tokens = readdirSync(join(ROOT, 'tokens'), { recursive: true, encoding: 'utf8' }).filter((f) => f.endsWith('.json')).map((f) => join('tokens', f));
+  const cibles = readdirSync(join(ROOT, 'fixtures', 'marque-demo')).filter((f) => /^cible.*\.json$/.test(f)).map((f) => join('fixtures', 'marque-demo', f));
+  /** @type {string[]} */
+  const out = [];
+  /** @param {string} f @param {any} o @param {string} chemin */
+  const parcourir = (f, o, chemin) => {
+    if (typeof o === 'string') {
+      if (mentionne(o)) out.push(`${f} ${chemin}  ${o.slice(0, 80)}`);
+    } else if (o && typeof o === 'object') for (const [k, v] of Object.entries(o)) parcourir(f, v, `${chemin}.${k}`);
+  };
+  for (const f of tokens) parcourir(f, JSON.parse(readFileSync(join(ROOT, f), 'utf8')), '');
+  for (const f of cibles) parcourir(f, JSON.parse(readFileSync(join(ROOT, f), 'utf8')).$comment ?? '', '.$comment');
   assert.deepEqual(out, []);
 });
 

@@ -16,7 +16,7 @@
  *   texte-grand : Orbe Café pas 9 ; Atelier Lavandine pas 9 (4,5091) ; Écume et Sel pas 11 (9 : 1,4007,
  *     10 : 1,6485, 11 : 5,0277) ; Grenat Papeterie pas 9 (9,0322).
  *   Orbe Café : marque.tokens.json, l'emplacement texte-grand retiré, redevient identique octet par octet
- *     (empreinte b479882e…, test/saisie.test.js).
+ *     (empreinte 6fb10a47…, test/saisie.test.js).
  *   Paires : les 48 d'origine, inchangées et en tête, puis 18 ajoutées (66) ; seuil grand-texte 3 ; 4 interdites
  *     ajoutées sur fond.marque.fort (8). Les quatre marques fictives : 0 paire en échec.
  */
@@ -57,7 +57,7 @@ test('texte-grand choisi à la saisie : pas 9, 10 ou 11', () => {
 test('Orbe Café : sans l\'emplacement texte-grand, la couche marque redevient identique octet par octet', () => {
   const m = load(DIR, 'marque.tokens.json');
   delete m.marque.primaire['texte-grand'];
-  assert.equal(createHash('sha256').update(serialiser(m)).digest('hex'), 'b479882e1a159e9c429805f44eefd7178e569d8f833edbacb5c6102c57016461');
+  assert.equal(createHash('sha256').update(serialiser(m)).digest('hex'), '6fb10a472f4e8437557a3f78798709c2a9e984e31a5a0da276edc0722c5466d4');
 });
 
 test('paires.json : 48 paires d\'origine en tête, 18 ajoutées, 4 interdites ajoutées', () => {

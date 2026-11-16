@@ -388,7 +388,7 @@ test('I5 : valeur hors tranche et inchangée, rattachée et toujours signalée',
     const l = sig.find((x) => x.startsWith(`- Valeur hors de sa tranche : ${value} `) && x.includes(` en ${usage},`));
     assert.ok(l, `${value} ${usage} signalée`);
     assert.equal(!!stepOf(rat, r.id), attached, `${value} ${usage} dans RATTACHE`);
-    assert.equal(l.endsWith(" ; rattaché, rôle à revoir à l'étape 3."), attached, l);
+    assert.equal(l.endsWith(' ; rattaché, rôle à revoir.'), attached, l);
   }
   assert.ok(!sig.some((x) => x.includes(' #f0c987 ') && x.includes(' en texte,')), '#f0c987 en texte : remplacée, pas signalée');
   const sigNo = sectionOf(sansJetons.data.agent.lines, 'SIGNALE SANS MODIFIER') ?? [];

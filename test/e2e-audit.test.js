@@ -79,7 +79,7 @@ test('rapport.md : sections, écarts v1, limites, étiquettes', () => {
   for (const h of ['## Avertissements', '## Pages', '## Synthèse par famille', '## Couleurs', '## Contraste (WCAG 2.1)', '## Feuilles', '## Écarts de méthode avec la v1', '## Limites', '## Origine des valeurs rendues']) {
     assert.ok(report.includes(h), h);
   }
-  assert.match(report, /effet sur les chiffres de l’étape 1 à mesurer/);
+  assert.match(report, /effet sur les chiffres de l’audit à mesurer/);
   assert.match(report, /opacity n’entre pas dans le calcul/);
   assert.match(report, /<slot>/);
   assert.match(report, /pseudo-éléments ne sont pas tracés/);
