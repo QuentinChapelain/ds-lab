@@ -16,8 +16,10 @@
  *      sous son seuil au niveau de la fonction (aucune couleur d'entrée connue ne la provoque par la commande) ;
  *   N8 marque et verify : option inconnue → 2 ; Chromium qui ne se lance pas → 2 ;
  *   N9 espacements() et typo() sans contexte étroit lèvent ;
- *   N10 contrôle final de la saisie, relancé après écriture, sur une copie dont contraste.js est remplacé : s'il rend 2,
- *      sortie 2, fichiers écrits, le message le dit ; s'il rend 1, incohérence de l'outil, sortie 2, le message le dit.
+ *   N10 (revue de code, lot 6, D31 : l'exception de D18 est fermée) contrôle final de la saisie, fait sur les fichiers
+ *      écrits à côté avant remplacement, sur une copie dont controlerEcrits (src/tokens/saisie.js) est forcé : s'il lève,
+ *      ou s'il trouve une paire en échec (incohérence de l'outil), sortie 2, le message le dit, rien n'est écrit, aucun
+ *      fichier temporaire laissé.
  *
  * La copie (N6, N10) va dans le dossier temporaire du système, hors du dépôt : src/, tokens/ et package.json (pour
  * "type": "module") ; elle trouve ses dépendances par un lien symbolique node_modules vers celui du dépôt.
@@ -173,15 +175,21 @@ test('N9 espacements() et typo() sans contexte étroit lèvent', () => {
   assert.throws(() => typo(l.large.semantique, l.large.primitives, l.large.marque, /** @type {any} */ (undefined)), /contexte étroit/);
 });
 
-test('N10 contrôle final après écriture : 2 non conclu, 1 incohérence ; fichiers écrits, sortie 2, message', () => {
-  for (const [code, motif] of /** @type {const} */ ([[2, /fichiers écrits.*contrôle final.*pas conclu/], [1, /incohérence/]])) {
+test('N10 contrôle final avant remplacement : panne ou incohérence ; sortie 2, message, rien d\'écrit', () => {
+  for (const [avant, apres, motif] of /** @type {const} */ ([
+    ['const resolver = docs[RESOLVER];', "throw new Error('contrôle final : essai de panne');", /contrôle final : essai de panne/],
+    ['if (c.roles.fails.length)', 'if (true)', /incohérence de l'outil.*rien n'est écrit/],
+  ])) {
     const d = copie();
-    writeFileSync(join(d, 'src', 'cli', 'contraste.js'), `process.exit(${code});\n`);
+    const f = join(d, 'src', 'tokens', 'saisie.js');
+    const texte = readFileSync(f, 'utf8');
+    assert.ok(texte.includes(avant), avant);
+    writeFileSync(f, texte.replace(avant, apres));
     const e = entree({ nom: 'Essai', primaire: '#2b4c7e', polices: POLICES_NOMS });
     const p = lancer(d, 'saisie', [e.fichier]);
-    assert.equal(p.status, 2, `contrôle final ${code} : sortie ${p.status}\n${p.stdout}\n${p.stderr}`);
-    assert.match(p.stdout, /marque acceptée : Essai/);
+    assert.equal(p.status, 2, `${apres} : sortie ${p.status}\n${p.stdout}\n${p.stderr}`);
     assert.match(p.stderr, motif);
-    assert.ok(readdirSync(e.dossier).includes('marque.tokens.json'), 'fichiers écrits');
+    assert.doesNotMatch(p.stdout, /marque acceptée/);
+    assert.deepEqual(readdirSync(e.dossier), ['entree.json'], 'rien d\'écrit');
   }
 });

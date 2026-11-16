@@ -28,8 +28,8 @@ import { typo, SUR_POLICE_TITRE } from './typo.js';
 import { generateScale, checkValise } from '../valise/generate.js';
 import { scaleToDtcg, valiseFromTokens, OPTIONS_COULEUR_SOMBRE } from './primitives.js';
 import { marqueTokens, marqueSombreTokens } from './pleins.js';
-import { contratRoles, resolveRoles } from './roles.js';
-import { COMMUN, modeleResolver, resoudre, partager, fusionner, enEtroit, seuilEtroit } from './resolver.js';
+import { contratRoles, contrat, resolveRoles, rolesDuResolver } from './roles.js';
+import { COMMUN, RESOLVER, modeleResolver, resoudre, partager, enLigne, enEtroit, seuilEtroit } from './resolver.js';
 import { fr } from '../lib/format.js';
 
 export { COMMUN };
@@ -68,6 +68,42 @@ export function chargerCommun({ mode } = {}) {
  * @param {string} dossier @returns {any}
  */
 export const echellesPropres = (dossier) => (existsSync(join(dossier, PROPRES)) ? JSON.parse(readFileSync(join(dossier, PROPRES), 'utf8')) : null);
+
+/**
+ * Revue de code, lot 6 (D32) : échelles de primitives.tokens.json d'une marque qui portent le nom d'une échelle commune
+ * (primitives et statuts de tokens/commun/). Une marque ne redéfinit pas une échelle commune : le resolver la ferait passer
+ * avant le mode sombre commun, la saisie après ; refus de la saisie, échec de npm run contraste.
+ * @param {any} propres echellesPropres(dossier) @param {import('./roles.js').RoleSet} [commun] @returns {string[]}
+ */
+export function echellesCommunesRedefinies(propres, commun = chargerCommun()) {
+  const communes = new Set(Object.keys(commun.primitives.couleur ?? {}).filter((k) => !k.startsWith('$')));
+  return Object.keys(propres?.couleur ?? {}).filter((k) => !k.startsWith('$') && communes.has(k));
+}
+
+/** Motif de refus, ligne d'échec de contraste. @param {string[]} noms */
+export const motifRedefinies = (noms) =>
+  `${PROPRES} : échelle commune redéfinie, ${noms.join(', ')} (les échelles communes se lisent dans tokens/commun/ ; ${noms.length > 1 ? 'renomme-les' : 'renomme-la'} dans le dossier de la marque)`;
+
+/**
+ * Revue de code, lot 6 (D31) : contrôle final de la saisie, sur les fichiers écrits à côté avant remplacement (remplacer,
+ * src/tokens/ecriture.js) : relus, résolus par le resolver écrit, dans les deux modes, avec les paires communes, comme
+ * npm run contraste. Une paire en échec est une incohérence de l'outil (la marque l'avait passée en mémoire) : panne.
+ * @param {string} dossier @param {Map<string, string>} lus texte relu de chaque fichier écrit, par nom
+ * @returns {[string, ReturnType<typeof contrat>][]}
+ */
+export function controlerEcrits(dossier, lus) {
+  /** @type {Record<string, any>} */
+  const docs = Object.fromEntries([...lus].map(([nom, texte]) => [nom, JSON.parse(texte)]));
+  const resolver = docs[RESOLVER];
+  if (!resolver) throw new Error(`contrôle final : ${RESOLVER} absent des fichiers écrits`);
+  const paires = JSON.parse(readFileSync(join(COMMUN, 'paires.json'), 'utf8'));
+  return ['clair', 'sombre'].map((mode) => {
+    const c = contrat(rolesDuResolver(enLigne(resolver, docs), dossier, { mode }, paires));
+    if (c.roles.fails.length)
+      throw new Error(`incohérence de l'outil : le contrôle final (${mode}) trouve une paire en échec que la saisie avait acceptée ; rien n'est écrit dans ${dossier}`);
+    return [mode, c];
+  });
+}
 
 /**
  * Revue de code du 15/11, lot 1a : contexte étroit commun, lu par le resolver des couches communes (contexte et seuil),
@@ -147,7 +183,8 @@ export const serialiser = (tokens) => JSON.stringify(tokens, null, 2) + '\n';
  * @typedef {{ scale: string, steps: string[] }} Source
  * @typedef {{ chemin: string, police: import('../polices/lecture.js').Police | import('../polices/lecture.js').Illisible }} FichierPolice
  * @typedef {{ familles: string[], controlee: boolean, fichiers: FichierPolice[] }} PoliceTitre
- * @typedef {{ motifs: string[], marque: any, echelles: any, echellesSombres: any, marqueSombre: any, resolver: any, commun: import('./roles.js').RoleSet, policeTitre: PoliceTitre | null }} Saisie
+ * @typedef {{ motifs: string[], marque: any, echelles: any, echellesSombres: any, marqueSombre: any, resolver: any, commun: import('./roles.js').RoleSet, policeTitre: PoliceTitre | null,
+ *   contrats: Record<string, ReturnType<typeof contratRoles>> | null }} Saisie
  */
 
 /**
@@ -163,7 +200,7 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   /** @type {string[]} */
   const motifs = [];
   const invalide = (/** @type {string} */ m) => motifs.push(`entrée invalide : ${m}`);
-  const vide = { motifs, marque: null, echelles: null, echellesSombres: null, marqueSombre: null, resolver: null, commun, policeTitre: null };
+  const vide = { motifs, marque: null, echelles: null, echellesSombres: null, marqueSombre: null, resolver: null, commun, policeTitre: null, contrats: null };
   if (!entree || typeof entree !== 'object' || Array.isArray(entree)) {
     invalide('objet JSON attendu');
     return vide;
@@ -175,6 +212,12 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   if ('description' in entree && typeof entree.description !== 'string') invalide('description, texte attendu');
 
   const propres = echellesPropres(dossier);
+  // Revue de code, lot 6 (D32) : une marque ne redéfinit aucune échelle commune.
+  const redefinies = echellesCommunesRedefinies(propres, commun);
+  if (redefinies.length) {
+    motifs.push(motifRedefinies(redefinies));
+    return vide;
+  }
   /** @type {Record<string, any>} */
   const nommables = propres?.couleur ?? {};
   /** @type {Record<string, ReturnType<typeof generateScale>>} */
@@ -298,32 +341,29 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
     fonds: fondsClairs(communSombre),
     description: `Couche marque de ${entree.nom} en mode sombre, écrite par la saisie. Format DTCG 2025.10. Posée sur marque.tokens.json dans le contexte sombre : les boutons gardent leurs valeurs claires (D04), le texte de marque des grands titres est choisi sur l'échelle sombre.`,
   });
-  // Contraste dans les deux modes (lot 3) : chaque motif dit son mode. Même fusion que le resolver : commun, échelles et
-  // couche marque claires, puis, en sombre, le commun sombre, les échelles sombres et la couche marque sombre.
-  // Revue de code, lot 5 : échelles écrites à la main puis générées, les deux quand l'entrée les mêle.
-  const claires = [...(propres ? [propres] : []), ...(echelles ? [echelles] : [])];
-  /** @type {[string, import('./roles.js').RoleSet][]} */
-  const jeux = [
-    ['clair', { ...commun, marque: fusionner(fusionner({}, commun.marque), marque), echelles: claires }],
-    ['sombre', { ...communSombre, marque: fusionner(fusionner(fusionner({}, communSombre.marque), marque), marqueSombre), echelles: [...claires, echellesSombres] }],
-  ];
-  // Revue de code du 15/11, lot 1a (D18) : une paire sous son seuil est un refus ; un contrat qui ne se calcule pas (paire
-  // vers un rôle inconnu, type inconnu : couche commune cassée) est une panne, qui lève.
-  for (const [mode, jeu] of jeux) {
-    /** @type {ReturnType<typeof contratRoles>} */
-    let c;
-    try {
-      c = contratRoles(jeu);
-    } catch (e) {
-      throw new Error(`contraste (${mode}) : ${/** @type {Error} */ (e).message}`);
-    }
-    for (const p of c.fails) motifs.push(`contraste (${mode}) : ${p.devant} sur ${p.fond}, ${fr(p.ratio, { decimales: 2, zeros: true })}:1 < ${fr(p.min)}:1`);
-  }
   const resolver = modeleResolver({
     nom: entree.nom,
     dossier,
     marque: [...(propres ? [PROPRES] : []), ...(echelles ? ['echelles.tokens.json'] : []), 'marque.tokens.json'],
     sombre: ['echelles.sombre.tokens.json', 'marque.sombre.tokens.json'],
   });
-  return { motifs, marque, echelles, echellesSombres, marqueSombre, resolver, commun, policeTitre };
+  // Contraste dans les deux modes (lot 3) : chaque motif dit son mode. Revue de code, lot 6 (D31) : la fusion est celle du
+  // resolver de la marque (rolesDuResolver, comme les contrôles), ses fichiers donnés en ligne, avant toute écriture.
+  const docs = { [PROPRES]: propres, 'echelles.tokens.json': echelles, 'marque.tokens.json': marque, 'echelles.sombre.tokens.json': echellesSombres, 'marque.sombre.tokens.json': marqueSombre };
+  /** @type {Record<string, ReturnType<typeof contratRoles>>} */
+  const contrats = {};
+  // Revue de code du 15/11, lot 1a (D18) : une paire sous son seuil est un refus ; un contrat qui ne se calcule pas (paire
+  // vers un rôle inconnu, type inconnu : couche commune cassée) est une panne, qui lève.
+  for (const [mode, paires] of /** @type {const} */ ([['clair', commun.paires], ['sombre', communSombre.paires]])) {
+    /** @type {ReturnType<typeof contratRoles>} */
+    let c;
+    try {
+      c = contratRoles(rolesDuResolver(enLigne(resolver, docs), dossier, { mode }, paires));
+    } catch (e) {
+      throw new Error(`contraste (${mode}) : ${/** @type {Error} */ (e).message}`);
+    }
+    contrats[mode] = c;
+    for (const p of c.fails) motifs.push(`contraste (${mode}) : ${p.devant} sur ${p.fond}, ${fr(p.ratio, { decimales: 2, zeros: true })}:1 < ${fr(p.min)}:1`);
+  }
+  return { motifs, marque, echelles, echellesSombres, marqueSombre, resolver, commun, policeTitre, contrats };
 }

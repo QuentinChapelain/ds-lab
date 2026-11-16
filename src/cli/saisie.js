@@ -4,22 +4,22 @@
  * Étape 4, séance a, lot 1 : saisie d'une marque. Lit tokens/<marque>/entree.json, génère les échelles et la couche
  * marque, refuse avec motif (entrée invalide, checkValise, paire de rôles en échec) ou écrit marque.tokens.json
  * (et echelles.tokens.json si une échelle est générée), le mode sombre (echelles.sombre.tokens.json,
- * marque.sombre.tokens.json) et le resolver marque.resolver.json dans le dossier de l'entrée,
- * puis lance le contrôle de contraste dans les deux modes (étape 4b, lot 3).
+ * marque.sombre.tokens.json) et le resolver marque.resolver.json dans le dossier de l'entrée, et affiche le contrôle de
+ * contraste dans les deux modes (étape 4b, lot 3).
  * Étape 4c, lot 3 : si l'entrée donne les fichiers de la police des titres, contrôle d'encre dans Chromium avant
  * d'écrire ; refus si l'encre de deux lignes se touche ; sinon la table des mesures est affichée.
  * Sort en 0 si la marque est acceptée, en 1 si elle est refusée (rien n'est écrit).
  * Revue de code du 15/11, lot 1a (D18) : en 2 sur une panne, par la garde commune (src/cli/garde.js) : aucun fichier
- * donné, fichier absent ou illisible, couche commune cassée, Chromium qui ne se lance pas ; rien n'est écrit. Exception :
- * le contrôle contraste relancé après écriture ; s'il ne conclut pas (2), ou s'il trouve une paire en échec (1, une
- * incohérence de l'outil, puisqu'un refus n'écrit rien), la commande sort en 2, fichiers écrits, et le dit.
+ * donné, fichier absent ou illisible, couche commune cassée, Chromium qui ne se lance pas ; rien n'est écrit.
+ * Revue de code, lot 6 (D31) : les fichiers sont écrits à côté, contrôlés (contraste dans les deux modes, sur les textes
+ * relus), puis remplacent les fichiers en place (remplacer, src/tokens/ecriture.js) ; un contrôle en échec (incohérence de
+ * l'outil) ou une panne d'écriture sort en 2 sans rien laisser d'écrit. Plus de sous-processus.
  * Usage : npm run saisie -- <entree.json>
  */
-import { writeFileSync, existsSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
-import { saisir, serialiser, controlerEncre } from '../tokens/saisie.js';
+import { saisir, serialiser, controlerEncre, controlerEcrits } from '../tokens/saisie.js';
+import { remplacer } from '../tokens/ecriture.js';
+import { lignesContraste } from '../report/contraste.js';
 import { RESOLVER } from '../tokens/resolver.js';
 import { decrirePolice } from '../polices/lecture.js';
 import { tableEncre } from '../polices/encre.js';
@@ -46,13 +46,21 @@ await lancer('saisie', async () => {
     for (const m of r.motifs) console.error(`  ${m}`);
     return 1;
   }
-  writeFileSync(join(dossier, 'marque.tokens.json'), serialiser(r.marque));
   const echelles = join(dossier, 'echelles.tokens.json');
-  if (r.echelles) writeFileSync(echelles, serialiser(r.echelles));
-  else if (existsSync(echelles)) rmSync(echelles);
-  writeFileSync(join(dossier, 'echelles.sombre.tokens.json'), serialiser(r.echellesSombres));
-  writeFileSync(join(dossier, 'marque.sombre.tokens.json'), serialiser(r.marqueSombre));
-  writeFileSync(join(dossier, RESOLVER), serialiser(r.resolver));
+  /** @type {[string, any][]} */
+  const docs = [
+    ['marque.tokens.json', r.marque],
+    ...(r.echelles ? /** @type {[string, any][]} */ ([['echelles.tokens.json', r.echelles]]) : []),
+    ['echelles.sombre.tokens.json', r.echellesSombres],
+    ['marque.sombre.tokens.json', r.marqueSombre],
+    [RESOLVER, r.resolver],
+  ];
+  // Une échelle générée devenue échelle nommée : echelles.tokens.json n'est supprimé qu'au remplacement final.
+  const controles = remplacer(
+    dossier,
+    docs.map(([nom, doc]) => /** @type {[string, string]} */ ([nom, serialiser(doc)])),
+    { supprimer: r.echelles ? [] : ['echelles.tokens.json'], controler: (lus) => controlerEcrits(dossier, lus) },
+  );
   console.log(`marque acceptée : ${nom}`);
   // Étape 4c : la police des titres, contrôlée si l'entrée donne ses fichiers ; « non contrôlée » n'est écrit qu'ici.
   const pt = r.policeTitre;
@@ -65,12 +73,7 @@ await lancer('saisie', async () => {
     }
   }
   console.log(`écrit : ${join(dossier, 'marque.tokens.json')}${r.echelles ? `, ${echelles}` : ''}, mode sombre, ${join(dossier, RESOLVER)}`);
-  // Contrôle final, relancé sur les fichiers écrits (D18 : exception à « rien n'est écrit »). La marque a déjà passé ses
-  // paires en mémoire : une paire en échec ici est une incohérence de l'outil, pas un refus.
-  const contraste = fileURLToPath(new URL('./contraste.js', import.meta.url));
-  const codes = ['clair', 'sombre'].map((mode) => spawnSync(process.execPath, [contraste, '--marque', dossier, '--mode', mode], { stdio: 'inherit' }).status);
-  if (codes.includes(1))
-    throw new Error(`incohérence de l'outil : fichiers écrits dans ${dossier}, mais le contrôle final trouve une paire en échec que la saisie avait acceptée`);
-  if (codes.some((c) => c !== 0)) throw new Error(`fichiers écrits dans ${dossier}, mais le contrôle final (npm run contraste) n'a pas conclu`);
+  // Contrôle final, fait sur les fichiers écrits à côté, avant remplacement : son texte, comme npm run contraste.
+  for (const [mode, c] of controles ?? []) for (const l of lignesContraste(c, { mode })) console.log(l);
   return 0;
 });

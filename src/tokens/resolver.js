@@ -109,6 +109,22 @@ export function resoudre(resolver, base, entrees = {}) {
 }
 
 /**
+ * Revue de code, lot 6 (D31) : un resolver dont les sources nommées dans `docs` (« fichier.tokens.json » tel qu'écrit dans
+ * le $ref) sont données en ligne, par leur contenu, au lieu d'être lues sur le disque ; les autres $ref restent lus. La
+ * saisie résout ainsi la marque avant de l'écrire, par le même resolver que les contrôles. Une source à null est retirée.
+ * @param {any} resolver @param {Record<string, any>} docs
+ */
+export function enLigne(resolver, docs) {
+  const remplace = (/** @type {any[]} */ liste) =>
+    liste.flatMap((s) => (estObjet(s) && typeof s.$ref === 'string' && Object.hasOwn(docs, s.$ref) ? (docs[s.$ref] ? [docs[s.$ref]] : []) : [s]));
+  const r = structuredClone({ ...resolver, sets: {}, modifiers: {} });
+  for (const [nom, set] of Object.entries(resolver.sets ?? {})) r.sets[nom] = { ...set, sources: remplace(set.sources ?? []) };
+  for (const [nom, m] of Object.entries(resolver.modifiers ?? {}))
+    r.modifiers[nom] = { ...m, contexts: Object.fromEntries(Object.entries(m.contexts ?? {}).map(([c, l]) => [c, remplace(/** @type {any[]} */ (l))])) };
+  return r;
+}
+
+/**
  * Revue de code, lot 5 : jetons d'un fichier donné à reduce --tokens. Un resolver (version et resolutionOrder) est résolu
  * depuis son dossier, dans ses contextes par défaut, et rend l'arbre fusionné ; un fichier de jetons est rendu tel quel.
  * @param {any} doc contenu du fichier @param {string} chemin chemin du fichier

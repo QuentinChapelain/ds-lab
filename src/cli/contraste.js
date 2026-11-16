@@ -11,41 +11,28 @@
  * défaut) ; un contexte inconnu sort en 2.
  * Revue de code du 15/11, lot 1a (D18) : toute panne (option inconnue, fichier absent ou illisible) sort en 2, par la garde
  * commune (src/cli/garde.js).
+ * Revue de code, lot 6 (D31, D32) : texte du contrôle dans src/report/contraste.js, lu aussi par la saisie ; une marque dont
+ * primitives.tokens.json redéfinit une échelle commune échoue (sortie 1), l'échelle nommée.
  * Usage : npm run contraste [-- --paires <fichier>] [--marque <dossier>] [--mode clair|sombre] [--largeur large|etroit]
  */
 import { parseArgs } from 'node:util';
 import { loadRoles, contrat } from '../tokens/roles.js';
+import { echellesPropres, echellesCommunesRedefinies, motifRedefinies } from '../tokens/saisie.js';
+import { lignesContraste } from '../report/contraste.js';
 import { lancer, parMarque } from './garde.js';
-import { fr } from '../lib/format.js';
 
 await lancer('contraste', () => {
   const { values } = parseArgs({ options: { paires: { type: 'string' }, marque: { type: 'string' }, mode: { type: 'string' }, largeur: { type: 'string' } } });
   return parMarque(values.marque, (dossier) => {
-    const c = contrat(loadRoles(dossier, { paires: values.paires, mode: values.mode, largeur: values.largeur }));
-    // Étape 4b, lot 3 : hors du contexte par défaut, la sortie nomme le contexte ; par défaut, elle reste celle d'avant.
-    const mode = values.mode ?? 'clair';
-    const largeur = values.largeur ?? 'large';
-    if (mode !== 'clair' || largeur !== 'large') console.log(`mode ${mode}, largeur ${largeur}`);
-
-    const D2 = { decimales: 2, zeros: true };
-    const plural = (/** @type {number} */ n, /** @type {string} */ one, /** @type {string} */ many) => `${n} ${n > 1 ? many : one}`;
-
-    let group = '';
-    for (const p of c.roles.pairs) {
-      const g = p.devant.split('.')[0];
-      if (g !== group) console.log(`\n${(group = g)}`);
-      const mark = p.ok ? '✓' : p.exception ? '~' : '✗';
-      console.log(`  ${mark} ${p.devant} sur ${p.fond} : ${fr(p.ratio, D2)}:1, seuil ${fr(p.min, D2)}:1${p.exception ? ` (exception : ${p.exception})` : ''}`);
+    // Revue de code, lot 6 (D32) : une marque qui redéfinit une échelle commune échoue, comme à la saisie.
+    const roles = loadRoles(dossier, { paires: values.paires, mode: values.mode, largeur: values.largeur });
+    const redefinies = echellesCommunesRedefinies(echellesPropres(dossier));
+    if (redefinies.length) {
+      console.log(`✗ ${motifRedefinies(redefinies)}`);
+      return 1;
     }
-
-    console.log(`\n${plural(c.roles.pairs.length, 'paire', 'paires')} de rôles, ${plural(c.roles.fails.length, 'paire en échec', 'paires en échec')}, ${plural(c.roles.exceptions.length, 'exception écrite', 'exceptions écrites')}, ${plural(c.roles.interdites.length, 'paire interdite', 'paires interdites')}.`);
-    for (const p of c.roles.fails) console.log(`  ✗ ${p.devant} sur ${p.fond} : ${fr(p.ratio, D2)}:1 < ${fr(p.min, D2)}:1`);
-    for (const p of c.roles.interdites) console.log(`  ⊘ ${p.devant} sur ${p.fond} (${fr(p.ratio, D2)}:1) : interdite, ${p.regle}`);
-
-    if (c.echelles.fails.length) {
-      console.log(`\nContrat par échelle (contractOf, pour information) : ${plural(c.echelles.fails.length, 'écart', 'écarts')}.`);
-      for (const f of c.echelles.fails) console.log(`  · ${f}`);
-    }
+    const c = contrat(roles);
+    for (const l of lignesContraste(c, values)) console.log(l);
     return c.roles.fails.length ? 1 : 0;
   });
 });

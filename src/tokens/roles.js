@@ -10,7 +10,7 @@ import { formatHex } from 'culori';
 import { contrastRatio } from '../lib/color.js';
 import { contractOf } from '../valise/generate.js';
 import { valiseFromTokens } from './primitives.js';
-import { lireResolver, partager, COMMUN, RESOLVER } from './resolver.js';
+import { resoudre, partager, COMMUN, RESOLVER } from './resolver.js';
 import { r4 } from '../lib/format.js';
 
 
@@ -140,14 +140,20 @@ export function loadRoles(dossier, opts = {}) {
   const entrees = {};
   if (opts.mode) entrees.mode = opts.mode;
   if (opts.largeur) entrees.largeur = opts.largeur;
-  const { semantique, primitives, marque } = partager(lireResolver(join(dossier, RESOLVER), entrees));
-  return {
-    primitives,
-    semantique,
-    paires: JSON.parse(readFileSync(opts.paires ?? join(COMMUN, 'paires.json'), 'utf8')),
-    marque,
-    echelles: [],
-  };
+  return rolesDuResolver(JSON.parse(readFileSync(join(dossier, RESOLVER), 'utf8')), dossier, entrees, JSON.parse(readFileSync(opts.paires ?? join(COMMUN, 'paires.json'), 'utf8')));
+}
+
+/**
+ * Revue de code, lot 6 (D31) : jeu de rôles d'un resolver déjà lu, dans un contexte. Seule fusion de contexte de marque :
+ * lue par loadRoles (les contrôles, les planches) et par la saisie (resolver aux fichiers de la marque donnés en ligne,
+ * enLigne, src/tokens/resolver.js).
+ * @param {any} resolver @param {string} base dossier depuis lequel se lisent ses $ref
+ * @param {Record<string, string>} entrees contexte choisi par modificateur @param {any} paires
+ * @returns {RoleSet}
+ */
+export function rolesDuResolver(resolver, base, entrees, paires) {
+  const { semantique, primitives, marque } = partager(resoudre(resolver, base, entrees));
+  return { primitives, semantique, paires, marque, echelles: [] };
 }
 
 /**
