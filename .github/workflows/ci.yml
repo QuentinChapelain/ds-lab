@@ -1,0 +1,39 @@
+# Rejoue, sur une machine neuve, ce que CLAUDE.md demande avant un commit : types, les trois contrôles
+# de la cible, puis tous les tests avec Chromium. Une étape par commande : la ligne rouge dit laquelle échoue.
+name: CI
+
+on:
+  push:
+    branches: ['**'] # toute branche, pas les étiquettes
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Un nouveau push sur une branche annule l'exécution encore en cours de cette branche.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  controles:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      # Actions épinglées par empreinte : une étiquette peut être déplacée sans trace dans ce dépôt.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false # aucune étape ne pousse
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22 # borne basse de engines
+          cache: npm
+      - run: npm ci
+      # La variante que chromium.launch() lance sans option ; aucun test n'ouvre de fenêtre.
+      - name: Chromium (sans fenêtre) et dépendances système
+        run: npx playwright-core install --with-deps --only-shell chromium
+      - run: npm run types
+      - run: npm run contraste
+      - run: npm run espacements
+      - run: npm run typo
+      - run: npm test
