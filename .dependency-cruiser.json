@@ -1,0 +1,21 @@
+{
+  "forbidden": [
+    {
+      "name": "aucun-cycle",
+      "comment": "Deux modules qui s'importent l'un l'autre, directement ou par un détour, ne se comprennent qu'ensemble.",
+      "severity": "error",
+      "from": {},
+      "to": { "circular": true }
+    },
+    {
+      "name": "aucun-orphelin",
+      "comment": "Un module de src/ qui n'importe rien et que rien n'importe ne sert à aucune commande. Les règles de couches restent dans test/couches.test.js.",
+      "severity": "error",
+      "from": { "orphan": true, "path": "^src/" },
+      "to": {}
+    }
+  ],
+  "options": {
+    "doNotFollow": { "path": "node_modules" }
+  }
+}

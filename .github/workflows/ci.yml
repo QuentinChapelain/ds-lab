@@ -33,6 +33,8 @@ jobs:
       - name: Chromium (sans fenêtre) et dépendances système
         run: npx playwright-core install --with-deps --only-shell chromium
       - run: npm run types
+      - run: npm run knip
+      - run: npm run dependances
       - run: npm run contraste
       - run: npm run espacements
       - run: npm run typo
