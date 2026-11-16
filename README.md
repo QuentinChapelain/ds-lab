@@ -29,9 +29,9 @@ npm run verify -- <adresse> --reference <dossier> [--save] [--sources <fichier>]
 npm run apply  -- --modifications <fichier> --racine <dossier> [--essai]   appliquer au CSS la part tranchée
 npm run demo   -- [--racine <dossier>]                       servir la marque fictive en local
 npm run saisie     -- <entree.json>                          saisir une marque : échelles, couche marque, contraste ; refus avec motif
-npm run contraste   -- [--paires <fichier>] [--marque <dossier>]   contrôler les paires de rôles de couleur
-npm run espacements -- [--semantique <fichier>]              contrôler les espacements par relation
-npm run typo        -- [--semantique <fichier>] [--primitives <fichier>] [--marque <fichier>]   contrôler les styles de texte
+npm run contraste   -- [--marque <dossier>] [--paires <fichier>] [--mode clair|sombre] [--largeur large|etroit]   contrôler les paires de rôles de couleur
+npm run espacements -- [--marque <dossier>] [--semantique <fichier>]   contrôler les espacements par relation
+npm run typo        -- [--marque <dossier>] [--semantique <fichier>] [--primitives <fichier>] [--couche-marque <fichier>]   contrôler les styles de texte
 npm run types                                                vérifier les types JSDoc de src/ (non strict, sans rien émettre)
 npm test
 ```
@@ -45,7 +45,7 @@ npm test
 | `table.json` | L'outil | La proposition et la synthèse. Le tour suivant relit `decisions.json`, exporté depuis la revue et passé avec `--decisions` |
 | `modifications.json` | `npm run apply` | Avec `--tokens` : chaque déclaration à modifier (feuille, ligne, sélecteur, propriété, valeur écrite attendue, nouvelle valeur), les commentaires à poser, le contenu de `tokens.css` |
 
-Le site audité n'est jamais modifié : les nouvelles valeurs sont posées dans le navigateur de l'outil, le temps des captures. Options utiles : `--tokens` (nommer les lignes par les jetons DTCG), `--decisions` (relire les choix du designer), `--live` (fenêtre avec une barre avant / après), `--viewport 390x844` (mobile).
+Le site audité n'est jamais modifié : les nouvelles valeurs sont posées dans le navigateur de l'outil, le temps des captures. Options utiles : `--tokens <fichier>` (nommer les lignes par les jetons DTCG : le resolver d'une marque, `tokens/orbe-cafe/marque.resolver.json`, ou un fichier de jetons ; un fichier qui ne donne aucun jeton sort en 2, D28), `--decisions` (relire les choix du designer), `--live` (fenêtre avec une barre avant / après), `--viewport 390x844` (mobile).
 
 `npm run apply` modifie une copie du site, à la racine donnée : il remplace chaque déclaration de `modifications.json` si la valeur écrite est bien celle attendue (sinon, un écart), pose les commentaires et écrit `tokens.css`. Relancé sur une copie déjà migrée, il ne change aucune feuille. Il ne touche pas au HTML ; il écrit `reste.md`, la consigne de ce qui reste pour l'agent (lien vers `tokens.css`, attributs d'accessibilité, écarts). `--essai` n'écrit rien. Il sort en 0 si tout est appliqué ou déjà appliqué, en 1 s'il reste au moins un écart (`--essai` compris), en 2 sur une panne : feuille illisible ou CSS invalide, et rien n'est écrit (D18).
 
@@ -71,13 +71,13 @@ La cible est écrite en quatre couches de jetons DTCG. Les couches communes à t
 | Rôles | `tokens/commun/semantique.tokens.json` | Les usages : couleurs de fond, de texte et de bordure, espacements par relation, styles de texte ; chacun en alias vers la marque ou une primitive |
 | Paires | `tokens/commun/paires.json` | Les paires de rôles devant / fond et leur seuil de contraste, les exceptions écrites et les paires interdites |
 
-Changer de marque, c'est changer la couche marque : les rôles restent les mêmes. Chaque marque a un resolver au format DTCG 2025.10, `marque.resolver.json`, qui réunit ses jeux de jetons et déclare deux contextes : le mode (clair, sombre) et la largeur (large, étroit). Un contexte échange des valeurs sous les rôles sans en changer un seul ; en étroit, seuls l'écart de section et les grands textes changent (`tokens/commun/largeur.etroit.tokens.json`). Trois commandes contrôlent la cible ; chacune sort en 0 si tout passe, en 1 si une règle échoue, en 2 si elle n'a pas pu juger (fichier absent ou illisible, option inconnue, panne), avec un message d'une ligne (D18) :
+Changer de marque, c'est changer la couche marque : les rôles restent les mêmes. Chaque marque a un resolver au format DTCG 2025.10, `marque.resolver.json`, qui réunit ses jeux de jetons et déclare deux contextes : le mode (clair, sombre) et la largeur (large, étroit). Un contexte échange des valeurs sous les rôles sans en changer un seul ; en étroit, seuls l'écart de section et les grands textes changent (`tokens/commun/largeur.etroit.tokens.json`). Trois commandes contrôlent la cible ; chacune sort en 0 si tout passe, en 1 si une règle échoue, en 2 si elle n'a pas pu juger (fichier absent ou illisible, option inconnue, panne), avec un message d'une ligne (D18). Chacune prend `--marque <dossier>` ; sans l'option, elle contrôle chaque marque de `tokens/`, un bloc par marque sous son en-tête « marque <nom> (tokens/<dossier>/) », et sort en 1 si une marque échoue (D26) :
 
 - `npm run contraste` : chaque paire de rôles atteint son seuil WCAG 2.1, sauf exception écrite ; les paires interdites sont affichées. `--mode sombre` et `--largeur etroit` choisissent le contexte (clair et large par défaut).
 - `npm run espacements` : écarts strictement croissants, valeurs en étroit, règles de proximité ; les primitives sans rôle sont affichées.
-- `npm run typo` : règles des styles de texte (hauteurs de ligne, hiérarchie en large et en étroit, consigne de hauteur de capitale des titres) ; les primitives sans rôle sont affichées.
+- `npm run typo` : règles des styles de texte (hauteurs de ligne, hiérarchie en large et en étroit, consigne de hauteur de capitale des titres) ; les primitives sans rôle sont affichées. `--couche-marque <fichier>` lit une couche marque donnée à part.
 
-Trois planches montrent la cible en situation : `tokens/orbe-cafe/roles.html`, `tokens/orbe-cafe/espacements.html`, `tokens/orbe-cafe/typo.html`, écrites par `node src/cli/planche.js [roles|espacements|typo]` (les trois sans argument). Les règles et leurs raisons sont dans `docs/regles.md`, les décisions dans `docs/decisions.md`.
+Trois planches par marque montrent la cible en situation, dans le dossier de la marque : `roles.html`, `espacements.html`, `typo.html` (pour Orbe Café, `tokens/orbe-cafe/roles.html`, `tokens/orbe-cafe/espacements.html`, `tokens/orbe-cafe/typo.html`). Même code pour toutes ; le nom de la marque est lu dans son resolver. Elles sont écrites par `node src/cli/planche.js [--marque <dossier>] [roles|espacements|typo]` : sans `--marque`, celles de chaque marque ; sans planche nommée, les trois (D27). Les règles et leurs raisons sont dans `docs/regles.md`, les décisions dans `docs/decisions.md`.
 
 ## Étape 4 : saisir une marque
 
@@ -89,7 +89,7 @@ Une marque entre par un fichier, `tokens/orbe-cafe/entree.json` pour Orbe Café 
 | 1 | Marque refusée : entrée invalide, `checkValise` en échec sur une échelle générée, paire de rôles sous son seuil, en clair ou en sombre, ou police des titres refusée par un garde-fou (format WOFF2, graisses des titres, signes français, licence déclarée, hauteur de capitale) ou par son encre (deux lignes qui se touchent sur un style de titre), ou fichier de police que le navigateur refuse de charger | Rien ; chaque motif est affiché avec son mode, `(clair)` ou `(sombre)` |
 | 2 | Panne, la marque n'a pas pu être jugée (D18) : aucun fichier donné, fichier absent ou JSON illisible, couche commune cassée, Chromium qui ne se lance pas pendant le contrôle d'encre ; message d'une ligne | Rien. Exception : si le contrôle `contraste` relancé après écriture ne conclut pas, ou trouve une paire en échec (incohérence de l'outil), les fichiers sont écrits et le message le dit |
 
-Sans accent, l'accent se replie sur le neutre (D05). Les couches communes (neutres, statuts, rôles, paires, espaces, typo) sont lues dans `tokens/commun/`. Orbe Café nomme ses échelles existantes (`{ "echelle": "bleu" }`), forme réservée à elle seule : sa couche marque est réécrite à l'identique. Les règles et la raison sont dans D13 (`docs/decisions.md`) ; le contrat tient en une page, `docs/contrat-de-marque.md`.
+Sans accent, l'accent se replie sur le neutre (D05). Les couches communes (neutres, statuts, rôles, paires, espaces, typo) sont lues dans `tokens/commun/`. Une entrée peut nommer une échelle existante (`{ "echelle": "bleu" }`) si elle est écrite à la main dans le dossier de sa marque, `primitives.tokens.json` (D25) ; Orbe Café seule en a un, sa couche marque est réécrite à l'identique ; une échelle commune (neutre, statuts) ne se nomme pas. Les règles et la raison sont dans D13 (`docs/decisions.md`) ; le contrat tient en une page, `docs/contrat-de-marque.md`.
 
 La saisie écrit aussi le mode sombre de la marque : une échelle sombre pour le primaire et l'accent, générée depuis le même pas 9, et une couche marque sombre. En sombre, la page est un gris très foncé (`#121212`) et chaque surface posée au-dessus est plus claire ; les textes de couleur sont plus lumineux (pas 11 à 9:1 sur la page) ; le bouton prend la version lumineuse de la couleur du client (pas 11, texte au pas 1), l'aplat plein garde la couleur exacte. Neutres et statuts sombres sont communs (`tokens/commun/mode.sombre.tokens.json`, écrit par `node src/cli/sombre.js`). Les rôles ne changent pas d'un mode à l'autre ; les cibles sombres sont des hypothèses jugées sur image.
 
@@ -172,7 +172,7 @@ Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier
 | `src/` | Audit, réduction, simulation, rapports |
 | `tokens/commun/` | Couches communes à toutes les marques : primitives, statuts, rôles, paires, contexte étroit |
 | `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive (entrée, échelles, marque, resolver) et les trois planches |
-| `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/` | Trois marques fictives saisies par fichier (lot 2 de l'étape 4) |
+| `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/` | Trois marques fictives saisies par fichier (lot 2 de l'étape 4), et leurs trois planches |
 | `docs/` | Règles du design system, décisions, contrat de marque, attendus des prochains lots |
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles, attendus |
 | `fixtures/polices/` | Quatre polices d'essai sous licence libre, chacune avec sa licence (étape 4c) |
