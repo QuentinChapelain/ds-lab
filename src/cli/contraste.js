@@ -16,6 +16,7 @@ import { parseArgs } from 'node:util';
 import { loadRoles, contrat } from '../tokens/roles.js';
 import { ORBE } from '../tokens/resolver.js';
 import { lancer } from './garde.js';
+import { fr } from '../lib/format.js';
 
 await lancer('contraste', () => {
   const { values } = parseArgs({ options: { paires: { type: 'string' }, marque: { type: 'string' }, mode: { type: 'string' }, largeur: { type: 'string' } } });
@@ -25,7 +26,7 @@ await lancer('contraste', () => {
   const largeur = values.largeur ?? 'large';
   if (mode !== 'clair' || largeur !== 'large') console.log(`mode ${mode}, largeur ${largeur}`);
 
-  const fr = (/** @type {number} */ n) => n.toFixed(2).replace('.', ',');
+  const D2 = { decimales: 2, zeros: true };
   const plural = (/** @type {number} */ n, /** @type {string} */ one, /** @type {string} */ many) => `${n} ${n > 1 ? many : one}`;
 
   let group = '';
@@ -33,12 +34,12 @@ await lancer('contraste', () => {
     const g = p.devant.split('.')[0];
     if (g !== group) console.log(`\n${(group = g)}`);
     const mark = p.ok ? '✓' : p.exception ? '~' : '✗';
-    console.log(`  ${mark} ${p.devant} sur ${p.fond} : ${fr(p.ratio)}:1, seuil ${fr(p.min)}:1${p.exception ? ` (exception : ${p.exception})` : ''}`);
+    console.log(`  ${mark} ${p.devant} sur ${p.fond} : ${fr(p.ratio, D2)}:1, seuil ${fr(p.min, D2)}:1${p.exception ? ` (exception : ${p.exception})` : ''}`);
   }
 
   console.log(`\n${plural(c.roles.pairs.length, 'paire', 'paires')} de rôles, ${plural(c.roles.fails.length, 'paire en échec', 'paires en échec')}, ${plural(c.roles.exceptions.length, 'exception écrite', 'exceptions écrites')}, ${plural(c.roles.interdites.length, 'paire interdite', 'paires interdites')}.`);
-  for (const p of c.roles.fails) console.log(`  ✗ ${p.devant} sur ${p.fond} : ${fr(p.ratio)}:1 < ${fr(p.min)}:1`);
-  for (const p of c.roles.interdites) console.log(`  ⊘ ${p.devant} sur ${p.fond} (${fr(p.ratio)}:1) : interdite, ${p.regle}`);
+  for (const p of c.roles.fails) console.log(`  ✗ ${p.devant} sur ${p.fond} : ${fr(p.ratio, D2)}:1 < ${fr(p.min, D2)}:1`);
+  for (const p of c.roles.interdites) console.log(`  ⊘ ${p.devant} sur ${p.fond} (${fr(p.ratio, D2)}:1) : interdite, ${p.regle}`);
 
   if (c.echelles.fails.length) {
     console.log(`\nContrat par échelle (contractOf, pour information) : ${plural(c.echelles.fails.length, 'écart', 'écarts')}.`);

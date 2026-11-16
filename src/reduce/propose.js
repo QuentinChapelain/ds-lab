@@ -39,6 +39,7 @@
  * trois au plus, quand ils sont mélangés.
  */
 import { toLab, deltaE, isOpaque, contrastRatio, relativeLuminance } from '../lib/color.js';
+import { fr, r4 } from '../lib/format.js';
 import { resolveBrand, isGrey } from '../brand/brand.js';
 import { converter } from 'culori';
 
@@ -504,8 +505,6 @@ function radiusUsageRows(usages, scale) {
 
 /** @param {number} d  ΔE */
 const byDelta = (d) => (d <= THRESHOLDS.autoDeltaE ? 'auto' : d <= THRESHOLDS.nearDeltaE ? 'proche' : 'décision');
-/** @param {number} n */
-const round4 = (n) => Math.round(n * 10000) / 10000;
 
 /**
  * Lot B : couleurs par valeur × usage, règles R1 à R5, R8 et R9.
@@ -547,7 +546,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
       const ratio = contrastRatio(text, p.bg);
       if (!worst || ratio / p.threshold < worst.ratio / worst.threshold) worst = { ratio, threshold: p.threshold };
     }
-    return scale && worst ? { scale, ratio: round4(worst.ratio), threshold: worst.threshold } : null;
+    return scale && worst ? { scale, ratio: r4(worst.ratio), threshold: worst.threshold } : null;
   };
 
   /** @type {(Row & { _cands?: any[], _nearest?: any, _fixed?: boolean, _exact?: any })[]} */
@@ -767,7 +766,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
         }
         // Revue de code du 15/11, lot 2 : le motif cite le seuil de la paire en échec (4,5:1, ou 3:1 pour un grand texte).
         if (cls === 'correction') {
-          const seuil = seuilFr(worst(ps, (p) => [r.old, p.bg]).threshold);
+          const seuil = fr(worst(ps, (p) => [r.old, p.bg]).threshold);
           reason = r.usage === 'texte' ? `texte sous ${seuil}:1 avant, au seuil après (R9)` : `bordure de champ sous ${seuil}:1 avant, au seuil après (R9)`;
         }
         const m = brandRule(r, chosen, cls);
@@ -780,7 +779,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
         if (set(r, chosen, cls, reason)) (changed = true), bougees.add(r);
         const b = worst(ps, (p) => [r.old, p.bg]);
         const a = worst(ps, (p) => [r.new ?? r.old, now(p.bg, p.bgUsage)]);
-        r.contrast = { threshold: b.threshold, before: round4(b.ratio), after: round4(a.ratio) };
+        r.contrast = { threshold: b.threshold, before: r4(b.ratio), after: r4(a.ratio) };
       } else if (r.usage === 'fond' || r.usage === 'plein') {
         const ps = bgPairs.get(`${r.old}|${r.usage}`);
         if (!ps?.length || r._exact) continue;
@@ -793,7 +792,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
         let reason;
         if (beforeFail && ownFix && hasScales && c.t.scale === nearestScale) {
           cls = 'correction';
-          reason = `texte porté sous ${seuilFr(worst(ps, (p) => [p.text, r.old]).threshold)}:1 avant, au seuil après (R9)`;
+          reason = `texte porté sous ${fr(worst(ps, (p) => [p.text, r.old]).threshold)}:1 avant, au seuil après (R9)`;
         } else if (!beforeFail && !afterOk && (cls === 'auto' || cls === 'proche')) {
           cls = 'décision';
           reason = 'la paire passe avant et échoue après (R2)';
@@ -806,7 +805,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
         if (set(r, c, cls, reason)) (changed = true), bougees.add(r);
         const b = worst(ps, (p) => [p.text, r.old]);
         const a = worst(ps, (p) => [now(p.text, 'texte'), r.new ?? r.old]);
-        r.contrast = { threshold: b.threshold, before: round4(b.ratio), after: round4(a.ratio) };
+        r.contrast = { threshold: b.threshold, before: r4(b.ratio), after: r4(a.ratio) };
       }
     }
     if (!changed) break;
@@ -1085,7 +1084,7 @@ export function worstContrast(usages, r, value, map = {}) {
   for (const p of list) {
     const ratio = contrastRatio(p.text, p.bg);
     if (worst && ratio / p.threshold >= worst.ratio / worst.threshold) continue;
-    worst = { ratio: round4(ratio), threshold: p.threshold, text: p.text, bg: p.bg };
+    worst = { ratio: r4(ratio), threshold: p.threshold, text: p.text, bg: p.bg };
     if (fg && p.today !== p.bg) worst.bgToday = p.today;
     if (!fg && p.today !== p.text) worst.textToday = p.today;
   }
@@ -1096,8 +1095,6 @@ export function worstContrast(usages, r, value, map = {}) {
 /** Revue de code du 15/11, lot 2 (D19) : état forcé d'une ligne vue seulement à cet état, dans son titre. */
 export const ETATS = /** @type {Record<string, string>} */ ({ hover: 'au survol', focus: 'au focus', active: 'à l’appui' });
 
-/** Seuil de contraste écrit à la française (4,5 ; 3). @param {number} t */
-const seuilFr = (t) => String(t).replace('.', ',');
 
 /** Revue de code du 15/11, lot 1b : motif d'une ligne qui change encore au dixième tour de la boucle de stabilisation. */
 export const NON_STABILISE = 'non stabilisé après 10 tours';

@@ -13,14 +13,13 @@ import { oklch, wcagContrast, formatHex, clampChroma, differenceEuclidean } from
 import { generateScale, HUED_CHROMA } from '../valise/generate.js';
 import { classePlein, voileBlanc, voileNoir, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL } from '../tokens/pleins.js';
 import { saisir, chargerCommun, lirePropresOrbe } from '../tokens/saisie.js';
+import { fr, esc } from '../lib/format.js';
 
 const WHITE = '#ffffff';
 const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
 const dEok = differenceEuclidean('oklab');
 /** ΔE OKLab × 100. @param {string} a @param {string} b */
 const dE = (a, b) => 100 * dEok(a, b);
-/** @param {number} n @param {number} [d] */
-const fr = (n, d = 2) => n.toFixed(d).replace('.', ',');
 
 /**
  * @typedef {import('../tokens/pleins.js').Classe} Classe
@@ -125,12 +124,10 @@ export function balayage() {
   }));
 }
 
-/** @param {string} s */
-const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 /** @param {string} bg @param {string} fg @param {string} txt @param {string} [title] */
 const pastille = (bg, fg, txt, title = '') => `<span class="b" style="background:${bg};color:${fg}"${title ? ` title="${esc(title)}"` : ''}>${esc(txt)}</span>`;
 /** La règle en une phrase. */
-const REGLE = `blanc ≥ ${fr(BLANC_MIN, 1)} sur le pas 9 : couleur exacte, texte blanc (survol par voile blanc si blanc ≥ ${fr(SOMBRE_BLANC, 1)}, sinon par voile noir de 15 %) ; sinon, pas 12 ≥ ${TEXTE_FONCE} sur le pas 9 et ≥ ${fr(TEXTE_FONCE_SURVOL, 1)} sur le pas 10 : couleur exacte, texte au pas 12 ; sinon pas 11, texte blanc. Primaire et accent seulement ; statuts figés.`;
+const REGLE = `blanc ≥ ${fr(BLANC_MIN, { decimales: 1, zeros: true })} sur le pas 9 : couleur exacte, texte blanc (survol par voile blanc si blanc ≥ ${fr(SOMBRE_BLANC, { decimales: 1, zeros: true })}, sinon par voile noir de 15 %) ; sinon, pas 12 ≥ ${TEXTE_FONCE} sur le pas 9 et ≥ ${fr(TEXTE_FONCE_SURVOL, { decimales: 1, zeros: true })} sur le pas 10 : couleur exacte, texte au pas 12 ; sinon pas 11, texte blanc. Primaire et accent seulement ; statuts figés.`;
 const LETTRE = /** @type {Record<string, string>} */ ({ sombre: 'S', soutenu: 'T', clair: 'C', moyen: 'M' });
 const ouiNon = (/** @type {boolean | null} */ v) => (v === null ? '—' : v ? 'oui' : 'non');
 
@@ -142,15 +139,15 @@ function lignes(cols) {
   return [
     ['Saisie [F]', map((c) => (c.motifs.length ? `refusée : ${c.motifs.join(' ; ')}` : 'acceptée'))],
     ['Couleur saisie (pas 9) [F]', map((c) => p(c)?.hex ?? '—')],
-    ['Blanc sur la couleur [F]', map((c) => (p(c) ? `${fr(/** @type {any} */ (p(c)).blanc)}:1` : '—'))],
-    ['OKLCH : L, C, h [F]', map((c) => (p(c) ? `${fr(/** @type {any} */ (p(c)).l, 3)} ; ${fr(/** @type {any} */ (p(c)).chroma, 3)} ; ${p(c)?.h === undefined ? '—' : fr(/** @type {number} */ (p(c)?.h), 1) + '°'}` : '—'))],
+    ['Blanc sur la couleur [F]', map((c) => (p(c) ? `${fr(/** @type {any} */ (p(c)).blanc, { decimales: 2, zeros: true })}:1` : '—'))],
+    ['OKLCH : L, C, h [F]', map((c) => (p(c) ? `${fr(/** @type {any} */ (p(c)).l, { decimales: 3, zeros: true })} ; ${fr(/** @type {any} */ (p(c)).chroma, { decimales: 3, zeros: true })} ; ${p(c)?.h === undefined ? '—' : fr(/** @type {number} */ (p(c)?.h), { decimales: 1, zeros: true }) + '°'}` : '—'))],
     ['Classe selon le générateur (école) [F]', map((c) => (p(c) ? `${p(c)?.ecole}, texte ${p(c)?.texteGenerateur} sur le pas 9` : '—'))],
     ['Classe selon la règle des pleins [F]', map((c) => p(c)?.classe ?? '—')],
     ['Couleur exacte sur le bouton [F]', map((c) => (p(c) ? `${ouiNon(/** @type {any} */ (p(c)).exacte)} (pas ${p(c)?.pasBouton})` : '—'))],
     ['Accent : couleur, école, règle [F]', map((c) => (c.accent ? `${c.accent.hex}, ${c.accent.ecole}, ${c.accent.classe}` : 'aucun, repli sur le neutre'))],
     ['Primaire grise (C < 0,02) [F]', map((c) => ouiNon(c.grise))],
-    ['Statut le plus proche, ΔE OKLab [F]', map((c) => (c.statutProche ? `${c.statutProche.nom}, ${fr(c.statutProche.dE, 1)}` : '—'))],
-    ['Accent proche du primaire, ΔE OKLab [F]', map((c) => (c.accentProche === null ? '—' : fr(c.accentProche, 1)))],
+    ['Statut le plus proche, ΔE OKLab [F]', map((c) => (c.statutProche ? `${c.statutProche.nom}, ${fr(c.statutProche.dE, { decimales: 1, zeros: true })}` : '—'))],
+    ['Accent proche du primaire, ΔE OKLab [F]', map((c) => (c.accentProche === null ? '—' : fr(c.accentProche, { decimales: 1, zeros: true })))],
   ];
 }
 
@@ -169,14 +166,14 @@ export function calibrageMd(cols, planches = []) {
     ...lignes(cols).map(([k, v]) => `| ${k} | ${/** @type {string[]} */ (v).map((x) => x.replace(/\|/g, '\\|')).join(' | ')} |`),
     '',
   ];
-  if (planches.length) out.push('## Balayage', '', `Teintes ${TEINTES[0]}° à ${TEINTES.at(-1)}°, clartés ${fr(CLARTES[0])} à ${fr(/** @type {number} */ (CLARTES.at(-1)))}.`, '');
+  if (planches.length) out.push('## Balayage', '', `Teintes ${TEINTES[0]}° à ${TEINTES.at(-1)}°, clartés ${fr(CLARTES[0], { decimales: 2, zeros: true })} à ${fr(/** @type {number} */ (CLARTES.at(-1)), { decimales: 2, zeros: true })}.`, '');
   for (const pl of planches) {
     const n = (/** @type {(x: any) => boolean} */ f) => pl.cases.filter(f).length;
     const refus = pl.cases.filter((x) => x.motifs.length);
     out.push(
       `- ${pl.titre} [F] : ${pl.cases.length} cases ; sombre ${n((x) => x.classe === 'sombre')}, soutenu ${n((x) => x.classe === 'soutenu')}, clair ${n((x) => x.classe === 'clair')}, moyen ${n((x) => x.classe === 'moyen')} ; ` +
         `gardent la couleur exacte : ${n((x) => x.exacte)}, dont acceptées à la saisie : ${n((x) => x.exacte && !x.motifs.length)} ; ` +
-        `refusées à la saisie : ${refus.length} (clair : ${refus.filter((x) => x.classe === 'clair').map((x) => `${fr(x.l)}/${x.h}°`).join(', ') || 'aucune'} ; moyen : ${refus.filter((x) => x.classe === 'moyen').map((x) => `${fr(x.l)}/${x.h}°`).join(', ') || 'aucune'}).`,
+        `refusées à la saisie : ${refus.length} (clair : ${refus.filter((x) => x.classe === 'clair').map((x) => `${fr(x.l, { decimales: 2, zeros: true })}/${x.h}°`).join(', ') || 'aucune'} ; moyen : ${refus.filter((x) => x.classe === 'moyen').map((x) => `${fr(x.l, { decimales: 2, zeros: true })}/${x.h}°`).join(', ') || 'aucune'}).`,
     );
   }
   if (planches.length) out.push('');
@@ -206,10 +203,10 @@ export function calibrageHtml(cols, planches) {
         const x = /** @type {any} */ (pl.cases.find((k) => k.l === l && k.h === h));
         const a = x.autre;
         const ratio = a ? a.ratioPlein : null;
-        const titre = `${x.hex} · règle : ${x.classe}, bouton pas ${x.regle.pas}${x.exacte ? ' (couleur exacte)' : ''}${a ? ` · autre cas : ${a.classe}, texte ${fr(a.ratioPlein)} sur le plein, ${fr(a.ratioSurvol)} sur le survol` : ''}${x.motifs.length ? ` · saisie refusée : ${x.motifs.join(' ; ')}` : ''}`;
-        return `<td class="c${x.exacte ? ' exacte' : ''}${x.motifs.length ? ' refus' : ''}" title="${esc(titre)}"><span class="sw2" style="background:${x.hex}"></span>${pastille(x.regle.plein, x.regle.texte, 'Aa')}${a ? `${pastille(a.plein, a.texte, 'Aa')}<small class="${/** @type {number} */ (ratio) < TEXTE_FONCE ? 'ko' : ''}">${fr(/** @type {number} */ (ratio), 1)}</small>` : '<small>—</small>'}<small>${LETTRE[x.classe]}${x.motifs.length ? ' ✗' : ''}</small></td>`;
+        const titre = `${x.hex} · règle : ${x.classe}, bouton pas ${x.regle.pas}${x.exacte ? ' (couleur exacte)' : ''}${a ? ` · autre cas : ${a.classe}, texte ${fr(a.ratioPlein, { decimales: 2, zeros: true })} sur le plein, ${fr(a.ratioSurvol, { decimales: 2, zeros: true })} sur le survol` : ''}${x.motifs.length ? ` · saisie refusée : ${x.motifs.join(' ; ')}` : ''}`;
+        return `<td class="c${x.exacte ? ' exacte' : ''}${x.motifs.length ? ' refus' : ''}" title="${esc(titre)}"><span class="sw2" style="background:${x.hex}"></span>${pastille(x.regle.plein, x.regle.texte, 'Aa')}${a ? `${pastille(a.plein, a.texte, 'Aa')}<small class="${/** @type {number} */ (ratio) < TEXTE_FONCE ? 'ko' : ''}">${fr(/** @type {number} */ (ratio), { decimales: 1, zeros: true })}</small>` : '<small>—</small>'}<small>${LETTRE[x.classe]}${x.motifs.length ? ' ✗' : ''}</small></td>`;
       }).join('');
-      return `<tr><th>${fr(l)}</th>${cells}</tr>`;
+      return `<tr><th>${fr(l, { decimales: 2, zeros: true })}</th>${cells}</tr>`;
     }).join('\n');
     return `<h3>${esc(pl.titre)}</h3><div class="scroll"><table class="grille">${head}\n${rows}</table></div>`;
   };

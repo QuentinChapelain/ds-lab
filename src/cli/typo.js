@@ -9,7 +9,8 @@
  * commune (src/cli/garde.js).
  */
 import { parseArgs } from 'node:util';
-import { typo, fr } from '../tokens/typo.js';
+import { typo } from '../tokens/typo.js';
+import { fr } from '../lib/format.js';
 import { largeurs, enEtroit } from '../tokens/resolver.js';
 import { lancer, lireJson } from './garde.js';
 
@@ -27,16 +28,17 @@ await lancer('typo', () => {
     { ...l.etroit, semantique: enEtroit(sem, contexte) },
   );
 
-  const ligne = (/** @type {number} */ n) => fr(Math.round(n * 100) / 100);
+  const D4 = { decimales: 4 };
+  const ligne = (/** @type {number} */ n) => fr(n, { decimales: 2 });
   const cols = r.styles.map((s) => [
     s.style,
-    `${fr(s.large.taille)} / ${ligne(s.large.ligne)} px`,
-    `rapport ${fr(s.large.interligne)}`,
-    s.etroit ? `étroit ${fr(s.etroit.taille)} / ${ligne(s.etroit.ligne)} px` : '',
-    s.etroit ? `rapport ${fr(s.etroit.interligne)}` : '',
+    `${fr(s.large.taille, D4)} / ${ligne(s.large.ligne)} px`,
+    `rapport ${fr(s.large.interligne, D4)}`,
+    s.etroit ? `étroit ${fr(s.etroit.taille, D4)} / ${ligne(s.etroit.ligne)} px` : '',
+    s.etroit ? `rapport ${fr(s.etroit.interligne, D4)}` : '',
     String(s.graisse),
     String(s.police).replace(/^\{marque\.(.*)\}$/, '$1'),
-    s.hauteurCapitale !== null ? `capitale ${fr(s.hauteurCapitale)} × taille` : '',
+    s.hauteurCapitale !== null ? `capitale ${fr(s.hauteurCapitale, D4)} × taille` : '',
   ]);
   const w = cols[0].map((_, i) => Math.max(...cols.map((c) => c[i].length)));
   const sous = r.styles.find((s) => s.sous !== null);

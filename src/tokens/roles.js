@@ -10,9 +10,8 @@ import { wcagContrast, formatHex } from 'culori';
 import { contractOf } from '../valise/generate.js';
 import { valiseFromTokens } from './primitives.js';
 import { lireResolver, partager, COMMUN, ORBE, RESOLVER } from './resolver.js';
+import { r4 } from '../lib/format.js';
 
-/** @param {number} n */
-const r4 = (n) => Math.round(n * 10000) / 10000;
 
 /**
  * Jetons d'un fichier DTCG à plat : chemin logique → jeton. Un $root prend le chemin de son groupe

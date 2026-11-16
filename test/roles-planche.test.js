@@ -37,7 +37,9 @@ const INTERDITES = new Map([
   ['bordure.forte|fond.composant', { ratio: 2.8718, regle: 'un champ se pose sur fond.surface' }],
   ['bordure.focus|fond.interactif.fort', { ratio: 1.5406, regle: 'l’anneau de focus est décalé de 2 px et se pose sur le fond de la page, jamais sur le plein' }],
 ]);
-const trunc = (/** @type {number} */ n) => (Math.floor(n * 100) / 100).toFixed(2).replace('.', ',');
+// Revue de code du 15/11, lot 4 : la troncature se fait sur la valeur arrondie à 4 décimales (5,02 × 100 = 501,999… en
+// flottant, qui donnait 5,01).
+const trunc = (/** @type {number} */ n) => (Math.floor(Math.round(n * 10000) / 100) / 100).toFixed(2).replace('.', ',');
 
 /** @param {string} s */
 const rows = (s) => [...s.matchAll(/<tr data-devant="([^"]+)" data-fond="([^"]+)"[^>]*>([^]*?)<\/tr>/g)].map((m) => ({ devant: m[1], fond: m[2], body: m[3] }));

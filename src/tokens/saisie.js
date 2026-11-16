@@ -30,6 +30,7 @@ import { scaleToDtcg, valiseFromTokens, OPTIONS_COULEUR_SOMBRE } from './primiti
 import { marqueTokens, marqueSombreTokens } from './pleins.js';
 import { contratRoles, resolveRoles } from './roles.js';
 import { COMMUN, ORBE, modeleResolver, resoudre, partager, fusionner, enEtroit, seuilEtroit } from './resolver.js';
+import { fr } from '../lib/format.js';
 
 export { COMMUN };
 const CLES = ['nom', 'description', 'primaire', 'accent', 'polices'];
@@ -37,8 +38,6 @@ const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
 const HEX = /^#[0-9a-f]{6}$/i;
 const LABELS = { primaire: 'Primaire', accent: 'Accent' };
 
-/** @param {number} n */
-const fr = (n) => n.toFixed(2).replace('.', ',');
 /** @param {string} a @param {string} b */
 const memeDossier = (a, b) => resolve(a) === resolve(b);
 
@@ -313,7 +312,7 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
     } catch (e) {
       throw new Error(`contraste (${mode}) : ${/** @type {Error} */ (e).message}`);
     }
-    for (const p of c.fails) motifs.push(`contraste (${mode}) : ${p.devant} sur ${p.fond}, ${fr(p.ratio)}:1 < ${String(p.min).replace('.', ',')}:1`);
+    for (const p of c.fails) motifs.push(`contraste (${mode}) : ${p.devant} sur ${p.fond}, ${fr(p.ratio, { decimales: 2, zeros: true })}:1 < ${fr(p.min)}:1`);
   }
   const resolver = modeleResolver({
     nom: entree.nom,

@@ -9,6 +9,7 @@
  * Neuf règles (échec, code 1) ; le rapport de chaque style et les primitives sans rôle sont affichés sans seuil.
  */
 import { flattenTokens, tokenTypes, primitivesSansRole } from './roles.js';
+import { fr } from '../lib/format.js';
 
 export const REM = 16;
 export const PAS = 4;
@@ -32,8 +33,8 @@ export const INTERLIGNES_MIN = [
  * @typedef {{ id: string, titre: string, ok: boolean, details: string[] }} Regle
  */
 
-/** Nombre à la française, 4 décimales au plus. @param {number} n */
-export const fr = (n) => String(Math.round(n * 10000) / 10000).replace('.', ',');
+/** Nombres de la typo : 4 décimales au plus. */
+const D4 = { decimales: 4 };
 /** @param {number} n */
 const r2 = (n) => Math.round(n * 100) / 100;
 
@@ -115,11 +116,11 @@ export function typo(semantique, primitives, marque, largeurEtroite) {
 
   regle(
     'multiple-4',
-    `taille × interligne multiple de ${PAS} px (tolérance ${fr(TOLERANCE)} px), en large et en étroit`,
+    `taille × interligne multiple de ${PAS} px (tolérance ${fr(TOLERANCE, D4)} px), en large et en étroit`,
     styles.flatMap((s) =>
       variantes(s)
         .filter(([, m]) => Math.abs(m.ligne - Math.round(m.ligne / PAS) * PAS) > TOLERANCE)
-        .map(([n, m]) => `${s.style} en ${n} : ${fr(m.taille)} px × ${fr(m.interligne)} = ${fr(r2(m.ligne))} px`),
+        .map(([n, m]) => `${s.style} en ${n} : ${fr(m.taille, D4)} px × ${fr(m.interligne, D4)} = ${fr(r2(m.ligne), D4)} px`),
     ),
   );
   regle(
@@ -130,7 +131,7 @@ export function typo(semantique, primitives, marque, largeurEtroite) {
         const s = get(name);
         return { name, taille: (n === 'étroit' ? (s.etroit ?? s.large) : s.large).taille };
       });
-      return suite.slice(1).flatMap((b, i) => (b.taille < suite[i].taille ? [] : [`en ${n} : ${suite[i].name} ${fr(suite[i].taille)} px, ${b.name} ${fr(b.taille)} px`]));
+      return suite.slice(1).flatMap((b, i) => (b.taille < suite[i].taille ? [] : [`en ${n} : ${suite[i].name} ${fr(suite[i].taille, D4)} px, ${b.name} ${fr(b.taille, D4)} px`]));
     }),
   );
   regle(
@@ -140,24 +141,24 @@ export function typo(semantique, primitives, marque, largeurEtroite) {
       .filter((s) => s.etroit && (s.etroit.taille > s.large.taille || s.etroit.ligne > s.large.ligne + TOLERANCE))
       .map((s) => {
         const e = /** @type {Mesure} */ (s.etroit);
-        return `${s.style} : étroit ${fr(e.taille)} / ${fr(r2(e.ligne))} px, large ${fr(s.large.taille)} / ${fr(r2(s.large.ligne))} px`;
+        return `${s.style} : étroit ${fr(e.taille, D4)} / ${fr(r2(e.ligne), D4)} px, large ${fr(s.large.taille, D4)} / ${fr(r2(s.large.ligne), D4)} px`;
       }),
   );
   for (const g of INTERLIGNES_MIN)
     regle(
       g.id,
-      `${g.styles.join(', ')} : interligne au moins ${fr(g.min)}`,
-      g.styles.flatMap((name) => variantes(get(name)).filter(([, m]) => m.interligne < g.min).map(([n, m]) => `${name} en ${n} : ${fr(m.interligne)} < ${fr(g.min)}`)),
+      `${g.styles.join(', ')} : interligne au moins ${fr(g.min, D4)}`,
+      g.styles.flatMap((name) => variantes(get(name)).filter(([, m]) => m.interligne < g.min).map(([n, m]) => `${name} en ${n} : ${fr(m.interligne, D4)} < ${fr(g.min, D4)}`)),
     );
   regle(
     'corps-1rem',
     `corps.moyen au moins 1 rem (${REM} px)`,
-    variantes(get('corps.moyen')).filter(([, m]) => m.taille < REM).map(([n, m]) => `corps.moyen en ${n} : ${fr(m.taille)} px < ${REM} px (1 rem)`),
+    variantes(get('corps.moyen')).filter(([, m]) => m.taille < REM).map(([n, m]) => `corps.moyen en ${n} : ${fr(m.taille, D4)} px < ${REM} px (1 rem)`),
   );
   regle(
     'min-12',
     `aucune taille sous ${MIN_PX} px, en large et en étroit`,
-    styles.flatMap((s) => variantes(s).filter(([, m]) => m.taille < MIN_PX).map(([n, m]) => `${s.style} en ${n} : ${fr(m.taille)} px < ${MIN_PX} px`)),
+    styles.flatMap((s) => variantes(s).filter(([, m]) => m.taille < MIN_PX).map(([n, m]) => `${s.style} en ${n} : ${fr(m.taille, D4)} px < ${MIN_PX} px`)),
   );
   regle(
     'police',
@@ -178,11 +179,11 @@ export function typo(semantique, primitives, marque, largeurEtroite) {
           const titre = SUR_POLICE_TITRE.includes(s.style);
           if (titre && m.hauteurCapitale === null) return [`${s.style} en ${n} : consigne absente`];
           if (!titre && m.hauteurCapitale !== null) return [`${s.style} en ${n} : consigne hors des styles de titre`];
-          if (m.hauteurCapitale !== null && !(m.hauteurCapitale > 0 && m.hauteurCapitale < 1)) return [`${s.style} en ${n} : consigne ${fr(m.hauteurCapitale)} hors de ]0, 1[`];
+          if (m.hauteurCapitale !== null && !(m.hauteurCapitale > 0 && m.hauteurCapitale < 1)) return [`${s.style} en ${n} : consigne ${fr(m.hauteurCapitale, D4)} hors de ]0, 1[`];
           return [];
         }),
       ),
-      ...(valeurs.size > 1 ? [`consignes différentes : ${[...valeurs].map(fr).join(', ')}`] : []),
+      ...(valeurs.size > 1 ? [`consignes différentes : ${[...valeurs].map((v) => fr(v, D4)).join(', ')}`] : []),
     ],
   );
 

@@ -7,13 +7,8 @@
  * sous 640 px chaque ligne s'empile en carte (aucune colonne masquée).
  * Ratio tronqué à 2 décimales (jamais arrondi vers le seuil). Page autonome, sans ressource externe.
  */
+import { fr, esc } from '../lib/format.js';
 
-/** @param {string} s */
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => /** @type {Record<string, string>} */ ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-/** @param {number} n */
-const ratioFr = (n) => `${(Math.floor(n * 100) / 100).toFixed(2).replace('.', ',')}:1`;
-/** @param {number} n */
-const seuilFr = (n) => `${String(n).replace('.', ',')}:1`;
 /** @param {number} n @param {string} one @param {string} many */
 const plural = (n, one, many) => `${n} ${n > 1 ? many : one}`;
 
@@ -39,8 +34,8 @@ function row(p, word, min) {
   return `        <tr data-devant="${esc(p.devant)}" data-fond="${esc(p.fond)}" class="${cls}">
           <td data-label="Fond"><span class="pastille" style="background:${p.hexFond}"></span><code>${esc(p.fond)}</code> <span class="hex">${p.hexFond}</span></td>
           <td data-label="Mot écrit"><span class="echantillon ${isText ? 'texte' : 'bordure'}" style="${style}">${esc(word)}</span><span class="paire"><code>${esc(p.devant)}</code> <span class="hex">${p.hexDevant}</span> <span class="sur">sur <code>${esc(p.fond)}</code></span></span></td>
-          <td data-label="Ratio" class="num">${ratioFr(p.ratio)}</td>
-          <td data-label="Seuil" class="num">${seuilFr(p.min ?? min)}</td>
+          <td data-label="Ratio" class="num">${fr(p.ratio, { decimales: 2, zeros: true, tronque: true })}:1</td>
+          <td data-label="Seuil" class="num">${fr(p.min ?? min)}:1</td>
           <td data-label="Verdict"><span class="verdict">${verdict}</span>${note ? ` <span class="motif">${esc(note)}</span>` : ''}</td>
         </tr>`;
 }

@@ -23,6 +23,7 @@
  */
 import { isOut, decisionFor, rowKey, onSolidOf, mapping } from './propose.js';
 import { contrastRatio, isOpaque, toLab, deltaE, relativeLuminance } from '../lib/color.js';
+import { r4 } from '../lib/format.js';
 
 /** Versions d'une carte de plein, dans l'ordre de la carte. */
 export const PLEIN_CHOICES = /** @type {const} */ (['onSolid', 'pas-10', 'teinte', 'garder']);
@@ -46,7 +47,6 @@ export function pleinFinder(target) {
 
 /** @param {Record<string, any>} map @param {string} v @param {string} usage */
 const mapped = (map, v, usage) => map.colors?.[`${v}|${usage}`] ?? map.colors?.[v] ?? v;
-const r4 = (/** @type {number} */ x) => Math.round(x * 10000) / 10000;
 
 /**
  * @typedef {{ choice: string, label: string, text: string, bg: string, ratio: number, threshold: number, pass: boolean }} PleinVersion

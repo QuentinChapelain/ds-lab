@@ -15,6 +15,7 @@ import { parseArgs } from 'node:util';
 import { espacements } from '../tokens/espacements.js';
 import { largeurs, enEtroit } from '../tokens/resolver.js';
 import { lancer, lireJson } from './garde.js';
+import { fr } from '../lib/format.js';
 
 await lancer('espacements', () => {
   const { values } = parseArgs({ options: { semantique: { type: 'string' }, etroit: { type: 'string' } } });
@@ -23,14 +24,14 @@ await lancer('espacements', () => {
   const contexte = values.etroit ? [lireJson(values.etroit)] : l.contexte;
   const r = espacements(sem, l.large.primitives, { ...l.etroit, semantique: enEtroit(sem, contexte) });
 
-  const fr = (/** @type {number | null} */ n) => (n === null ? '—' : String(n).replace('.', ','));
+  const TIRET = { vide: '—' };
   const w = Math.max(...[...r.ecarts, ...r.horsControle].map((e) => e.role.length));
   const line = (/** @type {import('../tokens/espacements.js').Espace} */ e) => `  ${e.role.padEnd(w)}  ${String(e.px).padStart(2)} px  ${e.alias}`;
 
   console.log('ecart (strictement croissants, du plus proche au plus lointain)');
   for (const e of r.ecarts) console.log(line(e));
   console.log('\nvoisins (rapport affiché ; seuil seulement par une règle de proximité, plus bas)');
-  for (const v of r.voisins) console.log(`  ${v.ok ? '✓' : '✗'} ${v.de} < ${v.vers} : ${v.a} → ${v.b} px, rapport ${fr(v.rapport)}`);
+  for (const v of r.voisins) console.log(`  ${v.ok ? '✓' : '✗'} ${v.de} < ${v.vers} : ${v.a} → ${v.b} px, rapport ${fr(v.rapport, TIRET)}`);
   if (r.etroits.length) {
     console.log('\nen étroit (> ecart précédent, ≤ valeur large)');
     const ouiNon = (/** @type {boolean} */ b) => (b ? 'oui' : 'non');
@@ -40,7 +41,7 @@ await lancer('espacements', () => {
   if (r.regles.length) {
     console.log('\nproximité (rapport minimal entre deux ecart)');
     for (const g of r.regles)
-      console.log(`  ${g.ok ? '✓' : '✗'} ${g.vers} ≥ ${g.min} × ${g.de} : ${g.b} px pour ${g.a} px, rapport ${fr(g.rapport)} ; ${g.raison} (${g.statut})`);
+      console.log(`  ${g.ok ? '✓' : '✗'} ${g.vers} ≥ ${g.min} × ${g.de} : ${g.b} px pour ${g.a} px, rapport ${fr(g.rapport, TIRET)} ; ${g.raison} (${g.statut})`);
   }
   console.log('\nhors contrôle');
   for (const e of r.horsControle) console.log(line(e));

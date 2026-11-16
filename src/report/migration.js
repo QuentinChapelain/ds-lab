@@ -11,6 +11,7 @@ import { APPLIED, isOut, SLICES, decisionFor, decisionKeyFor, decisionKeysOrphel
 
 export { onSolidOf };
 import { contrastRatio } from '../lib/color.js';
+import { fr } from '../lib/format.js';
 import { pleinFinder } from '../reduce/pleins.js';
 import { buildModifications } from '../apply/modifications.js';
 
@@ -111,8 +112,6 @@ const line = (r) => cell(`${r.id} ${r.title}`.trim());
 const selectorsOf = (r) => (r.selectors.map((x) => `\`${cell(x)}\``).join(', ') || '—') + cutNote(r);
 /** Lot R : la liste des sélecteurs est-elle coupée ? @param {{ selectorsCut?: boolean }} r */
 const cutNote = (r) => (r.selectorsCut ? ' (liste coupée au relevé, d’autres éléments sont touchés)' : '');
-/** @param {number} n */
-const fr = (n) => String(n).replace('.', ',');
 /** Liste en clair, comptes entre parenthèses quand il y en a plusieurs. @param {{ text: string, n: number }[]} list */
 const listed = (list) => (list.length > 1 ? list.map((x) => `${x.text} (${x.n})`).join(', ') : list[0]?.text ?? '');
 /**
@@ -164,7 +163,7 @@ function originOf(rendered, family, r) {
 }
 
 /** Lot C : « 12 px » pour une dimension, la valeur telle quelle sinon. @param {string} v */
-const shortValue = (v) => (/^-?[\d.]+px$/.test(v) ? `${String(parseFloat(v)).replace('.', ',')} px` : v);
+const shortValue = (v) => (/^-?[\d.]+px$/.test(v) ? `${fr(parseFloat(v))} px` : v);
 
 
 
@@ -768,16 +767,16 @@ function agentBrief(d, s) {
         ? `, ${cssVarFallback(p.token, olds[0])}`
         : `, ${olds.map((/** @type {string} */ o) => `${cssVarFallback(p.token, o)} là où le texte valait ${o}`).join(', ')}`;
     couples.push(
-      `- Le texte posé sur un plein ${p.scale} devient ${p.onSolid} (${p.tint ? `même teinte, ${p.name ?? 'pas de la valise'}` : 'onSolid'}${v}) : texte ${p.text} sur ${p.bg} après la table (fonds d'origine ${p.befores.map((/** @type {any} */ b) => b.bg).join(', ')}), ${String(p.ratio).replace('.', ',')}:1. Sélecteurs : ${p.selectors.join(', ') || '—'}.`,
+      `- Le texte posé sur un plein ${p.scale} devient ${p.onSolid} (${p.tint ? `même teinte, ${p.name ?? 'pas de la valise'}` : 'onSolid'}${v}) : texte ${p.text} sur ${p.bg} après la table (fonds d'origine ${p.befores.map((/** @type {any} */ b) => b.bg).join(', ')}), ${fr(p.ratio)}:1. Sélecteurs : ${p.selectors.join(', ') || '—'}.`,
     );
   }
   for (const g of d.pleins ?? []) {
     const ver = g.versions.find((/** @type {any} */ x) => x.choice === (g.choice ?? ''));
-    const ratio = ver ? `${String(ver.ratio).replace('.', ',')}:1` : '';
+    const ratio = ver ? `${fr(ver.ratio)}:1` : '';
     if (g.choice === 'pas-10')
       couples.push(`- Plein ${g.scale} : le fond passe au pas 10 (${g.steps[10].name}, ${g.steps[10].value}) et le texte reste tel quel (${ver.text} sur ${ver.bg}, ${ratio}), choisi par le designer (carte ${g.title}). Les fonds sont dans REMPLACEMENTS ; ne change pas le texte.`);
     else if (g.choice === 'garder')
-      couples.push(`- Plein ${g.scale} : le texte reste tel quel (${ver.text} sur ${ver.bg}, ${ratio}, sous ${String(ver.threshold).replace('.', ',')}:1), gardé par le designer (carte ${g.title}). Ne change pas le texte.`);
+      couples.push(`- Plein ${g.scale} : le texte reste tel quel (${ver.text} sur ${ver.bg}, ${ratio}, sous ${fr(ver.threshold)}:1), gardé par le designer (carte ${g.title}). Ne change pas le texte.`);
     else if (!g.choice) couples.push(`- Plein ${g.scale} : en attente du designer (carte ${g.title}) : ne change ni le texte ni le fond ; les lignes de fond sont dans NE TOUCHE PAS.`);
   }
   lines.push(`COUPLAGES (${couples.length})`);
@@ -822,7 +821,7 @@ function agentBrief(d, s) {
   lines.push('Chaque variable écrite est déclarée dans tokens.css.');
   lines.push('Retire le repli quand toutes les pages sont migrées, pas avant.');
   lines.push(
-    `Il ne doit rester ${d.remaining.length === 1 ? 'qu’une paire' : `que ${d.remaining.length} paires`} de texte sous 4,5:1 : ${d.remaining.map((/** @type {any} */ p) => `${p.text} sur ${p.bg} (${String(p.ratio).replace('.', ',')}:1)${p.note ? `, sous ${String(p.threshold).replace('.', ',')}:1, ${p.note}` : ''}`).join(' ; ') || 'aucune'}.`,
+    `Il ne doit rester ${d.remaining.length === 1 ? 'qu’une paire' : `que ${d.remaining.length} paires`} de texte sous 4,5:1 : ${d.remaining.map((/** @type {any} */ p) => `${p.text} sur ${p.bg} (${fr(p.ratio)}:1)${p.note ? `, sous ${fr(p.threshold)}:1, ${p.note}` : ''}`).join(' ; ') || 'aucune'}.`,
   );
   const markdown = ['## Consigne pour un agent', '', 'À copier telle quelle.', '', '```text', ...lines, '```', ''].join('\n');
   return { markdown, replacements: replaceable.length, lines };

@@ -24,6 +24,7 @@ import { RESOLVER } from '../tokens/resolver.js';
 import { decrirePolice } from '../polices/lecture.js';
 import { tableEncre } from '../polices/encre.js';
 import { lancer, lireJson } from './garde.js';
+import { fr } from '../lib/format.js';
 
 await lancer('saisie', async () => {
   const fichier = process.argv[2];
@@ -58,7 +59,7 @@ await lancer('saisie', async () => {
     console.log(`police des titres : ${pt.familles.join(', ')}, ${pt.controlee ? 'contrôlée' : 'non contrôlée (aucun fichier)'}`);
     for (const f of pt.fichiers) console.log(`  ${f.chemin} : ${decrirePolice(f.police)}`);
     if (encre.length) {
-      console.log(`encre de deux lignes, consigne de hauteur de capitale ${String(encre[0].consigne).replace('.', ',')} (aucun écart nul ou négatif) :`);
+      console.log(`encre de deux lignes, consigne de hauteur de capitale ${fr(encre[0].consigne)} (aucun écart nul ou négatif) :`);
       for (const l of tableEncre(encre)) console.log(`  ${l}`);
     }
   }

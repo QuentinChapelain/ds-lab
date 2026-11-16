@@ -11,11 +11,10 @@
 import { largeurs } from '../tokens/resolver.js';
 import { espacements } from '../tokens/espacements.js';
 import { resolveRoles } from '../tokens/roles.js';
+import { fr, esc } from '../lib/format.js';
 
-/** @param {string} s */
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => /** @type {Record<string, string>} */ ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-/** @param {number | null} n */
-const fr = (n) => (n === null ? '—' : String(n).replace('.', ','));
+/** Nombre absent : un tiret. */
+const TIRET = { vide: '—' };
 /** Nom de variable CSS d'un rôle. @param {string} role */
 const cssVar = (role) => `--${role.replace(/\./g, '-')}`;
 
@@ -157,7 +156,7 @@ ${seuils
       <section aria-labelledby="titre-legende">
         <div class="entete">
           <h2 id="titre-legende">Les cinq espaces</h2>
-          <p class="rapports">${r.ecarts.map((e) => e.px).join(' → ')} px ; rapports entre voisins ${r.voisins.map((v) => fr(v.rapport)).join(' ; ')} (affichés, non contrôlés). ${bilan}</p>
+          <p class="rapports">${r.ecarts.map((e) => e.px).join(' → ')} px ; rapports entre voisins ${r.voisins.map((v) => fr(v.rapport, TIRET)).join(' ; ')} (affichés, non contrôlés). ${bilan}</p>
         </div>
         <ul class="legende">
 ${legende}

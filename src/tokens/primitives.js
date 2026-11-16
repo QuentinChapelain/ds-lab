@@ -6,6 +6,7 @@
  */
 import { rgb, formatHex, wcagContrast } from 'culori';
 import { generateScale, couleurAuContraste, TARGETS } from '../valise/generate.js';
+import { r4 } from '../lib/format.js';
 
 /** Phrases d'usage par pas, reprises de primitives.tokens.json. */
 export const STEP_USAGES = /** @type {Record<string, string>} */ ({
@@ -34,7 +35,6 @@ export const STATUTS = [
 /** Couleur DTCG 2025.10 (srgb, composantes à 4 décimales, hex). @param {string} hex */
 export function colorValue(hex) {
   const c = /** @type {import('culori').Rgb} */ (rgb(hex));
-  const r4 = (/** @type {number} */ n) => Math.round(n * 10000) / 10000;
   return { colorSpace: 'srgb', components: [c.r, c.g, c.b].map(r4), hex: formatHex(hex) };
 }
 

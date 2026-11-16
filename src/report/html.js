@@ -10,14 +10,8 @@
  */
 import { LIMITS } from './differences.js';
 import { contrastRatio, isOpaque, blend } from '../lib/color.js';
+import { esc } from '../lib/format.js';
 
-/** @param {unknown} s */
-const esc = (s) =>
-  String(s ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 
 /** @param {string} hex */
 const safeHex = (hex) => (/^#[0-9a-f]{6}([0-9a-f]{2})?$/.test(hex) ? hex : '#ffffff');

@@ -23,6 +23,7 @@
  */
 import { writeFile } from 'node:fs/promises';
 import { oklch, rgb, formatHex, wcagContrast, clampChroma, differenceEuclidean } from 'culori';
+import { fr, r4 } from '../lib/format.js';
 
 /** Contraste visé sur blanc par pas (repris de la valise de A ; 9 et 10 selon l'école). */
 export const TARGETS = /** @type {Record<number, number>} */ ({ 1: 1.02, 2: 1.05, 3: 1.11, 4: 1.19, 5: 1.29, 6: 1.45, 7: 1.9, 8: 3.2, 11: 5.6, 12: 13 });
@@ -51,8 +52,6 @@ const kOf = (hex) => wcagContrast(hex, WHITE);
 const referenceDe = (fond) => (fond === 'sombre' ? BLACK : WHITE);
 /** Écart angulaire signé b − a dans [−180, 180]. @param {number} a @param {number} b */
 const dh = (a, b) => ((((b - a) % 360) + 540) % 360) - 180;
-/** @param {number} n */
-const r4 = (n) => Math.round(n * 10000) / 10000;
 
 /**
  * Paramètres de teinte et de chroma d'une échelle.
@@ -313,12 +312,12 @@ export function contractOf(valise) {
       pairs.push({ scale, ...p, ratio, ok: ratio >= p.min });
     }
     if ((valise.signals?.[scale] ?? []).includes('échelle comprimée')) {
-      const gaps = [9, 10, 11].map((i) => dE(st[i], st[i + 1]).toFixed(2).replace('.', ','));
+      const gaps = [9, 10, 11].map((i) => fr(dE(st[i], st[i + 1]), { decimales: 2, zeros: true }));
       notes.push(`${scale} : échelle comprimée, pas 9 à 12 à ΔE ${gaps.join(' / ')} entre voisins, peu distincts ; le contraste tient, la nuance ne tient pas`);
     }
     if ((valise.signals?.[scale] ?? []).includes('plein clair')) notes.push(`${scale} : plein clair, les pas 7 et 8 sont plus foncés que le pas 9`);
   }
-  const fails = pairs.filter((p) => !p.ok).map((p) => `${p.scale} : ${p.fg} sur ${p.bg}, ${String(p.ratio).replace('.', ',')} < ${String(p.min).replace('.', ',')}`);
+  const fails = pairs.filter((p) => !p.ok).map((p) => `${p.scale} : ${p.fg} sur ${p.bg}, ${fr(p.ratio)} < ${fr(p.min)}`);
   return { pairs, fails, notes };
 }
 

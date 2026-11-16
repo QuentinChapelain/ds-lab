@@ -8,16 +8,17 @@
  * déclaration margin est la remise à zéro. Page autonome, sans ressource externe ni script.
  */
 import { largeurs } from '../tokens/resolver.js';
-import { typo, fr } from '../tokens/typo.js';
+import { typo } from '../tokens/typo.js';
+import { fr, esc } from '../lib/format.js';
 import { espacements } from '../tokens/espacements.js';
 import { resolveRoles, flattenTokens } from '../tokens/roles.js';
 
-/** @param {string} s */
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => /** @type {Record<string, string>} */ ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 /** Nom CSS d'un style ou d'un rôle. @param {string} s */
 const slug = (s) => s.replace(/\./g, '-');
+/** Nombres de la typo : 4 décimales au plus. */
+const D4 = { decimales: 4 };
 /** @param {number} n */
-const ligne = (n) => fr(Math.round(n * 100) / 100);
+const ligne = (n) => fr(n, { decimales: 2 });
 /** Liste de polices DTCG → valeur CSS. @param {string | string[]} v */
 const famille = (v) => (Array.isArray(v) ? v : [v]).map((f) => (/[\s"]/.test(f) ? `"${f.replace(/"/g, '\\"')}"` : f)).join(', ');
 
@@ -74,12 +75,12 @@ export function typoHtml(t, e, roles, extra) {
     .map((s) => {
       const meta = [
         `<code>${s.style}</code>`,
-        `${fr(s.large.taille)} / ${ligne(s.large.ligne)} px`,
-        `rapport ${fr(s.large.interligne)}`,
-        ...(s.etroit ? [`étroit ${fr(s.etroit.taille)} / ${ligne(s.etroit.ligne)} px`, `rapport ${fr(s.etroit.interligne)}`] : []),
+        `${fr(s.large.taille, D4)} / ${ligne(s.large.ligne)} px`,
+        `rapport ${fr(s.large.interligne, D4)}`,
+        ...(s.etroit ? [`étroit ${fr(s.etroit.taille, D4)} / ${ligne(s.etroit.ligne)} px`, `rapport ${fr(s.etroit.interligne, D4)}`] : []),
         String(s.graisse),
         esc(String(s.police).replace(/^\{marque\.(.*)\}$/, '$1')),
-        ...(s.hauteurCapitale !== null ? [`capitale ${fr(s.hauteurCapitale)} × taille`] : []),
+        ...(s.hauteurCapitale !== null ? [`capitale ${fr(s.hauteurCapitale, D4)} × taille`] : []),
       ].join(' · ');
       return `          <li data-specimen="${s.style}">
             <p class="meta">${meta}</p>

@@ -6,15 +6,9 @@
  * reduce relit au tour suivant (--decisions). Un seul fichier, sans dépendance.
  * Toute chaîne venue de la page auditée est échappée.
  */
+import { fr, esc } from '../lib/format.js';
 import { ALL_CLASSES, OUT, rowKey, isOut, decisionFor, APPLIED, WHERE_TO_FIX, marginRow, M_REASONS, nearestOf, tieOf } from '../reduce/propose.js';
 
-/** @param {unknown} s */
-const esc = (s) =>
-  String(s ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 /** @param {string} v */
 const hex = (v) => (/^#[0-9a-f]{6}$/.test(v) ? v : null);
 /** @param {string} v */
@@ -71,10 +65,10 @@ function glyph(family, value) {
 /** Lot R : valeur lisible, « 10 px » ou « #d0563f ». @param {string} family @param {string} v */
 const short = (family, v) => {
   const n = num(v);
-  return family === 'colors' || n === null ? v : `${String(n).replace('.', ',')} px`;
+  return family === 'colors' || n === null ? v : `${fr(n)} px`;
 };
-/** @param {number} n */
-const fr = (n) => String(Math.round(n * 100) / 100).replace('.', ',');
+/** Nombres de la revue : 2 décimales au plus. */
+const D2 = { decimales: 2 };
 /** Lot R : nom de jeton d'un pas de dimension (les couleurs gardent le nom de la valise). */
 const TOKEN_PREFIX = /** @type {Record<string, string>} */ ({ spacing: 'espace', radii: 'rayon', fontSizes: 'taille-texte' });
 /** Lot R : nom du pas d'une version, « terre-9 » ou « espace.8 ». @param {string} family @param {{ value: string, name?: string }} c */
@@ -109,11 +103,11 @@ function zones(shot, space, { end = false } = {}) {
         const across = w >= h;
         const ex = across ? x + w : x + w / 2;
         const ey = across ? y + h / 2 : y + h;
-        return `${box}<span class="cote bout ${across ? 'droite' : 'bas'}" style="left:${pct(ex, shot.width)};top:${pct(ey, shot.height)}">${fr(z.px)} px</span>`;
+        return `${box}<span class="cote bout ${across ? 'droite' : 'bas'}" style="left:${pct(ex, shot.width)};top:${pct(ey, shot.height)}">${fr(z.px, D2)} px</span>`;
       }
       const cx = Math.min(Math.max(x + w / 2, 26), shot.width - 26);
       const cy = Math.min(Math.max(y + h / 2, 9), shot.height - 9);
-      return `${box}<span class="cote" style="left:${pct(cx, shot.width)};top:${pct(cy, shot.height)}">${fr(z.px)} px</span>`;
+      return `${box}<span class="cote" style="left:${pct(cx, shot.width)};top:${pct(cy, shot.height)}">${fr(z.px, D2)} px</span>`;
     })
     .join('');
 }
@@ -137,7 +131,7 @@ function absorbedNotes(versions) {
   return versions
     .map((v, i) => {
       const z = (v.space ?? []).find((/** @type {any} */ x) => x.absorbed);
-      return z ? `<p class="absorbe" data-v="${i}"${i ? ' hidden' : ''}>espace visible ${fr(z.visiblePx)} px, la marge du voisin l’emporte</p>` : '';
+      return z ? `<p class="absorbe" data-v="${i}"${i ? ' hidden' : ''}>espace visible ${fr(z.visiblePx, D2)} px, la marge du voisin l’emporte</p>` : '';
     })
     .join('');
 }
@@ -162,7 +156,7 @@ function contrastLine(usage, c) {
   const pass = c.ratio >= c.threshold - 1e-9;
   // Lot M : la paire la plus défavorable de toute la ligne (toutes pages), après la table, comme le détail.
   const other = contrastSide(usage, c);
-  return `<small>${fr(c.ratio)} · ${pass ? 'passe' : 'sous'} le seuil de ${fr(c.threshold)}</small><small>${esc(other)}</small>`;
+  return `<small>${fr(c.ratio, D2)} · ${pass ? 'passe' : 'sous'} le seuil de ${fr(c.threshold, D2)}</small><small>${esc(other)}</small>`;
 }
 
 /**
@@ -205,7 +199,7 @@ function decisionCard(family, r) {
   const versions = r.capture?.versions ?? [{ label: 'actuelle', value: r.old }, ...r.candidates.map((/** @type {any} */ c, /** @type {number} */ i) => ({ label: `candidat ${i + 1}`, value: c.value, name: c.name }))];
   const nearest = nearestOf(r);
   /** @param {{ delta: number }} c */
-  const gapOf = (c) => (family === 'colors' ? `écart ΔE ${fr(c.delta)}` : `écart ${fr(c.delta)} px`);
+  const gapOf = (c) => (family === 'colors' ? `écart ΔE ${fr(c.delta, D2)}` : `écart ${fr(c.delta, D2)} px`);
   const gap = nearest ? gapOf(nearest) : '';
   // Lot C : à égalité d'écart, les deux candidats affichent leur écart ; le défaut le dit.
   const tie = tieOf(r.candidates ?? []);
@@ -228,7 +222,7 @@ function decisionCard(family, r) {
       // Lot J, J1 : candidat qui échoue au contraste alors que l'actuelle passe : grisé, avec sa raison,
       // toujours cliquable ; le grisé du lot C (marges) ne le touche pas (data-contraste). J2 : pas hors tranche.
       const c = i === 0 ? null : (r.candidates ?? []).find((/** @type {any} */ x) => x.value === v.value);
-      const fails = c?.fails ? `<small class="raison-contraste">${fr(c.fails.ratio)} sous le seuil de ${fr(c.fails.threshold)}, alors que l’actuelle passe</small>` : '';
+      const fails = c?.fails ? `<small class="raison-contraste">${fr(c.fails.ratio, D2)} sous le seuil de ${fr(c.fails.threshold, D2)}, alors que l’actuelle passe</small>` : '';
       const out = c?.outOfSlice ? '<small>hors tranche</small>' : '';
       return `<button type="button" class="v${c?.fails ? ' grise' : ''}" data-v="${i}" data-value="${esc(v.value)}" data-court="${esc(short(family, v.value))}"${c?.fails ? ' data-contraste' : ''} aria-pressed="${i === 0}">${glyph(family, v.value)}<span class="nom"><span>${esc(name)}</span>${note}${out}${ctr}${fails}</span></button>`;
     })
@@ -271,7 +265,7 @@ export function plainReason(reason) {
   const rule = /\(([RM]\d+)\)\s*$/.exec(reason)?.[1] ?? null;
   /** @type {[RegExp, (m: RegExpExecArray) => string][]} */
   const RULES = [
-    [/^ΔE ([\d.]+) à la valeur la plus proche de la valise \((.+)\) : aucune échelle/, (m) => `aucune couleur de la valise n’en est assez proche (la plus proche, ${m[2]}, est à ΔE ${m[1].replace('.', ',')}) : la valeur est laissée telle quelle`],
+    [/^ΔE ([\d.]+) à la valeur la plus proche de la valise \((.+)\) : aucune échelle/, (m) => `aucune couleur de la valise n’en est assez proche (la plus proche, ${m[2]}, est à ΔE ${fr(Number(m[1]))}) : la valeur est laissée telle quelle`],
     [/^fond plus sombre que le pas 10/, () => 'ce fond est plus sombre que tous les fonds de la valise : il est laissé tel quel'],
     [/^texte posé sur un fond sombre/, () => 'ce texte est posé sur un fond sombre que la valise ne couvre pas : sa couleur est à choisir à l’œil'],
     [/^à égale distance de (\S+) et (\S+)/, (m) => `cette valeur est à égale distance de ${m[1]} et de ${m[2]} : l’outil ne choisit pas, à toi de trancher`],
@@ -301,7 +295,7 @@ export function plainReason(reason) {
 function brandNote(r) {
   /** @type {string[]} */
   const lines = [];
-  if (r.reason === M_REASONS.M5) lines.push(`Couleur de marque : la valeur la plus proche lisible sur tous ses fonds (${r.name}, ${r.new}) s’en écarte de ΔE ${fr(r.delta)}. À choisir.`);
+  if (r.reason === M_REASONS.M5) lines.push(`Couleur de marque : la valeur la plus proche lisible sur tous ses fonds (${r.name}, ${r.new}) s’en écarte de ΔE ${fr(r.delta, D2)}. À choisir.`);
   if (r.reason === M_REASONS.M4) lines.push(`Échelle de statut réservée aux vrais états : ${r.name ? `${r.name.replace(/-\d+$/, '')} ` : ''}ne vaut ici pour aucun champ invalide, alerte ou message relié. À choisir.`);
   for (const a of r.alternatives ?? []) {
     const moves = a.backgrounds.map((/** @type {any} */ b) => `le fond ${b.from} passe à ${b.name} (${b.to})`).join(' et ');
@@ -350,16 +344,17 @@ function detail(family, r, key, cls) {
   const readable = r.reason === M_REASONS.M5;
   const label = readable ? 'la valeur la plus proche lisible sur tous ses fonds' : cls === 'décision' ? 'la valeur la plus proche' : 'la valeur proposée';
   const against = `avec ${label}`;
-  const ctr = r.contrast ? `<dt>Contraste</dt><dd>${fr(r.contrast.before)} avant → ${fr(r.contrast.after)} ${against} (seuil ${fr(r.contrast.threshold)})</dd>` : '';
+  // Revue, lot 4 : sans défaut (J1), le contraste « après » est absent (src/reduce/propose.js) : un tiret, et non NaN.
+  const ctr = r.contrast ? `<dt>Contraste</dt><dd>${fr(r.contrast.before, D2)} avant → ${fr(r.contrast.after, { ...D2, vide: '—' })} ${against} (seuil ${fr(r.contrast.threshold, D2)})</dd>` : '';
   // Lot P-fin : l'écart en une phrase, avec la valeur visée ; le nombre d'usages seulement s'il ne répète pas la portée.
   const target = cls === 'décision' && !readable ? nearestOf(r)?.value : r.new;
   // Revue de code du 15/11, lot 2 (D20) : à égalité, l'écart vaut pour les deux valeurs, sans défaut.
   const egales = (r.candidates ?? []).filter((/** @type {any} */ c) => c.tie).map((/** @type {any} */ c) => short(family, c.value));
   const ecart =
     r.delta && egales.length === 2
-      ? `${fr(r.delta)} px avec chacune des deux valeurs les plus proches, à égalité (${egales.join(' et ')})`
+      ? `${fr(r.delta, D2)} px avec chacune des deux valeurs les plus proches, à égalité (${egales.join(' et ')})`
       : r.delta && target
-        ? `${family === 'colors' ? `ΔE ${fr(r.delta)}` : `${fr(r.delta)} px`} ${against} (${short(family, target)})`
+        ? `${family === 'colors' ? `ΔE ${fr(r.delta, D2)}` : `${fr(r.delta, D2)} px`} ${against} (${short(family, target)})`
         : '';
   const scope = r.capture?.elements ?? r.count;
   const usages = r.count !== scope ? `${r.count} occurrences relevées dans le rendu, sur ${scope} ${scope === 1 ? 'élément' : 'éléments'} (un élément peut porter la valeur sur plusieurs côtés)` : '';
@@ -455,13 +450,13 @@ function pleinCard(g, pageIndex = /** @type {Map<string, number>} */ (new Map())
   const shots = vs.map((/** @type {any} */ v) => byChoice.get(v.choice)).filter(Boolean);
   const buttons = vs
     .map((/** @type {any} */ v, /** @type {number} */ i) => {
-      const pass = v.pass ? `passe le seuil de ${fr(v.threshold)}` : 'sous le seuil';
+      const pass = v.pass ? `passe le seuil de ${fr(v.threshold, D2)}` : 'sous le seuil';
       const sw = hex(v.bg) && hex(v.text) ? `<span class="g sw paire" style="background:${v.bg};color:${v.text}">Aa</span>` : '<span class="g sw vide"></span>';
       // « Garder le texte actuel » : le fond, lui, passe au pas 9 quand un fond du plein n'y est pas déjà.
       const keep = v.choice === 'garder';
       const name = keep ? 'Garder le texte actuel' : v.label;
       const moves = keep && g.rows.some((/** @type {any} */ r) => r.old !== v.bg) ? ` ; le fond passe au pas 9 (${g.scale}-9)` : '';
-      return `<button type="button" class="v" data-v="${i}" data-value="${esc(v.choice)}" data-court="${esc(name)}" aria-pressed="${i === 0}">${sw}<span class="nom"><span>${esc(name)}</span><small>${esc(v.text)} sur ${esc(v.bg)}${esc(moves)}</small><small>${String(v.ratio).replace('.', ',')} · ${pass}</small></span></button>`;
+      return `<button type="button" class="v" data-v="${i}" data-value="${esc(v.choice)}" data-court="${esc(name)}" aria-pressed="${i === 0}">${sw}<span class="nom"><span>${esc(name)}</span><small>${esc(v.text)} sur ${esc(v.bg)}${esc(moves)}</small><small>${fr(v.ratio)} · ${pass}</small></span></button>`;
     })
     .join('');
   const s0 = shots[0]?.shot;
