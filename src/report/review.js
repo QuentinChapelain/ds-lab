@@ -718,7 +718,7 @@ ${pleinCards}${byClass}
   .sans-capture, .sans-effet { margin:6px 0 0; font-size:12px; line-height:1.35; color:#4a4f59; font-style:italic; }
   .trancher { display:flex; align-items:center; gap:10px; margin-top:10px; }
   .retenir { font:inherit; font-size:14px; font-weight:600; border:0; border-radius:6px; padding:7px 14px; cursor:pointer; background:#16181d; color:#fff; }
-  /* Lot J, J7 : la page telle qu'elle existe, à droite ; sous la carte active sur écran étroit.
+  /* J7 : la page telle qu'elle existe, à droite ; sous la carte active sur écran étroit.
      Retouche : deux vraies colonnes (cartes à gauche, sans marge vide ; page à droite), le panneau
      colle en haut au défilement et s'arrête au haut de la barre (--barre, mesurée). */
   :root { --barre:52px; --apercu:min(34vw, 560px); }
@@ -761,9 +761,9 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
   // Mémoire propre à chaque réduction : hôte et horodatage.
   var KEY = 'ds-lab-revue:' + ${JSON.stringify(meta.host)} + ':' + ${JSON.stringify(meta.stamp)};
   var previous = ${JSON.stringify(previous).replace(/</g, '\\u003c')};
-  // Lot P, étape 3 : paires contrôlées (P3), recalculées à chaque choix.
+  // Paires contrôlées (P3), recalculées à chaque choix.
   var PAIRS = ${JSON.stringify(pairs).replace(/</g, '\\u003c')};
-  // Lot C (C12) : lignes numériques par usage, pour le bilan des valeurs finales.
+  // C12 : lignes numériques par usage, pour le bilan des valeurs finales.
   var BILAN = ${JSON.stringify(usageLines).replace(/</g, '\\u003c')};
   // Décisions venues de --decisions : écartées par une remise à zéro, jusqu'à la prochaine réduction.
   var FILE_KEY = KEY + ':fichier';
@@ -833,7 +833,7 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
     });
     return out;
   }
-  // Lot P, étape 3 : valeur d'une marge avec les choix de la revue. Décision : la version choisie,
+  // Valeur d'une marge avec les choix de la revue. Décision : la version choisie,
   // l'ancienne sans choix ; ligne appliquée : la proposition, l'ancienne si elle est refusée.
   function byKey(k) { return rows().filter(function (r) { return r.getAttribute('data-key') === k; })[0] || null; }
   function valueOf(part, over) {
@@ -857,7 +857,7 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
     return { px: Math.round((v + sp.extra) * 100) / 100, chosen: chosen };
   }
   function fr(n) { return String(n).replace('.', ','); }
-  // Lot P-fin : une seule formulation, « du champ suivant » : libellé, champ et message comptent comme un champ.
+  // Une seule formulation, « du champ suivant » : libellé, champ et message comptent comme un champ.
   function group(role) { return role === 'libellé' || role === 'message' ? 'champ' : role; }
   function nextOf(x) { return group(x.roles[2]) + ' ' + x.toward; }
   function verdictOf(x, a, b) {
@@ -866,7 +866,7 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
       : a.px === b.px ? 'même distance, on ne voit pas à quel ' + own + ' il appartient'
       : 'il est plus près du ' + nextOf(x) + ' que de son ' + own;
   }
-  // Lot C (C7 à C10) : un candidat d'une marge appariée qui rendrait l'espace dans le composant égal
+  // C7 à C10 : un candidat d'une marge appariée qui rendrait l'espace dans le composant égal
   // ou supérieur à l'espace entre composants est grisé, avec sa raison ; il reste cliquable.
   // Même calcul que control() (marges fusionnées, autres choix en cours), le candidat à la place de la marge.
   function greyOut() {
@@ -891,7 +891,7 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
       if (!row.classList.contains('decision')) return;
       var m = marks[row.getAttribute('data-key')] || {};
       versionsOf(row).forEach(function (b) {
-        if (b.hasAttribute('data-contraste')) return; // Lot J, J1 : grisé de contraste, fixe
+        if (b.hasAttribute('data-contraste')) return; // J1 : grisé de contraste, fixe
         var why = m[b.getAttribute('data-value')];
         var old = b.querySelector('.raison'); if (old) old.remove();
         b.classList.toggle('grise', !!why && b.getAttribute('data-v') !== '0');
@@ -901,14 +901,14 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
       });
     });
   }
-  // Lot C : raisons d'un candidat grisé fusionnées en une phrase, dans la formulation du lot P.
+  // Raisons d'un candidat grisé fusionnées en une phrase, dans la formulation du contrôle de proximité.
   function reasonOf(why) {
     var parts = [];
     if (why.same.length) parts.push('même distance, on ne voit pas ' + why.same.map(function (o) { return 'à quel ' + o; }).join(' ni ') + ' il appartient');
     if (why.closer.length) parts.push('il est plus près ' + why.closer.map(function (k) { var x = k.split('|'); return 'du ' + x[0] + ' que de son ' + x[1]; }).join(' et '));
     return parts.join(', et ');
   }
-  // Lot C (C12) : valeurs finales distinctes par usage, toutes lignes comprises.
+  // C12 : valeurs finales distinctes par usage, toutes lignes comprises.
   function finalOf(e) {
     var row = byKey(e.key);
     if (!row) return e.new || e.old;
@@ -970,7 +970,7 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
     // Le bilan change la hauteur de la barre : le panneau la suit tout de suite (sans attendre l'observateur).
     if (barre) hauteurBarre();
   }
-  // Lot J, J7 : la carte active (clic, focus, « Suivante à choisir ») montre sa page dans le panneau,
+  // J7 : la carte active (clic, focus, « Suivante à choisir ») montre sa page dans le panneau,
   // défilée jusqu'à son premier élément ; sur écran étroit, le panneau passe sous la carte.
   var apercu = document.getElementById('apercu');
   var etroit = window.matchMedia('(max-width: 1000px)');

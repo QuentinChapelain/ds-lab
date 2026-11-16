@@ -333,7 +333,7 @@ export function generateValise(spec) {
     ...(spec.$comment ? { $comment: spec.$comment } : {}),
     ...(spec.brand ? { brand: spec.brand } : {}),
     generator: {
-      name: 'ds-lab, générateur visé par contraste (lot G)',
+      name: 'ds-lab, générateur visé par contraste',
       targets: TARGETS,
       schools: Object.fromEntries(generated.map((g) => [g.name, g.school])),
       sources: Object.fromEntries(generated.map((g) => [g.name, g.source])),

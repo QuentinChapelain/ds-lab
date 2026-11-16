@@ -1,5 +1,5 @@
 {
-  "$description": "Primitives communes à toutes les marques : blanc, neutre, erreur, succès, espaces, tailles de texte, graisses, rayons. Reprises telles quelles des primitives d'Orbe Café (séance 2b du 11/11/2026), rangées ici à l'étape 4, séance b. Format DTCG 2025.10.",
+  "$description": "Primitives communes à toutes les marques : blanc, neutre, erreur, succès, espaces, tailles de texte, graisses, rayons. Reprises telles quelles des primitives d'Orbe Café (11/11/2026). Format DTCG 2025.10.",
   "couleur": {
     "$type": "color",
     "$description": "Échelles de 12 pas. Pas 9 = couleur source exacte ; autres pas générés par contraste visé contre le blanc (Leonardo, hors dépôt) ; paires d'usage vérifiées en WCAG 2.1 AA.",
@@ -649,7 +649,7 @@
       "$description": "grasse, affichage et titres"
     },
     "$type": "fontWeight",
-    "$description": "Graisses de texte (séance 3c, typo)"
+    "$description": "Graisses de texte"
   },
   "rayon": {
     "0": {

@@ -1,5 +1,5 @@
 {
-  "$description": "Statuts complémentaires communs à toutes les marques (avertissement, info), séance 3a du 14/11/2026. Format DTCG 2025.10. Complète primitives.tokens.json sans le modifier.",
+  "$description": "Statuts complémentaires communs à toutes les marques (avertissement, info), du 14/11/2026. Format DTCG 2025.10. Complète primitives.tokens.json sans le modifier.",
   "couleur": {
     "$type": "color",
     "$description": "Statuts complémentaires (avertissement, info), générés par contraste visé contre le blanc ; checkValise passe.",

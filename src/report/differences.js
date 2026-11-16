@@ -40,7 +40,7 @@ export const V1_DIFFERENCES = [
     point: 'Alpha et canaux en pourcentage',
     v1: 'parseFloat("50%") donne 50 : rgb(… / 50%) est compté opaque, les canaux en % sont faux (bug)',
     outil: 'lecture correcte',
-    effet: 'effet sur les chiffres de l’étape 1 à mesurer',
+    effet: 'effet sur les chiffres de l’audit à mesurer',
     tag: '[F]',
   },
   {

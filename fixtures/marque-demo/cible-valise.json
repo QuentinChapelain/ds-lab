@@ -1,5 +1,5 @@
 {
-  "$comment": "Valise d'Orbe Café (séance 2b, 11/11/2026). Échelles de 12 pas : 1-2 fonds, 3-5 fonds de composants, 6-8 bordures, 9-10 pleins, 11-12 texte. Pas 9 = couleur source exacte. Autres pas générés par contraste visé contre le blanc avec @adobe/leonardo-contrast-colors (hors dépôt). Paires vérifiées en WCAG 2.1. onSolid = couleur du texte posé sur le pas 9 (hors table). Dimensions génériques.",
+  "$comment": "Valise d'Orbe Café (11/11/2026). Échelles de 12 pas : 1-2 fonds, 3-5 fonds de composants, 6-8 bordures, 9-10 pleins, 11-12 texte. Pas 9 = couleur source exacte. Autres pas générés par contraste visé contre le blanc avec @adobe/leonardo-contrast-colors (hors dépôt). Paires vérifiées en WCAG 2.1. onSolid = couleur du texte posé sur le pas 9 (hors table). Dimensions génériques.",
   "onSolid": {
     "neutre": "#201d17",
     "bleu": "#ffffff",

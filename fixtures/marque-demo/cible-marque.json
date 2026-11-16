@@ -1,5 +1,5 @@
 {
-  "$comment": "Valise de la page de marque d’Orbe Café (lot M, 13/11/2026), marque fictive. Mêmes valeurs que cible-valise.json, échelles renommées par emplacement de marque : primaire = bleu, accent = terre ; sable retiré. Le bloc brand est la marque déclarée avant la réduction (M0) : emplacements du back-office fictif, variantes, échelles de statut. Sans bloc brand (cible-valise.json), les règles M ne s’appliquent pas.",
+  "$comment": "Valise de la page de marque d’Orbe Café (13/11/2026), marque fictive. Mêmes valeurs que cible-valise.json, échelles renommées par emplacement de marque : primaire = bleu, accent = terre ; sable retiré. Le bloc brand est la marque déclarée avant la réduction (M0) : emplacements du back-office fictif, variantes, échelles de statut. Sans bloc brand (cible-valise.json), les règles M ne s’appliquent pas.",
   "brand": {
     "slots": {
       "primaire": {

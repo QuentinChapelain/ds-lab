@@ -234,7 +234,7 @@ table{border-collapse:collapse}th,td{border:1px solid var(--ligne);padding:6px 8
 .grille td.refus{background:#fff0ee}
 </style></head><body>
 <h1>Calibrage des pleins</h1>
-<p>Étape 4, séance a, lot 3 bis. Règle en vigueur, décidée sur image le 15/11/2026 : ${esc(REGLE)}</p>
+<p>Règle en vigueur (D04), décidée sur image le 15/11/2026 : ${esc(REGLE)}</p>
 <h2>Table des marques</h2>
 <div class="scroll"><table class="marques">${tete}
 ${corps}

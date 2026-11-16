@@ -111,7 +111,7 @@ export const isOut = (cls) => cls.startsWith('hors table');
  * @property {string} [id]           Identifiant stable de la ligne (R-1)
  * @property {string} [title]        Titre en clair (R-1)
  * @property {Record<string, Kind>} [kinds]  sortes d'éléments de la valeur (relevé du rendu)
- * @property {boolean} [noDefault]   décision sans valeur par défaut : égalité (C5) ou aucun candidat qui garde le contraste
+ * @property {boolean} [noDefault]   décision sans valeur par défaut : égalité (D20) ou aucun candidat qui garde le contraste
  * @property {string[]} [etats]      D19 : états forcés où seuls la valeur se voit
  * @property {string} [slot]         Emplacement de marque déclaré de la valeur
  * @property {number} [_states]      champ de travail : occurrences en état forcé, retiré avant le rendu
@@ -237,7 +237,7 @@ export function dimensionRow(base, scale, { pill = false, forcePill = false, nea
     const candidates = window
       .sort((a, b) => a - b)
       .map((s) => ({ value: `${s}px`, delta: round2(Math.abs(s - n)), ...(pair.includes(`${s}px`) ? { tie: true } : {}) }));
-    return { ...base, new: null, class: 'décision', delta: best.delta, noDefault: true, reason: `à égale distance de ${pair.join(' et ')} : au designer de choisir (C5)`, candidates };
+    return { ...base, new: null, class: 'décision', delta: best.delta, noDefault: true, reason: `à égale distance de ${pair.join(' et ')} : au designer de choisir (D20)`, candidates };
   }
   const ratio = n === 0 ? (best.delta === 0 ? 0 : 1) : best.delta / Math.abs(n);
   const cls = best.delta === 0 ? 'inchangé' : best.delta <= THRESHOLDS.autoPx ? 'auto' : ratio <= THRESHOLDS.nearRatio && best.delta <= nearPx ? 'proche' : 'décision';

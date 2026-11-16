@@ -76,7 +76,7 @@ export function statutsTokens() {
   };
   for (const s of STATUTS) couleur[s.name] = scaleToDtcg(generateScale(s.name, s.source), s.label);
   return {
-    $description: "Statuts complémentaires communs à toutes les marques (avertissement, info), séance 3a du 14/11/2026. Format DTCG 2025.10. Complète primitives.tokens.json sans le modifier.",
+    $description: "Statuts complémentaires communs à toutes les marques (avertissement, info), du 14/11/2026. Format DTCG 2025.10. Complète primitives.tokens.json sans le modifier.",
     couleur,
   };
 }

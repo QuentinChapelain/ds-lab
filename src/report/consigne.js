@@ -262,7 +262,7 @@ export function consigneAgent(d, s) {
   const signale = [
     ...d.exceptions.outOfSlice
       .filter((/** @type {any} */ x) => !isReplaced(x))
-      .map((/** @type {any} */ x) => `Valeur hors de sa tranche : ${x.value} (${x.name}) en ${x.usage}, ${x.elements} élément(s), tranche attendue ${x.expected} : ${x.selectors.join(', ')}${isAttached(x) ? " ; rattaché, rôle à revoir à l'étape 3" : ''}.`),
+      .map((/** @type {any} */ x) => `Valeur hors de sa tranche : ${x.value} (${x.name}) en ${x.usage}, ${x.elements} élément(s), tranche attendue ${x.expected} : ${x.selectors.join(', ')}${isAttached(x) ? " ; rattaché, rôle à revoir" : ''}.`),
     ...d.exceptions.states.map((/** @type {any} */ st) => `État non lu : ${st.value} (${[...new Set(st.contexts.map((/** @type {any} */ c) => `${c.state} ${c.property}`))].join(', ')}).`),
     ...d.exceptions.ties
       .filter((/** @type {any} */ r) => !replaceable.some((/** @type {any} */ x) => x.id === r.id))

@@ -6,8 +6,8 @@
  *   S1 Orbe Café passe par la saisie sans changer de valeur : tokens/orbe-cafe/entree.json nomme les échelles
  *      existantes bleu et terre ; aucune échelle n'est générée ; marque.tokens.json est réécrit à l'identique,
  *      octet par octet. Empreinte du fichier versionné sans l'emplacement texte-grand (git show b5783d3:tokens/orbe-cafe/marque.tokens.json
- *      | shasum -a 256 → b479882e…), recalculée quand la description a perdu sa séance (16/11/2026, sha256 de
- *      JSON.stringify(marque, null, 2) + saut de ligne) → 6fb10a472f4e8437557a3f78798709c2a9e984e31a5a0da276edc0722c5466d4.
+ *      | shasum -a 256 → b479882e…), recalculée quand la description a perdu ses séances (16/11/2026, sha256 de
+ *      JSON.stringify(marque, null, 2) + saut de ligne) → 2abaca339a3b57ac84a9bf999bee8814e9c1c2bb9b556a401b855353ca0d0a73.
  *   S2 Motif « entrée invalide » : nom, primaire ou polices manquants ; couleur qui n'est pas #rrggbb ;
  *      clé inconnue ; échelle existante sans fichier d'échelles écrites à la main dans le dossier ; échelle inconnue.
  *   S3 Motif « checkValise » : primaire #00ccff. Essai avant le code (generateScale, script d'essai hors dépôt) :
@@ -39,7 +39,7 @@ import { fondsClairs } from '../src/tokens/saisie.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const ORBE = join(ROOT, 'tokens', 'orbe-cafe');
-const ORBE_SHA = '6fb10a472f4e8437557a3f78798709c2a9e984e31a5a0da276edc0722c5466d4';
+const ORBE_SHA = '2abaca339a3b57ac84a9bf999bee8814e9c1c2bb9b556a401b855353ca0d0a73';
 const POLICES = { titre: ['Georgia', 'serif'], texte: ['Arial', 'sans-serif'] };
 const AILLEURS = join(tmpdir(), 'ds-lab-ailleurs');
 const sha = (/** @type {string} */ s) => createHash('sha256').update(s).digest('hex');

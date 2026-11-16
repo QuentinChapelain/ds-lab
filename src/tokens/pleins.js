@@ -189,7 +189,7 @@ export function aplatTokens() {
   const primaire = {};
   for (const [k, v] of Object.entries(APLAT)) primaire[k] = { $value: `{marque.primaire.${v}}`, $description: `aplat plein (fond.marque.fort et bouton inversé) : ${v} du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json)` };
   return {
-    $description: "Emplacements de l'aplat plein, communs à toutes les marques (étape 4b, lot 2 bis). Format DTCG 2025.10. En clair, alias du plein du primaire ; en sombre, la couche marque sombre les fige aux valeurs claires, pendant que le bouton prend la version lumineuse de la couleur du client (D04).",
+    $description: "Emplacements de l'aplat plein, communs à toutes les marques. Format DTCG 2025.10. En clair, alias du plein du primaire ; en sombre, la couche marque sombre les fige aux valeurs claires, pendant que le bouton prend la version lumineuse de la couleur du client (D04).",
     marque: { $type: 'color', primaire },
   };
 }
