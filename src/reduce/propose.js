@@ -208,10 +208,22 @@ export function dimensionRow(base, scale, { pill = false, forcePill = false, nea
     const same = n === maxStep;
     return { ...base, new: `${maxStep}px`, class: same ? 'inchangé' : 'auto', delta: 0, candidates: [{ value: `${maxStep}px`, delta: 0, nearest: true }] };
   }
-  // C5 : le défaut reste le pas le plus proche de toute l'échelle, départagé par la plus petite valeur.
-  const best = steps
+  // C5 : le défaut est le pas le plus proche de toute l'échelle.
+  const byDistance = steps
     .map((s) => ({ value: `${s}px`, delta: round2(Math.abs(s - n)) }))
-    .sort((a, b) => a.delta - b.delta || /** @type {number} */ (px(a.value)) - /** @type {number} */ (px(b.value)))[0];
+    .sort((a, b) => a.delta - b.delta || /** @type {number} */ (px(a.value)) - /** @type {number} */ (px(b.value)));
+  const best = byDistance[0];
+  // Revue de code du 15/11, lot 2 (D20) : à égale distance de deux pas, l'outil ne tranche pas. Décision, sans défaut ;
+  // les deux pas sont candidats, marqués « à égalité ». Vaut à toute distance, 1 px compris.
+  if (best.delta > 0 && byDistance[1]?.delta === best.delta) {
+    const pair = [best.value, byDistance[1].value];
+    const window = candidateWindow(steps, n);
+    for (const v of pair) if (!window.includes(/** @type {number} */ (px(v)))) window.push(/** @type {number} */ (px(v)));
+    const candidates = window
+      .sort((a, b) => a - b)
+      .map((s) => ({ value: `${s}px`, delta: round2(Math.abs(s - n)), ...(pair.includes(`${s}px`) ? { tie: true } : {}) }));
+    return { ...base, new: null, class: 'décision', delta: best.delta, noDefault: true, reason: `à égale distance de ${pair.join(' et ')} : au designer de choisir (C5)`, candidates };
+  }
   const ratio = n === 0 ? (best.delta === 0 ? 0 : 1) : best.delta / Math.abs(n);
   const cls = best.delta === 0 ? 'inchangé' : best.delta <= THRESHOLDS.autoPx ? 'auto' : ratio <= THRESHOLDS.nearRatio && best.delta <= nearPx ? 'proche' : 'décision';
   const window = candidateWindow(steps, n);
@@ -572,6 +584,8 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
       const exact = T.find((t) => t.value === old);
       /** @type {any} */
       const row = { old, count: n, properties: e.properties, selectors: e.selectors, usage, usages: [USAGE_LABEL[usage] ?? usage], kinds: e.kinds, candidates: candidatesOf(cands), _cands: cands, _nearest: nearest, _exact: exact, _states: e.states ?? 0 };
+      // Revue de code du 15/11, lot 2 (D19) : une valeur vue seulement à un état forcé porte cet état.
+      if (e.enEtat && e.enEtat === n) row.etats = Object.keys(e.etats ?? {}).sort();
       if (declared) row.slot = declared.slot;
       if (range) row.slice = usage;
       if (e.field) row.field = e.field;
@@ -737,7 +751,11 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
             reason = `la paire passe avant et échoue après (R2)`;
           }
         }
-        if (cls === 'correction') reason = r.usage === 'texte' ? 'texte sous 4,5:1 avant, au seuil après (R9)' : 'bordure de champ sous 3:1 avant, au seuil après (R9)';
+        // Revue de code du 15/11, lot 2 : le motif cite le seuil de la paire en échec (4,5:1, ou 3:1 pour un grand texte).
+        if (cls === 'correction') {
+          const seuil = seuilFr(worst(ps, (p) => [r.old, p.bg]).threshold);
+          reason = r.usage === 'texte' ? `texte sous ${seuil}:1 avant, au seuil après (R9)` : `bordure de champ sous ${seuil}:1 avant, au seuil après (R9)`;
+        }
         const m = brandRule(r, chosen, cls);
         if (m) [cls, reason] = m;
         // M6 : une décision M5 propose aussi le pas proche, avec le fond de la paire en échec déplacé.
@@ -761,7 +779,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
         let reason;
         if (beforeFail && ownFix && hasScales && c.t.scale === nearestScale) {
           cls = 'correction';
-          reason = 'texte porté sous 4,5:1 avant, au seuil après (R9)';
+          reason = `texte porté sous ${seuilFr(worst(ps, (p) => [p.text, r.old]).threshold)}:1 avant, au seuil après (R9)`;
         } else if (!beforeFail && !afterOk && (cls === 'auto' || cls === 'proche')) {
           cls = 'décision';
           reason = 'la paire passe avant et échoue après (R2)';
@@ -990,7 +1008,7 @@ function identify(family, rows) {
   const order = [...rows].sort((a, b) => b.count - a.count || byValue(a.old, b.old) || cmp(a.usage ?? '', b.usage ?? '') || cmp(a.scope ?? '', b.scope ?? ''));
   order.forEach((r, i) => {
     r.id = `${prefix}-${String(i + 1).padStart(2, '0')}`;
-    r.title = rowTitle(family, r);
+    r.title = rowTitle(family, r) + (r.etats?.length ? ` (${r.etats.map((/** @type {string} */ e) => ETATS[e] ?? e).join(', ')})` : '');
     delete r.kinds;
   });
 }
@@ -1061,6 +1079,12 @@ export function worstContrast(usages, r, value, map = {}) {
 }
 
 /** Lot M : motifs des décisions imposées par la marque. */
+/** Revue de code du 15/11, lot 2 (D19) : état forcé d'une ligne vue seulement à cet état, dans son titre. */
+export const ETATS = /** @type {Record<string, string>} */ ({ hover: 'au survol', focus: 'au focus', active: 'à l’appui' });
+
+/** Seuil de contraste écrit à la française (4,5 ; 3). @param {number} t */
+const seuilFr = (t) => String(t).replace('.', ',');
+
 /** Revue de code du 15/11, lot 1b : motif d'une ligne qui change encore au dixième tour de la boucle de stabilisation. */
 export const NON_STABILISE = 'non stabilisé après 10 tours';
 

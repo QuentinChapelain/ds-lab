@@ -217,6 +217,8 @@ function decisionCard(family, r) {
       const note =
         i === 0
           ? '<small>la choisir garde la valeur</small>'
+          : (r.candidates ?? []).some((/** @type {any} */ c) => c.tie && c.value === v.value)
+            ? `<small class="ecart">à égalité, ${esc(gapOf(/** @type {any} */ (r.candidates.find((/** @type {any} */ c) => c.value === v.value))))}</small>`
           : nearest && v.value === nearest.value && gap
             ? `<small class="ecart">le plus proche${partner ? `, à égalité avec ${esc(short(family, partner))}` : ''} · ${esc(gap)}</small>`
             : partnerC && v.value === partner
@@ -272,10 +274,12 @@ export function plainReason(reason) {
     [/^ΔE ([\d.]+) à la valeur la plus proche de la valise \((.+)\) : aucune échelle/, (m) => `aucune couleur de la valise n’en est assez proche (la plus proche, ${m[2]}, est à ΔE ${m[1].replace('.', ',')}) : la valeur est laissée telle quelle`],
     [/^fond plus sombre que le pas 10/, () => 'ce fond est plus sombre que tous les fonds de la valise : il est laissé tel quel'],
     [/^texte posé sur un fond sombre/, () => 'ce texte est posé sur un fond sombre que la valise ne couvre pas : sa couleur est à choisir à l’œil'],
+    [/^à égale distance de (\S+) et (\S+)/, (m) => `cette valeur est à égale distance de ${m[1]} et de ${m[2]} : l’outil ne choisit pas, à toi de trancher`],
     [/^la paire passe avant et échoue après/, () => 'le contraste suffit aujourd’hui, mais ne suffirait plus avec la valeur la plus proche'],
-    [/^texte sous 4,5:1 avant, au seuil après/, () => 'ce texte n’était pas assez lisible (contraste sous 4,5:1) ; la valeur proposée le rend lisible'],
-    [/^bordure de champ sous 3:1 avant, au seuil après/, () => 'le bord de ce champ se distinguait mal du fond (contraste sous 3:1) ; la valeur proposée le rend visible'],
-    [/^texte porté sous 4,5:1 avant, au seuil après/, () => 'le texte posé sur ce fond n’était pas assez lisible (contraste sous 4,5:1) ; ce fond le rend lisible'],
+    // Revue de code du 15/11, lot 2 : le seuil est celui que cite le motif (R9), quel qu'il soit.
+    [/^texte sous ([\d,]+):1 avant, au seuil après/, (m) => `ce texte n’était pas assez lisible (contraste sous ${m[1]}:1) ; la valeur proposée le rend lisible`],
+    [/^bordure de champ sous ([\d,]+):1 avant, au seuil après/, (m) => `le bord de ce champ se distinguait mal du fond (contraste sous ${m[1]}:1) ; la valeur proposée le rend visible`],
+    [/^texte porté sous ([\d,]+):1 avant, au seuil après/, (m) => `le texte posé sur ce fond n’était pas assez lisible (contraste sous ${m[1]}:1) ; ce fond le rend lisible`],
     [/^texte posé sur .+ : utiliser onSolid/, () => 'un texte est posé sur ce fond ; si le fond change, la couleur du texte devra changer pour rester lisible'],
     [/^échelle de statut réservée aux états/, () => 'cette couleur tombe sur une échelle de statut (erreur, succès), réservée aux vrais états : champ invalide, alerte, message relié à un champ. Ici, ce n’en est pas un : la couleur est à choisir'],
     [/^correction de couleur de marque à plus de 10/, () => 'couleur de marque peu lisible : la valeur la plus proche qui reste lisible sur tous ses fonds s’en écarte de plus de ΔE 10, ce qui change la marque. La correction n’est pas appliquée d’office : elle est à choisir'],
@@ -349,7 +353,14 @@ function detail(family, r, key, cls) {
   const ctr = r.contrast ? `<dt>Contraste</dt><dd>${fr(r.contrast.before)} avant → ${fr(r.contrast.after)} ${against} (seuil ${fr(r.contrast.threshold)})</dd>` : '';
   // Lot P-fin : l'écart en une phrase, avec la valeur visée ; le nombre d'usages seulement s'il ne répète pas la portée.
   const target = cls === 'décision' && !readable ? nearestOf(r)?.value : r.new;
-  const ecart = r.delta && target ? `${family === 'colors' ? `ΔE ${fr(r.delta)}` : `${fr(r.delta)} px`} ${against} (${short(family, target)})` : '';
+  // Revue de code du 15/11, lot 2 (D20) : à égalité, l'écart vaut pour les deux valeurs, sans défaut.
+  const egales = (r.candidates ?? []).filter((/** @type {any} */ c) => c.tie).map((/** @type {any} */ c) => short(family, c.value));
+  const ecart =
+    r.delta && egales.length === 2
+      ? `${fr(r.delta)} px avec chacune des deux valeurs les plus proches, à égalité (${egales.join(' et ')})`
+      : r.delta && target
+        ? `${family === 'colors' ? `ΔE ${fr(r.delta)}` : `${fr(r.delta)} px`} ${against} (${short(family, target)})`
+        : '';
   const scope = r.capture?.elements ?? r.count;
   const usages = r.count !== scope ? `${r.count} occurrences relevées dans le rendu, sur ${scope} ${scope === 1 ? 'élément' : 'éléments'} (un élément peut porter la valeur sur plusieurs côtés)` : '';
   const motif = r.reason ? plainReason(r.reason) : null;

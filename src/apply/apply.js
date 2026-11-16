@@ -21,6 +21,29 @@ import { join, dirname, relative, isAbsolute } from 'node:path';
 const SIDES = ['top', 'right', 'bottom', 'left'];
 const CORNERS = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
 const BORDER_STYLES = new Set(['none', 'hidden', 'dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset']);
+const KINDS = ['width', 'style', 'color'];
+
+/**
+ * Revue de code du 15/11, lot 2 : une seule table raccourci → propriétés longues, lue par covers et par coverage.
+ * Un border ou un border-top ne couvre pas les rayons (border-*-radius), que seul border-radius couvre.
+ * @type {Record<string, string[]>}
+ */
+export const LONGUES = {
+  margin: SIDES.map((s) => `margin-${s}`),
+  padding: SIDES.map((s) => `padding-${s}`),
+  'border-width': SIDES.map((s) => `border-${s}-width`),
+  'border-style': SIDES.map((s) => `border-${s}-style`),
+  'border-color': SIDES.map((s) => `border-${s}-color`),
+  'border-radius': CORNERS.map((c) => `border-${c}-radius`),
+  border: SIDES.flatMap((s) => KINDS.map((k) => `border-${s}-${k}`)),
+  ...Object.fromEntries(SIDES.map((s) => [`border-${s}`, KINDS.map((k) => `border-${s}-${k}`)])),
+  outline: KINDS.map((k) => `outline-${k}`),
+  gap: ['row-gap', 'column-gap'],
+  'grid-gap': ['row-gap', 'column-gap'],
+  background: ['background-color', 'background-image', 'background-position', 'background-size', 'background-repeat', 'background-attachment', 'background-origin', 'background-clip'],
+  'text-decoration': ['text-decoration-line', 'text-decoration-style', 'text-decoration-color', 'text-decoration-thickness'],
+  font: ['font-style', 'font-variant', 'font-weight', 'font-stretch', 'font-size', 'line-height', 'font-family'],
+};
 
 /** Valeur comparable : casse, espaces. @param {string | null | undefined} v */
 export const norm = (v) =>
@@ -104,6 +127,14 @@ const sideIndex = (n, i) => (n === 1 ? 0 : n === 2 ? i % 2 : n === 3 ? (i === 3 
  * @returns {Map<string, number> | string}  propriété → indice du composant, ou motif d'écart
  */
 function coverage(prop, parts) {
+  const out = coverageOf(prop, parts);
+  // La table LONGUES borne ce qu'un raccourci couvre : coverage ne rend jamais une propriété hors de sa liste.
+  if (typeof out !== 'string') for (const k of out.keys()) if (!(LONGUES[prop] ?? []).includes(k)) throw new Error(`apply : ${prop} ne couvre pas ${k} (table LONGUES)`);
+  return out;
+}
+
+/** @param {string} prop @param {{ text: string }[]} parts @returns {Map<string, number> | string} */
+function coverageOf(prop, parts) {
   const n = parts.length;
   /** @type {Map<string, number>} */
   const out = new Map();
@@ -148,14 +179,8 @@ function coverage(prop, parts) {
   return `raccourci ${prop} non pris en charge`;
 }
 
-/** Le raccourci écrit couvre-t-il cette propriété ? @param {string} written @param {string} prop */
-const covers = (written, prop) =>
-  written === prop ||
-  (prop.startsWith(`${written}-`) && /^(margin|padding|border|outline|background|text-decoration|gap|font)/.test(written)) ||
-  (written === 'border-radius' && /^border-.*-radius$/.test(prop)) ||
-  (/^border-(width|style|color)$/.test(written) && new RegExp(`^border-[a-z]+-${written.slice(7)}$`).test(prop)) ||
-  ((written === 'gap' || written === 'grid-gap') && (prop === 'row-gap' || prop === 'column-gap')) ||
-  (written === 'font' && /^(font-|line-height)/.test(prop));
+/** Le raccourci écrit couvre-t-il cette propriété ? Lu dans la table LONGUES. @param {string} written @param {string} prop */
+export const covers = (written, prop) => written === prop || (LONGUES[written] ?? []).includes(prop);
 
 /** Nombre de retours à la ligne. @param {string} s */
 const newlines = (s) => (String(s ?? '').match(/\n/g) ?? []).length;

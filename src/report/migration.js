@@ -266,7 +266,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
           : typeof d === 'string' && d !== r.old
             ? 'décidée'
             : 'inchangé'
-        : r.class === 'inchangé' && d !== false
+        : r.class === 'inchangé' && d !== false && !(typeof d === 'string' && d !== r.old) // revue, lot 2 : une décision écrite l'emporte
           ? 'inchangé'
           : d === false
             ? 'refusée'
@@ -282,6 +282,8 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
       rows.push({
         id: r.id ?? '',
         title: r.title ?? '',
+        // Revue de code du 15/11, lot 2 (D19) : valeur vue seulement à un état forcé.
+        ...(r.etats ? { etats: r.etats } : {}),
         family,
         value: r.old,
         usage: r.usage ?? (family === 'fontSizes' ? 'taille du texte' : (r.usages ?? []).join(', ')),
@@ -352,10 +354,16 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     x.n += p.n;
     remaining.set(k, x);
   }
-  const states = (rendered.states?.onlyInStates ?? []).map((/** @type {string} */ hex) => {
-    const v = rendered.states.colors[hex];
-    return { value: hex, contexts: v.contexts.map((/** @type {any} */ c) => ({ state: c.state, property: c.property, role: c.role, selectors: c.selectors })) };
-  });
+  // Revue de code du 15/11, lot 2 (D19) : une couleur d'état écrite par le site a sa ligne ; restent ici les autres,
+  // dont l'anneau de focus du navigateur, nommé comme tel.
+  const enTable = new Set((table.families.colors?.rows ?? []).map((/** @type {any} */ r) => r.old));
+  const states = (rendered.states?.onlyInStates ?? [])
+    .filter((/** @type {string} */ hex) => !enTable.has(hex))
+    .map((/** @type {string} */ hex) => {
+      const v = rendered.states.colors[hex];
+      const navigateur = v.contexts.length > 0 && v.contexts.every((/** @type {any} */ c) => c.navigateur);
+      return { value: hex, ...(navigateur ? { navigateur: true } : {}), contexts: v.contexts.map((/** @type {any} */ c) => ({ state: c.state, property: c.property, role: c.role, selectors: c.selectors })) };
+    });
   const ties = rows.filter((r) => r.tie && r.status === 'appliquée');
   // Valeur de la valise utilisée hors de sa tranche (R1) : signalée, la table ne change pas.
   /** @type {any[]} */
@@ -524,7 +532,7 @@ function renderMarkdown(d, s) {
   L.push('| ligne | famille | valeur | usage | relation | proposé | candidats | motif | sélecteurs |', '|---|---|---|---|---|---|---|---|---|');
   for (const r of s.pending)
     L.push(
-      `| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.relation)} | ${r.noDefault ? 'aucun défaut' : `${r.token === 'jeton absent' ? r.token : `\`${r.token}\``} (\`${cell(r.new)}\`)`} | ${r.candidates.map((/** @type {any} */ c) => `\`${cell(c.value)}\` (${fr(c.delta)}${c.nearest ? `, le plus proche${r.tie && r.tie[0] === c.value ? `, à égalité avec ${shortValue(r.tie[1])}` : ''}` : ''}${c.fails ? `, échoue au contraste : ${fr(c.fails.ratio)} sous ${fr(c.fails.threshold)}` : ''}${c.outOfSlice ? ', hors tranche' : ''})`).join(', ')} | ${cell(r.reason ?? 'écart au-delà des seuils')}${r.contrast && r.contrast.after !== undefined ? ` contraste ${fr(r.contrast.before)} → ${fr(r.contrast.after)} si appliquée` : ''}${cell(m6Text(r))} | ${selectorsOf(r)} |`,
+      `| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.relation)} | ${r.noDefault ? 'aucun défaut' : `${r.token === 'jeton absent' ? r.token : `\`${r.token}\``} (\`${cell(r.new)}\`)`} | ${r.candidates.map((/** @type {any} */ c) => `\`${cell(c.value)}\` (${fr(c.delta)}${c.tie ? ', à égalité' : ''}${c.nearest ? `, le plus proche${r.tie && r.tie[0] === c.value ? `, à égalité avec ${shortValue(r.tie[1])}` : ''}` : ''}${c.fails ? `, échoue au contraste : ${fr(c.fails.ratio)} sous ${fr(c.fails.threshold)}` : ''}${c.outOfSlice ? ', hors tranche' : ''})`).join(', ')} | ${cell(r.reason ?? 'écart au-delà des seuils')}${r.contrast && r.contrast.after !== undefined ? ` contraste ${fr(r.contrast.before)} → ${fr(r.contrast.after)} si appliquée` : ''}${cell(m6Text(r))} | ${selectorsOf(r)} |`,
     );
   L.push('');
 
@@ -573,9 +581,9 @@ function renderMarkdown(d, s) {
   if (!e.onSolid.length) L.push('- Aucun.');
   L.push('');
   L.push(`### États non lus : ${e.states.length}`, '');
-  L.push('Couleurs vues seulement à un état forcé (survol, focus, actif) : la table et la simulation ne les rangent pas.', '');
+  L.push('Couleurs vues seulement à un état forcé (survol, focus, actif) que le site n’a pas écrites : la table et la simulation ne les rangent pas.', '');
   for (const st of e.states)
-    L.push(`- \`${st.value}\` : ${st.contexts.map((/** @type {any} */ c) => `${c.state} ${c.property} (${c.role} : ${c.selectors.map((/** @type {string} */ x) => `\`${x}\``).join(', ')})`).join(' ; ')}.`);
+    L.push(`- \`${st.value}\`${st.navigateur ? ', anneau de focus du navigateur' : ''} : ${st.contexts.map((/** @type {any} */ c) => `${c.state} ${c.property} (${c.role} : ${c.selectors.map((/** @type {string} */ x) => `\`${x}\``).join(', ')})`).join(' ; ')}.`);
   if (!e.states.length) L.push('- Aucun.');
   L.push('');
   L.push('### Élément injecté après le chargement : limite connue', '');

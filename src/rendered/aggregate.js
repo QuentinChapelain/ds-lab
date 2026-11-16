@@ -428,7 +428,7 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
    * @param {string} family @param {string} value @param {string} usage @param {RenderedRecord} rec
    * @param {string} page @param {string} property @param {{ content?: boolean, field?: boolean }} [o]
    */
-  const addUsage = (family, value, usage, rec, page, property, { content = false, field = false, index = -1, scope = /** @type {string | undefined} */ (undefined), relation = /** @type {any} */ (undefined) } = {}) => {
+  const addUsage = (family, value, usage, rec, page, property, { content = false, field = false, index = -1, scope = /** @type {string | undefined} */ (undefined), relation = /** @type {any} */ (undefined), etat = /** @type {string | undefined} */ (undefined) } = {}) => {
     const byValue = usageFam[family];
     let u = byValue.get(value);
     if (!u) byValue.set(value, (u = new Map()));
@@ -442,6 +442,12 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
     if (field) e.field++;
     // Lot M (M4) : occurrences portées par un vrai état (role="alert", aria-invalid, message relié).
     if (rec.state && !content) e.states = (e.states ?? 0) + 1;
+    // Revue de code du 15/11, lot 2 (D19) : occurrences vues à un état forcé (survol, focus, actif), par état.
+    if (etat) {
+      e.enEtat = (e.enEtat ?? 0) + 1;
+      const parEtat = /** @type {Record<string, number>} */ ((e.etats ??= {}));
+      parEtat[etat] = (parEtat[etat] ?? 0) + 1;
+    }
     e.properties.add(property);
     const sel = rec.selector ?? '';
     if (e.selectors.length < 4 && !e.selectors.includes(sel)) e.selectors.push(sel);
@@ -467,6 +473,7 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
   function addPage(pc) {
     const page = pc.url;
     pageNo++;
+    derniere = { pc, plein: pleinSources(pc.records, solid) };
     const stats = (byPage[page] = { elements: 0, pseudoElements: 0, excluded: pc.excluded, textBearing: 0, iframes: pc.iframes });
     // Lot P (P3) : paires contrôlées, marges converties en clés de valeur.
     for (const x of pc.proximity ?? []) {
@@ -489,7 +496,7 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
     }
     /** @type {{ family: string, value: string, context: Context }[]} */
     const created = [];
-    const plein = pleinSources(pc.records, solid);
+    const plein = /** @type {{ plein: Set<number> }} */ (derniere).plein;
     // Lot B, R1 : fond de page porté par html ou body (hors relevé de l'audit, mais rangé et simulé).
     pc.records.forEach((rec, index) => {
       if (rec.retained || (rec.parent !== -1 && rec.parent !== 0)) return;
@@ -626,6 +633,8 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
   /** R15 : couleurs qui n'apparaissent qu'à un état forcé, par couleur puis par (état, propriété, rôle). */
   /** @type {Map<string, { count: number, ctx: Map<string, { state: string, property: string, role: string, count: number, selectors: string[] }> }>} */
   const stateColors = new Map();
+  /** Revue de code du 15/11, lot 2 : page versée en dernier, à laquelle addStates rattache ses échantillons. @type {{ pc: PageCollection, plein: Set<number> } | null} */
+  let derniere = null;
   const stateStats = { sampled: 0, capped: false, candidates: 0 };
   /** R17 : éléments tiers écartés. */
   const third = { elements: 0, selectors: /** @type {Record<string, number>} */ ({}), invalid: /** @type {Set<string>} */ (new Set()) };
@@ -666,9 +675,20 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
           let v = stateColors.get(c.hex);
           if (!v) stateColors.set(c.hex, (v = { count: 0, ctx: new Map() }));
           v.count++;
+          // Revue de code du 15/11, lot 2 (D19) : une couleur d'état entre dans la table si le site l'a écrite. Les
+          // échantillons d'état ne sont pas tracés : l'anneau de focus du navigateur est reconnu par repli, un contour
+          // outline-style auto (KNOWN_ISSUES.md) ; il reste dans « États non lus ».
+          const navigateur = c.property === 'outline-color' && snap.el?.['outline-style'] === 'auto';
           const ck = `${state}\n${c.property}\n${smp.role}`;
           let x = v.ctx.get(ck);
-          if (!x) v.ctx.set(ck, (x = { state, property: c.property, role: smp.role, count: 0, selectors: [] }));
+          if (!x) v.ctx.set(ck, (x = { state, property: c.property, role: smp.role, count: 0, selectors: [], ...(navigateur ? { navigateur: true } : {}) }));
+          const rec = derniere?.pc.records[smp.index];
+          if (!navigateur && rec && derniere) {
+            // Un fond sous un texte plus clair, à cet état, est un plein (même règle qu'au relevé, pleinSources).
+            const fg = c.property === 'background-color' && smp.text ? normalizeColor(snap.el?.color ?? '') : null;
+            const plein = !!fg && relativeLuminance(isOpaque(fg.hex) ? fg.hex : blend(fg.hex, c.hex)) > relativeLuminance(c.hex);
+            addUsage('colors', c.hex, colorUsage(c.property, plein || (derniere.plein.has(smp.index) && c.property === 'background-color')), rec, derniere.pc.url, c.property, { index: smp.index, etat: state });
+          }
           x.count++;
           if (x.selectors.length < MAX_SELECTORS && !x.selectors.includes(c.selector)) x.selectors.push(c.selector);
         }
