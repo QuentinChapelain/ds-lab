@@ -11,7 +11,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { chromium } from 'playwright-core';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { runReduce, parseReduceArgs } from '../src/cli/reduce.js';
+import { runReduce } from '../src/reduce/run.js';
+import { parseReduceArgs } from '../src/cli/reduce.js';
 import { simulatePage, installLive } from '../src/browser/simulate.js';
 import { mapping } from '../src/reduce/propose.js';
 

@@ -19,7 +19,7 @@ import { readFile, mkdtemp, writeFile, cp, readdir, stat } from 'node:fs/promise
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { runReduce } from '../src/cli/reduce.js';
+import { runReduce } from '../src/reduce/run.js';
 import { applyModifications } from '../src/apply/apply.js';
 
 const TOKENS = new URL('../tokens/orbe-cafe/marque.resolver.json', import.meta.url).pathname;

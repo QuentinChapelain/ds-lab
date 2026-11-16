@@ -18,7 +18,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { formatHex, parse, wcagContrast } from 'culori';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { runReduce } from '../src/cli/reduce.js';
+import { runReduce } from '../src/reduce/run.js';
 import { gotoAndSettle } from '../src/browser/navigate.js';
 
 const E = JSON.parse(await readFile(new URL('../fixtures/marque-demo/expected-marque.json', import.meta.url), 'utf8'));

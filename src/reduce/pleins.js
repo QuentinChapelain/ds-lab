@@ -42,8 +42,12 @@ export function pleinFinder(target) {
   return { T, pleinOf };
 }
 
-/** @param {Record<string, any>} map @param {string} v @param {string} usage */
-const mapped = (map, v, usage) => map.colors?.[`${v}|${usage}`] ?? map.colors?.[v] ?? v;
+/**
+ * Valeur après la table (avec décisions) pour une couleur et un usage ; lue aussi par migration.md (revue, lot 6 : une seule
+ * définition, la copie de src/report/migration.js retirée).
+ * @param {Record<string, any>} map @param {string} v @param {string} usage
+ */
+export const mapped = (map, v, usage) => map.colors?.[`${v}|${usage}`] ?? map.colors?.[v] ?? v;
 
 /**
  * @typedef {{ choice: string, label: string, text: string, bg: string, ratio: number, threshold: number, pass: boolean }} PleinVersion
@@ -242,3 +246,46 @@ export function pleinVersionMap(g, choice, solid = []) {
         : [];
   return { colors, solid, couplings };
 }
+
+/**
+ * COUPLAGES : textes posés sur un plein et l'onSolid de l'échelle du plein. Une entrée par paire
+ * après la table, avec ses paires d'origine (befores). Lot V, étape 4 : la simulation les applique
+ * aussi (voir simulationCouplings). Lot K : un couplage est une décision ; seuls les pleins dont la
+ * carte a retenu « onSolid » en ont, pour tous leurs textes (sauf ceux déjà à l'onSolid).
+ * @param {{ rendered: any, map: Record<string, any>, pleins?: any[] }} o
+ */
+export function couplingsOf({ rendered, map, pleins = [] }) {
+  /** @type {any[]} */
+  const onSolid = [];
+  for (const p of rendered.usages?.pairs ?? []) {
+    if (p.bgUsage !== 'plein') continue;
+    // Lot J, J4 : « teinte » couple aussi : chaque texte prend son pas de même teinte (g.tints).
+    const g = pleins.find((x) => (x.choice === 'onSolid' || (x.choice === 'teinte' && x.tints)) && x.rows.some((/** @type {any} */ r) => r.old === p.bg));
+    if (!g) continue;
+    const text = mapped(map, p.text, 'texte');
+    const bg = mapped(map, p.bg, 'plein');
+    const to = g.choice === 'teinte' ? g.tints[text] : g.onSolid;
+    if (!to || text === to) continue;
+    const ratio = contrastRatio(text, bg);
+    const seen = (rendered.contrast?.pairs ?? []).find((/** @type {any} */ x) => x.text === p.text && x.bg === p.bg);
+    // Une entrée par paire après la table : plusieurs fonds d'origine peuvent aller au même pas.
+    let o = onSolid.find((x) => x.text === text && x.bg === bg);
+    if (!o) {
+      o = { text, bg, before: { text: p.text, bg: p.bg }, befores: [], ratio: Math.round(ratio * 10000) / 10000, threshold: p.threshold, scale: g.scale, onSolid: to, ...(g.choice === 'teinte' ? { tint: true } : {}), card: g.title, n: 0, selectors: [] };
+      onSolid.push(o);
+    }
+    o.n += p.n;
+    if (!o.befores.some((/** @type {any} */ b) => b.bg === p.bg && b.text === p.text)) o.befores.push({ text: p.text, bg: p.bg });
+    for (const sel of seen?.selectors ?? []) if (!o.selectors.includes(sel)) o.selectors.push(sel);
+  }
+  return onSolid;
+}
+
+/**
+ * Lot V, étape 4 : couplages pour la simulation, par paire d'origine : texte et fond lus dans la
+ * page, fond attendu après la table (to), couleur posée sur le texte (onSolid).
+ * @param {any[]} couplings  couplingsOf(…)
+ * @returns {{ text: string, bg: string, to: string, onSolid: string }[]}
+ */
+export const simulationCouplings = (couplings) =>
+  couplings.flatMap((o) => o.befores.map((/** @type {any} */ b) => ({ text: b.text, bg: b.bg, to: o.bg, onSolid: String(o.onSolid).toLowerCase() })));

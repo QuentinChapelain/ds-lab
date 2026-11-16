@@ -24,7 +24,7 @@ import { measureRendered } from '../src/rendered/run.js';
 import { createRenderedAggregator } from '../src/rendered/aggregate.js';
 import { traceElements } from '../src/browser/trace.js';
 import { readBrand } from '../src/brand/read.js';
-import { runReduce } from '../src/cli/reduce.js';
+import { runReduce } from '../src/reduce/run.js';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));

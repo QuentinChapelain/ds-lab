@@ -21,7 +21,7 @@ import { join } from 'node:path';
 import { PNG } from 'pngjs';
 import { wcagContrast } from 'culori';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { runReduce } from '../src/cli/reduce.js';
+import { runReduce } from '../src/reduce/run.js';
 import { propose, solidPairs } from '../src/reduce/propose.js';
 import { pickColorToken } from '../src/report/migration.js';
 import { referenceFiles } from '../src/verify/reference.js';

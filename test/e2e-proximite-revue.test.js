@@ -15,7 +15,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { runReduce } from '../src/cli/reduce.js';
+import { runReduce } from '../src/reduce/run.js';
 import { rowKey } from '../src/reduce/propose.js';
 import { renderReview } from '../src/report/review.js';
 

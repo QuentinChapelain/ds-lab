@@ -13,7 +13,8 @@ import { dirname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { colonne, balayage, calibrageHtml, calibrageMd } from '../report/calibrage.js';
 import { chargerCommun } from '../tokens/saisie.js';
-import { lancer, lireJson } from './garde.js';
+import { lancer } from './garde.js';
+import { lireJson } from '../lib/fichiers.js';
 
 await lancer('calibrage', () => {
   const { values, positionals } = parseArgs({ options: { sortie: { type: 'string' } }, allowPositionals: true });

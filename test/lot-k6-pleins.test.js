@@ -18,7 +18,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { wcagContrast, differenceEuclidean } from 'culori';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { runReduce } from '../src/cli/reduce.js';
+import { runReduce } from '../src/reduce/run.js';
 import { pleinGroups } from '../src/reduce/pleins.js';
 
 const TARGET = `${FIXTURE_DIR}cible-valise.json`;

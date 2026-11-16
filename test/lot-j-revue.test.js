@@ -18,7 +18,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { PNG } from 'pngjs';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { runReduce } from '../src/cli/reduce.js';
+import { runReduce } from '../src/reduce/run.js';
 
 const PAGE = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>J5 J7</title>
 <style>html,body{margin:0;background:#ffffff;font:16px/1.4 Arial,sans-serif;color:#363026}body{height:2000px;position:relative}

@@ -17,7 +17,7 @@ import { join } from 'node:path';
 import { differenceEuclidean, wcagContrast } from 'culori';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
 import { runAudit } from '../src/audit/run.js';
-import { runReduce } from '../src/cli/reduce.js';
+import { runReduce } from '../src/reduce/run.js';
 
 const E = JSON.parse(await readFile(new URL('../fixtures/marque-demo/expected-desordre.json', import.meta.url), 'utf8'));
 const TOL = 0.01;

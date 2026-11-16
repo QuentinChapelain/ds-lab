@@ -15,7 +15,8 @@
 import { parseArgs } from 'node:util';
 import { espacements } from '../tokens/espacements.js';
 import { largeurs, enEtroit } from '../tokens/resolver.js';
-import { lancer, lireJson, parMarque } from './garde.js';
+import { lancer, parMarque } from './garde.js';
+import { lireJson } from '../lib/fichiers.js';
 import { fr } from '../lib/format.js';
 
 await lancer('espacements', () => {

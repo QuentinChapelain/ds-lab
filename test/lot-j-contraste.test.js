@@ -28,7 +28,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { wcagContrast, differenceEuclidean } from 'culori';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { runReduce } from '../src/cli/reduce.js';
+import { runReduce } from '../src/reduce/run.js';
 
 const PAGE = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>J1 J2</title>
 <style>html,body{margin:0;background:#ffffff;font:700 16px/1.4 Arial,sans-serif;color:#363026}

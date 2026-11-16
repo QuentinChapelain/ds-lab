@@ -23,7 +23,8 @@ import { saisir, serialiser, controlerEncre } from '../tokens/saisie.js';
 import { RESOLVER } from '../tokens/resolver.js';
 import { decrirePolice } from '../polices/lecture.js';
 import { tableEncre } from '../polices/encre.js';
-import { lancer, lireJson } from './garde.js';
+import { lancer } from './garde.js';
+import { lireJson } from '../lib/fichiers.js';
 import { fr } from '../lib/format.js';
 
 await lancer('saisie', async () => {

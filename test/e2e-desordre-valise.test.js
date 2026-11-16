@@ -14,7 +14,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { differenceEuclidean, wcagContrast } from 'culori';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { runReduce } from '../src/cli/reduce.js';
+import { runReduce } from '../src/reduce/run.js';
 import { gotoAndSettle } from '../src/browser/navigate.js';
 import { scanInPage, showInPage } from '../src/browser/simulate.js';
 import { collectRendered } from '../src/browser/rendered.js';

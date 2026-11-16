@@ -25,7 +25,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { wcagContrast, differenceEuclidean } from 'culori';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { runReduce } from '../src/cli/reduce.js';
+import { runReduce } from '../src/reduce/run.js';
 
 const BOX = 'position:absolute;left:20px;width:240px;padding:12px;font:400 16px/1.4 Arial,sans-serif;background-color:#2b4c7e';
 const PAGE = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>J3 J4</title>

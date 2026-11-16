@@ -15,7 +15,8 @@ import { parseArgs } from 'node:util';
 import { typo } from '../tokens/typo.js';
 import { fr } from '../lib/format.js';
 import { largeurs, enEtroit } from '../tokens/resolver.js';
-import { lancer, lireJson, parMarque } from './garde.js';
+import { lancer, parMarque } from './garde.js';
+import { lireJson } from '../lib/fichiers.js';
 
 await lancer('typo', () => {
   const { values } = parseArgs({ options: { marque: { type: 'string' }, semantique: { type: 'string' }, primitives: { type: 'string' }, 'couche-marque': { type: 'string' }, etroit: { type: 'string' } } });

@@ -15,7 +15,8 @@ import { parseArgs } from 'node:util';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { applyModifications } from '../apply/apply.js';
-import { lancer, lireJson } from './garde.js';
+import { lancer } from './garde.js';
+import { lireJson } from '../lib/fichiers.js';
 
 const USAGE = `Usage : npm run apply -- --modifications <fichier> --racine <dossier> [options]
   --modifications <fichier>  modifications.json écrit par npm run reduce (avec --tokens)

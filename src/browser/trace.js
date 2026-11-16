@@ -229,18 +229,3 @@ export async function traceElements(page, samples, { sources, lookup }) {
  * @param {string} property @param {string} page  chemin de la page (feuille <style>)
  */
 export const declarationId = (t, property, page) => `${t.href ?? `${page}#style`}|${t.sheetLine ?? t.line}|${t.selector}|${property}`;
-
-/**
- * Lot V, étape 6 (D3) : unité d'une valeur écrite dans la source. « relative » : rem, em, %, unités
- * de fenêtre ou de police ; « absolue » : px ou zéro ; « inconnue » : var(), calc(), env(), mot-clé
- * d'héritage ; « sans unité » : le reste (couleurs, mots-clés).
- * @param {string | null | undefined} v
- * @returns {'relative' | 'absolue' | 'inconnue' | 'sans unité'}
- */
-export function unitOf(v) {
-  const t = String(v ?? '').trim().toLowerCase();
-  if (!t || /\b(var|calc|env|min|max|clamp)\(/.test(t) || /^(inherit|initial|unset|revert|revert-layer)$/.test(t)) return 'inconnue';
-  if (/(^|[\s(,])-?(\d*\.)?\d+(rem|em|%|vw|vh|vmin|vmax|ch|ex|lh|rlh|cap|ic)\b/.test(t) || /(^|[\s(,])-?(\d*\.)?\d+%/.test(t)) return 'relative';
-  if (/^-?(\d*\.)?\d+px$/.test(t) || /^-?0$/.test(t)) return 'absolue';
-  return 'sans unité';
-}

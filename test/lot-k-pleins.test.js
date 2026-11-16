@@ -33,7 +33,7 @@ import { join } from 'node:path';
 import { PNG } from 'pngjs';
 import { wcagContrast } from 'culori';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { runReduce } from '../src/cli/reduce.js';
+import { runReduce } from '../src/reduce/run.js';
 import { referenceFiles } from '../src/verify/reference.js';
 
 const TARGET = `${FIXTURE_DIR}cible-valise.json`;

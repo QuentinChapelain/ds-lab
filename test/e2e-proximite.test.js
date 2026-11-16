@@ -13,7 +13,7 @@ import { readFile, writeFile, mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { runReduce } from '../src/cli/reduce.js';
+import { runReduce } from '../src/reduce/run.js';
 import { gotoAndSettle } from '../src/browser/navigate.js';
 import { collectRendered } from '../src/browser/rendered.js';
 

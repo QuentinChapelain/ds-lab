@@ -24,7 +24,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { PNG } from 'pngjs';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { runReduce } from '../src/cli/reduce.js';
+import { runReduce } from '../src/reduce/run.js';
 import { capturePage } from '../src/verify/capture.js';
 import { verifyPage, referenceFiles } from '../src/verify/reference.js';
 import { parseVerifyArgs } from '../src/cli/verify.js';

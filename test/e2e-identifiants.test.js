@@ -11,7 +11,7 @@ import { readFile, mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { runReduce, linesOf } from '../src/cli/reduce.js';
+import { runReduce, linesOf } from '../src/reduce/run.js';
 import { mapping } from '../src/reduce/propose.js';
 import { installLive } from '../src/browser/simulate.js';
 import { rowKey, propose } from '../src/reduce/propose.js';

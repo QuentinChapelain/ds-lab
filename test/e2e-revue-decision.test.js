@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { wcagContrast } from 'culori';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { runReduce } from '../src/cli/reduce.js';
+import { runReduce } from '../src/reduce/run.js';
 import { rowKey, decisionFor } from '../src/reduce/propose.js';
 import { renderReview } from '../src/report/review.js';
 import { writeFile } from 'node:fs/promises';

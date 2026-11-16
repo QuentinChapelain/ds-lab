@@ -12,7 +12,7 @@ import { APPLIED, isOut, SLICES, decisionFor, decisionKeyFor, retenue, decisionK
 export { onSolidOf };
 import { contrastRatio } from '../lib/color.js';
 import { fr } from '../lib/format.js';
-import { pleinFinder } from '../reduce/pleins.js';
+import { pleinFinder, couplingsOf, mapped } from '../reduce/pleins.js';
 import { buildModifications } from './modifications.js';
 import { consigneAgent, cutNote, hasToken, m6Text } from './consigne.js';
 
@@ -133,11 +133,6 @@ export function relationCell(r) {
   return parts.filter(Boolean).join(' · ');
 }
 
-/**
- * Valeur après la table (avec décisions) pour une couleur et un usage.
- * @param {Record<string, any>} map @param {string} value @param {string} usage
- */
-const mapped = (map, value, usage) => map.colors?.[`${value}|${usage}`] ?? map.colors?.[value] ?? value;
 
 /**
  * Origine CSS d'une ligne : la règle tracée d'un élément d'exemple (fichier:ligne).
@@ -165,49 +160,6 @@ function originOf(rendered, family, r) {
 const shortValue = (v) => (/^-?[\d.]+px$/.test(v) ? `${fr(parseFloat(v))} px` : v);
 
 
-
-/**
- * COUPLAGES : textes posés sur un plein et l'onSolid de l'échelle du plein. Une entrée par paire
- * après la table, avec ses paires d'origine (befores). Lot V, étape 4 : la simulation les applique
- * aussi (voir simulationCouplings). Lot K : un couplage est une décision ; seuls les pleins dont la
- * carte a retenu « onSolid » en ont, pour tous leurs textes (sauf ceux déjà à l'onSolid).
- * @param {{ rendered: any, map: Record<string, any>, target?: any, pleins?: any[] }} o
- */
-export function couplingsOf({ rendered, map, pleins = [] }) {
-  /** @type {any[]} */
-  const onSolid = [];
-  for (const p of rendered.usages?.pairs ?? []) {
-    if (p.bgUsage !== 'plein') continue;
-    // Lot J, J4 : « teinte » couple aussi : chaque texte prend son pas de même teinte (g.tints).
-    const g = pleins.find((x) => (x.choice === 'onSolid' || (x.choice === 'teinte' && x.tints)) && x.rows.some((/** @type {any} */ r) => r.old === p.bg));
-    if (!g) continue;
-    const text = mapped(map, p.text, 'texte');
-    const bg = mapped(map, p.bg, 'plein');
-    const to = g.choice === 'teinte' ? g.tints[text] : g.onSolid;
-    if (!to || text === to) continue;
-    const ratio = contrastRatio(text, bg);
-    const seen = (rendered.contrast?.pairs ?? []).find((/** @type {any} */ x) => x.text === p.text && x.bg === p.bg);
-    // Une entrée par paire après la table : plusieurs fonds d'origine peuvent aller au même pas.
-    let o = onSolid.find((x) => x.text === text && x.bg === bg);
-    if (!o) {
-      o = { text, bg, before: { text: p.text, bg: p.bg }, befores: [], ratio: Math.round(ratio * 10000) / 10000, threshold: p.threshold, scale: g.scale, onSolid: to, ...(g.choice === 'teinte' ? { tint: true } : {}), card: g.title, n: 0, selectors: [] };
-      onSolid.push(o);
-    }
-    o.n += p.n;
-    if (!o.befores.some((/** @type {any} */ b) => b.bg === p.bg && b.text === p.text)) o.befores.push({ text: p.text, bg: p.bg });
-    for (const sel of seen?.selectors ?? []) if (!o.selectors.includes(sel)) o.selectors.push(sel);
-  }
-  return onSolid;
-}
-
-/**
- * Lot V, étape 4 : couplages pour la simulation, par paire d'origine : texte et fond lus dans la
- * page, fond attendu après la table (to), couleur posée sur le texte (onSolid).
- * @param {any[]} couplings  couplingsOf(…)
- * @returns {{ text: string, bg: string, to: string, onSolid: string }[]}
- */
-export const simulationCouplings = (couplings) =>
-  couplings.flatMap((o) => o.befores.map((/** @type {any} */ b) => ({ text: b.text, bg: b.bg, to: o.bg, onSolid: String(o.onSolid).toLowerCase() })));
 
 /**
  * Lot V, étape 5 : page témoin, hors de la table, sur laquelle la table est simulée.
@@ -333,7 +285,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
   // Exceptions nommées.
   const links = (rendered.usages?.links ?? []).map((/** @type {any} */ l) => ({ ...l }));
   const pleins = table.pleins ?? [];
-  const onSolid = couplingsOf({ rendered, map, target, pleins }).map((o) => {
+  const onSolid = couplingsOf({ rendered, map, pleins }).map((o) => {
     // Lot J, J4 : un pas de même teinte se nomme par la valise (terre-6), pas comme un onSolid.
     const name = o.tint ? T.find((/** @type {any} */ t) => t.value === o.onSolid)?.name ?? null : null;
     return { ...o, ...(name ? { name } : {}), token: idx?.find('colors', o.onSolid, o.tint ? { name } : { pleinScales: new Set([o.scale]) }) ?? null };
