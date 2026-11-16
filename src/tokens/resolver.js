@@ -109,6 +109,15 @@ export function resoudre(resolver, base, entrees = {}) {
 }
 
 /**
+ * Revue de code, lot 5 : jetons d'un fichier donné à reduce --tokens. Un resolver (version et resolutionOrder) est résolu
+ * depuis son dossier, dans ses contextes par défaut, et rend l'arbre fusionné ; un fichier de jetons est rendu tel quel.
+ * @param {any} doc contenu du fichier @param {string} chemin chemin du fichier
+ */
+export function jetonsDe(doc, chemin) {
+  return estObjet(doc) && 'resolutionOrder' in doc ? resoudre(doc, dirname(chemin)).jetons : doc;
+}
+
+/**
  * Lit et résout un fichier resolver.
  * @param {string} chemin @param {Record<string, string>} [entrees]
  */

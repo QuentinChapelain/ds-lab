@@ -23,18 +23,20 @@ import { collectSheets } from '../browser/sheets.js';
 import { contradictionsIn } from '../brand/brand.js';
 import { simulatePage, installLive, captureDecision, touchedElements, capturePlein, FRAME } from '../browser/simulate.js';
 import { renderReview } from '../report/review.js';
-import { buildMigration, couplingsOf, simulationCouplings } from '../report/migration.js';
+import { buildMigration, couplingsOf, simulationCouplings, indexTokens } from '../report/migration.js';
 import { stampOf, freeOutputDir } from '../report/json.js';
 import { pageName, writeReference } from '../verify/reference.js';
 import { identityMapping, declarationsOnPage, attachDeclarations } from '../reduce/declarations.js';
 import { pleinGroups, applyPleins, pleinVersionMap } from '../reduce/pleins.js';
-import { lancer } from './garde.js';
+import { lancer, lireJson } from './garde.js';
+import { jetonsDe } from '../tokens/resolver.js';
 
 const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cible.json> [options]
 
   --target <fichier>         échelles cibles : radii, spacing, fontSizes (px), colors ({ name, value })
   --decisions <fichier>      decisions.json exporté depuis revue.html (tour suivant)
-  --tokens <fichier>         jetons DTCG de la cible (.tokens.json) : leurs chemins nomment les lignes de migration.md
+  --tokens <fichier>         jetons DTCG de la cible (.tokens.json, ou resolver de la marque, marque.resolver.json) :
+                             leurs chemins nomment les lignes de migration.md
   --storage-state <fichier>  session enregistrée par npm run login
   --sources <fichier>        fichier de sources (pour thirdParty ; sans lui : aucun fichier lu)
   --viewport <LxH>           fenêtre (défaut : 1366x900)
@@ -60,7 +62,7 @@ const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cibl
  * @property {string[]} addresses
  * @property {string} targetPath
  * @property {string} [decisionsPath]
- * @property {string} [tokensPath]     jetons DTCG de la cible, pour migration.md
+ * @property {string} [tokensPath]     jetons DTCG de la cible (fichier de jetons ou resolver), pour migration.md
  * @property {string} [storageState]
  * @property {string} [sourcesPath]
  * @property {string} [referencesPath]  lot V : dossier des références de npm run verify
@@ -94,7 +96,11 @@ export async function runReduce(opts) {
   const target = JSON.parse(await readFile(opts.targetPath, 'utf8'));
   /** @type {Record<string, string | false>} */
   const decisions = opts.decisionsPath ? JSON.parse(await readFile(opts.decisionsPath, 'utf8')) : {};
-  const tokens = opts.tokensPath ? JSON.parse(await readFile(opts.tokensPath, 'utf8')) : null;
+  // Revue de code, lot 5 : --tokens lit un fichier de jetons ou un resolver ; un fichier qui ne donne aucun jeton est une
+  // panne (D18) : migration.md ne nommerait aucune ligne.
+  const tokens = opts.tokensPath ? jetonsDe(lireJson(opts.tokensPath), opts.tokensPath) : null;
+  if (tokens && !indexTokens(tokens).size)
+    throw new Error(`--tokens ${opts.tokensPath} : aucun jeton lu (couleur en hex, dimension en px) ; un fichier .tokens.json ou un resolver DTCG 2025.10 attendu`);
   // Revue de code du 15/11, lot 1b (D18) : une couleur de marque illisible dans la cible lève avant de lancer Chromium.
   if (target.brand) brandOf(target);
   const { sources } = await loadSources({ path: opts.sourcesPath });
