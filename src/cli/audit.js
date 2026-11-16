@@ -4,7 +4,7 @@
  * npm run audit -- <adresses> [options]
  *
  * Revue de code du 15/11, lot 1b (D18) : sort en 0 si toutes les pages sont mesurées ; en 2 sur une panne, ou si l'audit
- * est incomplet (pages non mesurées, trace en panne : audit écrit ; aucune page mesurée : rien d'écrit).
+ * est incomplet (pages non mesurées, trace en panne, script v1 en échec : audit écrit ; aucune page mesurée : rien d'écrit).
  */
 import { parseArgs } from 'node:util';
 import { pathToFileURL } from 'node:url';
@@ -93,6 +93,7 @@ export function incomplet(results) {
     const quoi = [];
     if (tombees) quoi.push(`${tombees} ${accorde(tombees, 'page', 'pages')} sur ${r.total} non ${accorde(tombees, 'mesurée', 'mesurées')}`);
     if (r.traceFailed) quoi.push(`trace en panne sur ${r.traceFailed} ${accorde(r.traceFailed, 'page', 'pages')} sur ${r.total}`);
+    if (r.v1Failed) quoi.push(`script v1 en échec sur ${r.v1Failed} ${accorde(r.v1Failed, 'page', 'pages')} sur ${r.total}`);
     if (quoi.length) parts.push(`${quoi.join(', ')}${sur} : audit écrit, incomplet`);
   }
   return parts.length ? parts.join(' ; ') : null;

@@ -38,6 +38,7 @@
 - Trois fichiers source au-delà de 1 000 lignes ; ni lint ni CI.
 - Saisie, exception à « rien n'est écrit » (D18) : le contrôle `contraste` est relancé sur les fichiers déjà écrits ; s'il ne conclut pas, ou trouve une paire en échec, la saisie sort en 2 avec les fichiers en place (`src/cli/saisie.js`). Remède (écrire à côté, contrôler, puis remplacer) renvoyé au lot de la fusion unique du contexte de marque.
 - Saisie, contrôle d'encre : le refus « fichier de police que le navigateur ne charge pas » (`PoliceRefusee`, `src/polices/encre.js`) est codé mais sans test, faute d'un fichier qui passe les garde-fous et que Chromium rejette.
+- Codé sans test (lot 1b de la revue) : le motif « non stabilisé après 10 tours » de la boucle de `propose` (aucune entrée connue ne la fait osciller, `src/reduce/propose.js`) ; la trace en panne dans un audit de bout en bout (testée au niveau de `measureRendered` seulement, aucun moyen de la provoquer dans une vraie page) ; les messages d'une navigation échouée de `reduce --live` et de `npm run login` (fenêtre visible).
 - Mode sombre : la carte (`fond.surface`, `#181818`) est jugée peu détachée de la page (`#121212`) sur image ; rapport carte sur page 1,055:1 en sombre contre 1,035:1 en clair [F], donc l'écart de teinte n'explique pas le jugement ; cause non établie [V], à reprendre à l'étape des composants.
 
 ## Revue de code du 15/11

@@ -38,11 +38,12 @@ async function main() {
       help: { type: 'boolean', short: 'h', default: false },
     },
   });
-  if (values.help || !values.modifications || !values.racine) {
+  if (values.help) {
     console.log(USAGE);
-    if (values.help) return 0;
-    throw new Error('--modifications et --racine sont attendus (npm run apply -- --help)');
+    return 0;
   }
+  // D18 : une erreur d'usage est une panne d'une ligne, sans l'aide (-h la donne).
+  if (!values.modifications || !values.racine) throw new Error('--modifications et --racine sont attendus');
   const t0 = Date.now();
   const mods = lireJson(values.modifications);
   const root = resolve(values.racine);

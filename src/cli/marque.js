@@ -40,8 +40,8 @@ async function main() {
   if (values.help) return console.log(USAGE);
   const vp = /^(\d+)x(\d+)$/.exec(String(values.viewport));
   if (!positionals.length || !vp) {
-    console.error(`Erreur : ${!positionals.length ? 'au moins une adresse est attendue' : `--viewport : format LxH attendu (reçu « ${values.viewport} »)`}\n\n${USAGE}`);
-    process.exit(2);
+    // Revue de code du 15/11, lot 1b (D18) : une erreur d'usage est une panne d'une ligne, sans l'aide (-h la donne).
+    throw new Error(!positionals.length ? 'au moins une adresse est attendue' : `--viewport : format LxH attendu (reçu « ${values.viewport} »)`);
   }
   for (const [host, urls] of groupByHost(resolveAddresses(positionals))) {
     const r = await readBrand({ addresses: urls, viewport: { width: Number(vp[1]), height: Number(vp[2]) }, prefix: String(values.prefix), storageState: values['storage-state'] });

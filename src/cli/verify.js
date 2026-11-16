@@ -64,10 +64,8 @@ async function main() {
     : !values.reference ? '--reference est attendu'
     : !vp ? `--viewport : format LxH attendu (reçu « ${values.viewport} »)`
     : null;
-  if (problem || !vp || !values.reference) {
-    console.error(`Erreur : ${problem}\n\n${USAGE}`);
-    process.exit(2);
-  }
+  // Revue de code du 15/11, lot 1b (D18) : une erreur d'usage est une panne d'une ligne, sans l'aide (-h la donne).
+  if (problem || !vp || !values.reference) throw new Error(problem ?? 'usage');
   const [url] = resolveAddresses(positionals);
   const refDir = String(values.reference);
   const viewport = { width: Number(vp[1]), height: Number(vp[2]) };
@@ -87,8 +85,7 @@ async function main() {
   } catch (e) {
     if (/** @type {any} */ (e).code !== 'ENOENT') throw e;
     const f = referenceFiles(refDir, url);
-    console.error(`Erreur : référence absente (${f.png}, ${f.aria}) ; la créer avec --save ou reduce --references`);
-    process.exit(2);
+    throw new Error(`référence absente (${f.png}, ${f.aria}) ; la créer avec --save ou reduce --references`);
   }
   const { shot, pixels, aria } = r;
   const dir = await freeOutputDir(String(values.out), new URL(url).host, stampOf(new Date()));
