@@ -22,7 +22,7 @@ import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
 import { runReduce } from '../src/cli/reduce.js';
 import { applyModifications } from '../src/apply/apply.js';
 
-const TOKENS = new URL('../fixtures/marque-demo/jetons/primitives.tokens.json', import.meta.url).pathname;
+const TOKENS = new URL('../tokens/orbe-cafe/marque.resolver.json', import.meta.url).pathname;
 const PAGES = ['/desordre/carte.html', '/desordre/compte.html', '/desordre/gestion.html'];
 const WITNESS = '/desordre/temoin.html';
 

@@ -53,7 +53,7 @@ before(async () => {
   [run] = await runReduce({
     addresses: [`${servers.origin}/j/p.html`],
     targetPath: `${FIXTURE_DIR}cible-valise.json`,
-    tokensPath: new URL('../fixtures/marque-demo/jetons/primitives.tokens.json', import.meta.url).pathname,
+    tokensPath: new URL('../tokens/orbe-cafe/marque.resolver.json', import.meta.url).pathname,
     viewport: { width: 400, height: 600 },
     waitMs: 50,
     outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-lot-j2-out-')),

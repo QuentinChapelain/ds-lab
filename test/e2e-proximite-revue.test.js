@@ -22,7 +22,7 @@ import { renderReview } from '../src/report/review.js';
 const P = JSON.parse(await readFile(new URL('../fixtures/marque-demo/expected-proximite.json', import.meta.url), 'utf8'));
 const D = JSON.parse(await readFile(new URL('../fixtures/marque-demo/expected-desordre-valise.json', import.meta.url), 'utf8'));
 const E = P.etape3;
-const TOKENS = new URL('../fixtures/marque-demo/jetons/primitives.tokens.json', import.meta.url).pathname;
+const TOKENS = new URL('../tokens/orbe-cafe/marque.resolver.json', import.meta.url).pathname;
 
 /** @type {Awaited<ReturnType<typeof startFixtureServers>>} */
 let servers;

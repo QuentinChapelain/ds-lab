@@ -105,7 +105,7 @@ test('T0 checkValise passe sur les deux échelles', () => {
   assert.deepEqual(checkValise(valiseFromTokens(statuts)), []);
 });
 
-test('T0 primitives.tokens.json inchangé (empreinte de 3fddd72), au bloc graisse près (séance 3c) ; copie figée dans fixtures/marque-demo/jetons/ (étape 4b)', () => {
+test('T0 copie figée des primitives d’avant l’étape 4b intacte (empreinte de 3fddd72), au bloc graisse près (séance 3c) : référence du test suivant, seule lectrice de fixtures/marque-demo/jetons/ (revue, lot 5)', () => {
   const s = readFileSync(join(ROOT, 'fixtures', 'marque-demo', 'jetons', 'primitives.tokens.json'), 'utf8');
   const sansGraisse = s.replace(/ {2}"graisse": \{\n[^]*?\n {2}\},\n/, '');
   assert.notEqual(sansGraisse, s, 'bloc graisse présent');

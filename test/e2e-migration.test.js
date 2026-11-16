@@ -15,7 +15,7 @@ import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
 import { runReduce } from '../src/cli/reduce.js';
 
 const E = JSON.parse(await readFile(new URL('../fixtures/marque-demo/expected-migration.json', import.meta.url), 'utf8'));
-const TOKENS = new URL('../fixtures/marque-demo/jetons/primitives.tokens.json', import.meta.url).pathname;
+const TOKENS = new URL('../tokens/orbe-cafe/marque.resolver.json', import.meta.url).pathname;
 const TOL = 0.01;
 
 /** @type {Awaited<ReturnType<typeof startFixtureServers>>} */
@@ -125,7 +125,7 @@ for (const [k, label] of [['applied', 'appliqué'], ['pending', 'décisions en a
   });
 }
 
-test('désordre : jetons DTCG repris de primitives.tokens.json', () => {
+test('désordre : jetons DTCG repris du resolver d’Orbe Café', () => {
   for (const t of E.desordre.tokens) {
     const row = desordre.data.rows.find((/** @type {any} */ x) => x.family === t.family && x.value === t.value && (!t.usage || x.usage === t.usage));
     assert.ok(row, `${t.family} ${t.value} ${t.usage ?? ''} absente`);
@@ -241,7 +241,7 @@ test('consigne pour un agent : contexte, une instruction par ligne appliquée, c
   assert.equal(ctx.length, 5, 'contexte en 5 lignes');
   assert.ok(ctx.some((/** @type {string} */ l) => l.includes("en repli, l'ancienne valeur ; si la source l'écrit autrement (rem, rgb()), garde l'écriture de la source")));
   // Lot V, étape 6 : tokens.css dans toute page qui charge une feuille modifiée (pages témoins comprises).
-  assert.ok(a.lines.includes('0. Crée tokens.css, qui déclare dans :root chaque variable utilisée ci-dessous avec sa valeur, à partir de primitives.tokens.json, et charge-la avant toutes les autres feuilles, dans toute page qui charge une feuille modifiée, pas seulement les pages de la table.'), 'étape 0');
+  assert.ok(a.lines.includes('0. Crée tokens.css, qui déclare dans :root chaque variable utilisée ci-dessous avec sa valeur, à partir de marque.resolver.json, et charge-la avant toutes les autres feuilles, dans toute page qui charge une feuille modifiée, pas seulement les pages de la table.'), 'étape 0');
   assert.ok(a.lines.includes('- Souligne tout lien posé dans du texte courant : 0 trouvé ici.'), 'change aussi');
   assert.ok(pieges.data.agent.lines.includes('- Souligne tout lien posé dans du texte courant : 1 trouvé ici (a.lien-discret).'), 'change aussi, pièges (L1)');
   const steps = (sectionOf(a.lines, 'REMPLACEMENTS (') ?? []).filter((/** @type {string} */ l) => /^[1-9]\d*\. /.test(l));

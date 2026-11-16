@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * Lot M : choix du jeton DTCG d'une couleur quand plusieurs jetons ont la même
- * valeur (src/report/migration.js), sur tokens/orbe-cafe/primitives.tokens.json.
+ * valeur (src/report/migration.js), sur le resolver d'Orbe Café (tokens/orbe-cafe/marque.resolver.json, revue, lot 5).
  * Règle : d'abord le nom de la ligne dans la valise ; un jeton sur-plein
  * seulement pour un texte posé sur le plein de cette échelle.
  */
@@ -9,8 +9,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { indexTokens, pickColorToken } from '../src/report/migration.js';
+import { jetonsDe } from '../src/tokens/resolver.js';
 
-const tokens = JSON.parse(await readFile(new URL('../fixtures/marque-demo/jetons/primitives.tokens.json', import.meta.url), 'utf8'));
+const RESOLVER = new URL('../tokens/orbe-cafe/marque.resolver.json', import.meta.url);
+const tokens = jetonsDe(JSON.parse(await readFile(RESOLVER, 'utf8')), RESOLVER.pathname);
 const idx = indexTokens(tokens);
 
 test('jetons : le nom de la valise d’abord (#ffffff → couleur.blanc, jamais un sur-plein)', () => {

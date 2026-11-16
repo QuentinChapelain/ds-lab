@@ -27,7 +27,7 @@ import { pickColorToken } from '../src/report/migration.js';
 import { referenceFiles } from '../src/verify/reference.js';
 
 const TARGET = `${FIXTURE_DIR}cible-valise.json`;
-const TOKENS = new URL('../fixtures/marque-demo/jetons/primitives.tokens.json', import.meta.url).pathname;
+const TOKENS = new URL('../tokens/orbe-cafe/marque.resolver.json', import.meta.url).pathname;
 /** @type {any} */
 let target;
 

@@ -22,7 +22,7 @@ import { runReduce } from '../src/cli/reduce.js';
 import { pleinGroups } from '../src/reduce/pleins.js';
 
 const TARGET = `${FIXTURE_DIR}cible-valise.json`;
-const TOKENS = new URL('../fixtures/marque-demo/jetons/primitives.tokens.json', import.meta.url).pathname;
+const TOKENS = new URL('../tokens/orbe-cafe/marque.resolver.json', import.meta.url).pathname;
 const BOX = 'position:absolute;left:40px;width:200px;height:60px;padding:0 8px;font:700 14px/60px Arial,sans-serif;color:#ffffff';
 const PAGE = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>K6</title>
 <style>html,body{margin:0;background:#ffffff}.certain{${BOX};top:40px;background-color:#c8553d}.vague{${BOX};top:140px;background-color:#e2683f}</style></head>

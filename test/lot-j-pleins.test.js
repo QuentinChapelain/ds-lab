@@ -49,7 +49,7 @@ before(async () => {
     const [run] = await runReduce({
       addresses: [`${servers.origin}/j/p.html`],
       targetPath: `${FIXTURE_DIR}cible-valise.json`,
-      tokensPath: new URL('../fixtures/marque-demo/jetons/primitives.tokens.json', import.meta.url).pathname,
+      tokensPath: new URL('../tokens/orbe-cafe/marque.resolver.json', import.meta.url).pathname,
       decisionsPath: file,
       viewport: { width: 400, height: 300 },
       waitMs: 50,

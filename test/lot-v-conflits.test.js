@@ -38,7 +38,7 @@ import { simulatePage } from '../src/browser/simulate.js';
 import { gotoAndSettle } from '../src/browser/navigate.js';
 
 const TARGET = `${FIXTURE_DIR}cible-valise.json`;
-const TOKENS = new URL('../fixtures/marque-demo/jetons/primitives.tokens.json', import.meta.url).pathname;
+const TOKENS = new URL('../tokens/orbe-cafe/marque.resolver.json', import.meta.url).pathname;
 const CSS = [
   'html { font-size: 87.5%; }',
   'body { margin: 0; font-family: Arial, sans-serif; font-size: 1rem; color: #103060; background-color: #ffffff; }',
