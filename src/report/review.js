@@ -442,11 +442,6 @@ function usageBilan(table) {
 }
 
 /**
- * @param {ReturnType<typeof import('../reduce/propose.js').propose>} table
- * @param {{ url: string, changes: import('../browser/simulate.js').SimulatedChange[], before: string | null, after: string | null }[]} pages
- * @param {{ host: string, stamp: string, target: string, decisions: Record<string, string | false> }} meta
- */
-/**
  * Lot K : carte « Texte sur plein <échelle> ». Trois versions (onSolid sur le pas 9, texte d'origine
  * sur le pas 10 si le contraste passe, garder), chacune avec sa capture et son contraste ; aucune
  * recommandée ni présélectionnée. Les lignes de fond qui mènent à ce plein suivent la carte.
@@ -514,6 +509,11 @@ function anchorOf(capture, pageIndex) {
   return ` data-page="${pageIndex.get(capture.page)}" data-y="${Math.max(0, Math.round(y))}" data-url="${esc(capture.page)}"`;
 }
 
+/**
+ * @param {ReturnType<typeof import('../reduce/propose.js').propose>} table
+ * @param {{ url: string, changes: import('../browser/simulate.js').SimulatedChange[], before: string | null, after: string | null }[]} pages
+ * @param {{ host: string, stamp: string, target: string, decisions: Record<string, string | false> }} meta
+ */
 export function renderReview(table, pages, meta) {
   // Lot J, J7 : index des pages entières (image « avant »), pour le panneau.
   const shown = pages.filter((p) => p.before && p.after);

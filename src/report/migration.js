@@ -163,16 +163,6 @@ function originOf(rendered, family, r) {
   return 'non tracé';
 }
 
-/**
- * @param {object} o
- * @param {ReturnType<typeof import('../reduce/propose.js').propose> & { thirdParty?: string[] }} o.table
- * @param {any} o.rendered        agrégat du rendu (usages, contextes tracés, états)
- * @param {Record<string, any>} o.map   table appliquée, décisions comprises (mapping)
- * @param {any} o.target          cible (onSolid, couleurs)
- * @param {any} [o.tokens]        fichier de jetons DTCG
- * @param {Record<string, string | false>} [o.decisions]  décisions du designer (--decisions) : une chaîne décide, false refuse
- * @param {{ host: string, stamp: string, target: string, tokens: string | null, pages: string[], viewport: { width: number, height: number }, command?: string }} o.meta
- */
 /** Lot C : « 12 px » pour une dimension, la valeur telle quelle sinon. @param {string} v */
 const shortValue = (v) => (/^-?[\d.]+px$/.test(v) ? `${String(parseFloat(v)).replace('.', ',')} px` : v);
 
@@ -227,7 +217,18 @@ export const simulationCouplings = (couplings) =>
  *   uncovered: { family: string, value: string, usage: string | null, count: number, selectors: string[] }[] }} Witness
  */
 
-/** @param {{ table: any, rendered: any, map: Record<string, any>, target: any, tokens?: any, decisions?: Record<string, string | false>, meta: any, witnesses?: Witness[], conflicts?: any[] }} o */
+/**
+ * @param {object} o
+ * @param {ReturnType<typeof import('../reduce/propose.js').propose> & { thirdParty?: string[] }} o.table
+ * @param {any} o.rendered        agrégat du rendu (usages, contextes tracés, états)
+ * @param {Record<string, any>} o.map   table appliquée, décisions comprises (mapping)
+ * @param {any} o.target          cible (onSolid, couleurs)
+ * @param {any} [o.tokens]        fichier de jetons DTCG
+ * @param {Record<string, string | false>} [o.decisions]  décisions du designer (--decisions) : une chaîne décide, false refuse
+ * @param {{ host: string, stamp: string, target: string, tokens: string | null, pages: string[], viewport: { width: number, height: number }, command?: string }} o.meta
+ * @param {Witness[]} [o.witnesses]  lot V, étape 5 : pages témoins, hors de la table
+ * @param {any[]} [o.conflicts]      lot V : conflits de déclarations (attachDeclarations)
+ */
 export function buildMigration({ table, rendered, map, target, tokens, decisions = {}, meta, witnesses = [], conflicts = [] }) {
   const idx = tokens ? indexTokens(tokens) : null;
   /** @param {string} family @param {string | null} value @param {{ name?: string | null, pleinScales?: Set<string> }} [ctx] */
@@ -429,10 +430,6 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
 }
 
 /**
- * @param {any} d
- * @param {{ applied: any[], pending: any[], refused: any[], outOfTable: any[] }} s
- */
-/**
  * Lot M (M6) : seconde version d'une décision, ou pourquoi il n'y en a pas.
  * @param {any} r
  */
@@ -469,6 +466,10 @@ function m6Move(r) {
   return moves + ex;
 }
 
+/**
+ * @param {any} d
+ * @param {{ applied: any[], pending: any[], refused: any[], outOfTable: any[] }} s
+ */
 function renderMarkdown(d, s) {
   const m = d.meta;
   const L = [];

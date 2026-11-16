@@ -74,10 +74,6 @@ const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cibl
  */
 
 /**
- * @param {ReduceOptions} opts
- * @returns {Promise<{ host: string, dir: string, files: string[], references: string[], table: ReturnType<typeof propose>, map: Record<string, any>, first: string, migration: ReturnType<typeof buildMigration>['data'], pages: Awaited<ReturnType<typeof simulatePage>>[] }[]>}
- */
-/**
  * Lot R, R-2 : identifiant et titre de chaque ligne de la table, pour la barre --live.
  * @param {ReturnType<typeof propose>} table
  */
@@ -89,6 +85,10 @@ const THUMBS = 3;
 /** Lot R : classes dont les lignes reçoivent des captures par version (5c : avant et après hors décision). */
 const CAPTURED = new Set(['décision', 'proche', 'auto', 'correction']);
 
+/**
+ * @param {ReduceOptions} opts
+ * @returns {Promise<{ host: string, dir: string, files: string[], references: string[], table: ReturnType<typeof propose>, map: Record<string, any>, first: string, migration: ReturnType<typeof buildMigration>['data'], pages: Awaited<ReturnType<typeof simulatePage>>[] }[]>}
+ */
 export async function runReduce(opts) {
   const { viewport = { width: 1366, height: 900 }, waitMs = DEFAULT_WAIT_MS, outRoot = 'local/reductions', now = new Date(), log = () => {} } = opts;
   const target = JSON.parse(await readFile(opts.targetPath, 'utf8'));
