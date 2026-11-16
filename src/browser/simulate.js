@@ -435,15 +435,6 @@ export async function freezeConflicts(page, conflicts) {
   }, frozen);
 }
 
-/** Exécutée dans la page : rectangles (coordonnées de page) des éléments demandés. @param {number[]} indices */
-export function rectsInPage(indices) {
-  const { els } = /** @type {any} */ (window).__dsSim;
-  return indices.map((i) => {
-    const r = els[i].getBoundingClientRect();
-    return { i, x: r.left + window.scrollX, y: r.top + window.scrollY, width: r.width, height: r.height };
-  });
-}
-
 /** Exécutée dans la page. @param {{ on: boolean, families?: string[] | null, keys?: string[] | null }} o */
 export function showInPage(o) {
   return /** @type {any} */ (window).__dsSim.show(o);
@@ -573,34 +564,10 @@ export async function installLive(context, map, { delayMs = 800, lines = [] } = 
   });
 }
 
-const PAD = 12;
-const MAX_W = 520;
-const MAX_H = 240;
-
 /**
  * @typedef {{ png: string, width: number, height: number, box: { x: number, y: number, width: number, height: number } }} Shot
  *   png : base64 ; box : rectangle de l'élément modifié dans la capture, en pixels
  */
-
-/**
- * @param {import('playwright-core').Page} page
- * @param {{ x: number, y: number, width: number, height: number }} r
- * @returns {Promise<Shot>}
- */
-async function crop(page, r) {
-  const doc = await page.evaluate(() => ({ width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight }));
-  const x = Math.max(0, Math.floor(r.x - PAD));
-  const y = Math.max(0, Math.floor(r.y - PAD));
-  const width = Math.max(8, Math.min(MAX_W, Math.ceil(r.width + 2 * PAD), doc.width - x));
-  const height = Math.max(8, Math.min(MAX_H, Math.ceil(r.height + 2 * PAD), doc.height - y));
-  const buf = await page.screenshot({ fullPage: true, clip: { x, y, width, height }, animations: 'disabled' });
-  return {
-    png: buf.toString('base64'),
-    width,
-    height,
-    box: { x: Math.round(r.x - x), y: Math.round(r.y - y), width: Math.round(Math.min(r.width, width)), height: Math.round(Math.min(r.height, height)) },
-  };
-}
 
 /**
  * @typedef {object} SimulatedChange
@@ -611,7 +578,6 @@ async function crop(page, r) {
  * @property {string} new
  * @property {number} count
  * @property {string[]} props   propriétés touchées, sans le côté (padding, margin, color…)
- * @property {{ before: Shot, after: Shot }[]} crops  l'« après » ne contient que ce changement
  */
 
 /**
@@ -619,11 +585,10 @@ async function crop(page, r) {
  * la table appliquée.
  * @param {import('playwright-core').Page} page
  * @param {Record<string, any>} map  comme scanInPage : par famille, ancien → nouveau ; split, solid, thirdParty, conflicts, couplings
- * @param {{ maxCropped?: number, fullPage?: boolean }} [opts]
- *   maxCropped : nombre de changements illustrés par des captures (les plus fréquents d'abord)
+ * @param {{ fullPage?: boolean }} [opts]
  * @returns {Promise<{ url: string, elements: number, operations: number, changed: number, byFamily: Record<string, number>, changes: SimulatedChange[], before: string | null, after: string | null }>}
  */
-export async function simulatePage(page, map, { maxCropped = 80, fullPage = true } = {}) {
+export async function simulatePage(page, map, { fullPage = true } = {}) {
   let scan = await page.evaluate(scanInPage, map);
   // Lot V, étape 6 (D4) : les opérations dont l'élément tient sa valeur d'une déclaration en conflit
   // ne sont pas appliquées (la consigne laisse ces déclarations telles quelles).
@@ -632,24 +597,6 @@ export async function simulatePage(page, map, { maxCropped = 80, fullPage = true
   const third = Array.isArray(map.thirdParty) ? map.thirdParty : [];
   await hideThirdParty(page, third, true);
   const before = fullPage ? (await page.screenshot({ fullPage: true, animations: 'disabled' })).toString('base64') : null;
-  const shown = new Set([...scan.changes].sort((a, b) => b.count - a.count).slice(0, maxCropped));
-  /** @type {Map<number, Shot>} */
-  const beforeShots = new Map();
-  for (const r of await page.evaluate(rectsInPage, [...new Set([...shown].flatMap((c) => c.samples))])) beforeShots.set(r.i, await crop(page, r));
-  /** @type {Map<string, { before: Shot, after: Shot }[]>} */
-  const shots = new Map();
-  for (const c of shown) {
-    if (!c.samples.length) continue;
-    const key = c.key;
-    await page.evaluate(showInPage, { on: true, keys: [key] });
-    const list = [];
-    for (const r of await page.evaluate(rectsInPage, c.samples)) {
-      const b = beforeShots.get(r.i);
-      if (b) list.push({ before: b, after: await crop(page, r) });
-    }
-    shots.set(key, list);
-    await page.evaluate(showInPage, { on: false });
-  }
   await page.evaluate(showInPage, { on: true });
   const after = fullPage ? (await page.screenshot({ fullPage: true, animations: 'disabled' })).toString('base64') : null;
   await hideThirdParty(page, third, false);
@@ -659,7 +606,7 @@ export async function simulatePage(page, map, { maxCropped = 80, fullPage = true
     operations: scan.operations,
     changed: scan.changed,
     byFamily: scan.byFamily,
-    changes: scan.changes.map((/** @type {any} */ c) => ({ key: c.key, family: c.family, old: c.old, usage: c.usage, new: c.new, count: c.count, props: c.props, crops: shots.get(c.key) ?? [] })),
+    changes: scan.changes.map((/** @type {any} */ c) => ({ key: c.key, family: c.family, old: c.old, usage: c.usage, new: c.new, count: c.count, props: c.props })),
     before,
     after,
   };

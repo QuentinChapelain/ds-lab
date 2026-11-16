@@ -218,7 +218,7 @@ export async function runReduce(opts) {
           // Lot V : l'arbre d'accessibilité avant simulation, la capture après simulation complète.
           const aria = opts.referencesPath ? await page.ariaSnapshot() : '';
           // Lot R, 5c : les captures par ligne viennent du passage des versions ; ici, pages entières seulement.
-          const simulated = await simulatePage(page, { ...map, split: splitOf(table) }, { maxCropped: 0 });
+          const simulated = await simulatePage(page, { ...map, split: splitOf(table) });
           pages.push(simulated);
           if (opts.referencesPath && simulated.after) {
             const f = await writeReference(opts.referencesPath, url, { png: Buffer.from(simulated.after, 'base64'), aria });
@@ -246,7 +246,7 @@ export async function runReduce(opts) {
         try {
           await gotoAndSettle(page, url, { waitMs });
           const aria = opts.referencesPath ? await page.ariaSnapshot() : '';
-          const simulated = await simulatePage(page, { ...map, split: splitOf(table) }, { maxCropped: 0 });
+          const simulated = await simulatePage(page, { ...map, split: splitOf(table) });
           if (opts.referencesPath && simulated.after) {
             const f = await writeReference(opts.referencesPath, url, { png: Buffer.from(simulated.after, 'base64'), aria });
             references.push(f.png, f.aria);

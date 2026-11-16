@@ -173,7 +173,7 @@ test('simulation complète : les déclarations en conflit ne bougent pas, le res
     /** @param {string} path */
     const margins = async (path) => {
       await gotoAndSettle(page, `${servers.origin}${path}`, { waitMs: 50 });
-      await simulatePage(page, { ...run.map, split: splitOf(run.table) }, { maxCropped: 0, fullPage: false });
+      await simulatePage(page, { ...run.map, split: splitOf(run.table) }, { fullPage: false });
       return page.evaluate(() => Object.fromEntries([...document.querySelectorAll('input, p')].map((e) => [`${e.tagName.toLowerCase()}${e.id ? `#${e.id}` : ''}.${e.className}`, getComputedStyle(e).marginBottom])));
     };
     const p = await margins('/t/P.html');

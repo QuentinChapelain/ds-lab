@@ -75,10 +75,10 @@ test('simulation : la valeur calculée change dans le navigateur, et seulement l
     assert.equal(await size(), '24px');
     assert.equal(requests, 0, 'la simulation ne déclenche aucune requête vers le site');
     const change = sim.changes.find((c) => c.family === 'fontSizes' && c.old === '22.5px');
-    assert.deepEqual([change?.new, change?.count, change?.crops.length], ['24px', 1, 1]);
+    assert.deepEqual([change?.new, change?.count], ['24px', 1]);
     assert.deepEqual(change?.props, ['font-size']);
-    const box = change?.crops[0].after.box;
-    assert.ok(box && box.width > 0 && box.height > 0, 'repère de l’élément modifié');
+    // Revue, lot 4 : repris du test « captures isolées », retiré avec les captures par changement.
+    assert.deepEqual(sim.changes.find((c) => c.family === 'spacing' && c.old === '27px')?.props, ['padding']);
     // Réversible : tout éteint, la page retrouve ses valeurs ; une famille seule s'allume.
     await page.evaluate(() => /** @type {any} */ (window).__dsSim.show({ on: false }));
     assert.equal(await size(), '22.5px');
@@ -107,21 +107,6 @@ test('reduce : la cible est obligatoire', () => {
   assert.equal(parseReduceArgs(['https://x.example/', '--target', 'c.json']).options?.targetPath, 'c.json');
 });
 
-test('captures isolées : l’« après » d’une ligne ne contient que son changement', async () => {
-  const browser = await chromium.launch();
-  try {
-    const page = await browser.newPage({ viewport: { width: 1366, height: 900 } });
-    await page.goto(servers.origin + '/');
-    const sim = await simulatePage(page, mapping(first[0].table), { fullPage: false });
-    const spacing = sim.changes.find((c) => c.family === 'spacing' && c.old === '27px');
-    const size = sim.changes.find((c) => c.family === 'fontSizes' && c.old === '22.5px');
-    assert.ok(spacing?.crops.length && size?.crops.length);
-    assert.equal(spacing?.crops[0].before.png === spacing?.crops[0].after.png, false, 'le retrait change la capture');
-    assert.deepEqual(spacing?.props, ['padding']);
-  } finally {
-    await browser.close();
-  }
-});
 
 test('mode --live : barre avant / après dans la page, interrupteur par famille, relue à chaque page', async () => {
   const browser = await chromium.launch();
