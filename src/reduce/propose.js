@@ -83,7 +83,7 @@ export const isOut = (cls) => cls.startsWith('hors table');
 
 /**
  * @typedef {{ name?: string, value: string }} TargetColor
- * @typedef {{ radii?: number[], spacing?: number[], fontSizes?: number[], colors?: TargetColor[], onSolid?: Record<string, string | Record<string, string>> }} Target
+ * @typedef {{ radii?: number[], spacing?: number[], fontSizes?: number[], colors?: TargetColor[], onSolid?: Record<string, string | Record<string, string>>, brand?: any }} Target
  * @typedef {object} Row
  * @property {string} old
  * @property {number} count          occurrences d'interface dans le rendu
@@ -103,11 +103,25 @@ export const isOut = (cls) => cls.startsWith('hors table');
  * @property {{ threshold: number, before: number, after: number }} [contrast]  lot B : paire la plus défavorable,
  *   avant et avec la cible proposée (appliquée ou non), les autres lignes suivant la table
  * @property {number | null} delta   écart en px, ou ΔE × 100 pour une couleur
- * @property {{ value: string, name?: string, delta: number, nearest?: boolean }[]} candidates
+ * @property {{ value: string, name?: string, delta: number, nearest?: boolean, fails?: { ratio: number, threshold: number } }[]} candidates
+ *   fails (lot J, J1) : contraste du candidat sous le seuil, alors que l'actuelle passe
  * @property {string[]} properties   familles ou propriétés d'origine
  * @property {string[]} selectors    exemples
  * @property {string} [id]           lot R : identifiant stable de la ligne (R-1)
  * @property {string} [title]        lot R : titre en clair (R-1)
+ * @property {Record<string, Kind>} [kinds]  sortes d'éléments de la valeur (relevé du rendu)
+ * @property {boolean} [noDefault]   décision sans valeur par défaut : égalité (C5) ou aucun candidat qui garde le contraste
+ * @property {string[]} [etats]      revue de code du 15/11, lot 2 (D19) : états forcés où seuls la valeur se voit
+ * @property {string} [slot]         lot M : emplacement de marque déclaré de la valeur
+ * @property {number} [_states]      champ de travail : occurrences en état forcé, retiré avant le rendu
+ * @property {{ name: string, new: string, backgrounds: { from: string, name: string, to: string }[],
+ *   exceptions: { background: string, elements: number, pages: string[], selectors: string[] }[] }[]} [alternatives]  lot M (M6) : seconde version
+ * @property {{ id: string, key: string, title: string, choice: string | null, ignored: string | false | null }} [plein]  lot K : carte de plein que la ligne suit
+ * @property {import('../browser/simulate.js').DecisionCapture & { elements?: number, touched?: any[], others?: any[] }} [capture]  lot R : captures par version
+ * @property {import('./declarations.js').RowDeclaration[]} [declarations]  lot V, étape 6 : déclarations sources
+ * @property {'total' | 'partiel'} [conflict]  lot V, étape 6 : part des déclarations en conflit
+ * @property {import('./declarations.js').RowConflict[]} [conflicts]
+ * @property {import('./declarations.js').CoupledDeclaration[]} [coupledDeclarations]  lot V, étape 6 : déclarations des éléments couplés
  */
 
 /** @param {string} key  « 12px » */
@@ -173,7 +187,7 @@ const ordered = (rows) =>
   );
 
 /**
- * @param {Map<string, { count: number, properties: Set<string>, selectors: string[] }>} values
+ * @param {Map<string, { count: number, properties: Set<string>, selectors: string[], kinds?: Record<string, Kind> }>} values
  * @param {number[]} scale
  * @param {{ pill?: boolean, nearPx?: number }} [opts]
  * @returns {Row[]}
@@ -187,7 +201,7 @@ function dimensionRows(values, scale, { pill = false, nearPx = Infinity } = {}) 
 
 /**
  * Une ligne de dimension : la valeur rangée sur l'échelle.
- * @param {{ old: string, count: number, properties: string[], selectors: string[] }} base
+ * @param {{ old: string, count: number, properties: string[], selectors: string[], kinds?: Record<string, Kind> }} base
  * @param {number[]} scale
  * @param {{ pill?: boolean, forcePill?: boolean, nearPx?: number }} [opts]  forcePill : l'élément dessine une pilule (R7) ;
  *   nearPx : écart absolu au-delà duquel la ligne n'est plus proche (lot R, tailles de texte)
@@ -289,7 +303,7 @@ export function candidateWindow(steps, n) {
 
 /**
  * Lot B : entrées d'un usage, hors occurrences de contenu.
- * @param {Record<string, { count: number, content: number, properties: string[], selectors: string[], field?: number }>} byUsage
+ * @param {Record<string, import('../rendered/aggregate.js').RenderedUsage>} byUsage
  */
 const usageEntries = (byUsage) =>
   Object.entries(byUsage)
@@ -863,7 +877,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
 }
 
 /**
- * @param {Map<string, { count: number, properties: Set<string>, selectors: string[] }>} values
+ * @param {Map<string, { count: number, properties: Set<string>, selectors: string[], kinds?: Record<string, Kind> }>} values
  * @param {TargetColor[]} targets
  * @returns {Row[]}
  */
@@ -1117,7 +1131,7 @@ export const splitOf = (table) => [...new Set((table.families.spacing?.rows ?? [
 
 /**
  * Clé d'une ligne dans les décisions et dans la simulation.
- * @param {string} family @param {{ old: string, usage?: string }} r
+ * @param {string} family @param {{ old: string, usage?: string, scope?: string }} r
  */
 export const rowKey = (family, r) => (r.usage ? `${family}|${r.old}|${r.usage}${r.scope ? `|${r.scope}` : ''}` : `${family}|${r.old}`);
 
@@ -1153,7 +1167,7 @@ export function decisionKeysOrphelines(table, decisions) {
 
 /**
  * Clé du fichier de décisions qui décide une ligne (la plus précise d'abord), ou null.
- * @param {Record<string, string | false>} decisions @param {string} family @param {Row} r
+ * @param {Record<string, string | false>} decisions @param {string} family @param {{ old: string, usage?: string, scope?: string }} r
  * @returns {string | null}
  */
 export function decisionKeyFor(decisions, family, r) {
@@ -1212,7 +1226,7 @@ export function mapping(table, decisions = {}) {
   for (const [family, f] of Object.entries(table.families)) {
     /** @type {Record<string, string>} */
     const fam = (out[family] = {});
-    /** @type {Map<string, { usage?: string, next: string | null }[]>} */
+    /** @type {Map<string, { usage?: string, scope?: string, next: string | null }[]>} */
     const byOld = new Map();
     for (const r of f.rows) {
       const d = decisionFor(decisions, family, r);

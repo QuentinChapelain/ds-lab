@@ -29,7 +29,7 @@ export function premiereLigne(e) {
  */
 export async function lancer(nom, main) {
   try {
-    process.exitCode = (await main()) ?? 0;
+    process.exitCode = /** @type {number} */ ((await main()) ?? 0);
   } catch (e) {
     console.error(`${nom} : ${premiereLigne(e)}`);
     process.exitCode = 2;

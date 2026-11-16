@@ -128,6 +128,24 @@ const CORNERS = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
  * @typedef {{ role: string, tag: string, label: string, chip: boolean }} Child
  * @typedef {{ order: [number, number], role: string, tag: string, label: string, chip: boolean, children?: { n: number, items: Child[] } }} First
  * @typedef {{ n: number, first: First }} Kind
+ * @typedef {NonNullable<RenderedRecord['margins']>[string]} MarginRelation
+ * @typedef {object} UsageEntry  lot B : occurrences d'une valeur pour un usage (R3), en cours d'agrégation
+ * @property {number} count
+ * @property {number} content
+ * @property {number} field
+ * @property {Set<string>} properties
+ * @property {string[]} selectors
+ * @property {Record<string, number>} pages
+ * @property {string} [usage]        lot P : usage et relation d'une marge coupée par relation
+ * @property {string} [scope]
+ * @property {number} [states]       lot M (M4) : occurrences portées par un vrai état
+ * @property {number} [enEtat]       revue de code du 15/11, lot 2 (D19) : occurrences vues à un état forcé
+ * @property {Record<string, number>} [etats]  les mêmes, par état
+ * @property {Record<string, number>} [relations]  lot P, étape 3 : rôles « élément>voisin »
+ * @property {Record<string, number>} [signals]    lot P, étape 3 : signaux de la relation
+ * @property {Record<string, Kind>} [kinds]
+ * @property {Set<string>} [_els]    éléments touchés (touch), retirés au rendu
+ * @typedef {Omit<UsageEntry, 'properties' | '_els'> & { properties: string[], elements: number }} RenderedUsage  entrée d'usage rendue
  */
 
 /** Lot R (R-1) : texte d'une étiquette possible, 20 caractères au plus. */
@@ -170,7 +188,7 @@ function chipOf(display, bgRaw, label) {
 const elementsOf = (x) => x._els?.size ?? 0;
 
 function createCollector() {
-  /** @type {Map<string, RenderedValue & { ctx: Map<string, Context> }>} */
+  /** @type {Map<string, RenderedValue & { ctx: Map<string, Context>, _els?: Set<string> }>} */
   const values = new Map();
   let total = 0;
   let nonNormalizable = 0;
@@ -409,7 +427,7 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
   /**
    * Lot B : occurrences par valeur et par usage (R3), hors marges auto (R7),
    * et paires de contraste rattachées aux lignes (R2, R8, R9).
-   * @type {Record<string, Map<string, Map<string, { count: number, content: number, field: number, properties: Set<string>, selectors: string[], pages: Record<string, number> }>>>}
+   * @type {Record<string, Map<string, Map<string, UsageEntry>>>}
    */
   const usageFam = { colors: new Map(), spacing: new Map(), radii: new Map() };
   /** Lot P (P3) : paires contrôlées de toutes les pages. @type {any[]} */
@@ -426,7 +444,8 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
   const proseLinks = new Map();
   /**
    * @param {string} family @param {string} value @param {string} usage @param {RenderedRecord} rec
-   * @param {string} page @param {string} property @param {{ content?: boolean, field?: boolean }} [o]
+   * @param {string} page @param {string} property
+   * @param {{ content?: boolean, field?: boolean, index?: number, scope?: string, relation?: MarginRelation, etat?: string }} [o]
    */
   const addUsage = (family, value, usage, rec, page, property, { content = false, field = false, index = -1, scope = /** @type {string | undefined} */ (undefined), relation = /** @type {any} */ (undefined), etat = /** @type {string | undefined} */ (undefined) } = {}) => {
     const byValue = usageFam[family];

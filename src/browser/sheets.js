@@ -1,7 +1,8 @@
 // @ts-check
 /**
  * Collecte de toutes les feuilles de style d'une page chargée, par le
- * protocole DevTools (CDP) : feuilles liées, @import, <style>, feuilles
+ * protocole DevTools (CDP) : feuilles liées, feuilles importées par une
+ * règle d'import, balises style, feuilles
  * construites (adoptedStyleSheets) et feuilles d'un autre domaine, dont le
  * texte reste lisible ici alors que CORS le cache au script de la page.
  * Cadre principal seulement : les iframes ne sont pas parcourues.

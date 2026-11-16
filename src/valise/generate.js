@@ -94,6 +94,7 @@ function hueModel(source, { hueShift = 0, l9, fond = 'clair' } = {}) {
  * @param {number} hue  teinte voulue @param {number} cMax  chroma de la source
  * Étape 4b, lot 2 bis (mode sombre seulement) : `rayon` élargit le voisinage de ± rayon par canal autour des arrondis,
  * pour tenir la teinte des pas peu saturés près du noir ; `exclure` écarte une couleur déjà prise (la source, pas 9).
+ * @param {(hex: string) => number} [k]  contraste d'une couleur contre la référence (blanc par défaut, noir en mode sombre)
  * @param {{ rayon?: number, exclure?: string[] }} [voisinage]
  */
 function quantize(color, target, hue, cMax, k = kOf, { rayon = 0, exclure = [] } = {}) {
@@ -199,6 +200,7 @@ export function generateScale(name, source, opts = {}) {
   /** @type {'normale' | 'foncée' | 'plein clair' | 'teinte seulement'} */
   /** @type {Record<number, number>} */
   const want = { ...TARGETS, ...opts.cibles };
+  /** @type {'normale' | 'foncée' | 'plein clair' | 'teinte seulement'} */
   let school = opts.school === 'teinte' ? 'teinte seulement' : k9 >= DARK_K ? 'foncée' : k9 < want[8] ? 'plein clair' : 'normale';
   let m;
   /** @type {Record<number, string>} */

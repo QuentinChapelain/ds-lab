@@ -196,8 +196,8 @@ export function analyzeDeclared(sheets, { rootPx, sources }) {
 
   for (const info of sheetInfo) {
     const { s, source } = info;
-    /** @param {string} raw */
-    const at = (raw, /** @type {number} */ line, /** @type {string | undefined} */ property) => ({
+    /** @param {string} raw @param {number} line @param {string} [property]  absente pour les familles lues par Wallace */
+    const at = (raw, line, property) => ({
       raw,
       source,
       sheet: s.id,

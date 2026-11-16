@@ -268,7 +268,10 @@ export function scanInPage(map) {
   };
   /** @type {Element[]} */
   const els = [];
-  /** with : clé de l'opération de fond à laquelle un couplage est lié (lot V, étape 4). @type {{ i: number, prop: string, value: string, family: string, key: string, prev: string, prevPriority: string, with?: string | null }[]} */
+  /**
+   * with : clé de l'opération de fond à laquelle un couplage est lié (lot V, étape 4) ; frozen : opération gelée par freezeConflicts (lot V, étape 6).
+   * @type {{ i: number, prop: string, value: string, family: string, key: string, prev: string, prevPriority: string, with?: string | null, frozen?: boolean }[]}
+   */
   const ops = [];
   /** Éléments porteurs de texte, pour les couplages. @type {number[]} */
   const textEls = [];
@@ -615,7 +618,7 @@ async function crop(page, r) {
  * Simule la table sur une page déjà chargée. La page est laissée avec toute
  * la table appliquée.
  * @param {import('playwright-core').Page} page
- * @param {Record<string, Record<string, string>>} map
+ * @param {Record<string, any>} map  comme scanInPage : par famille, ancien → nouveau ; split, solid, thirdParty, conflicts, couplings
  * @param {{ maxCropped?: number, fullPage?: boolean }} [opts]
  *   maxCropped : nombre de changements illustrés par des captures (les plus fréquents d'abord)
  * @returns {Promise<{ url: string, elements: number, operations: number, changed: number, byFamily: Record<string, number>, changes: SimulatedChange[], before: string | null, after: string | null }>}
@@ -760,7 +763,7 @@ export function versionInPage({ key, i, family, usage, lines = false, clip }) {
   if (label) around.push({ kind: 'libellé', rect: rectOf(label) });
   // R-8 : zone d'espace, en coordonnées de page. Marge : bande hors de l'élément, du côté touché ;
   // retrait : bande à l'intérieur de la bordure, côté par côté ; gouttière : bande entre les deux enfants.
-  /** @type {{ side?: string, axis?: string, px: number, rect: { x: number, y: number, width: number, height: number } }[]} */
+  /** @type {{ side?: string, axis?: string, px: number, rect: { x: number, y: number, width: number, height: number }, visiblePx?: number, absorbed?: boolean }[]} */
   const space = [];
   const num = (/** @type {string} */ p) => parseFloat(cs.getPropertyValue(p)) || 0;
   const r2 = (/** @type {number} */ n) => Math.round(n * 100) / 100;
@@ -912,13 +915,14 @@ export const FRAME = { pad: 16, maxHeight: 400, wideRetrait: 600, scale: 2 };
  * @property {string} label     « actuelle », « candidat 1 »…
  * @property {string} value     valeur posée sur la ligne
  * @property {string} [name]    nom du pas de la cible
- * @property {Record<string, string>} measured  valeur calculée de l'élément, par propriété touchée
- * @property {{ kind: string, side?: string, rect: Rect }[]} around  contexte du cadre (R-9), en coordonnées de page
- * @property {{ side?: string, axis?: string, px: number, rect: Rect, visiblePx?: number, absorbed?: boolean }[]} space  zone d'espace (R-8), dans la capture,
+ * @property {Record<string, string>} [measured]  valeur calculée de l'élément, par propriété touchée ; absente hors de la page (lot J, J8), comme around et space
+ * @property {{ kind: string, side?: string, rect: Rect }[]} [around]  contexte du cadre (R-9), en coordonnées de page
+ * @property {{ side?: string, axis?: string, px: number, rect: Rect, visiblePx?: number, absorbed?: boolean }[]} [space]  zone d'espace (R-8), dans la capture,
  *   en px CSS : bande de marge, de retrait (côté par côté) ou de gouttière ; px : son épaisseur ;
  *   absorbed, visiblePx (lot P-fin) : marge absorbée par celle du voisin, plus grande, et espace visible
  * @property {{ ratio: number, threshold: number, text: string, bg: string }} [contrast]  couleur : contraste le plus faible
  *   des éléments touchés, son seuil et sa paire (texte ou bordure, fond)
+ * @property {number} [cutLines]  lignes de texte coupées par le bord haut ou bas du cadre (versionInPage)
  * @property {Shot & { scale: number }} [shot]  absente si l'élément est hors de la page (lot J, J8) ; même cadre et même taille pour toutes les versions d'une décision ;
  *   width et height en px CSS, l'image en densité scale
  * @typedef {{ page: string, element: { tag: string, index: number }, clip: Rect | null, offPage?: boolean, versions: DecisionVersion[] }} DecisionCapture
@@ -1052,6 +1056,7 @@ const offPage = (p) => p.rect.y + p.rect.height <= 0 || p.rect.x + p.rect.width 
  * @returns {Promise<DecisionCapture | null>} null si la ligne ne touche rien sur cette page
  */
 export async function captureDecision(page, d, thirdParty = [], { index, compact = false, labels } = {}) {
+  /** @type {{ label: string, value: string, name?: string }[]} */
   const versions = [{ label: labels?.[0] ?? 'actuelle', value: d.old }, ...d.candidates.map((c, n) => ({ label: labels?.[n + 1] ?? `candidat ${n + 1}`, value: c.value, name: c.name }))];
   /** @param {string} value @param {number} [i] */
   const pose = async (value, i) => {

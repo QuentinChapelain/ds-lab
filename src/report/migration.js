@@ -219,13 +219,13 @@ export const simulationCouplings = (couplings) =>
 
 /**
  * @param {object} o
- * @param {ReturnType<typeof import('../reduce/propose.js').propose> & { thirdParty?: string[] }} o.table
+ * @param {ReturnType<typeof import('../reduce/propose.js').propose> & { thirdParty?: string[], pleins?: import('../reduce/pleins.js').Plein[] }} o.table  pleins : cartes du lot K
  * @param {any} o.rendered        agrégat du rendu (usages, contextes tracés, états)
  * @param {Record<string, any>} o.map   table appliquée, décisions comprises (mapping)
  * @param {any} o.target          cible (onSolid, couleurs)
  * @param {any} [o.tokens]        fichier de jetons DTCG
  * @param {Record<string, string | false>} [o.decisions]  décisions du designer (--decisions) : une chaîne décide, false refuse
- * @param {{ host: string, stamp: string, target: string, tokens: string | null, pages: string[], viewport: { width: number, height: number }, command?: string }} o.meta
+ * @param {{ host: string, stamp: string, target: string, tokens: string | null, pages: string[], viewport: { width: number, height: number }, command?: string, decisions?: string | null }} o.meta
  * @param {Witness[]} [o.witnesses]  lot V, étape 5 : pages témoins, hors de la table
  * @param {any[]} [o.conflicts]      lot V : conflits de déclarations (attachDeclarations)
  */
@@ -339,7 +339,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     return { ...o, ...(name ? { name } : {}), token: idx?.find('colors', o.onSolid, o.tint ? { name } : { pleinScales: new Set([o.scale]) }) ?? null };
   });
   // Paires encore sous leur seuil une fois la table posée, hors celles que le couplage onSolid répare.
-  /** @type {Map<string, { text: string, bg: string, ratio: number, threshold: number, n: number }>} */
+  /** @type {Map<string, { text: string, bg: string, ratio: number, threshold: number, n: number, note: string | null }>} */
   const remaining = new Map();
   for (const p of rendered.usages?.pairs ?? []) {
     const text = mapped(map, p.text, 'texte');

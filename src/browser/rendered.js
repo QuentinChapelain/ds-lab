@@ -33,6 +33,7 @@
  * @property {Record<string, { scope: string, signal: string | null, detail?: string, neighbor: string | null, visiblePx: number | null, role?: string, neighborRole?: string }>} [margins]
  *   lot P : par côté de marge non nulle, relation avec le voisin de ce côté (« dans le composant »,
  *   « entre composants », ou « inconnue » sans élément voisin), signal, voisin et espace visible
+ * @property {boolean} [state]        lot M (M4) : élément porté par un vrai état (role="alert", aria-invalid, message relié à un champ)
  */
 
 /**

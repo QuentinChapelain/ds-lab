@@ -15,6 +15,14 @@ import { traceElements, unitOf, declarationId } from '../browser/trace.js';
 import { basename } from 'node:path';
 
 /**
+ * Champs posés sur une ligne de la table par attachDeclarations ; trace lue par traceElements (TraceResult).
+ * @typedef {{ id: string, file: string, href: string | null, line: number | null, selector: string | null, property: string, written: string | null,
+ *   unit: ReturnType<typeof unitOf>, inherited: boolean, pages: string[], elements: number, conflict: boolean }} RowDeclaration
+ * @typedef {{ file: string, href: string | null, line: number | null, selector: string | null, property: string, written: string | null, pages: string[] }} CoupledDeclaration
+ * @typedef {{ file: string, line: number | null, selector: string | null, property: string, with: string[] }} RowConflict
+ */
+
+/**
  * Carte de simulation qui couvre toutes les lignes, valeur inchangée : pour savoir, sans rien
  * changer à la page, de quelle ligne relève chaque élément.
  * @param {{ families: Record<string, { rows: any[] }>, thirdParty?: string[] }} table
