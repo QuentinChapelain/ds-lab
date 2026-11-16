@@ -1,6 +1,8 @@
 // @ts-check
 /**
- * Lot S, S1 : modifications.json, écrit par reduce à côté de migration.md (avec --tokens).
+ * Lot S, S1 : modifications.json, écrit par reduce à côté de migration.md (avec --tokens). Revue de code, lot 6 (D29) :
+ * rangé avec les sorties de reduce (src/report/) ; la consigne réduite est lue dans la consigne structurée
+ * (src/report/consigne.js), jamais dans son texte ; src/apply/ ne fait que lire le fichier.
  *
  * Une entrée par déclaration et par propriété à modifier : feuille (chemin d'URL), ligne de la règle,
  * sélecteur, propriété, valeur écrite attendue, nouvelle valeur var(--jeton, valeur écrite), lignes.
@@ -15,11 +17,10 @@
  * Aucune date hors de celles des commentaires : un même fichier donne le même résultat.
  */
 
+import { cssVarFallback as withFallback, hasToken, m6Move, relationShort } from './consigne.js';
+
 /** Variable CSS d'un jeton DTCG. @param {string} token */
 const cssVar = (token) => `--${token.replace(/\./g, '-')}`;
-/** @param {string} token @param {string} fallback */
-const withFallback = (token, fallback) => `var(${cssVar(token)}, ${fallback})`;
-const hasToken = (/** @type {any} */ r) => !!r.token && r.token !== 'jeton absent' && r.token !== '—';
 
 /**
  * Valeur CSS d'un jeton DTCG (couleur : hex ; dimension : valeur et unité), ou null.
@@ -46,19 +47,10 @@ const sheetOf = (href, host) => {
   }
 };
 
-/** Lignes d'une section de la consigne, sans son titre. @param {string[]} lines @param {string} head */
-const section = (lines, head) => {
-  const i = lines.findIndex((l) => l.startsWith(head));
-  if (i < 0) return [];
-  const j = lines.indexOf('', i);
-  return lines.slice(i + 1, j < 0 ? undefined : j);
-};
-
 /**
- * @param {{ d: any, s: { applied: any[], pending: any[], refused: any[], outOfTable: any[], attached: any[] }, agentLines: string[], tokens: any,
- *   helpers: { m6Move: (r: any) => string, relationShort: (r: any) => string } }} o
+ * @param {{ d: any, s: { applied: any[], pending: any[], refused: any[], outOfTable: any[], attached: any[] }, consigne: import('./consigne.js').Consigne, tokens: any }} o
  */
-export function buildModifications({ d, s, agentLines, tokens, helpers }) {
+export function buildModifications({ d, s, consigne, tokens }) {
   const m = d.meta;
   const host = m.host;
   const date = String(m.stamp ?? '').slice(0, 10);
@@ -121,7 +113,7 @@ export function buildModifications({ d, s, agentLines, tokens, helpers }) {
     }
     if (!ds.length) noDecl(r, `remplace ${r.value} par ${goal}.`);
     for (const e of ds) reachable(e) ? addEntry(r, e, r.token, 'REMPLACEMENTS') : leave(r, e, `si la valeur calculée est bien ${r.value}, écris ${withFallback(r.token, e.written ?? r.value)} à la main.`);
-    const m6 = helpers.m6Move(r).trim();
+    const m6 = m6Move(r).trim();
     if (m6) reste.push(`${r.id} ${r.title} : ${m6}`);
   }
   // RATTACHE
@@ -156,7 +148,7 @@ export function buildModifications({ d, s, agentLines, tokens, helpers }) {
   const pendingMarked = new Set();
   for (const r of s.pending) {
     const ds = (r.declarations ?? []).filter((/** @type {any} */ e) => !e.conflict);
-    const text = `ds-lab : en attente du designer, ${r.value} ${r.usage}${helpers.relationShort(r)} (${r.id}, ${m.stamp})`;
+    const text = `ds-lab : en attente du designer, ${r.value} ${r.usage}${relationShort(r)} (${r.id}, ${m.stamp})`;
     const ok = ds.filter((/** @type {any} */ e) => sheetOf(e.href, host));
     for (const e of ok) addComment(e, 'en attente', [r.id], text);
     if (ok.length) pendingMarked.add(r.id);
@@ -181,15 +173,11 @@ export function buildModifications({ d, s, agentLines, tokens, helpers }) {
   ].join('\n');
 
   // Consigne réduite : NE TOUCHE PAS sans l'instruction de commentaire, que le script a posé.
+  const reduite = consigne.reste;
   const neTouchePas = [
-    ...s.outOfTable.map((r) => `Hors table : ${r.value} (${r.usage}), ${r.reason}.`),
-    ...s.refused.map((r) => `Refusée : ${r.value} (${r.usage}), le designer garde la valeur.`),
-    ...s.pending
-      .filter((r) => pendingMarked.has(r.id))
-      .map((r) => `${r.id} ${r.title}. Pas encore choisie par le designer : ne l'applique pas (${r.value}, ${r.usage}) ; le script a posé le commentaire « en attente du designer » au-dessus de ses déclarations.`),
-    'Les déclarations marquées par le script /* ds-lab : conflit … */ ou /* ds-lab : unité relative … */ : laisse-les telles quelles, ne coupe pas leur règle.',
-    ...(d.thirdParty ?? []).map((/** @type {string} */ sel) => `Composant tiers : ${sel} et tout ce qu'il contient.`),
-    'Toute valeur absente de cette consigne.',
+    ...reduite.neTouchePas.avant,
+    ...reduite.neTouchePas.attente.filter((x) => pendingMarked.has(x.id)).map((x) => x.texte),
+    ...reduite.neTouchePas.apres,
   ];
   return {
     version: 1,
@@ -203,11 +191,11 @@ export function buildModifications({ d, s, agentLines, tokens, helpers }) {
       pages: [...pages].sort(),
       sheets,
       reste,
-      changeAussi: section(agentLines, 'CHANGE AUSSI').map((l) => l.replace(/^- /, '')),
+      changeAussi: consigne.changeAussi,
       neTouchePas,
-      signale: section(agentLines, 'SIGNALE SANS MODIFIER').map((l) => l.replace(/^- /, '')),
+      signale: consigne.signale,
       // reste.md n'a pas de section CONFLITS : le script a marqué ces déclarations.
-      verification: section(agentLines, 'VÉRIFICATION').map((l) => l.replace('Les déclarations de CONFLITS', 'Les déclarations marquées /* ds-lab : conflit … */')),
+      verification: reduite.verification,
     },
   };
 }
