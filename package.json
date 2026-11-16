@@ -20,7 +20,8 @@
     "saisie": "node src/cli/saisie.js",
     "demo": "node test/helpers/demo.js",
     "test": "node --test \"test/**/*.test.js\"",
-    "verify": "node src/cli/verify.js"
+    "verify": "node src/cli/verify.js",
+    "types": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@projectwallace/css-analyzer": "9.9.7",
@@ -29,5 +30,9 @@
     "playwright-core": "1.59.1",
     "pngjs": "7.0.0",
     "postcss": "8.5.32"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "typescript": "7.0.2"
   }
 }

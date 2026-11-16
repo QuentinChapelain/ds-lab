@@ -1,0 +1,15 @@
+{
+  "//": "npm run types : vérification non stricte des fichiers de src/ (@ts-check), sans rien émettre. Revue de code, lot 3 (docs/attendus/revue-lot-3-types.md).",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "esnext",
+    "skipLibCheck": true,
+    "strict": false,
+    "types": ["node"]
+  },
+  "include": ["src/**/*.js"]
+}
