@@ -9,6 +9,8 @@
  * pile, et sortie 2. Un refus n'est jamais une exception : la commande l'affiche avec ses motifs et rend 1.
  */
 import { readFileSync } from 'node:fs';
+import { relative } from 'node:path';
+import { dossiersDeMarque, nomDeMarque } from '../tokens/resolver.js';
 
 /**
  * Première ligne du message d'une erreur ; option inconnue de parseArgs dite en français.
@@ -55,4 +57,21 @@ export function lireJson(chemin) {
   } catch (e) {
     throw new Error(`${chemin} : JSON illisible (${premiereLigne(e)})`);
   }
+}
+
+/**
+ * Revue de code, lot 5 (D26) : un contrôle sur la marque de --marque <dossier>, ou, sans l'option, sur chaque marque de
+ * tokens/ (dossiersDeMarque), sans en nommer aucune. Sans l'option, chaque bloc est précédé de « marque <nom> (<dossier>) »
+ * et les blocs sont séparés par une ligne vide ; le code le plus haut l'emporte (1 si une marque échoue).
+ * @param {string | undefined} option @param {(dossier: string) => number} controler
+ */
+export function parMarque(option, controler) {
+  if (option) return controler(option);
+  let code = 0;
+  dossiersDeMarque().forEach((d, i) => {
+    if (i) console.log('');
+    console.log(`marque ${nomDeMarque(d)} (${relative(process.cwd(), d)}/)`);
+    code = Math.max(code, controler(d));
+  });
+  return code;
 }

@@ -10,7 +10,7 @@ import { formatHex } from 'culori';
 import { contrastRatio } from '../lib/color.js';
 import { contractOf } from '../valise/generate.js';
 import { valiseFromTokens } from './primitives.js';
-import { lireResolver, partager, COMMUN, ORBE, RESOLVER } from './resolver.js';
+import { lireResolver, partager, COMMUN, RESOLVER } from './resolver.js';
 import { r4 } from '../lib/format.js';
 
 
@@ -130,11 +130,12 @@ export function resolveRoles(semantique, ...primitives) {
  * Jeu de rôles d'une marque, lu par son resolver (tokens/<marque>/marque.resolver.json) dans un contexte :
  * primitives communes et échelles de la marque fusionnées dans `primitives`, rôles dans `semantique`, couche marque
  * dans `marque`, paires communes (tokens/commun/paires.json, ou `paires`).
- * @param {string} [dossier] tokens/<marque>/, Orbe Café par défaut
+ * @param {string} dossier tokens/<marque>/, obligatoire (revue de code, lot 5 : aucune marque par défaut)
  * @param {{ paires?: string, mode?: string, largeur?: string }} [opts]
  * @returns {RoleSet}
  */
-export function loadRoles(dossier = ORBE, opts = {}) {
+export function loadRoles(dossier, opts = {}) {
+  if (!dossier) throw new Error('loadRoles : dossier de marque attendu');
   /** @type {Record<string, string>} */
   const entrees = {};
   if (opts.mode) entrees.mode = opts.mode;

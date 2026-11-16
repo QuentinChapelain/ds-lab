@@ -21,7 +21,7 @@
  *      = #6d675b (neutre 11).
  *   S6 Commande : sans fichier → code 2 ; refusée (#00ccff, S3) → code 1, motif sur la sortie d'erreur, rien d'écrit ;
  *      acceptée → code 0, marque.tokens.json et echelles.tokens.json écrits, contrôle de contraste lancé (0 paire en échec).
- *   S7 npm run contraste -- --marque tokens/orbe-cafe/ : même sortie que sans l'option.
+ *   S7 npm run contraste -- --marque tokens/orbe-cafe/ : même sortie que sans l'option ; revue, lot 5 : que son bloc sans l'option.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -127,11 +127,11 @@ test('S6 commande saisie : codes de sortie, motif, fichiers', () => {
   assert.ok(existsSync(join(ok, 'marque.tokens.json')) && existsSync(join(ok, 'echelles.tokens.json')));
 });
 
-test('S7 contraste --marque tokens/orbe-cafe/ : même sortie que sans l\'option', () => {
+test('S7 contraste --marque tokens/orbe-cafe/ : même sortie que son bloc sans l\'option (revue, lot 5 : sans l\'option, toutes les marques)', () => {
   const a = run('src/cli/contraste.js');
   const b = run('src/cli/contraste.js', '--marque', 'tokens/orbe-cafe/');
   assert.equal(a.status, 0);
   assert.equal(b.status, 0);
-  assert.equal(b.stdout, a.stdout);
+  assert.ok(a.stdout.endsWith(`marque Orbe Café (tokens/orbe-cafe/)\n${b.stdout}`));
   assert.equal(COMMUN, join(ROOT, 'tokens', 'commun') + '/');
 });

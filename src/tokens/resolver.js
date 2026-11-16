@@ -18,7 +18,7 @@
  *   mode        clair | sombre, défaut clair ;
  *   largeur     large | etroit, défaut large ; le seuil de l'étroit est dans $extensions["ds-lab.largeur"].
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -27,8 +27,8 @@ export const VERSION = '2025.10';
 export const RESOLVER = 'marque.resolver.json';
 /** Couches communes à toutes les marques. */
 export const COMMUN = fileURLToPath(new URL('../../tokens/commun/', import.meta.url));
-/** Dossier d'Orbe Café, marque par défaut des contrôles. */
-export const ORBE = fileURLToPath(new URL('../../tokens/orbe-cafe/', import.meta.url));
+/** Dossier des jetons : tokens/commun/ et un dossier par marque. */
+export const TOKENS = fileURLToPath(new URL('../../tokens/', import.meta.url));
 /** Clé d'extension du seuil de largeur, sur le modificateur largeur. */
 export const LARGEUR = 'ds-lab.largeur';
 
@@ -194,10 +194,26 @@ export function seuilEtroit(r) {
 }
 
 /**
- * Une marque dans ses deux largeurs, pour espacements et typo.
- * @param {string} [dossier] tokens/<marque>/ @param {{ mode?: string }} [opts]
+ * Revue de code, lot 5 (D26) : les marques, sans en nommer aucune : chaque dossier de tokens/ qui a un
+ * marque.resolver.json, par ordre de nom, chemin terminé par le séparateur.
+ * @param {string} [racine] @returns {string[]}
  */
-export function largeurs(dossier = ORBE, { mode } = {}) {
+export function dossiersDeMarque(racine = TOKENS) {
+  return readdirSync(racine, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && existsSync(join(racine, d.name, RESOLVER)))
+    .map((d) => join(racine, d.name) + sep)
+    .sort();
+}
+
+/** Nom d'une marque, lu dans le champ name de son resolver. @param {string} dossier */
+export const nomDeMarque = (dossier) => String(JSON.parse(readFileSync(join(dossier, RESOLVER), 'utf8')).name ?? '');
+
+/**
+ * Une marque dans ses deux largeurs, pour espacements et typo. Revue de code, lot 5 : le dossier est obligatoire.
+ * @param {string} dossier tokens/<marque>/ @param {{ mode?: string }} [opts]
+ */
+export function largeurs(dossier, { mode } = {}) {
+  if (!dossier) throw new Error('largeurs : dossier de marque attendu');
   const chemin = join(dossier, RESOLVER);
   const large = lireResolver(chemin, { ...(mode ? { mode } : {}), largeur: 'large' });
   const etroit = lireResolver(chemin, { ...(mode ? { mode } : {}), largeur: 'etroit' });

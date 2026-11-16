@@ -9,9 +9,11 @@
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { COMMUN, ORBE, fusionner } from '../../src/tokens/resolver.js';
+import { COMMUN, TOKENS, fusionner } from '../../src/tokens/resolver.js';
 
-export { COMMUN, ORBE };
+/** Dossier d'Orbe Café : les tests le nomment ; src/ ne nomme aucune marque (revue de code, lot 5). */
+export const ORBE = join(TOKENS, 'orbe-cafe') + '/';
+export { COMMUN };
 const COMMUNS = ['semantique.tokens.json', 'paires.json', 'statuts.tokens.json', 'largeur.etroit.tokens.json', 'aplat.tokens.json'];
 /** @param {string} d @param {string} f */
 const lire = (d, f) => JSON.parse(readFileSync(join(d, f), 'utf8'));

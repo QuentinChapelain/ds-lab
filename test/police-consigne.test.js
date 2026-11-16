@@ -16,7 +16,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { typo, SUR_POLICE_TITRE, CONSIGNE } from '../src/tokens/typo.js';
-import { COMMUN, ORBE, largeurs, enEtroit } from '../src/tokens/resolver.js';
+import { COMMUN, largeurs, enEtroit } from '../src/tokens/resolver.js';
+import { ORBE } from './helpers/jetons.js';
 import { flattenTokens } from '../src/tokens/roles.js';
 import { planche } from '../src/report/typo.js';
 import { fileURLToPath } from 'node:url';
@@ -43,7 +44,7 @@ test('C2 les cinq styles de titre portent la consigne, en large et en étroit', 
 });
 
 test('C3 typo() lit la consigne ; la règle échoue si elle manque ou déborde', () => {
-  const l = largeurs();
+  const l = largeurs(ORBE);
   const run = (/** @type {any} */ sem) => typo(sem, l.large.primitives, l.large.marque, { ...l.etroit, semantique: enEtroit(sem, l.contexte) });
   const r = run(l.large.semantique);
   for (const s of r.styles) {

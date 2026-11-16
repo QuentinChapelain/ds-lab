@@ -33,6 +33,7 @@ import { saisir, chargerCommun } from '../src/tokens/saisie.js';
 import { espacements } from '../src/tokens/espacements.js';
 import { typo } from '../src/tokens/typo.js';
 import { largeurs } from '../src/tokens/resolver.js';
+import { ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const POLICES = join(ROOT, 'fixtures', 'polices');
@@ -167,7 +168,7 @@ test('N8 marque et verify : option inconnue → 2 ; Chromium qui ne se lance pas
 });
 
 test('N9 espacements() et typo() sans contexte étroit lèvent', () => {
-  const l = largeurs();
+  const l = largeurs(ORBE);
   assert.throws(() => espacements(l.large.semantique, l.large.primitives, /** @type {any} */ (undefined)), /contexte étroit/);
   assert.throws(() => typo(l.large.semantique, l.large.primitives, l.large.marque, /** @type {any} */ (undefined)), /contexte étroit/);
 });

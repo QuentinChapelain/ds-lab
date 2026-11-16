@@ -2,7 +2,7 @@
 /**
  * Étape 4b, lot 3 : contrôle de contraste par mode (docs/attendus/etape-4b-contextes.md, lot 3 réduit).
  * Attendus écrits à la main avant le code :
- *   C1 npm run contraste --mode clair : même sortie que sans option ; --mode sombre, --largeur etroit acceptés ;
+ *   C1 npm run contraste --mode clair : même sortie que sans option (un bloc par marque, revue, lot 5) ; --mode sombre, --largeur etroit acceptés ;
  *      mode inconnu : erreur d'usage, code 2 ;
  *   C2 les 4 marques fictives sortent en 0 dans les deux modes et dans les deux largeurs ; 70 paires (66 + les 4
  *      bordures de statut sur fond.surface) ;
@@ -40,7 +40,8 @@ test('C1 --mode et --largeur : clair = sans option ; mode inconnu = code 2', () 
   assert.equal(run('--mode', 'clair', '--largeur', 'large').stdout, sans.stdout);
   const sombre = run('--mode', 'sombre');
   assert.equal(sombre.status, 0, sombre.stdout);
-  assert.match(sombre.stdout, /^mode sombre, largeur large\n/);
+  // Revue de code, lot 5 (D26) : sans --marque, un bloc par marque, chacun nomme son contexte après son en-tête.
+  assert.equal(sombre.stdout.match(/^marque [^\n]+\nmode sombre, largeur large$/gm)?.length, 4);
   assert.equal(run('--largeur', 'etroit').status, 0);
   const faux = run('--mode', 'nuit');
   assert.equal(faux.status, 2);
