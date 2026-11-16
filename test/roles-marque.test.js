@@ -248,7 +248,7 @@ test('M0 une autre marque se branche sans toucher aux rôles (témoin fictif, so
   const m = marqueTokens({ primaire: { scale: 'temoin', steps: g.steps }, accent: { scale: 'temoin', steps: g.steps }, statuts, fonds: fondsClairs(loadRoles(DIR)), description: 'témoin fictif' });
   const echelle = { couleur: { $type: 'color', temoin: Object.fromEntries(g.steps.map((hex, i) => [String(i + 1), { $value: { colorSpace: 'srgb', components: [0, 0, 0], hex } }])) } };
   const set = { ...loadRoles(DIR), marque: avecAplat(m), echelles: [echelle] };
-  const roles = resolveRoles(set.semantique, set.primitives, set.statuts, set.marque, ...set.echelles);
+  const roles = resolveRoles(set.semantique, set.primitives, set.marque, ...set.echelles);
   assert.equal(roles.get('fond.interactif.fort')?.hex, g.steps[8]);
   assert.equal(roles.get('fond.interactif.fort.survol')?.hex, voileBlanc(g.steps[8], 0.08));
   assert.equal(roles.get('texte.sur-interactif')?.hex, '#ffffff');

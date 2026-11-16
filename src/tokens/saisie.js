@@ -48,7 +48,7 @@ const memeDossier = (a, b) => resolve(a) === resolve(b);
  */
 export function fondsClairs(commun) {
   const f = commun.semantique.fond;
-  const roles = resolveRoles({ fond: { $type: 'color', app: f.app, surface: f.surface, discret: f.discret } }, commun.primitives, commun.statuts);
+  const roles = resolveRoles({ fond: { $type: 'color', app: f.app, surface: f.surface, discret: f.discret } }, commun.primitives);
   return ['fond.app', 'fond.surface', 'fond.discret'].map((r) => /** @type {any} */ (roles.get(r)).hex);
 }
 
@@ -59,7 +59,7 @@ export function fondsClairs(commun) {
 export function chargerCommun({ mode } = {}) {
   const r = resoudre(modeleResolver({ nom: 'commun', marque: [], dossier: COMMUN }), COMMUN, mode ? { mode } : {});
   const { semantique, primitives, marque } = partager(r);
-  return { primitives, statuts: {}, semantique, paires: JSON.parse(readFileSync(join(COMMUN, 'paires.json'), 'utf8')), marque, echelles: [] };
+  return { primitives, semantique, paires: JSON.parse(readFileSync(join(COMMUN, 'paires.json'), 'utf8')), marque, echelles: [] };
 }
 
 /** Échelles propres à Orbe Café (bleu, terre, sable), écrites à la main. */
@@ -172,7 +172,7 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
 
   const orbe = memeDossier(dossier, ORBE);
   const propres = orbe ? lirePropresOrbe() : null;
-  const existantes = { ...commun.primitives.couleur, ...commun.statuts.couleur, ...propres?.couleur };
+  const existantes = { ...commun.primitives.couleur, ...propres?.couleur };
   /** @type {Record<string, ReturnType<typeof generateScale>>} */
   const generees = {};
   /** @param {'primaire' | 'accent'} slot @returns {Source | undefined} */

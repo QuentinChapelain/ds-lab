@@ -123,7 +123,7 @@ export function resolveRoles(semantique, ...primitives) {
 }
 
 /**
- * @typedef {{ primitives: any, statuts: any, semantique: any, paires: any, marque?: any, echelles?: any[] }} RoleSet
+ * @typedef {{ primitives: any, semantique: any, paires: any, marque?: any, echelles?: any[] }} RoleSet
  */
 
 /**
@@ -142,7 +142,6 @@ export function loadRoles(dossier = ORBE, opts = {}) {
   const { semantique, primitives, marque } = partager(lireResolver(join(dossier, RESOLVER), entrees));
   return {
     primitives,
-    statuts: {},
     semantique,
     paires: JSON.parse(readFileSync(opts.paires ?? join(COMMUN, 'paires.json'), 'utf8')),
     marque,
@@ -158,7 +157,7 @@ export function loadRoles(dossier = ORBE, opts = {}) {
  * @param {RoleSet} set
  */
 export function contratRoles(set) {
-  const roles = resolveRoles(set.semantique, set.primitives, set.statuts, set.marque ?? {}, ...(set.echelles ?? []));
+  const roles = resolveRoles(set.semantique, set.primitives, set.marque ?? {}, ...(set.echelles ?? []));
   const seuils = set.paires.seuils ?? {};
   /** @param {any} p */
   const known = (p) => {
@@ -211,7 +210,7 @@ export function contratRoles(set) {
  * @param {RoleSet} set
  */
 export function contrat(set) {
-  return { echelles: contractOf(valiseFromTokens({ couleur: ordreEchelles(set.primitives, set.statuts) })), roles: contratRoles(set) };
+  return { echelles: contractOf(valiseFromTokens({ couleur: ordreEchelles(set.primitives) })), roles: contratRoles(set) };
 }
 
 /** Statuts, dans l'ordre d'affichage. */

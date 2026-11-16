@@ -63,7 +63,7 @@ function lecture(steps) {
  */
 export function colonne({ dossier, entree }, commun = chargerCommun()) {
   const r = saisir(entree, { dossier, commun });
-  const existantes = { ...commun.primitives.couleur, ...commun.statuts.couleur, ...lirePropresOrbe().couleur };
+  const existantes = { ...commun.primitives.couleur, ...lirePropresOrbe().couleur };
   const pasDe = (/** @type {string} */ s) => Array.from({ length: 12 }, (_, i) => existantes[s][String(i + 1)].$value.hex);
   /** @param {any} v @returns {string[] | null} */
   const steps = (v) => {

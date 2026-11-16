@@ -37,7 +37,7 @@ const load = (/** @type {string} */ d, /** @type {string} */ f) => JSON.parse(re
 
 test('Orbe Café : les 9 rôles ajoutés, en alias vers la couche marque, et leurs valeurs', () => {
   const set = loadRoles(DIR);
-  const roles = resolveRoles(set.semantique, set.primitives, set.statuts, set.marque);
+  const roles = resolveRoles(set.semantique, set.primitives, set.marque);
   for (const [role, [slot, hex]] of Object.entries(AJOUTS)) {
     assert.equal(roles.get(role)?.alias, `{${slot}}`, role);
     assert.equal(roles.get(role)?.hex, hex, role);
