@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Espacements Atelier Lavandine</title>
+    <style>
+      :root { --ecart-dans-composant: 4px; --ecart-entre-composants: 16px; --ecart-entre-groupes: 24px; --ecart-section: 48px; --marge-interieure-composant: 16px; }
+      .sous-600 { display: none; }
+      @media (max-width: 599.98px) { :root { --ecart-section: 32px; } }
+      @media (max-width: 599.98px) { .sous-600 { display: inline; } .dessus-600 { display: none; } }
+
+      /* Le parent porte l'espace : gap et padding ; aucun enfant n'a de marge. */
+      * { margin: 0; box-sizing: border-box; }
+      body {
+        display: grid; grid-template-columns: minmax(0, 1040px); justify-content: center;
+        padding: 32px 16px 64px; /* gouttière de page, hors des cinq rôles */
+        background: #fbfbfb; color: #363026;
+        font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+      main { display: flex; flex-direction: column; gap: var(--ecart-section); }
+      main > header, main > section { position: relative; display: flex; flex-direction: column; gap: var(--ecart-entre-groupes); }
+      .entete { position: relative; display: flex; flex-direction: column; gap: var(--ecart-dans-composant); }
+      h1 { font-size: 26px; line-height: 1.2; }
+      h2 { font-size: 19px; line-height: 1.3; }
+      h3 { font-size: 16px; line-height: 1.3; }
+      .entete p, .usage, .carte p { color: #6d675b; }
+      code { font: 13px ui-monospace, Menlo, monospace; overflow-wrap: anywhere; }
+
+      .legende { list-style: none; padding: 0; display: grid; gap: var(--ecart-entre-composants); }
+      .legende li { display: flex; align-items: flex-start; gap: 12px; }
+      .barre-case { flex: none; display: flex; width: 48px; }
+      .barre { flex: none; height: 24px; min-width: 2px; background: color-mix(in srgb, var(--c) 30%, transparent); box-shadow: inset 0 0 0 1px var(--c); }
+      .legende-texte { display: flex; flex-direction: column; gap: var(--ecart-dans-composant); min-width: 0; }
+      .valeur { font-variant-numeric: tabular-nums; }
+      .usage { font-size: 14px; }
+      .rapports { font-variant-numeric: tabular-nums; }
+
+
+      .formulaire { max-width: 560px; display: flex; flex-direction: column; gap: var(--ecart-entre-groupes); padding: var(--marge-interieure-composant); background: #ffffff; border: 1px solid #d8d6d2; border-radius: 8px; }
+      .champs { display: flex; flex-direction: column; gap: var(--ecart-entre-composants); }
+      .champ { position: relative; display: flex; flex-direction: column; gap: var(--ecart-dans-composant); }
+      .champ label { position: relative; font-weight: 600; font-size: 14px; }
+      .champ input { font: inherit; width: 100%; min-height: 40px; padding: 8px 12px; color: #363026; background: #ffffff; border: 1px solid #958f84; border-radius: 6px; }
+      .champ.erreur input { border: 2px solid #e76862; }
+      .champ input:focus-visible, .actions button:focus-visible { outline: 2px solid #8247ce; outline-offset: 2px; }
+      .message-erreur { color: #cb1d2a; font-size: 14px; line-height: 20px; }
+      .actions { display: flex; flex-wrap: wrap; gap: var(--ecart-entre-composants); }
+      .actions button { font: inherit; font-weight: 600; padding: 10px 16px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; }
+      .actions .principal { background: #8a4fd8; color: #ffffff; }
+      .actions .secondaire { background: #ffffff; color: #8247ce; border-color: #958f84; }
+
+      .cartes { display: flex; flex-wrap: wrap; gap: var(--ecart-entre-composants); }
+      .carte { flex: 1 1 260px; position: relative; display: flex; flex-direction: column; gap: var(--ecart-dans-composant); padding: var(--marge-interieure-composant); background: #ffffff; border: 1px solid #d8d6d2; border-radius: 8px; }
+      .carte .meta { color: #8247ce; font-weight: 600; font-size: 14px; }
+
+      .horaires { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--ecart-entre-composants); max-width: 560px; }
+      .horaires li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--ecart-dans-composant); padding-bottom: 8px; border-bottom: 1px solid #d8d6d2; }
+
+      /* Cotes : bande posée sous son hôte, sur l'écart qu'elle nomme ; cadre pour la marge intérieure. */
+      .cote { position: absolute; left: 0; right: 0; top: 100%; z-index: 1; pointer-events: none; display: flex; align-items: center; justify-content: flex-end; background: color-mix(in srgb, var(--c) 22%, transparent); box-shadow: inset 0 1px 0 var(--c), inset 0 -1px 0 var(--c); }
+      .cote-cadre { position: absolute; inset: 0; z-index: 1; pointer-events: none; border: var(--marge-interieure-composant) solid color-mix(in srgb, var(--c) 22%, transparent); outline: 1px dashed var(--c); outline-offset: -1px; border-radius: 7px; }
+      .etiquette { position: relative; flex: none; font: 600 11px/14px ui-monospace, Menlo, monospace; padding: 1px 6px; color: #1f1c17; background: #ffffff; border: 1px solid var(--c); border-radius: 3px; white-space: nowrap; }
+      .cote-cadre .etiquette { position: absolute; left: 0; top: calc(var(--marge-interieure-composant) / -2); transform: translateY(-50%); }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="entete">
+          <h1>Espacements par relation, Atelier Lavandine</h1>
+          <p>Marque fictive. Cinq rôles dans semantique.tokens.json, alias vers espace.* ; le parent porte l'espace (gap et padding), aucun enfant n'a de marge. Chaque rôle est coté une fois sur la page, d'une bande à sa couleur.</p>
+        </div>
+      </header>
+
+      <section aria-labelledby="titre-legende">
+        <div class="entete">
+          <h2 id="titre-legende">Les cinq espaces</h2>
+          <p class="rapports">4 → 16 → 24 → 48 px ; rapports entre voisins 4 ; 1,5 ; 2 (affichés, non contrôlés). Strictement croissants, valeurs en étroit comprises ; ecart.entre-composants ≥ 2 × ecart.dans-composant, pour qu'on voie à quel champ appartient un libellé ou un message (régularité observée dans les systèmes lus, pas une norme) ; contrôlé par <code>npm run espacements</code>.</p>
+        </div>
+        <ul class="legende">
+          <li>
+            <span class="barre-case"><span class="barre" style="--c:#c2255c;width:var(--ecart-dans-composant)"></span></span>
+            <div class="legende-texte">
+              <code>ecart.dans-composant</code>
+              <span class="valeur">4 px · {espace.4}</span>
+              <span class="usage">Écart entre les parties d'un même composant, comme une étiquette et son champ ou un champ et son message d'erreur.</span>
+            </div>
+          </li>
+          <li>
+            <span class="barre-case"><span class="barre" style="--c:#1971c2;width:var(--ecart-entre-composants)"></span></span>
+            <div class="legende-texte">
+              <code>ecart.entre-composants</code>
+              <span class="valeur">16 px · {espace.16}</span>
+              <span class="usage">Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée ; au moins le double de ecart.dans-composant, pour qu'on voie à quel champ appartient un libellé ou un message (régularité observée dans les systèmes lus, pas une norme).</span>
+            </div>
+          </li>
+          <li>
+            <span class="barre-case"><span class="barre" style="--c:#2b8a3e;width:var(--ecart-entre-groupes)"></span></span>
+            <div class="legende-texte">
+              <code>ecart.entre-groupes</code>
+              <span class="valeur">24 px · {espace.24}</span>
+              <span class="usage">Écart entre deux groupes d'une même section, comme un titre de section et son contenu ou les champs d'un formulaire et ses boutons.</span>
+            </div>
+          </li>
+          <li>
+            <span class="barre-case"><span class="barre" style="--c:#d9480f;width:var(--ecart-section)"></span></span>
+            <div class="legende-texte">
+              <code>ecart.section</code>
+              <span class="valeur">48 px · {espace.48} ; en étroit, sous 600 px [H] : 32 px · {espace.32}</span>
+              <span class="usage">Écart entre deux sections de la page, la plus grande respiration verticale ; plus petit en étroit (largeur.etroit.tokens.json).</span>
+            </div>
+          </li>
+          <li>
+            <span class="barre-case"><span class="barre" style="--c:#7048e8;width:var(--marge-interieure-composant)"></span></span>
+            <div class="legende-texte">
+              <code>marge-interieure.composant</code>
+              <span class="valeur">16 px · {espace.16}</span>
+              <span class="usage">Marge intérieure d'un composant à bord visible, comme une carte, un encadré ou une zone de formulaire.</span>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="titre-reservation">
+        <div class="entete">
+          <h2 id="titre-reservation">Réserver une table</h2>
+          <p>Une table au comptoir, sous la verrière ou au salon, du mardi au dimanche.</p>
+        </div>
+        <form class="formulaire" novalidate>
+          <div class="champs">
+            <div class="champ">
+              <label for="nom">Nom</label>
+              <input id="nom" name="nom" type="text" value="Camille Arnaud" autocomplete="off">
+              <span class="cote" data-cote="ecart.entre-composants" aria-hidden="true" style="--c:#1971c2;height:var(--ecart-entre-composants)"><span class="etiquette">ecart.entre-composants · 16 px</span></span>
+            </div>
+            <div class="champ erreur">
+              <label for="courriel">Adresse e-mail<span class="cote" data-cote="ecart.dans-composant" aria-hidden="true" style="--c:#c2255c;height:var(--ecart-dans-composant)"><span class="etiquette">ecart.dans-composant · 4 px</span></span></label>
+              <input id="courriel" name="courriel" type="email" value="camille.arnaud" autocomplete="off" aria-invalid="true" aria-describedby="courriel-erreur">
+              <p class="message-erreur" id="courriel-erreur">Il manque la partie après @.<br>Exemple : prenom@domaine.fr</p>
+            </div>
+            <div class="champ">
+              <label for="couverts">Nombre de couverts</label>
+              <input id="couverts" name="couverts" type="text" inputmode="numeric" value="2" autocomplete="off">
+            </div>
+          </div>
+          <div class="actions">
+            <button type="button" class="principal">Réserver</button>
+            <button type="button" class="secondaire">Annuler</button>
+          </div>
+        </form>
+        <span class="cote" data-cote="ecart.section" aria-hidden="true" style="--c:#d9480f;height:var(--ecart-section)"><span class="etiquette">ecart.section · <span class="dessus-600">48 px</span><span class="sous-600">32 px en étroit, sous 600 px [H]</span></span></span>
+      </section>
+
+      <section aria-labelledby="titre-salles">
+        <div class="entete">
+          <h2 id="titre-salles">Trois salles</h2>
+          <p>Chacune a son rythme ; la carte et les horaires sont les mêmes partout.</p>
+          <span class="cote" data-cote="ecart.entre-groupes" aria-hidden="true" style="--c:#2b8a3e;height:var(--ecart-entre-groupes)"><span class="etiquette">ecart.entre-groupes · 24 px</span></span>
+        </div>
+        <div class="cartes">
+          <article class="carte">
+            <h3>Le comptoir</h3>
+            <p>Huit tabourets face aux machines, pour un café serré ou un déjeuner rapide.</p>
+            <p class="meta">8 places</p>
+            <span class="cote-cadre" data-cote="marge-interieure.composant" aria-hidden="true" style="--c:#7048e8"><span class="etiquette">marge-interieure.composant · 16 px</span></span>
+          </article>
+          <article class="carte">
+            <h3>La verrière</h3>
+            <p>Lumière du jour et grandes tables, pour venir à plusieurs le week-end.</p>
+            <p class="meta">24 places</p>
+          </article>
+          <article class="carte">
+            <h3>Le salon</h3>
+            <p>Fauteuils et lampes basses, pour lire ou travailler au calme.</p>
+            <p class="meta">12 places</p>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="titre-horaires">
+        <div class="entete">
+          <h2 id="titre-horaires">Horaires</h2>
+          <p>Cuisine ouverte jusqu'à une heure avant la fermeture.</p>
+        </div>
+        <ul class="horaires">
+          <li><span>Mardi au vendredi</span><span>8 h – 19 h</span></li>
+          <li><span>Samedi et dimanche</span><span>9 h – 20 h</span></li>
+          <li><span>Lundi</span><span>fermé</span></li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>

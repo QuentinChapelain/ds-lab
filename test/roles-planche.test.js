@@ -31,7 +31,8 @@ const FILE = join(DIR, 'roles.html');
 const html = readFileSync(FILE, 'utf8');
 const paires = charger('paires.json');
 
-const INTERDITES = new Map([
+// Ratios d’Orbe Café, écrits à la main : à ne pas lire comme une règle commune (lot 5, mesure Q5).
+const INTERDITES_ORBE_CAFE = new Map([
   ['texte.secondaire|fond.composant.appui', { ratio: 4.3327, regle: 'sur fond.composant.appui, le texte passe en texte.principal' }],
   ['texte.secondaire|fond.interactif.fort', { ratio: 1.5348, regle: 'sur un plein, le texte est texte.sur-*' }],
   ['bordure.forte|fond.composant', { ratio: 2.8718, regle: 'un champ se pose sur fond.surface' }],
@@ -50,7 +51,7 @@ const text = (s) => s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 const group = (/** @type {string} */ role) => role.split('.')[0];
 
 test('T4 la planche versionnée est à jour', () => {
-  assert.equal(html, rolesHtml(contratRoles(loadRoles(DIR))));
+  assert.equal(html, rolesHtml(contratRoles(loadRoles(DIR)), 'Orbe Café'));
 });
 
 test('T4 page autonome, en français, titrée', () => {
@@ -98,7 +99,7 @@ test('T4 colonnes : fond, mot écrit, ratio, seuil, verdict ; nom du fond aussi 
     assert.equal(text(seuil), 'min' in p ? `${String(p.min).replace('.', ',')}:1` : groupe);
     const key = `${r.devant}|${r.fond}`;
     // Les 4 interdites de l'étape 3 gardent leurs ratios ; celles du lot 5 sont lues dans contratRoles.
-    const forbidden = INTERDITES.get(key) ?? c.interdites.find((x) => `${x.devant}|${x.fond}` === key);
+    const forbidden = INTERDITES_ORBE_CAFE.get(key) ?? c.interdites.find((x) => `${x.devant}|${x.fond}` === key);
     if (forbidden) {
       assert.equal(text(verdict), `interdite ${forbidden.regle}`, key);
       assert.equal(text(ratio), `${trunc(forbidden.ratio)}:1`, key);
@@ -114,7 +115,7 @@ test('T4 aucune colonne masquée par la feuille', () => {
 test('T4 une exception écrite s\'affiche avec son texte et le verdict « exception »', () => {
   const set = structuredClone(loadRoles(DIR));
   set.paires.paires.push({ devant: 'bordure.forte', fond: 'fond.composant.appui', type: 'bordure', exception: 'Champ toujours doublé de son libellé.' });
-  const out = rolesHtml(contratRoles(set));
+  const out = rolesHtml(contratRoles(set), 'Orbe Café');
   const r = rows(out).find((x) => x.devant === 'bordure.forte' && x.fond === 'fond.composant.appui');
   assert.ok(r);
   assert.equal(text(cells(r.body)[4]), 'exception Champ toujours doublé de son libellé.');

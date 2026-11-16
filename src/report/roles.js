@@ -1,6 +1,7 @@
 // @ts-check
 /**
- * Séance 3a, T4 : planche des paires de rôles (tokens/orbe-cafe/roles.html).
+ * Séance 3a, T4 : planche des paires de rôles (tokens/<marque>/roles.html). Revue de code, lot 5 (D27) : une planche par
+ * marque, même code ; le nom de la marque est lu dans son resolver.
  * Une ligne par paire : fond, mot écrit, ratio, seuil, verdict ; groupée par propriété de l'élément devant.
  * Dans chaque groupe : les paires déclarées, puis les paires interdites avec leur règle.
  * Le nom du fond se lit dans chaque ligne à toutes les largeurs : il est repris sous le mot écrit, et
@@ -8,6 +9,8 @@
  * Ratio tronqué à 2 décimales (jamais arrondi vers le seuil). Page autonome, sans ressource externe.
  */
 import { fr, esc } from '../lib/format.js';
+import { loadRoles, contratRoles } from '../tokens/roles.js';
+import { nomDeMarque } from '../tokens/resolver.js';
 
 /** @param {number} n @param {string} one @param {string} many */
 const plural = (n, one, many) => `${n} ${n > 1 ? many : one}`;
@@ -42,9 +45,10 @@ function row(p, word, min) {
 
 /**
  * @param {{ pairs: any[], fails: any[], exceptions: any[], interdites?: any[] }} c contrat de rôles (contratRoles)
+ * @param {string} nom nom de la marque
  * @returns {string}
  */
-export function rolesHtml(c) {
+export function rolesHtml(c, nom) {
   const interdites = c.interdites ?? [];
   const sections = GROUPS.map((g) => {
     const inGroup = (/** @type {any} */ p) => p.devant.split('.')[0] === g.key;
@@ -68,7 +72,7 @@ ${[...pairs, ...banned].map((p) => row(p, g.word, min)).join('\n')}
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Rôles Orbe Café</title>
+    <title>Rôles ${esc(nom)}</title>
     <style>
       :root { --encre: #1f1c17; --gris: #6b665c; --trait: #dedbd5; --page: #ffffff; --echec: #b3261e; --exception: #8a5a00; --interdite: #5b4a8a; --ok: #1e6b45; }
       body { margin: 0; padding: 24px 16px 48px; background: var(--page); color: var(--encre); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
@@ -108,7 +112,7 @@ ${[...pairs, ...banned].map((p) => row(p, g.word, min)).join('\n')}
   </head>
   <body>
     <main>
-    <h1>Rôles de couleur, Orbe Café</h1>
+    <h1>Rôles de couleur, ${esc(nom)}</h1>
     <p>Marque fictive. Paires déclarées dans paires.json, rôles dans semantique.tokens.json ; contraste WCAG 2.1, ratio tronqué à 2 décimales.</p>
     <p class="bilan">${plural(c.pairs.length, 'paire', 'paires')}, ${plural(c.fails.length, 'en échec', 'en échec')}, ${plural(c.exceptions.length, 'exception écrite', 'exceptions écrites')}, ${plural(interdites.length, 'paire interdite', 'paires interdites')}.</p>
 ${sections}
@@ -116,4 +120,13 @@ ${sections}
   </body>
 </html>
 `;
+}
+
+/**
+ * Planche d'un dossier de marque : lit ses rôles par son resolver et rend la page.
+ * @param {string} dir dossier tokens/<marque>/
+ * @returns {string}
+ */
+export function planche(dir) {
+  return rolesHtml(contratRoles(loadRoles(dir)), nomDeMarque(dir));
 }

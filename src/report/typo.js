@@ -1,13 +1,15 @@
 // @ts-check
 /**
- * Séance 3c, typo : planche des styles de texte d'Orbe Café (tokens/orbe-cafe/typo.html).
+ * Séance 3c, typo : planche des styles de texte d'une marque (tokens/<marque>/typo.html). Revue de code, lot 5 (D27) : une
+ * planche par marque, même code ; le nom de la marque, lu dans son resolver, est dans le titre et le texte d'essai du
+ * spécimen ; les trois situations sont un contenu d'essai commun (KNOWN_ISSUES.md).
  * Spécimen des onze styles (taille, ligne, rapport), puis trois situations : hero de page d'accueil,
  * page de contenu, écran dense. Toutes les valeurs viennent des jetons (typo, polices de marque,
  * espacements, couleurs) ; valeurs en étroit sous leur seuil ([H]). Aucun réglage : les décisions prises sur
  * la planche (15/11/2026) sont dans les jetons. gap et padding seulement, avec les rôles d'espacement ; la seule
  * déclaration margin est la remise à zéro. Page autonome, sans ressource externe ni script.
  */
-import { largeurs } from '../tokens/resolver.js';
+import { largeurs, nomDeMarque } from '../tokens/resolver.js';
 import { typo } from '../tokens/typo.js';
 import { fr, esc } from '../lib/format.js';
 import { espacements } from '../tokens/espacements.js';
@@ -35,7 +37,7 @@ const el = (tag, style, contenu, attrs = '', cls = '') => {
  * @param {ReturnType<typeof typo>} t
  * @param {ReturnType<typeof espacements>} e
  * @param {ReturnType<typeof resolveRoles>} roles
- * @param {{ polices: Record<string, string | string[]>, espacementLettres: Record<string, string> }} extra
+ * @param {{ polices: Record<string, string | string[]>, espacementLettres: Record<string, string>, nom: string }} extra  nom : nom de la marque
  * @returns {string}
  */
 export function typoHtml(t, e, roles, extra) {
@@ -84,7 +86,7 @@ export function typoHtml(t, e, roles, extra) {
       ].join(' · ');
       return `          <li data-specimen="${s.style}">
             <p class="meta">${meta}</p>
-            ${el('p', s.style, 'Orbe Café torréfie le mardi')}
+            ${el('p', s.style, `${esc(extra.nom)} ouvre le mardi`)}
           </li>`;
     })
     .join('\n');
@@ -97,7 +99,7 @@ export function typoHtml(t, e, roles, extra) {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Typographie Orbe Café</title>
+    <title>Typographie ${esc(extra.nom)}</title>
     <style>
       :root { ${varsRacine.join(' ')} }
 ${[...etroits.entries()].map(([n, decl]) => `      @media (max-width: ${n - 0.02}px) { :root { ${decl.join(' ')} } }`).join('\n')}
@@ -148,7 +150,7 @@ ${classes}
     <main>
       <header>
         <div class="entete">
-          ${el('h1', 'titre.1', 'Typographie, Orbe Café')}
+          ${el('h1', 'titre.1', `Typographie, ${esc(extra.nom)}`)}
           ${el('p', 'corps.moyen', "Marque fictive. Onze styles de texte, un jeton composite chacun (groupe typo de semantique.tokens.json) : police de la marque, taille, graisse et interligne sans unité, hauteur de ligne visée multiple de 4 px. Sous 600 px de large [H], affichage et titres 1 à 3 prennent leur valeur en étroit.", '', 'secondaire')}
           ${el('p', 'mention', esc(bilan))}
         </div>
@@ -245,5 +247,5 @@ export function planche(dir) {
     const ls = tok.$value?.letterSpacing;
     if (ls && typeof ls === 'object') espacementLettres[path] = `${ls.value}${ls.unit}`;
   }
-  return typoHtml(typo(sem, prims, marque, etroit), espacements(sem, prims, etroit), roles, { polices, espacementLettres });
+  return typoHtml(typo(sem, prims, marque, etroit), espacements(sem, prims, etroit), roles, { polices, espacementLettres, nom: nomDeMarque(dir) });
 }

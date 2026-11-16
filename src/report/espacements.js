@@ -1,6 +1,7 @@
 // @ts-check
 /**
- * Séance 3c : planche des espacements par relation d'Orbe Café (tokens/orbe-cafe/espacements.html).
+ * Séance 3c : planche des espacements par relation d'une marque (tokens/<marque>/espacements.html). Revue de code, lot 5
+ * (D27) : une planche par marque, même code ; le nom de la marque est lu dans son resolver.
  * Une page complète (formulaire avec un message d'erreur sur deux lignes, rangée de trois cartes,
  * plusieurs sections) bâtie sur les cinq rôles d'espacement, chacun coté et nommé une fois.
  * Le parent porte l'espace : gap et padding uniquement, la seule déclaration margin est la remise à zéro.
@@ -8,7 +9,7 @@
  * sous 600 px dans le contexte étroit, seuil [H]). Couleurs : rôles de semantique.tokens.json ; les cotes ont leur propre
  * palette d'annotation, hors du design system. Page autonome, sans ressource externe ni script.
  */
-import { largeurs } from '../tokens/resolver.js';
+import { largeurs, nomDeMarque } from '../tokens/resolver.js';
 import { espacements } from '../tokens/espacements.js';
 import { resolveRoles } from '../tokens/roles.js';
 import { fr, esc } from '../lib/format.js';
@@ -37,9 +38,10 @@ const cote = (role, valeur) =>
 /**
  * @param {ReturnType<typeof espacements>} r
  * @param {ReturnType<typeof resolveRoles>} roles
+ * @param {string} nom nom de la marque
  * @returns {string}
  */
-export function espacementsHtml(r, roles) {
+export function espacementsHtml(r, roles, nom) {
   const hex = (/** @type {string} */ role) => {
     const v = roles.get(role);
     if (!v) throw new Error(`rôle de couleur absent : ${role}`);
@@ -78,7 +80,7 @@ export function espacementsHtml(r, roles) {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Espacements Orbe Café</title>
+    <title>Espacements ${esc(nom)}</title>
     <style>
       :root { ${vars} }
 ${seuils
@@ -148,7 +150,7 @@ ${seuils
     <main>
       <header>
         <div class="entete">
-          <h1>Espacements par relation, Orbe Café</h1>
+          <h1>Espacements par relation, ${esc(nom)}</h1>
           <p>Marque fictive. Cinq rôles dans semantique.tokens.json, alias vers espace.* ; le parent porte l'espace (gap et padding), aucun enfant n'a de marge. Chaque rôle est coté une fois sur la page, d'une bande à sa couleur.</p>
         </div>
       </header>
@@ -244,5 +246,5 @@ ${legende}
 export function planche(dir) {
   const { large, etroit } = largeurs(dir);
   const roles = resolveRoles(large.semantique, large.primitives, large.marque);
-  return espacementsHtml(espacements(large.semantique, large.primitives, etroit), roles);
+  return espacementsHtml(espacements(large.semantique, large.primitives, etroit), roles, nomDeMarque(dir));
 }
