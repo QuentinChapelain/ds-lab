@@ -91,7 +91,8 @@ export function dedupeSheets(perPage) {
  * @property {boolean} normalizable
  * @property {Record<string, number>} originals
  * @property {Record<string, number>} sources
- * @property {Record<string, number>} properties
+ * @property {Record<string, number>} [properties]  comptes par propriété ; absent quand la lecture ne donne pas la propriété
+ *   (familles lues par Wallace, revue de code du 15/11, lot 4, Q5)
  * @property {{ sheet: number, line: number }[]} locations
  */
 
@@ -124,13 +125,19 @@ function createCollector() {
       e.count++;
       e.originals[at.raw] = (e.originals[at.raw] ?? 0) + 1;
       e.sources[at.source] = (e.sources[at.source] ?? 0) + 1;
-      if (at.property) e.properties[at.property] = (e.properties[at.property] ?? 0) + 1;
+      if (at.property) /** @type {Record<string, number>} */ (e.properties)[at.property] = (e.properties?.[at.property] ?? 0) + 1;
       if (e.locations.length < MAX_LOCATIONS) e.locations.push({ sheet: at.sheet, line: at.line });
     },
     /** @returns {Family} */
     result() {
       const sorted = [...values.entries()].sort((a, b) => b[1].count - a[1].count || (a[0] < b[0] ? -1 : 1));
-      return { total, distinct: values.size, nonNormalizable, values: Object.fromEntries(sorted) };
+      // Revue, lot 4 (Q5) : un compte par propriété vide n'est pas écrit ; retiré ici, l'ordre des clés reste le même.
+      const ecrite = (/** @type {ValueEntry} */ e) => {
+        if (Object.keys(e.properties ?? {}).length) return e;
+        const { properties, ...reste } = e;
+        return reste;
+      };
+      return { total, distinct: values.size, nonNormalizable, values: Object.fromEntries(sorted.map(([k, e]) => [k, ecrite(e)])) };
     },
   };
 }
