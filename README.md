@@ -16,7 +16,7 @@ Une migration ne se fait pas à l'aveugle. Elle a trois phases, et la difficult�
 
 `ds-lab` sert les trois : il mesure l'existant, vérifie la cible, range ce qu'une règle sait trancher, montre au designer en situation ce qui demande un jugement, et remet au développeur une consigne qu'un agent applique telle quelle, vérifiée avant et après.
 
-Sur les pages fictives d'Orbe Café, une fois la cible posée : 87 lignes, dont 34 déjà sur la cible. Sur les 53 qui changent, les règles en tranchent 27 (16 d'office, 10 corrections, 1 hors table) ; le designer valide les 15 proches et tranche les 11 décisions.
+Sur les pages fictives d'Orbe Café, une fois la cible posée (valise d'Orbe Café, réduction du 16/11/2026) : 90 lignes, dont 35 déjà sur la cible. Sur les 55 qui changent, les règles en tranchent 27 (15 d'office, 10 corrections, 2 hors table) ; le designer valide les 14 proches et tranche les 14 décisions.
 
 ## Ce que fait l'outil
 
@@ -131,8 +131,8 @@ Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier
 | Usage | Le rôle d'une valeur dans la page : texte, fond, bordure, marge, retrait, gouttière. L'usage choisit la tranche, pas la ressemblance |
 | Relation | Ce que sépare un espace : dans le composant (un champ et son message) ou entre composants (deux champs) |
 | Réduction | Ranger l'existant dans la cible, sans redessiner |
-| Table | Une ligne par valeur × usage : nouvelle valeur, jeton, classe, origine dans le CSS |
-| Classes | **inchangé** (déjà sur la cible) · **auto** (écart invisible, appliqué) · **proche** (écart faible, appliqué par défaut, refusable un par un) · **correction** (contraste réparé d'office, annulable) · **décision** (le designer tranche) · **hors table** (laissé tel quel, avec son motif) |
+| Table | Une ligne par valeur × usage : nouvelle valeur, jeton, classe, origine dans le CSS. Une couleur vue seulement au survol, au focus ou à l'appui, écrite par le site, a sa ligne, marquée par son état (D19) |
+| Classes | **inchangé** (déjà sur la cible) · **auto** (écart invisible, appliqué) · **proche** (écart faible, appliqué par défaut, refusable un par un) · **correction** (contraste réparé d'office, annulable) · **décision** (le designer tranche ; toute valeur à égale distance de deux pas en est une, sans défaut, D20) · **hors table** (laissé tel quel, avec son motif) |
 | Règles | Ce que le code décide seul (R1 à R9) : l'usage choisit la tranche, le contraste est vérifié, la mise en page et les éléments tiers sont exclus, une décision n'est jamais appliquée sans réponse |
 | Contraste | Rapport de luminance entre un texte et son fond. Seuils retenus (WCAG 2.1 AA) : 4,5:1 pour le texte ; 3:1 pour le grand texte (24 px, ou 18,67 px en gras) et pour une bordure de champ |
 | Marge, retrait, gouttière | Espace autour d'un élément, à l'intérieur de ses bords, entre les enfants d'un conteneur |

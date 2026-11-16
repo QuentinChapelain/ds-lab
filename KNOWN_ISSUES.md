@@ -2,9 +2,6 @@
 
 État au 15/11/2026.
 
-- Tests C14 et E5 rouges, dans `test/e2e-desordre.test.js`, depuis avant l'étape 3 ; chacun attend une décision, pas seulement du code.
-  - C14 : `#24426f` n'est rendu qu'au survol forcé, et les couleurs d'état vont dans `stateColors` (`src/rendered/aggregate.js`), jamais dans les usages d'où `propose` tire les lignes (`src/reduce/propose.js:1016`), si bien que la valeur n'a pas de ligne [F].
-  - E5 : l'attendu veut « décision » pour une égalité 12/16 px, qu'il écrit lui-même comme hypothèse, alors que l'outil départage l'égalité vers la plus petite valeur et range 14px en « proche » (`src/reduce/propose.js:211`) [F].
 - Tailles de texte en px : `indexTokens` (`src/report/migration.js`) n'indexe que les px ; bascule en rem à faire après adaptation (D12, `docs/decisions.md`).
 - Interlettrage à 0 partout, à régler avec une vraie police.
 - Police du produit (`tokens/commun/police.tokens.json`) : `system-ui, sans-serif`, valeur provisoire [H], à choisir avec une vraie police.
@@ -39,15 +36,14 @@
 - Saisie, exception à « rien n'est écrit » (D18) : le contrôle `contraste` est relancé sur les fichiers déjà écrits ; s'il ne conclut pas, ou trouve une paire en échec, la saisie sort en 2 avec les fichiers en place (`src/cli/saisie.js`). Remède (écrire à côté, contrôler, puis remplacer) renvoyé au lot de la fusion unique du contexte de marque.
 - Saisie, contrôle d'encre : le refus « fichier de police que le navigateur ne charge pas » (`PoliceRefusee`, `src/polices/encre.js`) est codé mais sans test, faute d'un fichier qui passe les garde-fous et que Chromium rejette.
 - Codé sans test (lot 1b de la revue) : le motif « non stabilisé après 10 tours » de la boucle de `propose` (aucune entrée connue ne la fait osciller, `src/reduce/propose.js`) ; la trace en panne dans un audit de bout en bout (testée au niveau de `measureRendered` seulement, aucun moyen de la provoquer dans une vraie page) ; les messages d'une navigation échouée de `reduce --live` et de `npm run login` (fenêtre visible).
+- États forcés (D19) : les échantillons d'état ne sont pas tracés ; l'anneau de focus du navigateur est reconnu par repli, un contour `outline-style: auto` (`src/rendered/aggregate.js`, `addStates`). Un site qui écrit lui-même `outline-style: auto` verrait sa couleur de focus rangée avec celle du navigateur. Remède : tracer chaque échantillon à l'état forcé (un appel `CSS.getMatchedStylesForNode` par échantillon et par état, dans `collectStates`) et lire l'origine de la règle.
+- États forcés (D19) : les paires de contraste du texte sur un fond survolé ne sont pas créées ; une couleur de survol est rangée sans contrôle de contraste.
 - Mode sombre : la carte (`fond.surface`, `#181818`) est jugée peu détachée de la page (`#121212`) sur image ; rapport carte sur page 1,055:1 en sombre contre 1,035:1 en clair [F], donc l'écart de teinte n'explique pas le jugement ; cause non établie [V], à reprendre à l'étape des composants.
 
 ## Revue de code du 15/11
 
-Constats de la revue en lecture seule (commit 4341b94), filets posés par le lot 0 (`docs/attendus/revue-lot-0-filets.md`). Corrigés et retirés d'ici : les codes de sortie des contrôles (lot 1a), la panne d'audit rangée en échec de chargement, la clé de décision orpheline et la couleur de marque illisible (lot 1b, D18).
+Constats de la revue en lecture seule (commit 4341b94), filets posés par le lot 0 (`docs/attendus/revue-lot-0-filets.md`). Corrigés et retirés d'ici : les codes de sortie des contrôles (lot 1a), la panne d'audit rangée en échec de chargement, la clé de décision orpheline et la couleur de marque illisible (lot 1b, D18) ; `border` dans apply, le motif R9 en dur, la divergence « inchangé » avec décision, C14 et E5 (lot 2, D19, D20).
 
-- `apply` tient `border` pour un raccourci des rayons : un `border` écrit après `border-radius` envoie les quatre rayons en écart à tort (`src/apply/apply.js:152`, `covers`) [F].
-- Motif R9 « texte sous 4,5:1 » écrit en dur, même quand le seuil de la paire vaut 3 (`src/reduce/propose.js:740, 764` ; relu par `src/report/review.js:276, 278`) [F].
-- Quatre blocs JSDoc posés au-dessus de la mauvaise fonction, si bien que `runReduce`, `buildMigration`, `renderMarkdown` et `renderReview` ne sont pas vérifiés par `@ts-check` (`src/cli/reduce.js:76`, `src/report/migration.js:166, 423`, `src/report/review.js:433`) [F].
+- Quatre blocs JSDoc posés au-dessus de la mauvaise fonction, si bien que `runReduce`, `buildMigration`, `renderMarkdown` et `renderReview` ne sont pas vérifiés par `@ts-check` (`src/cli/reduce.js:76`, `src/report/migration.js:166, 431`, `src/report/review.js:444`) [F].
 - Annotations en retard : 69 des 77 erreurs de TypeScript non strict viennent de types JSDoc qui n'ont pas suivi les lots, surtout dans `src/reduce/propose.js`, `src/rendered/aggregate.js` et `src/browser/simulate.js` [F].
 - Copie figée `fixtures/marque-demo/jetons/primitives.tokens.json` : `reduce --tokens` accepte sans le dire un fichier qui ne donne aucun jeton (le resolver passé tel quel en donne 0), et la copie, seule lue par les tests, masque ce cas (`src/cli/reduce.js:94`, `indexTokens` dans `src/report/migration.js:62`) [F].
-- Une ligne « inchangé » qui reçoit une décision écrite est appliquée par `mapping` (`src/reduce/propose.js:1195`) et dite « inchangé » à sa valeur d'avant par la migration (`src/report/migration.js:269`) [F] ; que la revue puisse produire une telle décision n'est pas établi [V].
