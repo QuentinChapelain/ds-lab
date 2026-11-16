@@ -11,7 +11,7 @@
  * voie à quel champ appartient un libellé ou un message ; régularité observée dans les systèmes lus, pas
  * une norme. Les autres rapports entre voisins n'ont pas de seuil.
  */
-import { flattenTokens, primitivesSansRole } from './roles.js';
+import { flattenTokens, primitivesSansRole, resoudreAlias } from './roles.js';
 
 /** Ordre des relations, du plus proche au plus lointain. */
 export const ORDRE = ['ecart.dans-composant', 'ecart.entre-composants', 'ecart.entre-groupes', 'ecart.section'];
@@ -53,28 +53,25 @@ export function espacements(semantique, primitives, largeurEtroite) {
   const sem = flattenTokens(semantique);
   for (const [k, v] of sem) all.set(k, v);
 
-  /** @param {string} path @param {string[]} seen @returns {{ cible: string, px: number }} */
-  const resolve = (path, seen) => {
-    if (seen.includes(path)) throw new Error(`alias en boucle : ${[...seen, path].join(' → ')}`);
-    const t = all.get(path);
-    if (!t) throw new Error(`alias sans cible : {${path}}${seen.length ? ` (depuis ${seen[0]})` : ''}`);
-    const m = typeof t.$value === 'string' ? /^\{([^}]+)\}$/.exec(t.$value) : null;
-    if (m) return resolve(m[1], [...seen, path]);
-    const v = t.$value;
-    if (!v || typeof v.value !== 'number' || v.unit !== 'px') throw new Error(`dimension illisible (px attendu) : ${path}`);
-    return { cible: path, px: v.value };
+  /** Valeur en px d'une valeur ou d'un alias. @param {any} valeur @param {string} depuis @param {string[]} chaine @returns {{ cible: string, px: number }} */
+  const dimension = (valeur, depuis, chaine) => {
+    const { valeur: v, cible } = resoudreAlias(all, valeur, { depuis, chaine });
+    if (!v || typeof v.value !== 'number' || v.unit !== 'px') throw new Error(`dimension illisible (px attendu) : ${cible}`);
+    return { cible, px: v.value };
   };
+  /** @param {string} path */
+  const resolve = (path) => dimension(all.get(path).$value, path, [path]);
   /** @param {string} alias @param {string} depuis */
   const resolveAlias = (alias, depuis) => {
     const m = typeof alias === 'string' ? /^\{([^}]+)\}$/.exec(alias) : null;
     if (!m) throw new Error(`alias attendu : ${depuis}`);
-    return resolve(m[1], [depuis]);
+    return dimension(alias, depuis, [depuis]);
   };
   /** @param {string} role @returns {Espace} */
   const espace = (role) => {
     const t = sem.get(role);
     if (!t) throw new Error(`rôle d'espacement absent : ${role}`);
-    return { role, alias: t.$value, ...resolve(role, []), description: t.$description ?? '' };
+    return { role, alias: t.$value, ...resolve(role), description: t.$description ?? '' };
   };
 
   const ecarts = ORDRE.map(espace);

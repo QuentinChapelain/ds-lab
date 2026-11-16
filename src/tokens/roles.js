@@ -32,6 +32,28 @@ export function flattenTokens(node, path = [], out = new Map()) {
 }
 
 /**
+ * Valeur finale d'une valeur DTCG, alias suivis (revue de code du 15/11, lot 4 : seule résolution d'alias des contrôles).
+ * `chaine` : les jetons déjà traversés, en commençant par le jeton de départ ; `depuis` : le jeton ou le champ de départ,
+ * nommé quand une cible manque. Rend la valeur finale et le dernier jeton traversé (`cible`) ; l'appelant juge le type.
+ * Une boucle lève « alias en boucle : départ → … », une cible absente (ou un groupe sans $root) « alias sans cible ».
+ * @param {Map<string, any>} jetons @param {any} valeur @param {{ depuis: string, chaine: string[] }} depart
+ * @returns {{ valeur: any, cible: string }}
+ */
+export function resoudreAlias(jetons, valeur, { depuis, chaine }) {
+  const vus = [...chaine];
+  let v = valeur;
+  for (;;) {
+    const m = typeof v === 'string' ? /^\{([^}]+)\}$/.exec(v) : null;
+    if (!m) return { valeur: v, cible: /** @type {string} */ (vus.at(-1)) };
+    if (vus.includes(m[1])) throw new Error(`alias en boucle : ${[...vus, m[1]].join(' → ')}`);
+    const t = jetons.get(m[1]);
+    if (!t) throw new Error(`alias sans cible : ${v} (depuis ${depuis})`);
+    vus.push(m[1]);
+    v = t.$value;
+  }
+}
+
+/**
  * Type DTCG de chaque jeton : celui du jeton, sinon celui du groupe le plus proche (undefined si aucun).
  * Clés comme flattenTokens, sans « groupe.$root ».
  * @param {any} node @param {string[]} [path] @param {string} [type] @param {Map<string, string | undefined>} [out]
@@ -81,16 +103,12 @@ export function resolveRoles(semantique, ...primitives) {
   for (const f of primitives) for (const [k, v] of flattenTokens(f)) all.set(k, v);
   const sem = flattenTokens(semantique);
   for (const [k, v] of sem) all.set(k, v);
-  /** @param {string} path @param {string[]} seen @returns {{ cible: string, hex: string }} */
-  const resolve = (path, seen) => {
-    if (seen.includes(path)) throw new Error(`alias en boucle : ${[...seen, path].join(' → ')}`);
-    const t = all.get(path);
-    if (!t) throw new Error(`alias sans cible : {${path}}${seen.length ? ` (depuis ${seen[0]})` : ''}`);
-    const m = typeof t.$value === 'string' ? /^\{([^}]+)\}$/.exec(t.$value) : null;
-    if (m) return resolve(m[1], [...seen, path]);
-    const hex = hexOf(t.$value);
-    if (!hex) throw new Error(`couleur illisible : ${path}`);
-    return { cible: path, hex };
+  /** @param {string} role @returns {{ cible: string, hex: string }} */
+  const resolve = (role) => {
+    const { valeur, cible } = resoudreAlias(all, all.get(role).$value, { depuis: role, chaine: [role] });
+    const hex = hexOf(valeur);
+    if (!hex) throw new Error(`couleur illisible : ${cible}`);
+    return { cible, hex };
   };
   /** @type {Map<string, { alias: string, cible: string, hex: string, description: string }>} */
   const out = new Map();
@@ -99,7 +117,7 @@ export function resolveRoles(semantique, ...primitives) {
     if (role.endsWith('.$root')) continue;
     const type = types.get(role);
     if (type !== undefined && type !== 'color') continue; // séance 3c : espacements (dimension) hors des rôles de couleur
-    out.set(role, { alias: t.$value, ...resolve(role, []), description: t.$description ?? '' });
+    out.set(role, { alias: t.$value, ...resolve(role), description: t.$description ?? '' });
   }
   return out;
 }

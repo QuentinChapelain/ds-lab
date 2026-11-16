@@ -8,7 +8,7 @@
  * alias vers police.titre.hauteur-capitale), lue en large et en étroit.
  * Neuf règles (échec, code 1) ; le rapport de chaque style et les primitives sans rôle sont affichés sans seuil.
  */
-import { flattenTokens, tokenTypes, primitivesSansRole } from './roles.js';
+import { flattenTokens, tokenTypes, primitivesSansRole, resoudreAlias } from './roles.js';
 import { fr } from '../lib/format.js';
 
 export const REM = 16;
@@ -55,32 +55,28 @@ export function typo(semantique, primitives, marque, largeurEtroite) {
   const sem = flattenTokens(semantique);
   for (const [k, v] of sem) all.set(k, v);
 
-  /** Valeur finale d'une valeur ou d'un alias. @param {any} v @param {string} depuis @param {string[]} [seen] @returns {any} */
-  const valeur = (v, depuis, seen = []) => {
-    const m = typeof v === 'string' ? /^\{([^}]+)\}$/.exec(v) : null;
-    if (!m) return v;
-    if (seen.includes(m[1])) throw new Error(`alias en boucle : ${[...seen, m[1]].join(' → ')}`);
-    const t = all.get(m[1]);
-    if (!t) throw new Error(`alias sans cible : ${v} (depuis ${depuis})`);
-    return valeur(t.$value, depuis, [...seen, m[1]]);
-  };
-  /** @param {any} v @param {string} depuis */
-  const px = (v, depuis) => {
-    const d = valeur(v, depuis);
+  /**
+   * Valeur finale d'un champ de style : la chaîne part du jeton du style (`jeton`), « depuis » nomme le champ.
+   * @param {any} v @param {string} depuis @param {string} jeton
+   */
+  const valeur = (v, depuis, jeton) => resoudreAlias(all, v, { depuis, chaine: [jeton] }).valeur;
+  /** @param {any} v @param {string} depuis @param {string} jeton */
+  const px = (v, depuis, jeton) => {
+    const d = valeur(v, depuis, jeton);
     if (d?.unit === 'px' && typeof d.value === 'number') return d.value;
     if (d?.unit === 'rem' && typeof d.value === 'number') return d.value * REM;
     throw new Error(`taille illisible (px ou rem attendu) : ${depuis}`);
   };
-  /** @param {any} v @param {string} depuis */
-  const nombre = (v, depuis) => {
-    const n = valeur(v, depuis);
+  /** @param {any} v @param {string} depuis @param {string} jeton */
+  const nombre = (v, depuis, jeton) => {
+    const n = valeur(v, depuis, jeton);
     if (typeof n !== 'number') throw new Error(`nombre attendu : ${depuis}`);
     return n;
   };
-  /** Consigne de hauteur de capitale d'un jeton, résolue ; null sans consigne. @param {any} tok @param {string} depuis */
-  const consigne = (tok, depuis) => {
+  /** Consigne de hauteur de capitale d'un jeton, résolue ; null sans consigne. @param {any} tok @param {string} depuis @param {string} jeton */
+  const consigne = (tok, depuis, jeton) => {
     const c = tok.$extensions?.[CONSIGNE];
-    return c === undefined ? null : nombre(c, `${depuis} (consigne)`);
+    return c === undefined ? null : nombre(c, `${depuis} (consigne)`, jeton);
   };
   /** @param {number} taille @param {number} interligne @param {number | null} hauteurCapitale @returns {Mesure} */
   const mesure = (taille, interligne, hauteurCapitale) => ({ taille, interligne, ligne: taille * interligne, hauteurCapitale });
@@ -92,12 +88,12 @@ export function typo(semantique, primitives, marque, largeurEtroite) {
     if (path.endsWith('.$root') || types.get(path) !== 'typography') continue;
     const style = path.replace(/^typo\./, '');
     const v = t.$value;
-    const large = mesure(px(v.fontSize, `${style}.fontSize`), nombre(v.lineHeight, `${style}.lineHeight`), consigne(t, style));
+    const large = mesure(px(v.fontSize, `${style}.fontSize`, path), nombre(v.lineHeight, `${style}.lineHeight`, path), consigne(t, style, path));
     const te = semEtroit?.get(path);
     const x = te && JSON.stringify(te.$value) !== JSON.stringify(v) ? te.$value : null;
-    const etroit = x && te ? mesure(px(x.fontSize, `${style} (étroit)`), nombre(x.lineHeight, `${style} (étroit)`), consigne(te, `${style} (étroit)`)) : null;
+    const etroit = x && te ? mesure(px(x.fontSize, `${style} (étroit)`, path), nombre(x.lineHeight, `${style} (étroit)`, path), consigne(te, `${style} (étroit)`, path)) : null;
     const sous = x && largeurEtroite ? largeurEtroite.sous : null;
-    styles.push({ style, police: v.fontFamily, graisse: nombre(v.fontWeight, `${style}.fontWeight`), large, etroit, sous, seuil: x && largeurEtroite ? largeurEtroite.seuil : '', description: t.$description ?? '', hauteurCapitale: large.hauteurCapitale });
+    styles.push({ style, police: v.fontFamily, graisse: nombre(v.fontWeight, `${style}.fontWeight`, path), large, etroit, sous, seuil: x && largeurEtroite ? largeurEtroite.seuil : '', description: t.$description ?? '', hauteurCapitale: large.hauteurCapitale });
   }
   const byName = new Map(styles.map((s) => [s.style, s]));
   /** @param {string} name */
