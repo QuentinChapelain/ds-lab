@@ -10,9 +10,6 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-/** Emplacement conseillé du fichier de sources ; il n'est lu que passé par `--sources`. */
-export const DEFAULT_SOURCES_PATH = 'local/sources.json';
-
 /** Étiquettes réservées, attribuées avant toute règle. */
 export const RESERVED = Object.freeze({
   inline: 'inline',

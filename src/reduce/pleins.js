@@ -25,9 +25,6 @@ import { isOut, decisionFor, rowKey, onSolidOf, mapping } from './propose.js';
 import { contrastRatio, isOpaque, toLab, deltaE, relativeLuminance } from '../lib/color.js';
 import { r4 } from '../lib/format.js';
 
-/** Versions d'une carte de plein, dans l'ordre de la carte. */
-export const PLEIN_CHOICES = /** @type {const} */ (['onSolid', 'pas-10', 'teinte', 'garder']);
-
 /**
  * Pas 9 ou 10 de la valise le plus proche d'une couleur (ΔE), ou null.
  * @param {any} target

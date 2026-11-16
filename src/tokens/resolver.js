@@ -31,8 +31,6 @@ export const COMMUN = fileURLToPath(new URL('../../tokens/commun/', import.meta.
 export const ORBE = fileURLToPath(new URL('../../tokens/orbe-cafe/', import.meta.url));
 /** Clé d'extension du seuil de largeur, sur le modificateur largeur. */
 export const LARGEUR = 'ds-lab.largeur';
-/** Modificateurs et leurs contextes, dans l'ordre ; le premier est le défaut. */
-export const MODIFICATEURS = { mode: ['clair', 'sombre'], largeur: ['large', 'etroit'] };
 
 /** @param {any} v */
 const estObjet = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
