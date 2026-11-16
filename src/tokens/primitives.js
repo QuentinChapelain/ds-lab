@@ -4,7 +4,8 @@
  * Les statuts avertissement et info d'Orbe Café sont générés par generateScale et rangés à part
  * (tokens/commun/statuts.tokens.json) ; primitives.tokens.json n'est pas modifié.
  */
-import { rgb, formatHex, wcagContrast } from 'culori';
+import { rgb, formatHex } from 'culori';
+import { contrastRatio } from '../lib/color.js';
 import { generateScale, couleurAuContraste, TARGETS } from '../valise/generate.js';
 import { r4 } from '../lib/format.js';
 
@@ -116,7 +117,7 @@ export function valiseFromTokens(...files) {
  * pas 12 à 12,75:1. fond.surface entre les pas 2 et 3 (milieu géométrique).
  */
 export const PAGE_SOMBRE = '#121212';
-const KP = wcagContrast(PAGE_SOMBRE, '#000000');
+const KP = contrastRatio(PAGE_SOMBRE, '#000000');
 const surPage = (/** @type {number} */ t) => (t / TARGETS[1]) * KP;
 /** Contraste de fond.surface sombre contre le noir. */
 export const SURFACE_SOMBRE = Math.sqrt(surPage(TARGETS[2]) * surPage(TARGETS[3]));

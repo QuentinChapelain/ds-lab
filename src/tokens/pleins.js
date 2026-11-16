@@ -14,7 +14,8 @@
  * Les voiles (blanc du cas sombre, noir du cas soutenu) sont les seules valeurs calculées de la couche marque :
  * couleur DTCG, formule en $extensions.
  */
-import { wcagContrast, interpolate, formatHex } from 'culori';
+import { interpolate, formatHex } from 'culori';
+import { contrastRatio } from '../lib/color.js';
 import { colorValue } from './primitives.js';
 
 /** Couleur exacte et texte blanc : contraste du blanc sur le pas 9. */
@@ -35,10 +36,10 @@ const WHITE = '#ffffff';
 
 /** Classe de plein d'une échelle de 12 pas (primaire, accent). @param {string[]} steps @returns {Classe} */
 export function classePlein(steps) {
-  const blanc = wcagContrast(WHITE, steps[8]);
+  const blanc = contrastRatio(WHITE, steps[8]);
   if (blanc >= SOMBRE_BLANC) return 'sombre';
   if (blanc >= BLANC_MIN) return 'soutenu';
-  if (wcagContrast(steps[11], steps[8]) >= TEXTE_FONCE && wcagContrast(steps[11], steps[9]) >= TEXTE_FONCE_SURVOL) return 'clair';
+  if (contrastRatio(steps[11], steps[8]) >= TEXTE_FONCE && contrastRatio(steps[11], steps[9]) >= TEXTE_FONCE_SURVOL) return 'clair';
   return 'moyen';
 }
 
@@ -134,7 +135,7 @@ export const GRAND_TEXTE = 3;
  */
 export function pasTexteGrand(steps, fonds) {
   const tous = [...fonds, steps[2]];
-  for (const pas of /** @type {(9 | 10)[]} */ ([9, 10])) if (tous.every((f) => wcagContrast(steps[pas - 1], f) >= GRAND_TEXTE)) return pas;
+  for (const pas of /** @type {(9 | 10)[]} */ ([9, 10])) if (tous.every((f) => contrastRatio(steps[pas - 1], f) >= GRAND_TEXTE)) return pas;
   return 11;
 }
 

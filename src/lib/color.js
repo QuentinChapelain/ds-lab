@@ -239,7 +239,8 @@ export function blend(fg, bg) {
 }
 
 /**
- * Luminance relative WCAG 2.1 (seuil de linéarisation 0,03928 de la norme).
+ * Luminance relative WCAG 2.1 (seuil de linéarisation 0,03928 de la norme ; aucun octet ne tombe entre ce seuil et le
+ * 0,04045 de sRGB, les deux donnent le même nombre). L'alpha d'un `#rrggbbaa` est ignoré.
  * @param {string} hex couleur opaque
  */
 export function relativeLuminance(hex) {
@@ -252,11 +253,13 @@ export function relativeLuminance(hex) {
 }
 
 /**
- * Ratio de contraste WCAG 2.1, de 1 à 21.
- * @param {string} a couleur opaque
- * @param {string} b couleur opaque
+ * Ratio de contraste WCAG 2.1, de 1 à 21. Revue de code du 15/11, lot 4 : seule source du contraste du dépôt ; une couleur
+ * qui n'est pas `#rrggbb` lève en la nommant (elle donnait NaN, en silence).
+ * @param {string} a couleur opaque, `#rrggbb`
+ * @param {string} b couleur opaque, `#rrggbb`
  */
 export function contrastRatio(a, b) {
+  for (const x of [a, b]) if (typeof x !== 'string' || !/^#[0-9a-f]{6}$/i.test(x)) throw new Error(`contraste : couleur #rrggbb attendue, reçu « ${x} »`);
   const la = relativeLuminance(a);
   const lb = relativeLuminance(b);
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);

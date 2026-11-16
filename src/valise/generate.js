@@ -22,7 +22,8 @@
  *   G7  contrat de paires écrit dans la valise.
  */
 import { writeFile } from 'node:fs/promises';
-import { oklch, rgb, formatHex, wcagContrast, clampChroma, differenceEuclidean } from 'culori';
+import { oklch, rgb, formatHex, clampChroma, differenceEuclidean } from 'culori';
+import { contrastRatio } from '../lib/color.js';
 import { fr, r4 } from '../lib/format.js';
 
 /** Contraste visé sur blanc par pas (repris de la valise de A ; 9 et 10 selon l'école). */
@@ -47,7 +48,7 @@ const dEok = differenceEuclidean('oklab');
 /** ΔE de la table (OKLab × 100). @param {string} a @param {string} b */
 const dE = (a, b) => 100 * dEok(a, b);
 /** @param {string} hex */
-const kOf = (hex) => wcagContrast(hex, WHITE);
+const kOf = (hex) => contrastRatio(hex, WHITE);
 /** Étape 4b : référence du miroir sombre [H]. @param {'clair' | 'sombre'} [fond] */
 const referenceDe = (fond) => (fond === 'sombre' ? BLACK : WHITE);
 /** Écart angulaire signé b − a dans [−180, 180]. @param {number} a @param {number} b */
@@ -122,7 +123,7 @@ function quantize(color, target, hue, cMax, k = kOf, { rayon = 0, exclure = [] }
  */
 function atContrast(m, target, fond = /** @type {'clair' | 'sombre'} */ ('clair'), voisinage = {}) {
   const ref = referenceDe(fond);
-  const k = (/** @type {string} */ hex) => wcagContrast(hex, ref);
+  const k = (/** @type {string} */ hex) => contrastRatio(hex, ref);
   /** @param {number} l */
   const color = (l) => clampChroma({ mode: 'oklch', l, c: m.chroma(l), h: m.hue(l) }, 'oklch');
   let lo = 0;
@@ -146,7 +147,7 @@ function darkOnSolid(m, bgs, fond = /** @type {'clair' | 'sombre'} */ ('clair'))
   /** @param {number} l */
   const make = (l) => formatHex(clampChroma({ mode: 'oklch', l, c: m.chroma(l), h: m.h9 }, 'oklch'));
   /** @param {string} t */
-  const passes = (t) => bgs.every((bg) => wcagContrast(t, bg) >= 4.5);
+  const passes = (t) => bgs.every((bg) => contrastRatio(t, bg) >= 4.5);
   if (fond === 'sombre') {
     // Miroir : texte clair de la teinte, le plus foncé qui passe 4,5 ; le blanc sinon.
     let lo = Math.max(...bgs.map((bg) => oklch(bg).l));
@@ -188,7 +189,7 @@ const MIN_9_10 = 2;
 export function generateScale(name, source, opts = {}) {
   const fond = opts.fond ?? 'clair';
   const ref = referenceDe(fond);
-  const kOf = (/** @type {string} */ hex) => wcagContrast(hex, ref);
+  const kOf = (/** @type {string} */ hex) => contrastRatio(hex, ref);
   /** @param {ReturnType<typeof hueModel>} mm @param {number} t */
   const src = formatHex(source);
   const atContrastF = (mm, t) => atContrast(mm, t, fond, fond === 'sombre' ? { rayon: 2, exclure: [src] } : {});
@@ -235,13 +236,13 @@ export function generateScale(name, source, opts = {}) {
   /** @type {'plus foncé' | 'plus clair'} */
   let step10 = 'plus foncé';
   let onSolid;
-  if (wcagContrast(ref, steps[8]) >= 4.5) {
+  if (contrastRatio(ref, steps[8]) >= 4.5) {
     steps[9] = fixed[10] ?? atContrastF(m, want[10]);
     onSolid = ref;
   } else {
     // Marge de 1 % sous la limite du texte noir, pour l'arrondi à l'hexadécimal.
     const darker = fixed[10] ?? atContrastF(m, Math.min(want[10], DARK_TEXT_MAX_K * 0.99));
-    const readable = wcagContrast(darkOnSolid(m, [steps[8], darker], fond), darker) >= 4.5;
+    const readable = contrastRatio(darkOnSolid(m, [steps[8], darker], fond), darker) >= 4.5;
     if (readable && kOf(darker) > kOf(steps[8]) && dE(darker, steps[8]) >= MIN_9_10) steps[9] = darker;
     else {
       steps[9] = atContrastF(m, kOf(steps[8]) / 1.18);
@@ -308,7 +309,7 @@ export function contractOf(valise) {
         pairs.push({ scale, ...p, ratio: 0, ok: false });
         continue;
       }
-      const ratio = r4(wcagContrast(fg, bg));
+      const ratio = r4(contrastRatio(fg, bg));
       pairs.push({ scale, ...p, ratio, ok: ratio >= p.min });
     }
     if ((valise.signals?.[scale] ?? []).includes('échelle comprimée')) {
@@ -369,7 +370,7 @@ export function checkValise(valise) {
     }
     const school = valise.generator?.schools?.[scale] ?? 'normale';
     const refScale = referenceDe(valise.generator?.fonds?.[scale]);
-    const kOf = (/** @type {string} */ hex) => wcagContrast(hex, refScale);
+    const kOf = (/** @type {string} */ hex) => contrastRatio(hex, refScale);
     const lighter10 = valise.generator?.step10?.[scale] === 'plus clair';
     // Contraste croissant 1 → 12 ; plein clair : 1 → 8 et 10 → 12, seul le pas 9 exempté ;
     // pas 10 plus clair (G4) : 1 → 9 et 10 → 12, le pas 10 restant au-dessus du 8.
@@ -391,7 +392,7 @@ export function checkValise(valise) {
     // onSolid (G4) sur 9 et 10.
     for (const step of /** @type {(9 | 10)[]} */ ([9, 10])) {
       const os = onSolidAt(valise, scale, step);
-      const ratio = os && st[step] ? wcagContrast(os, st[step]) : 0;
+      const ratio = os && st[step] ? contrastRatio(os, st[step]) : 0;
       if (ratio < 4.5) fails.push(`${scale} : onSolid sur le pas ${step}, ${ratio.toFixed(2)} < 4,5`);
     }
   }

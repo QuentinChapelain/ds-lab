@@ -9,7 +9,8 @@
  * recalculée sur le pas 9), classe selon la règle des pleins (classePlein), couleur exacte sur le bouton ou non,
  * et trois indicateurs qui ne sont pas des refus (D13) : primaire grise, statut le plus proche, accent proche du primaire.
  */
-import { oklch, wcagContrast, formatHex, clampChroma, differenceEuclidean } from 'culori';
+import { oklch, formatHex, clampChroma, differenceEuclidean } from 'culori';
+import { contrastRatio } from '../lib/color.js';
 import { generateScale, HUED_CHROMA } from '../valise/generate.js';
 import { classePlein, voileBlanc, voileNoir, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL } from '../tokens/pleins.js';
 import { saisir, chargerCommun, lirePropresOrbe } from '../tokens/saisie.js';
@@ -43,7 +44,7 @@ function lecture(steps) {
   const b = bouton(steps, classe);
   return {
     hex,
-    blanc: wcagContrast(WHITE, hex),
+    blanc: contrastRatio(WHITE, hex),
     l: o?.l ?? 0,
     chroma: o?.c ?? 0,
     h: o?.h,
@@ -115,7 +116,7 @@ export function balayage() {
         const autreClasse = classe === 'moyen' ? 'clair' : null;
         const a = autreClasse ? bouton(steps, autreClasse) : null;
         const autre = a && autreClasse
-          ? { classe: autreClasse, ...a, ratioPlein: wcagContrast(a.texte, a.plein), ratioSurvol: wcagContrast(a.texte, a.survol) }
+          ? { classe: autreClasse, ...a, ratioPlein: contrastRatio(a.texte, a.plein), ratioSurvol: contrastRatio(a.texte, a.survol) }
           : null;
         const motifs = saisir({ nom: 'balayage', primaire: hex, polices }, { dossier: '/balayage', commun }).motifs;
         return { l, h, hex, classe, exacte: regle.plein === hex, regle, autre, motifs };

@@ -6,7 +6,8 @@
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { wcagContrast, formatHex } from 'culori';
+import { formatHex } from 'culori';
+import { contrastRatio } from '../lib/color.js';
 import { contractOf } from '../valise/generate.js';
 import { valiseFromTokens } from './primitives.js';
 import { lireResolver, partager, COMMUN, ORBE, RESOLVER } from './resolver.js';
@@ -149,7 +150,7 @@ export function contratRoles(set) {
   const measure = (devant, fond) => {
     const hexDevant = /** @type {any} */ (roles.get(devant)).hex;
     const hexFond = /** @type {any} */ (roles.get(fond)).hex;
-    return { hexDevant, hexFond, raw: wcagContrast(hexDevant, hexFond) };
+    return { hexDevant, hexFond, raw: contrastRatio(hexDevant, hexFond) };
   };
   const forbidden = new Set();
   const interdites = (set.paires.interdites ?? []).map((/** @type {any} */ p) => {
