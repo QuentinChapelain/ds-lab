@@ -2,7 +2,8 @@
 /**
  * Dérive de la documentation : chaque commande « npm run … » (et « npm test ») et chaque chemin
  * de fichier cités dans CLAUDE.md, README.md, ARCHITECTURE.md, KNOWN_ISSUES.md et docs/**.md
- * existent vraiment.
+ * existent vraiment. Les attendus (docs/attendus/) ne sont pas lus : ils décrivent le dépôt à leur date,
+ * et un fichier renommé depuis y garde son ancien nom.
  *
  * Candidats chemins : le contenu de chaque code en ligne (`…`), la cible de chaque lien ](…)
  * (sans ancre), chaque import @… en début de ligne, et chaque mot d'un bloc de code ```.
@@ -61,7 +62,8 @@ export function chemins(text, racine) {
 const markdowns = (dir) =>
   readdirSync(join(ROOT, dir), { recursive: true, encoding: 'utf8' })
     .filter((f) => f.endsWith('.md'))
-    .map((f) => join(dir, f));
+    .map((f) => join(dir, f))
+    .filter((f) => !f.startsWith(join('docs', 'attendus') + '/'));
 
 test('l\'extracteur trouve les commandes et les chemins cités (attendu écrit à la main)', () => {
   const texte = [
