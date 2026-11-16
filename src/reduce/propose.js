@@ -1144,6 +1144,22 @@ export function decisionFor(decisions, family, r) {
 }
 
 /**
+ * Valeur retenue d'une ligne après décisions (revue de code du 15/11, lot 4 ; D21) : seule définition de la règle, lue par
+ * la simulation (mapping), les conflits de déclarations, le contrôle de proximité, la migration et la revue.
+ * Un refus (`false`) laisse la ligne ; une décision écrite l'emporte, sauf égale à l'ancienne valeur, qui laisse la ligne ;
+ * sans décision, la proposition d'une classe appliquée d'office (APPLIED), si elle existe ; sinon rien.
+ * `valeur` : la valeur à écrire, `null` pour laisser la ligne ; `par` : d'où vient l'issue.
+ * @param {Record<string, string | false>} decisions @param {string} family @param {{ old: string, new?: string | null, class?: string, usage?: string, scope?: string }} r
+ * @returns {{ valeur: string | null, par: 'refus' | 'décision' | 'ancienne' | 'classe' | null }}
+ */
+export function retenue(decisions, family, r) {
+  const d = decisionFor(decisions, family, r);
+  if (d === false) return { valeur: null, par: 'refus' };
+  if (typeof d === 'string') return d === r.old ? { valeur: null, par: 'ancienne' } : { valeur: d, par: 'décision' };
+  return APPLIED.has(r.class ?? '') && r.new ? { valeur: r.new, par: 'classe' } : { valeur: null, par: null };
+}
+
+/**
  * Revue de code du 15/11, lot 1b : clés du fichier de décisions qui ne visent aucune ligne ni carte de plein, triées.
  * Une clé vise une ligne sous l'une des trois formes que lit decisionKeyFor ; une carte sous sa clé (plein|<échelle>).
  * Elle devient orpheline sans faute de frappe quand le site, les pages, la fenêtre ou la cible ont changé.
@@ -1186,8 +1202,7 @@ export function controlAfter(table, decisions) {
     const next = (scope) => (/** @type {string} */ old) => {
       const r = marginRow(rows, old, scope);
       if (!r) return old;
-      const d = decisionFor(decisions, 'spacing', r);
-      return d === false ? old : typeof d === 'string' ? d : APPLIED.has(r.class) && r.new ? r.new : old;
+      return retenue(decisions, 'spacing', r).valeur ?? old;
     };
     const decided = [x.in, x.out].some((sp) => sp.parts.some((/** @type {string} */ part) => {
       const r = marginRow(rows, part, sp.scope);
@@ -1226,8 +1241,7 @@ export function mapping(table, decisions = {}) {
     /** @type {Map<string, { usage?: string, scope?: string, next: string | null }[]>} */
     const byOld = new Map();
     for (const r of f.rows) {
-      const d = decisionFor(decisions, family, r);
-      const next = d === false ? null : typeof d === 'string' ? d : APPLIED.has(r.class) ? r.new : null;
+      const next = retenue(decisions, family, r).valeur;
       byOld.set(r.old, [...(byOld.get(r.old) ?? []), { usage: r.usage, scope: r.scope, next }]);
     }
     for (const [old, list] of byOld) {

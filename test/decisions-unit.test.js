@@ -133,11 +133,13 @@ test('V6 mapping : une décision égale à l’ancienne valeur laisse la ligne',
   assert.deepEqual([m.spacing?.['20px'] ?? '20px', m.spacing?.['18px'] ?? '18px'], ['20px', '18px']);
 });
 
+// outcomeOf ne se lit que dans un conflit : un témoin E3 (10px proche vers 12px, sans décision) partage la déclaration.
 test('V6 outcomeOf : une décision égale à l’ancienne valeur donne « laisse »', () => {
-  const t2 = egale();
+  const t2 = /** @type {any} */ (egale());
+  t2.families.spacing.rows.push({ id: 'E3', old: '10px', new: '12px', class: 'proche', usage: 'marge', scope: DANS, count: 1 });
   const trace = { origin: 'feuille', href: 'https://a.test/s.css', line: 3, selector: '.bloc', written: '20px' };
-  const conflicts = attachDeclarations(t2, t2.families.spacing.rows.map((r) => ({ key: `spacing|${r.old}|marge|${r.scope}`, family: 'spacing', property: 'margin-top', page: '/', trace })), EGALE);
-  assert.deepEqual(Object.fromEntries((conflicts[0]?.rows ?? []).map((/** @type {any} */ r) => [r.id, r.outcome])), { E1: 'laisse', E2: 'laisse' });
+  const conflicts = attachDeclarations(t2, t2.families.spacing.rows.map((/** @type {any} */ r) => ({ key: `spacing|${r.old}|marge|${r.scope}`, family: 'spacing', property: 'margin-top', page: '/', trace })), EGALE);
+  assert.deepEqual(Object.fromEntries((conflicts[0]?.rows ?? []).map((/** @type {any} */ r) => [r.id, r.outcome])), { E1: 'laisse', E2: 'laisse', E3: '12px' });
 });
 
 test('V6 controlAfter : une décision égale à l’ancienne valeur garde l’ancienne', () => {

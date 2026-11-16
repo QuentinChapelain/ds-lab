@@ -9,7 +9,7 @@
  *     diffère est un conflit : la remplacer pour l'une casse l'autre ; il faudrait couper la règle.
  *     Les pages témoins comptent : elles ne font pas la table, mais elles partagent les feuilles.
  */
-import { APPLIED, decisionFor, rowKey } from './propose.js';
+import { retenue, rowKey } from './propose.js';
 import { scanInPage } from '../browser/simulate.js';
 import { traceElements, unitOf, declarationId } from '../browser/trace.js';
 import { basename } from 'node:path';
@@ -67,8 +67,7 @@ export async function declarationsOnPage(page, identity, { sources = null } = {}
  * @param {string} family @param {any} r @param {Record<string, string | false>} decisions @param {string} unit
  */
 function outcomeOf(family, r, decisions, unit) {
-  const d = decisionFor(decisions, family, r);
-  const next = d === false ? null : typeof d === 'string' ? d : APPLIED.has(r.class) ? r.new : null;
+  const next = retenue(decisions, family, r).valeur;
   if (!next) return 'laisse';
   if (next === r.old && unit === 'relative') return 'laisse';
   return next;

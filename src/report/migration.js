@@ -7,7 +7,7 @@
  * renvoyées avec le texte, pour les tests.
  */
 import { basename } from 'node:path';
-import { APPLIED, isOut, SLICES, decisionFor, decisionKeyFor, decisionKeysOrphelines, WHERE_TO_FIX, nearestOf, tieOf, onSolidOf } from '../reduce/propose.js';
+import { APPLIED, isOut, SLICES, decisionFor, decisionKeyFor, retenue, decisionKeysOrphelines, WHERE_TO_FIX, nearestOf, tieOf, onSolidOf } from '../reduce/propose.js';
 
 export { onSolidOf };
 import { contrastRatio } from '../lib/color.js';
@@ -257,21 +257,23 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
   for (const [family, f] of Object.entries(table.families))
     for (const r of f.rows) {
       const d = decisionOf(family, r);
-      // Statut après décisions : une chaîne décide (la ligne est appliquée), false refuse.
+      // Statut après décisions, par la valeur retenue (D21) : une chaîne décide, false refuse, une chaîne égale à
+      // l'ancienne valeur laisse la ligne (revue, lot 4) ; une décision écrite l'emporte sur « inchangé » (revue, lot 2).
       // Lot K : une ligne de fond d'un plein suit sa carte ; non tranchée, elle attend (K5).
       const pl = r.plein ?? null;
+      const par = retenue(decisions, family, r).par;
       const status = pl
         ? !pl.choice
           ? 'en attente'
           : typeof d === 'string' && d !== r.old
             ? 'décidée'
             : 'inchangé'
-        : r.class === 'inchangé' && d !== false && !(typeof d === 'string' && d !== r.old) // revue, lot 2 : une décision écrite l'emporte
-          ? 'inchangé'
-          : d === false
+        : par === 'décision'
+          ? 'décidée'
+          : par === 'refus'
             ? 'refusée'
-            : typeof d === 'string' && d !== r.old
-              ? 'décidée'
+            : par === 'ancienne' || r.class === 'inchangé'
+              ? 'inchangé'
               : isOut(r.class)
                 ? 'hors table'
                 : r.class === 'décision'

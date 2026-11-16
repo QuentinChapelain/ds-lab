@@ -7,7 +7,7 @@
  * Toute chaîne venue de la page auditée est échappée.
  */
 import { fr, esc } from '../lib/format.js';
-import { ALL_CLASSES, OUT, rowKey, isOut, decisionFor, APPLIED, WHERE_TO_FIX, marginRow, M_REASONS, nearestOf, tieOf } from '../reduce/propose.js';
+import { ALL_CLASSES, OUT, rowKey, isOut, decisionFor, retenue, APPLIED, WHERE_TO_FIX, marginRow, M_REASONS, nearestOf, tieOf } from '../reduce/propose.js';
 
 /** @param {string} v */
 const hex = (v) => (/^#[0-9a-f]{6}$/.test(v) ? v : null);
@@ -375,13 +375,26 @@ function detail(family, r, key, cls) {
 }
 
 /**
+ * Revue de code du 15/11, lot 4 (D21) : sur une ligne qui n'est pas à trancher, la valeur retenue que donne une décision
+ * écrite dans le fichier de décisions (null : la ligne est laissée) ; undefined sans décision écrite. La page la lit à son
+ * état initial au lieu de la proposition.
+ * @param {Record<string, string | false>} decisions @param {string} family @param {any} r
+ * @returns {string | null | undefined}
+ */
+function ecrite(decisions, family, r) {
+  if (r.class === 'décision' || r.plein) return undefined;
+  const x = retenue(decisions, family, r);
+  return x.par === 'décision' || x.par === 'ancienne' ? x.valeur : undefined;
+}
+
+/**
  * Lot P, étape 3 : paires contrôlées (P3) pour la revue, dédoublonnées. Chaque marge porte la clé
  * de sa ligne, sa valeur actuelle et la proposition appliquée par défaut. Seules les paires dont
  * une ligne se choisit (décision, proche, d'office, correction) sont gardées ; `before` : la
  * hiérarchie était déjà égale ou inversée avant la revue.
- * @param {any} table
+ * @param {any} table @param {Record<string, string | false>} decisions
  */
-function controlPairs(table) {
+function controlPairs(table, decisions) {
   const rows = table.families?.spacing?.rows ?? [];
   /** @param {string} old @param {string} scope */
   const rowOf = (old, scope) => marginRow(rows, old, scope);
@@ -391,7 +404,8 @@ function controlPairs(table) {
     extra: sp.extra,
     parts: sp.parts.map((/** @type {string} */ old) => {
       const r = rowOf(old, sp.scope);
-      return { key: r ? rowKey('spacing', r) : null, old, applied: r && APPLIED.has(r.class) && r.new ? r.new : null, choice: !!r && ['décision', 'proche', 'auto', 'correction'].includes(r.class) };
+      const w = r ? ecrite(decisions, 'spacing', r) : undefined;
+      return { key: r ? rowKey('spacing', r) : null, old, applied: w !== undefined ? w : r && APPLIED.has(r.class) && r.new ? r.new : null, choice: !!r && ['décision', 'proche', 'auto', 'correction'].includes(r.class) };
     }),
   });
   /** @type {Map<string, any>} */
@@ -415,9 +429,9 @@ const BILAN_FAMILIES = ['spacing', 'radii', 'fontSizes'];
 /**
  * Lot C (C12) : lignes numériques de la table pour le bilan par usage (hors table exclues : leur
  * valeur n'est pas rangée sur l'échelle). Chaque entrée porte sa clé, sa valeur actuelle et la proposition.
- * @param {any} table
+ * @param {any} table @param {Record<string, string | false>} decisions
  */
-function usageBilan(table) {
+function usageBilan(table, decisions) {
   /** @type {{ label: string, rows: { key: string, old: string, new: string | null }[] }[]} */
   const out = [];
   for (const family of BILAN_FAMILIES) {
@@ -427,7 +441,7 @@ function usageBilan(table) {
     for (const r of rows) {
       if (isOut(r.class) || r.class === 'hors table') continue;
       const label = family === 'fontSizes' ? 'Taille du texte' : BILAN_LABELS[r.usage] ?? (r.usage ? r.usage[0].toUpperCase() + r.usage.slice(1) : FAMILY_LABELS[family] ?? family);
-      byUsage.set(label, [...(byUsage.get(label) ?? []), { key: rowKey(family, r), old: r.old, new: r.new ?? null }]);
+      byUsage.set(label, [...(byUsage.get(label) ?? []), { key: rowKey(family, r), old: r.old, new: ecrite(decisions, family, r) ?? r.new ?? null }]);
     }
     const order = Object.values(BILAN_LABELS);
     for (const label of [...byUsage.keys()].sort((a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99) || a.localeCompare(b, 'fr')))
@@ -524,8 +538,8 @@ export function renderReview(table, pages, meta) {
       const d = decisionFor(meta.decisions, family, r);
       if (!(k in previous) && d !== undefined) previous[k] = d;
     }
-  const pairs = controlPairs(table);
-  const usageLines = usageBilan(table);
+  const pairs = controlPairs(table, meta.decisions);
+  const usageLines = usageBilan(table, meta.decisions);
   /** @type {Set<string>} */
   const paired = new Set(pairs.flatMap((x) => [...x.in.parts, ...x.out.parts].map((q) => q.key).filter((k) => k !== null)));
   /** @type {Map<string, Set<string>>} */
@@ -559,7 +573,13 @@ export function renderReview(table, pages, meta) {
                 : cls === 'proche' || cls === 'auto' || cls === 'correction'
                   ? `<label class="ok"><input type="checkbox" name="${esc(key)}" checked> appliquer</label>`
                   : '';
-            const arrow = cls === 'décision' ? '' : r.new && r.new !== r.old ? `<b class="arrow">→</b>${glyph(family, r.new)}<code>${esc(r.new)}</code>${r.name ? ` <i>${esc(r.name)}</i>` : ''}` : r.name ? ` <i>${esc(r.name)}</i>` : '';
+            // Revue, lot 4 (D21) : une décision écrite sur une ligne qui n'est pas à trancher est la valeur montrée et exportée.
+            const w = ecrite(meta.decisions, family, r);
+            const vers = w !== undefined ? w : r.new;
+            const nom = vers === r.new ? r.name : null;
+            const arrow = cls === 'décision' ? '' : vers && vers !== r.old ? `<b class="arrow">→</b>${glyph(family, vers)}<code>${esc(vers)}</code>${nom ? ` <i>${esc(nom)}</i>` : ''}` : nom ? ` <i>${esc(nom)}</i>` : '';
+            const d = decisionFor(meta.decisions, family, r);
+            const decidee = w !== undefined && typeof d === 'string' ? ` data-decidee="${esc(d)}"` : '';
             // Une seule étiquette quand deux disent la même chose (« retrait » et « retrait intérieur ») : la plus explicite.
             const usageList = (r.usages ?? []).filter((/** @type {string} */ u) => !whatList.some((w) => w === u || w.startsWith(`${u} `)));
             const usage = usageList.map((/** @type {string} */ x) => `<span class="usage">${esc(x)}</span>`).join('');
@@ -574,7 +594,7 @@ export function renderReview(table, pages, meta) {
                   .map(esc)
                   .join(' ; ')})</p>`
               : '';
-            return `<article class="row c-${isOut(cls) ? 'hors' : esc(cls)}${decision ? ' decision a-trancher' : ''}${twoWay ? ' avant-apres' : ''}" data-key="${esc(key)}"${decision || twoWay ? ' tabindex="0"' : ''}${anchorOf(r.capture, pageIndex)}>
+            return `<article class="row c-${isOut(cls) ? 'hors' : esc(cls)}${decision ? ' decision a-trancher' : ''}${twoWay ? ' avant-apres' : ''}" data-key="${esc(key)}"${decidee}${decision || twoWay ? ' tabindex="0"' : ''}${anchorOf(r.capture, pageIndex)}>
   ${head}
   ${conflict}
   <header>${glyph(family, r.old)}<code>${esc(r.old)}</code>${arrow}${usage}${what}</header>
@@ -805,6 +825,7 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
       } else {
         var box = row.querySelector('input[type=checkbox]');
         if (box && !box.checked) { out[k] = false; refused = true; }
+        else if (row.hasAttribute('data-decidee')) out[k] = row.getAttribute('data-decidee');
         var choix = row.querySelector('.choix');
         if (choix && box) choix.textContent = refused ? 'Refusé' : '';
       }
