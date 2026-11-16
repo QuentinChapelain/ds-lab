@@ -174,6 +174,8 @@ test('désordre : exceptions', () => {
   for (const v of want.unreadStates.values) {
     const s = e.states.find((/** @type {any} */ x) => x.value === v.value);
     assert.ok(s?.contexts.some((/** @type {any} */ c) => c.state === v.state && c.property === v.property), `${v.value} ${v.state}`);
+    // Revue de code du 15/11, lot 2 (D19) : l'anneau de focus du navigateur est nommé comme tel.
+    if (v.navigateur) assert.equal(s?.navigateur, true, `${v.value} : anneau du navigateur`);
   }
   assert.equal(e.injected, null, 'injecté : limite connue, sans compte');
   assert.deepEqual(
@@ -193,15 +195,17 @@ test('pièges : L1, un lien sans soulignement dans un paragraphe', () => {
   assert.ok(pieges.md.includes('### Liens sans soulignement dans un paragraphe : 1'));
 });
 
-test('décisions (passage 2c) : les 10 décisions lues décident 11 lignes (la marge de 10 px est coupée par relation), qui passent dans « Appliqué » ; une seule en attente, la taille 40px née du lot R', () => {
+test('décisions (passage 2c) : les 10 décisions lues décident 11 lignes (la marge de 10 px est coupée par relation), qui passent dans « Appliqué » ; trois en attente, la taille 40px née du lot R et deux égalités (D20)', () => {
   // Lot K : « plein|terre » est la décision d'une carte, pas d'une ligne ; ses lignes de fond la suivent.
   const n = Object.keys(decidee.decisions).filter((k) => !k.startsWith('plein|')).length;
   assert.equal(n, 10, 'décisions lues');
   // Lot P : « spacing|10px|marge », choisi avant la coupure, vaut pour ses deux lignes.
   assert.equal(decidee.data.decided, n + 1);
-  assert.equal(decidee.data.sections.pending.total, 1, 'en attente');
+  // Revue de code du 15/11, lot 2 (D20) : 14px marge et 3px rayon, égalités, attendent le designer ; le passage 2c,
+  // écrit avant, ne les décide pas.
+  assert.equal(decidee.data.sections.pending.total, 3, 'en attente');
   const pending = decidee.data.rows.filter((/** @type {any} */ r) => r.status === 'en attente');
-  assert.deepEqual(pending.map((/** @type {any} */ r) => `${r.family}|${r.value}`), ['fontSizes|40px'], 'seule la taille de texte 40px est en attente');
+  assert.deepEqual(pending.map((/** @type {any} */ r) => `${r.family}|${r.value}`).sort(), ['fontSizes|40px', 'radii|3px', 'spacing|14px'], 'la taille de texte 40px et les deux égalités sont en attente');
   assert.equal(decidee.data.sections.applied.total, E.desordre.sections.applied.total + n + 1, 'appliqué');
   assert.equal(decidee.data.sections.refused.total, 0, 'refusée');
   for (const [key, value] of Object.entries(decidee.decisions)) {
@@ -215,7 +219,7 @@ test('décisions (passage 2c) : les 10 décisions lues décident 11 lignes (la m
   const ink = decidee.data.rows.find((/** @type {any} */ r) => r.value === '#1f2a44' && r.usage === 'texte');
   assert.equal(ink.token, 'couleur.bleu.12', 'jeton de la valeur choisie');
   assert.ok(decidee.md.includes('| décision, décidée |'), 'mention « décidée » dans la table');
-  assert.ok(decidee.md.includes('## Décisions en attente : 1'));
+  assert.ok(decidee.md.includes('## Décisions en attente : 3'), 'D20 : la taille 40px et les deux égalités');
 });
 
 test('décisions : une ligne refusée va dans « Refusée, laissée telle quelle »', () => {

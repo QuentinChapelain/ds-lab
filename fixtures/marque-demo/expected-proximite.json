@@ -84,7 +84,7 @@
       "table": {
         "text": "La ligne 10px garde sa classe d'avant le lot P (décision vers 8, ex aequo 8/12, relevée le 12/11/2026 sur cette page) ; seul l'espace contrôlé change (16 au lieu de 10). Pas de motif P3 : 4 < 16.",
         "rows": [
-          { "family": "spacing", "value": "10px", "scope": null, "class": "décision", "new": "8px", "reason": null, "note": "13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : aucune marge de 10 px n'est dans le composant, une seule ligne" }
+          { "family": "spacing", "value": "10px", "scope": null, "class": "décision", "new": null, "reason": "à égale distance de 8px et 12px : au designer de choisir (C5)", "corrected": "16/11/2026, revue de code, lot 2 (D20) : égalité 8/12, décision sans défaut, motif de l’égalité (avant : vers 8, la plus petite, sans motif)", "note": "13/11/2026 : lot P-fin, une valeur × usage n'est coupée par relation que si l'une des lignes est « dans le composant » : aucune marge de 10 px n'est dans le composant, une seule ligne" }
         ]
       }
     },
@@ -177,7 +177,8 @@
     "detail": {
       "rule": "« Usages : n · écart » est remplacé : l’écart devient une phrase (« Écart »), le nombre d’usages disparaît quand il répète « Ce choix s’applique à n éléments ».",
       "card": { "value": "10px", "scope": "dans le composant" },
-      "ecart": "2 px avec la valeur la plus proche (8 px)",
+      "ecart": "2 px avec chacune des deux valeurs les plus proches, à égalité (8 px et 12 px)",
+      "ecartCorrected": "16/11/2026, revue de code, lot 2 (D20) : à égalité, plus de valeur la plus proche (avant : « 2 px avec la valeur la plus proche (8 px) »)",
       "noUsages": true
     },
     "agent": { "rule": "« à vérifier » n’apparaît pas dans la consigne pour l’agent ; il reste dans la revue. Exception (lot V, étape 6, D3) : « à vérifier sur les pages témoins », pour une déclaration en unité relative.", "absent": "à vérifier", "except": "à vérifier sur les pages témoins" },

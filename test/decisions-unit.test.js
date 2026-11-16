@@ -79,3 +79,33 @@ test('V4 statut de migration : appliquée, décidée, refusée, avec la même va
     ['M3', 'refusée', RETENUE.M3],
   ]);
 });
+
+// Revue de code du 15/11, lot 2 : une décision écrite sur une ligne « inchangé » l'emporte, pour les quatre lecteurs.
+// Table écrite à la main : I1 8px inchangé (dans le composant), décidé à 12px ; I2 10px proche vers 12px (entre
+// composants), refusé. Valeurs retenues : I1 12px, I2 10px ; la paire reste inversée (12 dans ≥ 10 entre).
+test('V5 ligne « inchangé » avec une décision écrite : même valeur retenue (12px) pour les quatre lecteurs', () => {
+  const t = () => ({
+    families: {
+      spacing: {
+        rows: [
+          { id: 'I1', old: '8px', new: '8px', class: 'inchangé', usage: 'marge', scope: DANS, count: 1 },
+          { id: 'I2', old: '10px', new: '12px', class: 'proche', usage: 'marge', scope: ENTRE, count: 1 },
+        ],
+      },
+    },
+  });
+  /** @type {Record<string, string | false>} */
+  const decisions = { [`spacing|8px|marge|${DANS}`]: '12px', [`spacing|10px|marge|${ENTRE}`]: false };
+  assert.deepEqual(mapping(t(), decisions), { spacing: { '8px': '12px' } }, 'mapping');
+  const t2 = t();
+  const trace = { origin: 'feuille', href: 'https://a.test/s.css', line: 3, selector: '.bloc', written: '8px' };
+  const conflicts = attachDeclarations(t2, t2.families.spacing.rows.map((r) => ({ key: `spacing|${r.old}|marge|${r.scope}`, family: 'spacing', property: 'margin-top', page: '/', trace })), decisions);
+  assert.deepEqual(Object.fromEntries(conflicts[0].rows.map((/** @type {any} */ r) => [r.id, r.outcome])), { I1: '12px', I2: 'laisse' }, 'outcomeOf');
+  const t3 = /** @type {any} */ (t());
+  t3.proximity = [{ in: { mode: 'max', extra: 0, parts: ['8px'], scope: DANS, gapPx: 8 }, out: { mode: 'max', extra: 0, parts: ['10px'], scope: ENTRE, gapPx: 10 } }];
+  controlAfter(t3, decisions);
+  assert.deepEqual(t3.families.spacing.rows[0].control?.after, { in: 12, out: 10 }, 'controlAfter');
+  const meta = { host: 'a.test', stamp: '16/11/2026', viewport: { width: 1366, height: 900 }, target: 'cible.json', pages: ['/'], decisions: 'decisions.json' };
+  const m = buildMigration({ table: t(), rendered: { usages: { pairs: [] } }, map: {}, target: {}, decisions, meta });
+  assert.deepEqual(m.data.rows.map((/** @type {any} */ r) => [r.id, r.status, r.new ?? r.value]), [['I1', 'décidée', '12px'], ['I2', 'refusée', '10px']], 'migration');
+});

@@ -41,12 +41,13 @@
     }
   },
   "guard": {
-    "title": "Orbe Café ne bouge pas : sans bloc brand, 12 décisions sur les pages du désordre",
+    "title": "Orbe Café ne bouge pas : sans bloc brand, 14 décisions sur les pages du désordre",
     "pages": ["/desordre/carte.html", "/desordre/compte.html", "/desordre/gestion.html"],
     "target": "fixtures/marque-demo/cible-valise.json",
     "sources": "fixtures/marque-demo/sources.json",
     "viewport": { "width": 1366, "height": 900 },
-    "decisions": 12
+    "decisions": 14,
+    "corrected": "16/11/2026, revue de code, lot 2 (D20) : 12 → 14, deux égalités (14px marge, 3px rayon) deviennent des décisions ; le bloc brand n’y est pour rien"
   },
   "decided": {
     "title": "cas décidé : PM8 choisi sur accent-11, la consigne garde accent-12 pour l’exception",

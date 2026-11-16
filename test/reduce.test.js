@@ -83,3 +83,27 @@ test('synthèse : valeurs avant et après, décisions à prendre', () => {
   assert.equal(s.decisions, 1, '75 px');
   assert.equal(s.occurrences, 21);
 });
+
+// Revue de code du 15/11, lot 2 : le motif R9 cite le seuil de la paire, et la page de revue le relit à tout seuil.
+// Relevé minimal écrit à la main : #999999 en grand texte (seuil 3:1) sur #ffffff. Contraste calculé avec culori :
+//   node --input-type=module -e "import { wcagContrast } from 'culori'; console.log(wcagContrast('#999999','#ffffff'))"
+//   → 2.849027755287037, sous 3.
+test('R9 : le motif cite le seuil de la paire (grand texte, 3:1) ; la revue le relit', async () => {
+  const { plainReason } = await import('../src/report/review.js');
+  const valise = JSON.parse(await readFile(new URL('../fixtures/marque-demo/cible-valise.json', import.meta.url), 'utf8'));
+  const releve = {
+    usages: {
+      colors: {
+        '#999999': { texte: { count: 1, content: 0, properties: ['color'], selectors: ['h2'], pages: {} } },
+        '#ffffff': { fond: { count: 1, content: 0, properties: ['background-color'], selectors: ['body'], pages: {} } },
+      },
+      pairs: [{ text: '#999999', bg: '#ffffff', bgUsage: 'fond', threshold: 3, n: 1 }],
+      borderPairs: [],
+    },
+  };
+  const r = propose(releve, { colors: valise.colors }).families.colors.rows.find((/** @type {any} */ x) => x.old === '#999999');
+  assert.equal(r.class, 'correction');
+  assert.equal(r.reason, 'texte sous 3:1 avant, au seuil après (R9)');
+  assert.equal(plainReason(r.reason).text, 'ce texte n’était pas assez lisible (contraste sous 3:1) ; la valeur proposée le rend lisible');
+  assert.equal(plainReason('texte sous 4,5:1 avant, au seuil après (R9)').text, 'ce texte n’était pas assez lisible (contraste sous 4,5:1) ; la valeur proposée le rend lisible');
+});

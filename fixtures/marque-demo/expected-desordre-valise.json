@@ -464,8 +464,10 @@
           "property": "background-color",
           "state": "hover",
           "detail": "survol du bouton Commander",
-          "class": "absent",
-          "known": "Écart connu, hors lot B : l’état survol n’est pas lu.",
+          "class": "hors table, fond sombre",
+          "rule": "R8",
+          "how": "luminance WCAG, culori 4.0.2 (wcagLuminance) : #24426f 0,05419, sous le pas 10 le plus sombre de la valise, bleu-10 #27487a 0,06471",
+          "corrected": "16/11/2026, revue de code, lot 2 (D19) : l’état survol est lu, la couleur écrite par le site entre dans la table ; plus sombre que bleu-10, elle est hors table par R8 comme tout fond de ce genre. Avant : « absent », écart connu hors lot B. Le bloc ifRead (bleu-10, proche), écrit avant, ne tenait pas compte de R8 ; il est gardé pour mémoire.",
           "ifRead": {
             "target": "bleu-10",
             "new": "#27487a",

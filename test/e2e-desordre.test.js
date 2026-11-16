@@ -65,6 +65,11 @@ function checkRow(family, want) {
   const classes = Array.isArray(want.class) ? want.class : [want.class];
   assert.ok(classes.includes(r.class), `${want.value} : classe « ${r.class} », attendu ${classes.map((c) => `« ${c} »`).join(' ou ')}`);
   if ('new' in want) assert.equal(r.new, want.new, `${want.value} : vers ${r.new}`);
+  // Revue de code du 15/11, lot 2 (D19) : une valeur vue seulement à un état forcé porte cet état.
+  if (want.etats) {
+    assert.deepEqual(r.etats, want.etats, `${want.value} : état`);
+    assert.match(r.title, /\(au survol\)$/, `${want.value} : titre`);
+  }
   if (want.deltaE !== undefined) assert.ok(Math.abs(r.delta - want.deltaE) <= TOL, `${want.value} : ΔE ${r.delta}, attendu ${want.deltaE}`);
   if (want.tie) {
     // Lot C : candidats de dimension par valeur ; l'égalité se lit sur les deux plus proches.

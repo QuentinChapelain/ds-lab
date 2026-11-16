@@ -219,3 +219,24 @@ test('S4 : le HTML n’est pas touché ; reste.md : contexte, reste (lien, chang
   assert.ok(md.includes('Chaque variable écrite est déclarée dans tokens.css.'));
   assert.ok(!/REMPLACEMENTS|RATTACHE/.test(md));
 });
+
+// Revue de code du 15/11, lot 2 : une seule table raccourci → propriétés longues ; border et border-top ne couvrent pas
+// les rayons. Feuille écrite à la main, attendu écrit à la main.
+test('S9 : un border écrit après border-radius ne couvre pas les rayons ; border-top non plus', async () => {
+  const root = await fresh();
+  await writeFile(join(root, 's', 'c.css'), '.carte {\n  border-radius: 4px;\n  border: 1px solid #ccc;\n}\n\n.onglet {\n  border-top-left-radius: 4px;\n  border-top: 1px solid #ccc;\n}\n');
+  const coin = (/** @type {number} */ line, /** @type {string} */ selector, /** @type {string} */ c) => ({ sheet: '/s/c.css', line, selector, property: `border-${c}-radius`, written: '4px', value: 'var(--rayon-4, 4px)', rows: ['arr-9'], section: 'REMPLACEMENTS' });
+  const mods = { ...MODS, entries: [...['top-left', 'top-right', 'bottom-right', 'bottom-left'].map((c) => coin(1, '.carte', c)), coin(6, '.onglet', 'top-left')], comments: [] };
+  const r = await applyModifications(mods, { root });
+  assert.deepEqual(r.results.map((/** @type {any} */ x) => `${x.entry.selector} ${x.entry.property} ${x.status}${x.reason ? ` (${x.reason})` : ''}`), [
+    '.carte border-top-left-radius appliquée',
+    '.carte border-top-right-radius appliquée',
+    '.carte border-bottom-right-radius appliquée',
+    '.carte border-bottom-left-radius appliquée',
+    '.onglet border-top-left-radius appliquée',
+  ]);
+  assert.equal(
+    await readFile(join(root, 's', 'c.css'), 'utf8'),
+    '.carte {\n  border-radius: var(--rayon-4, 4px);\n  border: 1px solid #ccc;\n}\n\n.onglet {\n  border-top-left-radius: var(--rayon-4, 4px);\n  border-top: 1px solid #ccc;\n}\n',
+  );
+});

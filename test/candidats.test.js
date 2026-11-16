@@ -33,6 +33,14 @@ for (const w of E.window)
   test(`C1 à C4 : ${w.case} (${w.family} ${w.value})`, () => {
     const r = rowOf(w.family, w.value, w.pill);
     assert.deepEqual(r.candidates.map((/** @type {any} */ c) => c.value), w.candidates, 'candidats, par valeur croissante');
+    // Revue de code du 15/11, lot 2 (D20) : une égalité est une décision sans défaut, ses deux candidats « à égalité ».
+    if (w.tie) {
+      assert.deepEqual(r.candidates.filter((/** @type {any} */ c) => c.nearest), [], 'aucun « le plus proche »');
+      assert.deepEqual(r.candidates.filter((/** @type {any} */ c) => c.tie).map((/** @type {any} */ c) => c.value), w.tie, 'à égalité');
+      assert.equal(r.class, 'décision');
+      assert.equal(r.new, null, 'pas de défaut');
+      return;
+    }
     const near = r.candidates.filter((/** @type {any} */ c) => c.nearest);
     assert.equal(near.length, 1, 'un seul candidat porte « le plus proche »');
     assert.equal(near[0].value, w.nearest, 'le plus proche');
@@ -58,13 +66,28 @@ test('C4 : la pilule n’entre jamais dans la fenêtre', () => {
   }
 });
 
-test('C5 : défaut, écart et classe inchangés sur les trois échelles (0 à 80 px, pas de 0,25)', () => {
+test('C5 : défaut, écart et classe inchangés sur les trois échelles (0 à 80 px, pas de 0,25), égalités à part (D20)', () => {
   for (const family of ['spacing', 'radii', 'fontSizes'])
     for (let n = 0; n <= 80; n += 0.25) {
       const r = rowOf(family, `${n}px`);
       const t = todayRow(n, E.scales[family]);
+      // Revue de code du 15/11, lot 2 (D20) : à égale distance de deux pas, plus de départage vers la plus petite.
+      const steps = /** @type {number[]} */ (E.scales[family]);
+      const d = Math.min(...steps.map((x) => Math.abs(x - n)));
+      if (d > 0 && steps.filter((x) => Math.abs(x - n) === d).length === 2) {
+        assert.deepEqual({ new: r.new, class: r.class, delta: r.delta }, { new: null, class: 'décision', delta: t.delta }, `${family} ${n}px (égalité)`);
+        continue;
+      }
       assert.deepEqual({ new: r.new, class: r.class, delta: r.delta }, t, `${family} ${n}px`);
     }
+});
+
+test('D20 : toute égalité est une décision sans défaut, à 1 px compris (rayon 3px entre 2 et 4)', () => {
+  const r = rowOf('radii', '3px');
+  assert.equal(r.class, 'décision');
+  assert.equal(r.new, null);
+  assert.deepEqual(r.candidates.filter((/** @type {any} */ c) => c.tie).map((/** @type {any} */ c) => c.value), ['2px', '4px']);
+  assert.match(r.reason, /^à égale distance de 2px et 4px/);
 });
 
 test('C1, C6 : quatre candidats au plus, par valeur croissante, le défaut parmi eux', () => {
@@ -74,6 +97,8 @@ test('C1, C6 : quatre candidats au plus, par valeur croissante, le défaut parmi
       const v = r.candidates.map((/** @type {any} */ c) => parseFloat(c.value));
       assert.ok(v.length >= 1 && v.length <= 4, `${family} ${n}px : ${v.length} candidats`);
       assert.deepEqual(v, [...v].sort((a, b) => a - b), `${family} ${n}px : ordre`);
-      assert.ok(r.candidates.some((/** @type {any} */ c) => c.nearest && c.value === r.new), `${family} ${n}px : défaut absent`);
+      // D20 : une égalité n'a pas de défaut, ses deux candidats sont dans la fenêtre.
+      if (r.new === null) assert.equal(r.candidates.filter((/** @type {any} */ c) => c.tie).length, 2, `${family} ${n}px : égalité`);
+      else assert.ok(r.candidates.some((/** @type {any} */ c) => c.nearest && c.value === r.new), `${family} ${n}px : défaut absent`);
     }
 });

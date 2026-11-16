@@ -99,8 +99,10 @@ for (const w of E.cards)
   test(`C1 à C6, table : ${w.title}`, () => {
     const { r } = rowOf(w);
     assert.deepEqual(r.candidates.map((/** @type {any} */ c) => c.value), w.candidates);
-    assert.deepEqual(r.candidates.filter((/** @type {any} */ c) => c.nearest).map((/** @type {any} */ c) => c.value), [w.nearest]);
-    assert.equal(r.new, w.nearest, 'défaut inchangé');
+    // Revue de code du 15/11, lot 2 (D20) : une égalité n'a pas de défaut ; ses deux candidats sont « à égalité ».
+    assert.deepEqual(r.candidates.filter((/** @type {any} */ c) => c.nearest).map((/** @type {any} */ c) => c.value), w.nearest ? [w.nearest] : []);
+    if (w.tie) assert.deepEqual(r.candidates.filter((/** @type {any} */ c) => c.tie).map((/** @type {any} */ c) => c.value), w.tie, 'à égalité');
+    assert.equal(r.new, w.nearest, 'défaut');
   });
 
 test('C6, revue : versions par valeur croissante, « le plus proche » sur le défaut seulement', async () => {
@@ -111,14 +113,18 @@ test('C6, revue : versions par valeur croissante, « le plus proche » sur le d�
       const values = await c.locator('.versions .v').evaluateAll((/** @type {Element[]} */ els) => els.slice(1).map((e) => e.getAttribute('data-value')));
       assert.deepEqual(values, w.candidates, `${w.title} : ordre`);
       const near = await c.locator('.versions .v', { hasText: 'le plus proche' }).evaluateAll((/** @type {Element[]} */ els) => els.map((e) => e.getAttribute('data-value')));
-      assert.deepEqual(near, [w.nearest], `${w.title} : « le plus proche »`);
+      assert.deepEqual(near, w.nearest ? [w.nearest] : [], `${w.title} : « le plus proche »`);
+      if (w.tie) {
+        const egal = await c.locator('.versions .v', { hasText: 'à égalité' }).evaluateAll((/** @type {Element[]} */ els) => els.map((e) => e.getAttribute('data-value')));
+        assert.deepEqual(egal, w.tie, `${w.title} : « à égalité »`);
+      }
     }
   } finally {
     await context.close();
   }
 });
 
-test('C6, égalité : les deux candidats affichent leur écart, le défaut dit « à égalité avec »', async () => {
+test('C6, égalité : les deux candidats affichent « à égalité » et leur écart (D20)', async () => {
   const { context, page } = await open(orbe.revue);
   try {
     for (const w of E.ties.cards) {
