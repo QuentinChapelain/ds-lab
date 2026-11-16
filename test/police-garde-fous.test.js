@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Étape 4c, lot 2 : garde-fous de la police des titres, chacun avec son motif de refus
+ * Garde-fous de la police des titres, chacun avec son motif de refus
  * (docs/attendus/etape-4c-police-des-titres.md). Attendus écrits à la main avant le code :
  *   G1 graisses demandées par les styles de titre, lues dans les rôles : 600 et 700 ;
  *   G2 Oswald, EB Garamond et Cinzel passent tous les garde-fous (mesures de fontTools, fixtures/polices/LISEZMOI.md) ;

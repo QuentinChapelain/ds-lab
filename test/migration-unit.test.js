@@ -1,7 +1,7 @@
 // @ts-check
 /**
- * Lot M : choix du jeton DTCG d'une couleur quand plusieurs jetons ont la même
- * valeur (src/report/migration.js), sur le resolver d'Orbe Café (tokens/orbe-cafe/marque.resolver.json, revue, lot 5).
+ * Choix du jeton DTCG d'une couleur quand plusieurs jetons ont la même
+ * valeur (src/report/migration.js), sur le resolver d'Orbe Café (tokens/orbe-cafe/marque.resolver.json).
  * Règle : d'abord le nom de la ligne dans la valise ; un jeton sur-plein
  * seulement pour un texte posé sur le plein de cette échelle.
  */

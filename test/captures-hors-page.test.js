@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot J, bloc 1 (J8, J6) : captures des cartes. Attendus écrits avant le code :
+ * J8, J6 : captures des cartes. Attendus écrits avant le code :
  * J8. Un élément hors de la page (rectangle entièrement hors du document, ex. lien d'évitement en
  *     position fixe à top:-100px, ramené à top:8px au focus) n'est pas capturé : la capture prend le
  *     premier élément touché qui est dans la page ; s'il n'y en a aucun, la carte dit « hors de la
@@ -37,7 +37,7 @@ let run;
 let html = '';
 
 before(async () => {
-  const root = await mkdtemp(join(tmpdir(), 'ds-lab-lot-j1-'));
+  const root = await mkdtemp(join(tmpdir(), 'ds-lab-captures-hors-page-'));
   await mkdir(join(root, 'j'));
   await writeFile(join(root, 'j', 'p.html'), PAGE);
   servers = await startFixtureServers({ root });
@@ -47,7 +47,7 @@ before(async () => {
     tokensPath: new URL('../tokens/orbe-cafe/marque.resolver.json', import.meta.url).pathname,
     viewport: { width: 400, height: 600 },
     waitMs: 50,
-    outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-lot-j1-out-')),
+    outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-captures-hors-page-out-')),
   });
   html = await readFile(run.files[1], 'utf8');
 });

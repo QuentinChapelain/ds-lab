@@ -2,7 +2,7 @@
 /**
  * npm run demo [-- --racine <dossier>] : sert la marque fictive Orbe Café en local, pour essayer
  * audit, reduce et --live sans toucher à un site réel. Ctrl+C pour arrêter.
- * Lot V : --racine sert un autre dossier comme origine principale (une copie à migrer,
+ * --racine sert un autre dossier comme origine principale (une copie à migrer,
  * par exemple local/lot-v) ; le serveur distant reste celui des fixtures.
  */
 import { parseArgs } from 'node:util';

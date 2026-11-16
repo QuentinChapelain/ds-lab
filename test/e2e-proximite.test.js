@@ -1,11 +1,11 @@
 // @ts-check
 /**
- * Lot P (proximité), étape 1 : pièges PX1 à PX8 (PX9 au lot P-fin) sur la page
+ * Pièges PX1 à PX9 sur la page
  * fixtures/marque-demo/proximite/proximite.html de la marque fictive, comparés à
  * fixtures/marque-demo/expected-proximite.json, écrit avant le code et jamais recalé.
  *   construction  la page est bien celle décrite (marges calculées et espace visible
  *                 mesurés ici, sans l'outil) : doit passer dès que la page existe ;
- *   PX1 à PX8     ce que le relevé et la table doivent produire après le lot P.
+ *   PX1 à PX8     ce que le relevé et la table doivent produire avec les règles P1 à P4.
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -139,14 +139,14 @@ function checkTable(trap) {
   for (const want of t.rows ?? []) {
     const what = `${trap.id} ${want.value} « ${want.scope} »`;
     const rows = table.families[want.family].rows.filter((/** @type {any} */ r) => r.old === want.value && isMargin(r));
-    // Lot P-fin : une ligne non coupée n'a pas de relation (scope null dans l'attendu).
+    // Une ligne non coupée n'a pas de relation (scope null dans l'attendu).
     const r = rows.find((/** @type {any} */ x) => (x.scope ?? null) === want.scope);
     assert.ok(r, `${what} : pas de ligne de marge (portées : ${rows.map((/** @type {any} */ x) => x.scope ?? 'aucune').join(', ') || 'aucune ligne'})`);
     assert.equal(r.class, want.class, `${what} : classe`);
     if ('new' in want) assert.equal(r.new, want.new, `${what} : cible`);
     if ('reason' in want) assert.equal(r.reason ?? null, want.reason, `${what} : motif`);
   }
-  // Lot P-fin : ni relation « dans le composant », ni avertissement, ni message à relier pour les éléments du piège.
+  // Ni relation « dans le composant », ni avertissement, ni message à relier pour les éléments du piège.
   if (t.noInsideFor) {
     const inside = records.filter((r) => r.selector?.includes(t.noInsideFor) && Object.values(r.margins ?? {}).some((/** @type {any} */ m) => m.scope === 'dans le composant'));
     assert.deepEqual(inside.map((r) => r.selector), [], `${trap.id} : relation « dans le composant »`);

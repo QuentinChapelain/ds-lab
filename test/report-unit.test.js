@@ -85,7 +85,7 @@ test('pageWarnings : rootPx différente, iframes, networkidle, redirection, éch
   assert.ok(w.some((t) => /2 iframe\(s\) non parcourue/.test(t)), 'iframes');
   assert.ok(w.some((t) => /networkidle non atteint/.test(t)), 'networkidle');
   assert.ok(w.some((t) => /redirigée vers https:\/\/a\.test\/login/.test(t)), 'redirection');
-  // Revue de code du 15/11, lot 1b : une page tombée est nommée par son étape, plus « échec du chargement ».
+  // Une page tombée est nommée par son étape, plus « échec du chargement ».
   assert.ok(w.some((t) => /https:\/\/a\.test\/c : étape navigation tombée \(net::ERR_NAME_NOT_RESOLVED\), page non mesurée/.test(t)), 'échec');
   assert.deepEqual(pageWarnings([{ url: 'https://a.test/', finalUrl: 'https://a.test/', rootPx: 16, iframes: 0, networkIdle: true, status: 200 }]), []);
 });
@@ -95,7 +95,7 @@ test('stampOf : horodatage local à la minute', () => {
 });
 
 test('écarts v1 et limites : contenu convenu', () => {
-  // 19 écarts à la séance 1, plus 4 après la relecture du 11/11/2026 (couleurs peintes, champs, états et regroupement, éléments écartés).
+  // 19 écarts d'origine, plus 4 après la relecture du 11/11/2026 (couleurs peintes, champs, états et regroupement, éléments écartés).
   assert.equal(V1_DIFFERENCES.length, 23);
   assert.deepEqual(V1_DIFFERENCES.map((d) => d.n), Array.from({ length: 23 }, (_, i) => i + 1));
   const alpha = V1_DIFFERENCES.find((d) => /alpha/i.test(d.point));

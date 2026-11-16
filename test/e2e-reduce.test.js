@@ -45,7 +45,7 @@ test('reduce : la table range le rendu de la démo sur la cible', () => {
   assert.deepEqual([row(t, 'fontSizes', '22.5px').class, row(t, 'fontSizes', '22.5px').new], ['proche', '24px']);
   assert.deepEqual([row(t, 'fontSizes', '13.5px').class, row(t, 'fontSizes', '13.5px').new], ['auto', '14px']);
   assert.deepEqual([row(t, 'colors', '#2c4d7f').class, row(t, 'colors', '#2c4d7f').new], ['auto', '#2b4c7e']);
-  // Lot B, R4 : ΔE 12,04 à la valeur la plus proche de la cible (gris), au-delà de 10.
+  // R4 : ΔE 12,04 à la valeur la plus proche de la cible (gris), au-delà de 10.
   assert.equal(row(t, 'colors', '#9a9a9a').class, 'hors table, aucune échelle');
   assert.deepEqual([row(t, 'radii', '999px').class, row(t, 'radii', '999px').new], ['auto', '9999px']);
   assert.deepEqual([row(t, 'spacing', '27px').class, row(t, 'spacing', '27px').new], ['proche', '24px']);
@@ -78,7 +78,7 @@ test('simulation : la valeur calculée change dans le navigateur, et seulement l
     const change = sim.changes.find((c) => c.family === 'fontSizes' && c.old === '22.5px');
     assert.deepEqual([change?.new, change?.count], ['24px', 1]);
     assert.deepEqual(change?.props, ['font-size']);
-    // Revue, lot 4 : repris du test « captures isolées », retiré avec les captures par changement.
+    // Repris du test « captures isolées », retiré avec les captures par changement.
     assert.deepEqual(sim.changes.find((c) => c.family === 'spacing' && c.old === '27px')?.props, ['padding']);
     // Réversible : tout éteint, la page retrouve ses valeurs ; une famille seule s'allume.
     await page.evaluate(() => /** @type {any} */ (window).__dsSim.show({ on: false }));
@@ -133,7 +133,7 @@ test('mode --live : barre avant / après dans la page, interrupteur par famille,
     // Page suivante : la barre revient.
     await page.goto(servers.origin + '/page-2.html');
     await page.locator('[data-ds-lab="barre"]').waitFor({ state: 'attached' });
-    // Revue de code du 15/11, lot 0 : la carte est relue sur la page suivante. Le titre de /page-2.html est à 54px
+    // La carte est relue sur la page suivante. Le titre de /page-2.html est à 54px
     // (3rem × 18, @media min-width 1024 px, fixtures/marque-demo/expected.json) ; la table le porte à 56px (cible.json).
     const titre = () => page.evaluate(() => getComputedStyle(/** @type {Element} */ (document.querySelector('h1'))).fontSize);
     assert.equal(await titre(), '56px', 'page suivante : après');

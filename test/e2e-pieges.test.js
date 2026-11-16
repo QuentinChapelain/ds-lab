@@ -1,13 +1,13 @@
 // @ts-check
 /**
- * Lot E2 : audit puis reduce sur la page des pièges de la marque fictive
+ * Audit puis reduce sur la page des pièges de la marque fictive
  * (pieges/pieges.html), avec la valise (cible-valise.json), comparés à
  * fixtures/marque-demo/expected-pieges.json, écrit avant la page et jamais
  * recalé. Chaque piège a deux tests :
  *   today   ce que l'outil actuel produit (classes, cibles, et ce qui se voit
  *           après simulation) : il prouve que le piège reproduit le défaut ;
- *   afterB  le critère de fin du lot B, actif depuis le lot B.
- * Revue de code du 15/11, lot 0 : les tests today sautés depuis le lot B sont supprimés ; restent P3b et L1,
+ *   afterB  le critère attendu (règles R1 à R9), actif.
+ * Les tests today sautés depuis sont supprimés ; restent P3b et L1,
  * identiques avant et après. Le défaut d'origine reste écrit dans expected-pieges.json (bloc today).
  * La simulation est relue ici avec scanInPage, comme reduce la pose : table
  * proposée, appliquée telle quelle, relevé avant puis après.
@@ -161,7 +161,7 @@ function checkTodayRows(trap) {
     assert.equal(r.new, want.new, `${trap.id} ${want.value} : vers ${r.new}, attendu ${want.new}`);
     if (want.deltaE !== undefined) assert.ok(Math.abs(r.delta - want.deltaE) <= TOL, `${trap.id} ${want.value} : ΔE ${r.delta}, attendu ${want.deltaE}`);
     if (want.tie) {
-      // Lot C : candidats de dimension par valeur ; l'égalité se lit sur les deux plus proches.
+      // Candidats de dimension par valeur ; l'égalité se lit sur les deux plus proches.
       const [a, b] = [...r.candidates].sort((/** @type {any} */ x, /** @type {any} */ y) => x.delta - y.delta);
       assert.equal(a.delta, b.delta, `${trap.id} ${want.value} : pas d'égalité (${a.value} ${a.delta}, ${b.value} ${b.delta})`);
       assert.deepEqual([a.value, b.value].sort(), [...want.tie].sort());
@@ -217,7 +217,7 @@ test(`P3 afterB : ${T.P3.afterB.text}`, () => {
   assert.equal(overlap(at[WIDE].after.titreP3, at[WIDE].after.descP3), false, 'superposition après simulation');
 });
 
-// P3b : contrôle, identique avant et après le lot B.
+// P3b : contrôle, identique avant et après les règles R1 à R9.
 test(`P3b today : ${T.P3b.today.text}`, () => {
   checkTodayRows(T.P3b);
   near(Math.abs(moved(WIDE, 'titreP3b', 'tuileP3b').dy), T.P3b.today.movesPx.titre, 'déplacement du titre');
@@ -259,7 +259,7 @@ for (const id of ['P8', 'P8b']) {
   test(`${id} afterB : ${T[id].afterB.text}`, () => checkAfterBRows(T[id]));
 }
 
-// L1 (lot M) : lien sans soulignement dans un paragraphe ; l'exception est testée dans e2e-migration.
+// L1 : lien sans soulignement dans un paragraphe ; l'exception est testée dans e2e-migration.
 test(`L1 today : ${T.L1.today.text}`, () => {
   checkTodayRows(T.L1);
   assert.equal(rowsOf(WIDE, 'colors', T.L1.values[0].value)[0].count, T.L1.values[0].elements, 'éléments');

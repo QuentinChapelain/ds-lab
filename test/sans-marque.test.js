@@ -1,13 +1,13 @@
 // @ts-check
 /**
- * Revue de code, lot 5, point 1 : aucune marque par défaut (docs/attendus/revue-lot-5-marque.md, Q1 et Q2).
+ * Aucune marque par défaut (docs/attendus/revue-lot-5-marque.md, Q1 et Q2).
  *
  * Attendus écrits à la main avant le code (16/11/2026) :
  *   D1 les marques sont les dossiers de tokens/ qui ont un marque.resolver.json, par ordre de nom : atelier-lavandine,
  *      ecume-et-sel, grenat-papeterie, orbe-cafe ; leur nom est le champ name de leur resolver ;
  *   D2 plus de constante ORBE ; loadRoles et largeurs exigent un dossier : sans lui, elles lèvent en le disant
  *      (« loadRoles : dossier de marque attendu », « largeurs : dossier de marque attendu ») ;
- *   D3 contraste, espacements et typo prennent --marque <dossier> ; avec l'option, la sortie est celle d'avant le lot ;
+ *   D3 contraste, espacements et typo prennent --marque <dossier> ; avec l'option, la sortie est celle d'une seule marque ;
  *      sans l'option, un bloc par marque, dans l'ordre de D1, chacun précédé d'une ligne « marque <nom> (tokens/<dossier>/) »,
  *      les blocs séparés par une ligne vide ; chaque bloc égale la sortie avec --marque ; sortie 0 si toutes passent ;
  *   D4 sortie 1 si une marque échoue (contraste avec un seuil d'essai que toutes manquent) ;
@@ -54,7 +54,7 @@ for (const cli of ['contraste', 'espacements', 'typo']) {
   });
 }
 
-test('D3 contraste --marque : sortie d\'avant le lot, sans en-tête', () => {
+test('D3 contraste --marque : sortie d\'une seule marque, sans en-tête', () => {
   const p = run('contraste', '--marque', 'tokens/orbe-cafe/');
   assert.ok(p.stdout.startsWith('\ncouleur') || p.stdout.startsWith('\ntexte') || /^\n\S/.test(p.stdout), p.stdout.slice(0, 80));
   assert.doesNotMatch(p.stdout, /^marque /m);

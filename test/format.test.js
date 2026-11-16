@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code du 15/11, lot 4 (docs/attendus/revue-lot-4-copies.md, point 1) : une seule définition de `fr`, `esc` et
+ * docs/attendus/revue-lot-4-copies.md, point 1 : une seule définition de `fr`, `esc` et
  * `r4`, dans src/lib/format.js. Chaque appelant garde son format, nommé par ses options (réponse de Quentin du 16/11/2026) ;
  * deux défauts corrigés : la troncature se fait sur la valeur arrondie à 4 décimales, et l'arrondi suit l'écriture
  * décimale du nombre (une valeur en ,xx5 monte).
@@ -19,7 +19,7 @@
  *     (avant : 5,01:1) ; console de npm run contraste, Écume et Sel en sombre, texte.accent sur fond.discret (ratio
  *     11,655) : « 11,66:1 » (avant : 11,65:1) ;
  *   une définition : dans src/, aucune autre définition de fr, esc, r4, round4, ratioFr ni seuilFr, ni de virgule
- *     décimale écrite à la main, hors des deux copies laissées hors du lot (script de page de src/report/review.js,
+ *     décimale écrite à la main, hors des deux copies laissées à part (D22 : script de page de src/report/review.js,
  *     fr1 de src/polices/encre.js).
  */
 import { test } from 'node:test';
@@ -88,7 +88,7 @@ test('F8 console de contraste : 11,655 s’écrit 11,66', () => {
 /** Fichiers .js de src/, chemins relatifs à la racine. @param {string} d @returns {string[]} */
 const sources = (d = join(ROOT, 'src')) =>
   readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? sources(join(d, e.name)) : e.name.endsWith('.js') ? [relative(ROOT, join(d, e.name))] : []));
-/** Les deux copies laissées hors du lot, à la ligne près. */
+/** Les deux copies laissées à part (D22), à la ligne près. */
 const HORS_LOT = ["  function fr(n) { return String(n).replace('.', ','); }", "const fr1 = (n) => (Math.round(n * 10) / 10).toFixed(1).replace('.', ',').replace(/^-0,0$/, '0,0');"];
 
 test('F9 une définition : fr, esc et r4 vivent seulement dans src/lib/format.js', () => {

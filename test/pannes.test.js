@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code du 15/11, lot 1a : une panne n'est pas un refus (docs/attendus/revue-lot-1a-pannes-controles.md, D18).
+ * Une panne n'est pas un refus (docs/attendus/revue-lot-1a-pannes-controles.md, D18).
  * Trois issues pour toute commande : 0 tout passe ; 1 l'entrée a été lue et jugée (règle en échec, marque refusée avec
  * son motif) ; 2 l'entrée n'a pas pu être jugée (fichier absent ou illisible, option inconnue, panne de l'outil), message
  * d'une ligne préfixé par le nom de la commande, sans pile. Sans navigateur : Chromium est empêché de se lancer par
@@ -16,7 +16,7 @@
  *      sous son seuil au niveau de la fonction (aucune couleur d'entrée connue ne la provoque par la commande) ;
  *   N8 marque et verify : option inconnue → 2 ; Chromium qui ne se lance pas → 2 ;
  *   N9 espacements() et typo() sans contexte étroit lèvent ;
- *   N10 (revue de code, lot 6, D31 : l'exception de D18 est fermée) contrôle final de la saisie, fait sur les fichiers
+ *   N10 (D31 : l'exception de D18 est fermée) contrôle final de la saisie, fait sur les fichiers
  *      écrits à côté avant remplacement, sur une copie dont controlerEcrits (src/tokens/saisie.js) est forcé : s'il lève,
  *      ou s'il trouve une paire en échec (incohérence de l'outil), sortie 2, le message le dit, rien n'est écrit, aucun
  *      fichier temporaire laissé.

@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot J, J9 : fond recouvert par une image. Attendus écrits avant le code :
+ * J9 : fond recouvert par une image. Attendus écrits avant le code :
  * J9. Un fond recouvert par une image (img, ou background-image qui couvre l'élément) dont le texte
  *     est posé sur l'image n'est pas un « plein » : usage « fond », candidats de la tranche fond (1 à 5),
  *     et pas de paire de contraste contre ce fond (le texte sur image reste « à vérifier »).
@@ -48,7 +48,7 @@ let servers;
 let run;
 
 before(async () => {
-  const root = await mkdtemp(join(tmpdir(), 'ds-lab-lot-j9-'));
+  const root = await mkdtemp(join(tmpdir(), 'ds-lab-fond-sous-image-'));
   await mkdir(join(root, 'j'));
   await writeFile(join(root, 'j', 'p.html'), PAGE);
   servers = await startFixtureServers({ root });
@@ -58,7 +58,7 @@ before(async () => {
     tokensPath: new URL('../tokens/orbe-cafe/marque.resolver.json', import.meta.url).pathname,
     viewport: { width: 400, height: 900 },
     waitMs: 100,
-    outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-lot-j9-out-')),
+    outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-fond-sous-image-out-')),
   });
 });
 

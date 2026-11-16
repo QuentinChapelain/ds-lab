@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Séance 3b : emplacements de marque (tokens/orbe-cafe/marque.tokens.json).
+ * Emplacements de marque (tokens/orbe-cafe/marque.tokens.json).
  *
  * M0 (15/11/2026) : les rôles qui citaient couleur.bleu.* et couleur.terre.* pointent vers marque.primaire.*
  * et marque.accent.* ; Orbe Café : primaire → bleu, accent → terre. Aucun rôle renommé, ajouté ni retiré.
@@ -24,13 +24,13 @@
  * (node local/scripts/ratios-pleins.mjs : voile #3c5a88, terre 11 #b3422b, erreur 11 #cb1d2a, succes 11 #00774a,
  * info 11 #006da6, avertissement 12 #442d01).
  * Décision du 15/11/2026 : bordure.focus → marque.primaire.11 pour toutes les marques (bleu 11 #4c6994).
- * Étape 4a, lot 3 bis (15/11/2026, décisions sur image) : nouvelle règle pour le primaire et l'accent, lue sur
+ * Nouvelle règle pour le primaire et l'accent, lue sur
  *   l'échelle : blanc ≥ 5,5 sombre (voile) ; blanc ≥ 4,5 soutenu (pas 9, blanc, survol pas 10) ; pas 12 ≥ 7 sur le
  *   pas 9 et ≥ 4,5 sur le pas 10 clair ; sinon moyen. Statuts figés (STATUTS_FIGES), Orbe Café inchangé.
  *   Cas limites fictifs, échelles de generateScale, culori wcagContrast (commande : node --input-type=module -e) :
  *   #ffffff clair (pas 12 sur 9 : 13,01) ; #000000 sombre ; #ffe14d clair (9,96 / 8,47) ; #8a6a00 soutenu
  *   (blanc 5,07, 5,31 sur le pas 10) ; #4dd2ff clair (7,41 / 6,26) ; #9d5bd2 moyen (blanc 4,32, pas 12 sur 9 : 3,02).
- * Séance 3c, typo (15/11/2026) : la couche marque porte aussi marque.police (titre, texte ; $type fontFamily),
+ * La couche marque porte aussi marque.police (titre, texte ; $type fontFamily),
  * produite par marqueTokens (paramètre polices) ; les tests ci-dessous portent sur les six emplacements de couleur.
  */
 import { test } from 'node:test';
@@ -52,7 +52,7 @@ const load = charger;
 const STEPS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 const CASES = ['plein', 'plein-survol', 'sur-plein'];
 const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
-/** Polices d'Orbe Café (séance 3c, typo). */
+/** Polices d'Orbe Café. */
 const POLICES = { titre: ['Georgia', 'serif'], texte: ['Orbe Sans', 'Arial', 'sans-serif'] };
 /** Emplacements de couleur seulement (sans marque.police). @param {any} m */
 const couleurs = (m) => Object.entries(m).filter(([k, g]) => !k.startsWith('$') && g.$type !== 'fontFamily');
@@ -127,7 +127,7 @@ const HEX = new Map([
   ['bordure.info', '#2f97da'],
 ]);
 
-/** Fichier versionné, tel quel ; les rôles se résolvent avec les emplacements communs de l'aplat (étape 4b, lot 2 bis). */
+/** Fichier versionné, tel quel ; les rôles se résolvent avec les emplacements communs de l'aplat. */
 const marque = JSON.parse(readFileSync(join(ORBE, 'marque.tokens.json'), 'utf8'));
 const prim = load('primitives.tokens.json').couleur;
 const stat = load('statuts.tokens.json').couleur;
@@ -169,7 +169,7 @@ test('M0 marque.tokens.json : DTCG 2025.10, six emplacements', () => {
   assert.equal(marque.marque.$type, 'color');
   assert.deepEqual(couleurs(marque.marque).map(([k]) => k), Object.keys(EMPLACEMENTS));
   assert.deepEqual(Object.keys(marque.marque).filter((k) => !k.startsWith('$')), [...Object.keys(EMPLACEMENTS), 'police']);
-  // Étape 4a, lot 5 : le primaire porte en dernier texte-grand.
+  // Le primaire porte en dernier texte-grand.
   assert.deepEqual(Object.keys(marque.marque.primaire).filter((k) => !k.startsWith('$')), [...STEPS, ...CASES, 'texte-grand']);
   assert.deepEqual(Object.keys(marque.marque.accent).filter((k) => !k.startsWith('$')), [...STEPS, ...CASES]);
   for (const s of STATUTS) assert.deepEqual(Object.keys(marque.marque[s]).filter((k) => !k.startsWith('$')), CASES, s);
@@ -234,7 +234,7 @@ test('M0 rôles : les pleins et les couleurs de marque passent par marque.* ; au
   for (const [role, slot] of Object.entries(VIA_MARQUE)) assert.equal(tokenOf(role).$value, `{${slot}}`, role);
 });
 
-test('Pleins : les 42 rôles se résolvent vers les hex attendus, plus les 9 du lot 5 (étape 4a)', () => {
+test('Pleins : les 42 rôles se résolvent vers les hex attendus, plus les 9 ajoutés (helpers/roles-ajoutes.js)', () => {
   const roles = resolveRoles(load('semantique.tokens.json'), load('primitives.tokens.json'), load('statuts.tokens.json'), avecAplat(marque));
   const all = new Map([...HEX, ...Object.entries(AJOUTS).map(([r, [, hex]]) => /** @type {[string, string]} */ ([r, hex]))]);
   assert.deepEqual([...roles.keys()].sort(), [...all.keys()].sort());
@@ -253,5 +253,5 @@ test('M0 une autre marque se branche sans toucher aux rôles (témoin fictif, so
   assert.equal(roles.get('fond.interactif.fort.survol')?.hex, voileBlanc(g.steps[8], 0.08));
   assert.equal(roles.get('texte.sur-interactif')?.hex, '#ffffff');
   assert.equal(roles.get('texte.principal')?.hex, HEX.get('texte.principal'));
-  assert.equal(contratRoles(set).pairs.length, 70, 'étape 4b, lot 3 : + 4 bordures de statut sur fond.surface');
+  assert.equal(contratRoles(set).pairs.length, 70, '+ 4 bordures de statut sur fond.surface');
 });

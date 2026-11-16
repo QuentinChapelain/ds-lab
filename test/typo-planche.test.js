@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Séance 3c, typo, lot 3 : planche tokens/orbe-cafe/typo.html.
+ * Planche tokens/orbe-cafe/typo.html.
  *
  * Attendu écrit à la main avant le code de src/report/typo.js, d'après le plan typo du 15/11/2026 :
  *   spécimen des onze styles, une ligne [data-specimen] par style, avec taille, ligne et rapport écrits ;
@@ -17,7 +17,7 @@
  *   chaque gap vaut un rôle d'espacement (var(--ecart-…) ou var(--marge-interieure-…)) ;
  *   rendue à 420 et à 1 200 px sans défilement horizontal ; page autonome, aucun script ni ressource externe ;
  *   le fichier versionné est à jour.
- * Étape 4c (D17) : lignes d'affichage.grand 76 / 48, d'affichage.moyen 60 / 40, de titre.1 40 en large.
+ * D17 : lignes d'affichage.grand 76 / 48, d'affichage.moyen 60 / 40, de titre.1 40 en large.
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';

@@ -1,8 +1,8 @@
 // @ts-check
 /**
- * Lot C (candidats) : fenêtre des candidats d'une ligne numérique (C1 à C6).
+ * Fenêtre des candidats d'une ligne numérique (C1 à C6).
  * Attendus écrits à la main avant le code : fixtures/marque-demo/expected-candidats.json (bloc « window »).
- * Le défaut et la classe (C5) sont comparés à la règle d'avant le lot, recopiée ici (todayRow).
+ * Le défaut et la classe (C5) sont comparés à l'ancienne règle, recopiée ici (todayRow).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -19,7 +19,7 @@ function rowOf(family, value, pill = false) {
 }
 
 /**
- * Règle d'avant le lot C (8f11d24) : le plus proche sur toute l'échelle, départage par la plus petite valeur.
+ * Ancienne règle (8f11d24) : le plus proche sur toute l'échelle, départage par la plus petite valeur.
  * @param {number} n @param {number[]} scale
  */
 function todayRow(n, scale) {
@@ -33,7 +33,7 @@ for (const w of E.window)
   test(`C1 à C4 : ${w.case} (${w.family} ${w.value})`, () => {
     const r = rowOf(w.family, w.value, w.pill);
     assert.deepEqual(r.candidates.map((/** @type {any} */ c) => c.value), w.candidates, 'candidats, par valeur croissante');
-    // Revue de code du 15/11, lot 2 (D20) : une égalité est une décision sans défaut, ses deux candidats « à égalité ».
+    // D20 : une égalité est une décision sans défaut, ses deux candidats « à égalité ».
     if (w.tie) {
       assert.deepEqual(r.candidates.filter((/** @type {any} */ c) => c.nearest), [], 'aucun « le plus proche »');
       assert.deepEqual(r.candidates.filter((/** @type {any} */ c) => c.tie).map((/** @type {any} */ c) => c.value), w.tie, 'à égalité');
@@ -71,7 +71,7 @@ test('C5 : défaut, écart et classe inchangés sur les trois échelles (0 à 80
     for (let n = 0; n <= 80; n += 0.25) {
       const r = rowOf(family, `${n}px`);
       const t = todayRow(n, E.scales[family]);
-      // Revue de code du 15/11, lot 2 (D20) : à égale distance de deux pas, plus de départage vers la plus petite.
+      // D20 : à égale distance de deux pas, plus de départage vers la plus petite.
       const steps = /** @type {number[]} */ (E.scales[family]);
       const d = Math.min(...steps.map((x) => Math.abs(x - n)));
       if (d > 0 && steps.filter((x) => Math.abs(x - n) === d).length === 2) {

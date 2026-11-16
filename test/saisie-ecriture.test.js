@@ -1,12 +1,12 @@
 // @ts-check
 /**
- * Revue de code, lot 6, point 3 (docs/attendus/revue-lot-6-structure.md, D25, D31) : une seule fusion de contexte de
+ * D25, D31 (docs/attendus/revue-lot-6-structure.md, point 3) : une seule fusion de contexte de
  * marque dans la saisie, celle du resolver ; écrire à côté, contrôler, puis remplacer ; aucune échelle commune redéfinie
  * par une marque. Sans navigateur.
  *
  * Attendus écrits à la main :
  *   W1 une marque dont primitives.tokens.json porte une échelle du nom d'une échelle commune (neutre) est refusée par la
- *      saisie pour ce seul motif, qui nomme l'échelle : sortie 1, rien d'écrit. Avant le lot : 18 paires refusées en
+ *      saisie pour ce seul motif, qui nomme l'échelle : sortie 1, rien d'écrit. Avec la fusion à la main d'avant D31, 18 paires étaient refusées en
  *      sombre, par la fusion à la main (essai C de la confrontation) ;
  *   W2 npm run contraste --marque sur un dossier dont primitives.tokens.json redéfinit neutre : sortie 1, ligne qui nomme
  *      l'échelle ; même définition que la saisie (echellesCommunesRedefinies) ;

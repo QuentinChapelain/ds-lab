@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Étape 4a, lot 5 : ajouts aux rôles et aux paires d'Orbe Café, partagés par les tests qui figent l'étape 3
+ * Ajouts aux rôles et aux paires d'Orbe Café, partagés par les tests qui figent les rôles d'origine
  * (les 42 rôles, 48 paires et 4 interdites d'avant restent en tête et inchangés). Attendus : test/aplats.test.js.
  */
 
@@ -8,7 +8,7 @@
 export const AJOUTS = {
   'fond.marque.discret': ['marque.primaire.3', '#f1f3f7'],
   'fond.accent.discret': ['marque.accent.3', '#fcf1ef'],
-  // Étape 4b, lot 2 bis : l'aplat plein passe par trois emplacements communs (tokens/commun/aplat.tokens.json), alias du plein.
+  // L'aplat plein passe par trois emplacements communs (tokens/commun/aplat.tokens.json), alias du plein.
   'fond.marque.fort': ['marque.primaire.aplat', '#2b4c7e'],
   'texte.sur-marque': ['marque.primaire.sur-aplat', '#ffffff'],
   'texte.marque.grand': ['marque.primaire.texte-grand', '#2b4c7e'],

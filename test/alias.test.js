@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code du 15/11, lot 4 (docs/attendus/revue-lot-4-copies.md, point 2) : une seule résolution d'alias, lue par les
+ * docs/attendus/revue-lot-4-copies.md, point 2 : une seule résolution d'alias, lue par les
  * rôles de couleur (resolveRoles), les espacements et la typo. Réponse de Quentin du 16/11/2026 : la fonction rend la valeur
  * finale ; « en boucle » cite la chaîne depuis le point de départ ; « depuis » nomme le jeton ou le champ de départ ; chaque
  * appelant garde son message de type.

@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code du 15/11, lot 4 (docs/attendus/revue-lot-4-copies.md, point 8 ; Q5, décision de Quentin du 15/11/2026) :
+ * D24 (docs/attendus/revue-lot-4-copies.md, point 8) :
  * au déclaré, audit.json n'écrit plus le champ `properties` vide des 8 familles qui ne le remplissent pas.
  *
  * Attendu écrit à la main avant le code (16/11/2026), sur les deux feuilles de fixtures/marque-demo/styles/ :

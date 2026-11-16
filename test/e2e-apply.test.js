@@ -1,10 +1,10 @@
 // @ts-check
 /**
- * Lot S, sur les pages en désordre d'Orbe Café (marque fictive). Attendus écrits avant le code :
+ * npm run apply, sur les pages en désordre d'Orbe Café (marque fictive). Attendus écrits avant le code :
  * S1. reduce (avec --tokens) écrit modifications.json à côté de migration.md : chaque déclaration
  *     que la consigne liste à remplacer ou à rattacher (unité absolue) a son entrée, et aucune autre ;
- *     ex. recente.css:59 .produit, 12px → var(--rayon-12, 12px) (RATTACHE, lu dans la consigne du
- *     lot K). Commentaires : chaque déclaration en conflit ; chaque unité relative de RATTACHE.
+ *     ex. recente.css:59 .produit, 12px → var(--rayon-12, 12px) (RATTACHE, lu dans la
+ *     consigne). Commentaires : chaque déclaration en conflit ; chaque unité relative de RATTACHE.
  *     tokens.css dans /desordre/styles/ ; pages qui chargent une feuille modifiée, témoin compris.
  * S3. Deux copies fraîches : fichiers identiques octet pour octet ; relancé sur une copie migrée :
  *     aucun fichier modifié hors reste.md.
@@ -38,7 +38,7 @@ const common = {};
 
 /** Copie fraîche du site en désordre. */
 async function fresh() {
-  const root = await mkdtemp(join(tmpdir(), 'ds-lab-lot-s-copie-'));
+  const root = await mkdtemp(join(tmpdir(), 'ds-lab-e2e-apply-copie-'));
   await cp(join(FIXTURE_DIR, 'desordre'), join(root, 'desordre'), { recursive: true });
   return root;
 }
@@ -60,7 +60,7 @@ async function snapshot(root) {
 
 before(async () => {
   servers = await startFixtureServers();
-  const dir = await mkdtemp(join(tmpdir(), 'ds-lab-lot-s-'));
+  const dir = await mkdtemp(join(tmpdir(), 'ds-lab-e2e-apply-'));
   decisionsPath = join(dir, 'decisions.json');
   await writeFile(decisionsPath, JSON.stringify({ ...JSON.parse(await readFile(`${FIXTURE_DIR}decisions-passage-2c.json`, 'utf8')), 'plein|terre': 'onSolid' }));
   Object.assign(common, {
@@ -80,7 +80,7 @@ before(async () => {
 
 after(async () => servers?.close());
 
-test('S1 : modifications.json à côté de migration.md ; entrée lue dans la consigne du lot K', () => {
+test('S1 : modifications.json à côté de migration.md ; entrée lue dans la consigne', () => {
   assert.ok(run.files.some((/** @type {string} */ f) => f.endsWith('/modifications.json')));
   const produit = mods.entries.filter((/** @type {any} */ e) => e.sheet === '/desordre/styles/recente.css' && e.line === 59 && e.selector === '.produit' && /radius/.test(e.property));
   assert.ok(produit.length >= 1, 'recente.css:59 .produit');
@@ -141,7 +141,7 @@ test('S3, S4 : deux copies fraîches identiques ; relance sans changement ; HTML
   }
   const copy = await startFixtureServers({ root: a });
   try {
-    const [r] = await runReduce({ ...common, addresses: [copy.origin + PAGES[0], ...PAGES.slice(1)], outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-lot-s-')) });
+    const [r] = await runReduce({ ...common, addresses: [copy.origin + PAGES[0], ...PAGES.slice(1)], outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-e2e-apply-')) });
     const left = r.migration.rows.filter((/** @type {any} */ x) => (x.status === 'appliquée' || x.status === 'décidée') && !x.conflict);
     assert.deepEqual(left.map((/** @type {any} */ x) => `${x.id} ${x.value} ${x.usage} → ${x.new}`), []);
   } finally {

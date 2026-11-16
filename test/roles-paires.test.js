@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Séance 3a, T2 et T3 : paires de rôles déclarées (tokens/orbe-cafe/paires.json), contrat de rôles
+ * T2 et T3 : paires de rôles déclarées (tokens/orbe-cafe/paires.json), contrat de rôles
  * ajouté au contrat par échelle (contractOf) sans le remplacer, et contrôle npm run contraste qui
  * échoue sous le seuil sans exception écrite.
  *
@@ -33,7 +33,7 @@
  *   interdite texte.secondaire sur fond.interactif.fort : 1,5348, règle « sur un plein, le texte est texte.sur-* » ;
  *   règle de bordure.forte sur fond.composant : « un champ se pose sur fond.surface ».
  *
- * Séance 3b (15/11/2026), règle des pleins en trois cas, ratios culori, commande : node local/scripts/ratios-pleins.mjs
+ * Règle des pleins en trois cas (15/11/2026), ratios culori, commande : node local/scripts/ratios-pleins.mjs
  * (wcagContrast sur les pas lus dans primitives et statuts ; voile = interpolate([bleu 9, blanc], 'rgb')(0,08) = #3c5a88) :
  *   blanc sur bleu 9 + voile 8 % : 6,9765 ; blanc sur terre 11 : 5,6287 ; sur erreur 11 : 5,6023 ;
  *   sur succes 11 : 5,6186 ; sur info 11 : 5,6178 ; avertissement 12 sur avertissement 9 : 5,7721.
@@ -126,9 +126,9 @@ const RETIREES = ['erreur', 'succes', 'avertissement', 'info'].map((s) => `bordu
 const paires = load('paires.json');
 const sem = load('semantique.tokens.json');
 
-test('T2 paires.json : seuils 4,5 texte, 3 bordure et focus (et grand texte, lot 5) ; 48 paires en tête, sans doublon, dans l\'ordre', () => {
+test('T2 paires.json : seuils 4,5 texte, 3 bordure et focus (et grand texte) ; 48 paires en tête, sans doublon, dans l\'ordre', () => {
   assert.deepEqual(paires.seuils, { texte: 4.5, bordure: 3, focus: 3, 'grand-texte': 3 });
-  assert.equal(paires.paires.length, 48 + PAIRES_AJOUTEES.length + 4, 'étape 4b, lot 3 : + 4 bordures de statut sur fond.surface');
+  assert.equal(paires.paires.length, 48 + PAIRES_AJOUTEES.length + 4, '+ 4 bordures de statut sur fond.surface');
   const keys = paires.paires.map((/** @type {any} */ p) => `${p.devant}|${p.fond}`);
   assert.equal(new Set(keys).size, keys.length);
   assert.deepEqual(paires.paires.slice(0, 48).map((/** @type {any} */ p) => [p.devant, p.fond]), TABLE.map((t) => [t.devant, t.fond]));
@@ -166,7 +166,7 @@ test('T2 couverture : chaque texte et chaque bordure non décorative a une paire
 
 test('T2 contratRoles : ratios égaux à culori (± 0,0001), seuil par type', () => {
   const c = contratRoles(loadRoles(DIR));
-  assert.equal(c.pairs.length, TABLE.length + PAIRES_AJOUTEES.length + 4, 'étape 4b, lot 3 : + 4 bordures de statut sur fond.surface');
+  assert.equal(c.pairs.length, TABLE.length + PAIRES_AJOUTEES.length + 4, '+ 4 bordures de statut sur fond.surface');
   c.pairs.slice(0, TABLE.length).forEach((/** @type {any} */ p, /** @type {number} */ i) => {
     assert.equal(p.devant, TABLE[i].devant);
     assert.equal(p.fond, TABLE[i].fond);
@@ -202,7 +202,7 @@ test('T2 hypothèse : texte.secondaire sous 4,5:1 sur fond.composant.appui (4,33
 });
 
 /**
- * Revue de code du 15/11, lot 0 : le contrat par échelle d'Orbe Café, écrit à la main (avant : comparé à
+ * Le contrat par échelle d'Orbe Café, écrit à la main (avant : comparé à
  * contractOf(valiseFromTokens({ couleur: ordreEchelles(…) })), recopie de src/tokens/roles.js).
  * Ordre : neutre, échelles de la marque (bleu, terre, sable, dans l'ordre de tokens/orbe-cafe/primitives.tokens.json),
  * statuts (erreur, succès, avertissement, info) ; 10 paires par échelle. Rapports recalculés avec culori sur les

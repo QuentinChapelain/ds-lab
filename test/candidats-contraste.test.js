@@ -1,9 +1,9 @@
 // @ts-check
 /**
- * Lot J, bloc 2 (J1, J2) : candidats qui échouent au contraste. Attendus écrits avant le code :
+ * J1, J2 : candidats qui échouent au contraste. Attendus écrits avant le code :
  * J1. Un candidat qui échoue au contraste (texte porté, ou fond le moins favorable ; bordure contre
  *     son fond, seuil 3) alors que l'actuelle passe n'est jamais « le plus proche » ni le défaut :
- *     grisé dans la revue, avec sa raison, toujours cliquable (mécanisme du lot C). Le défaut est le
+ *     grisé dans la revue, avec sa raison, toujours cliquable (même mécanisme que le grisé des marges, C7 à C10). Le défaut est le
  *     premier candidat qui passe.
  * J2. Si aucun candidat de la tranche ne passe : la carte dit « la cible ne couvre pas ce cas » et
  *     propose, en plus, les pas de la même échelle hors tranche qui passent ; migration.md les liste
@@ -46,7 +46,7 @@ let html = '';
 let md = '';
 
 before(async () => {
-  const root = await mkdtemp(join(tmpdir(), 'ds-lab-lot-j2-'));
+  const root = await mkdtemp(join(tmpdir(), 'ds-lab-candidats-contraste-'));
   await mkdir(join(root, 'j'));
   await writeFile(join(root, 'j', 'p.html'), PAGE);
   servers = await startFixtureServers({ root });
@@ -56,7 +56,7 @@ before(async () => {
     tokensPath: new URL('../tokens/orbe-cafe/marque.resolver.json', import.meta.url).pathname,
     viewport: { width: 400, height: 600 },
     waitMs: 50,
-    outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-lot-j2-out-')),
+    outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-candidats-contraste-out-')),
   });
   html = await readFile(run.files[1], 'utf8');
   md = await readFile(run.files[2], 'utf8');
@@ -150,14 +150,14 @@ test('J2 : plein #6a655a : aucun pas de la tranche ne passe : la cible ne couvre
  * 258,5°) : aucun de même teinte ne passe.
  */
 test('J1, règle 2 : sans échelles, aucun candidat de même teinte ne passe : pas de défaut, terre grisé, rien n’est « le plus proche »', async () => {
-  const root = await mkdtemp(join(tmpdir(), 'ds-lab-lot-j2b-'));
+  const root = await mkdtemp(join(tmpdir(), 'ds-lab-candidats-contraste-b-'));
   await mkdir(join(root, 'j'));
   await writeFile(join(root, 'j', 'p.html'), `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>J1 b</title>
 <style>html,body{margin:0;background:#ffffff;font:700 16px/1.4 Arial,sans-serif;color:#1f2a44}.etiquette{position:absolute;top:20px;left:20px;padding:8px;background-color:#c4513a;color:#ffffff}</style></head>
 <body><span class="etiquette">Nouveau</span></body></html>`);
   const s = await startFixtureServers({ root });
   try {
-    const [b] = await runReduce({ addresses: [`${s.origin}/j/p.html`], targetPath: `${FIXTURE_DIR}cible.json`, viewport: { width: 400, height: 300 }, waitMs: 50, outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-lot-j2b-out-')) });
+    const [b] = await runReduce({ addresses: [`${s.origin}/j/p.html`], targetPath: `${FIXTURE_DIR}cible.json`, viewport: { width: 400, height: 300 }, waitMs: 50, outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-candidats-contraste-b-out-')) });
     const r = b.table.families.colors.rows.find((/** @type {any} */ x) => x.old === '#c4513a');
     assert.equal(r.class, 'décision');
     assert.equal(r.new, null, 'pas de défaut');

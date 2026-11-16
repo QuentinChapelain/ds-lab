@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code, lot 5, point 2 : planches des quatre marques, même code (docs/attendus/revue-lot-5-marque.md, Q4 et Q5).
+ * Planches des quatre marques, même code (docs/attendus/revue-lot-5-marque.md, Q4 et Q5).
  * Sans navigateur ; les tests de mise en page restent sur une marque (roles-, espacements-, typo-planche.test.js), après
  * une mesure faite une fois sur les quatre.
  *

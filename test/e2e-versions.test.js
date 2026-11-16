@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot R, R-3 : une capture par version de chaque décision (actuelle, puis chaque candidat),
+ * R-3 : une capture par version de chaque décision (actuelle, puis chaque candidat),
  * sur la réduction des trois pages en désordre avec la valise. Chaque version ne change que
  * sa ligne ; la valeur calculée de l'élément est celle de la version ; toutes les versions
  * d'une décision ont le même cadre et la même taille d'image ; ce cadre contient le contexte
@@ -22,7 +22,7 @@ const E = JSON.parse(await readFile(new URL('../fixtures/marque-demo/expected-de
 let servers;
 /** @type {any[]} */
 let decisions = [];
-/** Lot R, 5c : lignes proches, d'office et corrections. @type {any[]} */
+/** Lignes proches, d'office et corrections. @type {any[]} */
 let applied = [];
 /** @type {any} */
 let saved;
@@ -40,7 +40,7 @@ before(async () => {
     now: new Date(2026, 10, 12, 16, 0),
   });
   decisions = Object.values(r.table.families).flatMap((/** @type {any} */ f) => f.rows.filter((/** @type {any} */ x) => x.class === 'décision' && !x.plein));
-  // Lot K : une ligne de fond d'un plein suit la carte « Texte sur plein », qui porte les captures.
+  // Une ligne de fond d'un plein suit la carte « Texte sur plein », qui porte les captures.
   applied = Object.values(r.table.families).flatMap((/** @type {any} */ f) => f.rows.filter((/** @type {any} */ x) => ['proche', 'auto', 'correction'].includes(x.class)));
   saved = JSON.parse(await readFile(r.files[0], 'utf8'));
 });

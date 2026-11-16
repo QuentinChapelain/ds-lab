@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot V, étape 1 : comparaison de captures et d'arbres d'accessibilité.
+ * Comparaison de captures et d'arbres d'accessibilité.
  * Attendus écrits avant le code :
  * - deux images identiques → 0 pixel différent, 0 % ;
  * - une image dont un carré 5×5 est modifié → exactement ces 25 pixels, et l'image des

@@ -1,8 +1,8 @@
 // @ts-check
 /**
- * Séance 3c, lot 3 : planche des espacements par relation (tokens/orbe-cafe/espacements.html).
+ * Planche des espacements par relation (tokens/orbe-cafe/espacements.html).
  *
- * Attendu écrit à la main avant le code de src/report/espacements.js, d'après la séance 3c du 15/11/2026 :
+ * Attendu écrit à la main avant le code de src/report/espacements.js, du 15/11/2026 :
  *   une page complète d'Orbe Café (marque fictive) : au moins trois sections dans main, dont un formulaire
  *   avec un message d'erreur sur deux lignes et une rangée de trois cartes ;
  *   les cinq espaces cotés et nommés, une cote [data-cote] par rôle, qui porte le nom du rôle et sa valeur
@@ -15,7 +15,7 @@
  *   rendue dans Chromium à 420 et à 1 200 px de large : aucun défilement horizontal, cotes dans la fenêtre ;
  *     les trois cartes sur une ligne à 1 200 px, une par ligne à 420 px ; le message d'erreur sur deux lignes
  *     aux deux largeurs ;
- *   lot 4 (décision du 15/11/2026) : plus aucun réglage (ni bouton radio, ni « réglage ») ; la planche
+ *   Plus aucun réglage (ni bouton radio, ni « réglage ») ; la planche
  *     lit ses valeurs dans les jetons : ecart.section vaut 48 px, et 32 px sous 600 px (valeur en étroit
  *     de ds-lab.etroit, seuil [H]) ; à 420 px la cote de section mesure et affiche 32 px, en étroit ;
  *     à 1 200 px, 48 px ; ecart.dans-composant reste à 4 px ;
@@ -87,25 +87,25 @@ const mesures = (page) =>
     }),
   );
 
-test('3c planche : page autonome, sans script, fichier à jour', () => {
+test('planche : page autonome, sans script, fichier à jour', () => {
   assert.equal(html, planche(DIR));
   assert.doesNotMatch(html, /<script|<link|@import|url\(|https?:\/\//i);
   assert.match(html, /Orbe Café/);
 });
 
-test('3c lot 4 planche : aucun réglage, valeurs lues dans les jetons', () => {
+test('planche : aucun réglage, valeurs lues dans les jetons', () => {
   assert.doesNotMatch(html, /type="radio"|réglage|reglage/i);
   assert.match(html, /--ecart-section: 48px;/);
   assert.match(html, /@media \(max-width: 599\.98px\) \{ :root \{ --ecart-section: 32px; \} \}/);
 });
 
-test('3c planche : une seule déclaration margin, la remise à zéro', () => {
+test('planche : une seule déclaration margin, la remise à zéro', () => {
   const decl = html.match(/margin[\w-]*\s*:[^;}]*/g) ?? [];
   assert.deepEqual(decl, ['margin: 0']);
 });
 
 for (const width of [420, 1200]) {
-  test(`3c planche à ${width} px : structure, pas de défilement, marges nulles`, async () => {
+  test(`planche à ${width} px : structure, pas de défilement, marges nulles`, async () => {
     const page = await open(width);
     const r = await page.evaluate(() => ({
       sections: document.querySelectorAll('main > section').length,
@@ -124,7 +124,7 @@ for (const width of [420, 1200]) {
     await page.close();
   });
 
-  test(`3c planche à ${width} px : cartes, message d'erreur sur deux lignes`, async () => {
+  test(`planche à ${width} px : cartes, message d'erreur sur deux lignes`, async () => {
     const page = await open(width);
     const r = await page.evaluate(() => {
       const tops = [...document.querySelectorAll('.carte')].map((c) => Math.round(c.getBoundingClientRect().top));
@@ -137,7 +137,7 @@ for (const width of [420, 1200]) {
     await page.close();
   });
 
-  test(`3c planche à ${width} px : cinq cotes nommées, chacune couvre l'espace réel`, async () => {
+  test(`planche à ${width} px : cinq cotes nommées, chacune couvre l'espace réel`, async () => {
     const page = await open(width);
     const m = await mesures(page);
     const ATTENDU = attendu(width);

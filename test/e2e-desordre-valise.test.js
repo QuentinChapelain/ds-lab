@@ -1,9 +1,9 @@
 // @ts-check
 /**
- * Lot B : reduce sur les trois pages en désordre de la marque fictive
+ * reduce sur les trois pages en désordre de la marque fictive
  * (desordre/carte, compte, gestion) avec la valise (cible-valise.json),
  * comparé à fixtures/marque-demo/expected-desordre-valise.json, écrit avant
- * le code du lot B et jamais recalé. La simulation est relue ici avec
+ * le code et jamais recalé. La simulation est relue ici avec
  * scanInPage, comme reduce la pose : relevé du rendu avant puis après, pour
  * les critères globaux (contraste, bandeau tiers).
  */
@@ -191,7 +191,7 @@ for (const e of E.radii ?? []) {
   });
 }
 
-test('C20 et C21 : contenu et tiers absents de la table, comme au lot E', () => {
+test('C20 et C21 : contenu et tiers absents de la table, comme à l\'audit', () => {
   const c20 = LOT_E.colors.find((/** @type {any} */ x) => x.id === 'C20');
   const c21 = LOT_E.colors.find((/** @type {any} */ x) => x.id === 'C21');
   for (const v of c20.values) assert.deepEqual(rowsOf(v.value), [], `${v.value} (contenu)`);

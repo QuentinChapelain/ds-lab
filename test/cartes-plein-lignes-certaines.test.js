@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot K, retouche K6 (trouvée sur un vrai site). Attendus écrits avant le code :
+ * K6 (cas trouvé sur un vrai site). Attendus écrits avant le code :
  * K6. Une carte de plein ne couvre que les lignes de fond certaines : inchangé, auto, proche,
  *     correction, ou déjà décidées. Une ligne de fond de classe « décision » non tranchée garde sa
  *     propre carte avec ses candidats ; ses éléments n'entrent pas dans la carte de plein tant
@@ -35,7 +35,7 @@ let servers;
 const R = {};
 
 before(async () => {
-  const root = await mkdtemp(join(tmpdir(), 'ds-lab-lot-k6-'));
+  const root = await mkdtemp(join(tmpdir(), 'ds-lab-lignes-certaines-'));
   await mkdir(join(root, 'k'));
   await writeFile(join(root, 'k', 'p.html'), PAGE);
   servers = await startFixtureServers({ root });
@@ -49,7 +49,7 @@ before(async () => {
       decisionsPath: file,
       viewport: { width: 400, height: 260 },
       waitMs: 50,
-      outRoot: await mkdtemp(join(tmpdir(), `ds-lab-lot-k6-out-${name}-`)),
+      outRoot: await mkdtemp(join(tmpdir(), `ds-lab-lignes-certaines-out-${name}-`)),
     });
     R[name] = { run, html: await readFile(run.files[1], 'utf8') };
   }

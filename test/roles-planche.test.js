@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Séance 3a, T4 : planche tokens/orbe-cafe/roles.html, une ligne par paire de rôles
+ * T4 : planche tokens/orbe-cafe/roles.html, une ligne par paire de rôles
  * (fond, mot écrit, ratio, seuil, verdict), groupée par propriété de l'élément devant.
  *
  * Attendu écrit à la main avant le code de src/report/roles.js :
@@ -31,14 +31,14 @@ const FILE = join(DIR, 'roles.html');
 const html = readFileSync(FILE, 'utf8');
 const paires = charger('paires.json');
 
-// Ratios d’Orbe Café, écrits à la main : à ne pas lire comme une règle commune (lot 5, mesure Q5).
+// Ratios d’Orbe Café, écrits à la main : à ne pas lire comme une règle commune (mesure Q5).
 const INTERDITES_ORBE_CAFE = new Map([
   ['texte.secondaire|fond.composant.appui', { ratio: 4.3327, regle: 'sur fond.composant.appui, le texte passe en texte.principal' }],
   ['texte.secondaire|fond.interactif.fort', { ratio: 1.5348, regle: 'sur un plein, le texte est texte.sur-*' }],
   ['bordure.forte|fond.composant', { ratio: 2.8718, regle: 'un champ se pose sur fond.surface' }],
   ['bordure.focus|fond.interactif.fort', { ratio: 1.5406, regle: 'l’anneau de focus est décalé de 2 px et se pose sur le fond de la page, jamais sur le plein' }],
 ]);
-// Revue de code du 15/11, lot 4 : la troncature se fait sur la valeur arrondie à 4 décimales (5,02 × 100 = 501,999… en
+// La troncature se fait sur la valeur arrondie à 4 décimales (5,02 × 100 = 501,999… en
 // flottant, qui donnait 5,01).
 const trunc = (/** @type {number} */ n) => (Math.floor(Math.round(n * 10000) / 100) / 100).toFixed(2).replace('.', ',');
 
@@ -61,11 +61,11 @@ test('T4 page autonome, en français, titrée', () => {
   assert.doesNotMatch(html, /(src|href)="https?:/);
 });
 
-test('T4 groupes par propriété : texte (37 + 15 du lot 5, et 4 interdites) puis bordure (11 + 3 + 4 de l\'étape 4b, et 3 interdites)', () => {
+test('T4 groupes par propriété : texte (37 + 15 ajoutées, et 4 interdites) puis bordure (11 + 3 + 4 de statut, et 3 interdites)', () => {
   const sections = [...html.matchAll(/<section data-propriete="([^"]+)">([^]*?)<\/section>/g)];
   assert.deepEqual(sections.map((s) => s[1]), ['texte', 'bordure']);
   assert.equal(rows(sections[0][2]).length, 56);
-  assert.equal(rows(sections[1][2]).length, 21, 'étape 4b, lot 3 : + 4 bordures de statut sur fond.surface');
+  assert.equal(rows(sections[1][2]).length, 21, '+ 4 bordures de statut sur fond.surface');
   for (const r of rows(sections[0][2])) assert.match(r.devant, /^texte\./);
   for (const r of rows(sections[1][2])) assert.match(r.devant, /^bordure\./);
 });
@@ -94,11 +94,11 @@ test('T4 colonnes : fond, mot écrit, ratio, seuil, verdict ; nom du fond aussi 
     assert.ok(mot.includes(`background:${p.hexFond}`), `${r.devant} : échantillon sur son fond`);
     assert.ok(mot.includes(r.devant.startsWith('texte.') ? `color:${p.hexDevant}` : `border-color:${p.hexDevant}`), `${r.devant} : couleur devant`);
     assert.equal(text(ratio), `${trunc(p.ratio)}:1`);
-    // Paire : son seuil (3:1 pour texte.marque.grand, lot 5 de l'étape 4a) ; interdite : le seuil de son groupe.
+    // Paire : son seuil (3:1 pour texte.marque.grand) ; interdite : le seuil de son groupe.
     const groupe = r.devant.startsWith('texte.') ? '4,5:1' : '3:1';
     assert.equal(text(seuil), 'min' in p ? `${String(p.min).replace('.', ',')}:1` : groupe);
     const key = `${r.devant}|${r.fond}`;
-    // Les 4 interdites de l'étape 3 gardent leurs ratios ; celles du lot 5 sont lues dans contratRoles.
+    // Les 4 interdites d'origine gardent leurs ratios ; celles ajoutées sont lues dans contratRoles.
     const forbidden = INTERDITES_ORBE_CAFE.get(key) ?? c.interdites.find((x) => `${x.devant}|${x.fond}` === key);
     if (forbidden) {
       assert.equal(text(verdict), `interdite ${forbidden.regle}`, key);
@@ -149,7 +149,7 @@ test('T4 à 420 px : le nom du fond se lit dans chaque ligne, sans défilement h
     return { vw, scroll: document.documentElement.scrollWidth, rows: out };
   });
   await page.close();
-  assert.equal(res.rows.length, 77, 'étape 4b, lot 3 : + 4 bordures de statut sur fond.surface');
+  assert.equal(res.rows.length, 77, '+ 4 bordures de statut sur fond.surface');
   for (const r of res.rows) assert.ok(r.seen, `${r.key} : nom du fond visible à 420 px`);
   assert.ok(res.scroll <= res.vw, `défilement horizontal : ${res.scroll} > ${res.vw}`);
 });

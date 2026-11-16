@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code du 15/11, lot 4 (docs/attendus/revue-lot-4-copies.md, point 1) : le contraste WCAG a une seule source,
+ * docs/attendus/revue-lot-4-copies.md, point 1 : le contraste WCAG a une seule source,
  * contrastRatio de src/lib/color.js (réponse de Quentin du 16/11/2026) ; culori reste l'oracle indépendant des tests.
  *
  * Attendus écrits à la main avant le code (16/11/2026) :

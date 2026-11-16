@@ -1,8 +1,8 @@
 // @ts-check
 /**
- * Séance 3c, lot 2 : contrôle des espacements par relation (src/tokens/espacements.js, npm run espacements).
+ * Contrôle des espacements par relation (src/tokens/espacements.js, npm run espacements).
  *
- * Attendu écrit à la main avant le code, d'après la séance 3c du 15/11/2026 :
+ * Attendu écrit à la main avant le code, du 15/11/2026 :
  *   les quatre ecart, dans l'ordre dans-composant, entre-composants, entre-groupes, section, sont
  *   strictement croissants ; un voisin égal ou plus petit est un échec, code de sortie 1 ;
  *   le rapport entre voisins (b / a) est affiché, jamais contrôlé ;
@@ -13,7 +13,7 @@
  *   rouge (ordre inversé) : entre-composants → {espace.24}, entre-groupes → {espace.16} ;
  *     4, 24, 16, 48 ; un échec, entre-composants / entre-groupes, rapport 0,67 (16 / 24 arrondi
  *     au centième) ; les deux autres voisins conformes (rapports 6 et 3) ;
- *   lot 4 (décision du 15/11/2026) : une valeur en étroit (étape 4b : contexte étroit, largeur.etroit.tokens.json) doit rester
+ *   Une valeur en étroit (contexte étroit, largeur.etroit.tokens.json) doit rester
  *     strictement supérieure à la valeur de l'ecart précédent et inférieure ou égale à sa valeur large ;
  *     sinon échec, code de sortie 1 ; Orbe Café : ecart.section 32 px sous 600 px, > 24 et ≤ 48, conforme ;
  *     rouge : étroit → {espace.24} (égal à entre-groupes) ; étroit → {espace.64} (au-dessus de 48) ;
@@ -24,7 +24,7 @@
  *     rapport est sous 2 ; les autres rapports restent affichés sans seuil ;
  *     vert : 4 et 16, rapport 4 ; rouge : dans-composant → {espace.12}, 12 et 16, rapport 1,33, l'ordre
  *     strict reste conforme (12 < 16 < 24 < 48) ;
- *   séance 3c, typo (15/11/2026) : la sortie liste aussi les primitives espace.* sans rôle, affichées, non
+ *   La sortie liste aussi les primitives espace.* sans rôle, affichées, non
  *     contrôlées ; une primitive citée seulement par une valeur en étroit compte comme utilisée ;
  *     Orbe Café : espace.0, espace.8, espace.12, espace.64 (espace.32 sert à ecart.section en étroit).
  */
@@ -42,7 +42,7 @@ import { charger, COMMUN, ORBE } from './helpers/jetons.js';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');
 const load = charger;
-// Revue de code du 15/11, lot 0 : jetons lus par le resolver (largeurs), seuil de l'étroit compris ; l'aide ne sert plus
+// Jetons lus par le resolver (largeurs), seuil de l'étroit compris ; l'aide ne sert plus
 // qu'aux jeux modifiés exprès.
 const l = largeurs(DIR);
 const prims = l.large.primitives;
@@ -79,7 +79,7 @@ const variantEtroit = (edit) => {
 /** @param {ReturnType<typeof espacements>} r */
 const values = (r) => r.ecarts.map((e) => e.px);
 
-test('3c vert : Orbe Café, 4 < 16 < 24 < 48, rapports affichés, code 0', () => {
+test('vert : Orbe Café, 4 < 16 < 24 < 48, rapports affichés, code 0', () => {
   const r = espacements(l.large.semantique, prims, l.etroit);
   assert.deepEqual(values(r), [4, 16, 24, 48]);
   assert.deepEqual(r.ecarts.map((e) => e.role), ['ecart.dans-composant', 'ecart.entre-composants', 'ecart.entre-groupes', 'ecart.section']);
@@ -98,7 +98,7 @@ test('3c vert : Orbe Café, 4 < 16 < 24 < 48, rapports affichés, code 0', () =>
   assert.match(p.stdout, /primitives sans rôle \(affiché, non contrôlé\)\n {2}espace\.0, espace\.8, espace\.12, espace\.64\n/);
 });
 
-test('3c lot 4 vert : ecart.section en étroit, 32 px sous 600 px, > 24 et ≤ 48, code 0', () => {
+test('vert, en étroit : ecart.section en étroit, 32 px sous 600 px, > 24 et ≤ 48, code 0', () => {
   const r = espacements(l.large.semantique, prims, l.etroit);
   assert.deepEqual(
     r.etroits.map((e) => ({ role: e.role, px: e.px, alias: e.alias, sous: e.sous, precedent: e.precedent, large: e.large, ok: e.ok })),
@@ -111,7 +111,7 @@ test('3c lot 4 vert : ecart.section en étroit, 32 px sous 600 px, > 24 et ≤ 4
   assert.match(p.stdout, /1 valeur en étroit, aucune en échec\./);
 });
 
-test('3c lot 4 rouge : valeur en étroit égale à entre-groupes, ou au-dessus de la valeur large, code 1', () => {
+test('rouge, en étroit : valeur en étroit égale à entre-groupes, ou au-dessus de la valeur large, code 1', () => {
   for (const [alias, px, sup, inf] of /** @type {const} */ ([['{espace.24}', 24, 'non', 'oui'], ['{espace.64}', 64, 'oui', 'non']])) {
     const sem = structuredClone(l.large.semantique);
     const etroit = variantEtroit((e) => { e.ecart.section.$value = alias; });
@@ -125,7 +125,7 @@ test('3c lot 4 rouge : valeur en étroit égale à entre-groupes, ou au-dessus d
   }
 });
 
-test('3c rouge : deux rôles égaux (entre-composants = entre-groupes = 16), code 1', () => {
+test('rouge : deux rôles égaux (entre-composants = entre-groupes = 16), code 1', () => {
   const sem = variant((s) => { s.ecart['entre-groupes'].$value = '{espace.16}'; });
   const r = espacements(sem, prims, etroitDe(sem));
   assert.deepEqual(values(r), [4, 16, 16, 48]);
@@ -136,7 +136,7 @@ test('3c rouge : deux rôles égaux (entre-composants = entre-groupes = 16), cod
   assert.match(p.stdout, /3 paires de voisins, 1 en échec\./);
 });
 
-test('3c rouge : ordre inversé (entre-composants 24, entre-groupes 16), code 1', () => {
+test('rouge : ordre inversé (entre-composants 24, entre-groupes 16), code 1', () => {
   const sem = variant((s) => {
     s.ecart['entre-composants'].$value = '{espace.24}';
     s.ecart['entre-groupes'].$value = '{espace.16}';
@@ -153,7 +153,7 @@ test('3c rouge : ordre inversé (entre-composants 24, entre-groupes 16), code 1'
 const RAISON = "pour qu'on voie à quel champ appartient un libellé ou un message";
 const STATUT = 'régularité observée dans les systèmes lus, pas une norme';
 
-test('3c règle de proximité vert : 4 et 16, au moins le double, code 0', () => {
+test('règle de proximité vert : 4 et 16, au moins le double, code 0', () => {
   const sem = structuredClone(l.large.semantique);
   const r = espacements(sem, prims, etroitDe(sem));
   assert.deepEqual(
@@ -168,7 +168,7 @@ test('3c règle de proximité vert : 4 et 16, au moins le double, code 0', () =>
   assert.match(p.stdout, /1 règle de proximité, aucune en échec\./);
 });
 
-test('3c règle de proximité rouge : 12 et 16, rapport 1,33 sous 2, code 1', () => {
+test('règle de proximité rouge : 12 et 16, rapport 1,33 sous 2, code 1', () => {
   const sem = variant((s) => { s.ecart['dans-composant'].$value = '{espace.12}'; });
   const r = espacements(sem, prims, etroitDe(sem));
   assert.deepEqual(r.fails, [], "l'ordre strict reste conforme");

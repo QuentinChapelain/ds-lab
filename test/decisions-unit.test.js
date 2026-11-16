@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code du 15/11, lot 0 (docs/attendus/revue-lot-0-filets.md, point 2) : valeur retenue après décision.
+ * docs/attendus/revue-lot-0-filets.md, point 2 : valeur retenue après décision.
  * La règle « décision écrite, sinon refus, sinon proposition appliquée, sinon valeur actuelle » est lue en quatre
  * endroits de src/ : mapping (simulation), outcomeOf (conflits de déclarations), controlAfter (contrôle de proximité
  * après décisions) et le statut de migration. Sans navigateur.
@@ -80,7 +80,7 @@ test('V4 statut de migration : appliquée, décidée, refusée, avec la même va
   ]);
 });
 
-// Revue de code du 15/11, lot 2 : une décision écrite sur une ligne « inchangé » l'emporte, pour les quatre lecteurs.
+// Une décision écrite sur une ligne « inchangé » l'emporte, pour les quatre lecteurs.
 // Table écrite à la main : I1 8px inchangé (dans le composant), décidé à 12px ; I2 10px proche vers 12px (entre
 // composants), refusé. Valeurs retenues : I1 12px, I2 10px ; la paire reste inversée (12 dans ≥ 10 entre).
 test('V5 ligne « inchangé » avec une décision écrite : même valeur retenue (12px) pour les quatre lecteurs', () => {
@@ -110,7 +110,7 @@ test('V5 ligne « inchangé » avec une décision écrite : même valeur retenue
   assert.deepEqual(m.data.rows.map((/** @type {any} */ r) => [r.id, r.status, r.new ?? r.value]), [['I1', 'décidée', '12px'], ['I2', 'refusée', '10px']], 'migration');
 });
 
-// Revue de code du 15/11, lot 4 (docs/attendus/revue-lot-4-copies.md, point 3 ; décision de Quentin du 16/11/2026) : une
+// docs/attendus/revue-lot-4-copies.md, point 3 ; décision de Quentin du 16/11/2026 : une
 // décision écrite égale à l'ancienne valeur laisse la ligne, pour les quatre lecteurs. Table écrite à la main : E1 20px
 // proche vers 16px (dans le composant), décidé à 20px ; E2 18px décision proposée vers 24px (entre composants), décidé à
 // 18px. Valeurs retenues : E1 20px, E2 18px (rien ne change) ; migration : « inchangé » pour les deux (avant : E1

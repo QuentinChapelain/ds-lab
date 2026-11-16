@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code du 15/11, lot 1b : une panne n'est pas un résultat, tests qui lancent Chromium, faute d'autre moyen (vraie
+ * Une panne n'est pas un résultat, tests qui lancent Chromium, faute d'autre moyen (vraie
  * page, vraie navigation, vraie trace). Les tests sans navigateur sont dans test/pannes-migration.test.js.
  *   M1b une trace en panne garde la page, échantillons « non tracé » ;
  *   M1c audit : une page tombée est nommée par son étape, absente du rendu et du déclaré, sortie 2 « audit écrit, incomplet » ;

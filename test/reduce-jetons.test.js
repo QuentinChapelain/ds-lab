@@ -1,12 +1,12 @@
 // @ts-check
 /**
- * Revue de code, lot 5, points 4 et 5 : reduce --tokens lit un resolver et refuse un fichier qui ne donne aucun jeton
+ * reduce --tokens lit un resolver et refuse un fichier qui ne donne aucun jeton
  * (docs/attendus/revue-lot-5-marque.md, D18). Sans navigateur : chaque refus sort avant de lancer Chromium.
  *
  * Attendus écrits à la main avant le code (16/11/2026) :
  *   J1 un resolver (version et resolutionOrder) est résolu depuis son dossier, dans ses contextes par défaut : le resolver
  *      d'Orbe Café donne 133 entrées à l'index (108 chemins de couleur, 25 de dimension), dont chaque chemin de la copie
- *      figée d'avant l'étape 4b, avec sa valeur ; un fichier de jetons est lu tel quel (copie figée : 104 entrées) ;
+ *      figée d'origine, avec sa valeur ; un fichier de jetons est lu tel quel (copie figée : 104 entrées) ;
  *   J2 un fichier qui ne donne aucun jeton ({}, ou les rôles seuls, tout en alias) : sortie 2, une ligne
  *      « reduce : --tokens <chemin> : aucun jeton lu (couleur en hex, dimension en px) ; un fichier .tokens.json ou un
  *      resolver DTCG 2025.10 attendu » ;

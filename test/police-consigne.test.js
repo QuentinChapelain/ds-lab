@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Étape 4c, lot 5 : consigne commune de hauteur de capitale des styles de titre (docs/attendus/etape-4c-police-des-titres.md,
+ * Consigne commune de hauteur de capitale des styles de titre (docs/attendus/etape-4c-police-des-titres.md,
  * réponse 9). Attendus écrits à la main avant le code :
  *   C1 tokens/commun/police.tokens.json déclare police.titre.hauteur-capitale, $type number, 0,7 [H] ;
  *   C2 dans semantique.tokens.json et largeur.etroit.tokens.json, affichage et titres 1 à 3 portent

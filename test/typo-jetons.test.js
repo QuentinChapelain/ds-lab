@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Séance 3c, typo, lot 1 : graisses, polices de marque et onze styles de texte d'Orbe Café (marque fictive).
+ * Graisses, polices de marque et onze styles de texte d'Orbe Café (marque fictive).
  *
  * Attendu écrit à la main avant le code, d'après le plan typo du 15/11/2026 :
  *   primitives : graisse 400, 600, 700 ($type fontWeight) ; aucune primitive d'interligne ;
@@ -28,7 +28,7 @@
  *   décision du 15/11/2026 prise sur la planche : {taille-texte.12}, rapport 1,3333 ; aucun autre jeton ne change).
  * Rapports attendus (hauteur ÷ taille, 4 décimales) : 68/60 1,1333 ; 40/36 1,1111 ; 56/48 1,1667 ; 36/30 1,2 ;
  *   32/24 1,3333 ; 28/20 1,4 ; 24/18 1,3333 ; 24/16 1,5 ; 28/18 1,5556 ; 20/14 1,4286.
- * Étape 4c (D17, décision du 15/11/2026, 19 h 59) : lignes relevées pour que l'encre de deux lignes ne se touche pas,
+ * D17 : lignes relevées pour que l'encre de deux lignes ne se touche pas,
  *   en gardant DS7 ; affichage.grand 60/76 (76/60 = 1,26667 → 1,2667) et 36/48 (1,3333) ; affichage.moyen 48/60
  *   (1,25) et 30/40 (1,3333) ; titre.1 30/40 (1,3333) en large, inchangé en étroit ; le reste inchangé.
  */
@@ -113,10 +113,10 @@ test('typo sémantique : rapport = hauteur visée ÷ taille, 4 décimales', () =
   }
 });
 
-test('typo sémantique, 4b lot 1 : valeur en étroit dans le contexte étroit pour affichage et titres 1 à 3, eux seuls, composite entier', () => {
+test('typo sémantique : valeur en étroit dans le contexte étroit pour affichage et titres 1 à 3, eux seuls, composite entier', () => {
   const etroit = charger('largeur.etroit.tokens.json');
   for (const [style, [, , te, , , , , re]] of Object.entries(STYLES)) {
-    // Étape 4c : la consigne de hauteur de capitale est le seul $extensions permis (police-consigne.test.js).
+    // La consigne de hauteur de capitale est le seul $extensions permis (police-consigne.test.js).
     assert.equal(at(sem.typo, style).$extensions?.['ds-lab.etroit'], undefined, style);
     const x = at(etroit.typo, style);
     if (te === null) assert.equal(x, undefined, style);
@@ -140,6 +140,6 @@ test('typo sémantique : une phrase d\'usage, hauteur visée en px, sans couleur
   }
 });
 
-test('typo : la couche couleur ne change pas, 42 rôles plus les 9 du lot 5 de l\'étape 4a', () => {
+test('typo : la couche couleur ne change pas, 42 rôles plus les 9 ajoutés', () => {
   assert.equal(resolveRoles(sem, prims, load('statuts.tokens.json'), marque).size, 51);
 });

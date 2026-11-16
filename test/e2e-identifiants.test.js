@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot R, R-1 : identifiant et titre en clair de chaque ligne. Réduction des trois
+ * R-1 : identifiant et titre en clair de chaque ligne. Réduction des trois
  * pages en désordre sur la valise, sans puis avec decisions-passage-2c.json : les
  * identifiants sont uniques et ne dépendent pas des décisions. Un champ est nommé par
  * son libellé, jamais par sa valeur saisie.

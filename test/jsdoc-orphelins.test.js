@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code du 15/11, lot 3 (docs/attendus/revue-lot-3-types.md, point 5) : aucun bloc JSDoc à
+ * docs/attendus/revue-lot-3-types.md, point 5 : aucun bloc JSDoc à
  * @param n'est suivi d'un autre bloc JSDoc. Un tel bloc ne documente aucune fonction : TypeScript
  * prend le second, et la fonction visée par le premier n'est pas vérifiée par @ts-check.
  */

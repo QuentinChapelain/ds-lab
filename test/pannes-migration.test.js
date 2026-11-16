@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code du 15/11, lot 1b : une panne n'est pas un résultat (docs/attendus/revue-lot-1b-pannes-migration.md, D18).
+ * Une panne n'est pas un résultat (docs/attendus/revue-lot-1b-pannes-migration.md, D18).
  * Tests sans navigateur ; ceux qui lancent Chromium sont dans test/pannes-migration-chromium.test.js. Aucune étape
  * commune ne lance Chromium ici (M4 l'empêche de se lancer par PLAYWRIGHT_BROWSERS_PATH=/nulle/part).
  *   M1 measureRendered : une étape qui tombe après le relevé ne verse rien dans le rendu (page factice) ;

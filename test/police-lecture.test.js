@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Étape 4c, lot 1 : lecture d'une police des titres (docs/attendus/etape-4c-police-des-titres.md).
+ * Lecture d'une police des titres (docs/attendus/etape-4c-police-des-titres.md).
  * Attendus écrits à la main avant le code, chiffres lus avec fontTools 4.60.2 (bibliothèque indépendante, hors du dépôt) :
  *   PYTHONPATH=local/outils/fonttools python3 -c "from fontTools.ttLib import TTFont; t = TTFont('<fichier>'); ..."
  *   (OS/2 : version, sCapHeight, sxHeight, usWeightClass, sTypoAscender, sTypoDescender ; hhea : ascent, descent, lineGap ;

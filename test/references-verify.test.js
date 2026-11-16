@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot V, étape 2. Attendus écrits avant le code :
+ * Références et verify. Attendus écrits avant le code :
  * 1. demo --racine <dossier> : le serveur principal sert ce dossier (même remplacement de
  *    {{ORIGINE_DISTANTE}}), le serveur distant est inchangé ; sans option, comportement actuel.
  * 2. reduce --references <dossier> : pour chaque page de la table, <page>.reference.png =
@@ -34,10 +34,10 @@ let servers;
 let run;
 
 before(async () => {
-  root = await mkdtemp(join(tmpdir(), 'ds-lab-lot-v-racine-'));
+  root = await mkdtemp(join(tmpdir(), 'ds-lab-references-verify-racine-'));
   await cp(join(FIXTURE_DIR, 'desordre'), join(root, 'desordre'), { recursive: true });
   await writeFile(join(root, 'seulement-ici.txt'), 'racine copiée\n');
-  refs = await mkdtemp(join(tmpdir(), 'ds-lab-lot-v-refs-'));
+  refs = await mkdtemp(join(tmpdir(), 'ds-lab-references-verify-refs-'));
   servers = await startFixtureServers({ root });
   [run] = await runReduce({
     addresses: [`${servers.origin}/desordre/carte.html`, '/desordre/temoin.html'],
@@ -46,7 +46,7 @@ before(async () => {
     referencesPath: refs,
     viewport: VIEWPORT,
     waitMs: 100,
-    outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-lot-v-reduce-')),
+    outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-references-verify-reduce-')),
   });
 });
 

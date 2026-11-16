@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot S : npm run apply, sur une feuille fictive. Attendus écrits à la main avant le code.
+ * npm run apply, sur une feuille fictive. Attendus écrits à la main avant le code.
  * S2. Chaque entrée de modifications.json est appliquée à sa déclaration (feuille, ligne de la règle,
  *     sélecteur, propriété), composant d'un raccourci compris ; garde : une valeur écrite qui n'est
  *     pas celle attendue n'est pas appliquée et sort en écart ; un composant de raccourci partagé par
@@ -123,7 +123,7 @@ const MODS = {
 
 /** Copie fraîche : la feuille et une page. */
 async function fresh() {
-  const root = await mkdtemp(join(tmpdir(), 'ds-lab-lot-s-'));
+  const root = await mkdtemp(join(tmpdir(), 'ds-lab-apply-unit-'));
   await mkdir(join(root, 's'));
   await writeFile(join(root, 's', 'a.css'), CSS);
   await writeFile(join(root, 'p.html'), HTML);
@@ -220,7 +220,7 @@ test('S4 : le HTML n’est pas touché ; reste.md : contexte, reste (lien, chang
   assert.ok(!/REMPLACEMENTS|RATTACHE/.test(md));
 });
 
-// Revue de code du 15/11, lot 2 : une seule table raccourci → propriétés longues ; border et border-top ne couvrent pas
+// Une seule table raccourci → propriétés longues ; border et border-top ne couvrent pas
 // les rayons. Feuille écrite à la main, attendu écrit à la main.
 test('S9 : un border écrit après border-radius ne couvre pas les rayons ; border-top non plus', async () => {
   const root = await fresh();

@@ -1,18 +1,18 @@
 // @ts-check
 /**
- * Séance 3a, T0 : statuts avertissement et info d'Orbe Café (marque fictive), générés par
+ * T0 : statuts avertissement et info d'Orbe Café (marque fictive), générés par
  * generateScale (src/valise/generate.js) et rangés à part dans tokens/orbe-cafe/statuts.tokens.json.
  * primitives.tokens.json n'est pas modifié.
  *
  * Attendus écrits à la main avant le code :
- *   sources : avertissement #e5a000, info #0284c7 (attendu de la séance 3a) ;
+ *   sources : avertissement #e5a000, info #0284c7 (attendu des rôles de couleur) ;
  *   avertissement : école « plein clair » (k9 = wcagContrast('#e5a000', '#ffffff') < 3,2), onSolid #4c3200 ;
  *   info : école « normale », onSolid #000104 (le blanc ne tient pas 4,5 sur le pas 9) ;
  *     how : node --input-type=module -e "import { generateScale } from './src/valise/generate.js';
  *           console.log(generateScale('avertissement', '#e5a000'), generateScale('info', '#0284c7'))"
  *     (essai du 14/11/2026, avant le code de T0) ;
  *   empreinte de primitives.tokens.json à 3fddd72 : shasum -a 256 tokens/orbe-cafe/primitives.tokens.json ;
- *   séance 3c, typo (15/11/2026) : le bloc graisse est ajouté ; l'empreinte de 3fddd72 doit tenir une fois
+ *   Le bloc graisse est ajouté ; l'empreinte de 3fddd72 doit tenir une fois
  *   ce seul bloc retiré (rien d'autre ne change dans le fichier).
  * Les contrastes sont recalculés ici avec culori (wcagContrast), indépendamment du générateur.
  */
@@ -105,7 +105,7 @@ test('T0 checkValise passe sur les deux échelles', () => {
   assert.deepEqual(checkValise(valiseFromTokens(statuts)), []);
 });
 
-test('T0 copie figée des primitives d’avant l’étape 4b intacte (empreinte de 3fddd72), au bloc graisse près (séance 3c) : référence du test suivant, seule lectrice de fixtures/marque-demo/jetons/ (revue, lot 5)', () => {
+test('T0 copie figée des primitives d’origine intacte (empreinte de 3fddd72), au bloc graisse près : référence du test suivant, seule lectrice de fixtures/marque-demo/jetons/ (D28)', () => {
   const s = readFileSync(join(ROOT, 'fixtures', 'marque-demo', 'jetons', 'primitives.tokens.json'), 'utf8');
   const sansGraisse = s.replace(/ {2}"graisse": \{\n[^]*?\n {2}\},\n/, '');
   assert.notEqual(sansGraisse, s, 'bloc graisse présent');
@@ -113,12 +113,12 @@ test('T0 copie figée des primitives d’avant l’étape 4b intacte (empreinte 
   assert.equal(h, PRIMITIVES_SHA256);
 });
 
-test('4b lot 1 : primitives communes et échelles d\'Orbe Café réunies = primitives d\'avant le rangement, descriptions de fichier mises à part', () => {
+test('primitives communes et échelles d\'Orbe Café réunies = primitives d\'avant le rangement, descriptions de fichier mises à part', () => {
   const avant = JSON.parse(readFileSync(join(ROOT, 'fixtures', 'marque-demo', 'jetons', 'primitives.tokens.json'), 'utf8'));
   const apres = charger('primitives.tokens.json');
   delete avant.$description;
   delete apres.$description;
-  // Étape 4b, lot 2 (réponse 1) : deux primitives ajoutées, blanches comme couleur.blanc.
+  // Deux primitives ajoutées, blanches comme couleur.blanc.
   assert.equal(apres.couleur.surface.$value.hex, '#ffffff');
   assert.equal(apres.couleur['sur-inverse'].$value.hex, '#ffffff');
   delete apres.couleur.surface;

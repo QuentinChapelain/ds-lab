@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot V, étape 6. Attendus écrits avant le code.
+ * Conflits de déclarations et unité écrite. Attendus écrits avant le code.
  * D3. Une ligne RATTACHE dont la déclaration source est en unité relative (rem, em, %) n'est pas
  *     rattachée : la consigne dit de la laisser et de poser
  *     /* ds-lab : unité relative, non rattachée (<valeur>, <date>) *\/.
@@ -71,7 +71,7 @@ let servers;
 let run;
 
 before(async () => {
-  const root = await mkdtemp(join(tmpdir(), 'ds-lab-lot-v-conflits-'));
+  const root = await mkdtemp(join(tmpdir(), 'ds-lab-declarations-conflits-'));
   await mkdir(join(root, 't'));
   await writeFile(join(root, 't', 's.css'), CSS);
   await writeFile(join(root, 't', 'P.html'), PAGE_P);
@@ -87,7 +87,7 @@ before(async () => {
     decisionsPath: decisions,
     viewport: { width: 600, height: 400 },
     waitMs: 50,
-    outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-lot-v-conflits-out-')),
+    outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-declarations-conflits-out-')),
   });
 });
 
@@ -200,7 +200,7 @@ test('revue : lignes en conflit marquées, déclaration à l’appui', async () 
   assert.ok(inside.id);
 });
 
-// Revue de code du 15/11, lot 0 : la feuille écrit #D8D6D2, pas la forme normalisée #d8d6d2 de la ligne.
+// La feuille écrit #D8D6D2, pas la forme normalisée #d8d6d2 de la ligne.
 test('déclarations : couleur écrite dans un raccourci (border-bottom: 1px solid #D8D6D2) lue telle quelle', () => {
   const r = rowOf('colors', '#d8d6d2');
   assert.ok(r?.declarations?.length, 'ligne de la bordure');

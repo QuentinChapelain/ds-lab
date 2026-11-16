@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code, lot 6, point 1 (docs/attendus/revue-lot-6-structure.md) : une consigne structurée (src/report/consigne.js),
+ * D29 (docs/attendus/revue-lot-6-structure.md, point 1) : une consigne structurée (src/report/consigne.js),
  * lue par migration.md et par modifications.json. modifications.json ne relit plus la prose. Sans navigateur.
  *
  * Attendus écrits à la main, sur une table de trois lignes de marge (M1 appliquée, M2 en attente, M3 refusée), un composant

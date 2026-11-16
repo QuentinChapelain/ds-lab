@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Étape 4b, lot 1 : lecteur de resolver DTCG 2025.10 et resolvers des marques (docs/attendus/etape-4b-contextes.md).
+ * Lecteur de resolver DTCG 2025.10 et resolvers des marques (docs/attendus/etape-4b-contextes.md).
  * Attendus écrits à la main avant le code :
  *   R1 chaque marque fictive a tokens/<marque>/marque.resolver.json, version "2025.10" ; jeux primitives, marque, roles ;
  *      modificateurs mode (clair, sombre ; défaut clair) et largeur (large, etroit ; défaut large) ; seuil de l'étroit

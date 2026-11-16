@@ -1,7 +1,7 @@
 // @ts-check
 /**
- * Lot J, retouches de la revue après le second passage. Attendus écrits avant le code :
- * 1. J5 étendu : les éléments tiers déclarés (sources.json, thirdParty) sont masqués (visibility:
+ * Tiers masqués dans les pages entières, panneau, carte de plein. Attendus écrits avant le code :
+ * 1. J5 : les éléments tiers déclarés (sources.json, thirdParty) sont masqués (visibility:
  *    hidden) aussi dans les captures de page entière : « avant » et « après » de la revue (donc le
  *    panneau, qui reprend l'« avant »), références de reduce --references, et capture de verify
  *    quand on lui donne les sources (--sources). Sans sources, verify capture la page telle quelle.
@@ -10,10 +10,10 @@
  *    à gauche, sans marge vide entre elles et le panneau (même sur grand écran), la page à droite.
  * 3. Carte de plein : la version « Garder » est marquée « actuelle », placée en premier et affichée
  *    à l'ouverture, comme l'actuelle des cartes de ligne. Son export reste « garder ».
- *    Retouche de libellé : elle s'appelle « Garder le texte actuel » ; la ligne du dessous dit « le fond
+ *    Libellé : elle s'appelle « Garder le texte actuel » ; la ligne du dessous dit « le fond
  *    passe au pas 9 » seulement quand un fond du plein n'y est pas déjà (ici bleu-9 #2b4c7e : non).
  * Page fictive (cible-valise d'Orbe Café), 400 × 700 : bandeau tiers .tiers-cookies #1b1b1b en haut,
- * bloc bleu-9 #2b4c7e portant un texte #c8553d (1,9783 : carte « Texte sur plein bleu », lot K),
+ * bloc bleu-9 #2b4c7e portant un texte #c8553d (1,9783 : carte « Texte sur plein bleu »),
  * texte #201d17 plus bas, page de 1600 px.
  */
 import { test, before, after } from 'node:test';

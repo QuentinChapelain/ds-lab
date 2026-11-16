@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot C (candidats) : cartes d'Orbe Café, grisé (C7 à C10), bilan par usage (C12) et consigne (C13).
+ * Cartes d'Orbe Café, grisé (C7 à C10), bilan par usage (C12) et consigne (C13).
  * Attendus écrits à la main avant le code : fixtures/marque-demo/expected-candidats.json (bloc « orbe »).
  *   cartes     fenêtre et ordre des candidats, « le plus proche » sur le défaut ;
  *   grisé      avec les choix du passage 2 : grisé, raison en clair, toujours cliquable ;
@@ -99,7 +99,7 @@ for (const w of E.cards)
   test(`C1 à C6, table : ${w.title}`, () => {
     const { r } = rowOf(w);
     assert.deepEqual(r.candidates.map((/** @type {any} */ c) => c.value), w.candidates);
-    // Revue de code du 15/11, lot 2 (D20) : une égalité n'a pas de défaut ; ses deux candidats sont « à égalité ».
+    // D20 : une égalité n'a pas de défaut ; ses deux candidats sont « à égalité ».
     assert.deepEqual(r.candidates.filter((/** @type {any} */ c) => c.nearest).map((/** @type {any} */ c) => c.value), w.nearest ? [w.nearest] : []);
     if (w.tie) assert.deepEqual(r.candidates.filter((/** @type {any} */ c) => c.tie).map((/** @type {any} */ c) => c.value), w.tie, 'à égalité');
     assert.equal(r.new, w.nearest, 'défaut');
@@ -180,7 +180,7 @@ test('C7 : le grisé se met à jour à chaque clic', async () => {
   }
 });
 
-test('C9, C-P1 : un candidat grisé reste visible et cliquable ; choisi, l’avertissement du lot P s’affiche', async () => {
+test('C9, C-P1 : un candidat grisé reste visible et cliquable ; choisi, l’avertissement de proximité s’affiche', async () => {
   const { context, page } = await open(orbe.passage2);
   try {
     const w = E.clicks.greyedClickable;

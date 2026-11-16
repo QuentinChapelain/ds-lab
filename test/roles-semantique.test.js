@@ -1,9 +1,9 @@
 // @ts-check
 /**
- * Séance 3a, T1 : couche sémantique de couleur d'Orbe Café (marque fictive),
+ * T1 : couche sémantique de couleur d'Orbe Café (marque fictive),
  * tokens/orbe-cafe/semantique.tokens.json, DTCG 2025.10.
  *
- * Attendu écrit à la main avant le code, d'après l'attendu de la séance 3a et ses retouches du 14/11/2026 :
+ * Attendu écrit à la main avant le code, d'après l'attendu des rôles de couleur et ses retouches du 14/11/2026 :
  *   nommage <propriété>.<sens>.<emphase>.<état>, texte sur plein en texte.sur-<sens> ;
  *   aucun nom ne cite une teinte (neutre, bleu, terre, sable) ni un pas ;
  *   primaire = bleu, accent = terre ; statuts = erreur, succes, avertissement, info ;
@@ -15,16 +15,16 @@
  *     avertissement inchangé ;
  *   décisions après T5 (14/11/2026) : fond.surface → couleur.blanc (cartes et champs) ;
  *     fond.inverse → neutre 12 et texte.sur-inverse → couleur.blanc ;
- *   étape 4b, réponse 1 : fond.surface → couleur.surface et texte.sur-inverse → couleur.sur-inverse, deux primitives
+ *   contextes, réponse 1 : fond.surface → couleur.surface et texte.sur-inverse → couleur.sur-inverse, deux primitives
  *     blanches en clair, noires en sombre ;
  *   un rôle qui a des états (fond.composant, fond.interactif.fort) porte sa valeur de base en $root (DTCG 2025.10) ;
  *   alias seulement, aucune valeur en dur ; $description d'une phrase.
- *   séance 3b (15/11/2026), règle des pleins en trois cas, déclarée dans la couche marque : les pleins et
+ *   règle des pleins en trois cas (15/11/2026), déclarée dans la couche marque : les pleins et
  *     leur texte passent par marque.<emplacement>.plein / .plein-survol / .sur-plein ; Orbe Café :
  *     primaire sombre (bleu 9, survol = bleu 9 + voile blanc 8 %, texte blanc), accent, erreur, succès et
  *     info moyens (pas 11, survol pas 12, texte blanc), avertissement clair (pas 9, survol pas 10, texte pas 12).
  *   décision du 15/11/2026 : bordure.focus → marque.primaire.11 pour toutes les marques ;
- *   séance 3c (15/11/2026) : le fichier porte aussi des rôles d'espacement (type dimension) ; les tests
+ *   Le fichier porte aussi des rôles d'espacement (type dimension) ; les tests
  *     ci-dessous portent sur les rôles de type color, toujours 42.
  * Les alias sont résolus ici par un résolveur propre au test, indépendant du code.
  */
@@ -93,10 +93,10 @@ function typesOf(node, path = /** @type {string[]} */ ([]), type = /** @type {st
 }
 
 const sem = load('semantique.tokens.json');
-/** Rôles de couleur seulement (séance 3c : les rôles d'espacement sont de type dimension). */
+/** Rôles de couleur seulement (les rôles d'espacement sont de type dimension). */
 const roles = new Map([...flatten(sem)].filter(([k]) => typesOf(sem).get(k) === 'color'));
 const prims = new Map([...flatten(load('primitives.tokens.json')), ...flatten(load('statuts.tokens.json'))]);
-/** Séance 3b, M0 : les rôles de marque passent par marque.tokens.json (primaire → bleu, accent → terre). */
+/** M0 : les rôles de marque passent par marque.tokens.json (primaire → bleu, accent → terre). */
 const marque = flatten(load('marque.tokens.json'));
 const VIA_MARQUE = /** @type {Record<string, string>} */ ({
   'fond.interactif.discret': 'marque.primaire.3',
@@ -115,7 +115,7 @@ test('T1 description racine et DTCG 2025.10', () => {
   assert.ok(typeof sem.$description === 'string' && /DTCG 2025\.10/.test(sem.$description));
 });
 
-test('T1 liste exacte des 42 rôles, plus les 9 du lot 5 (étape 4a)', () => {
+test('T1 liste exacte des 42 rôles, plus les 9 ajoutés (helpers/roles-ajoutes.js)', () => {
   assert.equal(Object.keys(EXPECTED).length, 42);
   assert.deepEqual([...roles.keys()].sort(), [...Object.keys(EXPECTED), ...Object.keys(AJOUTS)].sort());
 });

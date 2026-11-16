@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot V, étape 5 : pages témoins. Attendus écrits avant le code :
+ * Pages témoins. Attendus écrits avant le code :
  * 1. reduce --temoins <adresses> (option répétable, adresses séparées par des virgules, relatives
  *    à la première adresse) : ces pages n'entrent pas dans la table.
  * 2. La table une fois faite, elle est simulée sur chaque témoin (couplages compris) ; avec
@@ -47,14 +47,14 @@ let withW;
 let withoutW;
 
 before(async () => {
-  const root = await mkdtemp(join(tmpdir(), 'ds-lab-lot-v-temoins-'));
+  const root = await mkdtemp(join(tmpdir(), 'ds-lab-pages-temoins-'));
   await mkdir(join(root, 't'));
   await writeFile(join(root, 't', 'A.html'), PAGE_A);
   await writeFile(join(root, 't', 'W.html'), PAGE_W);
   const decisions = join(root, 'decisions.json');
-  // Lot K : le couplage est la version « onSolid » de la carte du plein terre.
+  // Le couplage est la version « onSolid » de la carte du plein terre.
   await writeFile(decisions, JSON.stringify({ 'colors|#d0563f|plein': '#c8553d', 'colors|#1f2a44|texte': '#103060', 'plein|terre': 'onSolid' }));
-  refs = await mkdtemp(join(tmpdir(), 'ds-lab-lot-v-temoins-refs-'));
+  refs = await mkdtemp(join(tmpdir(), 'ds-lab-pages-temoins-refs-'));
   servers = await startFixtureServers({ root });
   const common = { targetPath: TARGET, tokensPath: TOKENS, decisionsPath: decisions, viewport: { width: 400, height: 360 }, waitMs: 50 };
   [withW] = await runReduce({
@@ -62,9 +62,9 @@ before(async () => {
     addresses: [`${servers.origin}/t/A.html`],
     temoins: ['/t/W.html'],
     referencesPath: refs,
-    outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-lot-v-temoins-out-')),
+    outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-pages-temoins-out-')),
   });
-  [withoutW] = await runReduce({ ...common, addresses: [`${servers.origin}/t/A.html`], outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-lot-v-temoins-out2-')) });
+  [withoutW] = await runReduce({ ...common, addresses: [`${servers.origin}/t/A.html`], outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-pages-temoins-out2-')) });
 });
 
 after(async () => servers?.close());

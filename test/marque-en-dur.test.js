@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code, lot 5 : aucun nom de marque dans le code de src/ (docs/attendus/revue-lot-5-marque.md, Q6 : garde stricte).
+ * Aucun nom de marque dans le code de src/ (docs/attendus/revue-lot-5-marque.md, Q6 : garde stricte).
  *
  * Attendus écrits à la main avant le code (16/11/2026) :
  *   G1 les marques sont lues dans leurs données : chaque dossier de tokens/ qui a un entree.json donne son nom (« Orbe Café »),

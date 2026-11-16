@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * Serveurs de test pour fixtures/marque-demo : deux origines distinctes.
- * - principale : http://127.0.0.1:<p1>/, racine fixtures/marque-demo/ (ou `root`, lot V)
+ * - principale : http://127.0.0.1:<p1>/, racine fixtures/marque-demo/ (ou `root`)
  * - distante   : http://localhost:<p2>/, racine fixtures/marque-demo/distant/
  * `{{ORIGINE_DISTANTE}}` est remplacé dans les pages HTML par l'origine distante.
  */
@@ -60,7 +60,7 @@ function listen(server, host) {
 
 /**
  * Démarre les deux serveurs.
- * @param {{ root?: string }} [opts]  root : racine du serveur principal (lot V) ; le distant reste fixtures/marque-demo/distant/
+ * @param {{ root?: string }} [opts]  root : racine du serveur principal ; le distant reste fixtures/marque-demo/distant/
  * @returns {Promise<{ origin: string, remoteOrigin: string, close: () => Promise<void> }>}
  */
 export async function startFixtureServers({ root = FIXTURE_DIR } = {}) {

@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot P, étape 3 : revue et migration.md. Attendus écrits à la main avant le code
+ * Revue et migration.md. Attendus écrits à la main avant le code
  * (fixtures/marque-demo/expected-proximite.json, bloc « etape3 ») :
  *   titre      la relation, pas les éléments (« Marge basse · champ vers son message ») ;
  *   détail     relation, signal et lieu de correction (composant ou page) ;
@@ -62,7 +62,7 @@ after(async () => {
 
 /** @param {any} table @param {string} value @param {string | null} scope */
 const margin = (table, value, scope) => {
-  // Lot P-fin : scope null pour une ligne non coupée.
+  // scope null pour une ligne non coupée.
   const r = table.families.spacing.rows.find((/** @type {any} */ x) => x.old === value && x.usage === 'marge' && (x.scope ?? null) === scope);
   assert.ok(r, `marge ${value} « ${scope} » absente`);
   return r;
@@ -194,7 +194,7 @@ test('migration.md : « Change aussi » demande de relier chaque message à son 
   );
 });
 
-// Lot P-fin, étape 3 : attendus du bloc « etapeFin3 ».
+// Attendus du bloc « etapeFin3 ».
 const F = P.etapeFin3;
 
 test('revue : l’écart dit en une phrase ; pas de nombre d’usages qui répète la portée', async () => {
@@ -211,7 +211,7 @@ test('revue : l’écart dit en une phrase ; pas de nombre d’usages qui répè
 });
 
 test('consigne : « à vérifier » absent de la consigne pour l’agent', () => {
-  // Lot V, étape 6 (D3) : seule exception, « à vérifier sur les pages témoins » (unité relative).
+  // Seule exception, « à vérifier sur les pages témoins » (unité relative).
   const hits = orbe.data.agent.lines.filter((/** @type {string} */ l) => l.split(F.agent.except).join('').includes(F.agent.absent));
   assert.deepEqual(hits, []);
 });

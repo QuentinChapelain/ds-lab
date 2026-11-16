@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot K : texte sur plein, une décision par plein. Attendus écrits avant le code :
+ * Texte sur plein, une décision par plein. Attendus écrits avant le code :
  * K1. Un couplage devient une décision : une carte par plein concerné (par échelle, « Texte sur
  *     plein terre »), qui couvre tous les éléments portés par ce plein, y compris ceux dont le fond
  *     est déjà sur la cible. Un plein dont le texte passe (blanc sur bleu-9) n'a pas de carte.
@@ -13,7 +13,7 @@
  *     références et la consigne ; (c) : paire listée « sous 4,5:1, gardée par le designer ».
  *     (a) : l'onSolid sur tous les textes du plein.
  * K5. Non tranchée : rien n'est appliqué, ni texte ni fond ; les lignes de fond sont en attente.
- * Retouches (attendus écrits avant le code) :
+ * Compléments (attendus écrits avant le code) :
  * K1 bis. Pas de carte quand chaque texte passe déjà sur le fond tel qu'il est, et sur le fond où la
  *     table le mène (blanc sur terre-10 après migration : 5,1669). Blanc sur #ba4834 que la table
  *     mène à terre-9 (4,3544) : carte.
@@ -55,14 +55,14 @@ let servers;
 const R = {};
 
 before(async () => {
-  const root = await mkdtemp(join(tmpdir(), 'ds-lab-lot-k-'));
+  const root = await mkdtemp(join(tmpdir(), 'ds-lab-cartes-plein-'));
   await mkdir(join(root, 'k'));
   await writeFile(join(root, 'k', 'p.html'), PAGE);
   servers = await startFixtureServers({ root });
   for (const [name, choice] of /** @type {const} */ ([['attente', null], ['a', 'onSolid'], ['b', 'pas-10'], ['c', 'garder']])) {
     const decisions = join(root, `decisions-${name}.json`);
     await writeFile(decisions, JSON.stringify(choice ? { ...ROWS, 'plein|terre': choice } : ROWS));
-    const refs = await mkdtemp(join(tmpdir(), `ds-lab-lot-k-refs-${name}-`));
+    const refs = await mkdtemp(join(tmpdir(), `ds-lab-cartes-plein-refs-${name}-`));
     const [run] = await runReduce({
       addresses: [`${servers.origin}/k/p.html`],
       targetPath: TARGET,
@@ -71,7 +71,7 @@ before(async () => {
       referencesPath: refs,
       viewport: { width: 400, height: 560 },
       waitMs: 50,
-      outRoot: await mkdtemp(join(tmpdir(), `ds-lab-lot-k-out-${name}-`)),
+      outRoot: await mkdtemp(join(tmpdir(), `ds-lab-cartes-plein-out-${name}-`)),
     });
     R[name] = { run, refs, md: await readFile(run.files[2], 'utf8'), html: await readFile(run.files[1], 'utf8') };
   }
@@ -147,7 +147,7 @@ test('K2 : la carte dans la revue : trois versions, contraste, aucune recommand�
   assert.ok(a, 'carte plein|terre absente');
   assert.match(a, /Texte sur plein terre/);
   const values = [...a.matchAll(/class="v"[^>]*data-value="([^"]+)"/g)].map((m) => m[1]);
-  // Retouche de la revue (lot-j-revue-2) : « Garder » est l'actuelle, en premier ; l'ordre de la carte (table) ne change pas.
+  // « Garder » est l'actuelle, en premier ; l'ordre de la carte (table) ne change pas.
   assert.deepEqual(values, ['garder', 'onSolid', 'pas-10']);
   assert.match(a, /4,5155?/);
   assert.match(a, /5,1669?/);
@@ -253,7 +253,7 @@ test('K4 : une version absente ou inconnue est refusée au chargement des décis
   assert.deepEqual(pleinChoices(groups, { 'plein|terre': 'garder' }), { terre: 'garder', sable: null });
 });
 
-// Lot K, retouche : libellés des versions, pour un designer. Attendus écrits avant le code :
+// Libellés des versions, pour un designer. Attendus écrits avant le code :
 // (a) « Texte foncé » (« Texte clair » si l'onSolid est plus clair que le pas 9) ; (b) « Texte blanc, fond
 // plus foncé » (« Texte d'origine, … » si un texte d'origine n'est pas blanc ; « fond plus clair » si le
 // pas 10 est plus clair que le pas 9) ; (c) « Garder (sous le seuil) ». Valeurs et contraste sur la ligne
@@ -264,7 +264,7 @@ test('libellés : terre (blanc) et sable, dans la carte et dans la revue', () =>
   assert.deepEqual(card('attente', 'terre').versions.map((/** @type {any} */ x) => x.label), ['Texte foncé', 'Texte blanc, fond plus foncé', 'Garder (sous le seuil)']);
   assert.deepEqual(card('attente', 'sable').versions.map((/** @type {any} */ x) => x.label), ['Texte foncé', 'Garder (sous le seuil)']);
   const a = article(R.attente.html, 'plein|terre');
-  // Retouche de la revue (lot-j-revue-2) : « Garder » devient « Garder le texte actuel » ; ses fonds #d0563f et
+  // « Garder » s'appelle « Garder le texte actuel » ; ses fonds #d0563f et
   // #c4513a ne sont pas sur terre-9 #c8553d : la ligne du dessous dit que le fond passe au pas 9.
   for (const l of ['Texte foncé', 'Texte blanc, fond plus foncé', 'Garder le texte actuel']) assert.ok(a.includes(`<span>${l}</span>`), l);
   assert.match(a, /<span>Garder le texte actuel<\/span><small>#[0-9a-f]{6} sur #c8553d ; le fond passe au pas 9 \(terre-9\)<\/small>/);
@@ -284,7 +284,7 @@ test('libellés génériques : texte d’origine non blanc ; onSolid clair (« T
   assert.equal(r4(wcagContrast('#f5f5f5', '#c8553d')), 3.9941);
   assert.equal(r4(wcagContrast('#f5f5f5', '#ba4834')), 4.7392);
   assert.deepEqual(one('#c8553d', '#f5f5f5'), [['Texte foncé', 'Texte d’origine, fond plus foncé', 'Garder (sous le seuil)']]);
-  // Lot J, J4 (14/11/2026) : était [['Texte clair', 'Garder (sous le seuil)']] ; la version « teinte »
+  // J4 : était [['Texte clair', 'Garder (sous le seuil)']] ; la version « teinte »
   // s'ajoute : #1a1a1a (échelle neutre) prend neutre-7 #bfbbb5, le plus proche qui passe sur bleu-9
   // (culori : wcagContrast('#bfbbb5', '#2b4c7e') = 4,5085 ; neutre-8 #958f84 : 2,6828).
   assert.equal(r4(wcagContrast('#bfbbb5', '#2b4c7e')), 4.5085);

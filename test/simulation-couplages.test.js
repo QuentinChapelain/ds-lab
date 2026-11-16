@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot V, étape 4. Attendus écrits avant le code :
+ * Couplages dans la simulation. Attendus écrits avant le code :
  * 1. La simulation (pages entières, références, captures par version) applique les COUPLAGES :
  *    un texte posé sur un plein, sous son seuil après la table, prend l'onSolid de l'échelle.
  *    A. Aussi quand le fond est déjà sur la cible (inchangé) : aucune opération de fond à
@@ -50,14 +50,14 @@ let run;
 
 before(async () => {
   target = JSON.parse(await readFile(TARGET, 'utf8'));
-  const root = await mkdtemp(join(tmpdir(), 'ds-lab-lot-v-couplages-'));
+  const root = await mkdtemp(join(tmpdir(), 'ds-lab-simulation-couplages-'));
   await mkdir(join(root, 'couplage'));
   await writeFile(join(root, 'couplage', 'avant.html'), AVANT);
   await writeFile(join(root, 'couplage', 'apres.html'), APRES);
   const decisions = join(root, 'decisions.json');
-  // Lot K : le couplage est la version « onSolid » de la carte du plein terre.
+  // Le couplage est la version « onSolid » de la carte du plein terre.
   await writeFile(decisions, JSON.stringify({ 'colors|#d0563f|plein': '#c8553d', 'plein|terre': 'onSolid' }));
-  refs = await mkdtemp(join(tmpdir(), 'ds-lab-lot-v-couplages-refs-'));
+  refs = await mkdtemp(join(tmpdir(), 'ds-lab-simulation-couplages-refs-'));
   servers = await startFixtureServers({ root });
   [run] = await runReduce({
     addresses: [`${servers.origin}/couplage/avant.html`, '/couplage/apres.html'],
@@ -67,7 +67,7 @@ before(async () => {
     referencesPath: refs,
     viewport: { width: 400, height: 300 },
     waitMs: 50,
-    outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-lot-v-couplages-reduce-')),
+    outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-simulation-couplages-reduce-')),
   });
 });
 
@@ -170,7 +170,7 @@ test('1 : revue, pages entières : l’après porte le couplage, l’avant non',
   assert.equal(countHex(b, '#220000'), 0, 'avant');
 });
 
-test('1 : captures de la carte du plein (lot K) : #220000 avec la version onSolid, blanc gardé avec « garder »', () => {
+test('1 : captures de la carte du plein : #220000 avec la version onSolid, blanc gardé avec « garder »', () => {
   const g = (/** @type {any} */ (run.table).pleins ?? []).find((/** @type {any} */ x) => x.scale === 'terre');
   assert.ok(g?.capture?.versions?.length, 'captures de la carte');
   const solid = g.capture.versions.find((/** @type {any} */ v) => v.choice === 'onSolid');
@@ -181,13 +181,13 @@ test('1 : captures de la carte du plein (lot K) : #220000 avec la version onSoli
   assert.ok(countHex(png(solid), '#220000') > 0, 'onSolid : texte #220000');
 });
 
-// Lot V, étape 6, retouches de la consigne. Attendus écrits avant le code :
-// 1. Étape 0 : tokens.css se charge dans toute page qui charge une feuille modifiée, pas seulement
+// Consigne. Attendus écrits avant le code :
+// 1. Instruction 0 de la consigne : tokens.css se charge dans toute page qui charge une feuille modifiée, pas seulement
 //    les pages de la table.
 // 2. Une ligne RATTACHE exclut les éléments visés par un COUPLAGE et le dit : ici le blanc en texte
 //    (blanc sur bleu-9, .pied, 8,6144:1, rattaché) n'inclut pas .nouveau ni .annulee (couplés) ;
 //    leurs déclarations de couleur ne sont pas dans « Déclarations à rattacher ».
-test('consigne, étape 0 : tokens.css dans toute page qui charge une feuille modifiée', () => {
+test('consigne, instruction 0 : tokens.css dans toute page qui charge une feuille modifiée', () => {
   const zero = run.migration.agent.lines.find((/** @type {string} */ l) => l.startsWith('0. '));
   assert.ok(zero?.includes('dans toute page qui charge une feuille modifiée, pas seulement les pages de la table'), zero);
 });
@@ -206,7 +206,7 @@ test('consigne, RATTACHE : le blanc exclut les éléments couplés et le dit', (
   assert.ok(!toAttach.includes('.nouveau') && !toAttach.includes('.annulee'), `couplés hors des déclarations à rattacher : ${toAttach}`);
 });
 
-// Revue de code du 15/11, lot 0 : .pied écrit #FFF, pas la forme normalisée #ffffff de la ligne.
+// .pied écrit #FFF, pas la forme normalisée #ffffff de la ligne.
 test('déclarations : la valeur écrite est celle de la source (#FFF), pas la valeur normalisée (#ffffff)', () => {
   const a = /** @type {string[]} */ (run.migration.agent.lines);
   const white = run.migration.rows.find((/** @type {any} */ r) => r.value === '#ffffff' && r.usage === 'texte');

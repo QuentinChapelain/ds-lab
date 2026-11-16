@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot J, bloc 4 (J5, J7). Attendus écrits avant le code :
+ * J5, J7 : tiers masqués dans les captures, panneau de la page. Attendus écrits avant le code :
  * J5. Les éléments tiers déclarés (sources.json, thirdParty, ex. bandeau de cookies) sont masqués
  *     (visibility: hidden) le temps des captures des cartes : aucun de leurs pixels dans une capture.
  * J7. Dans la revue, un panneau fixe à droite montre la page telle qu'elle existe (l'image « avant »
@@ -36,7 +36,7 @@ let run;
 let browser;
 
 before(async () => {
-  const root = await mkdtemp(join(tmpdir(), 'ds-lab-lot-j4-'));
+  const root = await mkdtemp(join(tmpdir(), 'ds-lab-revue-apercu-'));
   await mkdir(join(root, 'j'));
   await writeFile(join(root, 'j', 'p.html'), PAGE);
   servers = await startFixtureServers({ root });
@@ -47,7 +47,7 @@ before(async () => {
     sourcesPath: `${FIXTURE_DIR}sources.json`,
     viewport: { width: 400, height: 700 },
     waitMs: 50,
-    outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-lot-j4-out-')),
+    outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-revue-apercu-out-')),
   });
   const { chromium } = await import('playwright-core');
   browser = await chromium.launch();
@@ -109,7 +109,7 @@ test('J7 : carte active (clic) : le panneau montre l’image « avant » de sa p
       return { same: i.src === avant.src, top: vue.scrollTop, max: vue.scrollHeight - vue.clientHeight, scale: i.clientWidth / i.naturalWidth, pos: getComputedStyle(document.getElementById('apercu') ?? document.body).position };
     });
     assert.ok(got.same, 'image « avant » de la page');
-    // Retouche de la revue (lot-j-revue-2) : deux vraies colonnes, le panneau colle en haut (sticky) au lieu d'être fixe.
+    // Deux vraies colonnes, le panneau colle en haut (sticky) au lieu d'être fixe.
     assert.equal(got.pos, 'sticky');
     // Défilé jusqu'au premier élément (24 px au-dessus), ou au bas de l'image si elle s'arrête avant.
     const want = Math.min(Math.max(0, 1500 * got.scale - 24), got.max);

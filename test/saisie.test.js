@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Étape 4, séance a, lot 1 : saisie d'une marque (docs/attendus/etape-4-contrat-de-marque.md).
+ * Saisie d'une marque (docs/attendus/etape-4-contrat-de-marque.md).
  *
  * Attendus écrits à la main avant le code (15/11/2026) :
  *   S1 Orbe Café passe par la saisie sans changer de valeur : tokens/orbe-cafe/entree.json nomme les échelles
@@ -8,11 +8,11 @@
  *      octet par octet. Empreinte du fichier versionné, commande : git show b5783d3:tokens/orbe-cafe/marque.tokens.json | shasum -a 256
  *      → b479882e1a159e9c429805f44eefd7178e569d8f833edbacb5c6102c57016461.
  *   S2 Motif « entrée invalide » : nom, primaire ou polices manquants ; couleur qui n'est pas #rrggbb ;
- *      clé inconnue ; échelle existante sans fichier d'échelles écrites à la main dans le dossier (revue, lot 5) ; échelle inconnue.
+ *      clé inconnue ; échelle existante sans fichier d'échelles écrites à la main dans le dossier ; échelle inconnue.
  *   S3 Motif « checkValise » : primaire #00ccff. Essai avant le code (generateScale, script d'essai hors dépôt) :
  *      pas 7 = pas 9 = #00ccff → « primaire : doublon, pas 7 = pas 9 (#00ccff) ».
- *   S4 Motif « contraste ». Avant le lot 3 bis : primaire #cc9900 refusée (texte pas 12 sur survol pas 10, 4,27:1).
- *      Règle du lot 3 bis : #cc9900 devient moyen et passe ; sur la grille de 216 couleurs, aucune n'échoue plus au
+ *   S4 Motif « contraste ». Avant D04 : primaire #cc9900 refusée (texte pas 12 sur survol pas 10, 4,27:1).
+ *      Avec D04 : #cc9900 devient moyen et passe ; sur la grille de 216 couleurs, aucune n'échoue plus au
  *      contraste. Le motif se vérifie avec un seuil d'essai : les deux paires texte.sur-interactif passent au type
  *      « essai », seuil 5,2. Primaire #8a4fd8, soutenu (pas 9 #8a4fd8, pas 10 #864bd3) ; culori, wcagContrast :
  *      blanc sur #8a4fd8 = 5,0112 (échoue), blanc sur #864bd3 = 5,3021 (passe)
@@ -21,7 +21,7 @@
  *      = #6d675b (neutre 11).
  *   S6 Commande : sans fichier → code 2 ; refusée (#00ccff, S3) → code 1, motif sur la sortie d'erreur, rien d'écrit ;
  *      acceptée → code 0, marque.tokens.json et echelles.tokens.json écrits, contrôle de contraste lancé (0 paire en échec).
- *   S7 npm run contraste -- --marque tokens/orbe-cafe/ : même sortie que sans l'option ; revue, lot 5 : que son bloc sans l'option.
+ *   S7 npm run contraste -- --marque tokens/orbe-cafe/ : même sortie que sans l'option ; Que son bloc sans l'option.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -52,7 +52,7 @@ test('S1 Orbe Café : échelles existantes, marque.tokens.json identique octet p
   assert.equal(r.echelles, null, 'aucune échelle générée');
   const texte = serialiser(r.marque);
   assert.equal(texte, readFileSync(join(ORBE, 'marque.tokens.json'), 'utf8'));
-  // Étape 4a, lot 5 : seul ajout, l'emplacement texte-grand ; retiré, le fichier redevient identique octet par octet.
+  // Seul ajout, l'emplacement texte-grand ; retiré, le fichier redevient identique octet par octet.
   const sans = structuredClone(r.marque);
   delete sans.marque.primaire['texte-grand'];
   assert.equal(sha(serialiser(sans)), ORBE_SHA);
@@ -70,7 +70,7 @@ test('S2 entrée invalide : motifs', () => {
   assert.deepEqual(motifs({ ...ok, accnet: '#2b4c7e' }), ['entrée invalide : clé inconnue accnet']);
   assert.deepEqual(motifs({ ...ok, primaire: { echelle: 'bleu' } }), ['entrée invalide : primaire, échelle existante : aucune échelle écrite à la main dans le dossier de la marque (primitives.tokens.json)']);
   assert.deepEqual(motifs({ ...ok, accent: { echelle: 'violet' } }, ORBE), ['entrée invalide : accent, échelle inconnue violet']);
-  // Étape 4, dernier lot (D16) : polices.texte est facultative, la police du produit la remplace.
+  // D16 : polices.texte est facultative, la police du produit la remplace.
   assert.deepEqual(motifs({ ...ok, polices: { titre: ['Georgia'] } }), []);
   assert.deepEqual(motifs({ ...ok, polices: { titre: ['Georgia'], texte: [] } }), ['entrée invalide : polices.texte, liste de noms de familles attendue']);
   assert.deepEqual(motifs({ ...ok, polices: { titre: [], texte: ['Arial'] } }), ['entrée invalide : polices.titre, liste de noms de familles attendue']);
@@ -127,7 +127,7 @@ test('S6 commande saisie : codes de sortie, motif, fichiers', () => {
   assert.ok(existsSync(join(ok, 'marque.tokens.json')) && existsSync(join(ok, 'echelles.tokens.json')));
 });
 
-test('S7 contraste --marque tokens/orbe-cafe/ : même sortie que son bloc sans l\'option (revue, lot 5 : sans l\'option, toutes les marques)', () => {
+test('S7 contraste --marque tokens/orbe-cafe/ : même sortie que son bloc sans l\'option (D26 : sans l\'option, toutes les marques)', () => {
   const a = run('src/cli/contraste.js');
   const b = run('src/cli/contraste.js', '--marque', 'tokens/orbe-cafe/');
   assert.equal(a.status, 0);

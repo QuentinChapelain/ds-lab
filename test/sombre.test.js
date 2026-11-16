@@ -1,7 +1,7 @@
 // @ts-check
 /**
- * Étape 4b, lots 2 et 2 bis : mode sombre (docs/attendus/etape-4b-contextes.md, « Lot 2 bis »). Attendus écrits à la main
- * avant le code du lot 2 bis, chiffres par culori (wcagContrast) :
+ * Mode sombre (docs/attendus/etape-4b-contextes.md). Attendus écrits à la main
+ * avant le code, chiffres par culori (wcagContrast) :
  *   page #121212 : 1,121 contre le noir ; commande : node --input-type=module -e "import {wcagContrast} from 'culori';
  *     console.log(wcagContrast('#121212','#000000'))" ;
  *   M1 couleur en sombre : pas 9 = source ; pas 1 à 7 au rapport à la page des cibles claires au pas 1 (cible ÷ 1,02),

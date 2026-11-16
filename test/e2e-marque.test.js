@@ -1,14 +1,14 @@
 // @ts-check
 /**
- * Lot M (marque d'abord), étape 1 : pièges PM0 à PM8 sur la page
+ * Pièges PM0 à PM8 sur la page
  * fixtures/marque-demo/marque/marque.html de la marque fictive, avec
  * fixtures/marque-demo/cible-marque.json (bloc brand), comparés à
  * fixtures/marque-demo/expected-marque.json, écrit avant le code et jamais recalé.
  *   construction   la page est bien celle décrite (couleurs, fonds, contrastes et
  *                  variables du back-office mesurés ici, sans l'outil) : passe dès que la page existe ;
- *   aujourd'hui    ce que l'outil d'avant le lot M produisait : tests supprimés à la revue de code du 15/11
- *                  (sautés depuis le lot M) ; le défaut reste écrit dans expected-marque.json (bloc today) ;
- *   PM0 à PM8      ce que la lecture rapide et la table doivent produire après le lot M ;
+ *   aujourd'hui    ce que l'outil d'avant les règles M produisait : tests supprimés,
+ *                  sautés depuis qu'elles existent ; le défaut reste écrit dans expected-marque.json (bloc today) ;
+ *   PM0 à PM8      ce que la lecture rapide et la table doivent produire avec les règles M ;
  *   garde-fou      Orbe Café sans bloc brand : 12 décisions, inchangé.
  */
 import { test, before, after } from 'node:test';

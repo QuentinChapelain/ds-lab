@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Étape 4, séance a, lot 3 : calibrage (docs/attendus/etape-4-contrat-de-marque.md).
+ * Calibrage (docs/attendus/etape-4-contrat-de-marque.md).
  * Table des marques (une colonne par marque) et balayage des teintes près des seuils du cas clair.
  * Aucun seuil ne change : la table et les planches servent la décision, sur image.
  *
@@ -17,8 +17,8 @@
  *   Atelier Lavandine  C 0,201 ; info, ΔE 17,5 ; accent à ΔE 42,8 ;
  *   Écume et Sel       C 0,101 ; info, ΔE 26,5 ; accent à ΔE 35,3 ;
  *   Grenat Papeterie   C 0,127 ; erreur, ΔE 20,8 ; sans accent.
- *   Aucune n'est grise (C < 0,02, seuil gris du lot M).
- * Lot 3 bis (règle décidée sur image, src/tokens/pleins.js ; culori wcagContrast sur les échelles générées) :
+ *   Aucune n'est grise (C < 0,02, seuil gris de M1).
+ * Règle des pleins décidée sur image (D04, src/tokens/pleins.js ; culori wcagContrast sur les échelles générées) :
  *   Atelier Lavandine  soutenu (blanc 5,01), couleur exacte : oui (pas 9) ;
  *   Écume et Sel       clair (pas 12 : 8,33 sur le pas 9, 7,08 sur le pas 10), oui (pas 9) ;
  *   Orbe Café et Grenat Papeterie inchangés.
@@ -26,7 +26,7 @@
  *   Balayage, L 0,80 et chroma forte : h 85° moyen (pas 12 : 6,94), h 50° moyen (6,71), h 120° clair (7,21 ; 6,11).
  * Balayage : teintes 30° à 140° par pas de 5° (23), clartés 0,60 à 0,92 par pas de 0,04 (9), deux chromas
  * (la plus forte dans le gamut sRGB, et 0,10 ramenée au gamut) : 2 × 207 cases. Dans chaque case, la classe est
- * celle de classePlein sur l'échelle générée (avant le lot 3 bis : h 85° clair, h 50° et h 120° moyen).
+ * celle de classePlein sur l'échelle générée (avant D04 : h 85° clair, h 50° et h 120° moyen).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

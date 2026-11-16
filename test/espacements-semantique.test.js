@@ -1,9 +1,9 @@
 // @ts-check
 /**
- * Séance 3c, lot 1 : rôles d'espacement par relation dans la couche sémantique d'Orbe Café
+ * Rôles d'espacement par relation dans la couche sémantique d'Orbe Café
  * (tokens/orbe-cafe/semantique.tokens.json, DTCG 2025.10), et filtre de type dans resolveRoles.
  *
- * Attendu écrit à la main avant le code, d'après la séance 3c du 15/11/2026 :
+ * Attendu écrit à la main avant le code, du 15/11/2026 :
  *   cinq rôles, $type dimension, alias seulement vers espace.* (primitives.tokens.json) :
  *     ecart.dans-composant → {espace.4}, ecart.entre-composants → {espace.16},
  *     ecart.entre-groupes → {espace.24}, ecart.section → {espace.48},
@@ -15,7 +15,7 @@
  *     un rôle de type dimension dans semantique.tokens.json ne le casse pas, et le compte reste
  *     à 42 rôles de couleur, aucun sous ecart.* ni marge-interieure.* ;
  *   un jeton sans aucun $type reste traité comme avant (couleur attendue, erreur si illisible) ;
- *   lot 4 (décision du 15/11/2026) : ecart.section garde 48 px et porte sa valeur en étroit dans
+ *   ecart.section garde 48 px et porte sa valeur en étroit dans
  *     $extensions["ds-lab.etroit"] = { valeur: "{espace.32}", sous: 600 px, seuil: "[H]" } ;
  *     aucun autre rôle n'en porte ; ecart.dans-composant reste à {espace.4}.
  */
@@ -43,7 +43,7 @@ const prims = load('primitives.tokens.json');
 /** @param {any} node @param {string} path */
 const at = (node, path) => path.split('.').reduce((n, k) => n?.[k], node);
 
-test('3c cinq rôles d\'espacement, alias vers espace.*, type dimension', () => {
+test('cinq rôles d\'espacement, alias vers espace.*, type dimension', () => {
   assert.deepEqual(Object.keys(sem.ecart).filter((k) => !k.startsWith('$')).sort(), ['dans-composant', 'entre-composants', 'entre-groupes', 'section']);
   assert.deepEqual(Object.keys(sem['marge-interieure']).filter((k) => !k.startsWith('$')), ['composant']);
   for (const [role, alias] of Object.entries(EXPECTED)) {
@@ -57,7 +57,7 @@ test('3c cinq rôles d\'espacement, alias vers espace.*, type dimension', () => 
   }
 });
 
-test('3c une phrase d\'usage par rôle d\'espacement', () => {
+test('une phrase d\'usage par rôle d\'espacement', () => {
   for (const role of Object.keys(EXPECTED)) {
     const d = at(sem, role).$description;
     assert.ok(typeof d === 'string' && d.length > 10, `${role} : description`);
@@ -66,7 +66,7 @@ test('3c une phrase d\'usage par rôle d\'espacement', () => {
   }
 });
 
-test('3c lot 4, 4b lot 1 : ecart.section a sa valeur en étroit (32 px) dans le contexte étroit, lui seul ; aucune extension dans les rôles', () => {
+test('ecart.section a sa valeur en étroit (32 px) dans le contexte étroit, lui seul ; aucune extension dans les rôles', () => {
   const etroit = charger('largeur.etroit.tokens.json');
   assert.equal(etroit.ecart.section.$value, '{espace.32}');
   assert.deepEqual(Object.keys(etroit.ecart).filter((k) => !k.startsWith('$')), ['section']);
@@ -76,18 +76,18 @@ test('3c lot 4, 4b lot 1 : ecart.section a sa valeur en étroit (32 px) dans le 
   for (const role of Object.keys(EXPECTED)) assert.equal(at(sem, role).$extensions, undefined, role);
 });
 
-test('3c description racine : espacements, DTCG 2025.10', () => {
+test('description racine : espacements, DTCG 2025.10', () => {
   assert.match(sem.$description, /DTCG 2025\.10/);
   assert.match(sem.$description, /espacement/i);
 });
 
-test('3c resolveRoles : un rôle de type dimension ne le casse pas, 51 rôles de couleur (étape 4a, lot 5 : 42 + 9 rôles ajoutés)', () => {
+test('resolveRoles : un rôle de type dimension ne le casse pas, 51 rôles de couleur (42 + 9 rôles ajoutés)', () => {
   const roles = resolveRoles(sem, prims, load('statuts.tokens.json'), load('marque.tokens.json'));
   assert.equal(roles.size, 51);
   for (const r of roles.keys()) assert.match(r, /^(fond|texte|bordure)\./, r);
 });
 
-test('3c resolveRoles : type porté par le jeton ou hérité du groupe, jeton sans type inchangé', () => {
+test('resolveRoles : type porté par le jeton ou hérité du groupe, jeton sans type inchangé', () => {
   const base = { couleur: { $type: 'color', blanc: { $value: '#ffffff' } }, espace: { $type: 'dimension', 4: { $value: { value: 4, unit: 'px' } } } };
   const s = {
     fond: { $type: 'color', app: { $value: '{couleur.blanc}' } },

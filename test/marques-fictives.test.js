@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Étape 4, séance a, lot 2 : trois marques fictives ajoutées par fichier (docs/attendus/etape-4-contrat-de-marque.md).
+ * Trois marques fictives ajoutées par fichier (docs/attendus/etape-4-contrat-de-marque.md).
  *
  * Attendus écrits à la main avant les fichiers (15/11/2026). Contraste du blanc sur la couleur saisie, OKLCH
  * (culori : wcagContrast, oklch), école du générateur (generateScale) et classe de plein (classePlein) ;
@@ -11,7 +11,7 @@
  *     plein moyen ; accent #e4572e (blanc 3,68 ; L 0,637 ; h 36,5) école normale, plein moyen.
  *   Grenat Papeterie, sans accent : primaire #7a1f3d (blanc 10,04 ; L 0,396 ; h 5,2) école foncée, plein sombre ;
  *     accent replié sur le neutre (D05), plein moyen.
- * Lot 3 bis, nouvelle règle des pleins (culori, wcagContrast sur les échelles générées) : Lavandine primaire soutenu
+ * Règle des pleins (D04 ; culori, wcagContrast sur les échelles générées) : Lavandine primaire soutenu
  *   (blanc 5,01 sur le pas 9, 5,30 sur le pas 10), accent clair (pas 12 : 7,18 sur le pas 9, 6,10 sur le pas 10) ;
  *   Écume primaire clair (8,33 et 7,08), accent moyen (blanc 3,68, pas 12 : 3,52) ; Grenat inchangé.
  * Les trois sont acceptées (aucun motif) ; leurs fichiers versionnés sont ceux que produit la saisie ;
@@ -19,7 +19,7 @@
  * Survol de la classe soutenu (décision du 15/11/2026, 13 h 58) : couleur exacte sous un voile noir de 15 %, valeur
  *   calculée, formule en $extensions. Lavandine : culori, formatHex(interpolate(['#8a4fd8', '#000000'], 'rgb')(0.15))
  *   = #7543b8 ; blanc dessus 6,46:1 ; ΔE OKLab × 100 avec le repos 6,68 (le pas 10 était à 1,33).
- * Lot 4 (contrat de marque) : les quatre statuts ont le même bouton que chez Orbe Café (statuts figés, D04).
+ * Les quatre statuts ont le même bouton que chez Orbe Café (statuts figés, D04).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

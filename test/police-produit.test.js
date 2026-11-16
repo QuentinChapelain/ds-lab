@@ -1,10 +1,10 @@
 // @ts-check
 /**
- * Étape 4, dernier lot : police du produit (décision de Quentin, 17 h 51). En marque blanche, la police des titres est
+ * Police du produit (décision de Quentin, 17 h 51). En marque blanche, la police des titres est
  * celle du client ; celle du texte (et des boutons) est celle du produit, commune, déclarée une fois dans le commun.
  * Attendus écrits à la main avant le code :
  *   P1 tokens/commun/police.tokens.json déclare marque.police.texte = ["system-ui", "sans-serif"] [H], et rien d'autre ;
- *      étape 4c : plus le groupe police (consigne de hauteur de capitale des titres) ;
+ *      Plus le groupe police (consigne de hauteur de capitale des titres) ;
  *   P2 une entrée sans polices.texte est acceptée ; sa couche marque n'écrit que police.titre ; résolue par le
  *      resolver, marque.police.texte vaut la police du produit et corps.moyen la prend ; les titres 1 à 3 prennent la
  *      police du client ;
@@ -30,7 +30,7 @@ const lire = (p) => JSON.parse(readFileSync(p, 'utf8'));
 
 test('P1 police du produit déclarée une fois dans le commun', () => {
   const p = lire(join(COMMUN, 'police.tokens.json'));
-  // Étape 4c : le même fichier porte la consigne commune des titres (police.titre.hauteur-capitale, police-consigne.test.js).
+  // Le même fichier porte la consigne commune des titres (police.titre.hauteur-capitale, police-consigne.test.js).
   assert.deepEqual(Object.keys(p).filter((k) => !k.startsWith('$')), ['marque', 'police']);
   assert.deepEqual(Object.keys(p.marque).filter((k) => !k.startsWith('$')), ['police']);
   assert.equal(p.marque.police.$type, 'fontFamily');

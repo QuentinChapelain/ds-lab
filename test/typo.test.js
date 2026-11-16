@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Séance 3c, typo, lot 2 : npm run typo (src/tokens/typo.js, src/cli/typo.js).
+ * npm run typo (src/tokens/typo.js, src/cli/typo.js).
  *
  * Attendu écrit à la main avant le code, d'après le plan typo du 15/11/2026. Règles en échec (code 1) :
  *   R1 taille × interligne multiple de 4 px (tolérance 0,01 px), en large et en étroit ;
@@ -15,8 +15,8 @@
  *      {marque.police.texte}.
  * Affiché sans seuil : le rapport de chaque style (4 décimales, virgule) ; les primitives sans rôle
  *   (taille-texte et graisse ; Orbe Café : aucune depuis que mention cite taille-texte.12, décision du 15/11/2026).
- * Orbe Café : 9 règles (8, plus la consigne de hauteur de capitale de l'étape 4c), aucune en échec, code 0 ; ligne affichée = taille × rapport arrondie au centième
- *   (60 × 1,2667 = 76,002 → 76 ; lignes des titres relevées à l'étape 4c, D17).
+ * Orbe Café : 9 règles (8, plus la consigne de hauteur de capitale, DS11), aucune en échec, code 0 ; ligne affichée = taille × rapport arrondie au centième
+ *   (60 × 1,2667 = 76,002 → 76 ; lignes des titres relevées, D17).
  * Rouges, chacun ne fait tomber que sa règle :
  *   R1 titre.2 interligne 1,3 → 24 × 1,3 = 31,2 px ;
  *   R2 titre.3 → {taille-texte.24}, interligne 1,3333 (32 px) : 30, 24, 24 en large ;
@@ -41,7 +41,7 @@ import { charger, COMMUN, ORBE } from './helpers/jetons.js';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');
 const load = charger;
-// Revue de code du 15/11, lot 0 : jetons lus par le resolver (largeurs), seuil de l'étroit compris ; l'aide ne sert plus
+// Jetons lus par le resolver (largeurs), seuil de l'étroit compris ; l'aide ne sert plus
 // qu'aux jeux modifiés exprès.
 const l = largeurs(DIR);
 const marque = l.large.marque;
@@ -83,7 +83,7 @@ function rouge(sem, prims, id, detail, etroit) {
   assert.match(p.stdout, /9 règles, 1 en échec\./);
 }
 
-test('typo vert : Orbe Café, 9 règles tenues (étape 4c : consigne de hauteur de capitale), rapports affichés, primitives sans rôle, code 0', () => {
+test('typo vert : Orbe Café, 9 règles tenues (DS11 : consigne de hauteur de capitale), rapports affichés, primitives sans rôle, code 0', () => {
   const r = typo(l.large.semantique, l.large.primitives, marque, l.etroit);
   assert.deepEqual(r.regles.map((g) => g.id), REGLES);
   assert.deepEqual(failing(r), []);

@@ -61,7 +61,7 @@ test('loadSources : sans --sources → avertissement et repli', async () => {
   assert.match(r.warning ?? '', /aucun fichier de sources \(--sources\)/);
 });
 
-test('loadSources : sans --sources, local/sources.json n’est pas lu (lot M)', async () => {
+test('loadSources : sans --sources, local/sources.json n’est pas lu', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'ds-lab-sources-'));
   await mkdir(join(dir, 'local'));
   await writeFile(join(dir, 'local/sources.json'), JSON.stringify({ rules: [{ label: 'theme', match: '/theme/' }] }));

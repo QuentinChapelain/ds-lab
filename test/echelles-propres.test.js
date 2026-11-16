@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code, lot 5, point 3 : une règle des échelles existantes pour toutes les marques
+ * Une règle des échelles existantes pour toutes les marques
  * (docs/attendus/revue-lot-5-marque.md, Q3). Une entrée nomme une échelle ({ "echelle": nom }) seulement si elle est
  * écrite à la main dans le dossier de sa marque, primitives.tokens.json ; la différence entre marques vit dans ce fichier.
  *

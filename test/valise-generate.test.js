@@ -1,7 +1,7 @@
 // @ts-check
 /**
- * Lot G : générateur de valise visé par contraste (src/valise/generate.js), règles G0 à G7
- * de l'attendu du lot G (G1, G5 et G7 corrigés le 13/11/2026). Sources fictives seulement :
+ * Générateur de valise visé par contraste (src/valise/generate.js), règles G0 à G7
+ * (G1, G5 et G7 corrigées le 13/11/2026). Sources fictives seulement :
  * celles d'Orbe Café, une très foncée, un rose saturé, un rouge, un vert, un gris.
  * Les contrastes sont recalculés ici avec culori (wcagContrast), indépendamment du générateur.
  */
@@ -36,7 +36,7 @@ const SOURCES = {
   gris: '#858585',
 };
 const CHROMATIC = ['bleu', 'terre', 'sable', 'erreur', 'succes', 'nuitTresFoncee', 'roseSature', 'rouge', 'vert'];
-/** Pas dont la teinte se mesure (chroma OKLCH ≥ 0,02, le seuil gris du lot M). */
+/** Pas dont la teinte se mesure (chroma OKLCH ≥ 0,02, le seuil gris de M1). */
 const hued = (/** @type {string[]} */ steps) => steps.map((v, i) => ({ step: i + 1, v, o: oklch(v) })).filter((x) => (x.o.c ?? 0) >= 0.02);
 
 test('G0 : culori seul, sans leonardo ni chroma.js', async () => {

@@ -1,8 +1,8 @@
 // @ts-check
 /**
- * Lot M : migration.md, écrit par reduce à chaque réduction. Comparé à
+ * migration.md, écrit par reduce à chaque réduction. Comparé à
  * fixtures/marque-demo/expected-migration.json, écrit avant le code : sur les
- * trois pages en désordre (instantané de la table du lot B) et sur la page des
+ * trois pages en désordre (instantané de la table par usage) et sur la page des
  * pièges (L1, lien sans soulignement dans un paragraphe).
  */
 import { test, before, after } from 'node:test';
@@ -26,13 +26,13 @@ const desordre = { data: null, md: '', table: null };
 const pieges = { data: null, md: '' };
 /** Passage 2c : décisions du designer (fixtures/marque-demo/decisions-passage-2c.json), puis un refus en plus. */
 const DECISIONS = `${FIXTURE_DIR}decisions-passage-2c.json`;
-/** Lot K : passage 2c plus la carte « Texte sur plein terre » (onSolid), fichier temporaire. */
+/** Passage 2c plus la carte « Texte sur plein terre » (onSolid), fichier temporaire. */
 let decisionsK = '';
 /** @type {{ data: any, md: string, decisions: Record<string, string | false> }} */
 const decidee = { data: null, md: '', decisions: {} };
 /** @type {{ data: any, md: string }} */
 const refusee = { data: null, md: '' };
-/** Lot I : les pages en désordre sans fichier de jetons. */
+/** Les pages en désordre sans fichier de jetons. */
 /** @type {{ data: any, md: string }} */
 const sansJetons = { data: null, md: '' };
 /** Date de réduction des passages ci-dessous (now). */
@@ -68,7 +68,7 @@ before(async () => {
   const [p] = await runReduce({ ...common, addresses: [servers.origin + '/pieges/pieges.html'], outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-migration-')) });
   pieges.data = p.migration;
   pieges.md = await readFile(p.files[2], 'utf8');
-  // Lot K : le couplage est une décision par plein ; le passage 2c tranche aussi la carte du plein terre.
+  // Le couplage est une décision par plein ; le passage 2c tranche aussi la carte du plein terre.
   const kDir = await mkdtemp(join(tmpdir(), 'ds-lab-migration-k-'));
   decisionsK = join(kDir, 'decisions-passage-2c-plein.json');
   decidee.decisions = { ...JSON.parse(await readFile(DECISIONS, 'utf8')), 'plein|terre': 'onSolid' };
@@ -102,7 +102,7 @@ test('migration.md : table, trois sections et cinq exceptions nommées', () => {
     assert.ok(desordre.md.includes(h), h);
   for (const h of ['Liens sans soulignement dans un paragraphe', 'onSolid', 'États non lus', 'Élément injecté après le chargement', 'Égalités tranchées en silence'])
     assert.ok(desordre.md.includes(`### ${h}`) || desordre.md.includes(h), h);
-  // Lot P, étape 3 : relation et motif sur chaque ligne de la table.
+  // Relation et motif sur chaque ligne de la table.
   assert.ok(desordre.md.includes('| famille | valeur | usage | jeton | classe | relation | motif | origine CSS | éléments |'));
 });
 
@@ -163,7 +163,7 @@ test('désordre : exceptions', () => {
   const e = desordre.data.exceptions;
   const want = E.desordre.exceptions;
   assert.equal(e.links.length, want.ununderlinedLinks.count, 'liens sans soulignement');
-  // Lot K : sans décision, la carte du plein terre attend (K5) : aucun couplage ; tranchée « onSolid », les deux.
+  // Sans décision, la carte du plein terre attend (K5) : aucun couplage ; tranchée « onSolid », les deux.
   assert.deepEqual(e.onSolid, [], 'aucun couplage sans décision');
   assert.deepEqual(
     decidee.data.exceptions.onSolid.map((/** @type {any} */ p) => `${p.text}|${p.bg}|${p.scale}|${p.onSolid}`).sort(),
@@ -174,7 +174,7 @@ test('désordre : exceptions', () => {
   for (const v of want.unreadStates.values) {
     const s = e.states.find((/** @type {any} */ x) => x.value === v.value);
     assert.ok(s?.contexts.some((/** @type {any} */ c) => c.state === v.state && c.property === v.property), `${v.value} ${v.state}`);
-    // Revue de code du 15/11, lot 2 (D19) : l'anneau de focus du navigateur est nommé comme tel.
+    // D19 : l'anneau de focus du navigateur est nommé comme tel.
     if (v.navigateur) assert.equal(s?.navigateur, true, `${v.value} : anneau du navigateur`);
   }
   assert.equal(e.injected, null, 'injecté : limite connue, sans compte');
@@ -195,13 +195,13 @@ test('pièges : L1, un lien sans soulignement dans un paragraphe', () => {
   assert.ok(pieges.md.includes('### Liens sans soulignement dans un paragraphe : 1'));
 });
 
-test('décisions (passage 2c) : les 10 décisions lues décident 11 lignes (la marge de 10 px est coupée par relation), qui passent dans « Appliqué » ; trois en attente, la taille 40px née du lot R et deux égalités (D20)', () => {
-  // Lot K : « plein|terre » est la décision d'une carte, pas d'une ligne ; ses lignes de fond la suivent.
+test('décisions (passage 2c) : les 10 décisions lues décident 11 lignes (la marge de 10 px est coupée par relation), qui passent dans « Appliqué » ; trois en attente, la taille 40px née de la règle des tailles de texte et deux égalités (D20)', () => {
+  // « plein|terre » est la décision d'une carte, pas d'une ligne ; ses lignes de fond la suivent.
   const n = Object.keys(decidee.decisions).filter((k) => !k.startsWith('plein|')).length;
   assert.equal(n, 10, 'décisions lues');
-  // Lot P : « spacing|10px|marge », choisi avant la coupure, vaut pour ses deux lignes.
+  // « spacing|10px|marge », choisi avant la coupure, vaut pour ses deux lignes.
   assert.equal(decidee.data.decided, n + 1);
-  // Revue de code du 15/11, lot 2 (D20) : 14px marge et 3px rayon, égalités, attendent le designer ; le passage 2c,
+  // D20 : 14px marge et 3px rayon, égalités, attendent le designer ; le passage 2c,
   // écrit avant, ne les décide pas.
   assert.equal(decidee.data.sections.pending.total, 3, 'en attente');
   const pending = decidee.data.rows.filter((/** @type {any} */ r) => r.status === 'en attente');
@@ -237,19 +237,19 @@ test('consigne pour un agent : contexte, une instruction par ligne appliquée, c
   const text = a.lines.join('\n');
   assert.ok(decidee.md.includes('## Consigne pour un agent'));
   const ctx = a.lines.slice(1, a.lines.indexOf(''));
-  // Lot V, étape 6 : deux règles générales s'ajoutent (D3 unité relative, D4 conflits).
+  // Deux règles générales s'ajoutent (D3 unité relative, D4 conflits).
   assert.equal(ctx.length, 5, 'contexte en 5 lignes');
   assert.ok(ctx.some((/** @type {string} */ l) => l.includes("en repli, l'ancienne valeur ; si la source l'écrit autrement (rem, rgb()), garde l'écriture de la source")));
-  // Lot V, étape 6 : tokens.css dans toute page qui charge une feuille modifiée (pages témoins comprises).
+  // tokens.css dans toute page qui charge une feuille modifiée (pages témoins comprises).
   assert.ok(a.lines.includes('0. Crée tokens.css, qui déclare dans :root chaque variable utilisée ci-dessous avec sa valeur, à partir de marque.resolver.json, et charge-la avant toutes les autres feuilles, dans toute page qui charge une feuille modifiée, pas seulement les pages de la table.'), 'étape 0');
   assert.ok(a.lines.includes('- Souligne tout lien posé dans du texte courant : 0 trouvé ici.'), 'change aussi');
   assert.ok(pieges.data.agent.lines.includes('- Souligne tout lien posé dans du texte courant : 1 trouvé ici (a.lien-discret).'), 'change aussi, pièges (L1)');
   const steps = (sectionOf(a.lines, 'REMPLACEMENTS (') ?? []).filter((/** @type {string} */ l) => /^[1-9]\d*\. /.test(l));
   assert.ok(steps.some((/** @type {string} */ l) => l.includes('Propriété font-size, usage taille du texte : remplace 13.5px par var(--taille-texte-14, 13.5px) (14px)')), 'usage taille du texte');
-  // Lot V, étape 6 (D4) : une ligne dont toutes les déclarations sont en conflit passe en CONFLITS.
+  // Une ligne dont toutes les déclarations sont en conflit passe en CONFLITS.
   const total = decidee.data.rows.filter((/** @type {any} */ r) => (r.status === 'appliquée' || r.status === 'décidée') && r.conflict === 'total').length;
   assert.equal(steps.length, decidee.data.sections.applied.total - total, 'une instruction par ligne appliquée, hors conflit total');
-  // Lot V, étape 6 : une ligne aux déclarations tracées les liste ; sinon, la recherche par valeur.
+  // Une ligne aux déclarations tracées les liste ; sinon, la recherche par valeur.
   for (const l of steps) assert.ok(l.endsWith('Ne touche que ces déclarations.') || l.includes('Cherche toutes les déclarations de cette valeur pour cette propriété et cet usage, pas seulement cette ligne.'), l);
   assert.ok(steps.some((/** @type {string} */ l) => l.includes('remplace #999999 par var(--couleur-neutre-11, #999999) (#6d675b)') && l.includes('Propriété color')));
   assert.ok(steps.some((/** @type {string} */ l) => l.includes('remplace #1f2a44 par var(--couleur-bleu-12, #1f2a44) (#103060) [décidée]')));
@@ -263,7 +263,7 @@ test('consigne pour un agent : contexte, une instruction par ligne appliquée, c
 });
 
 test('consigne : tous les sélecteurs, sans plafond ; les deux lignes de la marge de 10 px, cherchées par valeur, usage et relation, citent leurs éléments', () => {
-  // Lot P : la marge basse de 10 px est coupée par relation ; p.aide est entre composants.
+  // La marge basse de 10 px est coupée par relation ; p.aide est entre composants.
   const want = { 'entre composants': ['input#nom', 'p.erreur', 'p.aide'], 'dans le composant': ['input#courriel', 'input#telephone'] };
   const pending = desordre.md.slice(desordre.md.indexOf('## Décisions en attente'), desordre.md.indexOf('## Refusée'));
   for (const [scope, sels] of Object.entries(want)) {
@@ -278,7 +278,7 @@ test('consigne : tous les sélecteurs, sans plafond ; les deux lignes de la marg
   }
 });
 
-// Lot I : rattacher les valeurs inchangées à leur jeton, avec un repli.
+// Rattacher les valeurs inchangées à leur jeton, avec un repli.
 
 test('I1 : RATTACHE après REMPLACEMENTS, une ligne par valeur inchangée qui a un jeton, même forme que les remplacements', () => {
   const a = desordre.data.agent.lines;
@@ -295,7 +295,7 @@ test('I1 : RATTACHE après REMPLACEMENTS, une ligne par valeur inchangée qui a 
     const l = stepOf(sec, r.id);
     assert.ok(l, `${r.id} absente de RATTACHE`);
     assert.ok(l.includes(`${r.id} ${r.title}.`), `titre : ${l}`);
-    // Lot V, étape 6 (D3) : « sur les pages mesurées » ; avec ses déclarations tracées, la ligne les liste
+    // « sur les pages mesurées » ; avec ses déclarations tracées, la ligne les liste
     // (« Ne touche que ces déclarations. ») au lieu du point de départ et de la recherche.
     assert.ok(l.includes(`usage ${r.usage}, valeur ${r.value} : remplace la valeur écrite par var(--${r.token.replace(/\./g, '-')}, ${r.value}) ; aucun changement visible sur les pages mesurées.`), l);
     assert.ok(l.includes(' Propriété '), `propriété : ${l}`);
@@ -342,7 +342,7 @@ test('I3 : repli partout, l’ancienne valeur mesurée de la ligne ; la source g
 });
 
 test('Correction 2 : COUPLAGES avec repli, l’ancienne couleur du texte', () => {
-  // Lot K : le couplage n'existe que tranché « onSolid » (réduction décidée).
+  // Le couplage n'existe que tranché « onSolid » (réduction décidée).
   const c = sectionOf(decidee.data.agent.lines, 'COUPLAGES (') ?? [];
   assert.ok(c.length > 1);
   for (const l of c.slice(1)) assert.ok(!/var\(--[^,)]*\)/.test(l), `variable sans repli : ${l}`);
@@ -382,7 +382,7 @@ test('I5 : valeur hors tranche et inchangée, rattachée et toujours signalée',
   const rat = sectionOf(a, 'RATTACHE (') ?? [];
   const sig = sectionOf(a, 'SIGNALE SANS MODIFIER') ?? [];
   // #2b4c7e (bleu-9) en texte et en bordure, #f0c987 (sable-9) en fond : inchangées, rattachées et signalées.
-  // Lot K (retouche) : #f0c987 en texte est une correction, dans REMPLACEMENTS : plus dans SIGNALE.
+  // #f0c987 en texte est une correction, dans REMPLACEMENTS : plus dans SIGNALE.
   for (const [value, usage, attached] of /** @type {const} */ ([['#2b4c7e', 'texte', true], ['#2b4c7e', 'bordure', true], ['#f0c987', 'fond', true]])) {
     const r = desordre.data.rows.find((/** @type {any} */ x) => x.family === 'colors' && x.value === value && x.usage === usage);
     const l = sig.find((x) => x.startsWith(`- Valeur hors de sa tranche : ${value} `) && x.includes(` en ${usage},`));
@@ -395,7 +395,7 @@ test('I5 : valeur hors tranche et inchangée, rattachée et toujours signalée',
   assert.ok(sigNo.every((x) => !x.includes('rattaché')), 'sans jetons : rien de rattaché');
 });
 
-test('Lot K (retouche) : aucune valeur de REMPLACEMENTS dans SIGNALE SANS MODIFIER', () => {
+test('aucune valeur de REMPLACEMENTS dans SIGNALE SANS MODIFIER', () => {
   for (const run of [desordre, decidee]) {
     const rep = run.data.rows.filter((/** @type {any} */ r) => (r.status === 'appliquée' || r.status === 'décidée') && r.conflict !== 'total');
     const sig = sectionOf(run.data.agent.lines, 'SIGNALE SANS MODIFIER') ?? [];

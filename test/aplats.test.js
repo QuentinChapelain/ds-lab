@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Étape 4, séance a, lot 5 : aplats et titres de marque (docs/attendus/etape-4-contrat-de-marque.md, complément).
+ * aplats et titres de marque (docs/attendus/etape-4-contrat-de-marque.md, complément).
  *
  * Attendus écrits à la main avant le code (15/11/2026). Valeurs lues dans les jetons ; contrastes culori wcagContrast,
  * commande : node --input-type=module -e (wcagContrast du pas 9, 10, 11 du primaire sur fond.app #fbfbfb,
@@ -17,7 +17,7 @@
  *     10 : 1,6485, 11 : 5,0277) ; Grenat Papeterie pas 9 (9,0322).
  *   Orbe Café : marque.tokens.json, l'emplacement texte-grand retiré, redevient identique octet par octet
  *     (empreinte b479882e…, test/saisie.test.js).
- *   Paires : 48 de l'étape 3, inchangées et en tête, puis 18 ajoutées (66) ; seuil grand-texte 3 ; 4 interdites
+ *   Paires : les 48 d'origine, inchangées et en tête, puis 18 ajoutées (66) ; seuil grand-texte 3 ; 4 interdites
  *     ajoutées sur fond.marque.fort (8). Les quatre marques fictives : 0 paire en échec.
  */
 import { test } from 'node:test';
@@ -60,10 +60,10 @@ test('Orbe Café : sans l\'emplacement texte-grand, la couche marque redevient i
   assert.equal(createHash('sha256').update(serialiser(m)).digest('hex'), 'b479882e1a159e9c429805f44eefd7178e569d8f833edbacb5c6102c57016461');
 });
 
-test('paires.json : 48 paires de l\'étape 3 en tête, 18 ajoutées, 4 interdites ajoutées', () => {
+test('paires.json : 48 paires d\'origine en tête, 18 ajoutées, 4 interdites ajoutées', () => {
   const p = charger('paires.json');
   assert.equal(p.seuils['grand-texte'], 3);
-  assert.equal(p.paires.length, 70, 'étape 4b, lot 3 : + 4 bordures de statut sur fond.surface');
+  assert.equal(p.paires.length, 70, '+ 4 bordures de statut sur fond.surface');
   assert.deepEqual(p.paires.slice(48, 66).map((/** @type {any} */ x) => [x.devant, x.fond, x.type]), PAIRES_AJOUTEES);
   assert.equal(p.interdites.length, 8);
   assert.deepEqual(p.interdites.slice(4).map((/** @type {any} */ x) => [x.devant, x.fond]), INTERDITES_AJOUTEES.map((d) => [d, 'fond.marque.fort']));
@@ -73,7 +73,7 @@ test('paires.json : 48 paires de l\'étape 3 en tête, 18 ajoutées, 4 interdite
 test('les quatre marques fictives : 0 paire en échec, 70 paires, 8 interdites', () => {
   for (const slug of ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie']) {
     const d = join(ROOT, 'tokens', slug);
-    // Revue de code du 15/11, lot 0 : le jeu de chaque marque, lu par son resolver (avant : rôles et primitives d'Orbe Café
+    // Le jeu de chaque marque, lu par son resolver (avant : rôles et primitives d'Orbe Café
     // pour les quatre, couche marque et échelles fusionnées à la main).
     const c = contratRoles(loadRoles(d));
     assert.equal(c.pairs.length, 70, slug);

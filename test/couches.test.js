@@ -1,11 +1,11 @@
 // @ts-check
 /**
- * Revue de code, lot 6, point 2 (docs/attendus/revue-lot-6-structure.md, D30) : orchestration et calculs dans leur couche.
+ * D30 (docs/attendus/revue-lot-6-structure.md, point 2) : orchestration et calculs dans leur couche.
  * Sans navigateur ; lecture des imports, sans parseur.
  *
  * Attendus écrits à la main :
  *   L1 src/cli/ ne sert que ses commandes : aucun module de src/ hors de src/cli/ n'en importe ; un test n'importe de
- *      src/cli/reduce.js que l'analyse des arguments (parseReduceArgs). src/cli/login.js, hors du lot, garde saveState et
+ *      src/cli/reduce.js que l'analyse des arguments (parseReduceArgs). src/cli/login.js, laissé tel quel, garde saveState et
  *      readState, lus par test/login.test.js (KNOWN_ISSUES.md) ;
  *   L2 src/browser/ n'importe que src/browser/ et src/lib/ ; src/apply/ n'importe rien de src/reduce/ ni de src/report/ ;
  *   L3 runReduce et linesOf dans src/reduce/run.js ; couplingsOf et simulationCouplings dans src/reduce/pleins.js ; unitOf

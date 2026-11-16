@@ -46,7 +46,7 @@ test('espacements : marges, retraits et gouttières partagent une échelle', () 
   assert.deepEqual([row('spacing', '5px').class, row('spacing', '5px').new], ['auto', '4px']);
   const r = row('spacing', '75px');
   assert.equal(r.class, 'décision', '48 est à 36 % : au designer de trancher');
-  // Lot C : fenêtre au bord haut (C2), par valeur croissante.
+  // Fenêtre au bord haut (C2), par valeur croissante.
   assert.deepEqual(r.candidates.map((/** @type {any} */ c) => c.value), ['32px', '48px']);
   assert.equal(row('spacing', '32px').count, 6);
 });
@@ -59,7 +59,7 @@ test('tailles de police', () => {
   assert.deepEqual([row('fontSizes', '11px').class, row('fontSizes', '11px').new], ['décision', '14px'], 'Δ 3 px, 27 %');
 });
 
-test('lot R : une taille de texte n’est proche qu’à 2 px au plus, même sous 15 %', () => {
+test('une taille de texte n’est proche qu’à 2 px au plus, même sous 15 %', () => {
   const t = propose({ families: { fontSizes: fam({ '30px': 1, '29.99px': 1 }) } }, { fontSizes: target.fontSizes });
   /** @param {string} old */
   const r = (old) => t.families.fontSizes.rows.find((/** @type {any} */ x) => x.old === old);
@@ -84,7 +84,7 @@ test('synthèse : valeurs avant et après, décisions à prendre', () => {
   assert.equal(s.occurrences, 21);
 });
 
-// Revue de code du 15/11, lot 2 : le motif R9 cite le seuil de la paire, et la page de revue le relit à tout seuil.
+// Le motif R9 cite le seuil de la paire, et la page de revue le relit à tout seuil.
 // Relevé minimal écrit à la main : #999999 en grand texte (seuil 3:1) sur #ffffff. Contraste calculé avec culori :
 //   node --input-type=module -e "import { wcagContrast } from 'culori'; console.log(wcagContrast('#999999','#ffffff'))"
 //   → 2.849027755287037, sous 3.

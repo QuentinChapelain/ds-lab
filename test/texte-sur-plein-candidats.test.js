@@ -1,9 +1,9 @@
 // @ts-check
 /**
- * Lot J, bloc 3 (J3, J4). Attendus écrits avant le code :
+ * J3, J4 : texte sur plein, premier candidat. Attendus écrits avant le code :
  * J3. Un texte posé seulement sur un plein d'échelle S (pas 9 ou 10 de S, après la table), et qui y
  *     passe aujourd'hui, a pour premier candidat l'onSolid de S, pas la tranche 11-12. Un texte qui y
- *     échoue reste à la carte du plein (lot K) : J3 ne le corrige pas.
+ *     échoue reste à la carte du plein : J3 ne le corrige pas.
  * J4. Carte de plein : une version en plus, « même teinte, plus claire / plus foncée » : chaque texte
  *     prend le pas de sa propre échelle le plus proche (ΔE) qui passe sur le pas 9 du plein ; un texte
  *     qui y passe déjà reste tel quel. La version n'existe que si chaque texte a un tel pas. Choisie,
@@ -39,7 +39,7 @@ let servers;
 const R = {};
 
 before(async () => {
-  const root = await mkdtemp(join(tmpdir(), 'ds-lab-lot-j3-'));
+  const root = await mkdtemp(join(tmpdir(), 'ds-lab-texte-sur-plein-'));
   await mkdir(join(root, 'j'));
   await writeFile(join(root, 'j', 'p.html'), PAGE);
   servers = await startFixtureServers({ root });
@@ -53,7 +53,7 @@ before(async () => {
       decisionsPath: file,
       viewport: { width: 400, height: 300 },
       waitMs: 50,
-      outRoot: await mkdtemp(join(tmpdir(), `ds-lab-lot-j3-out-${name}-`)),
+      outRoot: await mkdtemp(join(tmpdir(), `ds-lab-texte-sur-plein-out-${name}-`)),
     });
     R[name] = { run, md: await readFile(run.files[2], 'utf8'), html: await readFile(run.files[1], 'utf8') };
   }

@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot R : la carte de décision dans revue.html (réduction des pages en désordre sur la valise).
+ * La carte de décision dans revue.html (réduction des pages en désordre sur la valise).
  * Sélecteur de versions (clic, ←/→), une seule image, « Choisir cette version » (ou Entrée).
  * Afficher une version ne change pas l'export ; une décision pas encore choisie en est absente,
  * l'actuelle choisie y vaut false. Contrastes des versions recalculés avec culori.
@@ -36,7 +36,7 @@ let fileDecisions;
 const byId = new Map();
 /** Table de la réduction, pour relire les décisions ligne par ligne. @type {any} */
 let table;
-/** Lot K : cartes « Texte sur plein » (une décision par plein ; ses lignes de fond la suivent). @type {any[]} */
+/** Cartes « Texte sur plein » (une décision par plein ; ses lignes de fond la suivent). @type {any[]} */
 let pleins = [];
 
 before(async () => {
@@ -87,7 +87,7 @@ async function exported(page) {
 /** @param {any} page @param {string} id */
 const card = (page, id) => page.locator(`article.row[data-key="${/** @type {any} */ (byId.get(id)).key}"]`);
 /**
- * Ligne cherchée par famille, valeur, usage et relation (lot P), jamais par numéro.
+ * Ligne cherchée par famille, valeur, usage et relation, jamais par numéro.
  * @param {string} family @param {string} old @param {string} usage @param {string} [scope]
  * @returns {{ key: string, row: any, family: string }}
  */
@@ -203,7 +203,7 @@ test('revue : sous chaque version de couleur, le contraste le plus faible et son
         const fr = (/** @type {number} */ n) => String(Math.round(n * 100) / 100).replace('.', ',');
         const pass = v.contrast.ratio >= v.contrast.threshold;
         assert.ok(smalls.includes(`${fr(v.contrast.ratio)} · ${pass ? 'passe' : 'sous'} le seuil de ${fr(v.contrast.threshold)}`), `${row.id} ${v.label} : ${smalls.join(' | ')}`);
-        // Lot M : la paire la plus défavorable de la ligne, toutes pages, après la table.
+        // La paire la plus défavorable de la ligne, toutes pages, après la table.
         const c2 = v.contrast;
         const other =
           row.usage === 'texte' || row.usage === 'bordure'
@@ -324,7 +324,7 @@ test('revue : détail en bas de la carte ; contraste « avec la valeur la plus p
     assert.equal(await page.locator('article.row > details.detail:last-child').count(), cards, 'détail en dernier');
     const coul = await card(page, 'coul-24').locator('details.detail').textContent();
     assert.ok(coul?.includes('avec la valeur la plus proche'), coul ?? '');
-    // Lot P-fin : l'écart en une phrase (« Écart : ΔE 1,59 avec la valeur la plus proche (…) »).
+    // L'écart en une phrase (« Écart : ΔE 1,59 avec la valeur la plus proche (…) »).
     assert.ok(coul?.includes('ΔE 1,59 avec la valeur la plus proche'), coul ?? '');
     const corr = await page.locator('article.row.c-correction details.detail').first().textContent();
     assert.ok(corr?.includes('avec la valeur proposée'), corr ?? '');
@@ -354,7 +354,7 @@ test('revue : la remise à zéro écarte aussi les décisions venues de --decisi
     const page = await context.newPage();
     await page.goto(revueFichier);
     const total = [...byId.values()].filter((x) => x.row.class === 'décision' && !x.row.plein).length + pleins.length;
-    // Lot P, étape 3 : un choix du fichier sans relation vaut pour chaque ligne coupée (10 px et 6 px en marge).
+    // Un choix du fichier sans relation vaut pour chaque ligne coupée (10 px et 6 px en marge).
     const fromFile = [...byId.values()].filter((x) => x.row.class === 'décision' && !x.row.plein && decisionFor(fileDecisions, x.family, x.row) !== undefined).length;
     assert.ok(fromFile > 0);
     assert.equal(await bilan(page), `${fromFile} / ${total} choisies`, 'décisions du fichier relues');
@@ -404,7 +404,7 @@ test('revue : cartes proche, d’office et correction, sélecteur « avant · ap
 test('revue : détail, 4 sélecteurs au plus puis « et n autres »', async () => {
   const { context, page } = await open();
   try {
-    // Lot P : la marge de 10 px est coupée par relation (3 et 2 éléments) ; l'encre #1f2a44 en texte en touche plus de 4.
+    // La marge de 10 px est coupée par relation (3 et 2 éléments) ; l'encre #1f2a44 en texte en touche plus de 4.
     const r = lineOf('colors', '#1f2a44', 'texte').row;
     const all = [...new Set(r.capture.touched.map((/** @type {any} */ t) => t.selector))];
     assert.ok(all.length > 4, `${all.length} sélecteurs`);
@@ -416,12 +416,12 @@ test('revue : détail, 4 sélecteurs au plus puis « et n autres »', async () =
   }
 });
 
-// Revue de code du 15/11, lot 4 (docs/attendus/revue-lot-4-copies.md, point 3 ; réponse de Quentin du 16/11/2026) : la page
+// docs/attendus/revue-lot-4-copies.md, point 3 ; réponse de Quentin du 16/11/2026 : la page
 // lit la valeur retenue calculée côté Node, à l'état initial. Attendu écrit à la main avant le code : avec
 // decisions-valise.json, une décision écrite sur une ligne qui n'est pas à trancher (proche, correction, hors table) est
 // affichée par la flèche de sa carte, et l'export fait sans rien toucher la rend telle quelle. Avant : la flèche montre la
 // proposition et l'export perd la décision (11 lignes, vérifié dans Chromium à la confrontation).
-test('revue, lot 4 : une décision écrite sur une ligne qui n’est pas à trancher est affichée et exportée', async () => {
+test('D21 : une décision écrite sur une ligne qui n’est pas à trancher est affichée et exportée', async () => {
   const decisions = JSON.parse(await readFile(`${FIXTURE_DIR}decisions-valise.json`, 'utf8'));
   const file = join(await mkdtemp(join(tmpdir(), 'ds-lab-revue-valise-')), 'revue.html');
   await writeFile(file, renderReview(table, [], { host: 'lot4.test', stamp: '16/11/2026', target: 'cible-valise.json', decisions }));

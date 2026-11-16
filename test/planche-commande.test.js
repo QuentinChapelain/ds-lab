@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code du 15/11, lot 4 (docs/attendus/revue-lot-4-copies.md, point 4 ; réponse de Quentin du 16/11/2026) : une
+ * docs/attendus/revue-lot-4-copies.md, point 4 ; réponse de Quentin du 16/11/2026 : une
  * seule commande de planche, `node src/cli/planche.js <roles|espacements|typo>`, les trois sans argument, par la garde
  * commune (D18). Les octets écrits sont ceux des fonctions de planche, vérifiés par les tests *-planche.test.js.
  *

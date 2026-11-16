@@ -1,11 +1,11 @@
 // @ts-check
 /**
- * Lot E : audit puis reduce sur les trois pages en désordre de la marque
+ * Audit puis reduce sur les trois pages en désordre de la marque
  * fictive (desordre/carte, compte, gestion), comparés à
  * fixtures/marque-demo/expected-desordre.json, écrit avant les pages et
  * jamais recalé. Un test par piège et par côté (table, audit) : un écart
  * entre l'outil et l'attendu reste visible, en échec. Une valeur qui porte un
- * « afterB » (lot B : R2, R4) est jugée sur lui. Une entrée « parUsage »
+ * « afterB » (R2, R4) est jugée sur lui. Une entrée « parUsage »
  * donne les usages de la table pour sa valeur, une ligne chacun (15/11/2026 :
  * remplace les entrées « lotB », voir le $comment de l'attendu).
  */
@@ -65,14 +65,14 @@ function checkRow(family, want) {
   const classes = Array.isArray(want.class) ? want.class : [want.class];
   assert.ok(classes.includes(r.class), `${want.value} : classe « ${r.class} », attendu ${classes.map((c) => `« ${c} »`).join(' ou ')}`);
   if ('new' in want) assert.equal(r.new, want.new, `${want.value} : vers ${r.new}`);
-  // Revue de code du 15/11, lot 2 (D19) : une valeur vue seulement à un état forcé porte cet état.
+  // D19 : une valeur vue seulement à un état forcé porte cet état.
   if (want.etats) {
     assert.deepEqual(r.etats, want.etats, `${want.value} : état`);
     assert.match(r.title, /\(au survol\)$/, `${want.value} : titre`);
   }
   if (want.deltaE !== undefined) assert.ok(Math.abs(r.delta - want.deltaE) <= TOL, `${want.value} : ΔE ${r.delta}, attendu ${want.deltaE}`);
   if (want.tie) {
-    // Lot C : candidats de dimension par valeur ; l'égalité se lit sur les deux plus proches.
+    // Candidats de dimension par valeur ; l'égalité se lit sur les deux plus proches.
     const [a, b] = [...r.candidates].sort((/** @type {any} */ x, /** @type {any} */ y) => x.delta - y.delta);
     assert.equal(a.delta, b.delta, `${want.value} : égalité entre ${a.value} et ${b.value}`);
     assert.deepEqual([a.value, b.value].sort(), [...want.tie].sort());
@@ -107,7 +107,7 @@ test('les trois pages sont mesurées, la cible inchangée', () => {
 
 // Couleurs : un test « table » et un test « audit » par piège.
 /**
- * Lot B : une valeur qui porte un « afterB » se juge sur lui (classe et règle) ;
+ * Une valeur qui porte un « afterB » se juge sur lui (classe et règle) ;
  * hors table, elle n'a plus de cible.
  * @param {any} v
  */

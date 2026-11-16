@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Étape 4c, lot 3 : contrôle d'encre de la police des titres (docs/attendus/etape-4c-police-des-titres.md, réponse 3).
+ * Contrôle d'encre de la police des titres (docs/attendus/etape-4c-police-des-titres.md, réponse 3).
  * Attendus écrits à la main avant le code :
  *   E1 styles sur la police des titres, lus dans les jetons communs (D17) : taille / ligne / graisse, consigne 0,7 ;
  *      affichage.grand 60/76 et 36/48 ; affichage.moyen 48/60 et 30/40 ; titre.1 30/40 et 24/32 ; titre.2 24/32 et
@@ -16,7 +16,7 @@
  *        EB Garamond 600 haut 0,8468 bas 0,2895 ; 700 haut 0,8511 bas 0,2892 ; H 0,6546 ; facteur 700/650 = 1,0769
  *        Cinzel      600 haut 0,9243 bas 0,2705 ; 700 haut 0,9354 bas 0,2843 ; H 0,700 ; facteur 1
  *   E4 avec les lignes de D17, les trois polices passent (écart le plus petit : EB Garamond, affichage.moyen en large,
- *      60 − 1,1403 × 1,0769 × 48 = 1,05 px) ; avec les lignes de l'étape 3 (68/40, 56/36, 36 en large pour titre.1),
+ *      60 − 1,1403 × 1,0769 × 48 = 1,05 px) ; avec les lignes d'avant D17 (68/40, 56/36, 36 en large pour titre.1),
  *      refus : Oswald affichage.grand large et étroit, affichage.moyen large (56 − 56,08) ; EB Garamond et Cinzel,
  *      les mêmes plus affichage.moyen étroit et titre.1 large ;
  *   E5 la commande accepte Oswald et affiche dix lignes d'encre ; elle refuse Bebas Neue sur ses graisses sans
@@ -86,7 +86,7 @@ test('E3 mesures dans Chromium, contre fontTools', async () => {
   }
 });
 
-test('E4 lignes de D17 : les trois passent ; lignes de l\'étape 3 : refus', async () => {
+test('E4 lignes de D17 : les trois passent ; lignes d\'avant D17 : refus', async () => {
   const etape3 = stylesTitres(chargerCommun()).map((s) => {
     const avant = /** @type {Record<string, number>} */ ({ 'affichage.grand large': 68, 'affichage.grand étroit': 40, 'affichage.moyen large': 56, 'affichage.moyen étroit': 36, 'titre.1 large': 36 })[`${s.style} ${s.largeur}`];
     return avant ? { ...s, ligne: avant } : s;

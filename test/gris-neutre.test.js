@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot G, règle G8 (13/11/2026) : un gris (chroma OKLCH < 0,02) ne se range que sur l'échelle
+ * G8 (13/11/2026) : un gris (chroma OKLCH < 0,02) ne se range que sur l'échelle
  * neutre, jamais sur une échelle de marque ni de statut, même quand un pas foncé d'une autre
  * échelle est plus proche. Valise fictive générée (neutre + bleu nuit très foncé).
  */
