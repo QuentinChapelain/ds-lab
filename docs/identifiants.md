@@ -17,8 +17,9 @@ Un même identifiant désigne plusieurs choses. À lire avant de citer l'un d'eu
 | | Ancienne règle des **conflits de déclarations** | attendus seulement ; le code dit « conflit » en clair |
 | **D2, D7** | Conventions du déclaré de l'audit | rapport d'audit |
 | | D02, D07 de `docs/decisions.md` (deux chiffres) | documentation |
-| **C5** | Égalité de deux candidats : l'outil ne tranche pas | motif d'une ligne (`migration.md`, `table.json`) |
+| **C5** | Cas C5 de `test/candidats.test.js` : le défaut est le pas le plus proche de toute l'échelle | tests |
 | | Cas C5 de `test/contraste-modes.test.js` (contrat de la saisie) | tests et `ARCHITECTURE.md` |
+| | Ancien renvoi du motif d'égalité, devenu D20 (les sorties ne citent plus C5) | attendus seulement |
 | **R-1 à R-9** | Identifiant et titre d'une ligne, captures (revue) | commentaires et titres de tests, jamais affichés |
 
 Dans le code, `D2` et `D4` sont aussi des noms de constantes de mise en forme (`{ decimales: 2 }`, `{ decimales: 4 }`), sans lien avec ces règles.
@@ -36,7 +37,7 @@ Dans le code, `D2` et `D4` sont aussi des noms de constantes de mise en forme (`
 | R7 | Espacement négatif, au-delà de 64 px ou marge auto : hors table, mise en page ; un rayon d'au moins la moitié du plus petit côté est une pilule | `src/reduce/propose.js`, `src/rendered/aggregate.js` | motif : `revue.html`, `migration.md`, `modifications.json`, `table.json` |
 | R8 | Fond plus sombre que le pas 10 le plus sombre de la valise : hors table ; un texte posé dessus est une décision | `src/reduce/propose.js` | motif : `revue.html`, `migration.md`, `modifications.json`, `table.json` |
 | R9 | Correction : la paire la plus défavorable échoue avant et passe après ; appliquée par défaut, annulable | `src/reduce/propose.js` | `revue.html`, `migration.md`, `table.json` |
-| C5 | À égale distance de deux pas, l'outil ne tranche pas : au designer de choisir (D20) | `src/reduce/propose.js` | motif : `migration.md`, `table.json` |
+| D20 | À égale distance de deux pas, l'outil ne tranche pas : au designer de choisir (décision de `docs/decisions.md`) | `src/reduce/propose.js` | motif : `migration.md`, `table.json` |
 | J1 | Un candidat qui échoue au contraste alors que la valeur actuelle passe n'est jamais le défaut ; il est grisé, avec sa raison | `src/reduce/propose.js`, `src/report/review.js` | motif : `revue.html`, `migration.md`, `table.json` |
 | M1 | Un emplacement de marque gris (chroma OKLCH < 0,02) rejoint neutre | `src/brand/brand.js` | `migration.md` (marque déclarée) |
 | M3 | La valeur d'un emplacement de marque, ou d'une variante, va sur l'échelle de cet emplacement ; l'usage choisit le pas | `src/brand/brand.js`, `src/reduce/propose.js` | `migration.md` (marque déclarée) |
@@ -71,7 +72,7 @@ Définitions d'origine : D1 à D15 et R1 à R14 dans `fixtures/marque-demo/expec
 | Id | Règle | Codée dans | Affichée dans |
 |---|---|---|---|
 | DS1, DS6 | Règles du design system (`docs/regles.md`) | `src/tokens/pleins.js`, `src/tokens/resolver.js` | `$description` des jetons écrits par la saisie |
-| D04, D05 | Décisions (`docs/decisions.md`) | `src/tokens/pleins.js`, `src/tokens/saisie.js` | `$description` des jetons écrits par la saisie |
+| D04, D05 | Décisions (`docs/decisions.md`) | `src/tokens/pleins.js`, `src/tokens/saisie.js`, `src/report/calibrage.js` | `$description` des jetons écrits par la saisie ; D04 aussi dans la page de calibrage |
 | G5 | La valise n'est écrite que si elle passe tous ses contrôles (checkValise) | `src/valise/generate.js` | message d'erreur de la génération |
 
 ## Identifiants des commentaires et des tests
