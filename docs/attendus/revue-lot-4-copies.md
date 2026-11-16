@@ -77,6 +77,7 @@ Réponses du propriétaire (16/11/2026) :
 5. Tests : la règle de troncature de `test/roles-planche.test.js` portait le même défaut (`Math.floor(n * 100)`) ; elle tronque maintenant la valeur arrondie à 4 décimales. Le test « outcomeOf » de V6 reçoit une ligne témoin : sans conflit entre issues différentes, `attachDeclarations` ne montre aucune issue. Une ligne témoin rend le test rouge avant le code et vert après.
 6. Copies en ligne : `review.js` reformate un ΔE capturé dans un motif (`fr(Number(m[1]))`) ; `typo` garde « 2 décimales sans zéros » pour la hauteur d'une ligne (`fr(n, { decimales: 2 })`), au lieu de l'arrondi recopié.
 7. Tests : 742 au départ, 37 ajoutés (20 rouges avant le code), 1 retiré (« captures isolées », écart 10 ci-dessus) : 778, tous verts.
+8. Vu sur image par Claude le 16/11 : sur les cartes `coul-27` (cible-2c) et `coul-01` (valise), la flèche montre la valeur décidée (#4c6994, #6d675b), mais les vignettes « avant / après » de la même carte montrent toujours la proposition de l'outil (#2b4c7e, #958f84) : la carte dit deux choses. La capture des versions reçoit la proposition (`src/cli/reduce.js:293`). 2 cartes sur les 14 décidées des deux réductions [F] ; 10 ont une vignette égale à la décision, `coul-02` et `coul-16` n'en ont pas. Décision de Quentin du 16/11 : non corrigé dans ce lot, renvoyé au lot du script de la page (C3), noté dans `KNOWN_ISSUES.md`.
 
 ## Sorties qui changent
 
