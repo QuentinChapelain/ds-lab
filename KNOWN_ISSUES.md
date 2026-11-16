@@ -43,8 +43,28 @@
 
 ## Revue de code du 15/11
 
-Constats de la revue en lecture seule (commit 4341b94), filets posés par le lot 0 (`docs/attendus/revue-lot-0-filets.md`). Corrigés et retirés d'ici : les codes de sortie des contrôles (lot 1a), la panne d'audit rangée en échec de chargement, la clé de décision orpheline et la couleur de marque illisible (lot 1b, D18) ; `border` dans apply, le motif R9 en dur, la divergence « inchangé » avec décision, C14 et E5 (lot 2, D19, D20) ; les quatre blocs JSDoc mal placés et les annotations en retard (lot 3, `npm run types` à 0).
+Constats de la revue en lecture seule (commit 4341b94), filets posés par le lot 0 (`docs/attendus/revue-lot-0-filets.md`). Corrigés et retirés d'ici : les codes de sortie des contrôles (lot 1a), la panne d'audit rangée en échec de chargement, la clé de décision orpheline et la couleur de marque illisible (lot 1b, D18) ; `border` dans apply, le motif R9 en dur, la divergence « inchangé » avec décision, C14 et E5 (lot 2, D19, D20) ; les quatre blocs JSDoc mal placés et les annotations en retard (lot 3, `npm run types` à 0) ; les copies de `fr`, `esc`, `r4`, du contraste WCAG, de la résolution d'alias, de la valeur retenue après décision et des commandes de planche, les captures par changement de la simulation, le champ `statuts` des rôles, trois exports morts et le champ `properties` vide d'`audit.json` (lot 4, D21 à D24).
 
 - Mode strict non tenu : `npm run types` vérifie en non strict. En strict (`npx tsc -p tsconfig.json --strict`), 30 erreurs à la fin du lot 3 [F] : 11 paramètres sans type, 11 modules sans types (`culori` dans 10 imports, `pngjs` dans 1 : `@types/culori` 4.0.1 et `@types/pngjs` 6.0.5, deux dépendances de plus, ou un `.d.ts` local ; accord de `@types/culori` 4.0.1 avec `culori` 4.0.2 [V]), 2 variables sans type (`conflicts`, `src/reduce/declarations.js`), 6 `null` ou `undefined` possibles, seuls à pouvoir demander une garde dans le code [H].
 - TypeScript 7 n'a pas d'API JavaScript (le paquet ne contient plus le fichier `typescript.js` de la version 5) [F] : les outils qui la chargent demandent TypeScript 5. À vérifier à l'étape 5 pour Knip et dependency-cruiser (variante JSDoc) [V].
 - Copie figée `fixtures/marque-demo/jetons/primitives.tokens.json` : `reduce --tokens` accepte sans le dire un fichier qui ne donne aucun jeton (le resolver passé tel quel en donne 0), et la copie, seule lue par les tests, masque ce cas (`src/cli/reduce.js:94`, `indexTokens` dans `src/report/migration.js:62`) [F].
+- Formats des nombres non harmonisés (lot 4, D22) : chaque sortie garde le sien, nommé par les options de `fr` (`src/lib/format.js`). Une même valeur s'écrit différemment d'une sortie à l'autre :
+
+  | Sortie | Format | 4,5 | 12,6234 |
+  |---|---|---|---|
+  | console de `npm run contraste` | 2 décimales, zéros gardés | 4,50 | 12,62 |
+  | motif de refus de la saisie | ratio à 2 décimales et zéros, seuil tel quel | 4,5 (seuil) | 12,62 |
+  | planche des rôles | ratio tronqué à 2 décimales, zéros gardés ; seuil tel quel | 4,5 (seuil) | 12,62 |
+  | `migration.md` | tel quel (ratios déjà à 4 décimales) | 4,5 | 12,6234 |
+  | `revue.html` | 2 décimales sans zéros ; le bouton d'une carte de plein, tel quel | 4,5 | 12,62 (bouton : 12,6234) |
+  | console et planche d'`espacements` | tel quel, « — » si absent | 4,5 | 12,6234 |
+  | console et planche de `typo` | 4 décimales sans zéros | 4,5 | 12,6234 |
+  | calibrage | 1, 2 ou 3 décimales, zéros gardés | 4,50 | 12,62 |
+  | rapports d'audit (`src/report/html.js`, `markdown.js`), messages de `checkValise` | point décimal, `toFixed` | 4.50 | 12.62 |
+
+  Dans la même ligne de la table, `migration.md` écrit « contraste 4,277 → 5,2818 » et la carte de `revue.html` « 9,1 avant → 8,31 ». Harmoniser par nature de valeur (ratio, seuil, px, rapport) changerait de 3 à 77 lignes par réduction sur fixtures (mesure de la confrontation du lot 4).
+- Copies laissées hors du lot 4 : `fr` du script de page de la revue (`src/report/review.js`, dans une chaîne) et `fr1` du contrôle d'encre (`src/polices/encre.js`) ; `plural` (2 copies identiques) ; ΔE OKLab × 100 (2 copies sur culori et `deltaE` de `src/lib/color.js`, écart au plus 9,4e-7) ; arrondi à 2 décimales (7 copies) ; arrondi à 4 décimales écrit en ligne (7 endroits, dont le code de page de la simulation).
+- Seuils de contraste comparés de trois façons : `>= seuil`, `>= seuil - 1e-9`, `< seuil - 1e-9` ; aucune paire du dépôt n'est à moins de 1e-9 d'un seuil [F].
+- `relativeLuminance` (`src/lib/color.js`) accepte un `#rrggbbaa` et en ignore l'alpha : `addStates` (`src/rendered/aggregate.js`) compare ainsi un fond survolé semi-transparent ; `contrastRatio`, lui, refuse toute couleur qui n'est pas `#rrggbb` (D22).
+- `migration.md` : une ligne « en attente » porte la proposition en nouvelle valeur, pas une valeur retenue [H] ; à confirmer quand la consigne sera structurée (lot 6).
+- Exports jamais importés : 91 noms dans 30 fichiers au recompte du lot 4, par une méthode qui ne lit pas l'import par espace de noms de `test/candidats.test.js` [H]. Retirer le mot `export` est sans effet sur le comportement, environ une heure ; `npm run types` ne les signale pas (`strict: false`). À garder : les fonctions de page sérialisées, et les constantes de règles que des tests unitaires pourraient lire.

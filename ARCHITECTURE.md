@@ -39,7 +39,7 @@ Chaque commande npm a son point d'entrée dans `src/cli/`. Toute commande a troi
 | `src/browser/` | Ce qui tourne dans le navigateur : chargement, feuilles de style, relevé du rendu, états forcés, simulation d'une table |
 | `src/declared/` | Audit du déclaré : toutes les feuilles de toutes les pages, dédoublonnées et comptées |
 | `src/rendered/` | Audit du rendu : relevé d'une page chargée, puis agrégation de toutes les pages |
-| `src/lib/` | Fonctions pures partagées : couleurs (OKLab, ΔE, contraste WCAG), unités, clés de valeurs, adresses, sources |
+| `src/lib/` | Fonctions pures partagées : couleurs (OKLab, ΔE, contraste WCAG), mise en forme des sorties (`format.js`), unités, clés de valeurs, adresses, sources |
 | `src/reduce/` | Proposition de la table ancien → nouveau, texte sur plein, déclarations sources et conflits |
 | `src/brand/` | Marque déclarée dans la cible ; lecture rapide de la marque d'un site, avant la réduction |
 | `src/polices/` | Police des titres d'une marque : lecture d'un WOFF2 (mesures, graisses, licence, couverture), sans dépendance ; garde-fous ; contrôle d'encre de deux lignes dans Chromium (`encre.js`, playwright-core déjà présent), lancé par la saisie quand l'entrée donne les fichiers |
@@ -48,6 +48,19 @@ Chaque commande npm a son point d'entrée dans `src/cli/`. Toute commande a troi
 | `src/report/` | Sorties lisibles : rapport d'audit, revue, `migration.md`, planches des rôles, des espacements et de la typo, calibrage des pleins |
 | `src/apply/` | Application de `modifications.json` aux feuilles d'une copie du site |
 | `src/verify/` | Captures, références et comparaisons (pixels, arbre d'accessibilité), partagées par reduce et verify |
+
+## Fonctions communes
+
+Une règle écrite à plusieurs endroits a une seule définition (revue de code, lot 4) ; chaque lecteur l'importe.
+
+| Règle | Définition | Lue par |
+|---|---|---|
+| Nombre à la française, texte échappé pour le HTML, arrondi à 4 décimales | `fr`, `esc`, `r4` dans `src/lib/format.js` ; chaque sortie nomme son format par les options de `fr` (D22) | consoles des contrôles et de la saisie, planches, revue, migration, calibrage, rapports d'audit, générateur |
+| Contraste WCAG | `contrastRatio` dans `src/lib/color.js` ; culori n'en calcule plus dans `src/`, il reste l'oracle des tests (D22) | reduce, revue, migration, rapports d'audit, jetons, générateur, calibrage |
+| Résolution d'alias DTCG | `resoudreAlias` dans `src/tokens/roles.js`, à côté de `flattenTokens` (D23) | rôles de couleur, espacements, typo |
+| Valeur retenue après décision | `retenue` dans `src/reduce/propose.js`, à côté de `decisionFor` (D21) | simulation, conflits de déclarations, contrôle de proximité, migration, revue |
+
+Un nouveau module de fonctions communes va dans `src/lib/` s'il ne dépend d'aucune couche ; sinon à côté de la fonction dont la règle dépend, comme `retenue` à côté de `decisionFor`. `test/format.test.js` et `test/contraste-source.test.js` vérifient qu'aucune copie ne revient.
 
 ## Autres dossiers
 
@@ -119,7 +132,7 @@ Chacun est tenu par le code ou par un test, cité.
 
 ## Dépendances
 
-`playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (couleurs, contraste), `pixelmatch` et `pngjs` (comparaison de captures). Toute nouvelle dépendance est signalée dans le plan du lot.
+`playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (conversions de couleurs et ΔE ; dans les tests, oracle indépendant du contraste), `pixelmatch` et `pngjs` (comparaison de captures). Toute nouvelle dépendance est signalée dans le plan du lot.
 
 Dépendances de développement, en version exacte, pour `npm run types` seulement (revue de code, lot 3) :
 

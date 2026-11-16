@@ -1,6 +1,6 @@
 # Décisions
 
-Vingt décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/commun/` et dans le dossier de chaque marque.
+Vingt-quatre décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/commun/` et dans le dossier de chaque marque.
 
 ### D01
 - **Décision** : les rôles se nomment propriété.sens.emphase.état.
@@ -101,3 +101,23 @@ Vingt décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est
 - **Décision** : une valeur à égale distance de deux pas est une décision, sans défaut : nouvelle valeur vide, les deux candidats affichés « à égalité, écart n px », sans « le plus proche ». Sans exception : un écart de 1 px, appliqué d'office hors égalité, n'y échappe pas.
 - **Raison** : revue de code du 15/11/2026, constat E5 ; décision de Quentin du 16/11/2026. Départager vers la plus petite valeur était un choix de l'outil, présenté comme un « proche » ou un « auto » : le designer ne le voyait pas.
 - **Conséquence** : `dimensionRow` (`src/reduce/propose.js`, C5) rend la classe décision, `noDefault`, le motif « à égale distance de A et B » et marque les deux candidats ; la revue et `migration.md` les disent « à égalité ». Sur les pages en désordre avec la valise, 14px de marge et 3px de rayon passent en décision ; « Égalités tranchées en silence » de `migration.md` est vide.
+
+### D21
+- **Décision** : la valeur retenue d'une ligne après décisions a une seule définition, `retenue` (`src/reduce/propose.js`), lue par la simulation, les conflits de déclarations, le contrôle de proximité, la migration et la revue. Un refus (`false`) laisse la ligne ; une décision écrite l'emporte, sauf si elle est égale à l'ancienne valeur : la ligne est alors laissée partout, et la migration la range en « inchangé ». La revue lit à son état initial la valeur retenue calculée côté Node : une décision écrite sur une ligne qui n'est pas à trancher (proche, d'office, correction, inchangé, hors table) est la valeur que montre la flèche de sa carte, et l'export la rend telle quelle.
+- **Raison** : revue de code du 15/11/2026, constats B8 et C11 ; décisions de Quentin du 16/11/2026. La migration rangeait une décision égale à l'ancienne valeur en « appliquée » vers la proposition, alors que la simulation laissait la ligne. La revue montrait la proposition, et l'export perdait la décision écrite (11 lignes avec `decisions-valise.json`, 3 avec `decisions-passage-2c.json`, vérifié dans Chromium).
+- **Conséquence** : les choix faits dans la page (cases, versions retenues) restent calculés par le script de la page ; seul l'état initial vient de Node, par les données de la page et l'attribut `data-decidee` des cartes. Une décision égale à l'ancienne valeur n'a aucune entrée réelle dans les fixtures.
+
+### D22
+- **Décision** : une seule mise en forme des nombres et du texte (`src/lib/format.js`) : `fr` (virgule décimale), `esc` (échappement HTML), `r4` (arrondi à 4 décimales). Chaque sortie garde son format, nommé par les options de `fr` : nombre tel quel, `decimales`, `zeros`, `tronque`, `vide`. Deux défauts corrigés : la troncature se fait sur la valeur arrondie à 4 décimales (5,02 reste 5,02), et l'arrondi suit l'écriture décimale du nombre (11,655 donne 11,66). `esc` rend la chaîne vide pour `null` et `undefined`. `fr` refuse ce qui n'est pas un nombre, sauf si l'appelant donne `vide`. Le contraste WCAG a une seule source, `contrastRatio` (`src/lib/color.js`) ; une couleur qui n'est pas `#rrggbb` y lève en la nommant. culori reste l'oracle indépendant des tests.
+- **Raison** : revue de code du 15/11/2026, constats C4, D9 et D10 ; décisions de Quentin du 16/11/2026. Neuf copies de `fr` (quatre comportements), six d'`esc` (trois comportements sur `null`), quatre de `r4`, deux sources de contraste. La planche des rôles affichait 5,01:1 pour 5,02, `toFixed` arrondissait 11,655 à 11,65, et une couleur mal écrite donnait un contraste NaN, en silence. Les deux sources de contraste donnent le même nombre, bit à bit, sur toute couleur `#rrggbb`.
+- **Conséquence** : les formats restent différents d'une sortie à l'autre ; leur harmonisation est une décision à part (`KNOWN_ISSUES.md`). Refuser une valeur qui n'est pas un nombre a fait apparaître un « NaN » dans la revue : le contraste « après » d'une décision sans défaut (J1) ; il s'écrit « — ». `relativeLuminance` accepte encore un `#rrggbbaa`, dont il ignore l'alpha (`KNOWN_ISSUES.md`).
+
+### D23
+- **Décision** : une seule résolution d'alias pour les trois contrôles, `resoudreAlias` (`src/tokens/roles.js`, à côté de `flattenTokens`). Elle rend la valeur finale ; chaque contrôle juge le type et garde son message (`couleur illisible`, `dimension illisible`, `taille illisible`, `nombre attendu`). « alias en boucle » cite la chaîne depuis le jeton de départ ; « alias sans cible » nomme, après « depuis », le jeton ou le champ de départ.
+- **Raison** : revue de code du 15/11/2026, constat D2 ; décision de Quentin du 16/11/2026. La typo citait sa chaîne sans le style de départ, et un style qui renvoyait à lui-même y passait pour une taille illisible.
+- **Conséquence** : seules les lignes d'erreur de `npm run typo` changent, dans ces deux cas ; les codes de sortie restent ceux de D18. Les ensembles de jetons où chercher restent propres à chaque contrôle.
+
+### D24
+- **Décision** : au déclaré, `audit.json` n'écrit pas le compte par propriété d'une valeur quand il est vide : c'est le cas des 8 familles lues par Wallace, qui ne donne pas la propriété (couleurs, familles et tailles de police, interlignes, ombres, rayons, durées, courbes). Les 8 familles lues par PostCSS gardent leurs comptes, à la même place.
+- **Raison** : décision de Quentin du 15/11/2026 (question Q5 de la revue de code). Un champ toujours vide laisse croire à un compte qui n'existe pas ; aucun lecteur ne s'en sert, ni dans `src/`, ni dans les tests, ni dans les fixtures, ni dans les scripts de `local/`.
+- **Conséquence** : les `audit.json` déjà écrits gardent leur champ vide ; aucun outil ne les relit pour ce champ.

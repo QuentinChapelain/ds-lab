@@ -2,7 +2,7 @@
 /**
  * Mise en forme commune des sorties (revue de code du 15/11, lot 4) : nombres à la française, texte échappé pour le HTML,
  * arrondi à 4 décimales des nombres écrits dans les fichiers. Une seule définition de chaque règle ; chaque appelant nomme
- * son format par les options de `fr` (docs/decisions.md, D21).
+ * son format par les options de `fr` (docs/decisions.md, D22).
  */
 
 /**

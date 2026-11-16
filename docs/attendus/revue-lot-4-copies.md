@@ -66,3 +66,51 @@ Réponses du propriétaire (16/11/2026) :
 - Script de page : il lit la valeur retenue calculée côté Node, limité à l'état initial de la page ; la perte à l'export est d'abord vérifiée dans un navigateur ; si le changement déborde l'état initial, arrêt et passage à un test rouge noté dans `KNOWN_ISSUES.md`.
 - Planches : une commande `node src/cli/planche.js <roles|espacements|typo>`, les trois sans argument, mêmes octets, garde commune, sans script npm.
 - Retraits : quatre commits, un par retrait. Commits enchaînés, sans fusion.
+- `esc` (question Q2, posée à part le 16/11) : la chaîne vide pour `null` et `undefined`.
+
+## Écarts constatés à l'exécution
+
+1. `fr` refuse ce qui n'est pas un nombre, sauf si l'appelant donne `vide` : règle prise par analogie avec la réponse sur le contraste, non tranchée par Quentin [H]. Elle a fait apparaître un « NaN » déjà écrit dans `revue.html` : le contraste « après » d'une décision sans défaut (J1), que `src/reduce/propose.js` retire exprès et que `migration.md` sait omettre. Il s'écrit « — », comme un nombre absent des espacements.
+2. Contraste : la vérification `#rrggbb` est posée sur `contrastRatio`, et non sur `relativeLuminance` : `addStates` (`src/rendered/aggregate.js`) passe à `relativeLuminance` un fond survolé semi-transparent (`#5b2a8680`), dont l'alpha est ignoré (`KNOWN_ISSUES.md`). Sur toute la suite, aucun ratio ne reçoit autre chose que `#rrggbb` [F].
+3. `retenue` vit dans `src/reduce/propose.js`, à côté de `decisionFor`, et non dans `src/reduce/declarations.js` comme le disait le plan : `declarations.js` importe `decisionFor` de `propose.js`.
+4. Script de page (D21) : le changement tient à l'état initial. La flèche, les valeurs des paires contrôlées et du bilan viennent de Node ; une ligne de `collect()` lit l'attribut `data-decidee`, écrit par Node, quand la case reste cochée. Aucune logique d'interaction n'est ajoutée.
+5. Tests : la règle de troncature de `test/roles-planche.test.js` portait le même défaut (`Math.floor(n * 100)`) ; elle tronque maintenant la valeur arrondie à 4 décimales. Le test « outcomeOf » de V6 reçoit une ligne témoin : sans conflit entre issues différentes, `attachDeclarations` ne montre aucune issue. Une ligne témoin rend le test rouge avant le code et vert après.
+6. Copies en ligne : `review.js` reformate un ΔE capturé dans un motif (`fr(Number(m[1]))`) ; `typo` garde « 2 décimales sans zéros » pour la hauteur d'une ligne (`fr(n, { decimales: 2 })`), au lieu de l'arrondi recopié.
+7. Tests : 742 au départ, 37 ajoutés (20 rouges avant le code), 1 retiré (« captures isolées », écart 10 ci-dessus) : 778, tous verts.
+
+## Sorties qui changent
+
+Mesurées sur 7b3ad9c puis à la fin du lot. Les contrôles portent sur 4 marques × 2 modes × 2 largeurs, `npm run espacements`, `npm run typo` et le calibrage des 4 entrées. Les 5 réductions sur fixtures sont : désordre, pièges et proximité sur la valise, puis les pages en désordre avec `decisions-passage-2c.json` et avec `decisions-valise.json`. Deux captures de 7b3ad9c sont identiques, une fois les ports normalisés [F].
+
+| Sortie | Avant | Après |
+|---|---|---|
+| `tokens/orbe-cafe/roles.html`, `texte.secondaire` sur `fond.composant` | 5,01:1 | 5,02:1 |
+| console de `npm run contraste`, Écume et Sel en sombre (large et étroit), `texte.accent` sur `fond.discret` | 11,65:1 | 11,66:1 |
+| console de `npm run contraste`, Grenat Papeterie en clair (large et étroit), 3 paires interdites | (1,54:1) | (1,55:1) |
+| `revue.html`, pages en désordre avec `decisions-passage-2c.json`, détail de la décision sans défaut (J1) | 4,58 avant → NaN | 4,58 avant → — |
+| `revue.html`, les 14 lignes à décision écrite (tableau suivant) | proposition affichée, décision perdue à l'export | décision affichée et exportée |
+| `revue.html`, toutes les réductions | — | une ligne de plus dans le script de page (`data-decidee`) |
+| `audit.json`, déclaré, pages en désordre | 73 `"properties": {}` | aucun ; le reste identique |
+| `npm run typo`, style qui renvoie à lui-même | `taille illisible (px ou rem attendu) : libelle.fontSize` | `alias en boucle : typo.libelle → typo.libelle` |
+| `npm run typo`, boucle depuis un style | `alias en boucle : renvoi.b1 → renvoi.b2 → renvoi.b1` | `alias en boucle : typo.libelle → renvoi.b1 → renvoi.b2 → renvoi.b1` |
+
+Les autres sorties ne changent pas [F] :
+- consoles d'`espacements` et de `typo` ;
+- calibrage ;
+- `migration.md`, `modifications.json` et `table.json` des 5 réductions ;
+- planches des espacements et de la typo ;
+- messages d'alias des rôles et des espacements.
+
+Les 14 lignes de D21. Pour chacune : la flèche de la carte avant et après, et la valeur que l'export rend après. Avant, l'export les perdait toutes (vérifié dans Chromium) :
+
+| Réduction | Ligne | Clé | Classe | Décision écrite | Flèche avant | Flèche après | Export après |
+|---|---|---|---|---|---|---|---|
+| passage 2c | coul-27 | `colors\|#30548a\|texte` | proche | #4c6994 | #2b4c7e | #4c6994 | #4c6994 |
+| passage 2c | coul-24 | `colors\|#d0563f\|plein` | auto | #c8553d | #c8553d | #c8553d | #c8553d |
+| passage 2c | coul-02 | `colors\|#1f2a44\|texte` | inchangé | #103060 | — | #103060 | #103060 |
+| valise | coul-11, coul-13, coul-30, coul-31, coul-32, coul-33 | `colors\|#9a9a9a\|texte`, `#757575`, `#777777`, `#808080`, `#999999`, `#9e9e9e` | correction | #6d675b | #6d675b | #6d675b | #6d675b |
+| valise | coul-23 | `colors\|#cccccc\|bordure` | correction | #958f84 | #958f84 | #958f84 | #958f84 |
+| valise | coul-28 | `colors\|#4990e2\|plein` | correction | #2b4c7e | #2b4c7e | #2b4c7e | #2b4c7e |
+| valise | coul-37 | `colors\|#ef5c56\|texte` | correction | #cb1d2a | #cb1d2a | #cb1d2a | #cb1d2a |
+| valise | coul-01 | `colors\|#999999\|bordure` | proche | #6d675b | #958f84 | #6d675b | #6d675b |
+| valise | coul-16 | `colors\|#2196f3` | hors table | #4c6994 | — | #4c6994 | #4c6994 |
