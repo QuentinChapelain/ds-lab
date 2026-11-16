@@ -87,12 +87,12 @@ Changer de marque, c'est changer la couche marque ; les rôles restent les même
 
 | Commande | Ce qu'elle fait |
 |---|---|
-| `npm run audit` | Mesurer un site : déclaré et rendu |
+| `npm run audit` | Mesurer un site : déclaré et rendu ; sort en 2 si une page n'a pas pu être mesurée (audit écrit, incomplet) ou si aucune ne l'a été (rien d'écrit) |
 | `npm run marque` | Lire la marque d'un site avant la réduction ; ne décide rien : sort en 0, ou en 2 sur une panne |
-| `npm run reduce` | Ranger l'existant dans la cible : table, revue, consigne ; `modifications.json` avec `--tokens` |
-| `npm run apply` | Appliquer `modifications.json` aux feuilles d'une copie du site |
+| `npm run reduce` | Ranger l'existant dans la cible : table, revue, consigne ; `modifications.json` avec `--tokens` ; sort en 2 dès qu'une page tombe |
+| `npm run apply` | Appliquer `modifications.json` aux feuilles d'une copie du site ; sort en 1 s'il reste un écart, en 2 sur une panne |
 | `npm run verify` | Comparer une page à sa référence (pixels, arbre d'accessibilité) ; sort en 0 même si des pixels diffèrent, en 2 sur une panne |
-| `npm run login` | Enregistrer une session dans `.auth/` |
+| `npm run login` | Enregistrer une session dans `.auth/` ; sort en 2 sur une panne |
 | `npm run demo` | Servir la marque fictive en local |
 | `npm run saisie` | Saisir une marque depuis son entrée : échelles, couche marque, mode sombre, resolver, contraste dans les deux modes ; sort en 1 si elle est refusée, avec motif et mode, en 2 sur une panne |
 | `npm run contraste` | Paires de rôles ; sort en 1 si une paire est sous son seuil sans exception écrite, en 2 sur une panne ; `--marque <dossier>` pour une autre marque, `--mode clair|sombre` et `--largeur large|etroit` pour le contexte |

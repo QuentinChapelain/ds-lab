@@ -46,7 +46,9 @@ npm test
 
 Le site audité n'est jamais modifié : les nouvelles valeurs sont posées dans le navigateur de l'outil, le temps des captures. Options utiles : `--tokens` (nommer les lignes par les jetons DTCG), `--decisions` (relire les choix du designer), `--live` (fenêtre avec une barre avant / après), `--viewport 390x844` (mobile).
 
-`npm run apply` modifie une copie du site, à la racine donnée : il remplace chaque déclaration de `modifications.json` si la valeur écrite est bien celle attendue (sinon, un écart), pose les commentaires et écrit `tokens.css`. Relancé sur une copie déjà migrée, il ne change aucune feuille. Il ne touche pas au HTML ; il écrit `reste.md`, la consigne de ce qui reste pour l'agent (lien vers `tokens.css`, attributs d'accessibilité, écarts). `--essai` n'écrit rien.
+`npm run apply` modifie une copie du site, à la racine donnée : il remplace chaque déclaration de `modifications.json` si la valeur écrite est bien celle attendue (sinon, un écart), pose les commentaires et écrit `tokens.css`. Relancé sur une copie déjà migrée, il ne change aucune feuille. Il ne touche pas au HTML ; il écrit `reste.md`, la consigne de ce qui reste pour l'agent (lien vers `tokens.css`, attributs d'accessibilité, écarts). `--essai` n'écrit rien. Il sort en 0 si tout est appliqué ou déjà appliqué, en 1 s'il reste au moins un écart (`--essai` compris), en 2 sur une panne : feuille illisible ou CSS invalide, et rien n'est écrit (D18).
+
+Codes de sortie de la chaîne (D18) : `npm run audit` sort en 2 si une page n'a pas pu être mesurée (l'avertissement nomme l'étape : navigation, feuilles, mesure, script v1) ou si sa trace est en panne ; l'audit est alors écrit, incomplet ; si aucune page n'est mesurée, rien n'est écrit. `npm run reduce` s'arrête en 2 dès qu'une page tombe, ou si une couleur de marque de la cible est illisible ; il affiche les avertissements de navigation (statut HTTP, redirection, feuilles illisibles), les sélecteurs tiers invalides et les clés de `decisions.json` qui ne visent aucune ligne ni carte, sans s'arrêter. `npm run marque` affiche aussi les avertissements de navigation.
 
 ## Le parcours d'une décision
 
