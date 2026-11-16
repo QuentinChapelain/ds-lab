@@ -9,7 +9,7 @@ import { normalizeColor } from './color.js';
 import { toPx, toMs, splitSpaces, splitCommas } from './units.js';
 
 /** D4 : mots-clés globaux exclus de toutes les familles. */
-export const GLOBAL_KEYWORDS = new Set(['inherit', 'initial', 'unset', 'revert', 'revert-layer']);
+const GLOBAL_KEYWORDS = new Set(['inherit', 'initial', 'unset', 'revert', 'revert-layer']);
 
 /**
  * @param {string} raw

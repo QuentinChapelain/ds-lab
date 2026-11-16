@@ -10,7 +10,7 @@ import { generateScale, couleurAuContraste, TARGETS } from '../valise/generate.j
 import { r4 } from '../lib/format.js';
 
 /** Phrases d'usage par pas, reprises de primitives.tokens.json. */
-export const STEP_USAGES = /** @type {Record<string, string>} */ ({
+const STEP_USAGES = /** @type {Record<string, string>} */ ({
   1: "fond d'application",
   2: 'fond discret',
   3: 'fond de composant',
@@ -25,10 +25,10 @@ export const STEP_USAGES = /** @type {Record<string, string>} */ ({
   12: 'texte principal',
 });
 /** generateScale vérifie le texte sur-plein sur les pas 9 et 10 (G4). */
-export const ON_SOLID_USAGE = 'texte posé sur les pas 9 et 10 (4,5:1)';
+const ON_SOLID_USAGE = 'texte posé sur les pas 9 et 10 (4,5:1)';
 
 /** Statuts complémentaires (avertissement, info) et leur couleur source. */
-export const STATUTS = [
+const STATUTS = [
   { name: 'avertissement', source: '#e5a000', label: "Statut d'avertissement" },
   { name: 'info', source: '#0284c7', label: "Statut d'information" },
 ];
@@ -116,11 +116,11 @@ export function valiseFromTokens(...files) {
  * pas 9 au milieu géométrique des pas 8 et 11. Couleurs : pas 11 à 9:1 sur la page (repères #8bb9ff et #c4a3ff),
  * pas 12 à 12,75:1. fond.surface entre les pas 2 et 3 (milieu géométrique).
  */
-export const PAGE_SOMBRE = '#121212';
+const PAGE_SOMBRE = '#121212';
 const KP = contrastRatio(PAGE_SOMBRE, '#000000');
 const surPage = (/** @type {number} */ t) => (t / TARGETS[1]) * KP;
 /** Contraste de fond.surface sombre contre le noir. */
-export const SURFACE_SOMBRE = Math.sqrt(surPage(TARGETS[2]) * surPage(TARGETS[3]));
+const SURFACE_SOMBRE = Math.sqrt(surPage(TARGETS[2]) * surPage(TARGETS[3]));
 const BASE_SOMBRE = Object.fromEntries([1, 2, 3, 4, 5, 6, 7].map((i) => [i, surPage(TARGETS[i])]));
 const NEUTRE_8 = 3.1 * SURFACE_SOMBRE;
 const NEUTRE_11 = surPage(TARGETS[11]);
@@ -134,7 +134,7 @@ export const CIBLES_SOMBRES = {
 export const OPTIONS_COULEUR_SOMBRE = /** @type {const} */ ({ fond: 'sombre', cibles: CIBLES_SOMBRES.couleur, chromaTextes: 'max' });
 
 /** Échelles communes du mode sombre ; statuts depuis le pas 9 de leur échelle claire, neutre dessiné. */
-export const ECHELLES_SOMBRES = [
+const ECHELLES_SOMBRES = [
   { name: 'neutre', label: 'Neutre' },
   { name: 'erreur', label: "Statut d'erreur" },
   { name: 'succes', label: 'Statut de succès' },

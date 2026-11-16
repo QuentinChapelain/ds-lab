@@ -414,7 +414,7 @@ export function scanInPage(map) {
  * @param {{ id: string, keys: string[] }[]} conflicts
  * @returns {Promise<{ operations: number, changed: number, byFamily: Record<string, number>, frozen: number }>}
  */
-export async function freezeConflicts(page, conflicts) {
+async function freezeConflicts(page, conflicts) {
   const keys = new Set(conflicts.flatMap((c) => c.keys));
   const ids = new Set(conflicts.map((c) => c.id));
   const ops = await page.evaluate(
@@ -448,7 +448,7 @@ export function showInPage(o) {
  * en choisir une n'applique que cette ligne, « Toutes » revient au mode par familles.
  * @param {{ key: string, id: string, title: string }[]} [lines]
  */
-export function toolbarInPage(lines = []) {
+function toolbarInPage(lines = []) {
   const LABELS = /** @type {Record<string, string>} */ ({ colors: 'Couleurs', spacing: 'Espacements', fontSizes: 'Tailles', radii: 'Rayons' });
   const sim = /** @type {any} */ (window).__dsSim;
   if (!sim) return false;
@@ -627,7 +627,7 @@ export async function simulatePage(page, map, { fullPage = true } = {}) {
  * @param {{ key: string, i?: number, family: string, usage?: string, lines?: boolean, clip?: { x: number, y: number, width: number, height: number } }} o
  *   i : élément imposé (versions suivantes)
  */
-export function versionInPage({ key, i, family, usage, lines = false, clip }) {
+function versionInPage({ key, i, family, usage, lines = false, clip }) {
   const sim = /** @type {any} */ (window).__dsSim;
   const ops = sim.ops.filter((/** @type {any} */ op) => op.key === key);
   if (!ops.length) return null;
@@ -887,7 +887,7 @@ export const FRAME = { pad: 16, maxHeight: 400, wideRetrait: 600, scale: 2 };
  * @param {{ usage?: string, family: string }} d
  * @returns {Rect}
  */
-export function frameOf(probes, d) {
+function frameOf(probes, d) {
   const gap = d.family === 'spacing' && d.usage === 'gouttière';
   const rects = probes.flatMap((p) => {
     const kids = p.around.filter((a) => a.kind === 'enfant').map((a) => a.rect);
@@ -1088,7 +1088,7 @@ export async function captureDecision(page, d, thirdParty = [], { index, compact
  * pour un champ, son libellé).
  * @param {{ key: string }} o
  */
-export function touchedInPage({ key }) {
+function touchedInPage({ key }) {
   const sim = /** @type {any} */ (window).__dsSim;
   const seen = new Set();
   /** @type {{ index: number, selector: string, text: string }[]} */

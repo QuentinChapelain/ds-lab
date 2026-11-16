@@ -15,7 +15,7 @@ import { SIGNES } from './garde-fous.js';
 import { lirePolice } from './lecture.js';
 
 /** Caractères mesurés : lettres et chiffres ASCII, et les signes français exigés. */
-export const JEU = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789' + SIGNES;
+const JEU = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789' + SIGNES;
 const FAMILLE = 'ds-lab-encre';
 /** Taille de mesure, en px : une ligne de pixels vaut 0,001 em. */
 const TAILLE = 1000;

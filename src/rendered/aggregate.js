@@ -28,7 +28,7 @@ import {
   shadowKey,
 } from '../lib/values.js';
 
-export const RENDERED_FAMILIES = /** @type {const} */ ([
+const RENDERED_FAMILIES = /** @type {const} */ ([
   'colors',
   'fontFamilies',
   'fontSizes',
@@ -49,7 +49,7 @@ export const RENDERED_FAMILIES = /** @type {const} */ ([
 const MAX_SELECTORS = 3;
 
 /** R13 : seuil de chroma OKLab √(a² + b²) des gris de texte. */
-export const GREY_CHROMA = 0.02;
+const GREY_CHROMA = 0.02;
 
 /**
  * R13 : gris de texte = couleurs rendues employées au moins une fois en color
@@ -149,7 +149,7 @@ const CORNERS = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
  */
 
 /** R-1 : texte d'une étiquette possible, 20 caractères au plus. */
-export const CHIP_TEXT_MAX = 20;
+const CHIP_TEXT_MAX = 20;
 
 /**
  * R-1 : élément touché, compté une fois (un pseudo-élément compte pour son élément),
@@ -267,7 +267,7 @@ const COLOR_TOKEN = /(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([^()]*\)|#[0
  * @returns {{ hex: string, raw: string, property: string, content?: boolean }[]} dans l'ordre : texte, bordures,
  *   contour, ombres, fond, dégradé, SVG ; content = occurrence de contenu et non d'interface (R18)
  */
-export function paintedColors(p, text, { imageBox = false } = {}) {
+function paintedColors(p, text, { imageBox = false } = {}) {
   /** @type {{ hex: string, raw: string, property: string, content?: boolean }[]} */
   const out = [];
   /** @param {string | undefined} raw @param {string} property @param {boolean} [content] */
@@ -343,7 +343,7 @@ export function effectiveBackground(records, index) {
  * @param {string} property @param {boolean} plein
  * @returns {'texte' | 'bordure' | 'fond' | 'plein' | 'autre'}
  */
-export function colorUsage(property, plein) {
+function colorUsage(property, plein) {
   if (property === 'color' || property === 'text-decoration-color') return 'texte';
   if (/^border-(top|right|bottom|left)-color$/.test(property) || property === 'outline-color') return 'bordure';
   if (property === 'background-color') return plein ? 'plein' : 'fond';
@@ -351,7 +351,7 @@ export function colorUsage(property, plein) {
 }
 
 /** R3 : usage d'un espacement, d'après sa famille. */
-export const SPACING_USAGE = /** @type {const} */ ({ margins: 'marge', paddings: 'retrait', gaps: 'gouttière' });
+const SPACING_USAGE = /** @type {const} */ ({ margins: 'marge', paddings: 'retrait', gaps: 'gouttière' });
 
 /**
  * R7 : un rayon au moins égal à la moitié du plus petit côté de l'élément
@@ -359,7 +359,7 @@ export const SPACING_USAGE = /** @type {const} */ ({ margins: 'marge', paddings:
  * @param {string} key  « 20px » @param {[number, number] | undefined} box
  * @returns {'pilule' | 'rayon'}
  */
-export function radiusUsage(key, box) {
+function radiusUsage(key, box) {
   const pct = /^(\d+(?:\.\d+)?)%$/.exec(key);
   if (pct) return Number(pct[1]) >= 50 ? 'pilule' : 'rayon';
   const m = /^(-?\d+(?:\.\d+)?)px$/.exec(key);
@@ -373,7 +373,7 @@ export function radiusUsage(key, box) {
  * Indice du relevé qui fournit le premier fond opaque d'un élément (lui-même ou un ancêtre), ou -1.
  * @param {RenderedRecord[]} records @param {number} index
  */
-export function opaqueSource(records, index) {
+function opaqueSource(records, index) {
   for (let i = index; i >= 0; i = records[i].parent) {
     const c = normalizeColor(records[i].bg);
     if (c && isOpaque(c.hex)) return i;
@@ -389,7 +389,7 @@ export function opaqueSource(records, index) {
  * @param {Set<string>} [solid]  solidPairs(target)
  * @returns {Set<number>}
  */
-export function pleinSources(records, solid = new Set()) {
+function pleinSources(records, solid = new Set()) {
   /** @type {Set<number>} */
   const out = new Set();
   records.forEach((rec, i) => {

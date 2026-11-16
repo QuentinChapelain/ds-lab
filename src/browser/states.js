@@ -7,14 +7,14 @@
  * juste après le changement d'état serait celle du départ de la transition.
  */
 
-export const STATES = /** @type {const} */ ({
+const STATES = /** @type {const} */ ({
   hover: ['hover'],
   focus: ['focus', 'focus-visible'],
   active: ['active'],
 });
 
-export const INTERACTIVE_ROLES = new Set(['bouton', 'lien', 'champ']);
-export const MAX_STATE_SAMPLES = 60;
+const INTERACTIVE_ROLES = new Set(['bouton', 'lien', 'champ']);
+const MAX_STATE_SAMPLES = 60;
 
 /**
  * @typedef {object} StateSample
@@ -34,7 +34,7 @@ export const MAX_STATE_SAMPLES = 60;
  * @param {import('./rendered.js').PageCollection} pc
  * @param {number} max
  */
-export function pickStateSamples(pc, max = MAX_STATE_SAMPLES) {
+function pickStateSamples(pc, max = MAX_STATE_SAMPLES) {
   /** @type {Map<string, { index: number, role: string, selector: string, text: boolean }>} */
   const byKey = new Map();
   pc.records.forEach((r, index) => {

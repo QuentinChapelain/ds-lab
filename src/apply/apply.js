@@ -28,7 +28,7 @@ const KINDS = ['width', 'style', 'color'];
  * Un border ou un border-top ne couvre pas les rayons (border-*-radius), que seul border-radius couvre.
  * @type {Record<string, string[]>}
  */
-export const LONGUES = {
+const LONGUES = {
   margin: SIDES.map((s) => `margin-${s}`),
   padding: SIDES.map((s) => `padding-${s}`),
   'border-width': SIDES.map((s) => `border-${s}-width`),
@@ -46,7 +46,7 @@ export const LONGUES = {
 };
 
 /** Valeur comparable : casse, espaces. @param {string | null | undefined} v */
-export const norm = (v) =>
+const norm = (v) =>
   String(v ?? '')
     .trim()
     .toLowerCase()
@@ -67,7 +67,7 @@ const normSelector = (s) =>
  * respectés), avec leur position ; slash et virgule de premier niveau signalés.
  * @param {string} value
  */
-export function components(value) {
+function components(value) {
   /** @type {{ text: string, start: number, end: number }[]} */
   const parts = [];
   let depth = 0;
@@ -180,7 +180,7 @@ function coverageOf(prop, parts) {
 }
 
 /** Le raccourci écrit couvre-t-il cette propriété ? Lu dans la table LONGUES. @param {string} written @param {string} prop */
-export const covers = (written, prop) => written === prop || (LONGUES[written] ?? []).includes(prop);
+const covers = (written, prop) => written === prop || (LONGUES[written] ?? []).includes(prop);
 
 /** Nombre de retours à la ligne. @param {string} s */
 const newlines = (s) => (String(s ?? '').match(/\n/g) ?? []).length;
@@ -424,7 +424,7 @@ const dash = (s) => (s.startsWith('- ') ? s : `- ${s}`);
  * S4 : reste.md, la consigne réduite à ce que le script n'a pas fait.
  * @param {any} mods @param {any[]} results @param {any[]} comments
  */
-export function renderReste(mods, results, comments) {
+function renderReste(mods, results, comments) {
   const b = mods.brief ?? {};
   const n = (/** @type {string} */ s) => results.filter((x) => x.status === s).length;
   const posed = comments.filter((x) => x.status === 'posé').length;

@@ -26,7 +26,7 @@ const cssVar = (token) => `--${token.replace(/\./g, '-')}`;
  * Valeur CSS d'un jeton DTCG (couleur : hex ; dimension : valeur et unité), ou null.
  * @param {any} tokens @param {string} path
  */
-export function tokenValue(tokens, path) {
+function tokenValue(tokens, path) {
   let node = tokens;
   for (const k of path.split('.')) node = node?.[k];
   const v = node?.$value;

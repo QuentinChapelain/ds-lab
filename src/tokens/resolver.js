@@ -22,7 +22,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const VERSION = '2025.10';
+const VERSION = '2025.10';
 /** Nom du resolver dans le dossier d'une marque. */
 export const RESOLVER = 'marque.resolver.json';
 /** Couches communes à toutes les marques. */
@@ -30,7 +30,7 @@ export const COMMUN = fileURLToPath(new URL('../../tokens/commun/', import.meta.
 /** Dossier des jetons : tokens/commun/ et un dossier par marque. */
 export const TOKENS = fileURLToPath(new URL('../../tokens/', import.meta.url));
 /** Clé d'extension du seuil de largeur, sur le modificateur largeur. */
-export const LARGEUR = 'ds-lab.largeur';
+const LARGEUR = 'ds-lab.largeur';
 
 /** @param {any} v */
 const estObjet = (v) => !!v && typeof v === 'object' && !Array.isArray(v);

@@ -16,11 +16,11 @@ import { converter } from 'culori';
 import { normalizeColor } from '../lib/color.js';
 
 /** M1 : en dessous, une couleur est un gris. */
-export const GREY_CHROMA = 0.02;
+const GREY_CHROMA = 0.02;
 const toOklch = converter('oklch');
 
 /** @param {string} hex */
-export const chromaOf = (hex) => toOklch(hex)?.c ?? 0;
+const chromaOf = (hex) => toOklch(hex)?.c ?? 0;
 /** @param {string} hex */
 export const isGrey = (hex) => chromaOf(hex) < GREY_CHROMA;
 

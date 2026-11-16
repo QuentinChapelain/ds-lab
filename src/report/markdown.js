@@ -5,7 +5,7 @@
  */
 import { V1_DIFFERENCES, V1_SAME, LIMITS, STORAGE_STATE_LIMIT } from './differences.js';
 
-export const FAMILY_LABELS = /** @type {Record<string, string>} */ ({
+const FAMILY_LABELS = /** @type {Record<string, string>} */ ({
   colors: 'Couleurs',
   fontFamilies: 'Polices',
   fontSizes: 'Tailles de police',

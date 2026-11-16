@@ -140,7 +140,7 @@ function absorbedNotes(versions) {
  * L'autre côté de la paire la plus défavorable, après la table, et sa valeur d'aujourd'hui quand elle change.
  * @param {string | undefined} usage @param {{ text: string, bg: string, bgToday?: string, textToday?: string }} c
  */
-export function contrastSide(usage, c) {
+function contrastSide(usage, c) {
   if (usage === 'texte' || usage === 'bordure')
     return c.bgToday ? `sur le fond le moins favorable après la table (${c.bg}, aujourd’hui ${c.bgToday})` : `sur le fond le moins favorable ${c.bg}`;
   return c.textToday ? `avec le texte le moins favorable après la table (${c.text}, aujourd’hui ${c.textToday})` : `avec le texte le moins favorable ${c.text}`;

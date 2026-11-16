@@ -41,7 +41,7 @@ const cote = (role, valeur) =>
  * @param {string} nom nom de la marque
  * @returns {string}
  */
-export function espacementsHtml(r, roles, nom) {
+function espacementsHtml(r, roles, nom) {
   const hex = (/** @type {string} */ role) => {
     const v = roles.get(role);
     if (!v) throw new Error(`rôle de couleur absent : ${role}`);

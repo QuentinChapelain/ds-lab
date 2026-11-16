@@ -11,18 +11,18 @@
 import { flattenTokens, tokenTypes, primitivesSansRole, resoudreAlias } from './roles.js';
 import { fr } from '../lib/format.js';
 
-export const REM = 16;
-export const PAS = 4;
-export const TOLERANCE = 0.01;
-export const MIN_PX = 12;
+const REM = 16;
+const PAS = 4;
+const TOLERANCE = 0.01;
+const MIN_PX = 12;
 /** Affichage et titres, du plus grand au plus petit. */
-export const ORDRE = ['affichage.grand', 'affichage.moyen', 'titre.1', 'titre.2', 'titre.3', 'titre.4'];
+const ORDRE = ['affichage.grand', 'affichage.moyen', 'titre.1', 'titre.2', 'titre.3', 'titre.4'];
 /** Styles sur police.titre ; tous les autres sur police.texte. */
 export const SUR_POLICE_TITRE = ['affichage.grand', 'affichage.moyen', 'titre.1', 'titre.2', 'titre.3'];
 /** Clé de la consigne commune de hauteur de capitale, dans $extensions d'un style de titre. */
 export const CONSIGNE = 'ds-lab.hauteur-capitale';
 /** Interlignes minimaux. */
-export const INTERLIGNES_MIN = [
+const INTERLIGNES_MIN = [
   { id: 'corps-1-5', styles: ['corps.grand', 'corps.moyen'], min: 1.5 },
   { id: 'petits-1-3', styles: ['corps.petit', 'libelle', 'mention'], min: 1.3 },
 ];

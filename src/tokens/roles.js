@@ -227,7 +227,7 @@ const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
  * Échelles du contrat par échelle, dans l'ordre d'origine : neutre, échelles de la marque, statuts.
  * @param {...any} fichiers
  */
-export function ordreEchelles(...fichiers) {
+function ordreEchelles(...fichiers) {
   /** @type {Record<string, any>} */
   const toutes = {};
   for (const f of fichiers) for (const [k, v] of Object.entries(f?.couleur ?? {})) if (!k.startsWith('$')) toutes[k] = v;

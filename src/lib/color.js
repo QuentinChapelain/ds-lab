@@ -192,7 +192,7 @@ export function clusterComplete(colors, threshold) {
  * @param {string} hex `#rrggbb` ou `#rrggbbaa`
  * @returns {{ r: number, g: number, b: number, a: number }} canaux 0–255, alpha 0–1
  */
-export function hexToRgba(hex) {
+function hexToRgba(hex) {
   const h = hex.slice(1);
   return {
     r: parseInt(h.slice(0, 2), 16),

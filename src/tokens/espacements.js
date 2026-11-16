@@ -14,9 +14,9 @@
 import { flattenTokens, primitivesSansRole, resoudreAlias } from './roles.js';
 
 /** Ordre des relations, du plus proche au plus lointain. */
-export const ORDRE = ['ecart.dans-composant', 'ecart.entre-composants', 'ecart.entre-groupes', 'ecart.section'];
+const ORDRE = ['ecart.dans-composant', 'ecart.entre-composants', 'ecart.entre-groupes', 'ecart.section'];
 /** Rôles affichés sans contrôle d'ordre. */
-export const HORS_CONTROLE = ['marge-interieure.composant'];
+const HORS_CONTROLE = ['marge-interieure.composant'];
 
 /**
  * @typedef {{ role: string, alias: string, cible: string, px: number, description: string }} Espace
@@ -30,7 +30,7 @@ export const HORS_CONTROLE = ['marge-interieure.composant'];
  * Règles de rapport minimal entre deux ecart (b ≥ min × a), avec leur raison et leur statut.
  * @type {{ de: string, vers: string, min: number, raison: string, statut: string }[]}
  */
-export const REGLES = [
+const REGLES = [
   {
     de: 'ecart.dans-composant',
     vers: 'ecart.entre-composants',

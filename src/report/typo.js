@@ -40,7 +40,7 @@ const el = (tag, style, contenu, attrs = '', cls = '') => {
  * @param {{ polices: Record<string, string | string[]>, espacementLettres: Record<string, string>, nom: string }} extra  nom : nom de la marque
  * @returns {string}
  */
-export function typoHtml(t, e, roles, extra) {
+function typoHtml(t, e, roles, extra) {
   const hex = (/** @type {string} */ role) => {
     const v = roles.get(role);
     if (!v) throw new Error(`rôle de couleur absent : ${role}`);

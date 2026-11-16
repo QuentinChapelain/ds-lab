@@ -31,7 +31,7 @@ import {
 } from '../lib/values.js';
 
 /** Familles du déclaré, dans l'ordre du rapport. */
-export const DECLARED_FAMILIES = /** @type {const} */ ([
+const DECLARED_FAMILIES = /** @type {const} */ ([
   'colors',
   'fontFamilies',
   'fontSizes',

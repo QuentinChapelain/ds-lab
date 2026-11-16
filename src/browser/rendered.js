@@ -57,7 +57,7 @@
  * Exécutée dans la page : aucune référence extérieure.
  * @param {string[]} [thirdSelectors]  sélecteurs CSS des composants tiers à écarter (R17)
  */
-export function collectInPage(thirdSelectors = []) {
+function collectInPage(thirdSelectors = []) {
   const TEXT_PROPS = [
     'color',
     'font-family',

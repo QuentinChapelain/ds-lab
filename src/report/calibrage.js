@@ -28,7 +28,7 @@ const dE = (a, b) => 100 * dEok(a, b);
  */
 
 /** Bouton d'une échelle selon une classe de plein (D04). @param {string[]} steps @param {Classe} classe @returns {Bouton} */
-export function bouton(steps, classe) {
+function bouton(steps, classe) {
   if (classe === 'sombre') return { plein: steps[8], survol: voileBlanc(steps[8]), texte: WHITE, pas: 9 };
   if (classe === 'soutenu') return { plein: steps[8], survol: voileNoir(steps[8]), texte: WHITE, pas: 9 };
   if (classe === 'moyen') return { plein: steps[10], survol: steps[11], texte: WHITE, pas: 11 };
@@ -93,8 +93,8 @@ export function colonne({ dossier, entree }, commun = chargerCommun()) {
 }
 
 /** Clartés et teintes du balayage. */
-export const CLARTES = Array.from({ length: 9 }, (_, i) => Math.round((0.6 + i * 0.04) * 100) / 100);
-export const TEINTES = Array.from({ length: 23 }, (_, i) => 30 + i * 5);
+const CLARTES = Array.from({ length: 9 }, (_, i) => Math.round((0.6 + i * 0.04) * 100) / 100);
+const TEINTES = Array.from({ length: 23 }, (_, i) => 30 + i * 5);
 
 /**
  * Balayage des teintes près des seuils du cas clair : deux planches (chroma la plus forte du gamut sRGB, chroma 0,10).

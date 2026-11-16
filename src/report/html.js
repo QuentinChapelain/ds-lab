@@ -33,7 +33,7 @@ const PROPERTY_LABELS = /** @type {[RegExp, string][]} */ ([
   [/^stroke$/, 'trait SVG'],
 ]);
 /** @param {string} property */
-export const propertyLabel = (property) => PROPERTY_LABELS.find(([re]) => re.test(property))?.[1] ?? property;
+const propertyLabel = (property) => PROPERTY_LABELS.find(([re]) => re.test(property))?.[1] ?? property;
 
 const STATE_LABELS = /** @type {Record<string, string>} */ ({ hover: 'survol', focus: 'focus', active: 'appui' });
 

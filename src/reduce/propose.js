@@ -45,13 +45,13 @@ import { converter } from 'culori';
 
 const toOklch = converter('oklch');
 /** J1 : écart de teinte toléré, sans échelles dans la cible. */
-export const SAME_HUE_DEG = 30;
+const SAME_HUE_DEG = 30;
 /**
  * J1 : même teinte, quand la cible n'a pas d'échelles : deux gris (chroma OKLCH < 0,02, G8),
  * ou deux couleurs dont les teintes OKLCH diffèrent de SAME_HUE_DEG degrés au plus.
  * @param {string} a @param {string} b
  */
-export function sameHue(a, b) {
+function sameHue(a, b) {
   if (isGrey(a) || isGrey(b)) return isGrey(a) && isGrey(b);
   const d = Math.abs((toOklch(a)?.h ?? 0) - (toOklch(b)?.h ?? 0)) % 360;
   return Math.min(d, 360 - d) <= SAME_HUE_DEG;
@@ -71,7 +71,7 @@ export const APPLIED = new Set(['correction', 'proche', 'auto', 'inchangé']);
 export const THRESHOLDS = { autoPx: 1, nearRatio: 0.15, nearTextPx: 2, autoDeltaE: 2, nearDeltaE: 5, pillPx: 500 };
 
 /** Seuils des règles R4 et R7. */
-export const RULES = { noScaleDeltaE: 10, layoutMaxPx: 64 };
+const RULES = { noScaleDeltaE: 10, layoutMaxPx: 64 };
 
 /** R1 : tranches de pas par usage. */
 export const SLICES = /** @type {Record<string, [number, number]>} */ ({ texte: [11, 12], bordure: [6, 8], fond: [1, 5], plein: [9, 10] });
@@ -283,7 +283,7 @@ export function tieOf(candidates) {
  * @param {number[]} steps  pas triés @param {number} n
  * @returns {number[]}
  */
-export function candidateWindow(steps, n) {
+function candidateWindow(steps, n) {
   const s = steps.filter((x) => x < THRESHOLDS.pillPx);
   if (!s.length) return [];
   // Pas du bas (≤ n) et pas du haut (≥ n) ; les mêmes quand n tombe sur un pas ; -1 au-delà d'un bord.
@@ -395,7 +395,7 @@ const groupOf = (role) => (role === 'libellé' || role === 'champ' || role === '
  * Dans le composant : « champ vers son message » ; entre composants : « entre champs », « entre champ et bloc ».
  * @param {string} scope @param {string} role @param {string} neighbor
  */
-export function relationPhrase(scope, role, neighbor) {
+function relationPhrase(scope, role, neighbor) {
   if (scope === 'dans le composant') return role && neighbor && role !== neighbor ? `${role} vers son ${neighbor}` : 'dans le champ';
   if (scope === 'entre composants') {
     const [a, b] = [groupOf(role), groupOf(neighbor)];
@@ -420,7 +420,7 @@ function relationsOf(scope, roles) {
 }
 
 /** P3 : motif d'une ligne mise en défaut par le contrôle de proximité. */
-export const PROXIMITY_REASON = 'le message est aussi loin de son champ que du champ suivant : on ne voit pas à quel champ il appartient';
+const PROXIMITY_REASON = 'le message est aussi loin de son champ que du champ suivant : on ne voit pas à quel champ il appartient';
 
 /**
  * Espace d'une paire après remplacement de ses marges (fusionnées : la plus grande ;
@@ -922,7 +922,7 @@ function mergeKinds(a, b) {
 }
 
 /** R-1 : préfixe d'identifiant par famille. */
-export const ID_PREFIX = /** @type {Record<string, string>} */ ({ colors: 'coul', spacing: 'esp', radii: 'arr', fontSizes: 'tail' });
+const ID_PREFIX = /** @type {Record<string, string>} */ ({ colors: 'coul', spacing: 'esp', radii: 'arr', fontSizes: 'tail' });
 /** R-1 : propriété en clair, par famille puis par usage. */
 const PROPERTY_LABEL = /** @type {Record<string, Record<string, string>>} */ ({
   colors: { texte: 'Couleur du texte', bordure: 'Couleur de bordure', fond: 'Fond', plein: 'Fond', autre: 'Couleur', '': 'Couleur' },
@@ -935,7 +935,7 @@ const MARGIN_SIDE = /** @type {Record<string, string>} */ ({ 'margin-top': 'Marg
 /** R-1 : nom français du rôle relevé par src/browser/rendered.js (roleOf), et son pluriel. */
 const ROLE_LABEL = /** @type {Record<string, string>} */ ({ bouton: 'bouton', lien: 'lien', champ: 'champ', titre: 'titre', image: 'image', texte: 'texte', conteneur: 'bloc' });
 /** Texte visible coupé à 30 caractères ; trois rôles au plus après « n autres ». */
-export const TITLE_TEXT_MAX = 30;
+const TITLE_TEXT_MAX = 30;
 const TITLE_ROLES_MAX = 3;
 
 /**
@@ -952,7 +952,7 @@ const cut = (raw) => (raw.length > TITLE_TEXT_MAX ? `${raw.slice(0, TITLE_TEXT_M
  * R-1 : titre en clair d'une ligne.
  * @param {string} family @param {Row & { kinds?: Record<string, Kind> }} r
  */
-export function rowTitle(family, r) {
+function rowTitle(family, r) {
   const labels = PROPERTY_LABEL[family] ?? { '': family };
   const usage = r.usage ?? (r.usages?.length === 1 ? r.usages[0] : '');
   let property = labels[usage] ?? labels[''] ?? family;
@@ -1093,7 +1093,7 @@ export function worstContrast(usages, r, value, map = {}) {
 
 /** Motifs des décisions imposées par la marque. */
 /** D19 : état forcé d'une ligne vue seulement à cet état, dans son titre. */
-export const ETATS = /** @type {Record<string, string>} */ ({ hover: 'au survol', focus: 'au focus', active: 'à l’appui' });
+const ETATS = /** @type {Record<string, string>} */ ({ hover: 'au survol', focus: 'au focus', active: 'à l’appui' });
 
 
 /** Motif d'une ligne qui change encore au dixième tour de la boucle de stabilisation. */

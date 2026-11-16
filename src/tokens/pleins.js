@@ -28,7 +28,7 @@ export const TEXTE_FONCE_SURVOL = 4.5;
 /** Voile blanc du survol sombre. */
 export const VOILE_BLANC = 0.08;
 /** Voile noir du survol soutenu. */
-export const VOILE_NOIR = 0.15;
+const VOILE_NOIR = 0.15;
 
 const WHITE = '#ffffff';
 
@@ -85,7 +85,7 @@ const STEP_WORD = 'pas';
  * Statut : classe et phrase figées (STATUTS_FIGES) ; primaire et accent : classePlein.
  * @param {string} name @param {{ scale: string, steps: string[] }} src @param {boolean} withSteps
  */
-export function emplacement(name, { scale, steps }, withSteps) {
+function emplacement(name, { scale, steps }, withSteps) {
   const fige = withSteps ? undefined : STATUTS_FIGES[name];
   if (!withSteps && !fige) throw new Error(`statut sans bouton figé : ${name}`);
   const classe = fige?.classe ?? classePlein(steps);
@@ -125,7 +125,7 @@ export function emplacement(name, { scale, steps }, withSteps) {
 }
 
 /** Texte de marque des grands titres : contraste visé sur chaque fond clair (grand texte, WCAG 1.4.3). */
-export const GRAND_TEXTE = 3;
+const GRAND_TEXTE = 3;
 
 /**
  * Pas du texte de marque des grands titres (affichage, titres 1 et 2). Pas 9 du primaire s'il atteint
@@ -133,7 +133,7 @@ export const GRAND_TEXTE = 3;
  * @param {string[]} steps échelle du primaire @param {string[]} fonds hex de fond.app, fond.surface, fond.discret
  * @returns {9 | 10 | 11}
  */
-export function pasTexteGrand(steps, fonds) {
+function pasTexteGrand(steps, fonds) {
   const tous = [...fonds, steps[2]];
   for (const pas of /** @type {(9 | 10)[]} */ ([9, 10])) if (tous.every((f) => contrastRatio(steps[pas - 1], f) >= GRAND_TEXTE)) return pas;
   return 11;
@@ -181,7 +181,7 @@ export function marqueTokens({ primaire, accent, statuts, polices, fonds, descri
 }
 
 /** Emplacements de l'aplat plein du primaire, alias du plein en clair (tokens/commun/aplat.tokens.json). */
-export const APLAT = /** @type {const} */ ({ aplat: 'plein', 'sur-aplat': 'sur-plein', 'aplat-survol': 'plein-survol' });
+const APLAT = /** @type {const} */ ({ aplat: 'plein', 'sur-aplat': 'sur-plein', 'aplat-survol': 'plein-survol' });
 
 /** Fichier tokens/commun/aplat.tokens.json : les trois emplacements de l'aplat plein, alias du plein du primaire. */
 export function aplatTokens() {
