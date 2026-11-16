@@ -55,7 +55,7 @@
       "unreadStates": {
         "count": 1,
         "values": [
-          { "value": "#005fcc", "state": "focus", "property": "outline-color", "navigateur": true, "note": "anneau de focus par défaut du navigateur" }
+          { "state": "focus", "property": "outline-color", "navigateur": true, "note": "anneau de focus par défaut du navigateur, reconnu par sa nature : sa couleur dépend du système (#005fcc sous macOS, #101010 sous Linux)" }
         ],
         "corrected": "16/11/2026, revue de code, lot 2 (D19) : une couleur d'état écrite par le site entre dans la table ; #24426f (survol) quitte les états non lus ; l'anneau de focus du navigateur y reste, nommé comme tel"
       },

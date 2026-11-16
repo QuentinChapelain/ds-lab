@@ -172,8 +172,12 @@ test('désordre : exceptions', () => {
   );
   assert.equal(e.states.length, want.unreadStates.count, 'états non lus');
   for (const v of want.unreadStates.values) {
-    const s = e.states.find((/** @type {any} */ x) => x.value === v.value);
-    assert.ok(s?.contexts.some((/** @type {any} */ c) => c.state === v.state && c.property === v.property), `${v.value} ${v.state}`);
+    // D32 : l'anneau du navigateur se reconnaît par sa nature (état, propriété, anneau du navigateur), pas par sa
+    // couleur, qui dépend du système ; une valeur écrite par le site se reconnaît par sa valeur.
+    const s = e.states.find((/** @type {any} */ x) =>
+      v.value ? x.value === v.value : !!x.navigateur === !!v.navigateur && x.contexts.some((/** @type {any} */ c) => c.state === v.state && c.property === v.property),
+    );
+    assert.ok(s?.contexts.some((/** @type {any} */ c) => c.state === v.state && c.property === v.property), `${v.value ?? 'anneau du navigateur'} ${v.state}`);
     // D19 : l'anneau de focus du navigateur est nommé comme tel.
     if (v.navigateur) assert.equal(s?.navigateur, true, `${v.value} : anneau du navigateur`);
   }
