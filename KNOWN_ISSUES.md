@@ -9,7 +9,7 @@
 - Consigne de hauteur de capitale des titres : rapport 0,7 [H], à juger sur image (D17).
 - Consigne : la hauteur de ligne suit la taille calculée, pas la taille ajustée, mesuré dans Chromium 147 seulement ; Firefox et Safari non mesurés [V] (forme `cap-height <nombre>` : Chrome 127, Firefox 92, Safari 17, selon MDN).
 - Consigne : Oswald est rendu 14 % plus petit que sa taille nominale (capitale 810 sur 1 000 : 0,7 ÷ 0,81 = 0,864) ; EB Garamond 7,7 % plus grand (650 sur 1 000) ; Georgia d'Orbe Café 1 % plus grand. C'est le prix d'une même hauteur de capitale visible.
-- Contrôle d'encre : pire cas sur tout le jeu de caractères, même si cette capitale et cette descendante ne se suivent jamais ; le canvas de Chromium borne l'encre par les points de contrôle des courbes, un peu au-delà du contour (jusqu'à 0,006 em sur les polices d'essai). Le contrôle est prudent, il peut refuser une police qui passerait à l'œil.
+- Contrôle d'encre : pire cas sur tout le jeu de caractères, même si cette capitale et cette descendante ne se suivent jamais ; le contrôle est prudent, il peut refuser une police qui passerait à l'œil. L'encre est lue dans les pixels du tracé à 1 000 px (D32) : une ligne de pixels vaut 0,001 em, et le lissage peut ajouter jusqu'à une ligne au bord ; macOS et Linux s'accordent à 0,001 em sur les polices d'essai [F]. Coût : environ 0,65 s par police sur un Mac, 1,9 s sur le runner de la CI, contre 0,11 s avec les bornes de `measureText` [F].
 - Police des titres sans fichier (Orbe Café, Georgia) : ni hauteur de capitale ni encre contrôlées ; Georgia touchait déjà avant la consigne avec les lignes de l'étape 3.
 - Image des titres de l'étape 4c (`local/lot-4c/titres.png`) et son script : dans `local/` seulement.
 - Primitives espace 0, 8, 12 et 64 sans rôle, à revoir après les composants.
@@ -37,6 +37,14 @@
 - Table des 8 marques par mode (lot 3 de l'étape 4b) : dans `local/lot-4b/` seulement, témoins compris.
 - Trois fichiers source au-delà de 1 000 lignes ; ni lint ni CI.
 - Saisie, remise en place (D31) : si une panne survient pendant le remplacement final et que la remise des fichiers d'origine tombe elle-même (disque plein, droits retirés entre-temps), les fichiers ne sont pas remis ; le message les nomme [H], cas non provoqué par un test.
+- Taille réellement rendue d'un titre avec `font-size-adjust: cap-height` : le facteur se calcule depuis la hauteur de capitale d'OS/2 (D32), sans mesurer la taille que le navigateur applique, sous Linux en particulier [V] ; une variation de la hauteur de capitale par graisse (table MVAR) n'est pas lue [H].
+- Sorties qui dépendent encore du système (D32), sans correction :
+  - la couleur de l'anneau de focus du navigateur, dans « États non lus » de `migration.md` et dans `table.json` (`#005fcc` sous macOS, `#101010` sous Linux) : juste sur chaque machine ;
+  - les captures de `revue.html` : tracé, lissage, polices de repli ;
+  - les mesures qui suivent la mise en page : taille d'un élément pour la pilule de R7, retour à la ligne avec une police de repli ; aucune différence observée sur les fixtures [F] ;
+  - une référence de `npm run verify` enregistrée sur une machine et comparée sur une autre ;
+  - le nom des dossiers de sortie, en heure locale (`src/report/json.js`), quand `audit.json` date en UTC ;
+  - le Mac de travail tourne sous Node 25, la CI sous Node 22, borne basse de `engines` : les deux ne sont pas comparés au-delà de la suite de tests.
 - Saisie, contrôle d'encre : le refus « fichier de police que le navigateur ne charge pas » (`PoliceRefusee`, `src/polices/encre.js`) est codé mais sans test, faute d'un fichier qui passe les garde-fous et que Chromium rejette.
 - Codé sans test (lot 1b de la revue) : le motif « non stabilisé après 10 tours » de la boucle de `propose` (aucune entrée connue ne la fait osciller, `src/reduce/propose.js`) ; la trace en panne dans un audit de bout en bout (testée au niveau de `measureRendered` seulement, aucun moyen de la provoquer dans une vraie page) ; les messages d'une navigation échouée de `reduce --live` et de `npm run login` (fenêtre visible).
 - États forcés (D19) : les échantillons d'état ne sont pas tracés ; l'anneau de focus du navigateur est reconnu par repli, un contour `outline-style: auto` (`src/rendered/aggregate.js`, `addStates`). Un site qui écrit lui-même `outline-style: auto` verrait sa couleur de focus rangée avec celle du navigateur. Remède : tracer chaque échantillon à l'état forcé (un appel `CSS.getMatchedStylesForNode` par échantillon et par état, dans `collectStates`) et lire l'origine de la règle.

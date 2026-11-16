@@ -103,3 +103,29 @@ Lecture des pixels à 1 000 px, en em (fontTools contour / Mac / runner) [F] :
 7. `#005fcc` n'est écrit que dans `fixtures/marque-demo/expected-migration.json:58` ; le test le cherche par sa valeur (`test/e2e-migration.test.js:173-178`).
 
 Décisions de Quentin (16/11/2026) : le facteur de taille se calcule depuis le fichier, consigne × unités par em ÷ hauteur de capitale d'OS/2, sans navigateur ; la mesure par largeurs est retirée. La consigne et la règle de refus ne changent pas ; une police sans hauteur de capitale est déjà refusée. D32 le dit avec les bornes d'encre : aucune mesure d'encre ni de taille ne dépend de la machine. Dette inscrite : la taille réellement rendue d'un titre sous Linux avec `font-size-adjust` n'est pas mesurée [V]. E3 donne toutes ses valeurs dans son message d'échec. Coût d'environ 0,9 s par police accepté ; la durée sur le runner est donnée au compte rendu. Une encre qui touche le bord du canvas est une panne (sortie 2), couverte par un test. Les six points de Q5 vont dans `KNOWN_ISSUES.md`, sans correction, le nom des dossiers de sortie en heure locale compris. Quatre commits, poussés un par un ; arrêt à la CI verte, avant le rouge voulu.
+
+## Écarts constatés à l'exécution
+
+1. Tests rouges (commit 1), sur le Mac : E3 rouge, 7 mesures hors tolérance (les quatre facteurs mesurés par largeurs, de 9e-5 à 3e-5 du calcul du fichier ; EB Garamond 700 haut 0,851 pour 0,849 ; Cinzel bas 0,2705 pour 0,2648 et 0,2843 pour 0,2783) ; E6 rouge (l'option de cadre n'existait pas, la mesure aboutissait) ; la règle de l'anneau par sa nature passe déjà sur le Mac [F].
+2. E6 ajoute un test : 822 tests, 820 verts et 2 sautés en CI, au lieu de 819 et 2.
+3. Cadre de mesure : un cadre fixe, puis la largeur d'avance plus 0,25 em, coûtaient de 1,6 à 2,2 s par police ; avec 0,25 em, le Q de Cinzel touchait le bord, et la garde l'a rendu en panne, pas en mesure fausse [F]. Retenu : chaque caractère cadré sur ses bornes horizontales de `measureText` (elles ne servent qu'à le placer), 0,05 em de marge, une seule hauteur de 1,5 em de part et d'autre de la ligne de base, une lecture de pixels limitée à la largeur du caractère.
+4. Coût, pour une police (600 et 700, lancement de Chromium compris) : environ 0,65 s sur le Mac, 1,9 s sur le runner (E3 : 5,7 s pour trois polices), contre 0,11 s avant [F]. Au-delà des 0,9 s acceptés sur le Mac pour le runner.
+5. Les mesures du runner viennent d'une exécution de diagnostic sur une branche jetable (`etape-5b-diag`, exécution 43968746045, supprimée ensuite) : E3 vert n'affiche pas ses valeurs.
+
+## Sorties
+
+- CI verte sur a9509ef (exécution 43967620324) : 822 tests, 820 verts, 2 sautés (`test/noms-interdits.test.js`, liste absente) [F]. Contrôles et types à 0.
+- Mesures d'encre en em, contour fontTools / Mac / runner, même code (a9509ef) [F] :
+
+| Police | Graisse | haut | bas | H |
+|---|---|---|---|---|
+| Oswald | 600 | 1,0710 / 1,071 / 1,071 | 0,2681 / 0,268 / 0,268 | 0,8100 / 0,810 / 0,810 |
+| Oswald | 700 | 1,0750 / 1,075 / 1,075 | 0,2770 / 0,277 / 0,277 | 0,8100 / 0,810 / 0,810 |
+| EB Garamond | 600 | 0,8453 / 0,846 / 0,846 | 0,2895 / 0,290 / 0,290 | 0,6541 / 0,654 / 0,654 |
+| EB Garamond | 700 | 0,8490 / 0,850 / 0,849 | 0,2892 / 0,290 / 0,290 | 0,6546 / 0,655 / 0,655 |
+| Cinzel | 600 | 0,9243 / 0,924 / 0,924 | 0,2648 / 0,265 / 0,265 | 0,7000 / 0,700 / 0,700 |
+| Cinzel | 700 | 0,9354 / 0,936 / 0,936 | 0,2783 / 0,279 / 0,279 | 0,7000 / 0,700 / 0,700 |
+
+- Plus grand écart Mac/runner : 0,001 em (EB Garamond 700, haut). Facteur identique sur les deux machines : 700/810, 700/650, 1. E4 : plus grand écart Mac/runner entre deux lignes 0,065 px ; écart le plus petit Oswald 3,17 / 3,17 px, EB Garamond 1,07 / 1,12 px, Cinzel 1,68 / 1,68 px [F].
+- Verdict de la saisie, Mac et runner : Oswald, EB Garamond, Cinzel acceptées (sortie 0) ; Bebas Neue refusée (sortie 1, graisses absentes : 600, 700) [F]. Fichiers de jetons des quatre marques inchangés.
+- Anneau de focus : `#005fcc` sur le Mac, `#101010` sur le runner, reconnu par sa nature des deux côtés.
