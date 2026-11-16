@@ -65,3 +65,40 @@ Réponses du propriétaire (16/11/2026) :
 - `docs/identifiants.md` garde les collisions visibles (R1 à R9 en double, D4 en triple, C5). Renommer un identifiant affiché changerait une sortie : hors lot, listé dans le tableau des sorties si besoin.
 - Le lexeur est versionné dans `test/helpers/`.
 - Plan accepté, commits 0 à 5 enchaînés, sans fusion. Arrêt si l'émission `tsc` sans commentaires diffère ou si une sortie change.
+
+## Écarts constatés à l'exécution
+
+1. Garde : le motif « séance » seul attrapait la phrase de la garde elle-même ; il demande un numéro ou une lettre (« séance 3a », « séance b »), comme « étape ». « dernier lot » ajouté au commit 3 [F].
+2. Commentaires : le gros des étiquettes (449 lignes de `src/`, 156 de `test/`) est retiré par un transformateur qui ne touche que le texte des commentaires (positions données par le lexeur), le reste à la main, puis tout le diff relu. Corrigé à la relecture : une parenthèse « (revue, références, captures, --live) » qui désignait la page de revue, retirée à tort puis rétablie ; « (mode sombre seulement) » rétabli ; des noms de code remis en minuscule en tête de phrase (`checkValise`, `solid`, `migration.md`, `npm`, `reduce`, `tokens.css`, `ecart.section`, `scope`) ; dans `test/`, les renvois aux attendus (`docs/attendus/…`, point n) gardés : ils disent d'où viennent les valeurs [F].
+3. Retirés aussi, hors des motifs de la garde : « Retouche : », « Retouche de la revue », « second passage », « 5c », « 3c » en tête de 16 titres de tests d'espacements, « Lot E2 » [F].
+4. Renvois ajoutés là où une décision existe : D04 (règle des pleins), D17, D20, D21, D22 (`src/lib/format.js`), D24 (au lieu de Q5), D26, D28, D29, D30, D31 ; seuil gris renvoyé à M1 ; identifiants de cas gardés (R-1, J7, K6, M6, P3, T0 à T4) [F].
+5. Le titre « consigne, étape 0 » nomme l'instruction 0 de la consigne (`tokens.css`), pas l'histoire : devenu « consigne, instruction 0 » pour passer la garde [F].
+6. Point 1 de la confrontation, recompté : « rôle à revoir à l'étape 3 » sort aussi dans la réduction `px` (1 ligne) ; 9 lignes en tout dans `migration.md` et 9 dans `modifications.json` [F].
+7. Nombre de tests : 814 sur main, 819 sur la branche ; les 5 de plus sont ceux de la garde (`test/histoire.test.js`). Compte fichier par fichier identique pour les 90 fichiers de main, renommés compris [F]. 42 titres ont changé de texte.
+
+## Sorties
+
+- Garde : rouge au commit 1 (3 tests en échec : 693 lignes de commentaires, 28 titres, 15 noms de fichiers), verte au commit 4 [F].
+- `src/` : 58 fichiers changés, 0 différence de code hors commentaires (lexeur, `local/revue-lot-8/sans-commentaires.mjs`) ; émission `tsc` sans commentaires identique à main, 69 fichiers sur 69 (`diff -r`), après le commit 3 et à la fin [F].
+- `test/` : hors commentaires, 81 lignes changées : 42 titres, 6 messages d'assertion, 33 préfixes de `mkdtemp` ; sur chacune, seule la chaîne change [F].
+- Sorties des 5 réductions et de la saisie des 4 marques identiques à l'octet à celles de main (0 fichier différent sur 45) après chaque commit de code ; consoles de `contraste`, `espacements`, `typo` et `types` identiques [F].
+- `npm test` : 819 tests, 819 verts ; quatre contrôles à 0 [F].
+
+## Textes écrits par l'outil qui portent une trace d'histoire (pour décision)
+
+Rien n'a changé dans ce lot. Lecteur : développeur, designer, ou personne (texte présent mais lu par aucun des deux).
+
+| # | Texte, source | Sortie touchée | Lecteur | Proposition | Tests à l'octet touchés |
+|---|---|---|---|---|---|
+| 1 | 10 commentaires « Lot J, J7 », « Lot P, étape 3 », « Lot C (C12) »… dans le CSS et le script de la page, `src/report/review.js:721` à `:973` | chaque `revue.html` | personne (source de la page) | même style que `src/` : « J7 : … », « Paires contrôlées (P3)… », « dans la formulation du contrôle de proximité » | aucun test du dépôt [F] ; les 5 `revue.html` des captures de comparaison |
+| 2 | « rattaché, rôle à revoir à l'étape 3 », `src/report/consigne.js:265` | `migration.md` et `modifications.json` (9 lignes dans chacun, sur 4 réductions) | développeur ou agent qui migre | « rattaché ; rôle à revoir » | `test/e2e-migration.test.js:391` (fin de ligne exacte) [F] |
+| 3 | « Étape 4, séance a, lot 3 bis. », `src/report/calibrage.js:237` | `calibrage.html` | designer (décision des pleins) | « Règle en vigueur (D04), décidée sur image le 15/11/2026 : … » | aucun [F] |
+| 4 | « effet sur les chiffres de l'étape 1 à mesurer », `src/report/differences.js:43` | rapport d'audit | développeur | « effet sur les chiffres de l'audit à mesurer » | `test/e2e-audit.test.js:82`, `test/report-unit.test.js:102` (texte exact) [F] |
+| 5 | « (étape 4b, lot 2 bis) », `src/tokens/pleins.js:192` | `tokens/commun/aplat.tokens.json` (versionné, réécrit par la commande du mode sombre) | développeur, outil DTCG | retirer la parenthèse | aucun ne lit cette description [V] ; le fichier versionné est à réécrire |
+| 6 | « séance 3a du 14/11/2026 », `src/tokens/primitives.js:79` | `tokens/commun/statuts.tokens.json` (versionné) | développeur, outil DTCG | « …(avertissement, info), du 14/11/2026. » | aucun ne lit cette description [V] ; le fichier versionné est à réécrire |
+| 7 | « générateur visé par contraste (lot G) », `src/valise/generate.js:336` | champ `generator.name` d'une valise générée | personne : aucune commande du dépôt n'écrit de valise, seuls les tests en génèrent | « ds-lab, générateur visé par contraste » | aucun [F] |
+| 8 | `$description` écrites à la main : `tokens/commun/primitives.tokens.json` (2), `semantique.tokens.json`, `paires.json`, `police.tokens.json` (2), `tokens/orbe-cafe/primitives.tokens.json` ; `tokens/orbe-cafe/entree.json` (`description`), recopiée par la saisie dans `tokens/orbe-cafe/marque.tokens.json` | ces fichiers ; `marque.tokens.json` d'Orbe Café | développeur, designer qui lit les jetons | dire le contenu sans la séance ni l'étape ; garder la date si elle date une décision | `test/aplats.test.js:60` (empreinte b479882e de `marque.tokens.json` d'Orbe Café) ; sortie de la saisie d'Orbe Café [F] |
+| 9 | `$comment` de `fixtures/marque-demo/cible-valise.json` (« séance 2b, 11/11/2026 ») | recopié dans `table.json` de 4 réductions sur 5 | personne | « Valise d'Orbe Café (11/11/2026). … » | aucun test du dépôt [F] ; les `table.json` des captures |
+| 10 | `fixtures/marque-demo/jetons/primitives.tokens.json` (« séance 2b », « séance 3c ») | aucune : copie figée de référence | personne | ne pas toucher : c'est une empreinte | `test/roles-statuts.test.js` (empreinte de 3fddd72) [F] |
+| 11 | Identifiants affichés en collision (`docs/identifiants.md`) : « (C5) » | `migration.md`, `table.json` | développeur | « (D20) », la décision qui fonde le motif | `test/candidats.test.js`, `test/e2e-candidats-revue.test.js`, `fixtures/marque-demo/expected-candidats.json`, `fixtures/marque-demo/expected-proximite.json` [F] |
+| 12 | Identifiants de l'audit D2, D4, D7, R1 bis… | rapport d'audit | développeur | les garder : ils renvoient à `fixtures/marque-demo/expected.json`, et la page des identifiants signale la collision | — |

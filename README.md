@@ -134,7 +134,7 @@ Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier
 | Réduction | Ranger l'existant dans la cible, sans redessiner |
 | Table | Une ligne par valeur × usage : nouvelle valeur, jeton, classe, origine dans le CSS. Une couleur vue seulement au survol, au focus ou à l'appui, écrite par le site, a sa ligne, marquée par son état (D19) |
 | Classes | **inchangé** (déjà sur la cible) · **auto** (écart invisible, appliqué) · **proche** (écart faible, appliqué par défaut, refusable un par un) · **correction** (contraste réparé d'office, annulable) · **décision** (le designer tranche ; toute valeur à égale distance de deux pas en est une, sans défaut, D20) · **hors table** (laissé tel quel, avec son motif) |
-| Règles | Ce que le code décide seul (R1 à R9) : l'usage choisit la tranche, le contraste est vérifié, la mise en page et les éléments tiers sont exclus, une décision n'est jamais appliquée sans réponse |
+| Règles | Ce que le code décide seul (R1 à R9) : l'usage choisit la tranche, le contraste est vérifié, la mise en page et les éléments tiers sont exclus, une décision n'est jamais appliquée sans réponse. Table des identifiants cités par les sorties : `docs/identifiants.md` |
 | Contraste | Rapport de luminance entre un texte et son fond. Seuils retenus (WCAG 2.1 AA) : 4,5:1 pour le texte ; 3:1 pour le grand texte (24 px, ou 18,67 px en gras) et pour une bordure de champ |
 | Marge, retrait, gouttière | Espace autour d'un élément, à l'intérieur de ses bords, entre les enfants d'un conteneur |
 

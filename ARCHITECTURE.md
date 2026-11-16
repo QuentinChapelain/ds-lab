@@ -1,6 +1,6 @@
 # Architecture
 
-La carte du dépôt, limitée à ce qui change rarement. Les valeurs se lisent dans `tokens/commun/` et dans le dossier de chaque marque, les règles dans `docs/regles.md`, les décisions dans `docs/decisions.md`, la dette dans `KNOWN_ISSUES.md`. Tout chemin cité dans la documentation s'écrit depuis la racine du dépôt ; `test/derive-docs.test.js` vérifie qu'il existe.
+La carte du dépôt, limitée à ce qui change rarement. Les valeurs se lisent dans `tokens/commun/` et dans le dossier de chaque marque, les règles dans `docs/regles.md`, les décisions dans `docs/decisions.md`, les identifiants de règles cités par les sorties dans `docs/identifiants.md`, la dette dans `KNOWN_ISSUES.md`. Tout chemin cité dans la documentation s'écrit depuis la racine du dépôt ; `test/derive-docs.test.js` vérifie qu'il existe.
 
 ## Schéma d'ensemble
 
@@ -81,7 +81,7 @@ Aucune branche de code ne dépend du nom d'une marque : une différence réelle 
 | `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive d'entraînement : entrée, échelles écrites à la main, marque, resolver, et ses trois planches HTML, générées |
 | `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/` | Trois marques fictives saisies par fichier : entrée, échelles générées, couche marque, resolver, et leurs trois planches HTML, générées |
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles et attendus des tests de bout en bout ; `fixtures/marque-demo/jetons/primitives.tokens.json`, primitives d'Orbe Café d'avant l'étape 4b, figées : référence de cet état passé seulement (`test/roles-statuts.test.js`), les tests de `npm run reduce` lisent le resolver d'Orbe Café (D28) ; `fixtures/polices/`, quatre polices d'essai sous licence libre, chacune avec sa licence |
-| `test/` | Tests `node --test` ; `test/helpers/` sert la marque fictive en local |
+| `test/` | Tests `node --test`, nommés par sujet ; `test/helpers/` sert la marque fictive en local et porte le lexeur des gardes (`test/helpers/commentaires.js`) |
 | `config/` | Exemple de fichier de sources, à copier dans `local/` |
 | `docs/` | Règles du design system, décisions, contrat de marque, attendus des prochains lots |
 | `local/`, `.auth/` | Données de vrais sites et sessions enregistrées : jamais versionnés |
@@ -146,7 +146,8 @@ Chacun est tenu par le code ou par un test, cité.
 - Aucun nom de marque dans le code de `src/`, commentaires exclus (`test/marque-en-dur.test.js`, D26).
 - Les planches versionnées de chaque marque égalent la sortie de leur fonction (`test/planches-marques.test.js`, D27).
 - Rien de `local/` ni de `.auth/` n'est versionné (`.gitignore`).
-- Chaque commande et chaque chemin cités dans la documentation existent (`test/derive-docs.test.js`).
+- Chaque commande et chaque chemin cités dans la documentation existent, attendus exceptés : ils décrivent le dépôt à leur date (`test/derive-docs.test.js`).
+- Un commentaire dit sa raison, pas son histoire : aucun numéro de lot, d'étape ou de séance dans les commentaires de `src/` et de `test/`, les titres des tests ni les noms de fichiers de test ; un commentaire renvoie à une décision par son numéro (`test/histoire.test.js`). Les textes écrits par l'outil ne sont pas gardés : ce sont des sorties.
 
 ## Dépendances
 
