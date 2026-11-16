@@ -8,7 +8,7 @@
  *      octet par octet. Empreinte du fichier versionné, commande : git show b5783d3:tokens/orbe-cafe/marque.tokens.json | shasum -a 256
  *      → b479882e1a159e9c429805f44eefd7178e569d8f833edbacb5c6102c57016461.
  *   S2 Motif « entrée invalide » : nom, primaire ou polices manquants ; couleur qui n'est pas #rrggbb ;
- *      clé inconnue ; échelle existante hors d'Orbe Café (réservée) ; échelle inconnue.
+ *      clé inconnue ; échelle existante sans fichier d'échelles écrites à la main dans le dossier (revue, lot 5) ; échelle inconnue.
  *   S3 Motif « checkValise » : primaire #00ccff. Essai avant le code (generateScale, script d'essai hors dépôt) :
  *      pas 7 = pas 9 = #00ccff → « primaire : doublon, pas 7 = pas 9 (#00ccff) ».
  *   S4 Motif « contraste ». Avant le lot 3 bis : primaire #cc9900 refusée (texte pas 12 sur survol pas 10, 4,27:1).
@@ -68,7 +68,7 @@ test('S2 entrée invalide : motifs', () => {
   assert.deepEqual(motifs({ ...ok, primaire: '#12345' }), ['entrée invalide : primaire, couleur #rrggbb ou { "echelle": nom } attendue']);
   assert.deepEqual(motifs({ ...ok, accent: 'bleu' }), ['entrée invalide : accent, couleur #rrggbb ou { "echelle": nom } attendue']);
   assert.deepEqual(motifs({ ...ok, accnet: '#2b4c7e' }), ['entrée invalide : clé inconnue accnet']);
-  assert.deepEqual(motifs({ ...ok, primaire: { echelle: 'bleu' } }), ['entrée invalide : primaire, échelle existante réservée à Orbe Café']);
+  assert.deepEqual(motifs({ ...ok, primaire: { echelle: 'bleu' } }), ['entrée invalide : primaire, échelle existante : aucune échelle écrite à la main dans le dossier de la marque (primitives.tokens.json)']);
   assert.deepEqual(motifs({ ...ok, accent: { echelle: 'violet' } }, ORBE), ['entrée invalide : accent, échelle inconnue violet']);
   // Étape 4, dernier lot (D16) : polices.texte est facultative, la police du produit la remplace.
   assert.deepEqual(motifs({ ...ok, polices: { titre: ['Georgia'] } }), []);

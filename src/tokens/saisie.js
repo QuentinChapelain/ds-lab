@@ -4,8 +4,8 @@
  *
  * Entrée (tokens/<marque>/entree.json) :
  *   nom          texte, obligatoire ;
- *   primaire     couleur #rrggbb (échelle générée par generateScale) ou { "echelle": nom } (échelle existante,
- *                réservée à Orbe Café, dont le dossier porte les couches communes) ;
+ *   primaire     couleur #rrggbb (échelle générée par generateScale) ou { "echelle": nom } (échelle existante, écrite à la
+ *                main dans primitives.tokens.json du dossier de la marque : revue de code, lot 5, D25) ;
  *   accent       facultatif, même forme ; absent : repli sur le neutre (D05) ;
  *   polices      { titre, texte?: [familles] } ; titre : [familles], noms seulement, police « non contrôlée », ou
  *                { familles: [...], fichiers: [chemins] } (étape 4c), fichiers relatifs à l'entrée, lus par src/polices/ ;
@@ -29,7 +29,7 @@ import { generateScale, checkValise } from '../valise/generate.js';
 import { scaleToDtcg, valiseFromTokens, OPTIONS_COULEUR_SOMBRE } from './primitives.js';
 import { marqueTokens, marqueSombreTokens } from './pleins.js';
 import { contratRoles, resolveRoles } from './roles.js';
-import { COMMUN, ORBE, modeleResolver, resoudre, partager, fusionner, enEtroit, seuilEtroit } from './resolver.js';
+import { COMMUN, modeleResolver, resoudre, partager, fusionner, enEtroit, seuilEtroit } from './resolver.js';
 import { fr } from '../lib/format.js';
 
 export { COMMUN };
@@ -38,8 +38,8 @@ const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
 const HEX = /^#[0-9a-f]{6}$/i;
 const LABELS = { primaire: 'Primaire', accent: 'Accent' };
 
-/** @param {string} a @param {string} b */
-const memeDossier = (a, b) => resolve(a) === resolve(b);
+/** Échelles écrites à la main d'une marque, dans son dossier (revue de code, lot 5, D25). */
+const PROPRES = 'primitives.tokens.json';
 
 /**
  * Fonds clairs communs sur lesquels le texte de marque des grands titres doit tenir 3:1 (lot 5) :
@@ -62,8 +62,12 @@ export function chargerCommun({ mode } = {}) {
   return { primitives, semantique, paires: JSON.parse(readFileSync(join(COMMUN, 'paires.json'), 'utf8')), marque, echelles: [] };
 }
 
-/** Échelles propres à Orbe Café (bleu, terre, sable), écrites à la main. */
-export const lirePropresOrbe = () => JSON.parse(readFileSync(join(ORBE, 'primitives.tokens.json'), 'utf8'));
+/**
+ * Revue de code, lot 5 (D25) : échelles écrites à la main dans le dossier d'une marque (primitives.tokens.json), ou null.
+ * Seules ces échelles se nomment dans une entrée ({ "echelle": nom }) ; la règle vaut pour toutes les marques.
+ * @param {string} dossier @returns {any}
+ */
+export const echellesPropres = (dossier) => (existsSync(join(dossier, PROPRES)) ? JSON.parse(readFileSync(join(dossier, PROPRES), 'utf8')) : null);
 
 /**
  * Revue de code du 15/11, lot 1a : contexte étroit commun, lu par le resolver des couches communes (contexte et seuil),
@@ -170,9 +174,9 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   if (entree.polices === undefined) invalide('polices manquantes');
   if ('description' in entree && typeof entree.description !== 'string') invalide('description, texte attendu');
 
-  const orbe = memeDossier(dossier, ORBE);
-  const propres = orbe ? lirePropresOrbe() : null;
-  const existantes = { ...commun.primitives.couleur, ...propres?.couleur };
+  const propres = echellesPropres(dossier);
+  /** @type {Record<string, any>} */
+  const nommables = propres?.couleur ?? {};
   /** @type {Record<string, ReturnType<typeof generateScale>>} */
   const generees = {};
   /** @param {'primaire' | 'accent'} slot @returns {Source | undefined} */
@@ -184,8 +188,8 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
       return { scale: slot, steps: generees[slot].steps };
     }
     if (v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 1 && typeof v.echelle === 'string') {
-      if (!orbe) return void invalide(`${slot}, échelle existante réservée à Orbe Café`);
-      const g = existantes[v.echelle];
+      if (!propres) return void invalide(`${slot}, échelle existante : aucune échelle écrite à la main dans le dossier de la marque (${PROPRES})`);
+      const g = v.echelle.startsWith('$') ? null : nommables[v.echelle];
       if (!g?.['1'] || !g?.['12']) return void invalide(`${slot}, échelle inconnue ${v.echelle}`);
       return { scale: v.echelle, steps: Array.from({ length: 12 }, (_, i) => g[String(i + 1)].$value.hex) };
     }
@@ -239,7 +243,7 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   if (motifs.length || !primaire || !polices) return { ...vide, policeTitre };
 
   /** @param {string} s @returns {Source} */
-  const commune = (s) => ({ scale: s, steps: Array.from({ length: 12 }, (_, i) => existantes[s][String(i + 1)].$value.hex) });
+  const commune = (s) => ({ scale: s, steps: Array.from({ length: 12 }, (_, i) => commun.primitives.couleur[s][String(i + 1)].$value.hex) });
   const noms = Object.keys(generees);
   /** @type {any} */
   let echelles = null;
@@ -296,7 +300,8 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   });
   // Contraste dans les deux modes (lot 3) : chaque motif dit son mode. Même fusion que le resolver : commun, échelles et
   // couche marque claires, puis, en sombre, le commun sombre, les échelles sombres et la couche marque sombre.
-  const claires = echelles ? [echelles] : propres ? [propres] : [];
+  // Revue de code, lot 5 : échelles écrites à la main puis générées, les deux quand l'entrée les mêle.
+  const claires = [...(propres ? [propres] : []), ...(echelles ? [echelles] : [])];
   /** @type {[string, import('./roles.js').RoleSet][]} */
   const jeux = [
     ['clair', { ...commun, marque: fusionner(fusionner({}, commun.marque), marque), echelles: claires }],
@@ -317,7 +322,7 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   const resolver = modeleResolver({
     nom: entree.nom,
     dossier,
-    marque: [...(orbe ? ['primitives.tokens.json'] : echelles ? ['echelles.tokens.json'] : []), 'marque.tokens.json'],
+    marque: [...(propres ? [PROPRES] : []), ...(echelles ? ['echelles.tokens.json'] : []), 'marque.tokens.json'],
     sombre: ['echelles.sombre.tokens.json', 'marque.sombre.tokens.json'],
   });
   return { motifs, marque, echelles, echellesSombres, marqueSombre, resolver, commun, policeTitre };

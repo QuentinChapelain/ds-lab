@@ -13,7 +13,7 @@ import { oklch, formatHex, clampChroma, differenceEuclidean } from 'culori';
 import { contrastRatio } from '../lib/color.js';
 import { generateScale, HUED_CHROMA } from '../valise/generate.js';
 import { classePlein, voileBlanc, voileNoir, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL } from '../tokens/pleins.js';
-import { saisir, chargerCommun, lirePropresOrbe } from '../tokens/saisie.js';
+import { saisir, chargerCommun, echellesPropres } from '../tokens/saisie.js';
 import { fr, esc } from '../lib/format.js';
 
 const WHITE = '#ffffff';
@@ -63,12 +63,15 @@ function lecture(steps) {
  */
 export function colonne({ dossier, entree }, commun = chargerCommun()) {
   const r = saisir(entree, { dossier, commun });
-  const existantes = { ...commun.primitives.couleur, ...lirePropresOrbe().couleur };
-  const pasDe = (/** @type {string} */ s) => Array.from({ length: 12 }, (_, i) => existantes[s][String(i + 1)].$value.hex);
+  // Revue de code, lot 5 (D25) : une échelle nommée se lit dans le dossier de sa marque ; les statuts, dans le commun.
+  /** @type {Record<string, any>} */
+  const propres = echellesPropres(dossier)?.couleur ?? {};
+  /** @param {Record<string, any>} ou @param {string} s */
+  const pasDe = (ou, s) => Array.from({ length: 12 }, (_, i) => ou[s][String(i + 1)].$value.hex);
   /** @param {any} v @returns {string[] | null} */
   const steps = (v) => {
     if (typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v)) return generateScale('x', v.toLowerCase()).steps;
-    if (v?.echelle && existantes[v.echelle]?.['12']) return pasDe(v.echelle);
+    if (typeof v?.echelle === 'string' && !v.echelle.startsWith('$') && propres[v.echelle]?.['12']) return pasDe(propres, v.echelle);
     return null;
   };
   const sp = steps(entree?.primaire);
@@ -76,7 +79,7 @@ export function colonne({ dossier, entree }, commun = chargerCommun()) {
   const primaire = sp ? lecture(sp) : null;
   const accent = sa ? lecture(sa) : null;
   const statutProche = primaire
-    ? STATUTS.map((s) => ({ nom: s, dE: dE(primaire.hex, pasDe(s)[8]) })).sort((a, b) => a.dE - b.dE)[0]
+    ? STATUTS.map((s) => ({ nom: s, dE: dE(primaire.hex, pasDe(commun.primitives.couleur, s)[8]) })).sort((a, b) => a.dE - b.dE)[0]
     : null;
   return {
     nom: typeof entree?.nom === 'string' ? entree.nom : dossier,

@@ -22,7 +22,7 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { saisir, chargerCommun, lirePropresOrbe } from '../src/tokens/saisie.js';
+import { saisir, chargerCommun, echellesPropres } from '../src/tokens/saisie.js';
 import { loadRoles, contratRoles } from '../src/tokens/roles.js';
 import { fusionner } from '../src/tokens/resolver.js';
 import { charger } from './helpers/jetons.js';
@@ -86,7 +86,8 @@ test('C5 contrat des couches de la saisie = contrat du resolver, 4 marques, clai
     const s = saisir(JSON.parse(readFileSync(join(dossier, 'entree.json'), 'utf8')), { dossier });
     assert.deepEqual(s.motifs, [], m);
     // Recette de src/tokens/saisie.js, recopiée : saisir() ne rend pas sa fusion.
-    const claires = s.echelles ? [s.echelles] : m === 'orbe-cafe' ? [lirePropresOrbe()] : [];
+    const propres = echellesPropres(dossier);
+    const claires = [...(propres ? [propres] : []), ...(s.echelles ? [s.echelles] : [])];
     const jeux = {
       clair: { ...commun, marque: fusionner(fusionner({}, commun.marque), s.marque), echelles: claires },
       sombre: { ...communSombre, marque: fusionner(fusionner(fusionner({}, communSombre.marque), s.marque), s.marqueSombre), echelles: [...claires, s.echellesSombres] },
