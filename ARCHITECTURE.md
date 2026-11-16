@@ -101,7 +101,7 @@ Changer de marque, c'est changer la couche marque ; les rôles restent les même
 | `npm run types` | Types JSDoc des fichiers de `src/` (`@ts-check`) : `tsc -p tsconfig.json`, non strict, sans rien émettre ; sort en 1 s'il reste une erreur. Tenu à 0 avant chaque commit, comme les trois contrôles |
 | `npm test` | Tous les tests |
 
-Générateurs sans commande npm, lancés avec `node` : `src/cli/statuts.js`, `src/cli/sombre.js`, `src/cli/calibrage.js`, `src/cli/planche.js`, `src/cli/planche-espaces.js`, `src/cli/planche-typo.js`.
+Générateurs sans commande npm, lancés avec `node` : `src/cli/statuts.js`, `src/cli/sombre.js`, `src/cli/calibrage.js`, et `src/cli/planche.js [roles|espacements|typo]`, qui écrit les trois planches d'Orbe Café (les trois sans argument).
 
 ## Invariants
 
