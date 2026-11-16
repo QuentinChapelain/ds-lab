@@ -1,12 +1,12 @@
 // @ts-check
 /**
- * Lot K : texte sur plein, une décision par plein (par échelle).
+ * Texte sur plein, une décision par plein (par échelle).
  *
  * K1. Les lignes de fond « plein » dont la proposition (ou la valeur, déjà sur la cible) est le pas 9
  *     ou 10 d'une échelle mènent au plein de cette échelle. L'échelle a une carte quand un texte posé
  *     sur l'un de ces fonds, après sa propre ligne, passe sous son seuil sur le pas 9 (ou sur le fond
  *     que la table lui donnerait). La carte couvre tous les éléments portés par ces fonds.
- *     Retouche : l'échelle n'a pas de carte quand chaque texte passe déjà sur son fond tel qu'il
+ *     L'échelle n'a pas de carte quand chaque texte passe déjà sur son fond tel qu'il
  *     est et sur le fond où la table le mène (blanc sur terre-10 après migration).
  * J4. Version « teinte » (même teinte, plus claire / plus foncée) : chaque texte prend le pas de sa
  *     propre échelle le plus proche (ΔE) qui passe sur le pas 9 ; un texte qui y passe déjà reste tel
@@ -43,8 +43,8 @@ export function pleinFinder(target) {
 }
 
 /**
- * Valeur après la table (avec décisions) pour une couleur et un usage ; lue aussi par migration.md (revue, lot 6 : une seule
- * définition, la copie de src/report/migration.js retirée).
+ * Valeur après la table (avec décisions) pour une couleur et un usage ; lue aussi par migration.md (une seule
+ * définition).
  * @param {Record<string, any>} map @param {string} v @param {string} usage
  */
 export const mapped = (map, v, usage) => map.colors?.[`${v}|${usage}`] ?? map.colors?.[v] ?? v;
@@ -106,7 +106,7 @@ export function pleinGroups({ table, rendered, target, decisions = {} }) {
       .filter((/** @type {any} */ p) => p.bgUsage === 'plein' && olds.has(p.bg))
       .map((/** @type {any} */ p) => ({ text: p.text, after: mapped(base, p.text, 'texte'), bg: p.bg, threshold: p.threshold, n: p.n }));
     if (!pairs.length) continue;
-    // Retouche : pas de carte quand chaque texte passe déjà sur le fond tel qu'il est (texte tel
+    // Pas de carte quand chaque texte passe déjà sur le fond tel qu'il est (texte tel
     // qu'il est) et sur le fond où la table le mène (texte après sa propre ligne) : ex. blanc sur
     // terre-10 après migration.
     /** @param {string} bg */
@@ -230,7 +230,7 @@ export function applyPleins(table, groups, decisions) {
 }
 
 /**
- * Lot K : carte de simulation d'une version d'une carte de plein : ses fonds, et pour (a) les couplages.
+ * Carte de simulation d'une version d'une carte de plein : ses fonds, et pour (a) les couplages.
  * @param {Plein} g @param {string} choice @param {string[]} solid
  */
 export function pleinVersionMap(g, choice, solid = []) {
@@ -249,8 +249,8 @@ export function pleinVersionMap(g, choice, solid = []) {
 
 /**
  * COUPLAGES : textes posés sur un plein et l'onSolid de l'échelle du plein. Une entrée par paire
- * après la table, avec ses paires d'origine (befores). Lot V, étape 4 : la simulation les applique
- * aussi (voir simulationCouplings). Lot K : un couplage est une décision ; seuls les pleins dont la
+ * après la table, avec ses paires d'origine (befores). La simulation les applique
+ * aussi (voir simulationCouplings). Un couplage est une décision ; seuls les pleins dont la
  * carte a retenu « onSolid » en ont, pour tous leurs textes (sauf ceux déjà à l'onSolid).
  * @param {{ rendered: any, map: Record<string, any>, pleins?: any[] }} o
  */
@@ -259,7 +259,7 @@ export function couplingsOf({ rendered, map, pleins = [] }) {
   const onSolid = [];
   for (const p of rendered.usages?.pairs ?? []) {
     if (p.bgUsage !== 'plein') continue;
-    // Lot J, J4 : « teinte » couple aussi : chaque texte prend son pas de même teinte (g.tints).
+    // J4 : « teinte » couple aussi : chaque texte prend son pas de même teinte (g.tints).
     const g = pleins.find((x) => (x.choice === 'onSolid' || (x.choice === 'teinte' && x.tints)) && x.rows.some((/** @type {any} */ r) => r.old === p.bg));
     if (!g) continue;
     const text = mapped(map, p.text, 'texte');
@@ -282,7 +282,7 @@ export function couplingsOf({ rendered, map, pleins = [] }) {
 }
 
 /**
- * Lot V, étape 4 : couplages pour la simulation, par paire d'origine : texte et fond lus dans la
+ * Couplages pour la simulation, par paire d'origine : texte et fond lus dans la
  * page, fond attendu après la table (to), couleur posée sur le texte (onSolid).
  * @param {any[]} couplings  couplingsOf(…)
  * @returns {{ text: string, bg: string, to: string, onSolid: string }[]}

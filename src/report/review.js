@@ -62,16 +62,16 @@ function glyph(family, value) {
   return `<span class="g txt" style="font-size:${Math.min(Math.max(n, 6), 44)}px">Aa</span>`;
 }
 
-/** Lot R : valeur lisible, « 10 px » ou « #d0563f ». @param {string} family @param {string} v */
+/** Valeur lisible, « 10 px » ou « #d0563f ». @param {string} family @param {string} v */
 const short = (family, v) => {
   const n = num(v);
   return family === 'colors' || n === null ? v : `${fr(n)} px`;
 };
 /** Nombres de la revue : 2 décimales au plus. */
 const D2 = { decimales: 2 };
-/** Lot R : nom de jeton d'un pas de dimension (les couleurs gardent le nom de la valise). */
+/** Nom de jeton d'un pas de dimension (les couleurs gardent le nom de la valise). */
 const TOKEN_PREFIX = /** @type {Record<string, string>} */ ({ spacing: 'espace', radii: 'rayon', fontSizes: 'taille-texte' });
-/** Lot R : nom du pas d'une version, « terre-9 » ou « espace.8 ». @param {string} family @param {{ value: string, name?: string }} c */
+/** Nom du pas d'une version, « terre-9 » ou « espace.8 ». @param {string} family @param {{ value: string, name?: string }} c */
 const stepName = (family, c) => c.name ?? (num(c.value) !== null && TOKEN_PREFIX[family] ? `${TOKEN_PREFIX[family]}.${num(c.value)}` : '');
 /** @param {number} n @param {number} d */
 const pct = (n, d) => `${((100 * n) / d).toFixed(3)}%`;
@@ -83,7 +83,7 @@ const SELECTORS_SHOWN = 4;
 const THUMB_MAX = 240;
 
 /**
- * Lot R : zones d'espace d'une version, découpées au cadre ; cote au milieu de la partie
+ * Zones d'espace d'une version, découpées au cadre ; cote au milieu de la partie
  * visible, toujours dans l'image. Masquées avec la case « repères ». Dans une vignette (end),
  * cote réduite et posée au bout de la bande : à droite d'une bande horizontale, en bas d'une
  * bande verticale, pour ne pas couvrir le texte.
@@ -113,7 +113,7 @@ function zones(shot, space, { end = false } = {}) {
 }
 
 /**
- * Lot J : J8, élément hors de la page, sans capture ; J6, toutes les versions donnent la même image.
+ * J8, élément hors de la page, sans capture ; J6, toutes les versions donnent la même image.
  * @param {any} capture @param {any[]} shots  versions capturées
  */
 function captureNotes(capture, shots) {
@@ -123,7 +123,7 @@ function captureNotes(capture, shots) {
 }
 
 /**
- * Lot P-fin : légende d'une version dont la marge est absorbée par celle du voisin, plus grande
+ * Légende d'une version dont la marge est absorbée par celle du voisin, plus grande
  * (« espace visible 16 px, la marge du voisin l'emporte ») ; une par version, qui suit la version affichée.
  * @param {any[]} versions
  */
@@ -137,7 +137,7 @@ function absorbedNotes(versions) {
 }
 
 /**
- * Lot M : l'autre côté de la paire la plus défavorable, après la table, et sa valeur d'aujourd'hui quand elle change.
+ * L'autre côté de la paire la plus défavorable, après la table, et sa valeur d'aujourd'hui quand elle change.
  * @param {string | undefined} usage @param {{ text: string, bg: string, bgToday?: string, textToday?: string }} c
  */
 export function contrastSide(usage, c) {
@@ -147,20 +147,20 @@ export function contrastSide(usage, c) {
 }
 
 /**
- * Lot R : contraste d'une version de couleur : « 4,35 · sous le seuil de 4,5 », puis la couleur
+ * Contraste d'une version de couleur : « 4,35 · sous le seuil de 4,5 », puis la couleur
  * réelle de l'autre côté de la paire (le texte posé sur un fond, le fond sous un texte ou une bordure).
- * Lot M : la paire est la plus défavorable de la ligne, sur toutes les pages, après la table.
+ * La paire est la plus défavorable de la ligne, sur toutes les pages, après la table.
  * @param {string | undefined} usage @param {{ ratio: number, threshold: number, text: string, bg: string, bgToday?: string, textToday?: string }} c
  */
 function contrastLine(usage, c) {
   const pass = c.ratio >= c.threshold - 1e-9;
-  // Lot M : la paire la plus défavorable de toute la ligne (toutes pages), après la table, comme le détail.
+  // La paire la plus défavorable de toute la ligne (toutes pages), après la table, comme le détail.
   const other = contrastSide(usage, c);
   return `<small>${fr(c.ratio, D2)} · ${pass ? 'passe' : 'sous'} le seuil de ${fr(c.threshold, D2)}</small><small>${esc(other)}</small>`;
 }
 
 /**
- * Lot R, 5c : capture d'une ligne appliquée (proche, d'office, correction), en deux versions,
+ * Capture d'une ligne appliquée (proche, d'office, correction), en deux versions,
  * « avant » et « après », avec le même sélecteur que les décisions (clic, ou ←/→ quand la
  * carte a le focus) ; « Tout basculer » les bascule toutes. Même cadre et même taille que pour
  * une décision, zone d'espace hachurée et cotée.
@@ -183,14 +183,14 @@ function beforeAfter(family, r) {
     .join('')}</div>${absorbedNotes(vs.slice(0, 2))}${captureNotes(r.capture, vs.slice(0, 2))}`;
 }
 
-/** Lot R : « Ce choix s'applique à n éléments ». @param {any} r */
+/** « Ce choix s'applique à n éléments ». @param {any} r */
 function portee(r) {
   const n = r.capture?.elements ?? r.count;
   return `<p class="portee">Ce choix s’applique à ${n} ${n === 1 ? 'élément' : 'éléments'}</p>`;
 }
 
 /**
- * Lot R : carte de décision. Sélecteur de versions (actuelle, puis chaque candidat), une seule
+ * Carte de décision. Sélecteur de versions (actuelle, puis chaque candidat), une seule
  * image (la version affichée) avec sa zone d'espace, et « Choisir cette version ». Afficher
  * une version ne change pas l'export ; seule une version choisie y entre.
  * @param {string} family @param {any} r
@@ -201,7 +201,7 @@ function decisionCard(family, r) {
   /** @param {{ delta: number }} c */
   const gapOf = (c) => (family === 'colors' ? `écart ΔE ${fr(c.delta, D2)}` : `écart ${fr(c.delta, D2)} px`);
   const gap = nearest ? gapOf(nearest) : '';
-  // Lot C : à égalité d'écart, les deux candidats affichent leur écart ; le défaut le dit.
+  // À égalité d'écart, les deux candidats affichent leur écart ; le défaut le dit.
   const tie = tieOf(r.candidates ?? []);
   const partner = tie && nearest && tie.includes(nearest.value) ? tie.find((v) => v !== nearest.value) : null;
   const partnerC = partner ? r.candidates.find((/** @type {any} */ c) => c.value === partner) : null;
@@ -219,8 +219,8 @@ function decisionCard(family, r) {
               ? `<small class="ecart">${esc(gapOf(partnerC))}</small>`
               : '';
       const ctr = v.contrast ? contrastLine(r.usage, v.contrast) : '';
-      // Lot J, J1 : candidat qui échoue au contraste alors que l'actuelle passe : grisé, avec sa raison,
-      // toujours cliquable ; le grisé du lot C (marges) ne le touche pas (data-contraste). J2 : pas hors tranche.
+      // J1 : candidat qui échoue au contraste alors que l'actuelle passe : grisé, avec sa raison,
+      // toujours cliquable ; le grisé des marges (C7 à C10) ne le touche pas (data-contraste). J2 : pas hors tranche.
       const c = i === 0 ? null : (r.candidates ?? []).find((/** @type {any} */ x) => x.value === v.value);
       const fails = c?.fails ? `<small class="raison-contraste">${fr(c.fails.ratio, D2)} sous le seuil de ${fr(c.fails.threshold, D2)}, alors que l’actuelle passe</small>` : '';
       const out = c?.outOfSlice ? '<small>hors tranche</small>' : '';
@@ -249,7 +249,7 @@ function decisionCard(family, r) {
         )
         .join('')}${more > 0 ? `<span class="encore">et ${more} ${more === 1 ? 'autre' : 'autres'}</span>` : ''}</div>`
     : '';
-  // Lot J, J2 : aucun pas de la tranche ne garde le contraste.
+  // J2 : aucun pas de la tranche ne garde le contraste.
   const hole = r.hole ? `<p class="trou">la cible ne couvre pas ce cas : aucun pas ${esc(r.hole.slice)} de ${esc(r.hole.scale)} ne garde le contraste de l’actuelle ; les pas de ${esc(r.hole.scale)} hors tranche qui passent sont proposés</p>` : '';
   return `${hole}<div class="versions" role="group" aria-label="Versions">${buttons}</div>
   ${view}${notes}${thumbs}
@@ -257,7 +257,7 @@ function decisionCard(family, r) {
 }
 
 /**
- * Lot R : motif réécrit en clair, et la règle qui l'impose. Un motif inconnu reste tel quel.
+ * Motif réécrit en clair, et la règle qui l'impose. Un motif inconnu reste tel quel.
  * @param {string} reason
  * @returns {{ text: string, rule: string | null }}
  */
@@ -270,7 +270,7 @@ export function plainReason(reason) {
     [/^texte posé sur un fond sombre/, () => 'ce texte est posé sur un fond sombre que la valise ne couvre pas : sa couleur est à choisir à l’œil'],
     [/^à égale distance de (\S+) et (\S+)/, (m) => `cette valeur est à égale distance de ${m[1]} et de ${m[2]} : l’outil ne choisit pas, à toi de trancher`],
     [/^la paire passe avant et échoue après/, () => 'le contraste suffit aujourd’hui, mais ne suffirait plus avec la valeur la plus proche'],
-    // Revue de code du 15/11, lot 2 : le seuil est celui que cite le motif (R9), quel qu'il soit.
+    // Le seuil est celui que cite le motif (R9), quel qu'il soit.
     [/^texte sous ([\d,]+):1 avant, au seuil après/, (m) => `ce texte n’était pas assez lisible (contraste sous ${m[1]}:1) ; la valeur proposée le rend lisible`],
     [/^bordure de champ sous ([\d,]+):1 avant, au seuil après/, (m) => `le bord de ce champ se distinguait mal du fond (contraste sous ${m[1]}:1) ; la valeur proposée le rend visible`],
     [/^texte porté sous ([\d,]+):1 avant, au seuil après/, (m) => `le texte posé sur ce fond n’était pas assez lisible (contraste sous ${m[1]}:1) ; ce fond le rend lisible`],
@@ -288,7 +288,7 @@ export function plainReason(reason) {
 }
 
 /**
- * Lot M : note visible d'une carte de couleur de marque — pourquoi elle est à choisir (M4, M5),
+ * Note visible d'une carte de couleur de marque — pourquoi elle est à choisir (M4, M5),
  * et la seconde version (M6) ou pourquoi il n'y en a pas.
  * @param {any} r
  */
@@ -310,7 +310,7 @@ function brandNote(r) {
   return lines.length ? `<p class="marque">${lines.map((l) => `<span>${esc(l)}</span>`).join('')}</p>` : '';
 }
 
-/** Lot P, étape 3 : où corriger, en clair, d'après la relation de la marge. */
+/** Où corriger, en clair, d'après la relation de la marge. */
 const WHERE_TEXT = /** @type {Record<string, string>} */ ({
   'dans le composant': 'dans le composant : la marge relie deux parties du même composant ; corrige-la dans la feuille du composant, pas dans la page',
   'entre composants': 'dans la page : la marge sépare deux composants ; corrige-la dans la mise en page qui les assemble (conteneur, gouttière), pas dans le composant',
@@ -320,9 +320,9 @@ const WHERE_TEXT = /** @type {Record<string, string>} */ ({
 /** @param {{ text: string, n: number }[]} list */
 const withCounts = (list) => list.map((x) => `${x.text} (${x.n})`).join(', ');
 
-/** Lot P, étape 3 : relation, signal et lieu de correction d'une marge. @param {any} r */
+/** Relation, signal et lieu de correction d'une marge. @param {any} r */
 function relationDetail(r) {
-  // Lot P-fin : marge non coupée, relations réunies.
+  // Marge non coupée, relations réunies.
   if (!r.scope && r.scopes?.length) {
     const rel = r.scopes.map((/** @type {any} */ x) => `${x.text === 'inconnue' ? 'relation inconnue' : x.text} (${x.n})`).join(', ');
     const where = r.scopes.length === 1 ? WHERE_TEXT[r.scopes[0].text] : 'à vérifier élément par élément : la ligne réunit plusieurs relations, aucune dans le composant';
@@ -334,21 +334,21 @@ function relationDetail(r) {
 }
 
 /**
- * Lot R : « Détail » d'une carte, fermé par défaut, en bas de la carte : motif en clair,
+ * « Détail » d'une carte, fermé par défaut, en bas de la carte : motif en clair,
  * contrastes chiffrés, usages, sélecteurs, clé technique. Le contraste « après » est celui de
  * la valeur la plus proche pour une décision, de la valeur proposée sinon.
  * @param {string} family @param {any} r @param {string} key @param {string} cls
  */
 function detail(family, r, key, cls) {
-  // Lot M (M5) : la valeur proposée est la plus proche lisible sur tous ses fonds, pas la plus proche.
+  // M5 : la valeur proposée est la plus proche lisible sur tous ses fonds, pas la plus proche.
   const readable = r.reason === M_REASONS.M5;
   const label = readable ? 'la valeur la plus proche lisible sur tous ses fonds' : cls === 'décision' ? 'la valeur la plus proche' : 'la valeur proposée';
   const against = `avec ${label}`;
-  // Revue, lot 4 : sans défaut (J1), le contraste « après » est absent (src/reduce/propose.js) : un tiret, et non NaN.
+  // Sans défaut (J1), le contraste « après » est absent (src/reduce/propose.js) : un tiret, et non NaN.
   const ctr = r.contrast ? `<dt>Contraste</dt><dd>${fr(r.contrast.before, D2)} avant → ${fr(r.contrast.after, { ...D2, vide: '—' })} ${against} (seuil ${fr(r.contrast.threshold, D2)})</dd>` : '';
-  // Lot P-fin : l'écart en une phrase, avec la valeur visée ; le nombre d'usages seulement s'il ne répète pas la portée.
+  // L'écart en une phrase, avec la valeur visée ; le nombre d'usages seulement s'il ne répète pas la portée.
   const target = cls === 'décision' && !readable ? nearestOf(r)?.value : r.new;
-  // Revue de code du 15/11, lot 2 (D20) : à égalité, l'écart vaut pour les deux valeurs, sans défaut.
+  // D20 : à égalité, l'écart vaut pour les deux valeurs, sans défaut.
   const egales = (r.candidates ?? []).filter((/** @type {any} */ c) => c.tie).map((/** @type {any} */ c) => short(family, c.value));
   const ecart =
     r.delta && egales.length === 2
@@ -375,7 +375,7 @@ function detail(family, r, key, cls) {
 }
 
 /**
- * Revue de code du 15/11, lot 4 (D21) : sur une ligne qui n'est pas à trancher, la valeur retenue que donne une décision
+ * D21 : sur une ligne qui n'est pas à trancher, la valeur retenue que donne une décision
  * écrite dans le fichier de décisions (null : la ligne est laissée) ; undefined sans décision écrite. La page la lit à son
  * état initial au lieu de la proposition.
  * @param {Record<string, string | false>} decisions @param {string} family @param {any} r
@@ -388,7 +388,7 @@ function ecrite(decisions, family, r) {
 }
 
 /**
- * Lot P, étape 3 : paires contrôlées (P3) pour la revue, dédoublonnées. Chaque marge porte la clé
+ * Paires contrôlées (P3) pour la revue, dédoublonnées. Chaque marge porte la clé
  * de sa ligne, sa valeur actuelle et la proposition appliquée par défaut. Seules les paires dont
  * une ligne se choisit (décision, proche, d'office, correction) sont gardées ; `before` : la
  * hiérarchie était déjà égale ou inversée avant la revue.
@@ -421,13 +421,13 @@ function controlPairs(table, decisions) {
   return [...out.values()];
 }
 
-/** Lot C (C12) : étiquette d'usage du bilan. */
+/** C12 : étiquette d'usage du bilan. */
 const BILAN_LABELS = /** @type {Record<string, string>} */ ({ marge: 'Marge', retrait: 'Retrait', 'gouttière': 'Gouttière', rayon: 'Rayon', pilule: 'Pilule' });
 /** Familles numériques du bilan, dans l'ordre d'affichage. */
 const BILAN_FAMILIES = ['spacing', 'radii', 'fontSizes'];
 
 /**
- * Lot C (C12) : lignes numériques de la table pour le bilan par usage (hors table exclues : leur
+ * C12 : lignes numériques de la table pour le bilan par usage (hors table exclues : leur
  * valeur n'est pas rangée sur l'échelle). Chaque entrée porte sa clé, sa valeur actuelle et la proposition.
  * @param {any} table @param {Record<string, string | false>} decisions
  */
@@ -451,13 +451,13 @@ function usageBilan(table, decisions) {
 }
 
 /**
- * Lot K : carte « Texte sur plein <échelle> ». Trois versions (onSolid sur le pas 9, texte d'origine
+ * Carte « Texte sur plein <échelle> ». Trois versions (onSolid sur le pas 9, texte d'origine
  * sur le pas 10 si le contraste passe, garder), chacune avec sa capture et son contraste ; aucune
  * recommandée ni présélectionnée. Les lignes de fond qui mènent à ce plein suivent la carte.
  * @param {any} g
  */
 function pleinCard(g, pageIndex = /** @type {Map<string, number>} */ (new Map())) {
-  // Retouche de la revue : « Garder » est l'actuelle, en premier et affichée à l'ouverture, comme
+  // « Garder » est l'actuelle, en premier et affichée à l'ouverture, comme
   // sur les cartes de ligne ; son export reste « garder ».
   const vs = [...g.versions.filter((/** @type {any} */ v) => v.choice === 'garder'), ...g.versions.filter((/** @type {any} */ v) => v.choice !== 'garder')];
   const byChoice = new Map((g.capture?.versions ?? []).map((/** @type {any} */ s) => [s.choice, s]));
@@ -498,7 +498,7 @@ function pleinCard(g, pageIndex = /** @type {Map<string, number>} */ (new Map())
 }
 
 /**
- * Lot K : une ligne de fond qui suit une carte de plein : pas de choix à elle ; une décision de
+ * Une ligne de fond qui suit une carte de plein : pas de choix à elle ; une décision de
  * ligne lue dans le fichier est ignorée, et la carte le dit.
  * @param {any} pl  r.plein
  */
@@ -508,7 +508,7 @@ const followsPlein = (pl) =>
   }`;
 
 /**
- * Lot J, J7 : page de la carte (index de son image « avant » dans la revue) et position, en px CSS
+ * J7 : page de la carte (index de son image « avant » dans la revue) et position, en px CSS
  * de page, de son premier élément ; un élément hors de la page renvoie au haut de la page.
  * @param {any} capture @param {Map<string, number>} pageIndex
  */
@@ -524,11 +524,11 @@ function anchorOf(capture, pageIndex) {
  * @param {{ host: string, stamp: string, target: string, decisions: Record<string, string | false> }} meta
  */
 export function renderReview(table, pages, meta) {
-  // Lot J, J7 : index des pages entières (image « avant »), pour le panneau.
+  // J7 : index des pages entières (image « avant »), pour le panneau.
   const shown = pages.filter((p) => p.before && p.after);
   /** @type {Map<string, number>} */
   const pageIndex = new Map(shown.map((p, i) => [p.url, i]));
-  // Lot P, étape 3 : un choix enregistré sans relation (ou sans usage) vaut pour les lignes qui en sont issues ;
+  // Un choix enregistré sans relation (ou sans usage) vaut pour les lignes qui en sont issues ;
   // il est rangé sous la clé de chaque ligne, que l'export reprend.
   /** @type {Record<string, string | false>} */
   const previous = { ...meta.decisions };
@@ -573,7 +573,7 @@ export function renderReview(table, pages, meta) {
                 : cls === 'proche' || cls === 'auto' || cls === 'correction'
                   ? `<label class="ok"><input type="checkbox" name="${esc(key)}" checked> appliquer</label>`
                   : '';
-            // Revue, lot 4 (D21) : une décision écrite sur une ligne qui n'est pas à trancher est la valeur montrée et exportée.
+            // D21 : une décision écrite sur une ligne qui n'est pas à trancher est la valeur montrée et exportée.
             const w = ecrite(meta.decisions, family, r);
             const vers = w !== undefined ? w : r.new;
             const nom = vers === r.new ? r.name : null;
@@ -587,7 +587,7 @@ export function renderReview(table, pages, meta) {
             const decision = cls === 'décision' && !pl;
             const choice = decision ? '<span class="choix">Pas encore choisie</span>' : pl ? '<span class="choix">Suit la carte</span>' : '<span class="choix"></span>';
             const head = `<p class="titre"><b class="id">${esc(r.id ?? '')}</b> ${esc(r.title ?? '')}${choice}</p>`;
-            // Lot V, étape 6 (D4) : même déclaration que d'autres lignes aux issues différentes (trace).
+            // Même déclaration que d'autres lignes aux issues différentes (trace).
             const conflict = r.conflict
               ? `<p class="conflit">${typeof decisionFor(meta.decisions, family, r) === 'string' ? 'décidé, ' : ''}${r.conflict === 'total' ? 'non applicable' : 'en partie non applicable'} sans changer la structure (${(r.conflicts ?? [])
                   .map((/** @type {any} */ c) => `même déclaration : ${c.file}:${c.line} ${c.selector}${c.with?.length ? `, avec ${c.with.join(', ')}` : ''}`)
@@ -609,7 +609,7 @@ export function renderReview(table, pages, meta) {
         const open = cls === 'décision' || cls === 'proche' || cls === 'correction';
         return `<details${open ? ' open' : ''}><summary>${esc(title)} <span class="n">${rows.length}</span></summary>${help ? `<p class="lede">${esc(help)}</p>` : ''}${cards}</details>`;
       }).join('\n');
-      // Lot K : cartes « Texte sur plein », en tête des couleurs.
+      // Cartes « Texte sur plein », en tête des couleurs.
       const pleins = family === 'colors' ? /** @type {any[]} */ (/** @type {any} */ (table).pleins ?? []) : [];
       const pleinCards = pleins.length
         ? `<details open><summary>Texte sur plein <span class="n">${pleins.length}</span></summary><p class="lede">${esc('Un texte posé sur un plein échoue au contraste. Une seule décision par plein : ses lignes de fond suivent le choix. Sans choix, rien n’est appliqué, ni texte ni fond.')}</p>${pleins.map((/** @type {any} */ g) => pleinCard(g, pageIndex)).join('\n')}</details>`

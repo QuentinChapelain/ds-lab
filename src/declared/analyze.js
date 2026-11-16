@@ -92,7 +92,7 @@ export function dedupeSheets(perPage) {
  * @property {Record<string, number>} originals
  * @property {Record<string, number>} sources
  * @property {Record<string, number>} [properties]  comptes par propriété ; absent quand la lecture ne donne pas la propriété
- *   (familles lues par Wallace, revue de code du 15/11, lot 4, Q5)
+ *   (familles lues par Wallace, D24)
  * @property {{ sheet: number, line: number }[]} locations
  */
 
@@ -131,7 +131,7 @@ function createCollector() {
     /** @returns {Family} */
     result() {
       const sorted = [...values.entries()].sort((a, b) => b[1].count - a[1].count || (a[0] < b[0] ? -1 : 1));
-      // Revue, lot 4 (Q5) : un compte par propriété vide n'est pas écrit ; retiré ici, l'ordre des clés reste le même.
+      // D24 : un compte par propriété vide n'est pas écrit ; retiré ici, l'ordre des clés reste le même.
       const ecrite = (/** @type {ValueEntry} */ e) => {
         if (Object.keys(e.properties ?? {}).length) return e;
         const { properties, ...reste } = e;

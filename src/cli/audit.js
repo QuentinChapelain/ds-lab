@@ -3,7 +3,7 @@
 /**
  * npm run audit -- <adresses> [options]
  *
- * Revue de code du 15/11, lot 1b (D18) : sort en 0 si toutes les pages sont mesurées ; en 2 sur une panne, ou si l'audit
+ * D18 : sort en 0 si toutes les pages sont mesurées ; en 2 sur une panne, ou si l'audit
  * est incomplet (pages non mesurées, trace en panne, script v1 en échec : audit écrit ; aucune page mesurée : rien d'écrit).
  */
 import { parseArgs } from 'node:util';
@@ -75,7 +75,7 @@ export function parseAuditArgs(argv) {
 const accorde = (n, un, plusieurs) => (n > 1 ? plusieurs : un);
 
 /**
- * Revue de code du 15/11, lot 1b (D18) : un audit incomplet est une panne. Message d'une ligne, ou null si tout est mesuré.
+ * D18 : un audit incomplet est une panne. Message d'une ligne, ou null si tout est mesuré.
  * @param {Awaited<ReturnType<typeof runAudit>>} results
  */
 export function incomplet(results) {

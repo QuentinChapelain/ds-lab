@@ -1,8 +1,8 @@
 // @ts-check
 /**
- * Revue de code, lot 6 (D31) : texte du contrôle de contraste d'une marque, lu par npm run contraste et par la saisie, qui
+ * D31 : texte du contrôle de contraste d'une marque, lu par npm run contraste et par la saisie, qui
  * l'affiche après son contrôle final, sans relancer la commande en sous-processus.
- * Hors du contexte par défaut (clair, large), la sortie nomme le contexte (étape 4b, lot 3).
+ * Hors du contexte par défaut (clair, large), la sortie nomme le contexte.
  */
 import { fr } from '../lib/format.js';
 

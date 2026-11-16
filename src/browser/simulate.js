@@ -8,7 +8,7 @@
  * interrupteur avant / après dans la page (mode --live).
  * Limites : les pseudo-éléments ne sont pas modifiés ; un élément créé après
  * le relevé ne l'est qu'après une nouvelle lecture de la page.
- * Lot B : chaque remplacement suit l'usage de sa ligne (R3 : texte, bordure, fond,
+ * Chaque remplacement suit l'usage de sa ligne (R3 : texte, bordure, fond,
  * plein ; marge, retrait, gouttière ; pilule, rayon), les marges auto ne sont pas
  * touchées (R7) et les éléments tiers sont exclus (R6). Les règles d'usage sont
  * celles de src/rendered/aggregate.js, réécrites ici parce que la fonction est
@@ -21,7 +21,7 @@ import { traceElements, declarationId } from './trace.js';
  * Exécutée dans la page. Relève les remplacements à faire et installe
  * window.__dsSim = { els, ops, changes, show }. Tout est éteint au départ.
  * @param {Record<string, any>} map  par famille : ancien (ou ancien|usage) → nouveau ; thirdParty : sélecteurs (R6) ;
- *   lot V, étape 4 : solid, paires « fond|texte » de la cible qui font un plein ; couplings, textes
+ *   solid, paires « fond|texte » de la cible qui font un plein ; couplings, textes
  *   posés sur un plein qui prennent l'onSolid ({ text, bg, to, onSolid }, voir simulationCouplings)
  */
 export function scanInPage(map) {
@@ -69,7 +69,7 @@ export function scanInPage(map) {
     if (t === 'select') return ((/** @type {any} */ (el).selectedOptions?.[0]?.textContent) ?? '').trim() !== '';
     return false;
   };
-  // Lot P : relation d'une marge avec le voisin de son côté, mêmes règles que collectInPage
+  // Relation d'une marge avec le voisin de son côté, mêmes règles que collectInPage
   // (src/browser/rendered.js), réécrites ici parce que la fonction est sérialisée dans la page.
   const META = new Set(['SCRIPT', 'STYLE', 'TEMPLATE', 'NOSCRIPT', 'LINK', 'META', 'TITLE', 'BASE']);
   const CTRL = 'input:not([type=hidden]):not([type=button]):not([type=submit]):not([type=reset]):not([type=image]),select,textarea';
@@ -112,7 +112,7 @@ export function scanInPage(map) {
         return !!t && (t === b || b.contains(t));
       }),
     );
-  // Étape 3 : un enfant qui est (et non seulement qui contient) un bouton, un lien ou une liste écarte le conteneur.
+  // Un enfant qui est (et non seulement qui contient) un bouton, un lien ou une liste écarte le conteneur.
   const BLOCKERS = 'button,a[href],ul,ol,table,section,article,nav,form,fieldset';
   /** @param {Element | null} p */
   const fieldBox = (p) =>
@@ -121,7 +121,7 @@ export function scanInPage(map) {
     !p.querySelector(HEADINGS) &&
     [...p.children].every((c) => hasCtrl(c) || c.tagName === 'LABEL' || !(c.matches(BLOCKERS) || c.querySelector(BLOCKERS)));
   /**
-   * Lot P-fin : un texte non vide (nœud texte) entre deux frères, comme le « / » d'un paginateur :
+   * Un texte non vide (nœud texte) entre deux frères, comme le « / » d'un paginateur :
    * la relation est alors inconnue. @param {Element} a @param {Element} b
    */
   const textBetween = (a, b) => {
@@ -134,7 +134,7 @@ export function scanInPage(map) {
   const fieldOf = (t) => {
     for (let x = t.previousElementSibling; x; x = x.previousElementSibling) {
       if (!inFlow(x)) continue;
-      // Lot P-fin : un texte sous le contrôle seulement, jamais à gauche ni à droite.
+      // Un texte sous le contrôle seulement, jamais à gauche ni à droite.
       if (x.matches(CTRL)) return t.getBoundingClientRect().top >= x.getBoundingClientRect().bottom - 0.5 ? x : null;
       if (!isText(x)) return null;
     }
@@ -155,7 +155,7 @@ export function scanInPage(map) {
     return 'entre composants';
   };
   const spacingMap = map.spacing ?? {};
-  // Lot P-fin : valeurs × usage coupées par relation, données (split) ou lues dans les clés « ancien|usage|relation ».
+  // Valeurs × usage coupées par relation, données (split) ou lues dans les clés « ancien|usage|relation ».
   const splitSet = new Set(Array.isArray(map.split) ? map.split : []);
   for (const k of Object.keys(spacingMap)) {
     const parts = k.split('|');
@@ -164,10 +164,10 @@ export function scanInPage(map) {
   /** Une marge de cette valeur figure dans la table (sous « ancien », « ancien|marge » ou « ancien|marge|relation »). @param {string} old */
   const marginListed = (old) => old in spacingMap || Object.keys(spacingMap).some((k) => k === `${old}|marge` || k.startsWith(`${old}|marge|`));
   // Pleins : éléments dont le fond opaque porte un texte plus clair que lui (R1), ou l'onSolid de
-  // son échelle (lot V, étape 4 : paires de la cible, comme au relevé).
+  // son échelle (paires de la cible, comme au relevé).
   const solid = new Set(Array.isArray(map.solid) ? map.solid : []);
 
-  // Lot J, J9 : un texte posé sur une image qui couvre son fond opaque (img, video, canvas, picture,
+  // J9 : un texte posé sur une image qui couvre son fond opaque (img, video, canvas, picture,
   // ou background-image url() en cover, à 100 % ou répétée) ne fait pas de ce fond un plein.
   // Empilement lu par le navigateur (elementsFromPoint au centre du texte, événements forcés) :
   // l'image doit être sous le texte et au-dessus du fond. Code dupliqué dans src/browser/rendered.js
@@ -269,7 +269,7 @@ export function scanInPage(map) {
   /** @type {Element[]} */
   const els = [];
   /**
-   * with : clé de l'opération de fond à laquelle un couplage est lié (lot V, étape 4) ; frozen : opération gelée par freezeConflicts (lot V, étape 6).
+   * with : clé de l'opération de fond à laquelle un couplage est lié ; frozen : opération gelée par freezeConflicts.
    * @type {{ i: number, prop: string, value: string, family: string, key: string, prev: string, prevPriority: string, with?: string | null, frozen?: boolean }[]}
    */
   const ops = [];
@@ -277,11 +277,11 @@ export function scanInPage(map) {
   const textEls = [];
   /** @type {Map<string, { key: string, family: string, old: string, usage?: string, new: string, count: number, samples: number[], props: string[] }>} */
   const changes = new Map();
-  /** @param {number} i @param {string} family @param {string} prop @param {string | null} old @param {string} [usage] @param {string} [scope]  lot P : relation d'une marge */
+  /** @param {number} i @param {string} family @param {string} prop @param {string | null} old @param {string} [usage] @param {string} [scope]  Relation d'une marge */
   const consider = (i, family, prop, old, usage, scope) => {
     const next = old ? (usage ? (scope ? map[family]?.[`${old}|${usage}|${scope}`] : undefined) ?? map[family]?.[`${old}|${usage}`] ?? map[family]?.[old] : map[family]?.[old]) : undefined;
     if (!old || !next) return;
-    // Lot P-fin : la relation n'entre dans la clé que pour une valeur coupée, comme dans la table.
+    // La relation n'entre dans la clé que pour une valeur coupée, comme dans la table.
     const cut = !!scope && splitSet.has(`${old}|${usage}`);
     const key = usage ? `${family}|${old}|${usage}${cut ? `|${scope}` : ''}` : `${family}|${old}`;
     const style = /** @type {HTMLElement} */ (els[i]).style;
@@ -311,7 +311,7 @@ export function scanInPage(map) {
         const raw = cs.getPropertyValue(`border-${c}-radius`).trim().split(/\s+/)[0];
         const pct = /^(\d+(?:\.\d+)?)%$/.exec(raw);
         if (pct) {
-          // R7 (lot M) : un pourcentage de 50 % ou plus est une pilule.
+          // R7 : un pourcentage de 50 % ou plus est une pilule.
           consider(i, 'radii', `border-${c}-radius`, `${Number(pct[1])}%`, Number(pct[1]) >= 50 ? 'pilule' : 'rayon');
           continue;
         }
@@ -331,7 +331,7 @@ export function scanInPage(map) {
       }
       if (/\b(flex|grid)\b/.test(cs.display)) for (const g of ['row-gap', 'column-gap']) consider(i, 'spacing', g, pxKey(cs.getPropertyValue(g)), 'gouttière');
       consider(i, 'colors', 'background-color', hexKey(cs.backgroundColor), plein.has(el) ? 'plein' : 'fond');
-      // Lot R : la valeur d'un champ rempli est un texte (comme au relevé, R3 bis) : couleur et taille changent.
+      // La valeur d'un champ rempli est un texte (comme au relevé, R3 bis) : couleur et taille changent.
       if (text || hasText(el)) {
         textEls.push(i);
         consider(i, 'fontSizes', 'font-size', pxKey(cs.fontSize));
@@ -342,14 +342,14 @@ export function scanInPage(map) {
     if (el.shadowRoot) for (const child of el.shadowRoot.children) visit(child);
   };
   if (document.body) for (const child of document.body.children) visit(child);
-  // Lot B, R1 : fond de page porté par html ou body.
+  // R1 : fond de page porté par html ou body.
   for (const el of [document.documentElement, document.body]) {
     if (!el) continue;
     const i = els.length;
     els.push(el);
     consider(i, 'colors', 'background-color', hexKey(getComputedStyle(el).backgroundColor), plein.has(el) ? 'plein' : 'fond');
   }
-  // Lot V, étape 4 : COUPLAGES. Un texte dont la couleur et le fond (premier fond opaque, lu avant
+  // COUPLAGES. Un texte dont la couleur et le fond (premier fond opaque, lu avant
   // simulation) sont une paire couplée, et dont le fond simulé vaut le fond attendu, prend l'onSolid.
   // L'opération suit celle du fond (with) ; sans opération de fond (fond déjà sur la cible), elle
   // ne s'allume que dans la simulation complète.
@@ -378,7 +378,7 @@ export function scanInPage(map) {
    */
   const show = (o) => {
     let active = 0;
-    // Lot V, étape 4 : un couplage s'allume avec l'opération de fond qu'il suit (with).
+    // Un couplage s'allume avec l'opération de fond qu'il suit (with).
     /** @param {(typeof ops)[number]} op */
     const isOn = (op) => !op.frozen && o.on && (!o.families || o.families.includes(op.family)) && (!o.keys || o.keys.includes(op.key) || (!!op.with && o.keys.includes(op.with)));
     // Deux passages : on rétablit d'abord, on pose ensuite, pour qu'une opération éteinte
@@ -402,13 +402,13 @@ export function scanInPage(map) {
   const byFamily = {};
   for (const op of ops) byFamily[op.family] = (byFamily[op.family] ?? 0) + 1;
   Object.defineProperty(window, '__dsSim', { value: { els, ops, changes: list, byFamily, show }, configurable: true });
-  // Lot V, étape 5 : éléments distincts touchés par au moins une opération.
+  // Éléments distincts touchés par au moins une opération.
   const changed = new Set(ops.map((op) => op.i)).size;
   return { elements: els.length, operations: ops.length, changed, changes: list, byFamily };
 }
 
 /**
- * Lot V, étape 6 (D4) : gèle, dans la simulation installée, les opérations des lignes en conflit
+ * Gèle, dans la simulation installée, les opérations des lignes en conflit
  * dont l'élément tient sa valeur de la déclaration en conflit (trace de la déclaration gagnante).
  * @param {import('playwright-core').Page} page
  * @param {{ id: string, keys: string[] }[]} conflicts
@@ -444,7 +444,7 @@ export function showInPage(o) {
  * Exécutée dans la page : barre « avant / après » du mode --live, dans un
  * shadow root (marqué data-ds-lab, que le relevé ignore). Feuille construite :
  * pas de <style> en ligne, donc pas de conflit avec une CSP stricte.
- * Lot R, R-2 : liste « Une ligne » (identifiant et titre des lignes présentes sur la page) ;
+ * R-2 : liste « Une ligne » (identifiant et titre des lignes présentes sur la page) ;
  * en choisir une n'applique que cette ligne, « Toutes » revient au mode par familles.
  * @param {{ key: string, id: string, title: string }[]} [lines]
  */
@@ -590,10 +590,10 @@ export async function installLive(context, map, { delayMs = 800, lines = [] } = 
  */
 export async function simulatePage(page, map, { fullPage = true } = {}) {
   let scan = await page.evaluate(scanInPage, map);
-  // Lot V, étape 6 (D4) : les opérations dont l'élément tient sa valeur d'une déclaration en conflit
+  // Les opérations dont l'élément tient sa valeur d'une déclaration en conflit
   // ne sont pas appliquées (la consigne laisse ces déclarations telles quelles).
   if (Array.isArray(map.conflicts) && map.conflicts.length) scan = { ...scan, ...(await freezeConflicts(page, map.conflicts)) };
-  // Lot J, J5 étendu : les éléments tiers déclarés sont masqués aussi dans les pages entières.
+  // J5 : les éléments tiers déclarés sont masqués aussi dans les pages entières.
   const third = Array.isArray(map.thirdParty) ? map.thirdParty : [];
   await hideThirdParty(page, third, true);
   const before = fullPage ? (await page.screenshot({ fullPage: true, animations: 'disabled' })).toString('base64') : null;
@@ -613,7 +613,7 @@ export async function simulatePage(page, map, { fullPage = true } = {}) {
 }
 
 /**
- * Lot R, R-3 : exécutée dans la page, après scanInPage et showInPage. Élément d'une ligne
+ * R-3 : exécutée dans la page, après scanInPage et showInPage. Élément d'une ligne
  * (le premier d'au moins 8 × 8 px, sinon le premier touché), son rectangle en coordonnées de
  * page, la valeur calculée de chaque propriété touchée (px ou hex), la taille du document et,
  * règle R-9, les rectangles qui donnent le contexte :
@@ -622,7 +622,7 @@ export async function simulatePage(page, map, { fullPage = true } = {}) {
  *              voisin est le libellé d'un champ, le champ aussi ;
  *   gouttière  les deux premiers enfants qu'elle sépare ;
  *   champ      son libellé (label associé).
- * Lot R : lignes de texte autour (lines) : chaque ligne visible proche de l'élément, avec le bloc
+ * Lignes de texte autour (lines) : chaque ligne visible proche de l'élément, avec le bloc
  * qui la porte ; avec un cadre (clip), le nombre de lignes que ses bords haut et bas coupent.
  * @param {{ key: string, i?: number, family: string, usage?: string, lines?: boolean, clip?: { x: number, y: number, width: number, height: number } }} o
  *   i : élément imposé (versions suivantes)
@@ -723,7 +723,7 @@ export function versionInPage({ key, i, family, usage, lines = false, clip }) {
         : side === 'top' ? { x: er.x, y: er.y - m, width: er.width, height: m }
         : side === 'left' ? { x: er.x - m, y: er.y, width: m, height: er.height }
         : { x: er.x + er.width, y: er.y, width: m, height: er.height };
-      // Lot P-fin : marge absorbée, quand l'espace visible vient de la marge du voisin, plus grande (fusion).
+      // Marge absorbée, quand l'espace visible vient de la marge du voisin, plus grande (fusion).
       const s = sibling(el, side);
       if (s) {
         const q = rectOf(s);
@@ -763,7 +763,7 @@ export function versionInPage({ key, i, family, usage, lines = false, clip }) {
         space.push({ axis: 'rangée', px: r2(b.y - (a.y + a.height)), rect: { x: left, y: a.y + a.height, width: Math.max(a.x + a.width, b.x + b.width) - left, height: b.y - (a.y + a.height) } });
     }
   }
-  // Lot R : pour une couleur, le contraste le plus faible des éléments touchés et son seuil.
+  // Pour une couleur, le contraste le plus faible des éléments touchés et son seuil.
   // Texte, fond, plein : la couleur du texte de l'élément sur le premier fond opaque, en remontant
   // depuis l'élément (4,5:1, 3:1 en grand texte) ; bordure : sur le fond du parent (3:1).
   /** @type {{ ratio: number, threshold: number, text: string, bg: string } | null} */
@@ -862,21 +862,21 @@ export const FRAME = { pad: 16, maxHeight: 400, wideRetrait: 600, scale: 2 };
  * @property {string} label     « actuelle », « candidat 1 »…
  * @property {string} value     valeur posée sur la ligne
  * @property {string} [name]    nom du pas de la cible
- * @property {Record<string, string>} [measured]  valeur calculée de l'élément, par propriété touchée ; absente hors de la page (lot J, J8), comme around et space
+ * @property {Record<string, string>} [measured]  valeur calculée de l'élément, par propriété touchée ; absente hors de la page (J8), comme around et space
  * @property {{ kind: string, side?: string, rect: Rect }[]} [around]  contexte du cadre (R-9), en coordonnées de page
  * @property {{ side?: string, axis?: string, px: number, rect: Rect, visiblePx?: number, absorbed?: boolean }[]} [space]  zone d'espace (R-8), dans la capture,
  *   en px CSS : bande de marge, de retrait (côté par côté) ou de gouttière ; px : son épaisseur ;
- *   absorbed, visiblePx (lot P-fin) : marge absorbée par celle du voisin, plus grande, et espace visible
+ *   absorbed, visiblePx : marge absorbée par celle du voisin, plus grande, et espace visible
  * @property {{ ratio: number, threshold: number, text: string, bg: string }} [contrast]  couleur : contraste le plus faible
  *   des éléments touchés, son seuil et sa paire (texte ou bordure, fond)
  * @property {number} [cutLines]  lignes de texte coupées par le bord haut ou bas du cadre (versionInPage)
- * @property {Shot & { scale: number }} [shot]  absente si l'élément est hors de la page (lot J, J8) ; même cadre et même taille pour toutes les versions d'une décision ;
+ * @property {Shot & { scale: number }} [shot]  absente si l'élément est hors de la page (J8) ; même cadre et même taille pour toutes les versions d'une décision ;
  *   width et height en px CSS, l'image en densité scale
  * @typedef {{ page: string, element: { tag: string, index: number }, clip: Rect | null, offPage?: boolean, versions: DecisionVersion[] }} DecisionCapture
  */
 
 /**
- * Lot R, R-9 : cadre commun à toutes les versions. Réunion, sous chaque version, de l'élément
+ * R-9 : cadre commun à toutes les versions. Réunion, sous chaque version, de l'élément
  * (pour une gouttière, de ses deux premiers enfants) et de son contexte, plus 16 px, dans le
  * document le plus petit. Au-delà de 400 px de haut, une fenêtre de 400 px : pour un retrait,
  * ancrée en haut de l'élément, ou en bas si seul le retrait bas change ; sinon centrée sur ce
@@ -935,7 +935,7 @@ export function frameOf(probes, d) {
     y0 = top;
     y1 = top + FRAME.maxHeight;
   }
-  // Lot R : un bord qui coupe une ligne de texte s'élargit jusqu'au bord du bloc qui la porte,
+  // Un bord qui coupe une ligne de texte s'élargit jusqu'au bord du bloc qui la porte,
   // dans la limite de 400 px de haut ; au-delà, il passe entre deux lignes, jamais au milieu.
   const all = probes.flatMap((p) => /** @type {any} */ (p).lines ?? []);
   for (let round = 0; round < 6 && all.length; round++) {
@@ -956,7 +956,7 @@ export function frameOf(probes, d) {
 }
 
 /**
- * Lot J, J5 : masque les éléments tiers (sélecteurs de sources.json) le temps des captures (cartes,
+ * J5 : masque les éléments tiers (sélecteurs de sources.json) le temps des captures (cartes,
  * pages entières, références, verify), par une feuille posée sur <html> (visibility: hidden, sans
  * changer la mise en page).
  * @param {import('playwright-core').Page} page @param {string[]} thirdParty @param {boolean} on
@@ -984,13 +984,13 @@ export async function hideThirdParty(page, thirdParty, on) {
 }
 
 /**
- * Lot J, J8 : rectangle entièrement hors du document (au-dessus, à gauche, ou au-delà).
+ * J8 : rectangle entièrement hors du document (au-dessus, à gauche, ou au-delà).
  * @param {{ rect: Rect, doc: { width: number, height: number } }} p
  */
 const offPage = (p) => p.rect.y + p.rect.height <= 0 || p.rect.x + p.rect.width <= 0 || p.rect.y >= p.doc.height || p.rect.x >= p.doc.width;
 
 /**
- * Lot R, R-3 : une capture par version de chaque décision (actuelle, puis chaque candidat).
+ * R-3 : une capture par version de chaque décision (actuelle, puis chaque candidat).
  * Base : la page d'origine ; chaque version ne change que cette ligne. Un élément par
  * décision, le premier trouvé dans l'ordre des pages ; même cadre pour toutes les versions (R-9).
  * La page vient d'un contexte en densité FRAME.scale (R-8) : l'image a scale × la taille du cadre.
@@ -999,7 +999,7 @@ const offPage = (p) => p.rect.y + p.rect.height <= 0 || p.rect.x + p.rect.width 
  * @param {string[]} thirdParty
  * @param {{ index?: number, compact?: boolean, labels?: string[] }} [opts]  index : élément imposé (vignette d'un autre élément touché) ;
  *   compact : cadre réduit à l'élément et à son voisin direct (ou aux enfants d'une gouttière), sans libellé ni champ du voisin ;
- *   labels : noms des versions (lot R, 5c : « avant », « après » pour une ligne appliquée)
+ *   labels : noms des versions (« avant », « après » pour une ligne appliquée)
  * @returns {Promise<DecisionCapture | null>} null si la ligne ne touche rien sur cette page
  */
 export async function captureDecision(page, d, thirdParty = [], { index, compact = false, labels } = {}) {
@@ -1017,7 +1017,7 @@ export async function captureDecision(page, d, thirdParty = [], { index, compact
     await page.evaluate(showInPage, { on: false });
     return null;
   }
-  // Lot J, J8 : un élément hors de la page (ex. lien d'évitement en position fixe au-dessus du
+  // J8 : un élément hors de la page (ex. lien d'évitement en position fixe au-dessus du
   // haut, visible seulement au focus) n'est pas capturé : le premier élément touché dans la page
   // le remplace ; sans aucun, la capture le dit, sans image (une vignette est simplement omise).
   if (offPage(first)) {
@@ -1083,7 +1083,7 @@ export async function captureDecision(page, d, thirdParty = [], { index, compact
 }
 
 /**
- * Lot R : exécutée dans la page, après scanInPage. Éléments touchés par une ligne, dans l'ordre
+ * Exécutée dans la page, après scanInPage. Éléments touchés par une ligne, dans l'ordre
  * de la page, avec un repère lisible (balise, id, deux classes) et leur texte visible (40 caractères ;
  * pour un champ, son libellé).
  * @param {{ key: string }} o
@@ -1110,7 +1110,7 @@ export function touchedInPage({ key }) {
 }
 
 /**
- * Lot R : éléments touchés par une décision sur une page déjà chargée (version actuelle posée).
+ * Éléments touchés par une décision sur une page déjà chargée (version actuelle posée).
  * @param {import('playwright-core').Page} page
  * @param {{ key: string, family: string, mapKey: string, old: string }} d
  * @param {string[]} thirdParty
@@ -1123,7 +1123,7 @@ export async function touchedElements(page, d, thirdParty = []) {
 }
 
 /**
- * Lot K : éléments d'une carte « Texte sur plein » sur une page déjà chargée (fonds de ses lignes,
+ * Éléments d'une carte « Texte sur plein » sur une page déjà chargée (fonds de ses lignes,
  * dans l'ordre de la page) et, si demandé, une capture par version (onSolid, pas-10, garder), dans
  * un même cadre : tous les éléments de la carte sur cette page s'ils tiennent en 400 px de haut,
  * sinon le premier. Chaque version pose ses fonds et, pour onSolid, ses couplages.
@@ -1204,6 +1204,6 @@ export async function capturePlein(page, g, thirdParty, solid, { versions = true
   }
   await page.evaluate(showInPage, { on: false });
   await hideThirdParty(page, thirdParty, false);
-  // Lot J, J7 : position du premier élément de la carte, pour le panneau de la revue.
+  // J7 : position du premier élément de la carte, pour le panneau de la revue.
   return { elements, capture: { page: page.url(), clip, y: Math.round(geo.rects[0].y), versions: out } };
 }

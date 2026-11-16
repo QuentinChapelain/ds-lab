@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Étape 4c, lot 2 : garde-fous de la police des titres, chacun avec son motif de refus.
+ * Garde-fous de la police des titres, chacun avec son motif de refus.
  *   format WOFF2 ; licence déclarée (name 13 ou 14 non vide : une licence est déclarée, le droit d'usage web reste à la
  *   charge du client) ; signes français présents ; hauteur de capitale déclarée (la consigne commune s'appuie dessus) ;
  *   graisses demandées par les styles de titre couvertes par les fichiers, statiques ou à axe de graisse.

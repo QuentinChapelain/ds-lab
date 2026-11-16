@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot M : migration.md, écrit par reduce à chaque réduction, lu par le
+ * migration.md, écrit par reduce à chaque réduction, lu par le
  * développeur sans l'outil. Une table valeur × usage → jeton DTCG, classe,
  * origine CSS, éléments ; trois sections (appliqué, décisions en attente, hors
  * table avec motif) ; des exceptions nommées. Les données structurées sont
@@ -39,7 +39,7 @@ const isOnSolid = (path) => /\.(sur-plein|on-solid|onSolid)$/.test(path);
  * @param {{ name?: string | null, pleinScales?: Set<string> }} [ctx]
  */
 export function pickColorToken(paths, { name = null, pleinScales = new Set() } = {}) {
-  // Lot V, étape 4 : une ligne « <échelle>-sur-plein » va au jeton sur-plein de son échelle.
+  // Une ligne « <échelle>-sur-plein » va au jeton sur-plein de son échelle.
   const solid = name ? /^(.+)-sur-plein$/.exec(name) : null;
   if (solid) {
     const hit = paths.find((p) => isOnSolid(p) && p.split('.').slice(-2, -1)[0] === solid[1]);
@@ -107,19 +107,19 @@ export function indexTokens(tokens) {
 
 /** @param {unknown} s */
 const cell = (s) => String(s ?? '').replace(/\|/g, '\\|').replace(/\n/g, ' ');
-/** Lot R, R-2 : identifiant et titre d'une ligne, en tête de cellule. @param {{ id: string, title: string }} r */
+/** R-2 : identifiant et titre d'une ligne, en tête de cellule. @param {{ id: string, title: string }} r */
 const line = (r) => cell(`${r.id} ${r.title}`.trim());
-/** Lot R, R-2 : sélecteurs d'exemple, gardés en détail. @param {{ selectors: string[], selectorsCut?: boolean }} r */
+/** R-2 : sélecteurs d'exemple, gardés en détail. @param {{ selectors: string[], selectorsCut?: boolean }} r */
 const selectorsOf = (r) => (r.selectors.map((x) => `\`${cell(x)}\``).join(', ') || '—') + cutNote(r);
 /** Liste en clair, comptes entre parenthèses quand il y en a plusieurs. @param {{ text: string, n: number }[]} list */
 const listed = (list) => (list.length > 1 ? list.map((x) => `${x.text} (${x.n})`).join(', ') : list[0]?.text ?? '');
 /**
- * Lot P, étape 3 : relation d'une marge en une cellule : relation, formules, signal, où corriger.
+ * Relation d'une marge en une cellule : relation, formules, signal, où corriger.
  * « — » pour une ligne sans relation.
  * @param {{ scope?: string | null, relations?: { text: string, n: number }[], signals?: { text: string, n: number }[], scopes?: { text: string, n: number }[] }} r
  */
 export function relationCell(r) {
-  // Lot P-fin : marge non coupée, relations réunies.
+  // Marge non coupée, relations réunies.
   if (!r.scope && r.scopes?.length) {
     const one = r.scopes.length === 1 ? r.scopes[0].text : null;
     const rel = one ? (one === 'inconnue' ? 'relation inconnue' : one) : r.scopes.map((x) => `${x.text === 'inconnue' ? 'relation inconnue' : x.text} (${x.n})`).join(', ');
@@ -156,28 +156,28 @@ function originOf(rendered, family, r) {
   return 'non tracé';
 }
 
-/** Lot C : « 12 px » pour une dimension, la valeur telle quelle sinon. @param {string} v */
+/** « 12 px » pour une dimension, la valeur telle quelle sinon. @param {string} v */
 const shortValue = (v) => (/^-?[\d.]+px$/.test(v) ? `${fr(parseFloat(v))} px` : v);
 
 
 
 /**
- * Lot V, étape 5 : page témoin, hors de la table, sur laquelle la table est simulée.
+ * Page témoin, hors de la table, sur laquelle la table est simulée.
  * @typedef {{ url: string, page: string, elements: number, changed: number, operations: number, byFamily: Record<string, number>,
  *   uncovered: { family: string, value: string, usage: string | null, count: number, selectors: string[] }[] }} Witness
  */
 
 /**
  * @param {object} o
- * @param {ReturnType<typeof import('../reduce/propose.js').propose> & { thirdParty?: string[], pleins?: import('../reduce/pleins.js').Plein[] }} o.table  pleins : cartes du lot K
+ * @param {ReturnType<typeof import('../reduce/propose.js').propose> & { thirdParty?: string[], pleins?: import('../reduce/pleins.js').Plein[] }} o.table  pleins : cartes « Texte sur plein »
  * @param {any} o.rendered        agrégat du rendu (usages, contextes tracés, états)
  * @param {Record<string, any>} o.map   table appliquée, décisions comprises (mapping)
  * @param {any} o.target          cible (onSolid, couleurs)
  * @param {any} [o.tokens]        fichier de jetons DTCG
  * @param {Record<string, string | false>} [o.decisions]  décisions du designer (--decisions) : une chaîne décide, false refuse
  * @param {{ host: string, stamp: string, target: string, tokens: string | null, pages: string[], viewport: { width: number, height: number }, command?: string, decisions?: string | null }} o.meta
- * @param {Witness[]} [o.witnesses]  lot V, étape 5 : pages témoins, hors de la table
- * @param {any[]} [o.conflicts]      lot V : conflits de déclarations (attachDeclarations)
+ * @param {Witness[]} [o.witnesses]  Pages témoins, hors de la table
+ * @param {any[]} [o.conflicts]      Conflits de déclarations (attachDeclarations)
  */
 export function buildMigration({ table, rendered, map, target, tokens, decisions = {}, meta, witnesses = [], conflicts = [] }) {
   const idx = tokens ? indexTokens(tokens) : null;
@@ -209,8 +209,8 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     for (const r of f.rows) {
       const d = decisionOf(family, r);
       // Statut après décisions, par la valeur retenue (D21) : une chaîne décide, false refuse, une chaîne égale à
-      // l'ancienne valeur laisse la ligne (revue, lot 4) ; une décision écrite l'emporte sur « inchangé » (revue, lot 2).
-      // Lot K : une ligne de fond d'un plein suit sa carte ; non tranchée, elle attend (K5).
+      // l'ancienne valeur laisse la ligne ; une décision écrite l'emporte sur « inchangé ».
+      // Une ligne de fond d'un plein suit sa carte ; non tranchée, elle attend (K5).
       const pl = r.plein ?? null;
       const par = retenue(decisions, family, r).par;
       const status = pl
@@ -235,7 +235,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
       rows.push({
         id: r.id ?? '',
         title: r.title ?? '',
-        // Revue de code du 15/11, lot 2 (D19) : valeur vue seulement à un état forcé.
+        // D19 : valeur vue seulement à un état forcé.
         ...(r.etats ? { etats: r.etats } : {}),
         family,
         value: r.old,
@@ -248,7 +248,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
         decision: d ?? null,
         decisionKey: decisionKeyFor(decisions, family, r),
         properties: r.properties ?? [],
-        // Lot R : tous les sélecteurs des éléments touchés (capture), sinon les exemples du relevé,
+        // Tous les sélecteurs des éléments touchés (capture), sinon les exemples du relevé,
         // signalés comme coupés quand la ligne compte plus d'occurrences que d'exemples.
         selectors: r.capture?.touched?.length ? [...new Set(r.capture.touched.map((/** @type {any} */ t) => t.selector))] : r.selectors ?? [],
         selectorsCut: !r.capture?.touched?.length && (r.selectors ?? []).length >= 3 && r.count > (r.selectors ?? []).length,
@@ -260,14 +260,14 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
         noDefault: !!r.noDefault,
         contrast: r.contrast ?? null,
         tie: tieOf(r.candidates ?? []),
-        // Lot V, étape 6 : déclarations sources (unité écrite) et conflits (même déclaration, issues différentes).
+        // Déclarations sources (unité écrite) et conflits (même déclaration, issues différentes).
         declarations: r.declarations ?? null,
         conflict: r.conflict ?? null,
         conflicts: r.conflicts ?? [],
         coupledDeclarations: r.coupledDeclarations ?? [],
-        // Lot K : carte de plein suivie (identifiant, titre, choix, décision de ligne ignorée).
+        // Carte de plein suivie (identifiant, titre, choix, décision de ligne ignorée).
         plein: pl,
-        // Lot M : emplacement de marque, seconde version ou exception (M6).
+        // Emplacement de marque, seconde version ou exception (M6).
         ...(r.slot ? { slot: r.slot } : {}),
         // Valeur lisible sur tous les fonds (proposition M5), gardée par les éléments en exception.
         ...(r.alternatives ? { alternatives: r.alternatives, readable: { name: r.name, value: r.new } } : {}),
@@ -277,7 +277,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
   const pending = rows.filter((r) => r.status === 'en attente');
   const refused = rows.filter((r) => r.status === 'refusée');
   const outOfTable = rows.filter((r) => r.status === 'hors table');
-  // Lot I : valeurs inchangées rattachées à leur jeton (I1) ; sans jeton, elles restent écrites (I2).
+  // Valeurs inchangées rattachées à leur jeton (I1) ; sans jeton, elles restent écrites (I2).
   const attached = rows.filter((r) => r.status === 'inchangé' && hasToken(r));
   /** @param {any[]} list */
   const byFamily = (list) => Object.fromEntries(Object.keys(table.families).map((f) => [f, list.filter((r) => r.family === f).length]));
@@ -286,7 +286,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
   const links = (rendered.usages?.links ?? []).map((/** @type {any} */ l) => ({ ...l }));
   const pleins = table.pleins ?? [];
   const onSolid = couplingsOf({ rendered, map, pleins }).map((o) => {
-    // Lot J, J4 : un pas de même teinte se nomme par la valise (terre-6), pas comme un onSolid.
+    // J4 : un pas de même teinte se nomme par la valise (terre-6), pas comme un onSolid.
     const name = o.tint ? T.find((/** @type {any} */ t) => t.value === o.onSolid)?.name ?? null : null;
     return { ...o, ...(name ? { name } : {}), token: idx?.find('colors', o.onSolid, o.tint ? { name } : { pleinScales: new Set([o.scale]) }) ?? null };
   });
@@ -299,7 +299,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     const ratio = contrastRatio(text, bg);
     if (ratio >= p.threshold || onSolid.some((o) => o.text === text && o.bg === bg)) continue;
     const k = `${text}|${bg}`;
-    // Lot K : paire d'un plein gardée par le designer (c), ou dont la carte attend (K5).
+    // Paire d'un plein gardée par le designer (c), ou dont la carte attend (K5).
     const g = pleins.find((x) => x.rows.some((/** @type {any} */ r) => r.old === p.bg));
     const note = g?.choice === 'garder' ? 'gardée par le designer' : g && !g.choice ? `en attente du designer (carte ${g.title})` : null;
     const x = remaining.get(k) ?? { text, bg, ratio: Math.round(ratio * 10000) / 10000, threshold: p.threshold, n: 0, note };
@@ -307,7 +307,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     x.n += p.n;
     remaining.set(k, x);
   }
-  // Revue de code du 15/11, lot 2 (D19) : une couleur d'état écrite par le site a sa ligne ; restent ici les autres,
+  // D19 : une couleur d'état écrite par le site a sa ligne ; restent ici les autres,
   // dont l'anneau de focus du navigateur, nommé comme tel.
   const enTable = new Set((table.families.colors?.rows ?? []).map((/** @type {any} */ r) => r.old));
   const states = (rendered.states?.onlyInStates ?? [])
@@ -331,7 +331,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     outOfSlice.push({ value: r.old, name: exact.name, usage: r.usage, elements: r.count, step, expected: `${r.usage} ${slice[0]}-${slice[1]}`, class: r.class, selectors: r.selectors });
   }
 
-  // Lot J, J2 : trous de la cible : aucun pas de la tranche ne garde le contraste de l'actuelle.
+  // J2 : trous de la cible : aucun pas de la tranche ne garde le contraste de l'actuelle.
   const holes = (table.families.colors?.rows ?? [])
     .filter((/** @type {any} */ r) => r.hole)
     .map((/** @type {any} */ r) => ({
@@ -350,7 +350,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     rows,
     witnesses,
     conflicts,
-    // Lot K : cartes « Texte sur plein », sans leurs captures.
+    // Cartes « Texte sur plein », sans leurs captures.
     pleins: pleins.map(({ capture, ...g }) => g),
     sections: {
       applied: { total: applied.length, ...byFamily(applied) },
@@ -361,13 +361,13 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     unchanged: rows.filter((r) => r.status === 'inchangé').length,
     attached: attached.length,
     decided: rows.filter((r) => r.status === 'décidée').length,
-    // Lot K (retouche) : décisions du fichier, comptées par clé ; les décisions de ligne qui suivent
+    // Décisions du fichier, comptées par clé ; les décisions de ligne qui suivent
     // une carte sont comptées à part.
     decisionKeys: {
       decided:
         new Set(rows.filter((r) => r.status === 'décidée' && !r.plein).map((r) => r.decisionKey)).size + pleins.filter((g) => g.choice).length,
       ignored: pleins.reduce((n, g) => n + (g.ignored?.length ?? 0), 0),
-      // Revue de code du 15/11, lot 1b : clés qui ne visent aucune ligne ni carte, listées au lieu d'être ignorées en silence.
+      // Clés qui ne visent aucune ligne ni carte, listées au lieu d'être ignorées en silence.
       orphelines: decisionKeysOrphelines(table, decisions),
     },
     exceptions: { links, onSolid, states, injected: null, ties, outOfSlice, holes, messages: rendered.usages?.messages ?? [] },
@@ -376,9 +376,9 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
     ...(table.brand ? { brand: table.brand } : {}),
   };
   const s = { applied, pending, refused, outOfTable, attached };
-  // Revue de code, lot 6 (D29) : une consigne structurée, écrite dans migration.md et lue par modifications.json.
+  // D29 : une consigne structurée, écrite dans migration.md et lue par modifications.json.
   const agent = consigneAgent(data, s);
-  // Lot S, S1 : modifications.json, pour npm run apply (avec un fichier de jetons).
+  // S1 : modifications.json, pour npm run apply (avec un fichier de jetons).
   const modifications = tokens ? buildModifications({ d: data, s, consigne: agent, tokens }) : null;
   return { data: { ...data, agent }, markdown: renderMarkdown(data, s) + '\n' + agent.markdown, modifications };
 }
@@ -408,7 +408,7 @@ function renderMarkdown(d, s) {
     const x = d.sections[k];
     L.push(`| ${label} | ${x.total} | ${x.colors ?? 0} | ${x.spacing ?? 0} | ${x.fontSizes ?? 0} | ${x.radii ?? 0} |`);
   }
-  // Lot I (I7) : combien rattachées à leur jeton, combien sans jeton.
+  // I7 : combien rattachées à leur jeton, combien sans jeton.
   L.push(`| Inchangé : ${d.attached} rattachée${d.attached > 1 ? 's' : ''}, ${d.unchanged - d.attached} sans jeton | ${d.unchanged} | | | | |`, '');
 
   if (d.brand) {
@@ -421,7 +421,7 @@ function renderMarkdown(d, s) {
     if (!d.brand.contradictions.length) L.push('- Aucune.');
     L.push('');
   }
-  // Lot K : une décision par plein ; les décisions de ligne sur ses fonds sont ignorées.
+  // Une décision par plein ; les décisions de ligne sur ses fonds sont ignorées.
   if ((d.pleins ?? []).length) {
     L.push(`## Texte sur plein : ${d.pleins.length}`, '', 'Un texte posé sur un plein qui échoue au contraste est une décision par plein (une carte par échelle). Les lignes de fond qui mènent à ce plein suivent la carte, sans choix séparé ; non tranchée, rien n’est appliqué (ni texte, ni fond).', '');
     L.push('| carte | clé | lignes de fond | versions (contraste) | choix | décisions de ligne ignorées |', '|---|---|---|---|---|---|');
@@ -465,7 +465,7 @@ function renderMarkdown(d, s) {
   for (const r of s.outOfTable) L.push(`| ${line(r)} | ${FAMILY_LABELS[r.family]} | \`${cell(r.value)}\` | ${cell(r.usage)} | ${cell(r.relation)} | ${cell(r.reason)} | ${r.elements} |`);
   L.push('');
 
-  // Lot V, étape 5 : pages témoins, hors de la table.
+  // Pages témoins, hors de la table.
   if (d.witnesses?.length) {
     L.push(`## Pages témoins : ${d.witnesses.length}`, '', 'Ces pages n’entrent pas dans la table : la table y est simulée telle quelle, couplages compris. Une valeur non couverte n’a aucune ligne pour sa valeur et son usage ; la migration ne la touche pas.', '');
     for (const w of d.witnesses) {

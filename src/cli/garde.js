@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code du 15/11, lot 1a : lancement commun des commandes (D18, docs/decisions.md).
+ * Lancement commun des commandes (D18, docs/decisions.md).
  * Trois issues pour toute commande :
  *   0 tout passe ;
  *   1 l'entrée a été lue et jugée : une règle échoue, ou la marque est refusée avec son motif ;
@@ -28,7 +28,7 @@ export async function lancer(nom, main) {
 }
 
 /**
- * Revue de code, lot 5 (D26) : un contrôle sur la marque de --marque <dossier>, ou, sans l'option, sur chaque marque de
+ * D26 : un contrôle sur la marque de --marque <dossier>, ou, sans l'option, sur chaque marque de
  * tokens/ (dossiersDeMarque), sans en nommer aucune. Sans l'option, chaque bloc est précédé de « marque <nom> (<dossier>) »
  * et les blocs sont séparés par une ligne vide ; le code le plus haut l'emporte (1 si une marque échoue).
  * @param {string | undefined} option @param {(dossier: string) => number} controler

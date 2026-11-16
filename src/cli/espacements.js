@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 // @ts-check
 /**
- * Séance 3c : contrôle des espacements par relation d'une marque.
+ * Contrôle des espacements par relation d'une marque.
  * Sort en 1 si les quatre ecart ne sont pas strictement croissants, ou si une valeur en étroit
  * (contexte étroit du resolver de la marque) n'est pas strictement supérieure à l'ecart précédent et au plus égale à sa valeur large ;
  * ou si une règle de proximité (REGLES : entre-composants ≥ 2 × dans-composant) n'est pas tenue ; sinon en 0.
  * Les autres rapports entre voisins sont affichés pour information ; ils ne changent pas le code de sortie.
  * Usage : npm run espacements [-- --marque <dossier>] [--semantique <fichier>] [--etroit <fichier>]
- *   Revue de code, lot 5 (D26) : --marque <dossier> contrôle cette marque ; sans l'option, chaque marque de tokens/.
+ *   D26 : --marque <dossier> contrôle cette marque ; sans l'option, chaque marque de tokens/.
  *   --semantique remplace semantique.tokens.json, --etroit le contexte étroit (largeur.etroit.tokens.json).
- * Revue de code du 15/11, lot 1a (D18) : toute panne (option inconnue, fichier absent ou illisible) sort en 2, par la garde
+ * D18 : toute panne (option inconnue, fichier absent ou illisible) sort en 2, par la garde
  * commune (src/cli/garde.js).
  */
 import { parseArgs } from 'node:util';

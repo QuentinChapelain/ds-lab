@@ -2,7 +2,7 @@
 // @ts-check
 /**
  * npm run reduce -- <adresse> [<chemins…>] --target <cible.json> [options]
- * Revue de code du 15/11, lot 1b (D18) : sort en 0, ou en 2 sur une panne (page qui tombe, en nommant son étape ;
+ * D18 : sort en 0, ou en 2 sur une panne (page qui tombe, en nommant son étape ;
  * couleur de marque illisible dans la cible ; option inconnue).
  *
  * Une boucle : mesurer le rendu, ranger chaque valeur sur la cible, simuler

@@ -55,7 +55,7 @@ export function pageWarnings(pages) {
   }
   for (const p of ok) {
     if (p.iframes > 0) w.push({ text: `${p.url} : ${p.iframes} iframe(s) non parcourue(s) (feuilles et rendu ignorés).`, tag: '[F]' });
-    // Revue de code du 15/11, lot 1b : avertissements de navigation partagés avec reduce et la lecture de marque.
+    // Avertissements de navigation partagés avec reduce et la lecture de marque.
     w.push(...navigationWarnings(p, p.sheetWarnings ?? []));
     if (p.traceError) w.push({ text: `${p.url} : étape trace tombée (${p.traceError}), échantillons non tracés.`, tag: '[F]' });
     if (p.v1Error) w.push({ text: `${p.url} : étape script v1 tombée (${p.v1Error}), comparaison absente pour cette page.`, tag: '[F]' });
@@ -68,7 +68,7 @@ export function pageWarnings(pages) {
 /**
  * @param {AuditOptions} opts
  * @returns {Promise<{ host: string, dir: string | null, files: string[], warnings: Warning[], total: number, measured: number, traceFailed: number, v1Failed: number }[]>}
- *   Revue de code du 15/11, lot 1b : `measured` pages mesurées sur `total` ; aucune page mesurée : rien n'est écrit (dir null).
+ *   `measured` pages mesurées sur `total` ; aucune page mesurée : rien n'est écrit (dir null).
  */
 export async function runAudit(opts) {
   const {
@@ -116,7 +116,7 @@ export async function runAudit(opts) {
         const page = await context.newPage();
         /** @type {any} */
         const meta = { url };
-        // Revue de code du 15/11, lot 1b : chaque étape est nommée ; la page n'entre dans le rendu et le déclaré
+        // Chaque étape est nommée ; la page n'entre dans le rendu et le déclaré
         // qu'une fois ses étapes de mesure réussies (navigation, feuilles, mesure). Le script v1 n'est pas une étape de
         // mesure : son échec laisse la page mesurée, sans comparaison, et l'audit est dit incomplet, comme pour la trace.
         let etape = 'navigation';

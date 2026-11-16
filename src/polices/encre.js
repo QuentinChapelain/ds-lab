@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Étape 4c, lot 3 : contrôle d'encre de la police des titres, sur deux lignes.
+ * Contrôle d'encre de la police des titres, sur deux lignes.
  * Ce qui se voit sur deux lignes, c'est l'encre des capitales accentuées de la ligne 2 contre les descendantes de la
  * ligne 1. Mesure dans Chromium (canvas, actualBoundingBox à 1 000 px, sur les lettres, chiffres et signes français) :
  * le plus haut et le plus bas de l'encre, la hauteur du H, et le facteur de taille que donne la consigne
@@ -16,7 +16,7 @@ export const JEU = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567
 const FAMILLE = 'ds-lab-encre';
 
 /**
- * Revue de code du 15/11, lot 1a (D18) : fichier de police que le navigateur refuse de charger. C'est un refus (le client
+ * D18 : fichier de police que le navigateur refuse de charger. C'est un refus (le client
  * doit changer son fichier) ; toute autre erreur de mesure est une panne.
  */
 export class PoliceRefusee extends Error {}

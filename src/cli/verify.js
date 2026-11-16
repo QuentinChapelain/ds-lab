@@ -3,11 +3,11 @@
 /**
  * npm run verify -- <adresse> --reference <dossier> [--save] [options]
  *
- * Lot V : vérifier qu'une page n'a pas bougé. Avec --save, capture la page (pleine page)
+ * Vérifier qu'une page n'a pas bougé. Avec --save, capture la page (pleine page)
  * et son arbre d'accessibilité dans le dossier de référence. Sans --save, capture à nouveau
  * et compare : pourcentage de pixels différents, image des différences, arbre identique ou diff.
  * Les fichiers sont ceux de reduce --references : <page>.reference.png, <page>.reference.aria.yml.
- * Revue de code du 15/11, lot 1a (D18) : sort en 0, même quand des pixels diffèrent (la commande compare, elle ne juge
+ * D18 : sort en 0, même quand des pixels diffèrent (la commande compare, elle ne juge
  * pas), ou en 2 sur une panne (option inconnue, référence absente, Chromium, navigation), par la garde commune
  * (src/cli/garde.js).
  */
@@ -64,13 +64,13 @@ async function main() {
     : !values.reference ? '--reference est attendu'
     : !vp ? `--viewport : format LxH attendu (reçu « ${values.viewport} »)`
     : null;
-  // Revue de code du 15/11, lot 1b (D18) : une erreur d'usage est une panne d'une ligne, sans l'aide (-h la donne).
+  // D18 : une erreur d'usage est une panne d'une ligne, sans l'aide (-h la donne).
   if (problem || !vp || !values.reference) throw new Error(problem ?? 'usage');
   const [url] = resolveAddresses(positionals);
   const refDir = String(values.reference);
   const viewport = { width: Number(vp[1]), height: Number(vp[2]) };
   const storageState = values['storage-state'];
-  // Lot J, J5 étendu : mêmes éléments tiers masqués que dans les références de reduce --sources.
+  // J5 : mêmes éléments tiers masqués que dans les références de reduce --sources.
   const thirdParty = values.sources ? (await loadSources({ path: values.sources })).sources?.thirdParty ?? [] : [];
 
   if (values.save) {

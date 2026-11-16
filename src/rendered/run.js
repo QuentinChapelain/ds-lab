@@ -2,7 +2,7 @@
 /**
  * Mesure du rendu d'une page déjà chargée : relevé, agrégation et, si demandé,
  * trace des contextes apparus sur cette page (tant qu'elle est ouverte).
- * Revue de code du 15/11, lot 1b : en deux temps. relever() lit la page (relevé, états forcés) sans rien verser ;
+ * En deux temps. relever() lit la page (relevé, états forcés) sans rien verser ;
  * verser() ajoute la page à l'agrégat une fois toutes ses étapes réussies, puis la trace annote les contextes apparus ;
  * une trace en panne ne retire pas la page : ses échantillons restent « non tracé », et l'erreur est rendue.
  */

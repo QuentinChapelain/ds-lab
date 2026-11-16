@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // @ts-check
 /**
- * Planches d'une marque, écrites dans son dossier tokens/<marque>/ : roles.html (paires de rôles, séance 3a),
- * espacements.html et typo.html (jetons, séance 3c). Revue de code du 15/11, lot 4 : une seule commande pour les trois, par
+ * Planches d'une marque, écrites dans son dossier tokens/<marque>/ : roles.html (paires de rôles),
+ * espacements.html et typo.html (jetons). Une seule commande pour les trois, par
  * la garde commune (D18) ; une planche inconnue ou une panne sort en 2, sans rien écrire.
- * Revue de code, lot 5 (D27) : --marque <dossier> écrit les planches de cette marque ; sans l'option, celles de chaque
+ * D27 : --marque <dossier> écrit les planches de cette marque ; sans l'option, celles de chaque
  * marque de tokens/ (dossiersDeMarque), même code pour toutes.
  * Usage : node src/cli/planche.js [--marque <dossier>] [roles|espacements|typo]...   (sans planche nommée : les trois)
  */

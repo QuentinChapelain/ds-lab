@@ -1,10 +1,10 @@
 // @ts-check
 /**
- * Séance 3c, typo : styles de texte de la couche sémantique (groupe typo, composites DTCG typography),
+ * Styles de texte de la couche sémantique (groupe typo, composites DTCG typography),
  * résolus vers taille-texte.*, graisse.* et marque.police.*. Tailles lues en px ou en rem (16 px = 1 rem).
- * Interligne sans unité ; ligne = taille × interligne. Étape 4b : la valeur en étroit est le style du contexte étroit
+ * Interligne sans unité ; ligne = taille × interligne. La valeur en étroit est le style du contexte étroit
  * (largeur.etroit.tokens.json, lu par le resolver) quand il diffère du large ; seuil sur le modificateur largeur.
- * Étape 4c : affichage et titres 1 à 3 portent la consigne commune de hauteur de capitale ($extensions["ds-lab.hauteur-capitale"],
+ * Affichage et titres 1 à 3 portent la consigne commune de hauteur de capitale ($extensions["ds-lab.hauteur-capitale"],
  * alias vers police.titre.hauteur-capitale), lue en large et en étroit.
  * Neuf règles (échec, code 1) ; le rapport de chaque style et les primitives sans rôle sont affichés sans seuil.
  */
@@ -19,7 +19,7 @@ export const MIN_PX = 12;
 export const ORDRE = ['affichage.grand', 'affichage.moyen', 'titre.1', 'titre.2', 'titre.3', 'titre.4'];
 /** Styles sur police.titre ; tous les autres sur police.texte. */
 export const SUR_POLICE_TITRE = ['affichage.grand', 'affichage.moyen', 'titre.1', 'titre.2', 'titre.3'];
-/** Clé de la consigne commune de hauteur de capitale (étape 4c), dans $extensions d'un style de titre. */
+/** Clé de la consigne commune de hauteur de capitale, dans $extensions d'un style de titre. */
 export const CONSIGNE = 'ds-lab.hauteur-capitale';
 /** Interlignes minimaux. */
 export const INTERLIGNES_MIN = [
@@ -47,7 +47,7 @@ const r2 = (n) => Math.round(n * 100) / 100;
  * @returns {{ styles: Style[], regles: Regle[], fails: Regle[], sansRole: string[] }}
  */
 export function typo(semantique, primitives, marque, largeurEtroite) {
-  // Revue de code du 15/11, lot 1a : sans contexte étroit, les règles en étroit passeraient sans rien contrôler.
+  // Sans contexte étroit, les règles en étroit passeraient sans rien contrôler.
   if (!largeurEtroite) throw new Error('contexte étroit absent : les règles en étroit ne peuvent pas être contrôlées');
   const semEtroit = largeurEtroite ? flattenTokens(largeurEtroite.semantique) : null;
   const all = new Map();

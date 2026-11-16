@@ -1,7 +1,7 @@
 // @ts-check
 /**
- * Lot G : générateur de valise visé par contraste (règles G0 à G7 de l'attendu du lot G ;
- * G1, G5 et G7 corrigés le 13/11/2026). culori seul, sans leonardo ni chroma.js.
+ * Générateur de valise visé par contraste (règles G0 à G7 ;
+ * G1, G5 et G7 corrigées le 13/11/2026). culori seul, sans leonardo ni chroma.js.
  *
  * Échelle de 12 pas : 1-2 fonds, 3-5 fonds de composants, 6-8 bordures, 9-10 pleins, 11-12 texte.
  *   G0  chaque pas : dichotomie sur la clarté OKLCH jusqu'au contraste visé sur blanc, teinte fixe,
@@ -37,7 +37,7 @@ export const PLEIN_TEINTE = 4.6;
 export const HUE_SPAN = 3;
 export const HUE_SPAN_SHIFT = 5;
 const WARM = 70;
-/** Chroma en dessous de laquelle la teinte ne se mesure pas (seuil gris du lot M). */
+/** Chroma en dessous de laquelle la teinte ne se mesure pas (seuil gris de M1). */
 export const HUED_CHROMA = 0.02;
 /** G3 : écart minimal souhaité entre 10 et 11. */
 const MIN_10_11 = 2;
@@ -49,14 +49,14 @@ const dEok = differenceEuclidean('oklab');
 const dE = (a, b) => 100 * dEok(a, b);
 /** @param {string} hex */
 const kOf = (hex) => contrastRatio(hex, WHITE);
-/** Étape 4b : référence du miroir sombre [H]. @param {'clair' | 'sombre'} [fond] */
+/** Référence du miroir sombre [H]. @param {'clair' | 'sombre'} [fond] */
 const referenceDe = (fond) => (fond === 'sombre' ? BLACK : WHITE);
 /** Écart angulaire signé b − a dans [−180, 180]. @param {number} a @param {number} b */
 const dh = (a, b) => ((((b - a) % 360) + 540) % 360) - 180;
 
 /**
  * Paramètres de teinte et de chroma d'une échelle.
- * Étape 4b, mode sombre [H] : du côté du noir (la référence), la chroma s'atténue en luminance (Y ≈ L³) et non en
+ * Mode sombre [H] : du côté du noir (la référence), la chroma s'atténue en luminance (Y ≈ L³) et non en
  * clarté, comme elle s'atténue du côté du blanc en mode clair ; sans cela, les pas 1 et 2, à une clarté OKLab de 0,1,
  * gardent une chroma que l'arrondi à 8 bits ne tient pas dans la teinte.
  * @param {string} source @param {{ hueShift?: number, l9?: number, fond?: 'clair' | 'sombre' }} [opts]
@@ -92,7 +92,7 @@ function hueModel(source, { hueShift = 0, l9, fond = 'clair' } = {}) {
  * tenu (± 0,5 %) et chroma jamais au-dessus de la source ; sinon le plus proche du contraste visé.
  * @param {any} color  OKLCH dans le gamut @param {number} target  contraste visé sur blanc
  * @param {number} hue  teinte voulue @param {number} cMax  chroma de la source
- * Étape 4b, lot 2 bis (mode sombre seulement) : `rayon` élargit le voisinage de ± rayon par canal autour des arrondis,
+ * En mode sombre seulement : `rayon` élargit le voisinage de ± rayon par canal autour des arrondis,
  * pour tenir la teinte des pas peu saturés près du noir ; `exclure` écarte une couleur déjà prise (la source, pas 9).
  * @param {(hex: string) => number} [k]  contraste d'une couleur contre la référence (blanc par défaut, noir en mode sombre)
  * @param {{ rayon?: number, exclure?: string[] }} [voisinage]
@@ -178,10 +178,10 @@ const MIN_9_10 = 2;
 /**
  * Une échelle de 12 pas.
  * @param {string} name @param {string} source
- * Étape 4b : `fond: 'sombre'` génère l'échelle en miroir [H] : même dichotomie, mêmes cibles, contraste visé contre le
+ * `fond: 'sombre'` génère l'échelle en miroir [H] : même dichotomie, mêmes cibles, contraste visé contre le
  * noir au lieu du blanc ; pas 9 = la source ; le texte sur le plein est clair. Les écoles se lisent contre le noir
  * (« foncée » : source très claire ; « plein clair » : source très foncée) ; « plus foncé » se lit « plus loin du noir ».
- * Étape 4b, lot 2 bis : `cibles` remplace des cibles de TARGETS (pas → contraste contre la référence) ; `chromaTextes: 'max'`
+ * `cibles` remplace des cibles de TARGETS (pas → contraste contre la référence) ; `chromaTextes: 'max'`
  * donne aux pas 11 et 12 la plus forte chroma que permet le gamut sRGB à leur teinte, au-dessus de la source si besoin.
  * @param {{ school?: 'teinte', hueShift?: number, fond?: 'clair' | 'sombre', cibles?: Record<number, number>, chromaTextes?: 'max' }} [opts]
  * @returns {{ name: string, source: string, school: 'normale' | 'foncée' | 'plein clair' | 'teinte seulement', steps: string[], onSolid: string, step10: 'plus foncé' | 'plus clair', signals: string[], hueShift: number, fond: 'clair' | 'sombre' }}
@@ -257,7 +257,7 @@ export function generateScale(name, source, opts = {}) {
 }
 
 /**
- * Étape 4b : couleur de la teinte d'une source au contraste visé contre la référence du fond. Chroma de la source,
+ * Couleur de la teinte d'une source au contraste visé contre la référence du fond. Chroma de la source,
  * constante, ou (`echelle`) celle de la courbe d'une échelle dont la source serait le pas 9.
  * @param {string} source @param {number} cible @param {{ fond?: 'clair' | 'sombre', echelle?: boolean }} [opts]
  */

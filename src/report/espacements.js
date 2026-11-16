@@ -1,11 +1,11 @@
 // @ts-check
 /**
- * Séance 3c : planche des espacements par relation d'une marque (tokens/<marque>/espacements.html). Revue de code, lot 5
- * (D27) : une planche par marque, même code ; le nom de la marque est lu dans son resolver.
+ * Planche des espacements par relation d'une marque (tokens/<marque>/espacements.html). D27 :
+ * une planche par marque, même code ; le nom de la marque est lu dans son resolver.
  * Une page complète (formulaire avec un message d'erreur sur deux lignes, rangée de trois cartes,
  * plusieurs sections) bâtie sur les cinq rôles d'espacement, chacun coté et nommé une fois.
  * Le parent porte l'espace : gap et padding uniquement, la seule déclaration margin est la remise à zéro.
- * Toutes les valeurs viennent des jetons, valeur en étroit comprise (lot 4 : ecart.section, 48 px, et 32 px
+ * Toutes les valeurs viennent des jetons, valeur en étroit comprise (ecart.section, 48 px, et 32 px
  * sous 600 px dans le contexte étroit, seuil [H]). Couleurs : rôles de semantique.tokens.json ; les cotes ont leur propre
  * palette d'annotation, hors du design system. Page autonome, sans ressource externe ni script.
  */

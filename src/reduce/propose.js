@@ -9,12 +9,12 @@
  *   inchangé   déjà sur la cible ;
  *   auto       écart invisible (≤ 1 px, ou ΔE ≤ 2) : appliqué sans revue ;
  *   proche     écart faible (≤ 15 % pour une dimension, ΔE ≤ 5) : à valider par lot ;
- *              lot R : pour une taille de texte, il faut aussi ≤ 2 px ;
+ *              Pour une taille de texte, il faut aussi ≤ 2 px ;
  *   décision   au-delà : trois candidats, le designer tranche ;
  *   hors table valeur non convertible (%, em…) ou couleur transparente.
  * Les seuils sont des hypothèses de départ, à régler à l'œil. [H]
  *
- * Lot B (règles R1 à R9, voir fixtures/marque-demo/expected-pieges.json et
+ * Règles R1 à R9 (voir fixtures/marque-demo/expected-pieges.json et
  * expected-desordre-valise.json), quand l'audit fournit le relevé par usage :
  *   R1  l'usage choisit la tranche (texte 11-12, bordure 6-8, fond 1-5, plein 9-10),
  *       la proximité choisit le pas, dans l'échelle de la valeur la plus proche ;
@@ -31,7 +31,7 @@
  *   R9  correction : la paire la plus défavorable échoue avant et passe après, cible
  *       dans l'échelle de la valeur la plus proche ; appliquée par défaut, annulable.
  *
- * Lot R, R-1 : chaque ligne reçoit un identifiant (coul-, esp-, arr-, tail- et un numéro
+ * R-1 : chaque ligne reçoit un identifiant (coul-, esp-, arr-, tail- et un numéro
  * sur deux chiffres, par famille, rangé par occurrences décroissantes, puis valeur, puis
  * usage, indépendant de la classe) et un titre en clair : « propriété · élément « texte
  * visible » et n autres (rôles) ». L'élément de référence est le premier, dans l'ordre des
@@ -44,10 +44,10 @@ import { resolveBrand, isGrey } from '../brand/brand.js';
 import { converter } from 'culori';
 
 const toOklch = converter('oklch');
-/** Lot J, J1 (règle 2) : écart de teinte toléré, sans échelles dans la cible. */
+/** J1 : écart de teinte toléré, sans échelles dans la cible. */
 export const SAME_HUE_DEG = 30;
 /**
- * Lot J, J1 : même teinte, quand la cible n'a pas d'échelles : deux gris (chroma OKLCH < 0,02, G8),
+ * J1 : même teinte, quand la cible n'a pas d'échelles : deux gris (chroma OKLCH < 0,02, G8),
  * ou deux couleurs dont les teintes OKLCH diffèrent de SAME_HUE_DEG degrés au plus.
  * @param {string} a @param {string} b
  */
@@ -59,7 +59,7 @@ export function sameHue(a, b) {
 
 export const CLASSES = /** @type {const} */ (['décision', 'proche', 'auto', 'inchangé', 'hors table']);
 
-/** Lot B : sous-classes « hors table » avec leur motif. */
+/** Sous-classes « hors table » avec leur motif. */
 export const OUT = /** @type {const} */ ({ scale: 'hors table, aucune échelle', dark: 'hors table, fond sombre', layout: 'hors table, mise en page' });
 
 /** Toutes les classes, dans l'ordre de la revue. */
@@ -70,7 +70,7 @@ export const APPLIED = new Set(['correction', 'proche', 'auto', 'inchangé']);
 
 export const THRESHOLDS = { autoPx: 1, nearRatio: 0.15, nearTextPx: 2, autoDeltaE: 2, nearDeltaE: 5, pillPx: 500 };
 
-/** Lot B : seuils des règles R4 et R7. */
+/** Seuils des règles R4 et R7. */
 export const RULES = { noScaleDeltaE: 10, layoutMaxPx: 64 };
 
 /** R1 : tranches de pas par usage. */
@@ -91,38 +91,38 @@ export const isOut = (cls) => cls.startsWith('hors table');
  * @property {string | null} new
  * @property {string} [name]         nom du pas de la cible, pour une couleur
  * @property {string} class          une de ALL_CLASSES
- * @property {string} [usage]        lot B : usage de la ligne (R3)
- * @property {string} [scope]        lot P : relation d'une marge (« dans le composant », « entre composants », « inconnue »)
+ * @property {string} [usage]        Usage de la ligne (R3)
+ * @property {string} [scope]        Relation d'une marge (« dans le composant », « entre composants », « inconnue »)
  * @property {{ before: { in: number, out: number }, after?: { in: number, out: number }, signal?: string }} [control]
- * @property {{ text: string, n: number }[]} [relations]  lot P, étape 3 : relations en clair (« champ vers son message »), la plus fréquente d'abord
- * @property {{ text: string, n: number }[]} [signals]    lot P, étape 3 : signaux de la relation (« relié par for », « aucun lien »)
- * @property {{ text: string, n: number }[]} [scopes]     lot P-fin : relations réunies d'une marge non coupée
- *   lot P (P3) : espaces de la paire mise en défaut (dans le composant, entre composants), avant et après les décisions
- * @property {string[]} [usages]     lot B : usages couverts (une ligne hors table « aucune échelle » les regroupe)
- * @property {string} [slice]        lot B : tranche de la valise (R1)
- * @property {string} [reason]       lot B : motif d'une décision imposée, d'une correction ou d'un hors table
- * @property {{ threshold: number, before: number, after: number }} [contrast]  lot B : paire la plus défavorable,
+ * @property {{ text: string, n: number }[]} [relations]  Relations en clair (« champ vers son message »), la plus fréquente d'abord
+ * @property {{ text: string, n: number }[]} [signals]    Signaux de la relation (« relié par for », « aucun lien »)
+ * @property {{ text: string, n: number }[]} [scopes]     Relations réunies d'une marge non coupée
+ *   P3 : espaces de la paire mise en défaut (dans le composant, entre composants), avant et après les décisions
+ * @property {string[]} [usages]     Usages couverts (une ligne hors table « aucune échelle » les regroupe)
+ * @property {string} [slice]        Tranche de la valise (R1)
+ * @property {string} [reason]       Motif d'une décision imposée, d'une correction ou d'un hors table
+ * @property {{ threshold: number, before: number, after: number }} [contrast]  Paire la plus défavorable,
  *   avant et avec la cible proposée (appliquée ou non), les autres lignes suivant la table
  * @property {number | null} delta   écart en px, ou ΔE × 100 pour une couleur
  * @property {{ value: string, name?: string, delta: number, nearest?: boolean, fails?: { ratio: number, threshold: number } }[]} candidates
- *   fails (lot J, J1) : contraste du candidat sous le seuil, alors que l'actuelle passe
+ *   fails (J1) : contraste du candidat sous le seuil, alors que l'actuelle passe
  * @property {string[]} properties   familles ou propriétés d'origine
  * @property {string[]} selectors    exemples
- * @property {string} [id]           lot R : identifiant stable de la ligne (R-1)
- * @property {string} [title]        lot R : titre en clair (R-1)
+ * @property {string} [id]           Identifiant stable de la ligne (R-1)
+ * @property {string} [title]        Titre en clair (R-1)
  * @property {Record<string, Kind>} [kinds]  sortes d'éléments de la valeur (relevé du rendu)
  * @property {boolean} [noDefault]   décision sans valeur par défaut : égalité (C5) ou aucun candidat qui garde le contraste
- * @property {string[]} [etats]      revue de code du 15/11, lot 2 (D19) : états forcés où seuls la valeur se voit
- * @property {string} [slot]         lot M : emplacement de marque déclaré de la valeur
+ * @property {string[]} [etats]      D19 : états forcés où seuls la valeur se voit
+ * @property {string} [slot]         Emplacement de marque déclaré de la valeur
  * @property {number} [_states]      champ de travail : occurrences en état forcé, retiré avant le rendu
  * @property {{ name: string, new: string, backgrounds: { from: string, name: string, to: string }[],
- *   exceptions: { background: string, elements: number, pages: string[], selectors: string[] }[] }[]} [alternatives]  lot M (M6) : seconde version
- * @property {{ id: string, key: string, title: string, choice: string | null, ignored: string | false | null }} [plein]  lot K : carte de plein que la ligne suit
- * @property {import('../browser/simulate.js').DecisionCapture & { elements?: number, touched?: any[], others?: any[] }} [capture]  lot R : captures par version
- * @property {import('./declarations.js').RowDeclaration[]} [declarations]  lot V, étape 6 : déclarations sources
- * @property {'total' | 'partiel'} [conflict]  lot V, étape 6 : part des déclarations en conflit
+ *   exceptions: { background: string, elements: number, pages: string[], selectors: string[] }[] }[]} [alternatives]  M6 : seconde version
+ * @property {{ id: string, key: string, title: string, choice: string | null, ignored: string | false | null }} [plein]  Carte de plein que la ligne suit
+ * @property {import('../browser/simulate.js').DecisionCapture & { elements?: number, touched?: any[], others?: any[] }} [capture]  Captures par version
+ * @property {import('./declarations.js').RowDeclaration[]} [declarations]  Déclarations sources
+ * @property {'total' | 'partiel'} [conflict]  Part des déclarations en conflit
  * @property {import('./declarations.js').RowConflict[]} [conflicts]
- * @property {import('./declarations.js').CoupledDeclaration[]} [coupledDeclarations]  lot V, étape 6 : déclarations des éléments couplés
+ * @property {import('./declarations.js').CoupledDeclaration[]} [coupledDeclarations]  Déclarations des éléments couplés
  */
 
 /** @param {string} key  « 12px » */
@@ -205,7 +205,7 @@ function dimensionRows(values, scale, { pill = false, nearPx = Infinity } = {}) 
  * @param {{ old: string, count: number, properties: string[], selectors: string[], kinds?: Record<string, Kind> }} base
  * @param {number[]} scale
  * @param {{ pill?: boolean, forcePill?: boolean, nearPx?: number }} [opts]  forcePill : l'élément dessine une pilule (R7) ;
- *   nearPx : écart absolu au-delà duquel la ligne n'est plus proche (lot R, tailles de texte)
+ *   nearPx : écart absolu au-delà duquel la ligne n'est plus proche (tailles de texte)
  * @returns {Row}
  */
 export function dimensionRow(base, scale, { pill = false, forcePill = false, nearPx = Infinity } = {}) {
@@ -228,7 +228,7 @@ export function dimensionRow(base, scale, { pill = false, forcePill = false, nea
     .map((s) => ({ value: `${s}px`, delta: round2(Math.abs(s - n)) }))
     .sort((a, b) => a.delta - b.delta || /** @type {number} */ (px(a.value)) - /** @type {number} */ (px(b.value)));
   const best = byDistance[0];
-  // Revue de code du 15/11, lot 2 (D20) : à égale distance de deux pas, l'outil ne tranche pas. Décision, sans défaut ;
+  // D20 : à égale distance de deux pas, l'outil ne tranche pas. Décision, sans défaut ;
   // les deux pas sont candidats, marqués « à égalité ». Vaut à toute distance, 1 px compris.
   if (best.delta > 0 && byDistance[1]?.delta === best.delta) {
     const pair = [best.value, byDistance[1].value];
@@ -251,13 +251,13 @@ export function dimensionRow(base, scale, { pill = false, forcePill = false, nea
 }
 
 /**
- * Lot C : le candidat le plus proche (C6). Les dimensions le marquent (ordre par valeur) ;
+ * Le candidat le plus proche (C6). Les dimensions le marquent (ordre par valeur) ;
  * les couleurs gardent l'ordre du plus proche au plus loin (C11).
  * @param {any} r
  */
 export const nearestOf = (r) => {
   const cs = r.candidates ?? [];
-  // Lot J, J1 : un candidat qui échoue au contraste n'est jamais « le plus proche » ; c'est alors le
+  // J1 : un candidat qui échoue au contraste n'est jamais « le plus proche » ; c'est alors le
   // défaut (dans l'échelle du plus proche), ou personne quand la ligne n'a pas de défaut.
   if (r.noDefault) return undefined;
   if (cs.some((/** @type {any} */ c) => c.fails)) return cs.find((/** @type {any} */ c) => c.value === r.new && !c.fails) ?? cs.find((/** @type {any} */ c) => !c.fails);
@@ -266,7 +266,7 @@ export const nearestOf = (r) => {
 
 /**
  * Égalité tranchée en silence : les deux candidats les plus proches à même écart (non nul).
- * Lot C : les candidats de dimension sont rangés par valeur, l'égalité se lit sur les écarts.
+ * Les candidats de dimension sont rangés par valeur, l'égalité se lit sur les écarts.
  * @param {{ value: string, delta: number }[]} candidates
  * @returns {[string, string] | null}
  */
@@ -276,7 +276,7 @@ export function tieOf(candidates) {
 }
 
 /**
- * Lot C : fenêtre des candidats d'une valeur (C1 à C4). Les deux pas qui encadrent la valeur
+ * Fenêtre des candidats d'une valeur (C1 à C4). Les deux pas qui encadrent la valeur
  * (un seul si elle tombe sur un pas ou au-delà d'un bord), plus un pas de chaque côté, sans
  * compenser au bord (C2). 0 n'est jamais ajouté pour élargir, mais reste candidat s'il encadre
  * la valeur (C3). Les pas de pilule restent hors fenêtre (C4).
@@ -303,7 +303,7 @@ export function candidateWindow(steps, n) {
 }
 
 /**
- * Lot B : entrées d'un usage, hors occurrences de contenu.
+ * Entrées d'un usage, hors occurrences de contenu.
  * @param {Record<string, import('../rendered/aggregate.js').RenderedUsage>} byUsage
  */
 const usageEntries = (byUsage) =>
@@ -312,7 +312,7 @@ const usageEntries = (byUsage) =>
     .filter((x) => x.n > 0);
 
 /**
- * Lot B : espacements par valeur × usage (R3), hors table « mise en page » (R7).
+ * Espacements par valeur × usage (R3), hors table « mise en page » (R7).
  * @param {Record<string, Record<string, any>>} usages @param {number[]} scale
  * @returns {Row[]}
  */
@@ -321,7 +321,7 @@ function spacingUsageRows(usages, scale, proximity = []) {
   const rows = [];
   for (const [old, byUsage] of Object.entries(usages)) {
     for (const { usage: slot, e, n } of cutByRelation(usageEntries(byUsage))) {
-      // Lot P : une marge porte sa relation (scope) ; l'entrée est rangée sous « usage|relation ».
+      // Une marge porte sa relation (scope) ; l'entrée est rangée sous « usage|relation ».
       const usage = e.usage ?? slot;
       const base = {
         old, count: n, properties: e.properties, selectors: e.selectors, usage, usages: [usage],
@@ -343,7 +343,7 @@ function spacingUsageRows(usages, scale, proximity = []) {
 }
 
 /**
- * Lot P-fin : une valeur × usage n'est coupée par relation que si l'une de ses lignes est
+ * Une valeur × usage n'est coupée par relation que si l'une de ses lignes est
  * « dans le composant ». Sinon ses entrées sont réunies en une seule ligne, sans relation,
  * titrée par ses éléments comme avant P ; les relations réunies restent comptées (scopes, signaux).
  * @param {{ usage: string, e: any, n: number }[]} entries
@@ -384,14 +384,14 @@ function cutByRelation(entries) {
   return out;
 }
 
-/** Lot P, étape 3 : où corriger une marge, d'après sa relation. */
+/** Où corriger une marge, d'après sa relation. */
 export const WHERE_TO_FIX = /** @type {Record<string, string>} */ ({ 'dans le composant': 'dans le composant', 'entre composants': 'dans la page', inconnue: 'à vérifier' });
 
-/** Lot P, étape 3 : libellé, champ et message forment un champ ; titre et bloc restent eux-mêmes. @param {string} role */
+/** Libellé, champ et message forment un champ ; titre et bloc restent eux-mêmes. @param {string} role */
 const groupOf = (role) => (role === 'libellé' || role === 'champ' || role === 'message' ? 'champ' : role || 'bloc');
 
 /**
- * Lot P, étape 3 : relation d'une marge en clair, d'après le rôle de l'élément et celui de son voisin.
+ * Relation d'une marge en clair, d'après le rôle de l'élément et celui de son voisin.
  * Dans le composant : « champ vers son message » ; entre composants : « entre champs », « entre champ et bloc ».
  * @param {string} scope @param {string} role @param {string} neighbor
  */
@@ -419,11 +419,11 @@ function relationsOf(scope, roles) {
   return counted(m);
 }
 
-/** Lot P, P3 : motif d'une ligne mise en défaut par le contrôle de proximité. */
+/** P3 : motif d'une ligne mise en défaut par le contrôle de proximité. */
 export const PROXIMITY_REASON = 'le message est aussi loin de son champ que du champ suivant : on ne voit pas à quel champ il appartient';
 
 /**
- * Lot P : espace d'une paire après remplacement de ses marges (fusionnées : la plus grande ;
+ * Espace d'une paire après remplacement de ses marges (fusionnées : la plus grande ;
  * additionnées : la somme), plus le reste mesuré (gouttière).
  * @param {{ mode: string, extra: number, parts: string[] }} sp @param {(old: string) => string} next
  */
@@ -433,14 +433,14 @@ const spaceAfter = (sp, next) => {
 };
 
 /**
- * Ligne de marge d'une valeur et d'une relation ; à défaut (lot P-fin, valeur non coupée), la ligne sans relation.
+ * Ligne de marge d'une valeur et d'une relation ; à défaut (valeur non coupée), la ligne sans relation.
  * @param {Row[]} rows @param {string} old @param {string} scope
  */
 export const marginRow = (rows, old, scope) =>
   rows.find((r) => r.old === old && r.usage === 'marge' && r.scope === scope) ?? rows.find((r) => r.old === old && r.usage === 'marge' && !r.scope);
 
 /**
- * Lot P, P3 : dans le composant doit rester strictement inférieur à entre composants, sinon
+ * P3 : dans le composant doit rester strictement inférieur à entre composants, sinon
  * les lignes des marges de la paire deviennent des décisions, avec le motif (hors table exceptée).
  * @param {Row[]} rows @param {any[]} proximity
  */
@@ -461,7 +461,7 @@ function proximityControl(rows, proximity) {
         faults.set(r, l);
       }
   }
-  // Lot P-fin : le motif nomme la page et les éléments de chaque paire en faute (3 au plus).
+  // Le motif nomme la page et les éléments de chaque paire en faute (3 au plus).
   for (const [r, l] of faults) {
     const more = l.length - FAULTS_SHOWN;
     r.reason = `${PROXIMITY_REASON} (${l.slice(0, FAULTS_SHOWN).join(' ; ')}${more > 0 ? ` ; et ${more} ${more === 1 ? 'autre' : 'autres'}` : ''})`;
@@ -472,7 +472,7 @@ function proximityControl(rows, proximity) {
 const FAULTS_SHOWN = 3;
 
 /**
- * Lot P-fin : une paire en clair, « page /compte.html : input#courriel, p.erreur, label.libelle » :
+ * Une paire en clair, « page /compte.html : input#courriel, p.erreur, label.libelle » :
  * l'élément du composant, celui qui fait face au voisin, puis le voisin.
  * @param {{ page?: string, elements: string[], facing?: number }} x
  */
@@ -487,7 +487,7 @@ function pairAt(x) {
 }
 
 /**
- * Lot B : rayons par valeur × usage ; une pilule va au plus grand pas (R7).
+ * Rayons par valeur × usage ; une pilule va au plus grand pas (R7).
  * @param {Record<string, Record<string, any>>} usages @param {number[]} scale
  * @returns {Row[]}
  */
@@ -507,8 +507,8 @@ function radiusUsageRows(usages, scale) {
 const byDelta = (d) => (d <= THRESHOLDS.autoDeltaE ? 'auto' : d <= THRESHOLDS.nearDeltaE ? 'proche' : 'décision');
 
 /**
- * Lot B : couleurs par valeur × usage, règles R1 à R5, R8 et R9.
- * Lot M, avec une marque déclarée (bloc brand de la cible) : M3, M4, M5 et M6.
+ * Couleurs par valeur × usage, règles R1 à R5, R8 et R9.
+ * Avec une marque déclarée (bloc brand de la cible) : M3, M4, M5 et M6.
  * @param {any} usages   rendered.usages
  * @param {TargetColor[]} targets
  * @param {import('../brand/brand.js').Brand | null} [B]  marque résolue
@@ -529,7 +529,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
   /** @param {{ t: (typeof T)[number], delta: number }[]} list */
   const candidatesOf = (list) => list.slice(0, 3).map((c) => ({ value: c.t.value, name: c.t.name, delta: c.delta }));
   /**
-   * Lot V, étape 4 : échelle dont `text` est l'onSolid sur chacun de ses fonds (pas 9 ou 10 de
+   * Échelle dont `text` est l'onSolid sur chacun de ses fonds (pas 9 ou 10 de
    * cette échelle), avec la paire la plus défavorable ; null si un fond sort de ce cas.
    * @param {string} text
    */
@@ -554,7 +554,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
   for (const [old, byUsage] of Object.entries(usages.colors ?? {})) {
     let entries = usageEntries(byUsage);
     if (!entries.length) continue;
-    // Lot V, étape 4 : l'onSolid d'une échelle, en texte posé seulement sur le pas 9 ou 10 de cette
+    // L'onSolid d'une échelle, en texte posé seulement sur le pas 9 ou 10 de cette
     // échelle, est sur la cible (inchangé, <échelle>-sur-plein), avant R4. Une valeur de la valise garde son nom.
     const solid = isOpaque(old) && !T.some((t) => t.value === old) ? solidTextOf(old) : null;
     if (solid) {
@@ -597,7 +597,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
       const exact = T.find((t) => t.value === old);
       /** @type {any} */
       const row = { old, count: n, properties: e.properties, selectors: e.selectors, usage, usages: [USAGE_LABEL[usage] ?? usage], kinds: e.kinds, candidates: candidatesOf(cands), _cands: cands, _nearest: nearest, _exact: exact, _states: e.states ?? 0 };
-      // Revue de code du 15/11, lot 2 (D19) : une valeur vue seulement à un état forcé porte cet état.
+      // D19 : une valeur vue seulement à un état forcé porte cet état.
       if (e.enEtat && e.enEtat === n) row.etats = Object.keys(e.etats ?? {}).sort();
       if (declared) row.slot = declared.slot;
       if (range) row.slice = usage;
@@ -688,9 +688,9 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
     r.alternatives = [{ name: near.t.name, new: near.t.value, backgrounds, exceptions }];
   };
 
-  // Lot J, J3 : un texte posé seulement sur le plein d'une échelle S (pas 9 ou 10, après la table
+  // J3 : un texte posé seulement sur le plein d'une échelle S (pas 9 ou 10, après la table
   // provisoire), qui y passe aujourd'hui, a pour premier candidat l'onSolid de S (nommé
-  // <S>-sur-plein), avant la tranche 11-12. Un texte qui y échoue reste à la carte du plein (lot K).
+  // <S>-sur-plein), avant la tranche 11-12. Un texte qui y échoue reste à la carte du plein.
   if (hasScales && onSolidMap)
     for (const r of rows) {
       if (r.usage !== 'texte' || r._fixed || r._exact || !r._cands) continue;
@@ -726,7 +726,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
     else delete r.reason;
     return changed;
   };
-  // Revue de code du 15/11, lot 1b : une table qui change encore au dixième tour n'est pas stable ; les lignes qui ont
+  // Une table qui change encore au dixième tour n'est pas stable ; les lignes qui ont
   // changé à ce tour passent en décision, avec le motif NON_STABILISE (aucune entrée connue ne fait osciller la boucle).
   let changed = false;
   /** @type {Set<Row>} */
@@ -764,7 +764,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
             reason = `la paire passe avant et échoue après (R2)`;
           }
         }
-        // Revue de code du 15/11, lot 2 : le motif cite le seuil de la paire en échec (4,5:1, ou 3:1 pour un grand texte).
+        // Le motif cite le seuil de la paire en échec (4,5:1, ou 3:1 pour un grand texte).
         if (cls === 'correction') {
           const seuil = fr(worst(ps, (p) => [r.old, p.bg]).threshold);
           reason = r.usage === 'texte' ? `texte sous ${seuil}:1 avant, au seuil après (R9)` : `bordure de champ sous ${seuil}:1 avant, au seuil après (R9)`;
@@ -818,7 +818,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
       const m = c.t && B.status.has(c.t.scale) && r._states < r.count ? ['décision', M_REASONS.M4] : null;
       if (m) Object.assign(r, { class: m[0], reason: m[1] });
     }
-  // Lot J, J1 : un candidat qui échoue au contraste (paire la plus défavorable après la table) alors
+  // J1 : un candidat qui échoue au contraste (paire la plus défavorable après la table) alors
   // que l'actuelle passe porte `fails` ; il n'est ni le défaut ni « le plus proche » (nearestOf).
   // J2 : aucun candidat de la tranche ne passe : la ligne est un trou de la cible (`hole`), et les pas
   // de la même échelle hors tranche qui passent (3 au plus, du plus proche au plus loin) s'ajoutent.
@@ -907,10 +907,10 @@ function colorRows(values, targets) {
  * @typedef {import('../rendered/aggregate.js').First} First
  * @typedef {import('../rendered/aggregate.js').Kind} Kind
  */
-/** Lot R (R-1) : le plus tôt de deux premiers éléments, dans l'ordre [page, relevé]. @param {First | undefined} a @param {First | undefined} b */
+/** R-1 : le plus tôt de deux premiers éléments, dans l'ordre [page, relevé]. @param {First | undefined} a @param {First | undefined} b */
 const earliest = (a, b) => (!a ? b : !b ? a : b.order[0] < a.order[0] || (b.order[0] === a.order[0] && b.order[1] < a.order[1]) ? b : a);
 /**
- * Lot R (R-1) : réunit deux relevés de sortes (comptes additionnés, premier le plus tôt).
+ * R-1 : réunit deux relevés de sortes (comptes additionnés, premier le plus tôt).
  * @param {Record<string, Kind> | undefined} a @param {Record<string, Kind> | undefined} b
  */
 function mergeKinds(a, b) {
@@ -921,35 +921,35 @@ function mergeKinds(a, b) {
   return out;
 }
 
-/** Lot R (R-1) : préfixe d'identifiant par famille. */
+/** R-1 : préfixe d'identifiant par famille. */
 export const ID_PREFIX = /** @type {Record<string, string>} */ ({ colors: 'coul', spacing: 'esp', radii: 'arr', fontSizes: 'tail' });
-/** Lot R (R-1) : propriété en clair, par famille puis par usage. */
+/** R-1 : propriété en clair, par famille puis par usage. */
 const PROPERTY_LABEL = /** @type {Record<string, Record<string, string>>} */ ({
   colors: { texte: 'Couleur du texte', bordure: 'Couleur de bordure', fond: 'Fond', plein: 'Fond', autre: 'Couleur', '': 'Couleur' },
   spacing: { marge: 'Marge', retrait: 'Retrait intérieur', gouttière: 'Espace entre éléments', '': 'Espacement' },
   radii: { '': 'Arrondi' },
   fontSizes: { '': 'Taille du texte' },
 });
-/** Lot R (R-1) : marge sur un seul côté. */
+/** R-1 : marge sur un seul côté. */
 const MARGIN_SIDE = /** @type {Record<string, string>} */ ({ 'margin-top': 'Marge haute', 'margin-bottom': 'Marge basse', 'margin-left': 'Marge gauche', 'margin-right': 'Marge droite' });
-/** Lot R (R-1) : nom français du rôle relevé par src/browser/rendered.js (roleOf), et son pluriel. */
+/** R-1 : nom français du rôle relevé par src/browser/rendered.js (roleOf), et son pluriel. */
 const ROLE_LABEL = /** @type {Record<string, string>} */ ({ bouton: 'bouton', lien: 'lien', champ: 'champ', titre: 'titre', image: 'image', texte: 'texte', conteneur: 'bloc' });
 /** Texte visible coupé à 30 caractères ; trois rôles au plus après « n autres ». */
 export const TITLE_TEXT_MAX = 30;
 const TITLE_ROLES_MAX = 3;
 
 /**
- * Lot R (R-1) : nom de l'élément, d'après son rôle. html et body sont la page ; un texte
+ * R-1 : nom de l'élément, d'après son rôle. html et body sont la page ; un texte
  * ou un bloc en ligne, à fond opaque, au texte de 20 caractères au plus, est une étiquette.
  */
 const elementName = (/** @type {{ role: string, tag: string, chip: boolean }} */ f) =>
   f.tag === 'html' || f.tag === 'body' ? 'page' : f.chip && (f.role === 'texte' || f.role === 'conteneur') ? 'étiquette' : ROLE_LABEL[f.role] ?? 'bloc';
 
-/** Lot R (R-1) : texte visible coupé à 30 caractères. @param {string} raw */
+/** R-1 : texte visible coupé à 30 caractères. @param {string} raw */
 const cut = (raw) => (raw.length > TITLE_TEXT_MAX ? `${raw.slice(0, TITLE_TEXT_MAX).trimEnd()}…` : raw);
 
 /**
- * Lot R (R-1) : titre en clair d'une ligne.
+ * R-1 : titre en clair d'une ligne.
  * @param {string} family @param {Row & { kinds?: Record<string, Kind> }} r
  */
 export function rowTitle(family, r) {
@@ -957,7 +957,7 @@ export function rowTitle(family, r) {
   const usage = r.usage ?? (r.usages?.length === 1 ? r.usages[0] : '');
   let property = labels[usage] ?? labels[''] ?? family;
   if (family === 'spacing' && usage === 'marge' && r.properties?.length === 1 && MARGIN_SIDE[r.properties[0]]) property = MARGIN_SIDE[r.properties[0]];
-  // Lot P, étape 3 : une marge dont la relation est connue est nommée par elle, la plus fréquente d'abord ;
+  // Une marge dont la relation est connue est nommée par elle, la plus fréquente d'abord ;
   // une relation inconnue garde le titre par éléments (elle est dite dans le détail et dans migration.md).
   if (family === 'spacing' && usage === 'marge' && r.scope && r.scope !== 'inconnue') {
     const rel = r.relations?.[0]?.text;
@@ -1010,7 +1010,7 @@ const byValue = (a, b) => {
 };
 
 /**
- * Lot R (R-1) : identifiant et titre de chaque ligne d'une famille ; retire les sortes
+ * R-1 : identifiant et titre de chaque ligne d'une famille ; retire les sortes
  * d'éléments, qui ne servent qu'au titre.
  * @param {string} family @param {(Row & { kinds?: Record<string, Kind> })[]} rows
  */
@@ -1038,7 +1038,7 @@ export function propose(rendered, target, { contradictions = /** @type {any[]} *
     identify(name, rows);
     families[name] = { rows, summary: summarize(rows) };
   };
-  // Lot B : avec le relevé par usage, une ligne par valeur × usage et les règles R1 à R9.
+  // Avec le relevé par usage, une ligne par valeur × usage et les règles R1 à R9.
   const u = rendered.usages;
   if (target.radii) put('radii', u ? radiusUsageRows(u.radii, target.radii) : dimensionRows(gather(rendered, ['radii']), target.radii, { pill: true }));
   if (target.spacing) put('spacing', u ? spacingUsageRows(u.spacing, target.spacing, u.proximity) : dimensionRows(gather(rendered, ['margins', 'paddings', 'gaps']), target.spacing));
@@ -1056,7 +1056,7 @@ export function propose(rendered, target, { contradictions = /** @type {any[]} *
 }
 
 /**
- * Lot M : contraste le plus défavorable d'une valeur sur toutes les paires de sa ligne (toutes
+ * Contraste le plus défavorable d'une valeur sur toutes les paires de sa ligne (toutes
  * pages), rapporté au seuil : texte et bordure sur leurs fonds, fond et plein sous leurs textes.
  * L'autre côté de la paire est pris après la table (`map`, décisions comprises), comme le détail ;
  * sa valeur d'aujourd'hui est gardée (bgToday, textToday) quand elle change. Null sans paire.
@@ -1073,7 +1073,7 @@ export function worstContrast(usages, r, value, map = {}) {
   let list = [];
   if (r.usage === 'texte') list = (usages?.pairs ?? []).filter((/** @type {any} */ p) => p.text === r.old).map((/** @type {any} */ p) => ({ text: value, bg: after(p.bg, p.bgUsage), threshold: p.threshold, today: p.bg }));
   else if (r.usage === 'bordure') {
-    // Lot J (J1) : une bordure hors champ se mesure contre son fond (edgePairs), à 3:1 comme un champ.
+    // J1 : une bordure hors champ se mesure contre son fond (edgePairs), à 3:1 comme un champ.
     const own = (usages?.borderPairs ?? []).filter((/** @type {any} */ p) => p.border === r.old);
     list = (own.length ? own : (usages?.edgePairs ?? []).filter((/** @type {any} */ p) => p.border === r.old)).map((/** @type {any} */ p) => ({ text: value, bg: after(p.bg, p.bgUsage), threshold: p.threshold, today: p.bg }));
   }
@@ -1091,12 +1091,12 @@ export function worstContrast(usages, r, value, map = {}) {
   return worst;
 }
 
-/** Lot M : motifs des décisions imposées par la marque. */
-/** Revue de code du 15/11, lot 2 (D19) : état forcé d'une ligne vue seulement à cet état, dans son titre. */
+/** Motifs des décisions imposées par la marque. */
+/** D19 : état forcé d'une ligne vue seulement à cet état, dans son titre. */
 export const ETATS = /** @type {Record<string, string>} */ ({ hover: 'au survol', focus: 'au focus', active: 'à l’appui' });
 
 
-/** Revue de code du 15/11, lot 1b : motif d'une ligne qui change encore au dixième tour de la boucle de stabilisation. */
+/** Motif d'une ligne qui change encore au dixième tour de la boucle de stabilisation. */
 export const NON_STABILISE = 'non stabilisé après 10 tours';
 
 export const M_REASONS = {
@@ -1105,7 +1105,7 @@ export const M_REASONS = {
 };
 
 /**
- * Lot M : marque déclarée de la cible, résolue sur les échelles de la valise.
+ * Marque déclarée de la cible, résolue sur les échelles de la valise.
  * @param {Target & { brand?: any }} target
  */
 export function brandOf(target) {
@@ -1120,7 +1120,7 @@ export function brandOf(target) {
 }
 
 /**
- * Lot P-fin : valeurs × usage coupées par relation (« 10px|marge »), pour que la simulation
+ * Valeurs × usage coupées par relation (« 10px|marge »), pour que la simulation
  * range ses changements sous la même clé que la table.
  * @param {{ families: Record<string, { rows: Row[] }> }} table
  */
@@ -1133,7 +1133,7 @@ export const splitOf = (table) => [...new Set((table.families.spacing?.rows ?? [
 export const rowKey = (family, r) => (r.usage ? `${family}|${r.old}|${r.usage}${r.scope ? `|${r.scope}` : ''}` : `${family}|${r.old}`);
 
 /**
- * Décision d'une ligne : sous sa clé, sinon sous la clé sans relation (lot P : un choix fait avant
+ * Décision d'une ligne : sous sa clé, sinon sous la clé sans relation (un choix fait avant
  * la coupure vaut pour les lignes qui en sont issues), sinon sous la valeur seule.
  * @param {Record<string, string | false>} decisions @param {string} family @param {{ old: string, usage?: string, scope?: string }} r
  * @returns {string | false | undefined}
@@ -1144,7 +1144,7 @@ export function decisionFor(decisions, family, r) {
 }
 
 /**
- * Valeur retenue d'une ligne après décisions (revue de code du 15/11, lot 4 ; D21) : seule définition de la règle, lue par
+ * Valeur retenue d'une ligne après décisions (D21) : seule définition de la règle, lue par
  * la simulation (mapping), les conflits de déclarations, le contrôle de proximité, la migration et la revue.
  * Un refus (`false`) laisse la ligne ; une décision écrite l'emporte, sauf égale à l'ancienne valeur, qui laisse la ligne ;
  * sans décision, la proposition d'une classe appliquée d'office (APPLIED), si elle existe ; sinon rien.
@@ -1160,7 +1160,7 @@ export function retenue(decisions, family, r) {
 }
 
 /**
- * Revue de code du 15/11, lot 1b : clés du fichier de décisions qui ne visent aucune ligne ni carte de plein, triées.
+ * Clés du fichier de décisions qui ne visent aucune ligne ni carte de plein, triées.
  * Une clé vise une ligne sous l'une des trois formes que lit decisionKeyFor ; une carte sous sa clé (plein|<échelle>).
  * Elle devient orpheline sans faute de frappe quand le site, les pages, la fenêtre ou la cible ont changé.
  * @param {{ families: Record<string, { rows: Row[] }>, pleins?: { key: string }[] }} table
@@ -1189,7 +1189,7 @@ export function decisionKeyFor(decisions, family, r) {
 }
 
 /**
- * Lot P, P3 après les décisions : chaque paire contrôlée dont une marge a une décision est recalculée avec les valeurs retenues
+ * P3 après les décisions : chaque paire contrôlée dont une marge a une décision est recalculée avec les valeurs retenues
  * (décision, sinon proposition appliquée, sinon valeur actuelle). Si dans le composant n'est
  * toujours pas strictement inférieur à entre composants, les lignes de ses marges le signalent.
  * @param {{ families: Record<string, { rows: Row[] }>, proximity?: any[] }} table
@@ -1250,7 +1250,7 @@ export function mapping(table, decisions = {}) {
         if (first && first !== old) fam[old] = first;
         continue;
       }
-      // Lot P : par usage si ses relations s'accordent, sinon par usage et relation.
+      // Par usage si ses relations s'accordent, sinon par usage et relation.
       for (const x of list) {
         if (!x.next || x.next === old) continue;
         const same = list.filter((y) => y.usage === x.usage).every((y) => y.next === x.next);
@@ -1263,7 +1263,7 @@ export function mapping(table, decisions = {}) {
 }
 
 /**
- * Lot G (G4) : onSolid d'une échelle pour un plein donné. La valise donne une valeur pour
+ * G4 : onSolid d'une échelle pour un plein donné. La valise donne une valeur pour
  * l'échelle, ou une valeur par pas ({ 9, 10 }) quand aucune ne tient sur les deux.
  * @param {Record<string, string | Record<string, string>> | undefined} map  target.onSolid
  * @param {string} scale @param {number} step  9 ou 10
@@ -1276,7 +1276,7 @@ export function onSolidOf(map, scale, step) {
 }
 
 /**
- * Lot V, étape 4 (B) : pleins de la cible reconnus par leur texte. Pour chaque échelle qui a un
+ * Pleins de la cible reconnus par leur texte. Pour chaque échelle qui a un
  * onSolid, « fond|texte » du pas 9 et du pas 10 avec cet onSolid (minuscules). Un fond de la page
  * qui porte exactement ce texte est un plein, même si le texte est plus foncé que lui.
  * @param {{ colors?: TargetColor[], onSolid?: Record<string, string | Record<string, string>> }} target
@@ -1294,7 +1294,7 @@ export function solidPairs(target) {
 }
 
 /**
- * Lot V, étape 5 : valeurs d'une page témoin que la table ne couvre pas. Couleurs, espacements et
+ * Valeurs d'une page témoin que la table ne couvre pas. Couleurs, espacements et
  * rayons : valeur × usage du relevé sans ligne de la table pour cette valeur et cet usage (une ligne
  * sans usage couvre la valeur entière) ; pour une marge, la relation aussi, sauf ligne sans relation.
  * Tailles : la valeur seule. Les éléments de contenu sont écartés.

@@ -3,11 +3,11 @@
 /**
  * npm run apply -- --modifications <fichier> --racine <dossier> [--essai] [--reste <fichier>]
  *
- * Lot S : applique aux feuilles d'une copie du site les modifications préparées par reduce
+ * Applique aux feuilles d'une copie du site les modifications préparées par reduce
  * (modifications.json, à côté de migration.md). Le HTML n'est pas touché. Une entrée dont la
  * valeur écrite n'est pas celle attendue n'est pas appliquée et sort en écart. reste.md (dans la
  * racine) dit ce qui reste à faire à la main.
- * Revue de code du 15/11, lot 1b (D18) : sort en 0 si tout est appliqué ou déjà appliqué ; en 1 s'il reste au moins un
+ * D18 : sort en 0 si tout est appliqué ou déjà appliqué ; en 1 s'il reste au moins un
  * écart (entrée ou commentaire refusé, listé dans reste.md), --essai compris ; en 2 sur une panne (option inconnue,
  * fichier de modifications absent ou illisible, feuille illisible, CSS invalide : rien n'est écrit).
  */

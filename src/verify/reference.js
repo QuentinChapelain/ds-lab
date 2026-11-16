@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot V : fichiers de référence d'une page, partagés par reduce --references et verify.
+ * Fichiers de référence d'une page, partagés par reduce --references et verify.
  *   <page>.reference.png       capture pleine page (reduce : après simulation complète)
  *   <page>.reference.aria.yml  arbre d'accessibilité (reduce : avant simulation)
  * <page> = dernier segment du chemin, sans extension (`/` → index).

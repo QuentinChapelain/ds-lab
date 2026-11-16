@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Étape 4c, lot 1 : conteneur WOFF2 (W3C, WOFF File Format 2.0), lecteur maison sans dépendance.
+ * Conteneur WOFF2 (W3C, WOFF File Format 2.0), lecteur maison sans dépendance.
  * Rend les tables non transformées (head, hhea, OS/2, name, cmap, fvar…) ; glyf, loca et hmtx, transformées, ne sont pas
  * reconstruites : la saisie n'en a pas besoin (l'encre des lettres est mesurée dans le navigateur, src/polices/encre.js).
  * Décompression Brotli de Node (node:zlib).

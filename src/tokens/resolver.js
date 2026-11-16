@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Étape 4, séance b, lot 1 : lecteur maison des resolvers DTCG 2025.10 (module Resolver), sans dépendance
+ * Lecteur maison des resolvers DTCG 2025.10 (module Resolver), sans dépendance
  * (docs/attendus/etape-4b-contextes.md, réponse 4).
  *
  * Ce qu'il lit, et rien d'autre :
@@ -109,7 +109,7 @@ export function resoudre(resolver, base, entrees = {}) {
 }
 
 /**
- * Revue de code, lot 6 (D31) : un resolver dont les sources nommées dans `docs` (« fichier.tokens.json » tel qu'écrit dans
+ * D31 : un resolver dont les sources nommées dans `docs` (« fichier.tokens.json » tel qu'écrit dans
  * le $ref) sont données en ligne, par leur contenu, au lieu d'être lues sur le disque ; les autres $ref restent lus. La
  * saisie résout ainsi la marque avant de l'écrire, par le même resolver que les contrôles. Une source à null est retirée.
  * @param {any} resolver @param {Record<string, any>} docs
@@ -125,7 +125,7 @@ export function enLigne(resolver, docs) {
 }
 
 /**
- * Revue de code, lot 5 : jetons d'un fichier donné à reduce --tokens. Un resolver (version et resolutionOrder) est résolu
+ * Jetons d'un fichier donné à reduce --tokens. Un resolver (version et resolutionOrder) est résolu
  * depuis son dossier, dans ses contextes par défaut, et rend l'arbre fusionné ; un fichier de jetons est rendu tel quel.
  * @param {any} doc contenu du fichier @param {string} chemin chemin du fichier
  */
@@ -210,7 +210,7 @@ export function seuilEtroit(r) {
 }
 
 /**
- * Revue de code, lot 5 (D26) : les marques, sans en nommer aucune : chaque dossier de tokens/ qui a un
+ * D26 : les marques, sans en nommer aucune : chaque dossier de tokens/ qui a un
  * marque.resolver.json, par ordre de nom, chemin terminé par le séparateur.
  * @param {string} [racine] @returns {string[]}
  */
@@ -225,7 +225,7 @@ export function dossiersDeMarque(racine = TOKENS) {
 export const nomDeMarque = (dossier) => String(JSON.parse(readFileSync(join(dossier, RESOLVER), 'utf8')).name ?? '');
 
 /**
- * Une marque dans ses deux largeurs, pour espacements et typo. Revue de code, lot 5 : le dossier est obligatoire.
+ * Une marque dans ses deux largeurs, pour espacements et typo. Le dossier est obligatoire.
  * @param {string} dossier tokens/<marque>/ @param {{ mode?: string }} [opts]
  */
 export function largeurs(dossier, { mode } = {}) {

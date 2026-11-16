@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Séance 3c, typo : planche des styles de texte d'une marque (tokens/<marque>/typo.html). Revue de code, lot 5 (D27) : une
+ * Planche des styles de texte d'une marque (tokens/<marque>/typo.html). D27 : une
  * planche par marque, même code ; le nom de la marque, lu dans son resolver, est dans le titre et le texte d'essai du
  * spécimen ; les trois situations sont un contenu d'essai commun (KNOWN_ISSUES.md).
  * Spécimen des onze styles (taille, ligne, rapport), puis trois situations : hero de page d'accueil,

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // @ts-check
 /**
- * Séance 3a, T0 : écrit tokens/commun/statuts.tokens.json (avertissement, info) si checkValise passe.
+ * T0 : écrit tokens/commun/statuts.tokens.json (avertissement, info) si checkValise passe.
  * Usage : node src/cli/statuts.js
  */
 import { writeFile } from 'node:fs/promises';

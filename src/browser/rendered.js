@@ -19,21 +19,21 @@
  * @property {boolean} [imageBox]     boîte d'image : son fond est du contenu, pas de l'interface (R18)
  * @property {boolean} [icon]         pseudo-élément dont le content est un glyphe de police d'icônes (R11 ter)
  * @property {boolean} [overlap]      porteur de texte dont le centre tombe sur un peintre hors de sa lignée (R11 bis)
- * @property {boolean} [onImage]      porteur de texte posé sur une image qui couvre son fond opaque (lot J, J9)
+ * @property {boolean} [onImage]      porteur de texte posé sur une image qui couvre son fond opaque (J9)
  * @property {string} [selector]
  * @property {string} [role]
- * @property {string} [label]        lot R : texte visible de l'élément (libellé d'un champ, titre d'un bloc), 31 caractères au plus (R-1)
+ * @property {string} [label]        Texte visible de l'élément (libellé d'un champ, titre d'un bloc), 31 caractères au plus (R-1)
  * @property {{ n: number, items: { role: string, tag: string, label: string, display: string, bg: string }[] }} [gapChildren]
- *   lot R : conteneur flex ou grid, ses enfants visibles et les deux premiers (titre d'une gouttière, R-1)
+ *   Conteneur flex ou grid, ses enfants visibles et les deux premiers (titre d'une gouttière, R-1)
  * @property {boolean} [text]         porteur de texte (R3, R2)
  * @property {Record<string, string>} [props]
- * @property {[number, number]} [box]       largeur et hauteur de la boîte (lot B, pilule R7)
- * @property {string[]} [autoMargins]     côtés dont la marge est auto (lot B, R7)
- * @property {{ neighbor: string }} [proseLink]  lien sans soulignement dans du texte courant, couleur du texte voisin (lot M)
+ * @property {[number, number]} [box]       largeur et hauteur de la boîte (pilule R7)
+ * @property {string[]} [autoMargins]     côtés dont la marge est auto (R7)
+ * @property {{ neighbor: string }} [proseLink]  lien sans soulignement dans du texte courant, couleur du texte voisin
  * @property {Record<string, { scope: string, signal: string | null, detail?: string, neighbor: string | null, visiblePx: number | null, role?: string, neighborRole?: string }>} [margins]
- *   lot P : par côté de marge non nulle, relation avec le voisin de ce côté (« dans le composant »,
+ *   Par côté de marge non nulle, relation avec le voisin de ce côté (« dans le composant »,
  *   « entre composants », ou « inconnue » sans élément voisin), signal, voisin et espace visible
- * @property {boolean} [state]        lot M (M4) : élément porté par un vrai état (role="alert", aria-invalid, message relié à un champ)
+ * @property {boolean} [state]        M4 : élément porté par un vrai état (role="alert", aria-invalid, message relié à un champ)
  */
 
 /**
@@ -43,8 +43,8 @@
  * @property {number} iframes
  * @property {number} excluded
  * @property {{ elements: number, selectors: Record<string, number>, invalid: string[] }} [thirdParty]  éléments tiers écartés (R17)
- * @property {Proximity[]} [proximity]  lot P (P3) : paires contrôlées, espace dans le composant face à l'espace entre composants
- * @property {{ message: string, field: string }[]} [messages]  lot P, étape 3 : messages non reliés à leur champ par aria-describedby
+ * @property {Proximity[]} [proximity]  P3 : paires contrôlées, espace dans le composant face à l'espace entre composants
+ * @property {{ message: string, field: string }[]} [messages]  Messages non reliés à leur champ par aria-describedby
  */
 /**
  * @typedef {{ scope: string, gapPx: number, mode: 'max' | 'sum', extra: number, parts: string[] }} Space
@@ -97,7 +97,7 @@ export function collectInPage(thirdSelectors = []) {
   const PAINTER_TAGS = new Set(['img', 'video', 'canvas', 'svg']);
   const MEDIA_TAGS = new Set(['IMG', 'PICTURE', 'VIDEO', 'CANVAS']);
   const body = document.body;
-  // Lot M (M4) : vrai état — dans un role="alert" ou un aria-invalid="true", ou message relié à
+  // M4 : vrai état — dans un role="alert" ou un aria-invalid="true", ou message relié à
   // un champ (son id, ou celui d'un ancêtre, dans aria-describedby ou aria-errormessage du champ).
   const STATE_IDS = new Set(
     [...document.querySelectorAll('input, select, textarea, [role="textbox"], [role="combobox"], [role="searchbox"]')].flatMap((c) =>
@@ -175,7 +175,7 @@ export function collectInPage(thirdSelectors = []) {
     return { value: false, placeholder: false };
   };
   /**
-   * Lot R (R-1) : texte visible d'un bloc, un espace entre deux éléments (« Filtre du jour Nouveau »),
+   * R-1 : texte visible d'un bloc, un espace entre deux éléments (« Filtre du jour Nouveau »),
    * un saut de ligne autour d'un élément qui n'est pas en ligne et à chaque br.
    * @param {Element} root
    */
@@ -215,7 +215,7 @@ export function collectInPage(thirdSelectors = []) {
     return out;
   };
   /**
-   * Lot R (R-1) : texte visible d'un élément, espaces resserrés, coupé à 31 caractères
+   * R-1 : texte visible d'un élément, espaces resserrés, coupé à 31 caractères
    * (le titre le coupe à 30 et sait ainsi qu'il a coupé). Un champ donne son libellé
    * (label associé, puis aria-label, puis texte d'indice), jamais sa valeur saisie ;
    * un bloc, son premier titre visible (h1 à h6), sinon la première ligne de son texte.
@@ -257,7 +257,7 @@ export function collectInPage(thirdSelectors = []) {
     return text ? 'texte' : 'conteneur';
   };
   /**
-   * R7 (lot B) : côtés dont la marge est « auto ». Le rendu ne donne que des pixels :
+   * R7 : côtés dont la marge est « auto ». Le rendu ne donne que des pixels :
    * on élargit (puis on allonge) l'élément de 2 px par un style en ligne, et un côté
    * dont la marge diminue est auto. Le style d'origine est rétabli aussitôt.
    * @param {Element} el @param {CSSStyleDeclaration} cs
@@ -288,7 +288,7 @@ export function collectInPage(thirdSelectors = []) {
     return out;
   };
   /**
-   * Lot M : lien sans soulignement posé dans du texte courant. Renvoie la couleur
+   * Lien sans soulignement posé dans du texte courant. Renvoie la couleur
    * du texte voisin (celle du parent), ou null. Texte courant : le bloc qui porte
    * le lien (premier ancêtre non inline, ni flex ni grid) contient du texte hors lien.
    * @param {Element} el @param {CSSStyleDeclaration} cs
@@ -382,7 +382,7 @@ export function collectInPage(thirdSelectors = []) {
       rec.text = text;
       rec.props = propsOf(cs, text, el);
       if (stateOf(el)) rec.state = true;
-      // Lot B : dimensions de la boîte (pilule, R7) et côtés en marge auto (R7).
+      // Dimensions de la boîte (pilule, R7) et côtés en marge auto (R7).
       const box = el.getBoundingClientRect();
       rec.box = [Math.round(box.width * 100) / 100, Math.round(box.height * 100) / 100];
       const auto = autoSidesOf(el, cs);
@@ -483,7 +483,7 @@ export function collectInPage(thirdSelectors = []) {
   }
 
 
-  // Lot J, J9 : un texte posé sur une image qui couvre son fond opaque (img, video, canvas, picture,
+  // J9 : un texte posé sur une image qui couvre son fond opaque (img, video, canvas, picture,
   // ou background-image url() en cover, à 100 % ou répétée) ne fait pas de ce fond un plein.
   // Empilement lu par le navigateur (elementsFromPoint au centre du texte, événements forcés) :
   // l'image doit être sous le texte et au-dessus du fond. Code dupliqué dans src/browser/rendered.js
@@ -557,7 +557,7 @@ export function collectInPage(thirdSelectors = []) {
   });
   imageDone();
 
-  // Lot P : relation de chaque marge avec le voisin de son côté (P1, P2), et paires contrôlées (P3).
+  // Relation de chaque marge avec le voisin de son côté (P1, P2), et paires contrôlées (P3).
   // Règles réécrites dans scanInPage (src/browser/simulate.js), la fonction étant sérialisée dans la page.
   const IN = 'dans le composant';
   const OUT = 'entre composants';
@@ -605,7 +605,7 @@ export function collectInPage(thirdSelectors = []) {
         return !!t && (t === b || b.contains(t));
       }),
     );
-  // Étape 3 : un enfant qui est (et non seulement qui contient) un bouton, un lien ou une liste écarte le conteneur.
+  // Un enfant qui est (et non seulement qui contient) un bouton, un lien ou une liste écarte le conteneur.
   const BLOCKERS = 'button,a[href],ul,ol,table,section,article,nav,form,fieldset';
   /** Conteneur de champ : un seul contrôle, aucun titre, rien d'autre que libellé, contrôle et texte. @param {Element | null} p */
   const fieldBox = (p) =>
@@ -614,7 +614,7 @@ export function collectInPage(thirdSelectors = []) {
     !p.querySelector(HEADINGS) &&
     [...p.children].every((c) => hasCtrl(c) || c.tagName === 'LABEL' || !(c.matches(BLOCKERS) || c.querySelector(BLOCKERS)));
   /**
-   * Lot P-fin : un texte non vide (nœud texte) entre deux frères, comme le « / » d'un paginateur :
+   * Un texte non vide (nœud texte) entre deux frères, comme le « / » d'un paginateur :
    * la relation est alors inconnue. @param {Element} a @param {Element} b
    */
   const textBetween = (a, b) => {
@@ -627,7 +627,7 @@ export function collectInPage(thirdSelectors = []) {
   const fieldOf = (t) => {
     for (let x = t.previousElementSibling; x; x = x.previousElementSibling) {
       if (!inFlow(x)) continue;
-      // Lot P-fin : un texte sous le contrôle seulement, jamais à gauche ni à droite.
+      // Un texte sous le contrôle seulement, jamais à gauche ni à droite.
       if (x.matches(CTRL)) return t.getBoundingClientRect().top >= x.getBoundingClientRect().bottom - 0.5 ? x : null;
       if (!isText(x)) return null;
     }
@@ -662,7 +662,7 @@ export function collectInPage(thirdSelectors = []) {
   /** @param {Element} t */
   const describedBy = (t) => !!t.id && !!document.querySelector(`[aria-describedby~="${CSS.escape(t.id)}"]`);
   /**
-   * Étape 3 : rôle d'un élément pour dire la relation en clair : libellé, champ (contrôle ou
+   * Rôle d'un élément pour dire la relation en clair : libellé, champ (contrôle ou
    * conteneur de champ), titre, message (texte rattaché à un contrôle), bloc sinon.
    * @param {Element} e
    */
@@ -692,7 +692,7 @@ export function collectInPage(thirdSelectors = []) {
         (r.margins ??= {})[side] = { scope: 'inconnue', signal: null, neighbor: null, visiblePx: null, role: placeOf(el) };
         continue;
       }
-      // Lot P-fin : un texte entre l'élément et son voisin rend la relation inconnue (aucun contrôle).
+      // Un texte entre l'élément et son voisin rend la relation inconnue (aucun contrôle).
       if (textBetween(el, nb.el)) {
         (r.margins ??= {})[side] = { scope: 'inconnue', signal: null, detail: 'texte entre l’élément et son voisin', neighbor: null, visiblePx: null, role: placeOf(el) };
         continue;
@@ -729,7 +729,7 @@ export function collectInPage(thirdSelectors = []) {
       if (!y || textBetween(/** @type {Element} */ (z), y.el) || relationOf(/** @type {Element} */ (z), y.el).scope !== OUT) continue;
       proximity.push({
         elements: [selectorOf(a), selectorOf(b), selectorOf(y.el)],
-        // Étape 3 : rôles, élément de la paire qui fait face au voisin, et sens (suivant, précédent).
+        // Rôles, élément de la paire qui fait face au voisin, et sens (suivant, précédent).
         roles: [placeOf(a), placeOf(b), placeOf(y.el)],
         facing: z === a ? 0 : 1,
         toward: away === 'bottom' || away === 'right' ? 'suivant' : 'précédent',
@@ -739,7 +739,7 @@ export function collectInPage(thirdSelectors = []) {
     }
   }
 
-  // Étape 3 : messages rattachés à leur champ par la seule position ou le conteneur, sans aria-describedby.
+  // Messages rattachés à leur champ par la seule position ou le conteneur, sans aria-describedby.
   /** @type {{ message: string, field: string }[]} */
   const messages = [];
   records.forEach((r, i) => {

@@ -34,7 +34,7 @@ export async function gotoAndSettle(
  */
 
 /**
- * Revue de code du 15/11, lot 1b : avertissements de navigation d'une page, partagés par l'audit, reduce et la lecture
+ * Avertissements de navigation d'une page, partagés par l'audit, reduce et la lecture
  * de marque. Statut HTTP d'erreur, redirection, networkidle non atteint, feuilles illisibles (collectSheets).
  * @param {{ url: string, status?: number | null, finalUrl?: string, networkIdle?: boolean }} nav résultat de gotoAndSettle, avec l'adresse demandée
  * @param {string[]} [feuilles] avertissements de collectSheets

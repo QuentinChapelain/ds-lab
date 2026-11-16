@@ -3,10 +3,10 @@
 /**
  * npm run marque -- <adresse> [<chemins…>] --prefix <préfixe> [options]
  *
- * Lot M, M0 : lecture rapide de la marque, avant la réduction. Sort les variables du
+ * M0 : lecture rapide de la marque, avant la réduction. Sort les variables du
  * back-office posées sur <html> (préfixe réglable), les couleurs fortes du rendu et leurs
  * contradictions avec les feuilles. Sert à écrire le bloc brand de la cible ; ne décide rien.
- * Revue de code du 15/11, lot 1a (D18) : sort en 0, ou en 2 sur une panne (option inconnue, Chromium, navigation), par
+ * D18 : sort en 0, ou en 2 sur une panne (option inconnue, Chromium, navigation), par
  * la garde commune (src/cli/garde.js).
  */
 import { parseArgs } from 'node:util';
@@ -40,7 +40,7 @@ async function main() {
   if (values.help) return console.log(USAGE);
   const vp = /^(\d+)x(\d+)$/.exec(String(values.viewport));
   if (!positionals.length || !vp) {
-    // Revue de code du 15/11, lot 1b (D18) : une erreur d'usage est une panne d'une ligne, sans l'aide (-h la donne).
+    // D18 : une erreur d'usage est une panne d'une ligne, sans l'aide (-h la donne).
     throw new Error(!positionals.length ? 'au moins une adresse est attendue' : `--viewport : format LxH attendu (reçu « ${values.viewport} »)`);
   }
   for (const [host, urls] of groupByHost(resolveAddresses(positionals))) {
@@ -55,7 +55,7 @@ async function main() {
     console.log('Couleurs fortes (occurrences) :');
     for (const s of r.strong.slice(0, 12)) console.log(`  ${s.value} (${s.count})`);
     console.log(`Contradictions : ${r.contradictions.length}`);
-    // Revue de code du 15/11, lot 1b : avertissements de navigation affichés, plus jetés.
+    // Avertissements de navigation affichés, plus jetés.
     if (r.warnings.length) console.log('Avertissements :');
     for (const w of r.warnings) console.log(`  ! ${w.text} ${w.tag}`);
     for (const c of r.contradictions) console.log(`  ${c.variable} : back-office ${c.backOffice}, feuille ${c.sheet} (${c.where.join(', ')})`);

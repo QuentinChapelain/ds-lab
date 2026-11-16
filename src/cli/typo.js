@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 // @ts-check
 /**
- * Séance 3c, typo : contrôle des styles de texte d'une marque.
+ * Contrôle des styles de texte d'une marque.
  * Sort en 1 si l'une des neuf règles n'est pas tenue, sinon en 0. Le rapport de chaque style et les primitives
  * sans rôle sont affichés pour information ; ils ne changent pas le code de sortie.
  * Usage : npm run typo [-- --marque <dossier>] [--semantique <fichier>] [--primitives <fichier>] [--couche-marque <fichier>]
  *   [--etroit <fichier>]
- * Revue de code, lot 5 (D26) : --marque <dossier> contrôle cette marque ; sans l'option, chaque marque de tokens/. La couche
+ * D26 : --marque <dossier> contrôle cette marque ; sans l'option, chaque marque de tokens/. La couche
  * marque donnée à part passe par --couche-marque <fichier> (l'ancien --marque <fichier>).
- * Revue de code du 15/11, lot 1a (D18) : toute panne (option inconnue, fichier absent ou illisible) sort en 2, par la garde
+ * D18 : toute panne (option inconnue, fichier absent ou illisible) sort en 2, par la garde
  * commune (src/cli/garde.js).
  */
 import { parseArgs } from 'node:util';
@@ -26,7 +26,7 @@ await lancer('typo', () => {
     const contexte = values.etroit ? [lireJson(values.etroit)] : l.contexte;
     const r = typo(
       sem,
-      // Étape 4c : la consigne de hauteur de capitale (groupe police, tokens/commun/police.tokens.json) vient du resolver
+      // La consigne de hauteur de capitale (groupe police, tokens/commun/police.tokens.json) vient du resolver
       // quand le fichier de primitives donné ne la porte pas.
       values.primitives ? { police: l.large.primitives.police, ...lireJson(values.primitives) } : l.large.primitives,
       values['couche-marque'] ? lireJson(values['couche-marque']) : l.large.marque,

@@ -21,7 +21,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 /** Formes d'une mention d'histoire. */
 const HISTOIRE = [
   /\b[Ll]ots? (?:[A-Z](?![a-zà-ÿ])|\d)/,
-  /\b(?:du|au|le|ce|des) lot\b/,
+  /\b(?:du|au|le|ce|des|dernier) lot\b/,
   /[ÉéEe]tapes? \d/,
   /\b[Ss]éances? (?:\d|[a-c]\b)/,
   /[Rr]evue de code/,

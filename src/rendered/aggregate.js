@@ -123,36 +123,36 @@ const CORNERS = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
  * @property {boolean} normalizable
  * @property {Record<string, number>} originals
  * @property {Context[]} contexts
- * @property {Record<string, Kind>} [kinds]  lot R : éléments d'interface touchés, par sorte (rôle, balise, étiquette possible), avec le premier de chacune (R-1)
- * @property {number} [elements]  lot R : éléments d'interface touchés (un pseudo-élément compte pour son élément)
+ * @property {Record<string, Kind>} [kinds]  Éléments d'interface touchés, par sorte (rôle, balise, étiquette possible), avec le premier de chacune (R-1)
+ * @property {number} [elements]  Éléments d'interface touchés (un pseudo-élément compte pour son élément)
  * @typedef {{ role: string, tag: string, label: string, chip: boolean }} Child
  * @typedef {{ order: [number, number], role: string, tag: string, label: string, chip: boolean, children?: { n: number, items: Child[] } }} First
  * @typedef {{ n: number, first: First }} Kind
  * @typedef {NonNullable<RenderedRecord['margins']>[string]} MarginRelation
- * @typedef {object} UsageEntry  lot B : occurrences d'une valeur pour un usage (R3), en cours d'agrégation
+ * @typedef {object} UsageEntry  Occurrences d'une valeur pour un usage (R3), en cours d'agrégation
  * @property {number} count
  * @property {number} content
  * @property {number} field
  * @property {Set<string>} properties
  * @property {string[]} selectors
  * @property {Record<string, number>} pages
- * @property {string} [usage]        lot P : usage et relation d'une marge coupée par relation
+ * @property {string} [usage]        Usage et relation d'une marge coupée par relation
  * @property {string} [scope]
- * @property {number} [states]       lot M (M4) : occurrences portées par un vrai état
- * @property {number} [enEtat]       revue de code du 15/11, lot 2 (D19) : occurrences vues à un état forcé
+ * @property {number} [states]       M4 : occurrences portées par un vrai état
+ * @property {number} [enEtat]       D19 : occurrences vues à un état forcé
  * @property {Record<string, number>} [etats]  les mêmes, par état
- * @property {Record<string, number>} [relations]  lot P, étape 3 : rôles « élément>voisin »
- * @property {Record<string, number>} [signals]    lot P, étape 3 : signaux de la relation
+ * @property {Record<string, number>} [relations]  Rôles « élément>voisin »
+ * @property {Record<string, number>} [signals]    Signaux de la relation
  * @property {Record<string, Kind>} [kinds]
  * @property {Set<string>} [_els]    éléments touchés (touch), retirés au rendu
  * @typedef {Omit<UsageEntry, 'properties' | '_els'> & { properties: string[], elements: number }} RenderedUsage  entrée d'usage rendue
  */
 
-/** Lot R (R-1) : texte d'une étiquette possible, 20 caractères au plus. */
+/** R-1 : texte d'une étiquette possible, 20 caractères au plus. */
 export const CHIP_TEXT_MAX = 20;
 
 /**
- * Lot R (R-1) : élément touché, compté une fois (un pseudo-élément compte pour son élément),
+ * R-1 : élément touché, compté une fois (un pseudo-élément compte pour son élément),
  * rangé par sorte avec le premier de chacune dans l'ordre [page, relevé]. Étiquette possible :
  * élément en ligne, fond opaque à lui, texte de 20 caractères au plus ; le nom est donné au titre.
  * @param {{ kinds?: Record<string, Kind>, _els?: Set<string> }} x @param {RenderedRecord} rec @param {number} pageNo @param {number} index
@@ -177,7 +177,7 @@ function touch(x, rec, pageNo, index) {
   k.n++;
 }
 /**
- * Lot R (R-1) : étiquette possible, en ligne, à fond opaque, au texte court.
+ * R-1 : étiquette possible, en ligne, à fond opaque, au texte court.
  * @param {string | undefined} display @param {string | undefined} bgRaw @param {string} label
  */
 function chipOf(display, bgRaw, label) {
@@ -201,7 +201,7 @@ function createCollector() {
      * @param {string} page
      * @param {number} index
      * @param {boolean} [content]  occurrence de contenu (R18)
-     * @param {number} [pageNo]  rang de la page (lot R, R-1)
+     * @param {number} [pageNo]  rang de la page (R-1)
      * @returns {Context | null} le contexte s'il vient d'être créé
      */
     add(k, raw, property, rec, page, index, content = false, pageNo = 0) {
@@ -338,7 +338,7 @@ export function effectiveBackground(records, index) {
 }
 
 /**
- * Lot B, R1 et R3 : usage d'une couleur peinte, d'après sa propriété. Un fond
+ * R1 et R3 : usage d'une couleur peinte, d'après sa propriété. Un fond
  * qui porte un texte plus clair que lui est un plein (tranche 9-10).
  * @param {string} property @param {boolean} plein
  * @returns {'texte' | 'bordure' | 'fond' | 'plein' | 'autre'}
@@ -350,12 +350,12 @@ export function colorUsage(property, plein) {
   return 'autre';
 }
 
-/** Lot B, R3 : usage d'un espacement, d'après sa famille. */
+/** R3 : usage d'un espacement, d'après sa famille. */
 export const SPACING_USAGE = /** @type {const} */ ({ margins: 'marge', paddings: 'retrait', gaps: 'gouttière' });
 
 /**
- * Lot B, R7 : un rayon au moins égal à la moitié du plus petit côté de l'élément
- * (ou d'au moins 500 px), ou un pourcentage de 50 % ou plus (lot M), dessine une pilule.
+ * R7 : un rayon au moins égal à la moitié du plus petit côté de l'élément
+ * (ou d'au moins 500 px), ou un pourcentage de 50 % ou plus, dessine une pilule.
  * @param {string} key  « 20px » @param {[number, number] | undefined} box
  * @returns {'pilule' | 'rayon'}
  */
@@ -382,8 +382,8 @@ export function opaqueSource(records, index) {
 }
 
 /**
- * Lot B : éléments dont le fond porte un texte plus clair que lui (pleins).
- * Lot V, étape 4 (B) : aussi un fond qui porte exactement l'onSolid de son échelle (paire
+ * Éléments dont le fond porte un texte plus clair que lui (pleins).
+ * Aussi un fond qui porte exactement l'onSolid de son échelle (paire
  * « fond|texte » de `solid`, pas 9 ou 10 de la cible), même si ce texte est plus foncé.
  * @param {RenderedRecord[]} records
  * @param {Set<string>} [solid]  solidPairs(target)
@@ -393,7 +393,7 @@ export function pleinSources(records, solid = new Set()) {
   /** @type {Set<number>} */
   const out = new Set();
   records.forEach((rec, i) => {
-    // Lot J, J9 : un texte posé sur une image qui couvre le fond ne fait pas de ce fond un plein.
+    // J9 : un texte posé sur une image qui couvre le fond ne fait pas de ce fond un plein.
     if (!rec.retained || !rec.props || !rec.text || rec.pseudo || rec.onImage) return;
     const fg = normalizeColor(rec.props['color'] ?? '');
     if (!fg) return;
@@ -410,7 +410,7 @@ export function pleinSources(records, solid = new Set()) {
  * Agrégateur incrémental : une page à la fois, pour pouvoir tracer les
  * contextes nouveaux tant que la page est ouverte.
  */
-/** @param {{ solid?: Set<string> }} [o]  solid : paires plein de la cible (lot V, étape 4) */
+/** @param {{ solid?: Set<string> }} [o]  solid : paires plein de la cible */
 export function createRenderedAggregator({ solid = new Set() } = {}) {
   /** @type {Record<string, ReturnType<typeof createCollector>>} */
   const fam = Object.fromEntries(RENDERED_FAMILIES.map((f) => [f, createCollector()]));
@@ -422,25 +422,25 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
   const byPage = {};
   const roles = new Set();
   let unmeasuredContrast = 0;
-  /** Lot R : rang de la page en cours (ordre des adresses). */
+  /** Rang de la page en cours (ordre des adresses). */
   let pageNo = -1;
   /**
-   * Lot B : occurrences par valeur et par usage (R3), hors marges auto (R7),
+   * Occurrences par valeur et par usage (R3), hors marges auto (R7),
    * et paires de contraste rattachées aux lignes (R2, R8, R9).
    * @type {Record<string, Map<string, Map<string, UsageEntry>>>}
    */
   const usageFam = { colors: new Map(), spacing: new Map(), radii: new Map() };
-  /** Lot P (P3) : paires contrôlées de toutes les pages. @type {any[]} */
+  /** P3 : paires contrôlées de toutes les pages. @type {any[]} */
   const proximity = [];
-  /** Lot P, étape 3 : messages non reliés à leur champ par aria-describedby. @type {Map<string, { message: string, field: string, n: number, pages: string[] }>} */
+  /** Messages non reliés à leur champ par aria-describedby. @type {Map<string, { message: string, field: string, n: number, pages: string[] }>} */
   const messages = new Map();
   /** @type {Map<string, { text: string, bg: string, bgUsage: string, threshold: number, n: number }>} */
   const usagePairs = new Map();
   /** @type {Map<string, { border: string, bg: string, bgUsage: string, threshold: number, n: number }>} */
   const borderPairs = new Map();
-  /** Lot J : bordures hors champ contre leur fond (3:1), pour J1 seulement. @type {Map<string, { border: string, bg: string, bgUsage: string, threshold: number, n: number }>} */
+  /** Bordures hors champ contre leur fond (3:1), pour J1 seulement. @type {Map<string, { border: string, bg: string, bgUsage: string, threshold: number, n: number }>} */
   const edgePairs = new Map();
-  /** Lot M : liens sans soulignement dans du texte courant. @type {Map<string, { color: string, neighbor: string, ratio: number, n: number, selectors: string[], pages: Record<string, number> }>} */
+  /** Liens sans soulignement dans du texte courant. @type {Map<string, { color: string, neighbor: string, ratio: number, n: number, selectors: string[], pages: Record<string, number> }>} */
   const proseLinks = new Map();
   /**
    * @param {string} family @param {string} value @param {string} usage @param {RenderedRecord} rec
@@ -451,7 +451,7 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
     const byValue = usageFam[family];
     let u = byValue.get(value);
     if (!u) byValue.set(value, (u = new Map()));
-    // Lot P : une entrée par usage et par relation (marges).
+    // Une entrée par usage et par relation (marges).
     const slot = scope ? `${usage}|${scope}` : usage;
     let e = u.get(slot);
     if (!e) u.set(slot, (e = { count: 0, content: 0, field: 0, properties: new Set(), selectors: [], pages: {}, ...(scope ? { usage, scope } : {}) }));
@@ -459,9 +459,9 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
     if (content) e.content++;
     else touch(e, rec, pageNo, index);
     if (field) e.field++;
-    // Lot M (M4) : occurrences portées par un vrai état (role="alert", aria-invalid, message relié).
+    // M4 : occurrences portées par un vrai état (role="alert", aria-invalid, message relié).
     if (rec.state && !content) e.states = (e.states ?? 0) + 1;
-    // Revue de code du 15/11, lot 2 (D19) : occurrences vues à un état forcé (survol, focus, actif), par état.
+    // D19 : occurrences vues à un état forcé (survol, focus, actif), par état.
     if (etat) {
       e.enEtat = (e.enEtat ?? 0) + 1;
       const parEtat = /** @type {Record<string, number>} */ ((e.etats ??= {}));
@@ -471,7 +471,7 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
     const sel = rec.selector ?? '';
     if (e.selectors.length < 4 && !e.selectors.includes(sel)) e.selectors.push(sel);
     e.pages[page] = (e.pages[page] ?? 0) + 1;
-    // Lot P, étape 3 : rôles de l'élément et de son voisin (« champ>message »), et signal de la relation.
+    // Rôles de l'élément et de son voisin (« champ>message »), et signal de la relation.
     if (relation) {
       const roles = /** @type {Record<string, number>} */ ((e.relations ??= {}));
       const rk = `${relation.role ?? ''}>${relation.neighborRole ?? ''}`;
@@ -494,13 +494,13 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
     pageNo++;
     derniere = { pc, plein: pleinSources(pc.records, solid) };
     const stats = (byPage[page] = { elements: 0, pseudoElements: 0, excluded: pc.excluded, textBearing: 0, iframes: pc.iframes });
-    // Lot P (P3) : paires contrôlées, marges converties en clés de valeur.
+    // P3 : paires contrôlées, marges converties en clés de valeur.
     for (const x of pc.proximity ?? []) {
       /** @param {any} sp */
       const keyed = (sp) => ({ ...sp, parts: sp.parts.map((/** @type {string} */ m) => lengthKey(m, 16).key) });
       proximity.push({ page, elements: x.elements, ...(x.roles ? { roles: x.roles, facing: x.facing, toward: x.toward } : {}), in: keyed(x.in), out: keyed(x.out) });
     }
-    // Lot P, étape 3 : messages non reliés à leur champ, une entrée par message et champ.
+    // Messages non reliés à leur champ, une entrée par message et champ.
     for (const m of pc.messages ?? []) {
       const k = `${m.message}|${m.field}`;
       const x = messages.get(k) ?? { message: m.message, field: m.field, n: 0, pages: [] };
@@ -516,7 +516,7 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
     /** @type {{ family: string, value: string, context: Context }[]} */
     const created = [];
     const plein = /** @type {{ plein: Set<number> }} */ (derniere).plein;
-    // Lot B, R1 : fond de page porté par html ou body (hors relevé de l'audit, mais rangé et simulé).
+    // R1 : fond de page porté par html ou body (hors relevé de l'audit, mais rangé et simulé).
     pc.records.forEach((rec, index) => {
       if (rec.retained || (rec.parent !== -1 && rec.parent !== 0)) return;
       const c = normalizeColor(rec.bg);
@@ -556,7 +556,7 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
         const field = usage === 'bordure' && rec.role === 'champ';
         addUsage('colors', c.hex, usage, rec, page, c.property, { content: !!c.content, field, index });
         if (usage === 'bordure' && !c.content && isOpaque(c.hex)) {
-          // R9 : bordure de champ contre le fond qui l'entoure (3:1). Lot J (J1) : les autres
+          // R9 : bordure de champ contre le fond qui l'entoure (3:1). J1 : les autres
           // bordures, à part (edgePairs), pour griser un candidat sans changer R9.
           const eff = effectiveBackground(pc.records, rec.parent);
           const src = opaqueSource(pc.records, rec.parent);
@@ -652,7 +652,7 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
   /** R15 : couleurs qui n'apparaissent qu'à un état forcé, par couleur puis par (état, propriété, rôle). */
   /** @type {Map<string, { count: number, ctx: Map<string, { state: string, property: string, role: string, count: number, selectors: string[] }> }>} */
   const stateColors = new Map();
-  /** Revue de code du 15/11, lot 2 : page versée en dernier, à laquelle addStates rattache ses échantillons. @type {{ pc: PageCollection, plein: Set<number> } | null} */
+  /** Page versée en dernier, à laquelle addStates rattache ses échantillons. @type {{ pc: PageCollection, plein: Set<number> } | null} */
   let derniere = null;
   const stateStats = { sampled: 0, capped: false, candidates: 0 };
   /** R17 : éléments tiers écartés. */
@@ -694,7 +694,7 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
           let v = stateColors.get(c.hex);
           if (!v) stateColors.set(c.hex, (v = { count: 0, ctx: new Map() }));
           v.count++;
-          // Revue de code du 15/11, lot 2 (D19) : une couleur d'état entre dans la table si le site l'a écrite. Les
+          // D19 : une couleur d'état entre dans la table si le site l'a écrite. Les
           // échantillons d'état ne sont pas tracés : l'anneau de focus du navigateur est reconnu par repli, un contour
           // outline-style auto (KNOWN_ISSUES.md) ; il reste dans « États non lus ».
           const navigateur = c.property === 'outline-color' && snap.el?.['outline-style'] === 'auto';
@@ -719,7 +719,7 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
    * @param {PageCollection} pc
    * @param {number} index
    * @param {string} page
-   * @param {Set<number>} plein  éléments dont le fond est un plein (lot B)
+   * @param {Set<number>} plein  éléments dont le fond est un plein
    */
   function addContrast(pc, index, page, plein) {
     const rec = pc.records[index];
@@ -741,9 +741,9 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
     const large = isLargeText(parseFloat(p['font-size']), parseFloat(p['font-weight']));
     // R11 ter : une icône se juge au seuil des éléments graphiques (3:1), sans niveau AAA.
     const lv = rec.icon ? { AA: ratio >= 3, AAA: true } : wcagLevels(ratio, large);
-    // Lot J, J9 : texte sur image : pas de paire contre le fond recouvert (la mesure reste « à vérifier »).
+    // J9 : texte sur image : pas de paire contre le fond recouvert (la mesure reste « à vérifier »).
     if (isOpaque(fg.hex) && !rec.pseudo && !rec.onImage) {
-      // Lot B : paire rattachée aux lignes texte et fond (R2, R8, R9).
+      // Paire rattachée aux lignes texte et fond (R2, R8, R9).
       const bgUsage = plein.has(opaqueSource(pc.records, index)) ? 'plein' : 'fond';
       const threshold = rec.icon || large ? 3 : 4.5;
       const uk = `${text}|${eff.bg}|${bgUsage}|${threshold}`;
@@ -780,7 +780,7 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
       if (eff.opacity) pair.uncertain.reasons.opacity++;
       if (eff.backgroundImage) pair.uncertain.reasons.backgroundImage++;
       if (rec.overlap) pair.uncertain.reasons.overlap++;
-      // Lot J, J9 : motif ajouté seulement quand il sert (forme des paires inchangée sinon).
+      // J9 : motif ajouté seulement quand il sert (forme des paires inchangée sinon).
       if (rec.onImage) pair.uncertain.reasons.image = (pair.uncertain.reasons.image ?? 0) + 1;
     }
     if (pair.selectors.length < MAX_SELECTORS && !pair.selectors.includes(rec.selector)) pair.selectors.push(rec.selector);

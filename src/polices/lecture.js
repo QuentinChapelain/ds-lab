@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Étape 4c, lot 1 : lecture d'une police des titres. Mesures en unités de la police, telles que le fichier les déclare :
+ * Lecture d'une police des titres. Mesures en unités de la police, telles que le fichier les déclare :
  * unités par em (head), hauteur de capitale et hauteur d'x (OS/2 version 2 et plus), ascendante, descendante et
  * interligne ajouté (hhea, ce que les navigateurs prennent sur macOS), métriques typo (OS/2), graisses (axe wght de fvar,
  * sinon usWeightClass), famille (name 1), licence (name 13, sinon 14) et couverture (cmap, format 4 ou 12).

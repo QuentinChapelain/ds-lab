@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Séance 3a, T2 et T3 : rôles de couleur (semantique.tokens.json) résolus vers les primitives,
+ * T2 et T3 : rôles de couleur (semantique.tokens.json) résolus vers les primitives,
  * et contrat de rôles : paires déclarées dans paires.json, mesurées en WCAG 2.1 (culori).
  * Le contrat de rôles s'ajoute au contrat par échelle (contractOf) sans le remplacer.
  */
@@ -32,7 +32,7 @@ export function flattenTokens(node, path = [], out = new Map()) {
 }
 
 /**
- * Valeur finale d'une valeur DTCG, alias suivis (revue de code du 15/11, lot 4 : seule résolution d'alias des contrôles).
+ * Valeur finale d'une valeur DTCG, alias suivis (seule résolution d'alias des contrôles).
  * `chaine` : les jetons déjà traversés, en commençant par le jeton de départ ; `depuis` : le jeton ou le champ de départ,
  * nommé quand une cible manque. Rend la valeur finale et le dernier jeton traversé (`cible`) ; l'appelant juge le type.
  * Une boucle lève « alias en boucle : départ → … », une cible absente (ou un groupe sans $root) « alias sans cible ».
@@ -70,7 +70,7 @@ export function tokenTypes(node, path = [], type = undefined, out = new Map()) {
 }
 
 /**
- * Primitives sans rôle (séance 3c) : jetons des groupes donnés qu'aucun alias de la couche sémantique ne cite,
+ * Primitives sans rôle : jetons des groupes donnés qu'aucun alias de la couche sémantique ne cite,
  * valeurs, composites et $extensions compris (une valeur en étroit compte comme un usage). Ordre du fichier.
  * @param {any} semantique @param {any[]} primitives fichiers de primitives @param {string[]} groupes
  * @returns {string[]}
@@ -93,8 +93,8 @@ function hexOf(v) {
 
 /**
  * Rôles de la couche sémantique, résolus : rôle → { alias, cible, hex, description }.
- * Seuls les jetons de type color (ou sans type) sont des rôles de couleur ; les autres (séance 3c :
- * espacements, type dimension) sont ignorés ici. Les alias peuvent s'enchaîner ; une boucle ou une cible absente lève une erreur.
+ * Seuls les jetons de type color (ou sans type) sont des rôles de couleur ; les autres (espacements,
+ * type dimension) sont ignorés ici. Les alias peuvent s'enchaîner ; une boucle ou une cible absente lève une erreur.
  * @param {any} semantique @param {...any} primitives
  * @returns {Map<string, { alias: string, cible: string, hex: string, description: string }>}
  */
@@ -116,7 +116,7 @@ export function resolveRoles(semantique, ...primitives) {
   for (const [role, t] of sem) {
     if (role.endsWith('.$root')) continue;
     const type = types.get(role);
-    if (type !== undefined && type !== 'color') continue; // séance 3c : espacements (dimension) hors des rôles de couleur
+    if (type !== undefined && type !== 'color') continue; // Espacements (dimension) hors des rôles de couleur
     out.set(role, { alias: t.$value, ...resolve(role), description: t.$description ?? '' });
   }
   return out;
@@ -130,7 +130,7 @@ export function resolveRoles(semantique, ...primitives) {
  * Jeu de rôles d'une marque, lu par son resolver (tokens/<marque>/marque.resolver.json) dans un contexte :
  * primitives communes et échelles de la marque fusionnées dans `primitives`, rôles dans `semantique`, couche marque
  * dans `marque`, paires communes (tokens/commun/paires.json, ou `paires`).
- * @param {string} dossier tokens/<marque>/, obligatoire (revue de code, lot 5 : aucune marque par défaut)
+ * @param {string} dossier tokens/<marque>/, obligatoire (D26 : aucune marque par défaut)
  * @param {{ paires?: string, mode?: string, largeur?: string }} [opts]
  * @returns {RoleSet}
  */
@@ -144,7 +144,7 @@ export function loadRoles(dossier, opts = {}) {
 }
 
 /**
- * Revue de code, lot 6 (D31) : jeu de rôles d'un resolver déjà lu, dans un contexte. Seule fusion de contexte de marque :
+ * D31 : jeu de rôles d'un resolver déjà lu, dans un contexte. Seule fusion de contexte de marque :
  * lue par loadRoles (les contrôles, les planches) et par la saisie (resolver aux fichiers de la marque donnés en ligne,
  * enLigne, src/tokens/resolver.js).
  * @param {any} resolver @param {string} base dossier depuis lequel se lisent ses $ref
@@ -224,7 +224,7 @@ export function contrat(set) {
 const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
 
 /**
- * Échelles du contrat par échelle, dans l'ordre d'avant l'étape 4b : neutre, échelles de la marque, statuts.
+ * Échelles du contrat par échelle, dans l'ordre d'origine : neutre, échelles de la marque, statuts.
  * @param {...any} fichiers
  */
 export function ordreEchelles(...fichiers) {

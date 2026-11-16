@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot M, M0 : lecture rapide de la marque, avant la réduction. Pour chaque page :
+ * M0 : lecture rapide de la marque, avant la réduction. Pour chaque page :
  *   - les variables posées par le back-office sur <html style>, dont le nom commence par
  *     le préfixe donné (réglable : le préfixe réel d'une plateforme reste hors dépôt) ;
  *   - les couleurs fortes du rendu (texte, fond, bordure ; opaques ; chroma OKLCH ≥ 0,02) ;
@@ -40,7 +40,7 @@ function readInPage(prefix) {
 /**
  * @param {{ addresses: string[], viewport?: { width: number, height: number }, waitMs?: number, prefix?: string, storageState?: string }} opts
  * @returns {Promise<{ variables: { name: string, value: string }[], strong: { value: string, count: number }[], contradictions: { variable: string, backOffice: string, sheet: string, where: string[] }[], warnings: import('../browser/navigate.js').AvertissementNavigation[] }>}
- *   Revue de code du 15/11, lot 1b : `warnings`, avertissements de navigation (statut, redirection, feuilles illisibles).
+ *   `warnings`, avertissements de navigation (statut, redirection, feuilles illisibles).
  */
 export async function readBrand({ addresses, viewport = { width: 1366, height: 900 }, waitMs = DEFAULT_WAIT_MS, prefix = '--', storageState }) {
   const { chromium } = await import('playwright-core');

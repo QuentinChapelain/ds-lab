@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 // @ts-check
 /**
- * Étape 4, séance a, lot 3 : table des marques et balayage des teintes près des seuils du cas clair.
+ * Table des marques et balayage des teintes près des seuils du cas clair.
  * Écrit calibrage.html (table, boutons rendus, balayage) et calibrage.md (table) dans le dossier de sortie.
  * Ne décide rien, ne change aucun seuil. Avec des marques témoins (vrais sites), la sortie va dans local/.
  * Usage : node src/cli/calibrage.js --sortie <dossier> <entree.json>...
- * Revue de code du 15/11, lot 1b (D18) : sort en 0, ou en 2 sur une panne (usage, fichier absent ou illisible), par la
+ * D18 : sort en 0, ou en 2 sur une panne (usage, fichier absent ou illisible), par la
  * garde commune (src/cli/garde.js).
  */
 import { writeFileSync, mkdirSync } from 'node:fs';

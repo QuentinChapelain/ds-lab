@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot S, S1 : modifications.json, écrit par reduce à côté de migration.md (avec --tokens). Revue de code, lot 6 (D29) :
+ * S1 : modifications.json, écrit par reduce à côté de migration.md (avec --tokens). D29 :
  * rangé avec les sorties de reduce (src/report/) ; la consigne réduite est lue dans la consigne structurée
  * (src/report/consigne.js), jamais dans son texte ; src/apply/ ne fait que lire le fichier.
  *

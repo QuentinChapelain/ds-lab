@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // @ts-check
 /**
- * Étape 4b, lots 2 et 2 bis : écrit tokens/commun/mode.sombre.tokens.json (neutre dessiné sur la page #121212, statuts,
+ * Écrit tokens/commun/mode.sombre.tokens.json (neutre dessiné sur la page #121212, statuts,
  * surface, texte sur inverse) si checkValise passe sur chaque échelle, et tokens/commun/aplat.tokens.json (emplacements
  * de l'aplat plein). Dessinés une fois, communs à toutes les marques.
  * Usage : node src/cli/sombre.js

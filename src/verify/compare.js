@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot V : comparaisons pures, sans navigateur.
+ * Comparaisons pures, sans navigateur.
  * - compareImages : deux PNG → nombre et pourcentage de pixels différents, image des différences.
  *   Seuil 0 et anticrénelage compté : un pixel qui change est un pixel différent.
  *   Tailles différentes (page plus longue) : les deux images sont étendues à la plus grande

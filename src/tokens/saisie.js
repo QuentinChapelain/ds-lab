@@ -1,21 +1,21 @@
 // @ts-check
 /**
- * Étape 4, séance a, lot 1 : saisie d'une marque (docs/attendus/etape-4-contrat-de-marque.md).
+ * Saisie d'une marque (docs/attendus/etape-4-contrat-de-marque.md).
  *
  * Entrée (tokens/<marque>/entree.json) :
  *   nom          texte, obligatoire ;
  *   primaire     couleur #rrggbb (échelle générée par generateScale) ou { "echelle": nom } (échelle existante, écrite à la
- *                main dans primitives.tokens.json du dossier de la marque : revue de code, lot 5, D25) ;
+ *                main dans primitives.tokens.json du dossier de la marque, D25) ;
  *   accent       facultatif, même forme ; absent : repli sur le neutre (D05) ;
  *   polices      { titre, texte?: [familles] } ; titre : [familles], noms seulement, police « non contrôlée », ou
- *                { familles: [...], fichiers: [chemins] } (étape 4c), fichiers relatifs à l'entrée, lus par src/polices/ ;
- *                texte facultatif (étape 4, dernier lot) : absent, la police du produit (tokens/commun/police.tokens.json) ;
+ *                { familles: [...], fichiers: [chemins] }, fichiers relatifs à l'entrée, lus par src/polices/ ;
+ *                texte facultatif : absent, la police du produit (tokens/commun/police.tokens.json) ;
  *   description  facultative, $description de marque.tokens.json.
  *
  * Motifs de refus : entrée invalide ; checkValise en échec sur les échelles générées ; paire de rôles en échec ;
- * étape 4c, police des titres donnée par ses fichiers qui échoue à un garde-fou (src/polices/garde-fous.js), ou dont
+ * police des titres donnée par ses fichiers qui échoue à un garde-fou (src/polices/garde-fous.js), ou dont
  * l'encre de deux lignes se touche sur un style de titre (controlerEncre, dans Chromium, lancé par la commande).
- * Étape 4b : checkValise et le contraste sont contrôlés dans les deux modes ; chaque motif dit son mode, (clair) ou (sombre).
+ * checkValise et le contraste sont contrôlés dans les deux modes ; chaque motif dit son mode, (clair) ou (sombre).
  * Les couches communes (neutres, statuts, rôles, paires) sont lues dans tokens/commun/ ; la saisie écrit aussi le resolver
  * de la marque (marque.resolver.json, src/tokens/resolver.js).
  */
@@ -38,11 +38,11 @@ const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
 const HEX = /^#[0-9a-f]{6}$/i;
 const LABELS = { primaire: 'Primaire', accent: 'Accent' };
 
-/** Échelles écrites à la main d'une marque, dans son dossier (revue de code, lot 5, D25). */
+/** Échelles écrites à la main d'une marque, dans son dossier (D25). */
 const PROPRES = 'primitives.tokens.json';
 
 /**
- * Fonds clairs communs sur lesquels le texte de marque des grands titres doit tenir 3:1 (lot 5) :
+ * Fonds clairs communs sur lesquels le texte de marque des grands titres doit tenir 3:1 :
  * hex de fond.app, fond.surface et fond.discret, résolus dans les couches communes.
  * @param {import('./roles.js').RoleSet} commun
  */
@@ -63,14 +63,14 @@ export function chargerCommun({ mode } = {}) {
 }
 
 /**
- * Revue de code, lot 5 (D25) : échelles écrites à la main dans le dossier d'une marque (primitives.tokens.json), ou null.
+ * D25 : échelles écrites à la main dans le dossier d'une marque (primitives.tokens.json), ou null.
  * Seules ces échelles se nomment dans une entrée ({ "echelle": nom }) ; la règle vaut pour toutes les marques.
  * @param {string} dossier @returns {any}
  */
 export const echellesPropres = (dossier) => (existsSync(join(dossier, PROPRES)) ? JSON.parse(readFileSync(join(dossier, PROPRES), 'utf8')) : null);
 
 /**
- * Revue de code, lot 6 (D25) : échelles de primitives.tokens.json d'une marque qui portent le nom d'une échelle commune
+ * D25 : échelles de primitives.tokens.json d'une marque qui portent le nom d'une échelle commune
  * (primitives et statuts de tokens/commun/). Une marque ne redéfinit pas une échelle commune : le resolver la ferait passer
  * avant le mode sombre commun, la saisie après ; refus de la saisie, échec de npm run contraste.
  * @param {any} propres echellesPropres(dossier) @param {import('./roles.js').RoleSet} [commun] @returns {string[]}
@@ -85,7 +85,7 @@ export const motifRedefinies = (noms) =>
   `${PROPRES} : échelle commune redéfinie, ${noms.join(', ')} (les échelles communes se lisent dans tokens/commun/ ; ${noms.length > 1 ? 'renomme-les' : 'renomme-la'} dans le dossier de la marque)`;
 
 /**
- * Revue de code, lot 6 (D31) : contrôle final de la saisie, sur les fichiers écrits à côté avant remplacement (remplacer,
+ * D31 : contrôle final de la saisie, sur les fichiers écrits à côté avant remplacement (remplacer,
  * src/tokens/ecriture.js) : relus, résolus par le resolver écrit, dans les deux modes, avec les paires communes, comme
  * npm run contraste. Une paire en échec est une incohérence de l'outil (la marque l'avait passée en mémoire) : panne.
  * @param {string} dossier @param {Map<string, string>} lus texte relu de chaque fichier écrit, par nom
@@ -106,7 +106,7 @@ export function controlerEcrits(dossier, lus) {
 }
 
 /**
- * Revue de code du 15/11, lot 1a : contexte étroit commun, lu par le resolver des couches communes (contexte et seuil),
+ * Contexte étroit commun, lu par le resolver des couches communes (contexte et seuil),
  * pour typo(), qui l'exige.
  * @param {import('./roles.js').RoleSet} commun
  */
@@ -117,7 +117,7 @@ function etroitCommun(commun) {
 }
 
 /**
- * Étape 4c, lot 2 : graisses demandées par les styles sur la police des titres (affichage, titres 1 à 3), lues dans les rôles.
+ * Graisses demandées par les styles sur la police des titres (affichage, titres 1 à 3), lues dans les rôles.
  * @param {import('./roles.js').RoleSet} commun @returns {number[]}
  */
 export function graissesTitres(commun) {
@@ -126,7 +126,7 @@ export function graissesTitres(commun) {
 }
 
 /**
- * Étape 4c, lot 3 : styles sur la police des titres, en large et en étroit (contexte étroit commun), avec leur consigne.
+ * Styles sur la police des titres, en large et en étroit (contexte étroit commun), avec leur consigne.
  * @param {import('./roles.js').RoleSet} commun @returns {import('../polices/encre.js').StyleTitre[]}
  */
 export function stylesTitres(commun) {
@@ -145,7 +145,7 @@ export function stylesTitres(commun) {
 }
 
 /**
- * Étape 4c, lot 3 : contrôle d'encre d'une police des titres donnée par ses fichiers, dans Chromium.
+ * Contrôle d'encre d'une police des titres donnée par ses fichiers, dans Chromium.
  * À lancer après saisir(), quand la marque n'a pas d'autre motif : les garde-fous ont déjà vérifié le format, les
  * graisses et la hauteur de capitale.
  * @param {PoliceTitre} policeTitre
@@ -190,7 +190,7 @@ export const serialiser = (tokens) => JSON.stringify(tokens, null, 2) + '\n';
 /**
  * Saisie d'une marque, sans rien écrire. Une marque est acceptée si `motifs` est vide.
  * @param {any} entree contenu de entree.json
- * Étape 4b, lot 2 : la saisie génère aussi le mode sombre de la marque (échelles en miroir depuis le pas 9, couche marque
+ * La saisie génère aussi le mode sombre de la marque (échelles en miroir depuis le pas 9, couche marque
  * sombre) ; checkValise en échec sur une échelle sombre est un motif de refus.
  * @param {{ dossier: string, commun?: import('./roles.js').RoleSet, communSombre?: import('./roles.js').RoleSet }} opts dossier de la
  *   marque ; couches communes, en clair et en sombre
@@ -212,7 +212,7 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   if ('description' in entree && typeof entree.description !== 'string') invalide('description, texte attendu');
 
   const propres = echellesPropres(dossier);
-  // Revue de code, lot 6 (D25) : une marque ne redéfinit aucune échelle commune.
+  // D25 : une marque ne redéfinit aucune échelle commune.
   const redefinies = echellesCommunesRedefinies(propres, commun);
   if (redefinies.length) {
     motifs.push(motifRedefinies(redefinies));
@@ -250,7 +250,7 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
     if (!p || typeof p !== 'object' || Array.isArray(p)) invalide('polices, { "titre": [...] } attendu, "texte" facultatif');
     else {
       for (const k of Object.keys(p)) if (k !== 'titre' && k !== 'texte') invalide(`clé inconnue polices.${k}`);
-      // Étape 4c : la police des titres s'entre par ses noms (non contrôlée) ou par ses noms et ses fichiers.
+      // La police des titres s'entre par ses noms (non contrôlée) ou par ses noms et ses fichiers.
       const t = p.titre;
       if (t && typeof t === 'object' && !Array.isArray(t)) {
         const avant = motifs.length;
@@ -347,12 +347,12 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
     marque: [...(propres ? [PROPRES] : []), ...(echelles ? ['echelles.tokens.json'] : []), 'marque.tokens.json'],
     sombre: ['echelles.sombre.tokens.json', 'marque.sombre.tokens.json'],
   });
-  // Contraste dans les deux modes (lot 3) : chaque motif dit son mode. Revue de code, lot 6 (D31) : la fusion est celle du
+  // Contraste dans les deux modes : chaque motif dit son mode. D31 : la fusion est celle du
   // resolver de la marque (rolesDuResolver, comme les contrôles), ses fichiers donnés en ligne, avant toute écriture.
   const docs = { [PROPRES]: propres, 'echelles.tokens.json': echelles, 'marque.tokens.json': marque, 'echelles.sombre.tokens.json': echellesSombres, 'marque.sombre.tokens.json': marqueSombre };
   /** @type {Record<string, ReturnType<typeof contratRoles>>} */
   const contrats = {};
-  // Revue de code du 15/11, lot 1a (D18) : une paire sous son seuil est un refus ; un contrat qui ne se calcule pas (paire
+  // D18 : une paire sous son seuil est un refus ; un contrat qui ne se calcule pas (paire
   // vers un rôle inconnu, type inconnu : couche commune cassée) est une panne, qui lève.
   for (const [mode, paires] of /** @type {const} */ ([['clair', commun.paires], ['sombre', communSombre.paires]])) {
     /** @type {ReturnType<typeof contratRoles>} */

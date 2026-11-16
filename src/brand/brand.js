@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot M (marque d'abord) : la marque déclarée dans la cible (bloc brand), sans navigateur.
+ * La marque déclarée dans la cible (bloc brand), sans navigateur.
  *
  *   M1  un emplacement gris (chroma OKLCH < 0,02) rejoint neutre ; la déclaration de la cible
  *       (clé scale d'un emplacement) l'emporte toujours ;
@@ -53,7 +53,7 @@ export function resolveBrand(brand, scales, nearestScale) {
   /** @type {Record<string, string>} */
   const variables = {};
   for (const [slot, s] of Object.entries(brand?.slots ?? {})) {
-    // Revue de code du 15/11, lot 1b (D18) : une couleur illisible dans la cible est une panne, qui nomme l'emplacement ;
+    // D18 : une couleur illisible dans la cible est une panne, qui nomme l'emplacement ;
     // elle ne devient plus un gris rangé sur neutre.
     const value = lisible(slot, s.value);
     const grey = isGrey(value);

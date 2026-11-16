@@ -20,7 +20,7 @@ const INHERITED = new Set(['color', 'font-family', 'font-size', 'font-weight', '
  * @property {number | null} line      ligne (base 1) de la règle dans le texte de sa feuille (pour un <style>, ajouter startLine de la feuille)
  * @property {boolean} inherited
  * @property {boolean} important
- * @property {string | null} [written]  lot V, étape 6 : valeur écrite dans la déclaration (composante d'un raccourci)
+ * @property {string | null} [written]  Valeur écrite dans la déclaration (composante d'un raccourci)
  * @property {number | null} [sheetLine]  ligne dans le document pour un <style> (startLine ajouté), sinon = line
  */
 
@@ -42,7 +42,7 @@ function declares(style, prop, important) {
     const l = valueIn(p);
     if (!l) continue;
     let written = typeof l.value === 'string' ? l.value : null;
-    // Lot V, étape 6 : une entrée implicite (sans emplacement dans la source) porte une valeur
+    // Une entrée implicite (sans emplacement dans la source) porte une valeur
     // normalisée (rgb(…)) ; la valeur écrite est celle de l'entrée de la source qui la déclare.
     /** @type {any} */
     let src = p;
@@ -128,7 +128,7 @@ export async function traceSamples(page, samples, { sources }) {
 }
 
 /**
- * Lot V, étape 6 : comme traceSamples, pour des éléments désignés par une expression de page
+ * Comme traceSamples, pour des éléments désignés par une expression de page
  * (par exemple les éléments de la simulation, window.__dsSim.els[i]).
  * @param {import('playwright-core').Page} page
  * @param {{ index: number, property: string, pseudo: boolean }[]} samples
@@ -166,7 +166,7 @@ export async function traceElements(page, samples, { sources, lookup }) {
       let m = matched.get(s.index);
       if (!m) {
         const { result } = /** @type {any} */ (
-          // Revue de code du 15/11, lot 1b : un élément sorti du document depuis le relevé n'a plus de règle à lire ;
+          // Un élément sorti du document depuis le relevé n'a plus de règle à lire ;
           // il est « non tracé », pas « initiale ».
           await cdp.send('Runtime.evaluate', { expression: `((e) => (e && e.isConnected ? e : null))(${lookup(s.index)})` })
         );
@@ -224,7 +224,7 @@ export async function traceElements(page, samples, { sources, lookup }) {
 }
 
 /**
- * Lot V, étape 6 : identifiant d'une déclaration de feuille (feuille, ligne, sélecteur, propriété).
+ * Identifiant d'une déclaration de feuille (feuille, ligne, sélecteur, propriété).
  * @param {{ href: string | null, sheetLine?: number | null, line: number | null, selector: string | null }} t
  * @param {string} property @param {string} page  chemin de la page (feuille <style>)
  */

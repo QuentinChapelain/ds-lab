@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot V : capture d'une page servie, pleine page, et son arbre d'accessibilité
+ * Capture d'une page servie, pleine page, et son arbre d'accessibilité
  * (page.ariaSnapshot()). Animations figées pour que deux captures du même état coïncident.
  * Mêmes réglages que la capture « après » de reduce (simulatePage), pour comparer à ses références.
  */
@@ -8,7 +8,7 @@ import { gotoAndSettle, DEFAULT_WAIT_MS } from '../browser/navigate.js';
 import { hideThirdParty } from '../browser/simulate.js';
 
 /**
- * Lot J, J5 étendu : `thirdParty` (sélecteurs de sources.json) masqués dans la capture, comme dans
+ * J5 : `thirdParty` (sélecteurs de sources.json) masqués dans la capture, comme dans
  * les références de reduce --sources ; l'arbre d'accessibilité est lu avant le masque.
  * @param {{ url: string, viewport?: { width: number, height: number }, waitMs?: number, storageState?: string, thirdParty?: string[] }} opts
  * @returns {Promise<{ png: Buffer, aria: string, status: number | null, finalUrl: string }>}

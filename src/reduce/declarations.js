@@ -1,11 +1,11 @@
 // @ts-check
 /**
- * Lot V, étape 6 : déclarations sources de chaque ligne de la table, et conflits.
+ * Déclarations sources de chaque ligne de la table, et conflits.
  *
- * D3. Chaque élément d'une ligne est tracé jusqu'à sa déclaration gagnante (héritage compris) ;
+ * Unité écrite. Chaque élément d'une ligne est tracé jusqu'à sa déclaration gagnante (héritage compris) ;
  *     la valeur écrite donne l'unité (unitOf). Une ligne inchangée tenue par une déclaration en
  *     unité relative n'est pas rattachée : la valeur calculée dépend de la racine de la page.
- * D4. Une même déclaration (feuille, ligne, sélecteur, propriété) dans deux lignes dont l'issue
+ * Conflit. Une même déclaration (feuille, ligne, sélecteur, propriété) dans deux lignes dont l'issue
  *     diffère est un conflit : la remplacer pour l'une casse l'autre ; il faudrait couper la règle.
  *     Les pages témoins comptent : elles ne font pas la table, mais elles partagent les feuilles.
  */
@@ -50,7 +50,7 @@ export function identityMapping(table, { split = [], solid = [] } = {}) {
 export async function declarationsOnPage(page, identity, { sources = null } = {}) {
   await page.evaluate(scanInPage, identity);
   const all = await page.evaluate(() => /** @type {any} */ (window).__dsSim.ops.map((/** @type {any} */ o) => ({ i: o.i, prop: o.prop, key: o.key, family: o.family })));
-  // Lot V, étape 6 : opérations de couplage (clé « …|sur-plein ») : elles marquent l'élément, sans ligne à elles.
+  // Opérations de couplage (clé « …|sur-plein ») : elles marquent l'élément, sans ligne à elles.
   const coupledEls = new Set(all.filter((/** @type {any} */ o) => o.key.endsWith('|sur-plein')).map((/** @type {any} */ o) => o.i));
   const ops = all.filter((/** @type {any} */ o) => !o.key.endsWith('|sur-plein'));
   const traces = await traceElements(
@@ -96,7 +96,7 @@ export function attachDeclarations(table, records, decisions) {
     if (!t || t.origin !== 'feuille') continue;
     const hit = rowAt(x.key, x.family);
     if (!hit) continue;
-    // Lot V, étape 6 : un élément couplé sort de sa ligne ; sa déclaration est rangée à part.
+    // Un élément couplé sort de sa ligne ; sa déclaration est rangée à part.
     if (x.coupled) {
       const list = (hit.r.coupledDeclarations ??= []);
       const file = t.href ? basename(new URL(t.href).pathname) : '<style>';
@@ -160,7 +160,7 @@ export function attachDeclarations(table, records, decisions) {
 }
 
 /**
- * Lot V, étape 6 (D3) : unité d'une valeur écrite dans la source. « relative » : rem, em, %, unités
+ * Unité d'une valeur écrite dans la source. « relative » : rem, em, %, unités
  * de fenêtre ou de police ; « absolue » : px ou zéro ; « inconnue » : var(), calc(), env(), mot-clé
  * d'héritage ; « sans unité » : le reste (couleurs, mots-clés).
  * @param {string | null | undefined} v

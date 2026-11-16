@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Règle des pleins, déclarée dans la couche marque (jamais dans les rôles). Séance 3b, puis étape 4a, lot 3 bis :
+ * Règle des pleins, déclarée dans la couche marque (jamais dans les rôles), D04 :
  * décisions de Quentin sur image (15/11/2026, 13 h 18 à 13 h 48). La classe se lit sur l'échelle, dans cet ordre :
  *   1. blanc ≥ 4,5 sur le pas 9 → couleur exacte (plein = pas 9), texte blanc ;
  *        sombre  : blanc ≥ 5,5 → survol = pas 9 + voile blanc 8 % ;
@@ -9,7 +9,7 @@
  *   2. clair : sinon, pas 12 sur le pas 9 ≥ 7 et pas 12 sur le pas 10 ≥ 4,5 → plein = pas 9, texte = pas 12,
  *      survol = pas 10 (seuil 7 calibré à l'œil, KNOWN_ISSUES.md) ;
  *   3. moyen : le reste → plein = pas 11, texte blanc, survol = pas 12.
- * Cette règle vaut pour le primaire et l'accent. Les quatre statuts gardent leur bouton d'avant l'étape 4, figé ici
+ * Cette règle vaut pour le primaire et l'accent. Les quatre statuts gardent leur bouton d'origine, figé ici
  * (STATUTS_FIGES), pour que la couche marque d'Orbe Café reste identique.
  * Les voiles (blanc du cas sombre, noir du cas soutenu) sont les seules valeurs calculées de la couche marque :
  * couleur DTCG, formule en $extensions.
@@ -44,7 +44,7 @@ export function classePlein(steps) {
 }
 
 /**
- * Statuts figés : classe et phrase de règle d'avant l'étape 4 (séance 3b), écrites telles quelles.
+ * Statuts figés : classe et phrase de règle d'origine, écrites telles quelles.
  * Avertissement : texte foncé à 5,77 sur le plein, sous le seuil des couleurs du client (KNOWN_ISSUES.md).
  */
 export const STATUTS_FIGES = /** @type {Record<string, { classe: Classe, regle: string }>} */ ({
@@ -128,7 +128,7 @@ export function emplacement(name, { scale, steps }, withSteps) {
 export const GRAND_TEXTE = 3;
 
 /**
- * Étape 4a, lot 5 : pas du texte de marque des grands titres (affichage, titres 1 et 2). Pas 9 du primaire s'il atteint
+ * Pas du texte de marque des grands titres (affichage, titres 1 et 2). Pas 9 du primaire s'il atteint
  * 3:1 sur chacun des fonds donnés et sur son propre pas 3 (fond.marque.discret) ; sinon pas 10 ; sinon pas 11.
  * @param {string[]} steps échelle du primaire @param {string[]} fonds hex de fond.app, fond.surface, fond.discret
  * @returns {9 | 10 | 11}
@@ -141,8 +141,8 @@ export function pasTexteGrand(steps, fonds) {
 
 /**
  * Fichier marque.tokens.json : primaire et accent (12 pas + cases de plein), statuts (cases de plein),
- * et, si elles sont données, les polices de la marque (séance 3c : police.titre, police.texte, $type fontFamily).
- * Étape 4a, lot 5 : le primaire porte en plus texte-grand (pasTexteGrand), écrit en dernier pour qu'Orbe Café redevienne
+ * et, si elles sont données, les polices de la marque (police.titre, police.texte, $type fontFamily).
+ * Le primaire porte en plus texte-grand (pasTexteGrand), écrit en dernier pour qu'Orbe Café redevienne
  * identique une fois cet ajout retiré.
  * @param {{ primaire: { scale: string, steps: string[] }, accent: { scale: string, steps: string[] }, statuts: Record<string, { scale: string, steps: string[] }>, polices?: { titre: string[], texte?: string[], fichiersTitre?: string[] }, fonds: string[], description: string }} spec
  */
@@ -170,17 +170,17 @@ export function marqueTokens({ primaire, accent, statuts, polices, fonds, descri
       titre: {
         $value: polices.titre,
         $description: 'Police des styles affichage et titre 1 à 3.',
-        // Étape 4c : fichiers de la police, relatifs à l'entrée, seulement s'ils sont donnés (les marques sans fichier ne changent pas).
+        // Fichiers de la police, relatifs à l'entrée, seulement s'ils sont donnés (les marques sans fichier ne changent pas).
         ...(polices.fichiersTitre?.length ? { $extensions: { 'ds-lab.police': { fichiers: polices.fichiersTitre } } } : {}),
       },
     };
-    // Étape 4, dernier lot : sans police de texte saisie, la police du produit vient du commun (tokens/commun/police.tokens.json).
+    // Sans police de texte saisie, la police du produit vient du commun (tokens/commun/police.tokens.json).
     if (polices.texte) m.police.texte = { $value: polices.texte, $description: 'Police des titres 4, du corps, des libellés et des mentions.' };
   }
   return { $description: description, marque: m };
 }
 
-/** Étape 4b, lot 2 bis : emplacements de l'aplat plein du primaire, alias du plein en clair (tokens/commun/aplat.tokens.json). */
+/** Emplacements de l'aplat plein du primaire, alias du plein en clair (tokens/commun/aplat.tokens.json). */
 export const APLAT = /** @type {const} */ ({ aplat: 'plein', 'sur-aplat': 'sur-plein', 'aplat-survol': 'plein-survol' });
 
 /** Fichier tokens/commun/aplat.tokens.json : les trois emplacements de l'aplat plein, alias du plein du primaire. */
@@ -195,7 +195,7 @@ export function aplatTokens() {
 }
 
 /**
- * Étape 4b, lot 2 bis : couche marque du mode sombre, posée par-dessus la claire dans le contexte sombre (D04).
+ * Couche marque du mode sombre, posée par-dessus la claire dans le contexte sombre (D04).
  *   Bouton du primaire et des quatre statuts, règle unique : plein = pas 11 de l'échelle sombre, survol = pas 12, texte =
  *   pas 1, en alias, sans valeur calculée.
  *   Aplat plein du primaire (aplat, sur-aplat, aplat-survol) et accent fort : valeurs du clair, écrites telles quelles

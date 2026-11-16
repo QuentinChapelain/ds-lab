@@ -1,16 +1,16 @@
 // @ts-check
 /**
- * Revue de code, lot 6 (D29) : consigne pour un agent, structurée. Une seule source pour la section « Consigne pour un
+ * D29 : consigne pour un agent, structurée. Une seule source pour la section « Consigne pour un
  * agent » de migration.md et pour la consigne réduite de modifications.json (reste.md, écrit par npm run apply) : chaque
  * section est une liste d'entrées ; migration.md en écrit le texte, modifications.json lit les entrées, jamais le texte.
  */
 import { fr } from '../lib/format.js';
 
-/** Lot R : la liste des sélecteurs est-elle coupée ? @param {{ selectorsCut?: boolean }} r */
+/** La liste des sélecteurs est-elle coupée ? @param {{ selectorsCut?: boolean }} r */
 export const cutNote = (r) => (r.selectorsCut ? ' (liste coupée au relevé, d’autres éléments sont touchés)' : '');
 
 /**
- * Lot M (M6) : seconde version d'une décision, ou pourquoi il n'y en a pas.
+ * M6 : seconde version d'une décision, ou pourquoi il n'y en a pas.
  * @param {any} r
  */
 export function m6Text(r) {
@@ -22,7 +22,7 @@ export function m6Text(r) {
 }
 
 /**
- * Lot M (M6) : éléments en exception d'une seconde version (aucun fond proche), et la valeur qu'ils gardent.
+ * M6 : éléments en exception d'une seconde version (aucun fond proche), et la valeur qu'ils gardent.
  * @param {any} a  seconde version @param {{ name: string, value: string } | undefined} readable
  */
 function exceptionsText(a, readable) {
@@ -33,7 +33,7 @@ function exceptionsText(a, readable) {
 }
 
 /**
- * Lot M : fond à déplacer quand la valeur décidée est celle de la seconde version (M6).
+ * Fond à déplacer quand la valeur décidée est celle de la seconde version (M6).
  * @param {any} r
  */
 export function m6Move(r) {
@@ -61,18 +61,18 @@ function propertyOf(family, props) {
   return [...out].join(', ');
 }
 
-/** Lot P, étape 3 : relation d'une marge dans la consigne. @param {any} r */
-// Lot P-fin : « à vérifier » reste dans la revue et dans les tables, pas dans la consigne.
+/** Relation d'une marge dans la consigne. @param {any} r */
+// « à vérifier » reste dans la revue et dans les tables, pas dans la consigne.
 const relationOf = (r) => {
   const rel = (r.relation ?? '').split(' · ').filter((/** @type {string} */ x) => !x.startsWith('à vérifier')).join(' · ');
   return rel && rel !== '—' ? ` Relation : ${rel}.` : '';
 };
 
-/** Variable CSS d'un jeton DTCG (points en tirets), avec repli : l'ancienne valeur mesurée (lot I). @param {string} token @param {string} old */
+/** Variable CSS d'un jeton DTCG (points en tirets), avec repli : l'ancienne valeur mesurée. @param {string} token @param {string} old */
 export const cssVarFallback = (token, old) => `var(--${token.replace(/\./g, '-')}, ${old})`;
 /** La ligne a-t-elle un jeton ? @param {any} r */
 export const hasToken = (r) => !!r.token && r.token !== 'jeton absent' && r.token !== '—';
-/** Lot I (I4) : relation d'une ligne en quelques mots (sans signal ni lieu), ou rien. @param {any} r */
+/** I4 : relation d'une ligne en quelques mots (sans signal ni lieu), ou rien. @param {any} r */
 export const relationShort = (r) => {
   const first = (r.relation ?? '—').split(' · ')[0];
   return first && first !== '—' ? ` ${first}` : '';
@@ -98,7 +98,7 @@ const ABSENTE = 'Toute valeur absente de cette consigne.';
  */
 
 /**
- * Lot M : « Consigne pour un agent », à l'impératif, copiable telle quelle. Revue de code, lot 6 (D29) : la consigne est
+ * « Consigne pour un agent », à l'impératif, copiable telle quelle. D29 : la consigne est
  * rendue en sections ; migration.md écrit son texte, modifications.json lit ses sections, sans relire le texte.
  * @param {any} d @param {{ applied: any[], pending: any[], refused: any[], outOfTable: any[], attached: any[] }} s
  * @returns {Consigne}
@@ -114,7 +114,7 @@ export function consigneAgent(d, s) {
     "Écris chaque jeton sous la forme var(--couleur-neutre-11, ancienne valeur) : chemin du jeton, points remplacés par des tirets ; en repli, l'ancienne valeur ; si la source l'écrit autrement (rem, rgb()), garde l'écriture de la source. Si la ligne dit « jeton absent », écris la valeur hex ou px indiquée.",
   );
   lines.push('Les valeurs ci-dessous sont des valeurs calculées : dans la source, elles peuvent être écrites autrement (rem, em, rgb(), mot-clé) ; cherche leur équivalent.');
-  // Lot V, étape 6 : D3 (unité relative) et D4 (conflits), en règle générale.
+  // Unité relative et conflits de déclarations, en règle générale.
   lines.push(
     "Une déclaration source en unité relative (rem, em, %) dépend de la racine de sa page : en RATTACHE, ne la rattache pas, laisse-la et pose au-dessus /* ds-lab : unité relative, non rattachée (<valeur>, <date>) */ ; en REMPLACEMENTS, remplace-la et vérifie le rendu sur les pages témoins. Quand une ligne ne liste pas ses déclarations, lis la source et applique cette règle.",
   );
@@ -158,7 +158,7 @@ export function consigneAgent(d, s) {
     return parts.join(' ');
   };
   /**
-   * Lot V, étape 6 : une ligne de texte exclut les éléments visés par un COUPLAGE (leur texte devient
+   * Une ligne de texte exclut les éléments visés par un COUPLAGE (leur texte devient
    * l'onSolid) et le dit ; leurs déclarations relèvent de COUPLAGES.
    * @param {any} r
    */
@@ -170,7 +170,7 @@ export function consigneAgent(d, s) {
     const decl = [...new Set((r.coupledDeclarations ?? []).map((/** @type {any} */ e) => `${e.file}:${e.line} ${e.selector}`))];
     return ` Exclut les éléments du COUPLAGE (texte posé sur un plein ${[...new Set(hits.map((/** @type {any} */ p) => p.scale))].join(', ')}, voir COUPLAGES) : ${sels.join(', ') || '—'}${decl.length ? ` ; leurs déclarations relèvent de COUPLAGES : ${decl.join(', ')}` : ''}.`;
   };
-  /** Lot K : ligne de fond qui suit une carte de plein. @param {any} r */
+  /** Ligne de fond qui suit une carte de plein. @param {any} r */
   const pleinNote = (r) =>
     !r.plein ? '' : r.plein.choice ? ` Suit la carte ${r.plein.title} (${r.plein.key}, choix : ${r.plein.choice}).` : ` Suit la carte ${r.plein.title} (${r.plein.key}), pas encore choisie.`;
   const replaceable = s.applied.filter((/** @type {any} */ r) => r.conflict !== 'total');
@@ -185,7 +185,7 @@ export function consigneAgent(d, s) {
     );
   });
   lines.push('');
-  // Lot I (I1, I2) : valeurs déjà sur la cible, rattachées à leur jeton sans changement visible.
+  // I1, I2 : valeurs déjà sur la cible, rattachées à leur jeton sans changement visible.
   lines.push(`RATTACHE (${s.attached.length})`);
   if (!m.tokens) {
     const n = d.unchanged;
@@ -199,7 +199,7 @@ export function consigneAgent(d, s) {
     if (!s.attached.length) lines.push('- Aucune.');
   }
   lines.push('');
-  // Lot V, étape 6 (D4) : une déclaration, deux lignes aux issues différentes.
+  // Une déclaration, deux lignes aux issues différentes.
   lines.push(`CONFLITS (${(d.conflicts ?? []).length})`);
   for (const c of d.conflicts ?? [])
     lines.push(
@@ -207,7 +207,7 @@ export function consigneAgent(d, s) {
     );
   if (!(d.conflicts ?? []).length) lines.push('- Aucun.');
   lines.push('');
-  // Lot K : un couplage suit la carte de son plein ; les autres choix et les cartes en attente le disent.
+  // Un couplage suit la carte de son plein ; les autres choix et les cartes en attente le disent.
   const couples = [];
   for (const p of d.exceptions.onSolid) {
     // Repli : l'ancienne couleur du texte ; une par texte d'origine quand il y en a plusieurs.
@@ -244,8 +244,8 @@ export function consigneAgent(d, s) {
   const tiers = d.thirdParty.map((/** @type {string} */ sel) => `Composant tiers : ${sel} et tout ce qu'il contient.`);
   const neTouchePas = [
     ...avant,
-    // Lot R, R-2 : décisions en attente, avec leur identifiant et leur titre.
-    // Lot I (I4) : un commentaire CSS marque la déclaration en attente.
+    // R-2 : décisions en attente, avec leur identifiant et leur titre.
+    // I4 : un commentaire CSS marque la déclaration en attente.
     ...s.pending.map(
       (r) =>
         `${r.id} ${r.title}. Pas encore choisie par le designer : ne l'applique pas (${r.value}, ${r.usage}). Ajoute au-dessus de la déclaration le commentaire /* ds-lab : en attente du designer, ${r.value} ${r.usage}${relationShort(r)} (${r.id}, ${m.stamp}) */.${pleinNote(r)}${relationOf(r)}${r.reason ? ` Motif : ${r.reason}.` : ''}${m6Text(r)} Sélecteurs : ${r.selectors.join(', ') || '—'}${cutNote(r)}.`,
@@ -253,10 +253,10 @@ export function consigneAgent(d, s) {
     ...tiers,
     ABSENTE,
   ];
-  // Lot I (I5) : une valeur hors tranche et inchangée est rattachée, et reste signalée.
+  // I5 : une valeur hors tranche et inchangée est rattachée, et reste signalée.
   /** @param {any} x */
   const isAttached = (x) => s.attached.some((r) => r.family === 'colors' && r.value === x.value && r.usage === x.usage);
-  // Lot K (retouche) : une valeur traitée par REMPLACEMENTS n'est pas aussi à signaler sans modifier.
+  // Une valeur traitée par REMPLACEMENTS n'est pas aussi à signaler sans modifier.
   /** @param {any} x */
   const isReplaced = (x) => replaceable.some((/** @type {any} */ r) => r.family === 'colors' && r.value === x.value && r.usage === x.usage);
   const signale = [
@@ -274,7 +274,7 @@ export function consigneAgent(d, s) {
     `Relance : ${m.command ?? 'npm run reduce (mêmes options)'}`,
     'Après modification du CSS, relance reduce sur les pages de la table et sur les pages témoins, et compare au prévu ; signale tout écart avant la mise en ligne.',
     `Chaque ligne traitée doit ressortir « inchangé » dans la nouvelle table. ${conflits} et les unités relatives laissées ressortent telles quelles : c’est attendu.`,
-    // Lot I (I6).
+    // I6 : chaque variable écrite est déclarée.
     'Chaque variable écrite est déclarée dans tokens.css.',
     'Retire le repli quand toutes les pages sont migrées, pas avant.',
     `Il ne doit rester ${d.remaining.length === 1 ? 'qu’une paire' : `que ${d.remaining.length} paires`} de texte sous 4,5:1 : ${d.remaining.map((/** @type {any} */ p) => `${p.text} sur ${p.bg} (${fr(p.ratio)}:1)${p.note ? `, sous ${fr(p.threshold)}:1, ${p.note}` : ''}`).join(' ; ') || 'aucune'}.`,

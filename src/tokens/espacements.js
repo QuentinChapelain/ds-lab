@@ -1,10 +1,10 @@
 // @ts-check
 /**
- * Séance 3c : espacements par relation de la couche sémantique (semantique.tokens.json, type dimension),
+ * Espacements par relation de la couche sémantique (semantique.tokens.json, type dimension),
  * résolus vers espace.* (primitives.tokens.json).
  * Les quatre ecart, du plus proche au plus lointain, doivent être strictement croissants ; le rapport
  * entre voisins est calculé pour information, jamais contrôlé. marge-interieure.* est hors contrôle.
- * Lot 4 : un ecart peut avoir une valeur en étroit (étape 4b : le rôle du contexte étroit, largeur.etroit.tokens.json,
+ * Un ecart peut avoir une valeur en étroit (le rôle du contexte étroit, largeur.etroit.tokens.json,
  * quand il diffère du large ; seuil sur le modificateur largeur) ; elle doit rester strictement supérieure à l'ecart
  * précédent (sa valeur en étroit s'il en a une) et inférieure ou égale à sa propre valeur large.
  * Règle de proximité : ecart.entre-composants vaut au moins le double de ecart.dans-composant, pour qu'on
@@ -46,7 +46,7 @@ export const REGLES = [
  * @returns {{ ecarts: Espace[], horsControle: Espace[], voisins: Voisin[], fails: Voisin[], etroits: Etroit[], etroitsFails: Etroit[], regles: Regle[], reglesFails: Regle[], sansRole: string[] }}
  */
 export function espacements(semantique, primitives, largeurEtroite) {
-  // Revue de code du 15/11, lot 1a : sans contexte étroit, les règles en étroit passeraient sans rien contrôler.
+  // Sans contexte étroit, les règles en étroit passeraient sans rien contrôler.
   if (!largeurEtroite) throw new Error('contexte étroit absent : les règles en étroit ne peuvent pas être contrôlées');
   const all = new Map();
   for (const [k, v] of flattenTokens(primitives)) all.set(k, v);

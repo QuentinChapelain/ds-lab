@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Séance 3a, T0 : échelles de couleur en jetons DTCG 2025.10, et lecture inverse pour checkValise.
+ * T0 : échelles de couleur en jetons DTCG 2025.10, et lecture inverse pour checkValise.
  * Les statuts avertissement et info d'Orbe Café sont générés par generateScale et rangés à part
  * (tokens/commun/statuts.tokens.json) ; primitives.tokens.json n'est pas modifié.
  */
@@ -27,7 +27,7 @@ export const STEP_USAGES = /** @type {Record<string, string>} */ ({
 /** generateScale vérifie le texte sur-plein sur les pas 9 et 10 (G4). */
 export const ON_SOLID_USAGE = 'texte posé sur les pas 9 et 10 (4,5:1)';
 
-/** Statuts ajoutés en séance 3a (sources de l'attendu). */
+/** Statuts complémentaires (avertissement, info) et leur couleur source. */
 export const STATUTS = [
   { name: 'avertissement', source: '#e5a000', label: "Statut d'avertissement" },
   { name: 'info', source: '#0284c7', label: "Statut d'information" },
@@ -109,7 +109,7 @@ export function valiseFromTokens(...files) {
 }
 
 /**
- * Étape 4b, lot 2 bis [H] : cibles du mode sombre, contraste contre le noir, calées sur la page (PAGE_SOMBRE).
+ * Cibles du mode sombre [H], contraste contre le noir, calées sur la page (PAGE_SOMBRE).
  * Pas 1 à 7 (et 8 des couleurs) au même rapport à la page que les cibles claires au pas 1 (cible ÷ 1,02 × page).
  * Pas 8 (bordures de champ et de statut, 3:1) à 3,1 × fond.surface, pour tenir 3:1 sur la surface où se pose un champ.
  * Neutre : pas 11 et 12 au rapport clair (5,49 et 12,75 sur la page),
@@ -133,7 +133,7 @@ export const CIBLES_SOMBRES = {
 /** Options de generateScale pour une échelle de couleur sombre (marques et statuts). */
 export const OPTIONS_COULEUR_SOMBRE = /** @type {const} */ ({ fond: 'sombre', cibles: CIBLES_SOMBRES.couleur, chromaTextes: 'max' });
 
-/** Étape 4b : échelles communes du mode sombre ; statuts depuis le pas 9 de leur échelle claire, neutre dessiné. */
+/** Échelles communes du mode sombre ; statuts depuis le pas 9 de leur échelle claire, neutre dessiné. */
 export const ECHELLES_SOMBRES = [
   { name: 'neutre', label: 'Neutre' },
   { name: 'erreur', label: "Statut d'erreur" },
@@ -143,7 +143,7 @@ export const ECHELLES_SOMBRES = [
 ];
 
 /**
- * Fichier tokens/commun/mode.sombre.tokens.json (lot 2 bis) : neutre dessiné sur la page #121212 (teinte du neutre
+ * Fichier tokens/commun/mode.sombre.tokens.json : neutre dessiné sur la page #121212 (teinte du neutre
  * clair, cibles CIBLES_SOMBRES.neutre), surface entre ses pas 2 et 3, texte sur inverse = pas 1 du neutre ; statuts en
  * échelles de couleur sombres (OPTIONS_COULEUR_SOMBRE) depuis le pas 9 de leur échelle claire.
  * @param {any} primitives tokens/commun/primitives.tokens.json @param {any} statuts tokens/commun/statuts.tokens.json

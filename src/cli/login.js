@@ -8,7 +8,7 @@
  * secondes dans .auth/<nom>.json, droits 600, jusqu'à la fermeture de la
  * fenêtre. Aucun identifiant ne passe par la ligne de commande ni par ce script.
  * Le fichier se donne ensuite à l'audit : --storage-state .auth/<nom>.json
- * Revue de code du 15/11, lot 1b (D18) : sort en 0, ou en 2 sur une panne (option inconnue, Chromium qui ne se lance
+ * D18 : sort en 0, ou en 2 sur une panne (option inconnue, Chromium qui ne se lance
  * pas) ; une navigation qui échoue est dite, la fenêtre reste ouverte pour naviguer à la main.
  */
 import { parseArgs } from 'node:util';

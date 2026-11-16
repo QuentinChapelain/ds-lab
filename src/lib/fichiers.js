@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code, lot 6 : lecture d'un fichier JSON, message d'erreur d'une ligne. Rangé dans src/lib/ pour être lu par les
+ * Lecture d'un fichier JSON, message d'erreur d'une ligne. Rangé dans src/lib/ pour être lu par les
  * commandes (src/cli/) et par l'orchestration de reduce (src/reduce/run.js), qui n'importe rien de src/cli/ (D30).
  */
 import { readFileSync } from 'node:fs';

@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code, lot 6 (D31) : écriture des fichiers d'une marque par la saisie, sans état intermédiaire sur le disque.
+ * D31 : écriture des fichiers d'une marque par la saisie, sans état intermédiaire sur le disque.
  * Quatre temps :
  *   1. lire les fichiers en place (ceux à remplacer et ceux à supprimer) : une lecture qui tombe est une panne, rien n'est
  *      écrit ;

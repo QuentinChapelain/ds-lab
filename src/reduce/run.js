@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code, lot 6 (D30) : orchestration de npm run reduce, sortie de src/cli/ (qui garde l'aide, les options et le
+ * D30 : orchestration de npm run reduce, sortie de src/cli/ (qui garde l'aide, les options et le
  * lancement). Une boucle : mesurer le rendu, ranger chaque valeur sur la cible, simuler la table dans le navigateur,
  * produire la page de revue, migration.md et modifications.json. Une panne lève (D18) : page qui tombe, en nommant son
  * étape ; couleur de marque illisible dans la cible ; --tokens sans jeton.
@@ -33,8 +33,8 @@ import { jetonsDe } from '../tokens/resolver.js';
  * @property {string} [tokensPath]     jetons DTCG de la cible (fichier de jetons ou resolver), pour migration.md
  * @property {string} [storageState]
  * @property {string} [sourcesPath]
- * @property {string} [referencesPath]  lot V : dossier des références de npm run verify
- * @property {string[]} [temoins]  lot V, étape 5 : pages témoins, hors de la table
+ * @property {string} [referencesPath]  Dossier des références de npm run verify
+ * @property {string[]} [temoins]  Pages témoins, hors de la table
  * @property {{ width: number, height: number }} [viewport]
  * @property {number} [waitMs]
  * @property {string} [outRoot]
@@ -44,15 +44,15 @@ import { jetonsDe } from '../tokens/resolver.js';
  */
 
 /**
- * Lot R, R-2 : identifiant et titre de chaque ligne de la table, pour la barre --live.
+ * R-2 : identifiant et titre de chaque ligne de la table, pour la barre --live.
  * @param {ReturnType<typeof propose>} table
  */
 export const linesOf = (table) =>
   Object.entries(table.families).flatMap(([family, f]) => f.rows.filter((r) => r.id).map((r) => ({ key: rowKey(family, r), id: /** @type {string} */ (r.id), title: r.title ?? '' })));
 
-/** Lot R : vignettes des autres éléments touchés par une décision, au plus. */
+/** Vignettes des autres éléments touchés par une décision, au plus. */
 const THUMBS = 3;
-/** Lot R : classes dont les lignes reçoivent des captures par version (5c : avant et après hors décision). */
+/** Classes dont les lignes reçoivent des captures par version (avant et après, hors décision). */
 const CAPTURED = new Set(['décision', 'proche', 'auto', 'correction']);
 
 /**
@@ -64,16 +64,16 @@ export async function runReduce(opts) {
   const target = JSON.parse(await readFile(opts.targetPath, 'utf8'));
   /** @type {Record<string, string | false>} */
   const decisions = opts.decisionsPath ? JSON.parse(await readFile(opts.decisionsPath, 'utf8')) : {};
-  // Revue de code, lot 5 : --tokens lit un fichier de jetons ou un resolver ; un fichier qui ne donne aucun jeton est une
+  // --tokens lit un fichier de jetons ou un resolver ; un fichier qui ne donne aucun jeton est une
   // panne (D18) : migration.md ne nommerait aucune ligne.
   const tokens = opts.tokensPath ? jetonsDe(lireJson(opts.tokensPath), opts.tokensPath) : null;
   if (tokens && !indexTokens(tokens).size)
     throw new Error(`--tokens ${opts.tokensPath} : aucun jeton lu (couleur en hex, dimension en px) ; un fichier .tokens.json ou un resolver DTCG 2025.10 attendu`);
-  // Revue de code du 15/11, lot 1b (D18) : une couleur de marque illisible dans la cible lève avant de lancer Chromium.
+  // D18 : une couleur de marque illisible dans la cible lève avant de lancer Chromium.
   if (target.brand) brandOf(target);
   const { sources } = await loadSources({ path: opts.sourcesPath });
   const urls = resolveAddresses(opts.addresses);
-  // Lot V, étape 5 : pages témoins, relatives à la première adresse, distinctes des pages de la table.
+  // Pages témoins, relatives à la première adresse, distinctes des pages de la table.
   const witnessUrls = [
     ...new Set(
       (opts.temoins ?? []).map((t) => {
@@ -88,7 +88,7 @@ export async function runReduce(opts) {
     if (!urls.some((u) => new URL(u).host === new URL(w).host)) throw new Error(`--temoins : ${w} n'a aucune page de la table sur son hôte`);
   }
   if (opts.referencesPath) {
-    // Lot V : un nom de fichier par page ; deux pages du même nom s'écraseraient.
+    // Un nom de fichier par page ; deux pages du même nom s'écraseraient.
     const seen = new Map();
     for (const u of [...urls, ...witnessUrls]) {
       const n = pageName(u);
@@ -102,17 +102,17 @@ export async function runReduce(opts) {
   try {
     for (const [host, hostUrls] of groupByHost(urls)) {
       const context = await browser.newContext({ viewport, storageState: opts.storageState ?? undefined });
-      // Lot V, étape 4 (B) : un fond qui porte l'onSolid de son échelle est un plein.
+      // Un fond qui porte l'onSolid de son échelle est un plein.
       const solid = solidPairs(target);
       const agg = createRenderedAggregator({ solid });
-      // Lot M (M7) : avec une marque déclarée, feuilles lues pour les replis contraires au back-office.
+      // M7 : avec une marque déclarée, feuilles lues pour les replis contraires au back-office.
       const brandSheets = /** @type {any[]} */ ([]);
       const seenSheets = new Set();
       // Tour 1 : mesurer, pour proposer la table sur l'ensemble des pages.
       for (const url of hostUrls) {
         log(`mesure → ${url}`);
         const page = await context.newPage();
-        // Revue de code du 15/11, lot 1b (D18) : une page qui tombe arrête la réduction (une table faite sur une partie
+        // D18 : une page qui tombe arrête la réduction (une table faite sur une partie
         // des pages tromperait), en nommant l'étape ; les avertissements de navigation sont affichés, plus jetés.
         let etape = 'navigation';
         try {
@@ -121,7 +121,7 @@ export async function runReduce(opts) {
           const { sheets, warnings: sw } = await collectSheets(page);
           for (const w of navigationWarnings({ url, ...nav }, sw)) log(`  ! ${w.text} ${w.tag}`);
           etape = 'mesure';
-          // Lot M : origine CSS (règle d'un élément d'exemple) et états forcés, pour migration.md.
+          // Origine CSS (règle d'un élément d'exemple) et états forcés, pour migration.md.
           const m = await measureRendered(page, agg, { trace: true, states: true, thirdParty: sources?.thirdParty ?? [], sources });
           if (m.traceError) {
             etape = 'trace';
@@ -142,26 +142,26 @@ export async function runReduce(opts) {
       }
       // R6 : les sélecteurs tiers suivent la table, pour que la simulation les exclue.
       const rendered = agg.result();
-      // Revue de code du 15/11, lot 1b : un sélecteur tiers invalide est signalé ici aussi, comme par l'audit.
+      // Un sélecteur tiers invalide est signalé ici aussi, comme par l'audit.
       for (const sel of rendered.thirdParty?.invalid ?? []) log(`  ! sources : sélecteur thirdParty invalide, ignoré : ${sel} [F]`);
       const contradictions = target.brand ? contradictionsIn(brandSheets, brandOf(target).variables) : [];
       const table = { ...propose(rendered, target, { contradictions }), thirdParty: sources?.thirdParty ?? [] };
       for (const r of table.families.colors?.rows ?? []) if (r.reason === NON_STABILISE) log(`  ! ${r.old} (${r.usage ?? 'couleur'}) : ${NON_STABILISE} [F]`);
-      // Lot K : une carte par plein dont le texte échoue ; ses lignes de fond suivent son choix.
+      // Une carte par plein dont le texte échoue ; ses lignes de fond suivent son choix.
       const pleins = pleinGroups({ table, rendered, target, decisions });
       /** @type {any} */ (table).pleins = pleins;
-      // Revue de code du 15/11, lot 1b : clés de decisions.json qui ne visent aucune ligne ni carte, listées.
+      // Clés de decisions.json qui ne visent aucune ligne ni carte, listées.
       const orphelines = decisionKeysOrphelines(/** @type {any} */ (table), decisions);
       for (const k of orphelines) log(`  ! clé de décision sans ligne ni carte, ignorée : ${k} [F]`);
       const effective = applyPleins(table, pleins, decisions);
-      // Lot P (P3) : la hiérarchie des espaces, recalculée avec les décisions relues.
+      // P3 : la hiérarchie des espaces, recalculée avec les décisions relues.
       controlAfter(table, effective);
       const map = mapping(table, effective);
-      // Lot V, étape 4 : la simulation (revue, références, captures, --live) pose aussi les COUPLAGES.
-      // Lot K : seulement ceux des pleins dont la carte a retenu « onSolid ».
+      // La simulation (revue, références, captures, --live) pose aussi les COUPLAGES.
+      // Seulement ceux des pleins dont la carte a retenu « onSolid ».
       map.solid = [...solid];
       map.couplings = simulationCouplings(couplingsOf({ rendered, map, pleins }));
-      // Lot V, étape 6 : déclarations sources de chaque ligne (unité écrite, D3) et conflits (D4),
+      // Déclarations sources de chaque ligne (l'unité écrite décide du rattachement) et conflits (une déclaration, deux issues),
       // sur les pages de la table et les pages témoins, qui partagent les feuilles.
       const hostWitnesses = witnessUrls.filter((w) => new URL(w).host === host);
       // Couplages lus sur la page telle quelle (fond attendu = fond lu) : ils marquent les éléments couplés.
@@ -189,9 +189,9 @@ export async function runReduce(opts) {
         const page = await context.newPage();
         try {
           await gotoAndSettle(page, url, { waitMs });
-          // Lot V : l'arbre d'accessibilité avant simulation, la capture après simulation complète.
+          // L'arbre d'accessibilité avant simulation, la capture après simulation complète.
           const aria = opts.referencesPath ? await page.ariaSnapshot() : '';
-          // Lot R, 5c : les captures par ligne viennent du passage des versions ; ici, pages entières seulement.
+          // Les captures par ligne viennent du passage des versions ; ici, pages entières seulement.
           const simulated = await simulatePage(page, { ...map, split: splitOf(table) });
           pages.push(simulated);
           if (opts.referencesPath && simulated.after) {
@@ -202,7 +202,7 @@ export async function runReduce(opts) {
           await page.close().catch(() => {});
         }
       }
-      // Lot V, étape 5 : pages témoins. Hors de la table : relevé à part (valeurs non couvertes),
+      // Pages témoins. Hors de la table : relevé à part (valeurs non couvertes),
       // puis la table simulée dessus, couplages compris, et sa référence.
       /** @type {any[]} */
       const witnesses = [];
@@ -238,13 +238,13 @@ export async function runReduce(opts) {
           await page.close().catch(() => {});
         }
       }
-      // Lot R, R-3 : une capture par version de chaque décision, sur la page d'origine ; puis une
+      // R-3 : une capture par version de chaque décision, sur la page d'origine ; puis une
       // vignette par autre élément touché (3 au plus), et le relevé de tous les éléments touchés.
-      // Lot R, 5c : les lignes proches, d'office et les corrections reçoivent les mêmes captures,
+      // Les lignes proches, d'office et les corrections reçoivent les mêmes captures,
       // en deux versions, « avant » et « après », sans vignettes.
       const pending = Object.entries(table.families).flatMap(([family, f]) =>
         f.rows
-          // Lot K : une ligne de fond d'un plein n'a pas de captures à elle ; la carte du plein les porte.
+          // Une ligne de fond d'un plein n'a pas de captures à elle ; la carte du plein les porte.
           .filter((r) => !r.plein && CAPTURED.has(r.class) && (r.class === 'décision' || (r.new && r.new !== r.old)))
           .map((r) => ({ family, r, decision: r.class === 'décision', others: /** @type {any[]} */ ([]), touched: /** @type {any[]} */ ([]) })),
       );
@@ -255,7 +255,7 @@ export async function runReduce(opts) {
         const page = await /** @type {any} */ (sharp).newPage();
         try {
           await gotoAndSettle(page, url, { waitMs });
-          // Lot K : éléments de chaque carte de plein, et ses trois versions sur la première page qui en porte.
+          // Éléments de chaque carte de plein, et ses trois versions sur la première page qui en porte.
           for (const g of pleins) {
             const els = await capturePlein(page, g, table.thirdParty, map.solid, { versions: !g.capture, versionMap: pleinVersionMap });
             if (!els) continue;
@@ -270,7 +270,7 @@ export async function runReduce(opts) {
             if (!here.length) continue;
             for (const t of here) x.touched.push({ page: url, selector: t.selector, text: t.text });
             let rest = here.map((t) => t.index);
-            // Lot J, J8 : une capture hors de la page cède la place à celle d'une page suivante.
+            // J8 : une capture hors de la page cède la place à celle d'une page suivante.
             if (!r.capture || r.capture.offPage) {
               const c = await captureDecision(page, d, table.thirdParty, decision ? {} : { labels: ['avant', 'après'] });
               if (!c) continue;
@@ -288,7 +288,7 @@ export async function runReduce(opts) {
         }
       }
       for (const { r, others, touched } of pending) if (r.capture) Object.assign(r.capture, { elements: touched.length, touched, others });
-      // Lot M : sous chaque version de couleur, le contraste le plus défavorable sur toutes les paires
+      // Sous chaque version de couleur, le contraste le plus défavorable sur toutes les paires
       // de la ligne (toutes pages), pas seulement celui des éléments de la page capturée.
       for (const { family, r } of pending)
         if (family === 'colors')
@@ -337,7 +337,7 @@ export async function runReduce(opts) {
         },
       });
       await writeFile(files[2], migration.markdown);
-      // Lot S, S1 : à côté de migration.md, les modifications que npm run apply sait faire.
+      // S1 : à côté de migration.md, les modifications que npm run apply sait faire.
       if (migration.modifications) {
         files.push(join(dir, 'modifications.json'));
         await writeFile(files[3], JSON.stringify(migration.modifications, null, 2) + '\n');
@@ -356,7 +356,7 @@ export async function runReduce(opts) {
       const context = await headed.newContext({ viewport: null, storageState: opts.storageState ?? undefined });
       await installLive(context, { ...map, split: splitOf(results[0].table) }, { lines: linesOf(results[0].table) });
       const page = await context.newPage();
-      // Revue de code du 15/11, lot 1b : une navigation qui échoue est dite ; la fenêtre reste ouverte pour naviguer à la main.
+      // Une navigation qui échoue est dite ; la fenêtre reste ouverte pour naviguer à la main.
       await page.goto(first, { waitUntil: 'load', timeout: 60000 }).catch((e) => log(`  ! --live : navigation vers ${first} échouée (${String(e?.message ?? e).split('\n')[0]}) ; la fenêtre reste ouverte`));
       await new Promise((done) => {
         page.on('close', done);

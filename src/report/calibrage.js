@@ -1,7 +1,7 @@
 // @ts-check
 /**
- * Étape 4, séance a, lot 3 : calibrage de la règle des pleins (docs/attendus/etape-4-contrat-de-marque.md) ;
- * lot 3 bis : relancé sur la règle décidée sur image (src/tokens/pleins.js).
+ * Calibrage de la règle des pleins (docs/attendus/etape-4-contrat-de-marque.md) ;
+ * Relancé sur la règle décidée sur image (src/tokens/pleins.js).
  * Table des marques, une colonne par marque, et balayage des teintes près des seuils du cas clair.
  * Ne décide rien et ne change aucun seuil : la table et les planches servent la décision, sur image.
  *
@@ -63,7 +63,7 @@ function lecture(steps) {
  */
 export function colonne({ dossier, entree }, commun = chargerCommun()) {
   const r = saisir(entree, { dossier, commun });
-  // Revue de code, lot 5 (D25) : une échelle nommée se lit dans le dossier de sa marque ; les statuts, dans le commun.
+  // D25 : une échelle nommée se lit dans le dossier de sa marque ; les statuts, dans le commun.
   /** @type {Record<string, any>} */
   const propres = echellesPropres(dossier)?.couleur ?? {};
   /** @param {Record<string, any>} ou @param {string} s */

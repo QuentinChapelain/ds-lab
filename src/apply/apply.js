@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Lot S : applique modifications.json (écrit par reduce) aux feuilles d'une copie du site.
+ * Applique modifications.json (écrit par reduce) aux feuilles d'une copie du site.
  *
  * S2. Chaque entrée vise une déclaration : feuille (chemin d'URL sous la racine), ligne de la règle
  *     (ligne de son accolade ouvrante, comme la trace), sélecteur, propriété (côté ou coin : un
@@ -24,7 +24,7 @@ const BORDER_STYLES = new Set(['none', 'hidden', 'dotted', 'dashed', 'solid', 'd
 const KINDS = ['width', 'style', 'color'];
 
 /**
- * Revue de code du 15/11, lot 2 : une seule table raccourci → propriétés longues, lue par covers et par coverage.
+ * Une seule table raccourci → propriétés longues, lue par covers et par coverage.
  * Un border ou un border-top ne couvre pas les rayons (border-*-radius), que seul border-radius couvre.
  * @type {Record<string, string[]>}
  */
@@ -237,7 +237,7 @@ export async function applyModifications(mods, { root, dryRun = false, restePath
   /** @type {string[]} */
   const written = [];
   const sheets = [...new Set([...mods.entries.map((/** @type {any} */ e) => e.sheet), ...(mods.comments ?? []).map((/** @type {any} */ c) => c.sheet)])].sort();
-  // Revue de code du 15/11, lot 1b (D18) : toutes les feuilles sont lues et analysées avant la première écriture. Une
+  // D18 : toutes les feuilles sont lues et analysées avant la première écriture. Une
   // feuille absente de la copie est un écart (l'entrée ne s'applique pas ici) ; une feuille illisible ou un CSS
   // invalide est une panne, qui nomme la feuille, et rien n'est écrit.
   /** @type {Map<string, { file: string, text: string, css: any } | null>} */

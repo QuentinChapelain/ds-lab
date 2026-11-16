@@ -253,7 +253,7 @@ export function relativeLuminance(hex) {
 }
 
 /**
- * Ratio de contraste WCAG 2.1, de 1 à 21. Revue de code du 15/11, lot 4 : seule source du contraste du dépôt ; une couleur
+ * Ratio de contraste WCAG 2.1, de 1 à 21. Seule source du contraste du dépôt ; une couleur
  * qui n'est pas `#rrggbb` lève en la nommant (elle donnait NaN, en silence).
  * @param {string} a couleur opaque, `#rrggbb`
  * @param {string} b couleur opaque, `#rrggbb`

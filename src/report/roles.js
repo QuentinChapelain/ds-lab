@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Séance 3a, T4 : planche des paires de rôles (tokens/<marque>/roles.html). Revue de code, lot 5 (D27) : une planche par
+ * T4 : planche des paires de rôles (tokens/<marque>/roles.html). D27 : une planche par
  * marque, même code ; le nom de la marque est lu dans son resolver.
  * Une ligne par paire : fond, mot écrit, ratio, seuil, verdict ; groupée par propriété de l'élément devant.
  * Dans chaque groupe : les paires déclarées, puis les paires interdites avec leur règle.

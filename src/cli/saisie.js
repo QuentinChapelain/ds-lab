@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 // @ts-check
 /**
- * Étape 4, séance a, lot 1 : saisie d'une marque. Lit tokens/<marque>/entree.json, génère les échelles et la couche
+ * Saisie d'une marque. Lit tokens/<marque>/entree.json, génère les échelles et la couche
  * marque, refuse avec motif (entrée invalide, checkValise, paire de rôles en échec) ou écrit marque.tokens.json
  * (et echelles.tokens.json si une échelle est générée), le mode sombre (echelles.sombre.tokens.json,
  * marque.sombre.tokens.json) et le resolver marque.resolver.json dans le dossier de l'entrée, et affiche le contrôle de
- * contraste dans les deux modes (étape 4b, lot 3).
- * Étape 4c, lot 3 : si l'entrée donne les fichiers de la police des titres, contrôle d'encre dans Chromium avant
+ * contraste dans les deux modes.
+ * Si l'entrée donne les fichiers de la police des titres, contrôle d'encre dans Chromium avant
  * d'écrire ; refus si l'encre de deux lignes se touche ; sinon la table des mesures est affichée.
  * Sort en 0 si la marque est acceptée, en 1 si elle est refusée (rien n'est écrit).
- * Revue de code du 15/11, lot 1a (D18) : en 2 sur une panne, par la garde commune (src/cli/garde.js) : aucun fichier
+ * D18 : en 2 sur une panne, par la garde commune (src/cli/garde.js) : aucun fichier
  * donné, fichier absent ou illisible, couche commune cassée, Chromium qui ne se lance pas ; rien n'est écrit.
- * Revue de code, lot 6 (D31) : les fichiers sont écrits à côté, contrôlés (contraste dans les deux modes, sur les textes
+ * D31 : les fichiers sont écrits à côté, contrôlés (contraste dans les deux modes, sur les textes
  * relus), puis remplacent les fichiers en place (remplacer, src/tokens/ecriture.js) ; un contrôle en échec (incohérence de
  * l'outil) ou une panne d'écriture sort en 2 sans rien laisser d'écrit. Plus de sous-processus.
  * Usage : npm run saisie -- <entree.json>
@@ -62,7 +62,7 @@ await lancer('saisie', async () => {
     { supprimer: r.echelles ? [] : ['echelles.tokens.json'], controler: (lus) => controlerEcrits(dossier, lus) },
   );
   console.log(`marque acceptée : ${nom}`);
-  // Étape 4c : la police des titres, contrôlée si l'entrée donne ses fichiers ; « non contrôlée » n'est écrit qu'ici.
+  // La police des titres, contrôlée si l'entrée donne ses fichiers ; « non contrôlée » n'est écrit qu'ici.
   const pt = r.policeTitre;
   if (pt) {
     console.log(`police des titres : ${pt.familles.join(', ')}, ${pt.controlee ? 'contrôlée' : 'non contrôlée (aucun fichier)'}`);
