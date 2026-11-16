@@ -32,6 +32,7 @@ npm run saisie     -- <entree.json>                          saisir une marque :
 npm run contraste   -- [--paires <fichier>] [--marque <dossier>]   contrôler les paires de rôles de couleur
 npm run espacements -- [--semantique <fichier>]              contrôler les espacements par relation
 npm run typo        -- [--semantique <fichier>] [--primitives <fichier>] [--marque <fichier>]   contrôler les styles de texte
+npm run types                                                vérifier les types JSDoc de src/ (non strict, sans rien émettre)
 npm test
 ```
 
@@ -177,7 +178,7 @@ Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier
 | `fixtures/polices/` | Quatre polices d'essai sous licence libre, chacune avec sa licence (étape 4c) |
 | `test/` | Tests, dont `noms-interdits` qui refuse tout nom réel dans un fichier ou un message de commit |
 
-Dépendances : `playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (couleurs, contraste), `pixelmatch` et `pngjs` (comparaison de captures, lot V).
+Dépendances : `playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (couleurs, contraste), `pixelmatch` et `pngjs` (comparaison de captures, lot V). Dépendances de développement : `typescript` 7.0.2 et `@types/node` 22.20.5, pour `npm run types` seulement.
 
 Règles : marques fictives uniquement ; rien de `local/` ni de `.auth/` dans un fichier versionné ; attendu avant le code. Carte du code : [ARCHITECTURE.md](ARCHITECTURE.md).
 

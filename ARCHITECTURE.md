@@ -98,6 +98,7 @@ Changer de marque, c'est changer la couche marque ; les rôles restent les même
 | `npm run contraste` | Paires de rôles ; sort en 1 si une paire est sous son seuil sans exception écrite, en 2 sur une panne ; `--marque <dossier>` pour une autre marque, `--mode clair|sombre` et `--largeur large|etroit` pour le contexte |
 | `npm run espacements` | Écarts par relation, valeurs en étroit, règles de proximité ; sort en 1 si l'une échoue, en 2 sur une panne |
 | `npm run typo` | Règles des styles de texte ; sort en 1 si l'une échoue, en 2 sur une panne |
+| `npm run types` | Types JSDoc des fichiers de `src/` (`@ts-check`) : `tsc -p tsconfig.json`, non strict, sans rien émettre ; sort en 1 s'il reste une erreur. Tenu à 0 avant chaque commit, comme les trois contrôles |
 | `npm test` | Tous les tests |
 
 Générateurs sans commande npm, lancés avec `node` : `src/cli/statuts.js`, `src/cli/sombre.js`, `src/cli/calibrage.js`, `src/cli/planche.js`, `src/cli/planche-espaces.js`, `src/cli/planche-typo.js`.
@@ -118,4 +119,9 @@ Chacun est tenu par le code ou par un test, cité.
 
 ## Dépendances
 
-`playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (couleurs, contraste), `pixelmatch` et `pngjs` (comparaison de captures). Aucune dépendance de développement. Toute nouvelle dépendance est signalée dans le plan du lot.
+`playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (couleurs, contraste), `pixelmatch` et `pngjs` (comparaison de captures). Toute nouvelle dépendance est signalée dans le plan du lot.
+
+Dépendances de développement, en version exacte, pour `npm run types` seulement (revue de code, lot 3) :
+
+- `typescript` 7.0.2 : vérifie les types JSDoc de `src/` selon `tsconfig.json` à la racine (`allowJs`, `checkJs`, `noEmit`, modules `nodenext`, `strict: false`). La version 7 est un compilateur natif : le paquet `typescript` n'est qu'un lanceur, le compilateur est un binaire par plateforme (`@typescript/typescript-<os>-<cpu>`), installé par les dépendances facultatives ; npm n'installe que celui de la machine, et `package-lock.json` les liste toutes. `npm ci --omit=optional` (ou `--no-optional`) rend `tsc` inutilisable.
+- `@types/node` 22.20.5 : types de la plus ancienne version de Node prise en charge (`engines` : `>=22`), pour qu'un appel à une API plus récente soit signalé.

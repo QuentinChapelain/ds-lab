@@ -1,6 +1,6 @@
 # Dette connue
 
-État au 15/11/2026.
+État au 16/11/2026.
 
 - Tailles de texte en px : `indexTokens` (`src/report/migration.js`) n'indexe que les px ; bascule en rem à faire après adaptation (D12, `docs/decisions.md`).
 - Interlettrage à 0 partout, à régler avec une vraie police.
@@ -43,8 +43,8 @@
 
 ## Revue de code du 15/11
 
-Constats de la revue en lecture seule (commit 4341b94), filets posés par le lot 0 (`docs/attendus/revue-lot-0-filets.md`). Corrigés et retirés d'ici : les codes de sortie des contrôles (lot 1a), la panne d'audit rangée en échec de chargement, la clé de décision orpheline et la couleur de marque illisible (lot 1b, D18) ; `border` dans apply, le motif R9 en dur, la divergence « inchangé » avec décision, C14 et E5 (lot 2, D19, D20).
+Constats de la revue en lecture seule (commit 4341b94), filets posés par le lot 0 (`docs/attendus/revue-lot-0-filets.md`). Corrigés et retirés d'ici : les codes de sortie des contrôles (lot 1a), la panne d'audit rangée en échec de chargement, la clé de décision orpheline et la couleur de marque illisible (lot 1b, D18) ; `border` dans apply, le motif R9 en dur, la divergence « inchangé » avec décision, C14 et E5 (lot 2, D19, D20) ; les quatre blocs JSDoc mal placés et les annotations en retard (lot 3, `npm run types` à 0).
 
-- Quatre blocs JSDoc posés au-dessus de la mauvaise fonction, si bien que `runReduce`, `buildMigration`, `renderMarkdown` et `renderReview` ne sont pas vérifiés par `@ts-check` (`src/cli/reduce.js:76`, `src/report/migration.js:166, 431`, `src/report/review.js:444`) [F].
-- Annotations en retard : 69 des 77 erreurs de TypeScript non strict viennent de types JSDoc qui n'ont pas suivi les lots, surtout dans `src/reduce/propose.js`, `src/rendered/aggregate.js` et `src/browser/simulate.js` [F].
+- Mode strict non tenu : `npm run types` vérifie en non strict. En strict (`npx tsc -p tsconfig.json --strict`), 30 erreurs à la fin du lot 3 [F] : 11 paramètres sans type, 11 modules sans types (`culori` dans 10 imports, `pngjs` dans 1 : `@types/culori` 4.0.1 et `@types/pngjs` 6.0.5, deux dépendances de plus, ou un `.d.ts` local ; accord de `@types/culori` 4.0.1 avec `culori` 4.0.2 [V]), 2 variables sans type (`conflicts`, `src/reduce/declarations.js`), 6 `null` ou `undefined` possibles, seuls à pouvoir demander une garde dans le code [H].
+- TypeScript 7 n'a pas d'API JavaScript (le paquet ne contient plus le fichier `typescript.js` de la version 5) [F] : les outils qui la chargent demandent TypeScript 5. À vérifier à l'étape 5 pour Knip et dependency-cruiser (variante JSDoc) [V].
 - Copie figée `fixtures/marque-demo/jetons/primitives.tokens.json` : `reduce --tokens` accepte sans le dire un fichier qui ne donne aucun jeton (le resolver passé tel quel en donne 0), et la copie, seule lue par les tests, masque ce cas (`src/cli/reduce.js:94`, `indexTokens` dans `src/report/migration.js:62`) [F].

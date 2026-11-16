@@ -22,9 +22,10 @@ npm test                 tous les tests
 npm run contraste        paires de rôles de couleur ; sortie 1 si une paire échoue
 npm run espacements      espacements par relation ; sortie 1 si une règle échoue
 npm run typo             styles de texte ; sortie 1 si une règle échoue
+npm run types            types JSDoc de src/ (TypeScript, non strict, sans émission) ; sortie 1 s'il reste une erreur
 ```
 
-Les trois contrôles restent à 0 échec, et npm test ne perd aucun vert, avant chaque commit et à la fin de chaque lot.
+Les quatre contrôles (contraste, espacements, typo, types) restent à 0 échec, et npm test ne perd aucun vert, avant chaque commit et à la fin de chaque lot.
 
 ## Règles du design system
 
