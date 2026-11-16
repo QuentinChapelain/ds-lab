@@ -7,12 +7,15 @@
  * (modifications.json, à côté de migration.md). Le HTML n'est pas touché. Une entrée dont la
  * valeur écrite n'est pas celle attendue n'est pas appliquée et sort en écart. reste.md (dans la
  * racine) dit ce qui reste à faire à la main.
+ * Revue de code du 15/11, lot 1b (D18) : sort en 0 si tout est appliqué ou déjà appliqué ; en 1 s'il reste au moins un
+ * écart (entrée ou commentaire refusé, listé dans reste.md), --essai compris ; en 2 sur une panne (option inconnue,
+ * fichier de modifications absent ou illisible, feuille illisible, CSS invalide : rien n'est écrit).
  */
 import { parseArgs } from 'node:util';
-import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { applyModifications } from '../apply/apply.js';
+import { lancer, lireJson } from './garde.js';
 
 const USAGE = `Usage : npm run apply -- --modifications <fichier> --racine <dossier> [options]
   --modifications <fichier>  modifications.json écrit par npm run reduce (avec --tokens)
@@ -37,10 +40,11 @@ async function main() {
   });
   if (values.help || !values.modifications || !values.racine) {
     console.log(USAGE);
-    process.exit(values.help ? 0 : 2);
+    if (values.help) return 0;
+    throw new Error('--modifications et --racine sont attendus (npm run apply -- --help)');
   }
   const t0 = Date.now();
-  const mods = JSON.parse(await readFile(values.modifications, 'utf8'));
+  const mods = lireJson(values.modifications);
   const root = resolve(values.racine);
   const r = await applyModifications(mods, { root, dryRun: values.essai, restePath: values.reste ? resolve(values.reste) : undefined });
   const n = (/** @type {string} */ s) => r.results.filter((x) => x.status === s).length;
@@ -51,11 +55,7 @@ async function main() {
   for (const x of r.comments.filter((y) => y.status === 'écart')) console.log(`  écart (commentaire) ${x.comment.sheet}:${x.comment.line} ${x.comment.selector} : ${x.reason}`);
   console.log(`${values.essai ? 'Seraient écrits' : 'Écrits'} : ${r.written.join(', ') || 'aucun'}${values.essai ? '' : ` ; reste : ${r.resteFile}`}`);
   console.log(`Durée : ${Date.now() - t0} ms`);
+  return n('écart') || c('écart') ? 1 : 0;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((e) => {
-    console.error(e);
-    process.exit(1);
-  });
-}
+if (import.meta.url === pathToFileURL(process.argv[1]).href) await lancer('apply', main);

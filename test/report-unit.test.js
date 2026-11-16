@@ -79,13 +79,14 @@ test('pageWarnings : rootPx différente, iframes, networkidle, redirection, éch
   const w = pageWarnings([
     { url: 'https://a.test/', finalUrl: 'https://a.test/', rootPx: 18, iframes: 0, networkIdle: true, status: 200 },
     { url: 'https://a.test/b', finalUrl: 'https://a.test/login', rootPx: 16, iframes: 2, networkIdle: false, status: 200 },
-    { url: 'https://a.test/c', error: 'net::ERR_NAME_NOT_RESOLVED' },
+    { url: 'https://a.test/c', error: 'net::ERR_NAME_NOT_RESOLVED', etape: 'navigation' },
   ]).map((x) => x.text);
   assert.ok(w.some((t) => /rootPx différente.*18 px.*16 px.*18 px \(première page\)/.test(t)), 'rootPx');
   assert.ok(w.some((t) => /2 iframe\(s\) non parcourue/.test(t)), 'iframes');
   assert.ok(w.some((t) => /networkidle non atteint/.test(t)), 'networkidle');
   assert.ok(w.some((t) => /redirigée vers https:\/\/a\.test\/login/.test(t)), 'redirection');
-  assert.ok(w.some((t) => /échec du chargement/.test(t)), 'échec');
+  // Revue de code du 15/11, lot 1b : une page tombée est nommée par son étape, plus « échec du chargement ».
+  assert.ok(w.some((t) => /https:\/\/a\.test\/c : étape navigation tombée \(net::ERR_NAME_NOT_RESOLVED\), page non mesurée/.test(t)), 'échec');
   assert.deepEqual(pageWarnings([{ url: 'https://a.test/', finalUrl: 'https://a.test/', rootPx: 16, iframes: 0, networkIdle: true, status: 200 }]), []);
 });
 

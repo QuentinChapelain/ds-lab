@@ -7,7 +7,7 @@
  * renvoyées avec le texte, pour les tests.
  */
 import { basename } from 'node:path';
-import { APPLIED, isOut, SLICES, decisionFor, decisionKeyFor, WHERE_TO_FIX, nearestOf, tieOf, onSolidOf } from '../reduce/propose.js';
+import { APPLIED, isOut, SLICES, decisionFor, decisionKeyFor, decisionKeysOrphelines, WHERE_TO_FIX, nearestOf, tieOf, onSolidOf } from '../reduce/propose.js';
 
 export { onSolidOf };
 import { contrastRatio } from '../lib/color.js';
@@ -406,6 +406,8 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
       decided:
         new Set(rows.filter((r) => r.status === 'décidée' && !r.plein).map((r) => r.decisionKey)).size + pleins.filter((g) => g.choice).length,
       ignored: pleins.reduce((n, g) => n + (g.ignored?.length ?? 0), 0),
+      // Revue de code du 15/11, lot 1b : clés qui ne visent aucune ligne ni carte, listées au lieu d'être ignorées en silence.
+      orphelines: decisionKeysOrphelines(table, decisions),
     },
     exceptions: { links, onSolid, states, injected: null, ties, outOfSlice, holes, messages: rendered.usages?.messages ?? [] },
     remaining: [...remaining.values()],
@@ -471,7 +473,9 @@ function renderMarkdown(d, s) {
     const k = d.decisionKeys;
     const n = (/** @type {number} */ x, /** @type {string} */ one, /** @type {string} */ many) => `${x} ${x > 1 ? many : one}`;
     const ignored = k.ignored ? `, ${n(k.ignored, 'décision de ligne ignorée : suit une carte', 'décisions de ligne ignorées : suivent une carte')}` : '';
-    L.push(`Décisions lues : \`${m.decisions}\`, ${n(k.decided, 'décidée', 'décidées')}, ${n(d.sections.refused.total, 'refusée', 'refusées')}${ignored}.`, '');
+    L.push(`Décisions lues : \`${m.decisions}\`, ${n(k.decided, 'décidée', 'décidées')}, ${n(d.sections.refused.total, 'refusée', 'refusées')}${ignored}.`);
+    if (k.orphelines?.length) L.push(`Clés de décision sans ligne ni carte, ignorées : ${k.orphelines.map((/** @type {string} */ x) => `\`${x}\``).join(', ')}.`);
+    L.push('');
   }
   L.push('| section | lignes | couleurs | espacements | tailles | rayons |', '|---|---|---|---|---|---|');
   for (const [k, label] of [['applied', 'Appliqué (auto, proche, correction, décidée)'], ['pending', 'Décisions en attente'], ['refused', 'Refusée, laissée telle quelle'], ['outOfTable', 'Hors table']]) {

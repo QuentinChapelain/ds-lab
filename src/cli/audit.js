@@ -2,11 +2,15 @@
 // @ts-check
 /**
  * npm run audit -- <adresses> [options]
+ *
+ * Revue de code du 15/11, lot 1b (D18) : sort en 0 si toutes les pages sont mesurées ; en 2 sur une panne, ou si l'audit
+ * est incomplet (pages non mesurées, trace en panne : audit écrit ; aucune page mesurée : rien d'écrit).
  */
 import { parseArgs } from 'node:util';
 import { pathToFileURL } from 'node:url';
 import { runAudit } from '../audit/run.js';
 import { DEFAULT_WAIT_MS } from '../browser/navigate.js';
+import { lancer } from './garde.js';
 
 const USAGE = `Usage : npm run audit -- <adresse> [<adresse ou chemin relatif>…] [options]
 
@@ -67,28 +71,47 @@ export function parseAuditArgs(argv) {
   };
 }
 
-async function main() {
-  let parsed;
-  try {
-    parsed = parseAuditArgs(process.argv.slice(2));
-  } catch (e) {
-    console.error(`Erreur : ${/** @type {Error} */ (e).message}\n\n${USAGE}`);
-    process.exit(2);
+/** @param {number} n @param {string} un @param {string} plusieurs */
+const accorde = (n, un, plusieurs) => (n > 1 ? plusieurs : un);
+
+/**
+ * Revue de code du 15/11, lot 1b (D18) : un audit incomplet est une panne. Message d'une ligne, ou null si tout est mesuré.
+ * @param {Awaited<ReturnType<typeof runAudit>>} results
+ */
+export function incomplet(results) {
+  const plusieurs = results.length > 1;
+  /** @type {string[]} */
+  const parts = [];
+  for (const r of results) {
+    const sur = plusieurs ? ` (${r.host})` : '';
+    if (!r.measured) {
+      parts.push(`aucune page mesurée${sur} : rien d'écrit`);
+      continue;
+    }
+    const tombees = r.total - r.measured;
+    /** @type {string[]} */
+    const quoi = [];
+    if (tombees) quoi.push(`${tombees} ${accorde(tombees, 'page', 'pages')} sur ${r.total} non ${accorde(tombees, 'mesurée', 'mesurées')}`);
+    if (r.traceFailed) quoi.push(`trace en panne sur ${r.traceFailed} ${accorde(r.traceFailed, 'page', 'pages')} sur ${r.total}`);
+    if (quoi.length) parts.push(`${quoi.join(', ')}${sur} : audit écrit, incomplet`);
   }
+  return parts.length ? parts.join(' ; ') : null;
+}
+
+async function main() {
+  const parsed = parseAuditArgs(process.argv.slice(2));
   if (parsed.help || !parsed.options) {
     console.log(USAGE);
-    return;
+    return 0;
   }
   const results = await runAudit({ ...parsed.options, log: (m) => console.log(m) });
   for (const r of results) {
-    console.log(`\n${r.host} : ${r.files.join(', ')}`);
+    console.log(`\n${r.host} : ${r.files.join(', ') || 'rien d\'écrit'}`);
     for (const w of r.warnings) console.log(`  ! ${w.text} ${w.tag}`);
   }
+  const panne = incomplet(results);
+  if (panne) throw new Error(panne);
+  return 0;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((e) => {
-    console.error(`Erreur : ${e.message}`);
-    process.exit(1);
-  });
-}
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await lancer('audit', main);

@@ -212,19 +212,38 @@ export async function applyModifications(mods, { root, dryRun = false, restePath
   /** @type {string[]} */
   const written = [];
   const sheets = [...new Set([...mods.entries.map((/** @type {any} */ e) => e.sheet), ...(mods.comments ?? []).map((/** @type {any} */ c) => c.sheet)])].sort();
+  // Revue de code du 15/11, lot 1b (D18) : toutes les feuilles sont lues et analysées avant la première écriture. Une
+  // feuille absente de la copie est un écart (l'entrée ne s'applique pas ici) ; une feuille illisible ou un CSS
+  // invalide est une panne, qui nomme la feuille, et rien n'est écrit.
+  /** @type {Map<string, { file: string, text: string, css: any } | null>} */
+  const lues = new Map();
   for (const sheet of sheets) {
     const file = join(root, sheet);
-    const mine = results.filter((x) => x.entry.sheet === sheet);
-    const notes = comments.filter((x) => x.comment.sheet === sheet);
     /** @type {string} */
     let text;
     try {
       text = await readFile(file, 'utf8');
-    } catch {
+    } catch (e) {
+      if (/** @type {any} */ (e).code !== 'ENOENT') throw new Error(`${sheet} : feuille illisible (${/** @type {Error} */ (e).message.split('\n')[0]})`);
+      lues.set(sheet, null);
+      continue;
+    }
+    try {
+      lues.set(sheet, { file, text, css: postcss.parse(text, { from: file }) });
+    } catch (e) {
+      const err = /** @type {any} */ (e);
+      throw new Error(`${sheet} : CSS illisible (${err.line ? `ligne ${err.line} : ` : ''}${err.reason ?? String(err.message).split('\n')[0]})`);
+    }
+  }
+  for (const sheet of sheets) {
+    const mine = results.filter((x) => x.entry.sheet === sheet);
+    const notes = comments.filter((x) => x.comment.sheet === sheet);
+    const lue = lues.get(sheet);
+    if (!lue) {
       for (const x of [...mine, ...notes]) x.reason = `feuille introuvable sous la racine (${sheet})`;
       continue;
     }
-    const css = postcss.parse(text, { from: file });
+    const { file, text, css } = lue;
     const rules = rulesOf(css, new Set(notes.map((x) => x.comment.text)));
     /** @param {any} t */
     const locate = (t) => {

@@ -8,11 +8,14 @@
  * secondes dans .auth/<nom>.json, droits 600, jusqu'à la fermeture de la
  * fenêtre. Aucun identifiant ne passe par la ligne de commande ni par ce script.
  * Le fichier se donne ensuite à l'audit : --storage-state .auth/<nom>.json
+ * Revue de code du 15/11, lot 1b (D18) : sort en 0, ou en 2 sur une panne (option inconnue, Chromium qui ne se lance
+ * pas) ; une navigation qui échoue est dite, la fenêtre reste ouverte pour naviguer à la main.
  */
 import { parseArgs } from 'node:util';
 import { mkdir, writeFile, rename, chmod } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { lancer } from './garde.js';
 
 const USAGE = `Usage : npm run login -- <adresse> [--name <nom>]
 
@@ -79,23 +82,17 @@ export async function readState(context, page) {
 }
 
 async function main() {
-  let parsed;
-  try {
-    parsed = parseLoginArgs(process.argv.slice(2));
-  } catch (e) {
-    console.error(`Erreur : ${/** @type {Error} */ (e).message}\n\n${USAGE}`);
-    process.exit(2);
-  }
+  const parsed = parseLoginArgs(process.argv.slice(2));
   if (parsed.help || !parsed.url || !parsed.file) {
     console.log(USAGE);
-    return;
+    return 0;
   }
   const { chromium } = await import('playwright-core');
   await mkdir('.auth', { recursive: true, mode: 0o700 });
   const browser = await chromium.launch({ headless: false });
   const context = await browser.newContext({ viewport: null });
   const page = await context.newPage();
-  await page.goto(parsed.url, { waitUntil: 'load', timeout: 60000 }).catch(() => {});
+  await page.goto(parsed.url, { waitUntil: 'load', timeout: 60000 }).catch((e) => console.log(`! navigation vers ${parsed.url} échouée (${String(e?.message ?? e).split('\n')[0]}) ; la fenêtre reste ouverte`));
   console.log(`Fenêtre ouverte. Connecte-toi, puis ferme la fenêtre. Session : ${parsed.file}`);
   let saves = 0;
   let open = true;
@@ -112,11 +109,7 @@ async function main() {
   }
   await browser.close().catch(() => {});
   console.log(saves ? `Session enregistrée dans ${parsed.file} (droits 600).` : 'Aucune session enregistrée.');
+  return 0;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((e) => {
-    console.error(`Erreur : ${e.message}`);
-    process.exit(1);
-  });
-}
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await lancer('login', main);

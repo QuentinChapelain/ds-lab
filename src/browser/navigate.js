@@ -28,3 +28,24 @@ export async function gotoAndSettle(
   if (waitMs > 0) await page.waitForTimeout(waitMs);
   return { status: response?.status() ?? null, networkIdle, finalUrl: page.url() };
 }
+
+/**
+ * @typedef {{ text: string, tag: '[F]' | '[V]' }} AvertissementNavigation
+ */
+
+/**
+ * Revue de code du 15/11, lot 1b : avertissements de navigation d'une page, partagés par l'audit, reduce et la lecture
+ * de marque. Statut HTTP d'erreur, redirection, networkidle non atteint, feuilles illisibles (collectSheets).
+ * @param {{ url: string, status?: number | null, finalUrl?: string, networkIdle?: boolean }} nav résultat de gotoAndSettle, avec l'adresse demandée
+ * @param {string[]} [feuilles] avertissements de collectSheets
+ * @returns {AvertissementNavigation[]}
+ */
+export function navigationWarnings(nav, feuilles = []) {
+  /** @type {AvertissementNavigation[]} */
+  const w = [];
+  if (nav.networkIdle === false) w.push({ text: `${nav.url} : networkidle non atteint en ${NETWORK_IDLE_TIMEOUT_MS / 1000} s, mesure faite quand même.`, tag: '[F]' });
+  if (typeof nav.status === 'number' && nav.status >= 400) w.push({ text: `${nav.url} : statut HTTP ${nav.status}.`, tag: '[F]' });
+  if (nav.finalUrl && nav.finalUrl !== nav.url) w.push({ text: `${nav.url} : redirigée vers ${nav.finalUrl} (session expirée ?).`, tag: '[V]' });
+  for (const t of feuilles) w.push({ text: `${nav.url} : ${t}`, tag: '[F]' });
+  return w;
+}

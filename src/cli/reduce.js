@@ -2,6 +2,8 @@
 // @ts-check
 /**
  * npm run reduce -- <adresse> [<chemins…>] --target <cible.json> [options]
+ * Revue de code du 15/11, lot 1b (D18) : sort en 0, ou en 2 sur une panne (page qui tombe, en nommant son étape ;
+ * couleur de marque illisible dans la cible ; option inconnue).
  *
  * Une boucle : mesurer le rendu, ranger chaque valeur sur la cible, simuler
  * la table dans le navigateur, produire la page de revue. Les décisions
@@ -13,10 +15,10 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { resolveAddresses, groupByHost } from '../lib/addresses.js';
 import { loadSources } from '../lib/sources.js';
-import { gotoAndSettle, DEFAULT_WAIT_MS } from '../browser/navigate.js';
+import { gotoAndSettle, navigationWarnings, DEFAULT_WAIT_MS } from '../browser/navigate.js';
 import { createRenderedAggregator } from '../rendered/aggregate.js';
 import { measureRendered } from '../rendered/run.js';
-import { propose, mapping, rowKey, controlAfter, splitOf, brandOf, worstContrast, solidPairs, uncoveredValues } from '../reduce/propose.js';
+import { propose, mapping, rowKey, controlAfter, splitOf, brandOf, worstContrast, solidPairs, uncoveredValues, decisionKeysOrphelines, NON_STABILISE } from '../reduce/propose.js';
 import { collectSheets } from '../browser/sheets.js';
 import { contradictionsIn } from '../brand/brand.js';
 import { simulatePage, installLive, captureDecision, touchedElements, capturePlein, FRAME } from '../browser/simulate.js';
@@ -26,6 +28,7 @@ import { stampOf, freeOutputDir } from '../report/json.js';
 import { pageName, writeReference } from '../verify/reference.js';
 import { identityMapping, declarationsOnPage, attachDeclarations } from '../reduce/declarations.js';
 import { pleinGroups, applyPleins, pleinVersionMap } from '../reduce/pleins.js';
+import { lancer } from './garde.js';
 
 const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cible.json> [options]
 
@@ -92,6 +95,8 @@ export async function runReduce(opts) {
   /** @type {Record<string, string | false>} */
   const decisions = opts.decisionsPath ? JSON.parse(await readFile(opts.decisionsPath, 'utf8')) : {};
   const tokens = opts.tokensPath ? JSON.parse(await readFile(opts.tokensPath, 'utf8')) : null;
+  // Revue de code du 15/11, lot 1b (D18) : une couleur de marque illisible dans la cible lève avant de lancer Chromium.
+  if (target.brand) brandOf(target);
   const { sources } = await loadSources({ path: opts.sourcesPath });
   const urls = resolveAddresses(opts.addresses);
   // Lot V, étape 5 : pages témoins, relatives à la première adresse, distinctes des pages de la table.
@@ -133,28 +138,47 @@ export async function runReduce(opts) {
       for (const url of hostUrls) {
         log(`mesure → ${url}`);
         const page = await context.newPage();
+        // Revue de code du 15/11, lot 1b (D18) : une page qui tombe arrête la réduction (une table faite sur une partie
+        // des pages tromperait), en nommant l'étape ; les avertissements de navigation sont affichés, plus jetés.
+        let etape = 'navigation';
         try {
-          await gotoAndSettle(page, url, { waitMs });
+          const nav = await gotoAndSettle(page, url, { waitMs });
+          etape = 'feuilles';
+          const { sheets, warnings: sw } = await collectSheets(page);
+          for (const w of navigationWarnings({ url, ...nav }, sw)) log(`  ! ${w.text} ${w.tag}`);
+          etape = 'mesure';
           // Lot M : origine CSS (règle d'un élément d'exemple) et états forcés, pour migration.md.
-          await measureRendered(page, agg, { trace: true, states: true, thirdParty: sources?.thirdParty ?? [], sources });
+          const m = await measureRendered(page, agg, { trace: true, states: true, thirdParty: sources?.thirdParty ?? [], sources });
+          if (m.traceError) {
+            etape = 'trace';
+            throw new Error(m.traceError);
+          }
           if (target.brand)
-            for (const sh of (await collectSheets(page)).sheets) {
+            for (const sh of sheets) {
               const k = sh.href ?? `${url}#${sh.styleSheetId}`;
               if (seenSheets.has(k)) continue;
               seenSheets.add(k);
               brandSheets.push(sh);
             }
+        } catch (e) {
+          throw new Error(`${url} : étape ${etape} tombée (${/** @type {Error} */ (e).message.split('\n')[0]}), réduction arrêtée`);
         } finally {
           await page.close().catch(() => {});
         }
       }
       // R6 : les sélecteurs tiers suivent la table, pour que la simulation les exclue.
       const rendered = agg.result();
+      // Revue de code du 15/11, lot 1b : un sélecteur tiers invalide est signalé ici aussi, comme par l'audit.
+      for (const sel of rendered.thirdParty?.invalid ?? []) log(`  ! sources : sélecteur thirdParty invalide, ignoré : ${sel} [F]`);
       const contradictions = target.brand ? contradictionsIn(brandSheets, brandOf(target).variables) : [];
       const table = { ...propose(rendered, target, { contradictions }), thirdParty: sources?.thirdParty ?? [] };
+      for (const r of table.families.colors?.rows ?? []) if (r.reason === NON_STABILISE) log(`  ! ${r.old} (${r.usage ?? 'couleur'}) : ${NON_STABILISE} [F]`);
       // Lot K : une carte par plein dont le texte échoue ; ses lignes de fond suivent son choix.
       const pleins = pleinGroups({ table, rendered, target, decisions });
       /** @type {any} */ (table).pleins = pleins;
+      // Revue de code du 15/11, lot 1b : clés de decisions.json qui ne visent aucune ligne ni carte, listées.
+      const orphelines = decisionKeysOrphelines(/** @type {any} */ (table), decisions);
+      for (const k of orphelines) log(`  ! clé de décision sans ligne ni carte, ignorée : ${k} [F]`);
       const effective = applyPleins(table, pleins, decisions);
       // Lot P (P3) : la hiérarchie des espaces, recalculée avec les décisions relues.
       controlAfter(table, effective);
@@ -304,7 +328,7 @@ export async function runReduce(opts) {
       const dir = await freeOutputDir(outRoot, host, stamp);
       await mkdir(dir, { recursive: true });
       const files = [join(dir, 'table.json'), join(dir, 'revue.html'), join(dir, 'migration.md')];
-      await writeFile(files[0], JSON.stringify({ host, stamp, viewport, target, decisions, table, pages: pages.map((p) => ({ url: p.url, elements: p.elements, operations: p.operations })) }, null, 2) + '\n');
+      await writeFile(files[0], JSON.stringify({ host, stamp, viewport, target, decisions, decisionsOrphelines: orphelines, table, pages: pages.map((p) => ({ url: p.url, elements: p.elements, operations: p.operations })) }, null, 2) + '\n');
       await writeFile(files[1], renderReview(table, pages, { host, stamp, target: opts.targetPath.split('/').pop() ?? '', decisions }));
       const migration = buildMigration({
         table,
@@ -358,7 +382,8 @@ export async function runReduce(opts) {
       const context = await headed.newContext({ viewport: null, storageState: opts.storageState ?? undefined });
       await installLive(context, { ...map, split: splitOf(results[0].table) }, { lines: linesOf(results[0].table) });
       const page = await context.newPage();
-      await page.goto(first, { waitUntil: 'load', timeout: 60000 }).catch(() => {});
+      // Revue de code du 15/11, lot 1b : une navigation qui échoue est dite ; la fenêtre reste ouverte pour naviguer à la main.
+      await page.goto(first, { waitUntil: 'load', timeout: 60000 }).catch((e) => log(`  ! --live : navigation vers ${first} échouée (${String(e?.message ?? e).split('\n')[0]}) ; la fenêtre reste ouverte`));
       await new Promise((done) => {
         page.on('close', done);
         headed.on('disconnected', done);
@@ -416,16 +441,10 @@ export function parseReduceArgs(argv) {
 }
 
 async function main() {
-  let parsed;
-  try {
-    parsed = parseReduceArgs(process.argv.slice(2));
-  } catch (e) {
-    console.error(`Erreur : ${/** @type {Error} */ (e).message}\n\n${USAGE}`);
-    process.exit(2);
-  }
+  const parsed = parseReduceArgs(process.argv.slice(2));
   if (parsed.help || !parsed.options) {
     console.log(USAGE);
-    return;
+    return 0;
   }
   const results = await runReduce({ ...parsed.options, log: (m) => console.log(m) });
   for (const r of results) {
@@ -436,11 +455,7 @@ async function main() {
       console.log(`  ${family} : ${s.before} → ${s.after} valeurs ; ${s.decisions} décision(s), ${s.corrections} correction(s), ${s.near} proche(s), ${s.auto} d'office`);
     }
   }
+  return 0;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((e) => {
-    console.error(`Erreur : ${e.message}`);
-    process.exit(1);
-  });
-}
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await lancer('reduce', main);

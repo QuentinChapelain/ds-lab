@@ -166,7 +166,9 @@ export async function traceElements(page, samples, { sources, lookup }) {
       let m = matched.get(s.index);
       if (!m) {
         const { result } = /** @type {any} */ (
-          await cdp.send('Runtime.evaluate', { expression: lookup(s.index) })
+          // Revue de code du 15/11, lot 1b : un élément sorti du document depuis le relevé n'a plus de règle à lire ;
+          // il est « non tracé », pas « initiale ».
+          await cdp.send('Runtime.evaluate', { expression: `((e) => (e && e.isConnected ? e : null))(${lookup(s.index)})` })
         );
         if (!result?.objectId) {
           out.push(none);

@@ -7,7 +7,7 @@
  *   - les contradictions entre ces variables et les feuilles (M7, voir brand.js).
  * Le résultat sert à écrire le bloc brand de la cible ; il ne décide rien.
  */
-import { gotoAndSettle, DEFAULT_WAIT_MS } from '../browser/navigate.js';
+import { gotoAndSettle, navigationWarnings, DEFAULT_WAIT_MS } from '../browser/navigate.js';
 import { collectSheets } from '../browser/sheets.js';
 import { normalizeColor, isOpaque } from '../lib/color.js';
 import { contradictionsIn, isGrey } from './brand.js';
@@ -39,13 +39,16 @@ function readInPage(prefix) {
 
 /**
  * @param {{ addresses: string[], viewport?: { width: number, height: number }, waitMs?: number, prefix?: string, storageState?: string }} opts
- * @returns {Promise<{ variables: { name: string, value: string }[], strong: { value: string, count: number }[], contradictions: { variable: string, backOffice: string, sheet: string, where: string[] }[] }>}
+ * @returns {Promise<{ variables: { name: string, value: string }[], strong: { value: string, count: number }[], contradictions: { variable: string, backOffice: string, sheet: string, where: string[] }[], warnings: import('../browser/navigate.js').AvertissementNavigation[] }>}
+ *   Revue de code du 15/11, lot 1b : `warnings`, avertissements de navigation (statut, redirection, feuilles illisibles).
  */
 export async function readBrand({ addresses, viewport = { width: 1366, height: 900 }, waitMs = DEFAULT_WAIT_MS, prefix = '--', storageState }) {
   const { chromium } = await import('playwright-core');
   const browser = await chromium.launch();
   /** @type {Map<string, string>} */
   const variables = new Map();
+  /** @type {import('../browser/navigate.js').AvertissementNavigation[]} */
+  const warnings = [];
   /** @type {Map<string, number>} */
   const counts = new Map();
   /** @type {any[]} */
@@ -56,14 +59,16 @@ export async function readBrand({ addresses, viewport = { width: 1366, height: 9
     for (const url of addresses) {
       const page = await context.newPage();
       try {
-        await gotoAndSettle(page, url, { waitMs });
+        const nav = await gotoAndSettle(page, url, { waitMs });
         const r = await page.evaluate(readInPage, prefix);
         for (const v of r.variables) if (!variables.has(v.name)) variables.set(v.name, normalizeColor(v.value)?.hex ?? v.value);
         for (const c of r.colors) {
           const hex = normalizeColor(c)?.hex;
           if (hex && isOpaque(hex)) counts.set(hex, (counts.get(hex) ?? 0) + 1);
         }
-        for (const s of (await collectSheets(page)).sheets) {
+        const lues = await collectSheets(page);
+        warnings.push(...navigationWarnings({ url, ...nav }, lues.warnings));
+        for (const s of lues.sheets) {
           const key = s.href ?? `${url}#${s.styleSheetId}`;
           if (seen.has(key)) continue;
           seen.add(key);
@@ -85,5 +90,6 @@ export async function readBrand({ addresses, viewport = { width: 1366, height: 9
     variables: [...variables.entries()].map(([name, value]) => ({ name, value })),
     strong,
     contradictions: contradictionsIn(sheets, Object.fromEntries(variables)),
+    warnings,
   };
 }

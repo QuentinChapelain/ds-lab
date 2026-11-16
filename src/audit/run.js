@@ -8,11 +8,11 @@ import { basename, relative } from 'node:path';
 import { chromium } from 'playwright-core';
 import { resolveAddresses, groupByHost } from '../lib/addresses.js';
 import { loadSources } from '../lib/sources.js';
-import { gotoAndSettle, DEFAULT_WAIT_MS, NETWORK_IDLE_TIMEOUT_MS } from '../browser/navigate.js';
+import { gotoAndSettle, navigationWarnings, DEFAULT_WAIT_MS, NETWORK_IDLE_TIMEOUT_MS } from '../browser/navigate.js';
 import { collectSheets } from '../browser/sheets.js';
 import { dedupeSheets, analyzeDeclared } from '../declared/analyze.js';
 import { createRenderedAggregator } from '../rendered/aggregate.js';
-import { measureRendered } from '../rendered/run.js';
+import { relever, verser } from '../rendered/run.js';
 import { loadV1Script, runV1, compareV1 } from './v1.js';
 import { stampOf, freeOutputDir, writeAuditFiles } from '../report/json.js';
 
@@ -55,17 +55,19 @@ export function pageWarnings(pages) {
   }
   for (const p of ok) {
     if (p.iframes > 0) w.push({ text: `${p.url} : ${p.iframes} iframe(s) non parcourue(s) (feuilles et rendu ignorés).`, tag: '[F]' });
-    if (p.networkIdle === false) w.push({ text: `${p.url} : networkidle non atteint en ${NETWORK_IDLE_TIMEOUT_MS / 1000} s, mesure faite quand même.`, tag: '[F]' });
-    if (typeof p.status === 'number' && p.status >= 400) w.push({ text: `${p.url} : statut HTTP ${p.status}.`, tag: '[F]' });
-    if (p.finalUrl && p.finalUrl !== p.url) w.push({ text: `${p.url} : redirigée vers ${p.finalUrl} (session expirée ?).`, tag: '[V]' });
+    // Revue de code du 15/11, lot 1b : avertissements de navigation partagés avec reduce et la lecture de marque.
+    w.push(...navigationWarnings(p, p.sheetWarnings ?? []));
+    if (p.traceError) w.push({ text: `${p.url} : étape trace tombée (${p.traceError}), échantillons non tracés.`, tag: '[F]' });
   }
-  for (const p of pages.filter((x) => x.error)) w.push({ text: `${p.url} : échec du chargement (${p.error}), page ignorée.`, tag: '[F]' });
+  // Une page tombée est nommée par son étape ; elle n'entre ni dans le rendu ni dans le déclaré.
+  for (const p of pages.filter((x) => x.error)) w.push({ text: `${p.url} : étape ${p.etape ?? 'navigation'} tombée (${p.error}), page non mesurée.`, tag: '[F]' });
   return w;
 }
 
 /**
  * @param {AuditOptions} opts
- * @returns {Promise<{ host: string, dir: string, files: string[], warnings: Warning[] }[]>}
+ * @returns {Promise<{ host: string, dir: string | null, files: string[], warnings: Warning[], total: number, measured: number, traceFailed: number }[]>}
+ *   Revue de code du 15/11, lot 1b : `measured` pages mesurées sur `total` ; aucune page mesurée : rien n'est écrit (dir null).
  */
 export async function runAudit(opts) {
   const {
@@ -113,36 +115,52 @@ export async function runAudit(opts) {
         const page = await context.newPage();
         /** @type {any} */
         const meta = { url };
+        // Revue de code du 15/11, lot 1b : chaque étape est nommée ; la page n'entre dans le rendu et le déclaré
+        // qu'une fois toutes ses étapes réussies (navigation, feuilles, mesure, script v1).
+        let etape = 'navigation';
         try {
           const nav = await gotoAndSettle(page, url, { waitMs });
           Object.assign(meta, nav);
+          etape = 'feuilles';
           const { sheets, rootPx, warnings: sw } = await collectSheets(page);
           meta.rootPx = rootPx;
           meta.sheets = sheets.length;
-          for (const t of sw) warnings.push({ text: `${url} : ${t}`, tag: '[F]' });
-          const pageAgg = v1Code ? createRenderedAggregator() : null;
-          const r = await measureRendered(page, agg, { trace, states, thirdParty: sources?.thirdParty ?? [], sources, also: pageAgg ? [pageAgg] : [] });
+          meta.sheetWarnings = sw;
+          etape = 'mesure';
+          const lu = await relever(page, { states, thirdParty: sources?.thirdParty ?? [] });
+          /** @type {any} */
+          let v1Page = null;
+          /** @type {any} */
+          let v1Brut = null;
+          if (v1Code) {
+            etape = 'script v1';
+            const pageAgg = createRenderedAggregator();
+            pageAgg.addPage(lu.pc);
+            if (lu.sc) pageAgg.addStates(lu.sc);
+            const v1 = await runV1(page, v1Code);
+            if ('error' in v1) {
+              v1Pages.push({ url, error: v1.error });
+              throw new Error(v1.error);
+            }
+            const pageDeclared = analyzeDeclared(dedupeSheets([{ pageUrl: nav.finalUrl, sheets }]), { rootPx, sources });
+            const pageRendered = pageAgg.result();
+            v1Brut = { url, result: v1.result };
+            v1Page = { url, rows: compareV1(v1.result, { rootPx, declared: pageDeclared, rendered: pageRendered, elements: pageRendered.elements }) };
+          }
+          etape = 'mesure';
+          const r = await verser(page, agg, lu, { trace, sources });
           meta.iframes = r.iframes;
           meta.traced = r.traced;
           meta.stateSamples = r.stateSamples;
+          if (r.traceError) meta.traceError = r.traceError;
           perPage.push({ pageUrl: nav.finalUrl, sheets });
-          if (v1Code && pageAgg) {
-            const v1 = await runV1(page, v1Code);
-            const pageDeclared = analyzeDeclared(dedupeSheets([{ pageUrl: nav.finalUrl, sheets }]), { rootPx, sources });
-            const pageRendered = pageAgg.result();
-            if ('error' in v1) {
-              v1Pages.push({ url, error: v1.error });
-              warnings.push({ text: `${url} : échec du script v1 (${v1.error}).`, tag: '[F]' });
-            } else {
-              v1Raw.push({ url, result: v1.result });
-              v1Pages.push({
-                url,
-                rows: compareV1(v1.result, { rootPx, declared: pageDeclared, rendered: pageRendered, elements: pageRendered.elements }),
-              });
-            }
+          if (v1Page) {
+            v1Raw.push(v1Brut);
+            v1Pages.push(v1Page);
           }
         } catch (e) {
           meta.error = /** @type {Error} */ (e).message.split('\n')[0];
+          meta.etape = etape;
         } finally {
           await page.close().catch(() => {});
         }
@@ -151,6 +169,8 @@ export async function runAudit(opts) {
       await context.close();
 
       const firstOk = pages.find((p) => !p.error);
+      const measured = pages.filter((p) => !p.error).length;
+      const traceFailed = pages.filter((p) => !p.error && p.traceError).length;
       const declared = analyzeDeclared(dedupeSheets(perPage), { rootPx: firstOk?.rootPx ?? 16, sources });
       const rendered = agg.result();
       if (sourcesWarning) warnings.unshift({ text: sourcesWarning, tag: '[F]' });
@@ -182,9 +202,13 @@ export async function runAudit(opts) {
         rendered,
         v1: v1Code ? { pages: v1Pages } : undefined,
       };
+      if (!measured) {
+        results.push({ host, dir: null, files: [], warnings, total: pages.length, measured, traceFailed });
+        continue;
+      }
       const dir = await freeOutputDir(outRoot, host, stamp);
       const files = await writeAuditFiles(dir, audit, v1Code ? { script: basename(/** @type {string} */ (v1ScriptPath)), pages: v1Raw } : undefined);
-      results.push({ host, dir, files, warnings });
+      results.push({ host, dir, files, warnings, total: pages.length, measured, traceFailed });
     }
   } finally {
     await browser.close();

@@ -55,6 +55,9 @@ async function main() {
     console.log('Couleurs fortes (occurrences) :');
     for (const s of r.strong.slice(0, 12)) console.log(`  ${s.value} (${s.count})`);
     console.log(`Contradictions : ${r.contradictions.length}`);
+    // Revue de code du 15/11, lot 1b : avertissements de navigation affichés, plus jetés.
+    if (r.warnings.length) console.log('Avertissements :');
+    for (const w of r.warnings) console.log(`  ! ${w.text} ${w.tag}`);
     for (const c of r.contradictions) console.log(`  ${c.variable} : back-office ${c.backOffice}, feuille ${c.sheet} (${c.where.join(', ')})`);
   }
 }

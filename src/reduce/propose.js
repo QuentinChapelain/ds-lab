@@ -699,8 +699,14 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
     else delete r.reason;
     return changed;
   };
+  // Revue de code du 15/11, lot 1b : une table qui change encore au dixième tour n'est pas stable ; les lignes qui ont
+  // changé à ce tour passent en décision, avec le motif NON_STABILISE (aucune entrée connue ne fait osciller la boucle).
+  let changed = false;
+  /** @type {Set<Row>} */
+  let bougees = new Set();
   for (let round = 0; round < 10; round++) {
-    let changed = false;
+    changed = false;
+    bougees = new Set();
     for (const r of rows) {
       if (!r.usage || r._fixed || !r._cands) continue;
       const nearestScale = r._nearest.t.scale;
@@ -738,8 +744,8 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
         const before6 = JSON.stringify(r.alternatives);
         delete r.alternatives;
         if (reason === M_REASONS.M5) secondVersion(r, ps, chosen);
-        if (JSON.stringify(r.alternatives) !== before6) changed = true;
-        if (set(r, chosen, cls, reason)) changed = true;
+        if (JSON.stringify(r.alternatives) !== before6) (changed = true), bougees.add(r);
+        if (set(r, chosen, cls, reason)) (changed = true), bougees.add(r);
         const b = worst(ps, (p) => [r.old, p.bg]);
         const a = worst(ps, (p) => [r.new ?? r.old, now(p.bg, p.bgUsage)]);
         r.contrast = { threshold: b.threshold, before: round4(b.ratio), after: round4(a.ratio) };
@@ -765,7 +771,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
         }
         const m = brandRule(r, c, cls);
         if (m) [cls, reason] = m;
-        if (set(r, c, cls, reason)) changed = true;
+        if (set(r, c, cls, reason)) (changed = true), bougees.add(r);
         const b = worst(ps, (p) => [p.text, r.old]);
         const a = worst(ps, (p) => [now(p.text, 'texte'), r.new ?? r.old]);
         r.contrast = { threshold: b.threshold, before: round4(b.ratio), after: round4(a.ratio) };
@@ -773,6 +779,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
     }
     if (!changed) break;
   }
+  if (changed) for (const r of bougees) if (!isOut(r.class)) Object.assign(r, { class: 'décision', reason: NON_STABILISE });
   // M4 : lignes que la boucle ne relit pas (sans paire de contraste), sur une échelle de statut.
   for (const r of rows)
     if (B && r._cands && r.name && r.class !== 'décision' && !isOut(r.class)) {
@@ -1054,6 +1061,9 @@ export function worstContrast(usages, r, value, map = {}) {
 }
 
 /** Lot M : motifs des décisions imposées par la marque. */
+/** Revue de code du 15/11, lot 1b : motif d'une ligne qui change encore au dixième tour de la boucle de stabilisation. */
+export const NON_STABILISE = 'non stabilisé après 10 tours';
+
 export const M_REASONS = {
   M4: 'échelle de statut réservée aux états (aria-invalid, role="alert", message relié) : décision (M4)',
   M5: 'correction de couleur de marque à plus de 10 : décision (M5)',
@@ -1096,6 +1106,25 @@ export const rowKey = (family, r) => (r.usage ? `${family}|${r.old}|${r.usage}${
 export function decisionFor(decisions, family, r) {
   const k = decisionKeyFor(decisions, family, r);
   return k === null ? undefined : decisions[k];
+}
+
+/**
+ * Revue de code du 15/11, lot 1b : clés du fichier de décisions qui ne visent aucune ligne ni carte de plein, triées.
+ * Une clé vise une ligne sous l'une des trois formes que lit decisionKeyFor ; une carte sous sa clé (plein|<échelle>).
+ * Elle devient orpheline sans faute de frappe quand le site, les pages, la fenêtre ou la cible ont changé.
+ * @param {{ families: Record<string, { rows: Row[] }>, pleins?: { key: string }[] }} table
+ * @param {Record<string, string | false>} decisions
+ * @returns {string[]}
+ */
+export function decisionKeysOrphelines(table, decisions) {
+  const visees = new Set((table.pleins ?? []).map((g) => g.key));
+  for (const [family, f] of Object.entries(table.families))
+    for (const r of f.rows) {
+      visees.add(rowKey(family, r));
+      if (r.usage) visees.add(`${family}|${r.old}|${r.usage}`);
+      visees.add(`${family}|${r.old}`);
+    }
+  return Object.keys(decisions).filter((k) => !visees.has(k)).sort();
 }
 
 /**

@@ -39,6 +39,12 @@ const hexOf = (v) => normalizeColor(v)?.hex ?? v.toLowerCase();
  * @returns {Brand}
  */
 export function resolveBrand(brand, scales, nearestScale) {
+  /** @param {string} ou @param {unknown} v @returns {string} */
+  const lisible = (ou, v) => {
+    const hex = typeof v === 'string' ? normalizeColor(v)?.hex : null;
+    if (!hex) throw new Error(`cible, bloc brand : ${ou}, couleur illisible « ${String(v)} »`);
+    return hex;
+  };
   /** @type {Slot[]} */
   const slots = [];
   /** @type {Brand['byValue']} */
@@ -47,7 +53,9 @@ export function resolveBrand(brand, scales, nearestScale) {
   /** @type {Record<string, string>} */
   const variables = {};
   for (const [slot, s] of Object.entries(brand?.slots ?? {})) {
-    const value = hexOf(s.value);
+    // Revue de code du 15/11, lot 1b (D18) : une couleur illisible dans la cible est une panne, qui nomme l'emplacement ;
+    // elle ne devient plus un gris rangé sur neutre.
+    const value = lisible(slot, s.value);
     const grey = isGrey(value);
     /** @type {Slot} */
     const out = { slot, ...(s.variable ? { variable: s.variable } : {}), value, scale: '' };
@@ -59,7 +67,7 @@ export function resolveBrand(brand, scales, nearestScale) {
     if (s.variable) variables[s.variable] = value;
     byValue.set(value, { slot, scale: out.scale });
     for (const v of s.variants ?? []) {
-      const vv = hexOf(v.value);
+      const vv = lisible(`${slot}, variante${v.variable ? ` ${v.variable}` : ''}`, v.value);
       if (!byValue.has(vv)) byValue.set(vv, { slot, scale: out.scale });
       if (v.variable) variables[v.variable] = vv;
     }
