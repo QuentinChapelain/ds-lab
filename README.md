@@ -28,10 +28,10 @@ npm run login                                                enregistrer une ses
 npm run verify -- <adresse> --reference <dossier> [--save] [--sources <fichier>]   vérifier qu'une page n'a pas bougé (pixels, arbre d'accessibilité) ; avec --sources, ses éléments tiers sont masqués, comme dans les références de reduce --sources
 npm run apply  -- --modifications <fichier> --racine <dossier> [--essai]   appliquer au CSS la part tranchée
 npm run demo   -- [--racine <dossier>]                       servir la marque fictive en local
-npm run saisie     -- <entree.json>                          saisir une marque : échelles, couche marque, contraste ; refus avec motif
+npm run saisie     -- <entree.json>                          saisir une marque : échelles, couche marque, mode sombre, resolver, contraste dans les deux modes ; refus avec motif
 npm run contraste   -- [--marque <dossier>] [--paires <fichier>] [--mode clair|sombre] [--largeur large|etroit]   contrôler les paires de rôles de couleur
-npm run espacements -- [--marque <dossier>] [--semantique <fichier>]   contrôler les espacements par relation
-npm run typo        -- [--marque <dossier>] [--semantique <fichier>] [--primitives <fichier>] [--couche-marque <fichier>]   contrôler les styles de texte
+npm run espacements -- [--marque <dossier>] [--semantique <fichier>] [--etroit <fichier>]   contrôler les espacements par relation
+npm run typo        -- [--marque <dossier>] [--semantique <fichier>] [--primitives <fichier>] [--couche-marque <fichier>] [--etroit <fichier>]   contrôler les styles de texte
 npm run types                                                vérifier les types JSDoc de src/ (non strict, sans rien émettre)
 npm test
 ```
@@ -60,7 +60,7 @@ Codes de sortie de la chaîne (D18) : `npm run audit` sort en 2 si une page n'a 
 5. **Consigne** : `migration.md`, avec les mêmes identifiants que la revue ; ce qui n'est pas choisi est marqué « ne touche pas ».
 6. **Contrôle** : l'outil relancé sur le CSS modifié, sur les pages de la table et sur des pages témoins jamais vues.
 
-## Étape 3 : nommer les rôles
+## Nommer les rôles
 
 La cible est écrite en quatre couches de jetons DTCG. Les couches communes à toutes les marques sont dans `tokens/commun/` ; chaque marque a son dossier, `tokens/orbe-cafe/` pour Orbe Café :
 
@@ -71,7 +71,7 @@ La cible est écrite en quatre couches de jetons DTCG. Les couches communes à t
 | Rôles | `tokens/commun/semantique.tokens.json` | Les usages : couleurs de fond, de texte et de bordure, espacements par relation, styles de texte ; chacun en alias vers la marque ou une primitive |
 | Paires | `tokens/commun/paires.json` | Les paires de rôles devant / fond et leur seuil de contraste, les exceptions écrites et les paires interdites |
 
-Changer de marque, c'est changer la couche marque : les rôles restent les mêmes. Chaque marque a un resolver au format DTCG 2025.10, `marque.resolver.json`, qui réunit ses jeux de jetons et déclare deux contextes : le mode (clair, sombre) et la largeur (large, étroit). Un contexte échange des valeurs sous les rôles sans en changer un seul ; en étroit, seuls l'écart de section et les grands textes changent (`tokens/commun/largeur.etroit.tokens.json`). Trois commandes contrôlent la cible ; chacune sort en 0 si tout passe, en 1 si une règle échoue, en 2 si elle n'a pas pu juger (fichier absent ou illisible, option inconnue, panne), avec un message d'une ligne (D18). Chacune prend `--marque <dossier>` ; sans l'option, elle contrôle chaque marque de `tokens/`, un bloc par marque sous son en-tête « marque <nom> (tokens/<dossier>/) », et sort en 1 si une marque échoue (D26) :
+Changer de marque, c'est changer la couche marque : les rôles restent les mêmes. Chaque marque a un resolver au format DTCG 2025.10, `marque.resolver.json`, qui réunit ses jeux de jetons et déclare deux contextes : le mode (clair, sombre) et la largeur (large, étroit). Un contexte échange des valeurs sous les rôles sans en changer un seul ; en étroit, seuls l'écart de section et les grands textes changent (`tokens/commun/largeur.etroit.tokens.json`). Les trois contrôles de la cible (contraste, espacements, typo) sortent chacun en 0 si tout passe, en 1 si une règle échoue, en 2 s'il n'a pas pu juger (fichier absent ou illisible, option inconnue, panne), avec un message d'une ligne (D18). Chacun prend `--marque <dossier>` ; sans l'option, il contrôle chaque marque de `tokens/`, un bloc par marque sous son en-tête « marque <nom> (tokens/<dossier>/) », et sort en 1 si une marque échoue (D26) :
 
 - `npm run contraste` : chaque paire de rôles atteint son seuil WCAG 2.1, sauf exception écrite ; les paires interdites sont affichées. `--mode sombre` et `--largeur etroit` choisissent le contexte (clair et large par défaut).
 - `npm run espacements` : écarts strictement croissants, valeurs en étroit, règles de proximité ; les primitives sans rôle sont affichées.
@@ -79,7 +79,7 @@ Changer de marque, c'est changer la couche marque : les rôles restent les même
 
 Trois planches par marque montrent la cible en situation, dans le dossier de la marque : `roles.html`, `espacements.html`, `typo.html` (pour Orbe Café, `tokens/orbe-cafe/roles.html`, `tokens/orbe-cafe/espacements.html`, `tokens/orbe-cafe/typo.html`). Même code pour toutes ; le nom de la marque est lu dans son resolver. Elles sont écrites par `node src/cli/planche.js [--marque <dossier>] [roles|espacements|typo]` : sans `--marque`, celles de chaque marque ; sans planche nommée, les trois (D27). Les règles et leurs raisons sont dans `docs/regles.md`, les décisions dans `docs/decisions.md`.
 
-## Étape 4 : saisir une marque
+## Saisir une marque
 
 Une marque entre par un fichier, `tokens/orbe-cafe/entree.json` pour Orbe Café : un nom, une couleur primaire, un accent facultatif et la police des titres : ses noms de familles, et ses fichiers WOFF2 si le client les donne (`{ "familles": [...], "fichiers": [...] }`, chemins relatifs à l'entrée). Sans fichier, la police est acceptée par ses noms et la saisie l'affiche « non contrôlée » ; avec fichiers, elle lit ses mesures (unités par em, hauteur de capitale, hauteur d'x, ascendante, descendante), ses graisses, sa licence et sa couverture (`src/polices/`), puis mesure dans Chromium l'encre de deux lignes de chaque style de titre, en large et en étroit, avec la consigne de hauteur de capitale (D17) : taille utilisée, hauteur de capitale obtenue, encre (capitale accentuée de la ligne 2 sur descendante de la ligne 1) et écart avec la hauteur de ligne, affichés. La police du texte est celle du produit, commune à toutes les marques (`tokens/commun/police.tokens.json`, D16) ; une entrée peut la remplacer par `polices.texte`. `npm run saisie -- <entree.json>` génère les échelles (pas 9 = couleur saisie), écrit la couche marque et le resolver à côté de l'entrée : écrits d'abord sous un nom temporaire, contrôlés (contraste dans les deux modes, affiché comme par `npm run contraste`), puis mis à la place des anciens (D31).
 
@@ -170,15 +170,16 @@ Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier
 | Dossier | Contenu |
 |---|---|
 | `src/` | Audit, réduction, simulation, rapports |
-| `tokens/commun/` | Couches communes à toutes les marques : primitives, statuts, rôles, paires, contexte étroit |
+| `tokens/commun/` | Couches communes à toutes les marques : primitives, statuts, mode sombre commun, police du produit, aplat plein, rôles, paires, contexte étroit |
 | `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive (entrée, échelles, marque, resolver) et les trois planches |
-| `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/` | Trois marques fictives saisies par fichier (lot 2 de l'étape 4), et leurs trois planches |
-| `docs/` | Règles du design system, décisions, contrat de marque, attendus des prochains lots |
+| `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/` | Trois marques fictives saisies par fichier, et leurs trois planches |
+| `docs/` | Règles du design system, décisions, contrat de marque, identifiants de règles (`docs/identifiants.md`) ; dans `docs/attendus/`, l'attendu de chaque lot, écrit avant le code et gardé à sa date |
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles, attendus |
-| `fixtures/polices/` | Quatre polices d'essai sous licence libre, chacune avec sa licence (étape 4c) |
+| `fixtures/polices/` | Quatre polices d'essai sous licence libre, chacune avec sa licence |
+| `config/` | Exemple de fichier de sources, à copier dans `local/` |
 | `test/` | Tests, dont `noms-interdits` qui refuse tout nom réel dans un fichier ou un message de commit |
 
-Dépendances : `playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (conversions de couleurs et ΔE ; oracle des contrastes dans les tests), `pixelmatch` et `pngjs` (comparaison de captures, lot V). Dépendances de développement : `typescript` 7.0.2 et `@types/node` 22.20.5, pour `npm run types` seulement.
+Dépendances : `playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (conversions de couleurs et ΔE ; oracle des contrastes dans les tests), `pixelmatch` et `pngjs` (comparaison de captures). Dépendances de développement : `typescript` 7.0.2 et `@types/node` 22.20.5, pour `npm run types` seulement.
 
 Règles : marques fictives uniquement ; rien de `local/` ni de `.auth/` dans un fichier versionné ; attendu avant le code. Carte du code : [ARCHITECTURE.md](ARCHITECTURE.md).
 

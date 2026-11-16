@@ -17,8 +17,8 @@ Un même identifiant désigne plusieurs choses. À lire avant de citer l'un d'eu
 | | Ancienne règle des **conflits de déclarations** | attendus seulement ; le code dit « conflit » en clair |
 | **D2, D7** | Conventions du déclaré de l'audit | rapport d'audit |
 | | D02, D07 de `docs/decisions.md` (deux chiffres) | documentation |
-| **C5** | Cas C5 de `test/candidats.test.js` : le défaut est le pas le plus proche de toute l'échelle | tests |
-| | Cas C5 de `test/contraste-modes.test.js` (contrat de la saisie) | tests et `ARCHITECTURE.md` |
+| **C5** | Cas C5 de `test/candidats.test.js` : le défaut est le pas le plus proche de toute l'échelle | tests, commentaire de `dimensionRow` (`src/reduce/propose.js`), D20 de `docs/decisions.md` |
+| | Cas C5 de `test/contraste-modes.test.js` (contrat de la saisie) | tests, `ARCHITECTURE.md`, D31 de `docs/decisions.md` |
 | | Ancien renvoi du motif d'égalité, devenu D20 (les sorties ne citent plus C5) | attendus seulement |
 | **R-1 à R-9** | Identifiant et titre d'une ligne, captures (revue) | commentaires et titres de tests, jamais affichés |
 

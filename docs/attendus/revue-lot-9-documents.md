@@ -72,3 +72,16 @@ FIN-DU-MESSAGE
 10. Contradictions relevées hors de la liste : README.md:31 (résumé de la saisie sans mode sombre ni resolver) ; CLAUDE.md:14 (contraste, sortie 1 sans l'échelle commune redéfinie) ; ARCHITECTURE.md:83 (« d'avant l'étape 4b ») ; KNOWN_ISSUES.md:71 (renvoi au lot du script de la page) ; D23 (« les trois contrôles »).
 
 Décisions de Quentin (16/11/2026) : A6 retiré du lot ; A5 dans `docs/identifiants.md` (lignes 20 et 21, et 22 si elle en devient fausse), D20 inchangée ; A8 étendu à ARCHITECTURE.md:37 ; B2 : ligne 72 retirée et nommée dans « Corrigés et retirés » comme comportement voulu (R5), avec `src/report/consigne.js` et `src/report/modifications.js` en preuve ; B3 : ligne 51 recomptée, ligne 73 garde son compte et sa date et dit que la méthode n'est pas écrite ; B4 : la valise et les deux chemins ; A2 : README.md:74 et ARCHITECTURE.md alignés. Hors liste : README.md:31 corrigé (mode sombre et resolver) ; CLAUDE.md:14, ARCHITECTURE.md:83, KNOWN_ISSUES.md:71 et D23 laissés. Les deux commits s'enchaînent ; pas de fusion avant vérification.
+
+## Écarts constatés à l'exécution
+
+1. A5 : `docs/identifiants.md:22` reste juste. Le motif « au designer de choisir (C5) » ne paraît plus que dans les attendus ; `src/`, `test/` et `fixtures/` ne l'écrivent plus [F]. Ligne inchangée.
+2. C2 : la troisième garde est écrite comme `test/couches.test.js` la vérifie : « aucun module de `src/` hors de `src/cli/` n'importe de `src/cli/` », un module de `src/cli/` important `src/cli/garde.js`. La première précise « chaînes comprises, commentaires exclus », comme ARCHITECTURE.md et D26.
+3. A2 : dans README.md:74, « chacune » (les commandes) devient « chacun » (les contrôles) dans les deux phrases qui suivent.
+4. A4 : la phrase ajoutée à D13 nomme aussi D18 pour le fichier de police que le navigateur refuse de charger (D18 le range en refus, pas en panne).
+
+## Sorties
+
+- `git diff --stat main` : 9 fichiers .md seulement, rien dans `src/`, `test/`, `tokens/`, `fixtures/` ni `package.json` [F].
+- CLAUDE.md : 47 lignes [F].
+- `npm test` : 821 tests, 821 verts, `test/derive-docs.test.js` compris ; contraste, espacements, typo et types à 0 [F].

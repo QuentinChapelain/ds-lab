@@ -1,1 +1,1 @@
-Attendus des prochains lots, écrits et validés avant le code : un fichier par attendu, nommé `etape-<numéro>-<sujet>.md`, ou `revue-lot-<n>-<sujet>.md` pour les lots de nettoyage issus d'une revue de code.
+L'attendu de chaque lot, écrit et validé avant le code, puis gardé à sa date : un fichier par attendu, nommé `etape-<numéro>-<sujet>.md`, ou `revue-lot-<n>-<sujet>.md` pour les lots de nettoyage issus d'une revue de code.

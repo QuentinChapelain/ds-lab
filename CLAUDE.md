@@ -14,6 +14,9 @@ Laboratoire de design system multi-marque, de l'audit à la génération par IA.
 - Proposer un plan avant tout code ; signaler chaque dépendance ajoutée.
 - Lis l'attendu nommé dans le message (`docs/attendus/<fichier>`) avant de proposer un plan ; si le message contient lui-même l'attendu, c'est lui : ne le cherche pas.
 - Un lot n'est fini que si README, ARCHITECTURE et docs sont à jour.
+- Aucun nom de marque dans le code de `src/`, chaînes comprises, commentaires exclus (`test/marque-en-dur.test.js`, D26).
+- Aucun numéro de lot, d'étape ou de séance dans les commentaires, les titres de tests, les noms de fichiers de test ni les textes que l'outil écrit (`test/histoire.test.js`).
+- Aucun module de `src/` hors de `src/cli/` n'importe de `src/cli/` (`test/couches.test.js`).
 
 ## Commandes
 
@@ -25,7 +28,9 @@ npm run typo             styles de texte ; sortie 1 si une règle échoue
 npm run types            types JSDoc de src/ (TypeScript, non strict, sans émission) ; sortie 1 s'il reste une erreur
 ```
 
-Les quatre contrôles (contraste, espacements, typo, types) restent à 0 échec, et npm test ne perd aucun vert, avant chaque commit et à la fin de chaque lot.
+Les trois contrôles de la cible (contraste, espacements, typo) prennent `--marque <dossier>` ; sans l'option, ils jugent chaque marque de `tokens/` et sortent en 1 si une seule échoue (D26). Aucune commande n'a de marque par défaut.
+
+Les trois contrôles de la cible et npm run types restent à 0 échec, et npm test ne perd aucun vert, avant chaque commit et à la fin de chaque lot.
 
 ## Règles du design system
 
@@ -35,6 +40,8 @@ Les quatre contrôles (contraste, espacements, typo, types) restent à 0 échec,
 
 - `ARCHITECTURE.md` : avant de toucher à `src/` ou d'ajouter un dossier, une commande ou une couche de jetons.
 - `docs/decisions.md` : avant de changer un jeton, un nom de rôle ou une règle de contrôle.
+- `docs/identifiants.md` : avant de citer ou de créer un identifiant de règle.
+- `docs/contrat-de-marque.md` : avant de toucher à la saisie ou à un motif de refus.
 - `KNOWN_ISSUES.md` : avant de proposer un lot, et pour y ajouter toute dette laissée en sortant.
 - `docs/attendus/` : l'attendu nommé dans le message, avant le plan.
 - `README.md` : avant de changer ce que l'outil fait ou ses commandes.
