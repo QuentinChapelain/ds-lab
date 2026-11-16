@@ -28,7 +28,7 @@ Jetons d'une marque (phase 1)
          npm run typo                                  src/report/typo.js
 ```
 
-Chaque commande npm a son point d'entrée dans `src/cli/`, sauf `npm run demo` (`test/helpers/demo.js`), `npm run types` (`tsc`) et `npm test` (`node --test`). L'orchestration de l'audit et de la réduction vit dans leur couche, `src/audit/run.js` et `src/reduce/run.js` (D30) ; aucun module de `src/` hors de `src/cli/` n'importe de `src/cli/`. Toute commande a trois issues (D18) : 0 tout passe, 1 l'entrée a été lue et jugée (règle en échec, marque refusée avec son motif), 2 l'entrée n'a pas pu être jugée (fichier absent ou illisible, option inconnue, panne), message d'une ligne préfixé par le nom de la commande ; la garde commune est `src/cli/garde.js`. Les sorties d'audit et de réduction sur un vrai site vont dans `local/`, jamais versionné.
+Chaque commande npm a son point d'entrée dans `src/cli/`, sauf `npm run demo` (`test/helpers/demo.js`), `npm run types` (`tsc`), `npm run knip` (`knip`), `npm run dependances` (`depcruise`) et `npm test` (`node --test`). L'orchestration de l'audit et de la réduction vit dans leur couche, `src/audit/run.js` et `src/reduce/run.js` (D30) ; aucun module de `src/` hors de `src/cli/` n'importe de `src/cli/`. Toute commande a trois issues (D18) : 0 tout passe, 1 l'entrée a été lue et jugée (règle en échec, marque refusée avec son motif), 2 l'entrée n'a pas pu être jugée (fichier absent ou illisible, option inconnue, panne), message d'une ligne préfixé par le nom de la commande ; la garde commune est `src/cli/garde.js`. Les sorties d'audit et de réduction sur un vrai site vont dans `local/`, jamais versionné.
 
 ## src/, un dossier par ligne
 
@@ -84,6 +84,8 @@ Aucune branche de code ne dépend du nom d'une marque : une différence réelle 
 | `test/` | Tests `node --test`, nommés par sujet ; `test/helpers/` sert la marque fictive en local et porte le lexeur des gardes (`test/helpers/commentaires.js`) |
 | `config/` | Exemple de fichier de sources, à copier dans `local/` |
 | `.github/workflows/` | La CI : un job, une étape par commande (`.github/workflows/ci.yml`) |
+| `knip.json`, `.dependency-cruiser.json` | Configurations de `npm run knip` (entrées : `src/cli/*.js` et les tests ; les scripts npm en ajoutent d'autres) et de `npm run dependances` (deux règles, chacune avec sa raison) |
+| `.node-version` | Version de Node du poste de travail (24.22.3), lue par un gestionnaire de versions ; la CI garde Node 22, borne basse de `engines` |
 | `docs/` | Règles du design system, décisions, contrat de marque, identifiants de règles (`docs/identifiants.md`) ; dans `docs/attendus/`, l'attendu de chaque lot, écrit avant le code et gardé à sa date |
 | `local/`, `.auth/` | Données de vrais sites et sessions enregistrées : jamais versionnés |
 
@@ -124,6 +126,8 @@ Changer de marque, c'est changer la couche marque ; les rôles restent les même
 | `npm run espacements` | Écarts par relation, valeurs en étroit, règles de proximité ; sort en 1 si l'une échoue, en 2 sur une panne |
 | `npm run typo` | Règles des styles de texte ; sort en 1 si l'une échoue, en 2 sur une panne ; `--couche-marque <fichier>` pour une couche marque donnée à part |
 | `npm run types` | Types JSDoc des fichiers de `src/` (`@ts-check`) : `tsc -p tsconfig.json`, non strict, sans rien émettre ; sort en 1 s'il reste une erreur. Tenu à 0 avant chaque commit, comme les trois contrôles de la cible |
+| `npm run knip` | Ce qui ne sert plus : fichiers, exports, dépendances de `src/` et `test/` (`knip`, `knip.json`) ; sort en 1 s'il reste un élément. Tenu à 0 avant chaque commit |
+| `npm run dependances` | Cycles d'import et modules orphelins de `src/` (`depcruise src test`, `.dependency-cruiser.json`) ; sort en 1 si une règle échoue. Tenu à 0 avant chaque commit |
 | `npm test` | Tous les tests |
 
 Les trois contrôles de la cible prennent `--marque <dossier>` ; sans l'option, ils contrôlent chaque marque de `tokens/` qui a un resolver, un bloc par marque sous son en-tête, et sortent en 1 si une marque échoue (D26). Aucune commande ne prend de marque par défaut.
@@ -142,12 +146,14 @@ Chacun est tenu par le code ou par un test, cité.
 - Une marque refusée par `npm run saisie`, ou une saisie en panne, n'écrit rien ; la couche marque d'Orbe Café en sort identique, octet par octet (`test/saisie.test.js`, `test/saisie-ecriture.test.js`, `test/pannes.test.js`).
 - La saisie juge le contraste par la même fusion que les contrôles, celle du resolver (`test/contraste-modes.test.js`, C5).
 - `modifications.json` ne relit pas le texte de `migration.md` : il lit les entrées de la consigne structurée (`test/consigne-unit.test.js`).
-- `src/cli/` n'est importé par aucun autre module de `src/` ; `src/browser/` n'importe que `src/browser/` et `src/lib/` (`test/couches.test.js`).
+- `src/cli/` n'est importé par aucun autre module de `src/` ; `src/browser/` n'importe que `src/browser/` et `src/lib/` (`test/couches.test.js`). Les règles de couches n'ont que cette définition.
+- Aucun fichier, export ni dépendance qui ne sert plus : un export que rien n'importe perd le mot `export`, sans exception nommée (`npm run knip`).
+- Aucun cycle d'import ; aucun module de `src/` sans lien, ni importé ni importateur (`npm run dependances`).
 - Aucun nom réel dans un fichier versionné, un chemin ou un message de commit (`test/noms-interdits.test.js`).
 - Aucun nom de marque dans le code de `src/`, commentaires exclus (`test/marque-en-dur.test.js`, D26).
 - Les planches versionnées de chaque marque égalent la sortie de leur fonction (`test/planches-marques.test.js`, D27).
 - Rien de `local/` ni de `.auth/` n'est versionné (`.gitignore`).
-- À chaque push, une machine neuve (ubuntu-24.04, Node 22) rejoue `npm ci`, l'installation de Chromium, `npm run types`, les trois contrôles de la cible et `npm test`, une étape par commande ; une étape en échec arrête les suivantes. Actions épinglées par empreinte, lecture seule, aucun secret (`.github/workflows/ci.yml`).
+- À chaque push, une machine neuve (ubuntu-24.04, Node 22) rejoue `npm ci`, l'installation de Chromium, `npm run types`, `npm run knip`, `npm run dependances`, les trois contrôles de la cible et `npm test`, une étape par commande ; une étape en échec arrête les suivantes. Actions épinglées par empreinte, lecture seule, aucun secret (`.github/workflows/ci.yml`).
 - Chaque commande et chaque chemin cités dans la documentation existent, attendus exceptés : ils décrivent le dépôt à leur date (`test/derive-docs.test.js`).
 - Un commentaire dit sa raison, pas son histoire : aucun numéro de lot, d'étape ou de séance dans les commentaires de `src/` et de `test/`, les titres des tests ni les noms de fichiers de test ; un commentaire renvoie à une décision par son numéro (`test/histoire.test.js`). La même garde couvre les textes que l'outil écrit : chaînes de `src/` (y compris un commentaire placé dans le gabarit d'une page), descriptions des jetons de `tokens/`, `$comment` des cibles de `fixtures/marque-demo/`.
 
@@ -155,7 +161,9 @@ Chacun est tenu par le code ou par un test, cité.
 
 `playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (conversions de couleurs et ΔE ; dans les tests, oracle indépendant du contraste), `pixelmatch` et `pngjs` (comparaison de captures). Toute nouvelle dépendance est signalée dans le plan du lot.
 
-Dépendances de développement, en version exacte, pour `npm run types` seulement :
+Dépendances de développement, en version exacte, pour les commandes d'analyse seulement :
 
 - `typescript` 7.0.2 : vérifie les types JSDoc de `src/` selon `tsconfig.json` à la racine (`allowJs`, `checkJs`, `noEmit`, modules `nodenext`, `strict: false`). La version 7 est un compilateur natif : le paquet `typescript` n'est qu'un lanceur, le compilateur est un binaire par plateforme (`@typescript/typescript-<os>-<cpu>`), installé par les dépendances facultatives ; npm n'installe que celui de la machine, et `package-lock.json` les liste toutes. `npm ci --omit=optional` (ou `--no-optional`) rend `tsc` inutilisable.
 - `@types/node` 22.20.5 : types de la plus ancienne version de Node prise en charge (`engines` : `>=22`), pour qu'un appel à une API plus récente soit signalé.
+- `knip` 6.45.1 (`npm run knip`) : lit le code avec oxc, sans charger TypeScript ; il ne lit que le `package.json` du paquet `typescript`, pour rattacher le binaire `tsc` du script `types`. Demande Node `^20.19.0 || >=22.12.0`.
+- `dependency-cruiser` 18.7.2 (`npm run dependances`) : lit le JavaScript avec acorn ; il lit le `package.json` du paquet `typescript` pour en connaître la version et écarte la 7.0, sans effet sur ce dépôt, qui n'a pas de source TypeScript. Sa ligne de commande refuse de démarrer hors de Node `^22||^24||>=26`.

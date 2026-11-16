@@ -26,11 +26,15 @@ npm run contraste        paires de rôles de couleur ; sortie 1 si une paire éc
 npm run espacements      espacements par relation ; sortie 1 si une règle échoue
 npm run typo             styles de texte ; sortie 1 si une règle échoue
 npm run types            types JSDoc de src/ (TypeScript, non strict, sans émission) ; sortie 1 s'il reste une erreur
+npm run knip             fichiers, exports et dépendances qui ne servent plus ; sortie 1 s'il en reste
+npm run dependances      cycles d'import, modules orphelins de src/ ; sortie 1 si une règle échoue
 ```
 
 Les trois contrôles de la cible (contraste, espacements, typo) prennent `--marque <dossier>` ; sans l'option, ils jugent chaque marque de `tokens/` et sortent en 1 si une seule échoue (D26). Aucune commande n'a de marque par défaut.
 
-Les trois contrôles de la cible et npm run types restent à 0 échec, et npm test ne perd aucun vert, avant chaque commit et à la fin de chaque lot. La CI (`.github/workflows/ci.yml`) rejoue ces commandes à chaque push ; elle ne remplace pas le lancement local.
+Les trois contrôles de la cible, npm run types, npm run knip et npm run dependances restent à 0 échec, et npm test ne perd aucun vert, avant chaque commit et à la fin de chaque lot. La CI (`.github/workflows/ci.yml`) rejoue ces commandes à chaque push ; elle ne remplace pas le lancement local.
+
+Node : la version de `.node-version` (Node 24 LTS). Vérifier `node -v` avant les commandes : sous Node 25, `npm run dependances` refuse de démarrer.
 
 ## Règles du design system
 

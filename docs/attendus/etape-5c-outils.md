@@ -68,3 +68,19 @@ FIN-DU-MESSAGE
 - Fait : fnm 1.39.0 par Homebrew (une formule, sans dépendance) ; Node 24.22.3 installé par fnm, `fnm default system` ; dans `~/.zshrc`, un crochet de changement de dossier qui prend la version de `.node-version` dans ds-lab et le Node du système partout ailleurs ; `.node-version` (24.22.3) entre dans le dépôt. Un premier essai avec `fnm env --use-on-cd` était trop large : il changeait aussi le Node d'autres projets du Mac (l'un passé en 24, un autre en échec sur son `.nvmrc`) ; remplacé [F].
 - Vérifié [F] : Node 24.22.3 et npm 11.19.1 dans ds-lab et ses sous-dossiers, Node 25.6.1 dans les autres projets. Sous Node 24 : `npm ci` sans changement du verrou, `npm run types` et les trois contrôles à 0, `npm test` 822 tests, 822 verts (les deux tests des noms interdits tournent, la liste étant sur le Mac). Aucun test ne casse sous 24.
 - La CI reste sous Node 22, borne basse de `engines`.
+
+## Écarts constatés à l'exécution
+
+- `knip --fix --fix-type exports` a retiré le mot `export` : 72 lignes dans 24 fichiers, chacune ne perd que `export ` [F]. Aucune exception dans `knip.json`.
+- `test/helpers/demo.js` retiré des entrées de `knip.json` : knip le donnait pour redondant, il le lit déjà dans le script `demo` [F].
+- Le premier crochet fnm (`fnm env --use-on-cd`) changeait le Node d'autres projets du Mac : remplacé par un crochet qui ne vise que ds-lab (voir plus haut) [F].
+- Le shell de Claude Code ne lit pas ce crochet : les commandes y sont lancées avec le Node 24 de fnm en tête du PATH ; CLAUDE.md demande de vérifier `node -v` [F].
+- `test/derive-docs.test.js` prenait `typescript/package.json` pour un chemin du dépôt : la documentation dit « le `package.json` du paquet `typescript` » [F].
+- Captures : `revue.html` de la réduction de la page de marque diffère, d'une capture à l'autre du même code, par une ou deux de ses 31 images ; inscrit dans KNOWN_ISSUES.md [F].
+
+## Sorties
+
+- Captures avant (main, 372470e) et après (676c095), sous Node 24.22.3, script du lot 8 bis repris dans `local/` : 6 réductions de fixtures, saisie des 4 marques (verdict et fichiers de jetons), générateurs de `tokens/commun/`, calibrage, audit, valise générée, les trois contrôles. 66 fichiers : 65 identiques à l'octet, chemin de capture et port neutralisés ; le dernier (`revue.html` de la page de marque) identique hors de ses images base64, qui varient déjà entre deux captures avant [F]. Avec la neutralisation du lot 8 bis (images, ordre des feuilles de l'audit) : 64 fichiers comparés, 0 différent. Fichiers de `tokens/` inchangés après la saisie.
+- Sur le Mac, Node 24.22.3 [F] : `npm run types`, `npm run knip`, `npm run dependances` et les trois contrôles à 0 ; `npm test` 822 tests, 822 verts. Durées : knip 0,86 s, dependency-cruiser 0,54 s (183 modules, 1 022 liens).
+- CI rouge sur 795e4a8 (exécution 43978218116), à l'étape `npm run knip`, « Unused exports (72) », comme voulu [F].
+- CI verte sur 676c095 (exécution 43978799463, Node 22) : toutes les étapes passent, `npm run dependances` 183 modules et 1 022 liens, `npm test` 822 tests, 820 verts, 2 sautés (`test/noms-interdits.test.js`, liste absente) [F]. Le commit de documentation qui suit ne touche ni `src/` ni `test/`.

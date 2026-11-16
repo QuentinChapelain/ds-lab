@@ -33,6 +33,8 @@ npm run contraste   -- [--marque <dossier>] [--paires <fichier>] [--mode clair|s
 npm run espacements -- [--marque <dossier>] [--semantique <fichier>] [--etroit <fichier>]   contrôler les espacements par relation
 npm run typo        -- [--marque <dossier>] [--semantique <fichier>] [--primitives <fichier>] [--couche-marque <fichier>] [--etroit <fichier>]   contrôler les styles de texte
 npm run types                                                vérifier les types JSDoc de src/ (non strict, sans rien émettre)
+npm run knip                                                 chercher ce qui ne sert plus : fichiers, exports, dépendances
+npm run dependances                                          chercher les cycles d'import et les modules orphelins de src/
 npm test
 ```
 
@@ -180,13 +182,15 @@ Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier
 | `.github/workflows/` | La CI, `.github/workflows/ci.yml` |
 | `test/` | Tests, dont `noms-interdits` qui refuse tout nom réel dans un fichier ou un message de commit |
 
-Dépendances : `playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (conversions de couleurs et ΔE ; oracle des contrastes dans les tests), `pixelmatch` et `pngjs` (comparaison de captures). Dépendances de développement : `typescript` 7.0.2 et `@types/node` 22.20.5, pour `npm run types` seulement.
+Dépendances : `playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (conversions de couleurs et ΔE ; oracle des contrastes dans les tests), `pixelmatch` et `pngjs` (comparaison de captures). Dépendances de développement, en version exacte : `typescript` 7.0.2 et `@types/node` 22.20.5 pour `npm run types`, `knip` 6.45.1 pour `npm run knip` (configuration `knip.json`), `dependency-cruiser` 18.7.2 pour `npm run dependances` (configuration `.dependency-cruiser.json`).
+
+Node : `engines` demande `>=22`, la CI tourne sous Node 22. Le poste de travail tourne sous la version écrite dans `.node-version` (24.22.3, Node 24 LTS), qu'un gestionnaire de versions comme fnm choisit en entrant dans le dossier. dependency-cruiser ne démarre que sous Node 22, 24 ou 26 et plus : sous Node 25, `npm run dependances` refuse de tourner.
 
 Règles : marques fictives uniquement ; rien de `local/` ni de `.auth/` dans un fichier versionné ; attendu avant le code. Carte du code : [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Intégration continue
 
-À chaque push, sur toute branche, et à la demande, GitHub rejoue sur une machine neuve (ubuntu-24.04, Node 22, borne basse de `engines`) ce qui est demandé avant un commit : `npm ci`, Chromium installé par `playwright-core` (la variante sans fenêtre), `npm run types`, les trois contrôles de la cible (`npm run contraste`, `npm run espacements`, `npm run typo`), puis `npm test`. Une étape par commande : l'étape rouge dit laquelle échoue, et les suivantes ne tournent pas. Les deux tests des noms interdits y sont sautés : leur liste vit dans `local/`, jamais versionné. La CI ne remplace pas le lancement sur sa machine avant un commit. Fichier : `.github/workflows/ci.yml`.
+À chaque push, sur toute branche, et à la demande, GitHub rejoue sur une machine neuve (ubuntu-24.04, Node 22, borne basse de `engines`) ce qui est demandé avant un commit : `npm ci`, Chromium installé par `playwright-core` (la variante sans fenêtre), `npm run types`, `npm run knip`, `npm run dependances`, les trois contrôles de la cible (`npm run contraste`, `npm run espacements`, `npm run typo`), puis `npm test`. Une étape par commande : l'étape rouge dit laquelle échoue, et les suivantes ne tournent pas. Les deux tests des noms interdits y sont sautés : leur liste vit dans `local/`, jamais versionné. La CI ne remplace pas le lancement sur sa machine avant un commit. Fichier : `.github/workflows/ci.yml`.
 
 ## Limites
 

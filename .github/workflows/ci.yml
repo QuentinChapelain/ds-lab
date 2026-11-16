@@ -1,5 +1,5 @@
-# Rejoue, sur une machine neuve, ce que CLAUDE.md demande avant un commit : types, les trois contrôles
-# de la cible, puis tous les tests avec Chromium. Une étape par commande : la ligne rouge dit laquelle échoue.
+# Rejoue, sur une machine neuve, ce que CLAUDE.md demande avant un commit : types, ce qui ne sert plus (knip),
+# cycles et orphelins (dependency-cruiser), les trois contrôles de la cible, puis tous les tests avec Chromium. Une étape par commande : la ligne rouge dit laquelle échoue.
 name: CI
 
 on:
