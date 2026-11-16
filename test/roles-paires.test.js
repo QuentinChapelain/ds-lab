@@ -50,7 +50,7 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { loadRoles, resolveRoles, contratRoles, contrat } from '../src/tokens/roles.js';
-import { PAIRES_AJOUTEES, INTERDITES_AJOUTEES } from './helpers/lot5.js';
+import { PAIRES_AJOUTEES, INTERDITES_AJOUTEES } from './helpers/roles-ajoutes.js';
 import { charger, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));

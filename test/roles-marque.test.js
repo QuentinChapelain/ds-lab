@@ -42,7 +42,7 @@ import { interpolate, formatHex, rgb } from 'culori';
 import { generateScale } from '../src/valise/generate.js';
 import { loadRoles, resolveRoles, contratRoles } from '../src/tokens/roles.js';
 import { fondsClairs } from '../src/tokens/saisie.js';
-import { AJOUTS } from './helpers/lot5.js';
+import { AJOUTS } from './helpers/roles-ajoutes.js';
 import { classePlein, voileBlanc, marqueTokens, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL, STATUTS_FIGES, VOILE_BLANC } from '../src/tokens/pleins.js';
 import { charger, avecAplat, COMMUN, ORBE } from './helpers/jetons.js';
 

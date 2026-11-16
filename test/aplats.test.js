@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { loadRoles, resolveRoles, contratRoles } from '../src/tokens/roles.js';
 import { serialiser } from '../src/tokens/saisie.js';
-import { AJOUTS, PAIRES_AJOUTEES, INTERDITES_AJOUTEES } from './helpers/lot5.js';
+import { AJOUTS, PAIRES_AJOUTEES, INTERDITES_AJOUTEES } from './helpers/roles-ajoutes.js';
 import { charger, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
