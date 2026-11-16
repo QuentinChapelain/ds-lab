@@ -83,6 +83,7 @@ Aucune branche de code ne dépend du nom d'une marque : une différence réelle 
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles et attendus des tests de bout en bout ; `fixtures/marque-demo/jetons/primitives.tokens.json`, primitives d'Orbe Café d'avant l'étape 4b, figées : référence de cet état passé seulement (`test/roles-statuts.test.js`), les tests de `npm run reduce` lisent le resolver d'Orbe Café (D28) ; `fixtures/polices/`, quatre polices d'essai sous licence libre, chacune avec sa licence |
 | `test/` | Tests `node --test`, nommés par sujet ; `test/helpers/` sert la marque fictive en local et porte le lexeur des gardes (`test/helpers/commentaires.js`) |
 | `config/` | Exemple de fichier de sources, à copier dans `local/` |
+| `.github/workflows/` | La CI : un job, une étape par commande (`.github/workflows/ci.yml`) |
 | `docs/` | Règles du design system, décisions, contrat de marque, identifiants de règles (`docs/identifiants.md`) ; dans `docs/attendus/`, l'attendu de chaque lot, écrit avant le code et gardé à sa date |
 | `local/`, `.auth/` | Données de vrais sites et sessions enregistrées : jamais versionnés |
 
@@ -146,6 +147,7 @@ Chacun est tenu par le code ou par un test, cité.
 - Aucun nom de marque dans le code de `src/`, commentaires exclus (`test/marque-en-dur.test.js`, D26).
 - Les planches versionnées de chaque marque égalent la sortie de leur fonction (`test/planches-marques.test.js`, D27).
 - Rien de `local/` ni de `.auth/` n'est versionné (`.gitignore`).
+- À chaque push, une machine neuve (ubuntu-24.04, Node 22) rejoue `npm ci`, l'installation de Chromium, `npm run types`, les trois contrôles de la cible et `npm test`, une étape par commande ; une étape en échec arrête les suivantes. Actions épinglées par empreinte, lecture seule, aucun secret (`.github/workflows/ci.yml`).
 - Chaque commande et chaque chemin cités dans la documentation existent, attendus exceptés : ils décrivent le dépôt à leur date (`test/derive-docs.test.js`).
 - Un commentaire dit sa raison, pas son histoire : aucun numéro de lot, d'étape ou de séance dans les commentaires de `src/` et de `test/`, les titres des tests ni les noms de fichiers de test ; un commentaire renvoie à une décision par son numéro (`test/histoire.test.js`). La même garde couvre les textes que l'outil écrit : chaînes de `src/` (y compris un commentaire placé dans le gabarit d'une page), descriptions des jetons de `tokens/`, `$comment` des cibles de `fixtures/marque-demo/`.
 

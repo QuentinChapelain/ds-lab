@@ -61,3 +61,16 @@ FIN-DU-MESSAGE
 8. Q6 : versions courantes au 16/11/2026, API GitHub : `actions/checkout` v7.0.1 (`3d3c42e5aac5ba805825da76410c181273ba90b1`, aussi pointé par `v7`), `actions/setup-node` v7.1.0 (`949feb2413d6458794dcd2491c4babbbce0c15c1`, aussi pointé par `v7`) [F]. Épinglées par empreinte, étiquette en commentaire : une étiquette se déplace sans trace dans ce dépôt.
 
 Décisions de Quentin (16/11/2026) : `--only-shell` ; empreintes avec l'étiquette en commentaire (relues sur GitHub par Claude : justes) ; `persist-credentials: false`. Un seul job en Node 22, pas de matrice ; écart avec le Mac dans `KNOWN_ISSUES.md`. Rouge voulu : sur `etape-5a-rouge`, seul change le pas 11 d'Écume et Sel ; rien n'en revient dans `etape-5a`. `CLAUDE.md` : la règle « avant chaque commit » dit que la CI rejoue ces commandes à chaque push sans remplacer le lancement local. Rouge sur le hero ou sur l'encre : arrêt, valeurs du runner à côté de celles du Mac.
+
+## Écarts constatés à l'exécution
+
+1. Première exécution sur `etape-5a` (26d4f99, exécution 43959932055) : rouge sur `npm test`, 3 tests en échec sur le runner, 0 sur le Mac [F]. Point d'arrêt : l'anneau de focus du navigateur (`#101010` sous Linux, `#005fcc` sous macOS) et deux tests d'encre (E3, E4 : bornes de `measureText` arrondies vers l'extérieur sous Linux). Le hero sur deux lignes, craint en Q4, passe sur le runner [F].
+2. Deux diagnostics sur branches jetables, autorisés puis supprimés (`etape-5a-diag`, exécution 43962290379 ; `etape-5a-diag-2`, exécution 43964073175), puis le lot 5b (`docs/attendus/etape-5b-plateforme.md`, D32) sur cette branche : encre lue dans les pixels, facteur de taille calculé depuis le fichier, anneau reconnu par sa nature.
+3. Compte de tests en CI : 822, 820 verts, 2 sautés, au lieu de 821, 819 et 2 : le lot 5b a ajouté E6 [F].
+4. Node du runner : 22.23.4 [F].
+5. Documentation : `test/derive-docs.test.js` lisait les noms des actions écrits entre accents graves comme des chemins du dépôt ; ils sont écrits en clair dans `KNOWN_ISSUES.md` [F].
+
+## Sorties
+
+- CI verte sur d1384d5 (exécution https://github.com/QuentinChapelain/ds-lab/actions/runs/43969395529) : 822 tests, 820 verts, 2 sautés (`test/noms-interdits.test.js`, « local/noms-interdits.txt absent ou vide ») [F]. Durées : checkout 5 s, Node 7 s, `npm ci` 2 s (cache npm), Chromium et dépendances 29 s, `npm run types` < 1 s, contraste < 1 s, espacements 1 s, typo < 1 s, `npm test` 243 s [F].
+- Rouge voulu (exécution https://github.com/QuentinChapelain/ds-lab/actions/runs/43970687764, branche `etape-5a-rouge` depuis d1384d5, pas 11 du primaire d'Écume et Sel en `#cccccc`, seul changement, supprimée ensuite en local et sur GitHub, jamais fusionnée) : étape rouge `npm run contraste`, sortie 1 ; `npm run espacements`, `npm run typo` et `npm test` n'ont pas tourné (skipped) [F]. La ligne rouge nomme la marque et les paires : « marque Écume et Sel (tokens/ecume-et-sel/) », « 70 paires de rôles, 17 paires en échec », dont « ✗ texte.interactif sur fond.app : 1,55:1, seuil 4,50:1 », « ✗ bordure.focus sur fond.composant : 1,44:1, seuil 3,00:1 », « ✗ texte.marque.grand sur fond.marque.discret : 1,44:1, seuil 3,00:1 » ; les trois autres marques : 0 paire en échec [F].

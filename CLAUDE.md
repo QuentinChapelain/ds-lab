@@ -30,7 +30,7 @@ npm run types            types JSDoc de src/ (TypeScript, non strict, sans émis
 
 Les trois contrôles de la cible (contraste, espacements, typo) prennent `--marque <dossier>` ; sans l'option, ils jugent chaque marque de `tokens/` et sortent en 1 si une seule échoue (D26). Aucune commande n'a de marque par défaut.
 
-Les trois contrôles de la cible et npm run types restent à 0 échec, et npm test ne perd aucun vert, avant chaque commit et à la fin de chaque lot.
+Les trois contrôles de la cible et npm run types restent à 0 échec, et npm test ne perd aucun vert, avant chaque commit et à la fin de chaque lot. La CI (`.github/workflows/ci.yml`) rejoue ces commandes à chaque push ; elle ne remplace pas le lancement local.
 
 ## Règles du design system
 

@@ -177,11 +177,16 @@ Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles, attendus |
 | `fixtures/polices/` | Quatre polices d'essai sous licence libre, chacune avec sa licence |
 | `config/` | Exemple de fichier de sources, à copier dans `local/` |
+| `.github/workflows/` | La CI, `.github/workflows/ci.yml` |
 | `test/` | Tests, dont `noms-interdits` qui refuse tout nom réel dans un fichier ou un message de commit |
 
 Dépendances : `playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (conversions de couleurs et ΔE ; oracle des contrastes dans les tests), `pixelmatch` et `pngjs` (comparaison de captures). Dépendances de développement : `typescript` 7.0.2 et `@types/node` 22.20.5, pour `npm run types` seulement.
 
 Règles : marques fictives uniquement ; rien de `local/` ni de `.auth/` dans un fichier versionné ; attendu avant le code. Carte du code : [ARCHITECTURE.md](ARCHITECTURE.md).
+
+## Intégration continue
+
+À chaque push, sur toute branche, et à la demande, GitHub rejoue sur une machine neuve (ubuntu-24.04, Node 22, borne basse de `engines`) ce qui est demandé avant un commit : `npm ci`, Chromium installé par `playwright-core` (la variante sans fenêtre), `npm run types`, les trois contrôles de la cible (`npm run contraste`, `npm run espacements`, `npm run typo`), puis `npm test`. Une étape par commande : l'étape rouge dit laquelle échoue, et les suivantes ne tournent pas. Les deux tests des noms interdits y sont sautés : leur liste vit dans `local/`, jamais versionné. La CI ne remplace pas le lancement sur sa machine avant un commit. Fichier : `.github/workflows/ci.yml`.
 
 ## Limites
 
