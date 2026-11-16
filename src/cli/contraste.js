@@ -11,7 +11,7 @@
  * défaut) ; un contexte inconnu sort en 2.
  * Revue de code du 15/11, lot 1a (D18) : toute panne (option inconnue, fichier absent ou illisible) sort en 2, par la garde
  * commune (src/cli/garde.js).
- * Revue de code, lot 6 (D31, D32) : texte du contrôle dans src/report/contraste.js, lu aussi par la saisie ; une marque dont
+ * Revue de code, lot 6 (D25, D31) : texte du contrôle dans src/report/contraste.js, lu aussi par la saisie ; une marque dont
  * primitives.tokens.json redéfinit une échelle commune échoue (sortie 1), l'échelle nommée.
  * Usage : npm run contraste [-- --paires <fichier>] [--marque <dossier>] [--mode clair|sombre] [--largeur large|etroit]
  */
@@ -24,7 +24,7 @@ import { lancer, parMarque } from './garde.js';
 await lancer('contraste', () => {
   const { values } = parseArgs({ options: { paires: { type: 'string' }, marque: { type: 'string' }, mode: { type: 'string' }, largeur: { type: 'string' } } });
   return parMarque(values.marque, (dossier) => {
-    // Revue de code, lot 6 (D32) : une marque qui redéfinit une échelle commune échoue, comme à la saisie.
+    // Revue de code, lot 6 (D25) : une marque qui redéfinit une échelle commune échoue, comme à la saisie.
     const roles = loadRoles(dossier, { paires: values.paires, mode: values.mode, largeur: values.largeur });
     const redefinies = echellesCommunesRedefinies(echellesPropres(dossier));
     if (redefinies.length) {

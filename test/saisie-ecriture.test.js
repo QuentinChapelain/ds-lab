@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Revue de code, lot 6, point 3 (docs/attendus/revue-lot-6-structure.md, D31, D32) : une seule fusion de contexte de
+ * Revue de code, lot 6, point 3 (docs/attendus/revue-lot-6-structure.md, D25, D31) : une seule fusion de contexte de
  * marque dans la saisie, celle du resolver ; écrire à côté, contrôler, puis remplacer ; aucune échelle commune redéfinie
  * par une marque. Sans navigateur.
  *

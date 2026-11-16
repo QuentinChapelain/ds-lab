@@ -28,7 +28,7 @@ Jetons d'une marque (phase 1)
          npm run typo                                  src/report/typo.js
 ```
 
-Chaque commande npm a son point d'entrée dans `src/cli/`. Toute commande a trois issues (D18) : 0 tout passe, 1 l'entrée a été lue et jugée (règle en échec, marque refusée avec son motif), 2 l'entrée n'a pas pu être jugée (fichier absent ou illisible, option inconnue, panne), message d'une ligne préfixé par le nom de la commande ; la garde commune est `src/cli/garde.js`. Les sorties d'audit et de réduction sur un vrai site vont dans `local/`, jamais versionné.
+Chaque commande npm a son point d'entrée dans `src/cli/`. L'orchestration de l'audit et de la réduction vit dans leur couche, `src/audit/run.js` et `src/reduce/run.js` (D30) ; aucun module de `src/` hors de `src/cli/` n'importe de `src/cli/`. Toute commande a trois issues (D18) : 0 tout passe, 1 l'entrée a été lue et jugée (règle en échec, marque refusée avec son motif), 2 l'entrée n'a pas pu être jugée (fichier absent ou illisible, option inconnue, panne), message d'une ligne préfixé par le nom de la commande ; la garde commune est `src/cli/garde.js`. Les sorties d'audit et de réduction sur un vrai site vont dans `local/`, jamais versionné.
 
 ## src/, un dossier par ligne
 
@@ -39,14 +39,14 @@ Chaque commande npm a son point d'entrée dans `src/cli/`. Toute commande a troi
 | `src/browser/` | Ce qui tourne dans le navigateur : chargement, feuilles de style, relevé du rendu, états forcés, simulation d'une table |
 | `src/declared/` | Audit du déclaré : toutes les feuilles de toutes les pages, dédoublonnées et comptées |
 | `src/rendered/` | Audit du rendu : relevé d'une page chargée, puis agrégation de toutes les pages |
-| `src/lib/` | Fonctions pures partagées : couleurs (OKLab, ΔE, contraste WCAG), mise en forme des sorties (`format.js`), unités, clés de valeurs, adresses, sources |
-| `src/reduce/` | Proposition de la table ancien → nouveau, texte sur plein, déclarations sources et conflits |
+| `src/lib/` | Fonctions pures partagées : couleurs (OKLab, ΔE, contraste WCAG), mise en forme des sorties (`format.js`), unités, clés de valeurs, adresses, sources ; lecture d'un fichier JSON et message d'erreur d'une ligne (`fichiers.js`, D30) |
+| `src/reduce/` | Proposition de la table ancien → nouveau, texte sur plein et couplages, déclarations sources et conflits ; orchestration de `npm run reduce` (`run.js`, `runReduce`, D30) |
 | `src/brand/` | Marque déclarée dans la cible ; lecture rapide de la marque d'un site, avant la réduction |
 | `src/polices/` | Police des titres d'une marque : lecture d'un WOFF2 (mesures, graisses, licence, couverture), sans dépendance ; garde-fous ; contrôle d'encre de deux lignes dans Chromium (`encre.js`, playwright-core déjà présent), lancé par la saisie quand l'entrée donne les fichiers |
 | `src/valise/` | Générateur d'échelles visé par contraste, et son contrôle `checkValise` |
-| `src/tokens/` | Jetons DTCG d'une marque : lecteur de resolver, liste des marques (`dossiersDeMarque`, `nomDeMarque`), primitives, pleins, rôles et paires, espacements, styles de texte ; calcul des trois contrôles |
-| `src/report/` | Sorties lisibles : rapport d'audit, revue, `migration.md`, planches des rôles, des espacements et de la typo d'une marque (`planche(dossier)`), calibrage des pleins |
-| `src/apply/` | Application de `modifications.json` aux feuilles d'une copie du site |
+| `src/tokens/` | Jetons DTCG d'une marque : lecteur de resolver, liste des marques (`dossiersDeMarque`, `nomDeMarque`), primitives, pleins, rôles et paires, espacements, styles de texte ; calcul des trois contrôles ; écriture de la saisie, à côté puis en remplacement (`ecriture.js`, D31) |
+| `src/report/` | Sorties lisibles : rapport d'audit, revue, `migration.md`, planches des rôles, des espacements et de la typo d'une marque (`planche(dossier)`), calibrage des pleins ; consigne pour un agent, structurée (`consigne.js`, D29), et `modifications.json` (`modifications.js`) ; texte du contrôle de contraste (`contraste.js`) |
+| `src/apply/` | Application de `modifications.json` aux feuilles d'une copie du site ; lit le fichier, n'importe rien de `src/reduce/` ni de `src/report/` (D30) |
 | `src/verify/` | Captures, références et comparaisons (pixels, arbre d'accessibilité), partagées par reduce et verify |
 
 ## Fonctions communes
@@ -61,6 +61,12 @@ Une règle écrite à plusieurs endroits a une seule définition (revue de code,
 | Valeur retenue après décision | `retenue` dans `src/reduce/propose.js`, à côté de `decisionFor` (D21) | simulation, conflits de déclarations, contrôle de proximité, migration, revue |
 | Marques et leur nom | `dossiersDeMarque` et `nomDeMarque` dans `src/tokens/resolver.js` : chaque dossier de `tokens/` qui a un `marque.resolver.json`, et le champ `name` de ce resolver (D26) | les trois contrôles sans `--marque`, les planches |
 | Échelles écrites à la main d'une marque | `echellesPropres` dans `src/tokens/saisie.js` : `primitives.tokens.json` du dossier, ou rien (D25) | saisie, calibrage |
+| Aucune échelle commune redéfinie par une marque | `echellesCommunesRedefinies` et `motifRedefinies` dans `src/tokens/saisie.js` (D25) | saisie (refus), `npm run contraste` (échec) |
+| Fusion de contexte d'une marque | `rolesDuResolver` dans `src/tokens/roles.js` : le resolver de la marque, résolu dans un contexte ; la saisie lui donne ses fichiers en mémoire (`enLigne`, `src/tokens/resolver.js`, D31) | `loadRoles` (contrôles, planches), saisie et son contrôle final |
+| Texte du contrôle de contraste | `lignesContraste` dans `src/report/contraste.js` (D31) | `npm run contraste`, saisie |
+| Consigne pour un agent | `consigneAgent` dans `src/report/consigne.js` : sections en listes d'entrées, consigne réduite de `reste.md` à côté (D29) | `migration.md` (texte), `modifications.json` (entrées) |
+| Valeur après la table d'une couleur, par usage | `mapped` dans `src/reduce/pleins.js` (D30) | cartes de plein, couplages, migration |
+| Lecture d'un fichier JSON | `lireJson` dans `src/lib/fichiers.js` : message qui nomme le fichier (absent, dossier, JSON illisible) (D30) | commandes, `runReduce` |
 | Jetons de `--tokens` | `jetonsDe` dans `src/tokens/resolver.js` : un resolver est résolu dans ses contextes par défaut, un fichier de jetons est lu tel quel (D28) | `npm run reduce` |
 
 Un nouveau module de fonctions communes va dans `src/lib/` s'il ne dépend d'aucune couche ; sinon à côté de la fonction dont la règle dépend, comme `retenue` à côté de `decisionFor`. `test/format.test.js` et `test/contraste-source.test.js` vérifient qu'aucune copie ne revient.
@@ -84,9 +90,9 @@ Aucune branche de code ne dépend du nom d'une marque : une différence réelle 
 
 | Couche | Fichier | Écrit par | Lu par |
 |---|---|---|---|
-| Entrée | `tokens/orbe-cafe/entree.json`, un par marque | à la main | `npm run saisie` |
+| Entrée | `tokens/orbe-cafe/entree.json`, un par marque | à la main | `npm run saisie` | Saisir une marque depuis son entrée : échelles, couche marque, mode sombre, resolver, contraste dans les deux modes ; écrit à côté, contrôle, puis remplace (D31) ; sort en 1 si elle est refusée, avec motif et mode, en 2 sur une panne ; rien n'est écrit hors de la sortie 0 |
 | Primitives communes | `tokens/commun/primitives.tokens.json` | à la main | `src/tokens/` |
-| Échelles écrites à la main | `primitives.tokens.json` à côté de l'entrée, s'il existe : seules échelles qu'une entrée peut nommer (D25) ; Orbe Café seule en a un (bleu, terre, sable) | à la main | marque, saisie, calibrage |
+| Échelles écrites à la main | `primitives.tokens.json` à côté de l'entrée, s'il existe : seules échelles qu'une entrée peut nommer, aucune du nom d'une échelle commune (D25) ; Orbe Café seule en a un (bleu, terre, sable) | à la main | marque, saisie, calibrage |
 | Statuts | `tokens/commun/statuts.tokens.json` | `src/cli/statuts.js`, si `checkValise` passe | marque, rôles |
 | Mode sombre commun | `tokens/commun/mode.sombre.tokens.json` : neutre dessiné sur la page `#121212`, statuts sombres, surface et texte sur inverse | `src/cli/sombre.js`, si `checkValise` passe | contexte sombre de chaque resolver |
 | Police du produit | `tokens/commun/police.tokens.json` : `marque.police.texte`, commune ; une couche marque qui la déclare la remplace ; `police.titre.hauteur-capitale`, consigne commune des styles de titre, rangée avec les primitives | à la main | jeu marque de chaque resolver |
@@ -113,7 +119,7 @@ Changer de marque, c'est changer la couche marque ; les rôles restent les même
 | `npm run login` | Enregistrer une session dans `.auth/` ; sort en 2 sur une panne |
 | `npm run demo` | Servir la marque fictive en local |
 | `npm run saisie` | Saisir une marque depuis son entrée : échelles, couche marque, mode sombre, resolver, contraste dans les deux modes ; sort en 1 si elle est refusée, avec motif et mode, en 2 sur une panne |
-| `npm run contraste` | Paires de rôles ; sort en 1 si une paire est sous son seuil sans exception écrite, en 2 sur une panne ; `--mode clair|sombre` et `--largeur large|etroit` pour le contexte |
+| `npm run contraste` | Paires de rôles ; sort en 1 si une paire est sous son seuil sans exception écrite, ou si la marque redéfinit une échelle commune (D25), en 2 sur une panne ; `--mode clair|sombre` et `--largeur large|etroit` pour le contexte |
 | `npm run espacements` | Écarts par relation, valeurs en étroit, règles de proximité ; sort en 1 si l'une échoue, en 2 sur une panne |
 | `npm run typo` | Règles des styles de texte ; sort en 1 si l'une échoue, en 2 sur une panne ; `--couche-marque <fichier>` pour une couche marque donnée à part |
 | `npm run types` | Types JSDoc des fichiers de `src/` (`@ts-check`) : `tsc -p tsconfig.json`, non strict, sans rien émettre ; sort en 1 s'il reste une erreur. Tenu à 0 avant chaque commit, comme les trois contrôles |
@@ -132,7 +138,10 @@ Chacun est tenu par le code ou par un test, cité.
 - Un rôle de couleur ou d'espacement est un alias vers la couche marque ou vers une primitive, jamais une valeur brute (`test/roles-semantique.test.js`, `test/espacements-semantique.test.js`). Dans un style de texte, police, taille et graisse sont des alias ; interligne et interlettrage sont écrits en nombre (`test/typo-jetons.test.js`).
 - Les jetons suivent le format DTCG 2025.10 (`test/roles-semantique.test.js`) ; les resolvers aussi (`test/resolver.test.js`).
 - Les trois contrôles sortent en 0 ou en 1 ; un lot les laisse à 0.
-- Une marque refusée par `npm run saisie` n'écrit rien ; la couche marque d'Orbe Café en sort identique, octet par octet (`test/saisie.test.js`).
+- Une marque refusée par `npm run saisie`, ou une saisie en panne, n'écrit rien ; la couche marque d'Orbe Café en sort identique, octet par octet (`test/saisie.test.js`, `test/saisie-ecriture.test.js`, `test/pannes.test.js`).
+- La saisie juge le contraste par la même fusion que les contrôles, celle du resolver (`test/contraste-modes.test.js`, C5).
+- `modifications.json` ne relit pas le texte de `migration.md` : il lit les entrées de la consigne structurée (`test/consigne-unit.test.js`).
+- `src/cli/` n'est importé par aucun autre module de `src/` ; `src/browser/` n'importe que `src/browser/` et `src/lib/` (`test/couches.test.js`).
 - Aucun nom réel dans un fichier versionné, un chemin ou un message de commit (`test/noms-interdits.test.js`).
 - Aucun nom de marque dans le code de `src/`, commentaires exclus (`test/marque-en-dur.test.js`, D26).
 - Les planches versionnées de chaque marque égalent la sortie de leur fonction (`test/planches-marques.test.js`, D27).

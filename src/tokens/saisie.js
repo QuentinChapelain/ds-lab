@@ -70,7 +70,7 @@ export function chargerCommun({ mode } = {}) {
 export const echellesPropres = (dossier) => (existsSync(join(dossier, PROPRES)) ? JSON.parse(readFileSync(join(dossier, PROPRES), 'utf8')) : null);
 
 /**
- * Revue de code, lot 6 (D32) : échelles de primitives.tokens.json d'une marque qui portent le nom d'une échelle commune
+ * Revue de code, lot 6 (D25) : échelles de primitives.tokens.json d'une marque qui portent le nom d'une échelle commune
  * (primitives et statuts de tokens/commun/). Une marque ne redéfinit pas une échelle commune : le resolver la ferait passer
  * avant le mode sombre commun, la saisie après ; refus de la saisie, échec de npm run contraste.
  * @param {any} propres echellesPropres(dossier) @param {import('./roles.js').RoleSet} [commun] @returns {string[]}
@@ -212,7 +212,7 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   if ('description' in entree && typeof entree.description !== 'string') invalide('description, texte attendu');
 
   const propres = echellesPropres(dossier);
-  // Revue de code, lot 6 (D32) : une marque ne redéfinit aucune échelle commune.
+  // Revue de code, lot 6 (D25) : une marque ne redéfinit aucune échelle commune.
   const redefinies = echellesCommunesRedefinies(propres, commun);
   if (redefinies.length) {
     motifs.push(motifRedefinies(redefinies));
