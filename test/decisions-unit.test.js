@@ -109,3 +109,46 @@ test('V5 ligne « inchangé » avec une décision écrite : même valeur retenue
   const m = buildMigration({ table: t(), rendered: { usages: { pairs: [] } }, map: {}, target: {}, decisions, meta });
   assert.deepEqual(m.data.rows.map((/** @type {any} */ r) => [r.id, r.status, r.new ?? r.value]), [['I1', 'décidée', '12px'], ['I2', 'refusée', '10px']], 'migration');
 });
+
+// Revue de code du 15/11, lot 4 (docs/attendus/revue-lot-4-copies.md, point 3 ; décision de Quentin du 16/11/2026) : une
+// décision écrite égale à l'ancienne valeur laisse la ligne, pour les quatre lecteurs. Table écrite à la main : E1 20px
+// proche vers 16px (dans le composant), décidé à 20px ; E2 18px décision proposée vers 24px (entre composants), décidé à
+// 18px. Valeurs retenues : E1 20px, E2 18px (rien ne change) ; migration : « inchangé » pour les deux (avant : E1
+// « appliquée » vers 16px, E2 « en attente » vers 24px) ; la paire reste inversée (20 dans ≥ 18 entre).
+const egale = () => ({
+  families: {
+    spacing: {
+      rows: [
+        { id: 'E1', old: '20px', new: '16px', class: 'proche', usage: 'marge', scope: DANS, count: 1 },
+        { id: 'E2', old: '18px', new: '24px', class: 'décision', usage: 'marge', scope: ENTRE, count: 1 },
+      ],
+    },
+  },
+});
+/** @type {Record<string, string | false>} */
+const EGALE = { [`spacing|20px|marge|${DANS}`]: '20px', [`spacing|18px|marge|${ENTRE}`]: '18px' };
+
+test('V6 mapping : une décision égale à l’ancienne valeur laisse la ligne', () => {
+  const m = mapping(egale(), EGALE);
+  assert.deepEqual([m.spacing?.['20px'] ?? '20px', m.spacing?.['18px'] ?? '18px'], ['20px', '18px']);
+});
+
+test('V6 outcomeOf : une décision égale à l’ancienne valeur donne « laisse »', () => {
+  const t2 = egale();
+  const trace = { origin: 'feuille', href: 'https://a.test/s.css', line: 3, selector: '.bloc', written: '20px' };
+  const conflicts = attachDeclarations(t2, t2.families.spacing.rows.map((r) => ({ key: `spacing|${r.old}|marge|${r.scope}`, family: 'spacing', property: 'margin-top', page: '/', trace })), EGALE);
+  assert.deepEqual(Object.fromEntries((conflicts[0]?.rows ?? []).map((/** @type {any} */ r) => [r.id, r.outcome])), { E1: 'laisse', E2: 'laisse' });
+});
+
+test('V6 controlAfter : une décision égale à l’ancienne valeur garde l’ancienne', () => {
+  const t3 = /** @type {any} */ (egale());
+  t3.proximity = [{ in: { mode: 'max', extra: 0, parts: ['20px'], scope: DANS, gapPx: 20 }, out: { mode: 'max', extra: 0, parts: ['18px'], scope: ENTRE, gapPx: 18 } }];
+  controlAfter(t3, EGALE);
+  assert.deepEqual(t3.families.spacing.rows[0].control?.after, { in: 20, out: 18 });
+});
+
+test('V6 migration : une décision égale à l’ancienne valeur range la ligne en « inchangé »', () => {
+  const meta = { host: 'a.test', stamp: '16/11/2026', viewport: { width: 1366, height: 900 }, target: 'cible.json', pages: ['/'], decisions: 'decisions.json' };
+  const mg = buildMigration({ table: egale(), rendered: { usages: { pairs: [] } }, map: {}, target: {}, decisions: EGALE, meta });
+  assert.deepEqual(mg.data.rows.map((/** @type {any} */ r) => [r.id, r.status, r.new ?? r.value]), [['E1', 'inchangé', '20px'], ['E2', 'inchangé', '18px']]);
+});

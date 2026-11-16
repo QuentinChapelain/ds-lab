@@ -34,6 +34,8 @@ let revueFichier;
 let fileDecisions;
 /** @type {Map<string, { key: string, row: any, family: string }>} */
 const byId = new Map();
+/** Table de la réduction, pour relire les décisions ligne par ligne. @type {any} */
+let table;
 /** Lot K : cartes « Texte sur plein » (une décision par plein ; ses lignes de fond la suivent). @type {any[]} */
 let pleins = [];
 
@@ -58,6 +60,7 @@ before(async () => {
   await writeFile(withFile, renderReview(r.table, [], { host: saved.host, stamp: saved.stamp, target: 'cible-valise.json', decisions }));
   revueFichier = pathToFileURL(withFile).href;
   fileDecisions = decisions;
+  table = r.table;
   for (const [family, f] of Object.entries(r.table.families)) for (const row of f.rows) byId.set(row.id, { key: rowKey(family, row), row, family });
   pleins = r.table.pleins ?? [];
   const { chromium } = await import('playwright-core');
@@ -408,6 +411,38 @@ test('revue : détail, 4 sélecteurs au plus puis « et n autres »', async () =
     const dd = card(page, r.id).locator('details.detail dt:text-is("Sélecteurs") + dd');
     assert.equal(await dd.locator('code').count(), 4);
     assert.equal(await dd.locator('i').textContent(), `et ${all.length - 4} ${all.length - 4 === 1 ? 'autre' : 'autres'}`);
+  } finally {
+    await context.close();
+  }
+});
+
+// Revue de code du 15/11, lot 4 (docs/attendus/revue-lot-4-copies.md, point 3 ; réponse de Quentin du 16/11/2026) : la page
+// lit la valeur retenue calculée côté Node, à l'état initial. Attendu écrit à la main avant le code : avec
+// decisions-valise.json, une décision écrite sur une ligne qui n'est pas à trancher (proche, correction, hors table) est
+// affichée par la flèche de sa carte, et l'export fait sans rien toucher la rend telle quelle. Avant : la flèche montre la
+// proposition et l'export perd la décision (11 lignes, vérifié dans Chromium à la confrontation).
+test('revue, lot 4 : une décision écrite sur une ligne qui n’est pas à trancher est affichée et exportée', async () => {
+  const decisions = JSON.parse(await readFile(`${FIXTURE_DIR}decisions-valise.json`, 'utf8'));
+  const file = join(await mkdtemp(join(tmpdir(), 'ds-lab-revue-valise-')), 'revue.html');
+  await writeFile(file, renderReview(table, [], { host: 'lot4.test', stamp: '16/11/2026', target: 'cible-valise.json', decisions }));
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
+  const page = await context.newPage();
+  try {
+    await page.goto(pathToFileURL(file).href);
+    const out = await exported(page);
+    const lost = [];
+    const arrows = [];
+    for (const [family, f] of Object.entries(table.families))
+      for (const row of /** @type {any[]} */ (f).rows) {
+        if (row.plein) continue;
+        const d = decisionFor(decisions, family, row);
+        if (decisionFor(out, family, row) !== d) lost.push(`${row.id} ${row.old} : ${d}`);
+        if (typeof d === 'string' && d !== row.old && row.class !== 'décision') {
+          const head = await page.locator(`article.row[data-key="${rowKey(family, row)}"] header`).first().textContent();
+          if (!head?.includes(`→${d}`) && !head?.includes(`→ ${d}`)) arrows.push(`${row.id} ${row.old} : ${head?.replace(/\s+/g, ' ').trim()}`);
+        }
+      }
+    assert.deepEqual({ perdues: lost, fleches: arrows }, { perdues: [], fleches: [] });
   } finally {
     await context.close();
   }
