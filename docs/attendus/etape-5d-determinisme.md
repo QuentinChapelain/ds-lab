@@ -87,3 +87,41 @@ FIN-DU-MESSAGE
 - Dette à inscrire : la fenêtre de 150 ms de `collectSheets` ; l'option de lancement est un réglage interne de Chromium, qui peut disparaître (le test le dira) ; le mécanisme du redessin partiel reste une hypothèse.
 - Durée de `npm test` après le lot, sur le Mac et sur le runner.
 - Commits (0) à (3) enchaînés, poussés après chacun ; arrêt à la CI verte, sans fusion.
+
+### Cas d'arrêt et décisions de Quentin (17/11/2026, second message)
+
+- Pages d'essai hors du dépôt, avant le code [F] :
+  - lisibles : imports imbriqués, import dans un `<style>`, feuille liée et importée, feuille importée trois fois (une feuille annoncée par occurrence, copies interchangeables), import introuvable (annoncé vide) ;
+  - non lisibles : import conditionnel (`media`, `print`, `supports` vrai ou faux, `layer` : tous annoncés, sans condition dans l'en-tête) et import redirigé (annoncé sous l'adresse finale, que ni le texte du parent ni le CSSOM ne donnent).
+- Décision : un import conditionnel est rangé à la place de sa règle, condition et couche non interprétées. Un import non rattachable par son adresse va après toutes les feuilles rattachées et avant les feuilles construites, par adresse puis par texte, avec l'avertissement « feuille importée hors de l'ordre de la cascade : <adresse> ». Cet avertissement est repris par l'audit sans changer son code de sortie.
+- Les pages d'essai des cas lisibles et de l'import redirigé entrent dans `fixtures/marque-demo/cascade/` avec leur test. Dette en deux lignes : les couches ne sont pas lues ; une feuille `print` ou au `supports` faux est mesurée comme si elle s'appliquait à l'écran.
+
+## Écarts constatés à l'exécution
+
+- Test de la réduction, au premier essai rouge pour une autre raison que l'instabilité : sans `--tokens`, `modifications.json` n'est pas écrit. Les jetons d'Orbe Café ont été ajoutés avant le commit (1) [F].
+- Sortie rouge du commit (1), sur le Mac, en lançant le fichier plusieurs fois [F] :
+  - ordre des feuilles de `index.html` : rouge 10 fois sur 10 ;
+  - audit de quatre pages : rouge 7 fois sur 10 (`audit.json`, `rapport.md`) ;
+  - réduction de la page de marque : rouge 9 fois sur 10 (`revue.html`) ;
+  - captures de `verify` : rouge au 17e lancement.
+  - Sur le runner (exécution 44038978832) : rouges l'ordre et l'audit ; la réduction et `verify` sont passés à leur unique lancement.
+- Redirection : le serveur des tests (`test/helpers/serveur.js`) redirige `/cascade/styles/redirigee.css` vers `g.css`. Aucun serveur de plus [F].
+- Test ajouté hors du plan : aucun module de `src/` ne lance Chromium hors de `src/browser/lancement.js`. Il n'a pas été montré rouge par un lancement ; sur c1e72d5, 6 modules de `src/` appellent `chromium.launch` (7 appels) [F].
+- Incident : un `git stash` lancé pour montrer ce test rouge a retiré le code modifié de la copie de travail pendant environ une minute, le test se bloquant. Les captures « après » n'avaient pas commencé, celles d'« avant » tournaient sur un arbre séparé de main : aucune sortie touchée. Les changements ont été remis tels quels (`git diff --stat` identique) [F].
+- `@import` en début de ligne dans un commentaire JSDoc est lu comme une balise par TypeScript 7 : les commentaires de `sheets.js` disent « règle d'import » [F].
+- Comparaison des captures : en plus du chemin de capture et du port, le chemin du dépôt est neutralisé entre l'arbre de main et la branche. `migration.md` (ligne de relance) et la console de `sombre` et `statuts` citent des chemins absolus [F].
+
+## Sorties
+
+- Captures (`local/lot-5d/capturer.sh`) faites deux fois sur main (d40de41, avec les pages de cascade et le serveur des tests copiés) et deux fois sur la branche (114c71c), sous Node 24.22.3. Elles couvrent : 6 réductions de fixtures, la saisie des 4 marques, les générateurs de `tokens/commun/`, le calibrage, 4 audits (une page, trois pages, démonstration, cascade), la valise générée et les trois contrôles. 73 fichiers [F].
+  - Avant contre avant : 5 fichiers différents (audits trois pages et cascade, `revue.html` de la page de marque).
+  - Après contre après : 0 fichier différent. Seuls le chemin de capture et le port sont neutralisés : plus d'image ni d'ordre d'audit.
+  - Ce qui reste neutralisé, et pourquoi : le chemin de capture, parce que chaque capture écrit dans son propre dossier ; le port, parce que le serveur de fixtures prend un port libre à chaque démarrage, ce qui change l'adresse donnée ; le chemin du dépôt, seulement entre deux arbres.
+  - Avant contre après : différents seulement les `audit.json` et `rapport.md` des audits, par l'ordre, et `revue.html` de la page de marque, par ses images 30 et 31. Fichiers de `tokens/` inchangés.
+- Contenu des audits [F]. Forme canonique : feuilles nommées, clés et emplacements triés, avertissement de cascade retiré.
+  - Une page, trois pages et démonstration : identiques avant et après, dans les 4 captures. Aucun emplacement gardé ne change sur ces fixtures.
+  - Cascade : l'avertissement entre (dans `warnings`, `pages[].sheetWarnings` et `rapport.md`). La valeur `#333333` plafonne à 10 emplacements, et le plafond suit le nouvel ordre : `conditions.css` ligne 6 sort, `f.css` ligne 1 entre. Mêmes feuilles, mêmes valeurs, mêmes comptes.
+- `revue.html` de la page de marque, identique hors des images dans les 4 captures [F]. Après : image 30 = `9829fdb2`, une des trois variantes d'avant ; image 31 = `7eb9d0bb`, à 1 px et 1/255 de la variante la plus fréquente d'avant (accepté).
+- `test/determinisme.test.js` vert 10 fois sur 10 sur le Mac après le code [F].
+- Sur le Mac, Node 24.22.3 [F] : `npm run types`, `npm run knip`, `npm run dependances` et les trois contrôles à 0. `npm test` : 832 tests, 832 verts, 102,1 s (100,4 s avant le lot).
+- CI verte sur 114c71c (exécution 44041911181, Node 22) [F] : `npm test` 832 tests, 830 verts, 2 sautés (noms interdits, liste absente), 314 s. Même code de test, le runner a donné 243 s (d40de41) et 300 s (b9c87e7) : l'écart du lot se perd dans celui du runner.

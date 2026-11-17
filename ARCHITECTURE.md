@@ -36,7 +36,7 @@ Chaque commande npm a son point d'entrée dans `src/cli/`, sauf `npm run demo` (
 |---|---|
 | `src/cli/` | Points d'entrée : un fichier par commande npm, sauf `demo`, `types` et `test`, plus les générateurs de jetons et de planches ; `garde.js`, lancement commun et codes de sortie (D18), et `parMarque`, un contrôle sur une marque ou sur chacune (D26) |
 | `src/audit/` | Orchestration d'un audit (navigateur, une session par hôte, pages, rapports) ; exécution facultative du script v1 |
-| `src/browser/` | Ce qui tourne dans le navigateur : chargement, feuilles de style, relevé du rendu, états forcés, simulation d'une table |
+| `src/browser/` | Ce qui tourne dans le navigateur : lancement de Chromium (`lancement.js`, D34), chargement, feuilles de style dans l'ordre de la cascade (`sheets.js`, D33), relevé du rendu, états forcés, simulation d'une table |
 | `src/declared/` | Audit du déclaré : toutes les feuilles de toutes les pages, dédoublonnées et comptées |
 | `src/rendered/` | Audit du rendu : relevé d'une page chargée, puis agrégation de toutes les pages |
 | `src/lib/` | Fonctions pures partagées : couleurs (OKLab, ΔE, contraste WCAG), mise en forme des sorties (`format.js`), unités, clés de valeurs, adresses, sources ; lecture d'un fichier JSON et message d'erreur d'une ligne (`fichiers.js`, D30) |
@@ -67,6 +67,7 @@ Une règle écrite à plusieurs endroits a une seule définition ; chaque lecteu
 | Consigne pour un agent | `consigneAgent` dans `src/report/consigne.js` : sections en listes d'entrées, consigne réduite de `reste.md` à côté (D29) | `migration.md` (texte), `modifications.json` (entrées) |
 | Valeur après la table d'une couleur, par usage | `mapped` dans `src/reduce/pleins.js` (D30) | cartes de plein, couplages, migration |
 | Lecture d'un fichier JSON | `lireJson` dans `src/lib/fichiers.js` : message qui nomme le fichier (absent, dossier, JSON illisible) (D30) | commandes, `runReduce` |
+| Lancement de Chromium | `lancerChromium` dans `src/browser/lancement.js`, avec `--disable-partial-raster` (D34) | audit, reduce et `--live`, marque, verify, login, contrôle d'encre de la saisie |
 | Jetons de `--tokens` | `jetonsDe` dans `src/tokens/resolver.js` : un resolver est résolu dans ses contextes par défaut, un fichier de jetons est lu tel quel (D28) | `npm run reduce` |
 
 Un nouveau module de fonctions communes va dans `src/lib/` s'il ne dépend d'aucune couche ; sinon à côté de la fonction dont la règle dépend, comme `retenue` à côté de `decisionFor`. `test/format.test.js` et `test/contraste-source.test.js` vérifient qu'aucune copie ne revient.
@@ -80,7 +81,7 @@ Aucune branche de code ne dépend du nom d'une marque : une différence réelle 
 | `tokens/commun/` | Couches communes à toutes les marques : primitives, statuts, mode sombre commun, police du produit, aplat plein, rôles, paires, contexte étroit |
 | `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive d'entraînement : entrée, échelles écrites à la main, marque, resolver, et ses trois planches HTML, générées |
 | `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/` | Trois marques fictives saisies par fichier : entrée, échelles générées, couche marque, resolver, et leurs trois planches HTML, générées |
-| `fixtures/marque-demo/` | Pages fictives, pièges, cibles et attendus des tests de bout en bout ; `fixtures/marque-demo/jetons/primitives.tokens.json`, primitives d'Orbe Café d'avant l'étape 4b, figées : référence de cet état passé seulement (`test/roles-statuts.test.js`), les tests de `npm run reduce` lisent le resolver d'Orbe Café (D28) ; `fixtures/polices/`, quatre polices d'essai sous licence libre, chacune avec sa licence |
+| `fixtures/marque-demo/` | Pages fictives, pièges, cibles et attendus des tests de bout en bout ; `fixtures/marque-demo/cascade/`, pages d'essai de l'ordre des feuilles (D33), dont un import redirigé par le serveur des tests (`test/helpers/serveur.js`) ; `fixtures/marque-demo/jetons/primitives.tokens.json`, primitives d'Orbe Café d'avant l'étape 4b, figées : référence de cet état passé seulement (`test/roles-statuts.test.js`), les tests de `npm run reduce` lisent le resolver d'Orbe Café (D28) ; `fixtures/polices/`, quatre polices d'essai sous licence libre, chacune avec sa licence |
 | `test/` | Tests `node --test`, nommés par sujet ; `test/helpers/` sert la marque fictive en local et porte le lexeur des gardes (`test/helpers/commentaires.js`) |
 | `config/` | Exemple de fichier de sources, à copier dans `local/` |
 | `.github/workflows/` | La CI : un job, une étape par commande (`.github/workflows/ci.yml`) |
@@ -138,6 +139,7 @@ Générateurs sans commande npm, lancés avec `node` : `src/cli/statuts.js`, `sr
 
 Chacun est tenu par le code ou par un test, cité.
 
+- Deux lancements sur la même entrée et la même machine donnent les mêmes sorties, à l'octet et sans neutralisation : audit (`audit.json`, `rapport.md`, `rapport.html`), réduction (`revue.html`, `table.json`, `migration.md`, `modifications.json`), capture de `verify` ; Chromium n'est lancé que par `lancerChromium` (D34) (`test/determinisme.test.js`). Les feuilles d'une page sont rangées dans l'ordre de la cascade (D33 ; `test/feuilles-cascade.test.js`). Seuls la date (horodatage, injectable par `now`) et le nom du dossier de sortie changent d'un lancement à l'autre ; le port fait partie de l'adresse donnée.
 - Le site audité n'est jamais modifié : les nouvelles valeurs sont posées dans le navigateur de l'outil, le temps des captures (`src/browser/simulate.js`).
 - `npm run apply` ne remplace une déclaration que si la valeur écrite est celle attendue, sinon il la sort en écart ; relancé sur une copie migrée, il ne change rien (`test/apply-unit.test.js`).
 - Un rôle de couleur ou d'espacement est un alias vers la couche marque ou vers une primitive, jamais une valeur brute (`test/roles-semantique.test.js`, `test/espacements-semantique.test.js`). Dans un style de texte, police, taille et graisse sont des alias ; interligne et interlettrage sont écrits en nombre (`test/typo-jetons.test.js`).
