@@ -175,11 +175,12 @@ const shortValue = (v) => (/^-?[\d.]+px$/.test(v) ? `${fr(parseFloat(v))} px` : 
  * @param {any} o.target          cible (onSolid, couleurs)
  * @param {any} [o.tokens]        fichier de jetons DTCG
  * @param {Record<string, string | false>} [o.decisions]  décisions du designer (--decisions) : une chaîne décide, false refuse
- * @param {{ host: string, stamp: string, target: string, tokens: string | null, pages: string[], viewport: { width: number, height: number }, command?: string, decisions?: string | null }} o.meta
+ * @param {{ host: string, scheme?: string, stamp: string, target: string, tokens: string | null, pages: string[], viewport: { width: number, height: number }, command?: string, decisions?: string | null }} o.meta
  * @param {Witness[]} [o.witnesses]  Pages témoins, hors de la table
  * @param {any[]} [o.conflicts]      Conflits de déclarations (attachDeclarations)
+ * @param {Map<string, { column: number | null, important: boolean }>} [o.reperes]  repères des déclarations (reperesDe), pour modifications.json
  */
-export function buildMigration({ table, rendered, map, target, tokens, decisions = {}, meta, witnesses = [], conflicts = [] }) {
+export function buildMigration({ table, rendered, map, target, tokens, decisions = {}, meta, witnesses = [], conflicts = [], reperes = new Map() }) {
   const idx = tokens ? indexTokens(tokens) : null;
   /** @param {string} family @param {string | null} value @param {{ name?: string | null, pleinScales?: Set<string> }} [ctx] */
   const token = (family, value, ctx) => (value === null ? '—' : idx?.find(family, value, ctx) ?? 'jeton absent');
@@ -379,7 +380,7 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
   // D29 : une consigne structurée, écrite dans migration.md et lue par modifications.json.
   const agent = consigneAgent(data, s);
   // S1 : modifications.json, pour npm run apply (avec un fichier de jetons).
-  const modifications = tokens ? buildModifications({ d: data, s, consigne: agent, tokens }) : null;
+  const modifications = tokens ? buildModifications({ d: data, s, consigne: agent, tokens, reperes }) : null;
   return { data: { ...data, agent }, markdown: renderMarkdown(data, s) + '\n' + agent.markdown, modifications };
 }
 

@@ -3,8 +3,10 @@
  * Localisation d'une déclaration de modifications.json dans le texte d'une feuille, et lecture du composant
  * qu'elle vise : partagées par npm run apply (src/apply/apply.js) et par les feuilles ajoutées
  * (src/apply/ajout.js), pour qu'une même entrée désigne la même déclaration et passe la même garde.
- * Une entrée vise une règle par la ligne de son accolade ouvrante (comme la trace) et son sélecteur, et une
- * propriété longue, écrite directement ou comme composant d'un raccourci.
+ * Une entrée vise une règle par la ligne de son accolade ouvrante (comme la trace) et, quand modifications.json la
+ * donne, sa colonne : dans une feuille compressée, toutes les règles sont sur la même ligne. Sans colonne, le
+ * sélecteur départage les règles d'une ligne. Puis une propriété longue, écrite directement ou comme composant
+ * d'un raccourci.
  */
 import { parse as parseColor } from 'culori';
 
@@ -182,14 +184,26 @@ const newlines = (s) => (String(s ?? '').match(/\n/g) ?? []).length;
 const braceLine = (rule) => rule.source.start.line + newlines(rule.raws.selector?.raw ?? rule.selector) + newlines(rule.raws.between);
 
 /**
- * Règles d'une feuille, avec leur ligne d'origine (avant les commentaires posés par apply).
+ * Colonne (base 1) de l'accolade ouvrante d'une règle, dans le fichier tel qu'il est ; null si la source ne le dit pas.
+ * @param {any} rule
+ */
+function braceColumn(rule) {
+  const css = rule.source?.input?.css;
+  const start = rule.source?.start?.offset;
+  if (typeof css !== 'string' || typeof start !== 'number') return null;
+  const brace = start + String(rule.raws.selector?.raw ?? rule.selector).length + String(rule.raws.between ?? '').length;
+  return brace - css.lastIndexOf('\n', brace - 1);
+}
+
+/**
+ * Règles d'une feuille, avec leur ligne d'origine (avant les commentaires posés par apply) et leur colonne.
  * @param {import('postcss').Root} root @param {Set<string>} posed  textes des commentaires de ce fichier de modifications
  */
 export function rulesOf(root, posed) {
   /** @type {any[]} */
   const rules = [];
   root.walkRules((r) => {
-    rules.push({ rule: r, line: braceLine(r), selector: normSelector(r.selector) });
+    rules.push({ rule: r, line: braceLine(r), column: braceColumn(r), selector: normSelector(r.selector) });
   });
   // S3 : chaque commentaire posé par apply a ajouté ses retours à la ligne (ceux de son raws.before,
   // copié de la déclaration qu'il précède, et ceux de son texte) ; une règle qui le suit a reculé
@@ -216,19 +230,22 @@ function declOf(rule, prop) {
 
 /**
  * La règle et la déclaration qu'une entrée vise, parmi les règles d'une feuille (rulesOf) ; ou le motif d'écart.
- * Le navigateur réécrit certains sélecteurs (:nth-child(even) lu :nth-child(2n)) : une règle seule à sa ligne
- * d'origine suffit ; le sélecteur ne départage que plusieurs règles sur une ligne.
+ * Avec une colonne, la règle de cette ligne et de cette colonne, sans regarder le sélecteur, que le navigateur
+ * réécrit (:nth-child(even) lu :nth-child(2n), .a>b lu .a > b). Sans colonne, ou si aucune règle n'est à cette colonne
+ * (copie déjà migrée, où les valeurs remplacées ont décalé la ligne) : une règle seule à sa ligne d'origine suffit ;
+ * le sélecteur ne départage que plusieurs règles sur une ligne.
  * @param {any[]} rules  rulesOf(…)
- * @param {{ line: number, selector: string, property: string }} t
- * @returns {{ rule: any, decl: any, line: number } | { error: string }}
+ * @param {{ line: number, column?: number | null, selector: string, property: string }} t
+ * @returns {{ rule: any, decl: any, line: number, column: number | null } | { error: string }}
  */
 export function localiser(rules, t) {
   const atLine = rules.filter((r) => r.origin === t.line);
-  const hits = atLine.length === 1 ? atLine : atLine.filter((r) => r.selector === normSelector(t.selector));
+  const atColumn = t.column == null ? [] : atLine.filter((r) => r.column === t.column);
+  const hits = atColumn.length === 1 ? atColumn : atLine.length === 1 ? atLine : atLine.filter((r) => r.selector === normSelector(t.selector));
   if (hits.length !== 1) return { error: hits.length ? `règle ambiguë (${hits.length} règles ${t.selector} à la ligne ${t.line})` : `règle introuvable (${t.selector}, ligne ${t.line})` };
   const decl = declOf(hits[0].rule, t.property);
   if (!decl) return { error: `déclaration introuvable (${t.property} dans ${t.selector})` };
-  return { rule: hits[0].rule, decl, line: hits[0].line };
+  return { rule: hits[0].rule, decl, line: hits[0].line, column: hits[0].column };
 }
 
 /**

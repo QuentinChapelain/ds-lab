@@ -22,7 +22,11 @@ const INHERITED = new Set(['color', 'font-family', 'font-size', 'font-weight', '
  * @property {boolean} important
  * @property {string | null} [written]  Valeur écrite dans la déclaration (composante d'un raccourci)
  * @property {number | null} [sheetLine]  ligne dans le document pour un <style> (startLine ajouté), sinon = line
+ * @property {number | null} [column]  colonne (base 1) de l'accolade ouvrante de la règle dans sa ligne, avec l'option `colonne`
  */
+
+/** `!important` collé ou non à la valeur, que Chromium laisse dans la valeur d'une feuille compressée. */
+const IMPORTANT = /\s*!\s*important\s*$/i;
 
 /**
  * Cherche la déclaration de `prop` dans un style CDP, la dernière l'emportant.
@@ -57,7 +61,8 @@ function declares(style, prop, important) {
       const token = src.value.match(/#[0-9a-f]{3,8}\b|rgba?\([^)]*\)/gi)?.find((/** @type {string} */ t) => sameColor(t, /** @type {string} */ (written)));
       if (token) written = token;
     }
-    return { written };
+    // La valeur écrite ne garde jamais !important (le drapeau important le dit) : sinon il passerait dans un repli.
+    return { written: written === null ? null : written.replace(IMPORTANT, '') };
   }
   return null;
 }
@@ -132,10 +137,12 @@ export async function traceSamples(page, samples, { sources }) {
  * (par exemple les éléments de la simulation, window.__dsSim.els[i]).
  * @param {import('playwright-core').Page} page
  * @param {{ index: number, property: string, pseudo: boolean }[]} samples
- * @param {{ sources: import('../lib/sources.js').CompiledSources | null, lookup: (i: number) => string }} opts
+ * @param {{ sources: import('../lib/sources.js').CompiledSources | null, lookup: (i: number) => string, colonne?: boolean }} opts
+ *   colonne : chaque résultat d'une feuille porte aussi `column`, qui situe la règle dans une ligne qui en porte plusieurs
+ *   (feuille compressée) ; sans elle, la forme des résultats ne change pas (relevé de l'audit).
  * @returns {Promise<TraceResult[]>}
  */
-export async function traceElements(page, samples, { sources, lookup }) {
+export async function traceElements(page, samples, { sources, lookup, colonne = false }) {
   if (!samples.length) return [];
   const cdp = await page.context().newCDPSession(page);
   try {
@@ -205,6 +212,8 @@ export async function traceElements(page, samples, { sources, lookup }) {
       }
       const sheet = byId.get(rule.styleSheetId);
       const startLine = rule.style?.range?.startLine;
+      // Chromium donne la colonne (base 0) qui suit l'accolade ouvrante : c'est la colonne (base 1) de l'accolade.
+      const startColumn = rule.style?.range?.startColumn;
       out.push({
         origin: 'feuille',
         source: sheet?.source ?? null,
@@ -215,6 +224,7 @@ export async function traceElements(page, samples, { sources, lookup }) {
         inherited,
         important: w.important,
         written: w.written,
+        ...(colonne ? { column: typeof startColumn === 'number' ? startColumn : null } : {}),
       });
     }
     return out;

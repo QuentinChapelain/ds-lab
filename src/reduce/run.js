@@ -21,7 +21,7 @@ import { renderReview } from '../report/review.js';
 import { buildMigration, indexTokens } from '../report/migration.js';
 import { stampOf, freeOutputDir } from '../report/json.js';
 import { pageName, writeReference } from '../verify/reference.js';
-import { identityMapping, declarationsOnPage, attachDeclarations } from './declarations.js';
+import { identityMapping, declarationsOnPage, attachDeclarations, reperesDe } from './declarations.js';
 import { pleinGroups, applyPleins, pleinVersionMap, couplingsOf, simulationCouplings } from './pleins.js';
 import { lireJson } from '../lib/fichiers.js';
 import { jetonsDe } from '../tokens/resolver.js';
@@ -179,6 +179,7 @@ export async function runReduce(opts) {
         }
       }
       const conflicts = attachDeclarations(table, records, effective);
+      const reperes = reperesDe(records);
       map.conflicts = conflicts.map((c) => ({ id: c.id, keys: c.rows.map((/** @type {any} */ r) => r.key) }));
       // Tour 2 : simuler la table, page par page.
       const pages = [];
@@ -313,8 +314,11 @@ export async function runReduce(opts) {
         decisions: effective,
         witnesses,
         conflicts,
+        reperes,
         meta: {
           host,
+          // Schéma des adresses (http, https) : l'adresse du site intact, pour npm run ajout, sans port de plus.
+          scheme: new URL(hostUrls[0]).protocol.replace(/:$/, ''),
           stamp,
           target: opts.targetPath.split('/').pop() ?? '',
           tokens: opts.tokensPath ? opts.tokensPath.split('/').pop() ?? null : null,

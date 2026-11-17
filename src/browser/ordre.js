@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * Règles gagnantes sur une page chargée, pour les feuilles ajoutées (src/apply/ajout.js, D37).
- * Pour chaque cible (feuille, ligne d'une règle, sélecteur de la source, propriété longue) : sur chaque élément
+ * Pour chaque cible (feuille, ligne et colonne d'une règle, sélecteur de la source, propriété longue) : sur chaque élément
  * que cette règle atteint vraiment (contexte compris, lu par Chromium), la règle qui gagne la propriété, avec sa
  * feuille, sa ligne et sa spécificité, et la spécificité de la règle visée sur cet élément. C'est ce qui dit si
  * la règle, reprise juste après sa feuille, passerait devant une règle de même spécificité qui la suit.
@@ -10,9 +10,11 @@ import { collectSheets } from './sheets.js';
 import { winner } from './trace.js';
 
 /**
- * @typedef {{ feuille: string, ligne: number, selecteur: string, propriete: string }} Cible
+ * @typedef {{ feuille: string, ligne: number, colonne: number | null, selecteur: string, propriete: string }} Cible
+ *   colonne : celle de l'accolade ouvrante, base 1 (la colonne de début de bloc que Chromium donne, base 0) ;
+ *   null : la ligne seule situe la règle
  * @typedef {{ origine: 'feuille' | 'attribut style' | 'navigateur', feuille: string | null, ligne: number | null,
- *   selecteur: string | null, important: boolean, specificite: number[] | null }} Gagnante
+ *   colonne: number | null, selecteur: string | null, important: boolean, specificite: number[] | null }} Gagnante
  * @typedef {{ specificite: number[], gagnante: Gagnante }} Sur
  */
 
@@ -93,7 +95,13 @@ export async function reglesGagnantes(page, cibles) {
       for (const i of index[k]) {
         const m = await stylesOf(i);
         const rules = /** @type {any[]} */ (m.matchedCSSRules ?? []);
-        const visee = rules.find((x) => x.rule.origin !== 'user-agent' && chemin.get(x.rule.styleSheetId) === c.feuille && x.rule.style?.range?.startLine + 1 === c.ligne);
+        const visee = rules.find(
+          (x) =>
+            x.rule.origin !== 'user-agent' &&
+            chemin.get(x.rule.styleSheetId) === c.feuille &&
+            x.rule.style?.range?.startLine + 1 === c.ligne &&
+            (c.colonne == null || x.rule.style?.range?.startColumn === c.colonne),
+        );
         // La règle n'atteint pas l'élément (contexte faux à cette largeur) : rien à juger.
         if (!visee) continue;
         const w = winner(m, c.propriete);
@@ -105,6 +113,7 @@ export async function reglesGagnantes(page, cibles) {
             origine: w.inline ? 'attribut style' : w.rule?.origin === 'user-agent' ? 'navigateur' : 'feuille',
             feuille: w.rule ? (chemin.get(w.rule.styleSheetId) ?? null) : null,
             ligne: typeof w.rule?.style?.range?.startLine === 'number' ? w.rule.style.range.startLine + 1 : null,
+            colonne: typeof w.rule?.style?.range?.startColumn === 'number' ? w.rule.style.range.startColumn : null,
             selecteur: w.rule?.selectorList?.text ?? null,
             important: w.important,
             specificite: gm ? specificiteDe(gm) : null,

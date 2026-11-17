@@ -5,7 +5,9 @@
  * (src/report/consigne.js), jamais dans son texte ; src/apply/ ne fait que lire le fichier.
  *
  * Une entrée par déclaration et par propriété à modifier : feuille (chemin d'URL), ligne de la règle,
- * sélecteur, propriété, valeur écrite attendue, nouvelle valeur var(--jeton, valeur écrite), lignes.
+ * sélecteur, propriété, valeur écrite attendue, nouvelle valeur var(--jeton, valeur écrite), lignes ; puis la colonne de
+ * la règle (accolade ouvrante, base 1 : elle la situe dans une feuille compressée), son !important d'origine et les
+ * pages où la déclaration est tracée. En tête : le schéma des adresses et la fenêtre de la réduction.
  *   REMPLACEMENTS : déclarations hors conflit des lignes appliquées ou décidées, unité relative
  *     comprise (le repli garde l'écriture de la source).
  *   RATTACHE : déclarations hors conflit en unité absolue (ou sans unité) des lignes inchangées ;
@@ -18,6 +20,7 @@
  */
 
 import { cssVarFallback as withFallback, hasToken, m6Move, relationShort } from './consigne.js';
+import { cleRepere } from '../reduce/declarations.js';
 
 /** Variable CSS d'un jeton DTCG. @param {string} token */
 export const cssVar = (token) => `--${token.replace(/\./g, '-')}`;
@@ -48,9 +51,10 @@ const sheetOf = (href, host) => {
 };
 
 /**
- * @param {{ d: any, s: { applied: any[], pending: any[], refused: any[], outOfTable: any[], attached: any[] }, consigne: import('./consigne.js').Consigne, tokens: any }} o
+ * @param {{ d: any, s: { applied: any[], pending: any[], refused: any[], outOfTable: any[], attached: any[] }, consigne: import('./consigne.js').Consigne, tokens: any,
+ *   reperes?: Map<string, { column: number | null, important: boolean }> }} o
  */
-export function buildModifications({ d, s, consigne, tokens }) {
+export function buildModifications({ d, s, consigne, tokens, reperes = new Map() }) {
   const m = d.meta;
   const host = m.host;
   const date = String(m.stamp ?? '').slice(0, 10);
@@ -75,9 +79,24 @@ export function buildModifications({ d, s, consigne, tokens }) {
     if (prev) {
       if (prev.value !== value) reste.push(`${r.id} ${r.title} : ${at(e)} : même déclaration que ${prev.rows.join(', ')}, valeurs différentes (${prev.value} / ${value}) ; tranche à la main et signale-le.`);
       else if (!prev.rows.includes(r.id)) prev.rows.push(r.id);
+      prev.pages = [...new Set([...prev.pages, ...(e.pages ?? [])])].sort();
       return;
     }
-    entries.set(key, { sheet, line: e.line, selector: e.selector, property: e.property, written: e.written, value, token, rows: [r.id], section: sectionName });
+    const rep = reperes.get(cleRepere(e.href, e.line, e.selector, e.property));
+    entries.set(key, {
+      sheet,
+      line: e.line,
+      selector: e.selector,
+      property: e.property,
+      written: e.written,
+      value,
+      token,
+      rows: [r.id],
+      section: sectionName,
+      column: rep?.column ?? null,
+      important: rep?.important ?? false,
+      pages: [...new Set(e.pages ?? [])].sort(),
+    });
     tokenPaths.add(token);
     for (const p of e.pages ?? []) pages.add(p);
   };
@@ -182,6 +201,8 @@ export function buildModifications({ d, s, consigne, tokens }) {
   return {
     version: 1,
     host,
+    ...(m.scheme ? { scheme: m.scheme } : {}),
+    ...(m.viewport ? { viewport: { width: m.viewport.width, height: m.viewport.height } } : {}),
     stamp: m.stamp,
     tokens: m.tokens,
     entries: sorted.map(({ token, ...e }) => e),

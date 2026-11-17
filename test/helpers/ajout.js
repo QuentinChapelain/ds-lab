@@ -56,7 +56,7 @@ export async function preuve(servers, opts) {
     for (const p of pages) {
       const app = await capturePage({ url: appliquee.origin + p, viewport: VIEWPORT, waitMs: 100, thirdParty });
       const clair = await capturePage({ url: servers.origin + p, viewport: VIEWPORT, waitMs: 100, thirdParty, ajout: sortie });
-      const sombre = await capturePage({ url: servers.origin + p, viewport: VIEWPORT, waitMs: 100, thirdParty, ajout: sortie, colorScheme: 'dark' });
+      const sombre = await capturePage({ url: servers.origin + p, viewport: VIEWPORT, waitMs: 100, thirdParty, ajout: sortie, juger: false, colorScheme: 'dark' });
       const f = referenceFiles(refs, servers.origin + p);
       const refAria = (await readFile(f.aria, 'utf8')).replace(/\n$/, '');
       resultats.push({

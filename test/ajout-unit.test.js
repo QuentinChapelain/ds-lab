@@ -270,7 +270,7 @@ const IMPORTANTS = [
 ];
 const RATTACHEMENTS = ['- esp-04 : /essai/x.css:38 .r { padding-bottom } : var(--e-4, 4px). À faire : rattacher dans la source quand le composant sera refait.'];
 const EN_TETE =
-  "Une valeur posée par un attribut style n'est jamais dans modifications.json : une ligne tenue seulement par des attributs style est sous HORS DE MODIFICATIONS.JSON (point de départ : attribut style) ; une ligne tenue en partie par eux ne le dit pas ici.";
+  "Une valeur posée par un attribut style n'est jamais dans modifications.json : une ligne tenue seulement par des attributs style est parmi les lignes hors de modifications.json, en fin de fichier (point de départ : attribut style) ; une ligne tenue en partie par eux ne le dit pas ici.";
 
 /** @type {string} */
 let site;

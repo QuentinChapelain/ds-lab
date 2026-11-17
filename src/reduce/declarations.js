@@ -56,10 +56,35 @@ export async function declarationsOnPage(page, identity, { sources = null } = {}
   const traces = await traceElements(
     page,
     ops.map((/** @type {any} */ o) => ({ index: o.i, property: o.prop, pseudo: false })),
-    { sources, lookup: (i) => `window.__dsSim.els[${Number(i)}]` },
+    { sources, lookup: (i) => `window.__dsSim.els[${Number(i)}]`, colonne: true },
   );
   const path = new URL(page.url()).pathname;
   return ops.map((/** @type {any} */ o, /** @type {number} */ n) => ({ key: o.key, family: o.family, property: o.prop, page: path, trace: traces[n], coupled: o.prop === 'color' && coupledEls.has(o.i) }));
+}
+
+/**
+ * Clé d'une déclaration de feuille pour ses repères : feuille, ligne, sélecteur, propriété.
+ * @param {string | null} href @param {number | null} line @param {string | null} selector @param {string} property
+ */
+export const cleRepere = (href, line, selector, property) => `${href}|${line}|${selector}|${property}`;
+
+/**
+ * Repères d'une déclaration que la table ne garde pas, lus dans les traces : la colonne de sa règle, qui la situe
+ * dans une ligne qui en porte plusieurs (feuille compressée), et son !important d'origine. Rangés à part, pour que
+ * table.json ne change pas ; seul modifications.json les écrit. La première trace d'une déclaration fait foi.
+ * @param {{ property: string, trace: any }[]} records
+ * @returns {Map<string, { column: number | null, important: boolean }>}
+ */
+export function reperesDe(records) {
+  /** @type {Map<string, { column: number | null, important: boolean }>} */
+  const out = new Map();
+  for (const x of records) {
+    const t = x.trace;
+    if (!t || t.origin !== 'feuille' || !t.href) continue;
+    const k = cleRepere(t.href, t.sheetLine ?? t.line, t.selector, x.property);
+    if (!out.has(k)) out.set(k, { column: t.column ?? null, important: !!t.important });
+  }
+  return out;
 }
 
 /**
