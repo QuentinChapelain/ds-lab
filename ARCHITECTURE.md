@@ -11,7 +11,10 @@ Migration d'un site existant (phases 2 et 3 du README)
                   déclaré et rendu    table ancien → nouveau     copie du site   pixels et arbre
                   src/declared/       src/reduce/  src/brand/    src/apply/      d'accessibilité
                   src/rendered/       simulation : src/browser/                  src/verify/
-                  src/browser/        revue, consigne : src/report/
+                  src/browser/        revue, consigne : src/report/   │                ▲
+                                                                      └► ajout ────────┘ verify --ajout
+                                                          feuilles ajoutées, site intact (D37)
+                                                          src/apply/ajout.js, src/browser/ordre.js
 
 Jetons d'une marque (phase 1)
 
@@ -39,7 +42,7 @@ Chaque commande npm a son point d'entrée dans `src/cli/`, sauf `npm run demo` (
 |---|---|
 | `src/cli/` | Points d'entrée : un fichier par commande npm, sauf `demo`, `types` et `test`, plus les générateurs de jetons et de planches ; `garde.js`, lancement commun et codes de sortie (D18), et `parMarque`, un contrôle sur une marque ou sur chacune (D26) |
 | `src/audit/` | Orchestration d'un audit (navigateur, une session par hôte, pages, rapports) ; exécution facultative du script v1 |
-| `src/browser/` | Ce qui tourne dans le navigateur : lancement de Chromium (`lancement.js`, D34), chargement, feuilles de style dans l'ordre de la cascade (`sheets.js`, D33), relevé du rendu, états forcés, simulation d'une table |
+| `src/browser/` | Ce qui tourne dans le navigateur : lancement de Chromium (`lancement.js`, D34), chargement, feuilles de style dans l'ordre de la cascade (`sheets.js`, D33), relevé du rendu, états forcés, simulation d'une table ; règle gagnante d'une propriété, élément par élément, pour les feuilles ajoutées (`ordre.js`, D37) |
 | `src/declared/` | Audit du déclaré : toutes les feuilles de toutes les pages, dédoublonnées et comptées |
 | `src/rendered/` | Audit du rendu : relevé d'une page chargée, puis agrégation de toutes les pages |
 | `src/lib/` | Fonctions pures partagées : couleurs (OKLab, ΔE, contraste WCAG), mise en forme des sorties (`format.js`), unités, clés de valeurs, adresses, sources ; lecture d'un fichier JSON et message d'erreur d'une ligne (`fichiers.js`, D30) |
@@ -49,8 +52,8 @@ Chaque commande npm a son point d'entrée dans `src/cli/`, sauf `npm run demo` (
 | `src/valise/` | Générateur d'échelles visé par contraste, et son contrôle `checkValise` |
 | `src/tokens/` | Jetons DTCG d'une marque : lecteur de resolver, liste des marques (`dossiersDeMarque`, `nomDeMarque`), primitives, pleins, rôles et paires, espacements, styles de texte ; calcul des trois contrôles de la cible (contraste, espacements, typo) ; écriture de la saisie, à côté puis en remplacement (`ecriture.js`, D31) ; feuille CSS complète d'une marque, écrite par Terrazzo depuis son resolver et comparée au lecteur avant écriture (`css.js`, D36) |
 | `src/report/` | Sorties lisibles : rapport d'audit, revue, `migration.md`, planches des rôles, des espacements et de la typo d'une marque (`planche(dossier)`), calibrage des pleins ; consigne pour un agent, structurée (`consigne.js`, D29), et `modifications.json` (`modifications.js`) ; texte du contrôle de contraste (`contraste.js`) |
-| `src/apply/` | Application de `modifications.json` aux feuilles d'une copie du site ; lit le fichier, n'importe rien de `src/reduce/` ni de `src/report/` (D30) |
-| `src/verify/` | Captures, références et comparaisons (pixels, arbre d'accessibilité), partagées par reduce et verify |
+| `src/apply/` | Application de `modifications.json` aux feuilles d'une copie du site, et feuilles ajoutées qui la posent à côté de l'ancien code, sur le site intact (`ajout.js`, D37) ; localisation d'une entrée et garde de sa valeur écrite, partagées par les deux (`localisation.js`) ; lit le fichier, n'importe rien de `src/reduce/` ni de `src/report/` (D30) |
+| `src/verify/` | Captures, références et comparaisons (pixels, arbre d'accessibilité), partagées par reduce et verify ; feuilles ajoutées posées sur la page avant une capture (`poserAjouts`, D37) |
 
 ## Fonctions communes
 
@@ -70,7 +73,9 @@ Une règle écrite à plusieurs endroits a une seule définition ; chaque lecteu
 | Consigne pour un agent | `consigneAgent` dans `src/report/consigne.js` : sections en listes d'entrées, consigne réduite de `reste.md` à côté (D29) | `migration.md` (texte), `modifications.json` (entrées) |
 | Valeur après la table d'une couleur, par usage | `mapped` dans `src/reduce/pleins.js` (D30) | cartes de plein, couplages, migration |
 | Lecture d'un fichier JSON | `lireJson` dans `src/lib/fichiers.js` : message qui nomme le fichier (absent, dossier, JSON illisible) (D30) | commandes, `runReduce` |
-| Lancement de Chromium | `lancerChromium` dans `src/browser/lancement.js`, avec `--disable-partial-raster` (D34) | audit, reduce et `--live`, marque, verify, login, contrôle d'encre de la saisie |
+| Lancement de Chromium | `lancerChromium` dans `src/browser/lancement.js`, avec `--disable-partial-raster` (D34) | audit, reduce et `--live`, marque, verify, login, ajout, contrôle d'encre de la saisie |
+| Déclaration visée par une entrée de `modifications.json`, et garde de sa valeur écrite | `localiser` et `composantDe` dans `src/apply/localisation.js` | `npm run apply`, `npm run ajout` (D37) |
+| Règle qui gagne une propriété sur un élément | `winner` dans `src/browser/trace.js` | trace de l'audit et de reduce, règles gagnantes des feuilles ajoutées (`src/browser/ordre.js`) |
 | Nom d'une variable CSS de jeton | `cssVar` dans `src/report/modifications.js` : chemin du jeton, points remplacés par des tirets ; `cssVarFallback` (`src/report/consigne.js`) en garde une seconde écriture (`KNOWN_ISSUES.md`) | `tokens.css` de `npm run apply`, feuille de `npm run css` (D36) |
 | Jetons de `--tokens` | `jetonsDe` dans `src/tokens/resolver.js` : un resolver est résolu dans ses contextes par défaut, un fichier de jetons est lu tel quel (D28) | `npm run reduce` |
 
@@ -124,7 +129,8 @@ Changer de marque, c'est changer la couche marque ; les rôles restent les même
 | `npm run marque` | Lire la marque d'un site avant la réduction ; ne décide rien : sort en 0, ou en 2 sur une panne |
 | `npm run reduce` | Ranger l'existant dans la cible : table, revue, consigne ; `modifications.json` avec `--tokens <fichier>`, fichier de jetons ou resolver d'une marque ; sort en 2 dès qu'une page tombe, ou si `--tokens` ne donne aucun jeton (D28) |
 | `npm run apply` | Appliquer `modifications.json` aux feuilles d'une copie du site ; sort en 1 s'il reste un écart, en 2 sur une panne |
-| `npm run verify` | Comparer une page à sa référence (pixels, arbre d'accessibilité) ; sort en 0 même si des pixels diffèrent, en 2 sur une panne |
+| `npm run ajout` | Poser `modifications.json` à côté de l'ancien code : une feuille ajoutée par feuille modifiée, `tokens.css`, `pertes.md`, `feuilles-ajoutees.json`, dans `--sortie` ; lit le site intact, n'en écrit rien ; sort en 1 si une ligne décidée n'est pas écrite ou s'il reste une ligne hors de `modifications.json`, en 2 sur une panne (D37) |
+| `npm run verify` | Comparer une page à sa référence (pixels, arbre d'accessibilité) ; avec `--ajout <dossier>`, les feuilles ajoutées posées sur la page ; sort en 0 même si des pixels diffèrent, en 2 sur une panne |
 | `npm run login` | Enregistrer une session dans `.auth/` ; sort en 2 sur une panne |
 | `npm run demo` | Servir la marque fictive en local |
 | `npm run saisie` | Saisir une marque depuis son entrée : échelles, couche marque, mode sombre, resolver, contraste dans les deux modes ; sort en 1 si elle est refusée, avec motif et mode, en 2 sur une panne |
@@ -148,6 +154,7 @@ Chacun est tenu par le code ou par un test, cité.
 - Deux lancements sur la même entrée et la même machine donnent les mêmes sorties, à l'octet et sans neutralisation : audit (`audit.json`, `rapport.md`, `rapport.html`), réduction (`revue.html`, `table.json`, `migration.md`, `modifications.json`), capture de `verify` ; Chromium n'est lancé que par `lancerChromium` (D34) (`test/determinisme.test.js`). Les feuilles d'une page sont rangées dans l'ordre de la cascade (D33 ; `test/feuilles-cascade.test.js`). Seuls la date (horodatage, injectable par `now`) et le nom du dossier de sortie changent d'un lancement à l'autre ; le port fait partie de l'adresse donnée.
 - Le site audité n'est jamais modifié : les nouvelles valeurs sont posées dans le navigateur de l'outil, le temps des captures (`src/browser/simulate.js`).
 - `npm run apply` ne remplace une déclaration que si la valeur écrite est celle attendue, sinon il la sort en écart ; relancé sur une copie migrée, il ne change rien (`test/apply-unit.test.js`).
+- `npm run ajout` n'écrit aucun fichier du site ; deux générations sont identiques à l'octet ; il n'ajoute ni `!important` ni spécificité ; une ligne décidée est écrite dans sa feuille ajoutée ou listée dans `pertes.md`, avec sa cause (`test/ajout-unit.test.js`). Sur les six réductions de fixtures, les feuilles ajoutées rendent chaque page identique au pixel à la copie passée par apply, même arbre d'accessibilité, en clair comme avec le système en sombre (`test/e2e-ajout-desordre.test.js`, `test/e2e-ajout-pages.test.js`, D37).
 - Un rôle de couleur ou d'espacement est un alias vers la couche marque ou vers une primitive, jamais une valeur brute (`test/roles-semantique.test.js`, `test/espacements-semantique.test.js`). Dans un style de texte, police, taille et graisse sont des alias ; interligne et interlettrage sont écrits en nombre (`test/typo-jetons.test.js`).
 - Les jetons suivent le format DTCG 2025.10 (`test/roles-semantique.test.js`) ; les resolvers aussi (`test/resolver.test.js`).
 - Les trois contrôles de la cible sortent en 0, 1 ou 2 (D18) : 0 tout passe, 1 une règle échoue, 2 l'entrée n'a pas pu être jugée ; un lot les laisse à 0, comme `npm run types`.
