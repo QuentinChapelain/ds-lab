@@ -56,6 +56,20 @@ const uneLigne = (s) => s.replace(/\s+/g, ' ').trim();
 const jetonDe = (v) => /^var\(\s*(--[\w-]+)/.exec(String(v))?.[1] ?? null;
 
 /**
+ * Ce qu'il faut faire d'une propriété longue introuvable dans le raccourci qui la porte (non écrite, cause
+ * « raccourci ») ; un raccourci d'origine !important le dit : la propriété longue écrite sans lui perdrait.
+ * @param {{ propriete: string, source: string, valeur: string, jeton: string | null, important: boolean }} o
+ *   source : valeur du raccourci dans la source ; valeur : la nouvelle valeur, var(--jeton, repli)
+ */
+export function aFaireRaccourci({ propriete, source, valeur, jeton, important }) {
+  const geste =
+    /var\(/i.test(source) && jeton
+      ? `écrire ${propriete} à part dans la source, avec le jeton ${jeton} ; le raccourci tient sa valeur d'un var(), sa valeur de repli n'est pas connue`
+      : `écrire ${valeur} dans la source`;
+  return important ? `${geste} ; le raccourci porte !important : écrire ${propriete} avec !important, sinon il la bat` : geste;
+}
+
+/**
  * Contexte d'une règle : les règles @ qui l'entourent, de la plus externe à la plus interne ; ou le motif qui
  * empêche de le redire.
  * @param {any} rule @returns {string[] | { motif: string }}
@@ -140,11 +154,7 @@ export async function feuillesAjoutees(mods, { origine, waitMs, storageState } =
       }
       const cd = composantDe(loc.decl, entry.property);
       if ('reason' in cd) {
-        const jeton = jetonDe(entry.value);
-        const aFaire =
-          /var\(/i.test(loc.decl.value) && jeton
-            ? `écrire ${entry.property} à part dans la source, avec le jeton ${jeton} ; le raccourci tient sa valeur d'un var(), sa valeur de repli n'est pas connue`
-            : `écrire ${entry.value} dans la source`;
+        const aFaire = aFaireRaccourci({ propriete: entry.property, source: loc.decl.value, valeur: entry.value, jeton: jetonDe(entry.value), important: !!loc.decl.important });
         nonEcrites.push({ entry, categorie: 'raccourci', cause: cd.reason, aFaire });
         continue;
       }
@@ -342,6 +352,7 @@ export async function feuillesAjoutees(mods, { origine, waitMs, storageState } =
       pages: e.pages ?? pages,
       ecrite: ecrites.has(e),
       cause: perdues.get(e)?.categorie ?? null,
+      aFaire: perdues.get(e)?.aFaire ?? null,
       important: !!ecrites.get(e)?.important,
       injectee: ecrites.has(e) && injectee(e.sheet),
     })),

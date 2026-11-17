@@ -196,7 +196,11 @@ test('C4 verdict par ligne décidée à la fenêtre de la réduction ; pixels do
   const ops = /** @type {any[]} */ (preuve.releve?.ops).filter((o) => o.ligne === 'coul-06');
   assert.equal(ops.length, 4);
   for (const o of ops) {
-    assert.deepEqual([o.declaration, o.annotation, o.canal.categories], [`${C}:1:154 .bord`, { ecrite: false, cause: 'raccourci', injectee: false }, ['raccourci', 'variable']]);
+    assert.deepEqual([o.declaration, o.annotation.ecrite, o.annotation.cause, o.annotation.injectee, o.canal.categories], [`${C}:1:154 .bord`, false, 'raccourci', false, ['raccourci', 'variable']]);
+    // docs/attendus/verify-se-reconnait.md : une cause, celle du manifeste, avec l'« à faire » du fichier des pertes.
+    assert.equal(o.canal.cause, 'raccourci');
+    assert.equal(o.canal.aFaire, o.annotation.aFaire);
+    assert.ok(ajout.pertes.includes(`À faire : ${o.annotation.aFaire}.`), o.annotation.aFaire);
     assert.match(o.canal.texte, /--trait/);
     assert.match(o.canal.texte, /:root/);
   }

@@ -96,15 +96,22 @@ export function buildModifications({ d, s, consigne, tokens, reperes = new Map()
   const comments = new Map();
   /** @type {string[]} */
   const reste = [];
-  /** Le reste, ligne à ligne, avec sa cause juste. @type {{ lignes: string[], cause: string, texte: string }[]} */
+  /**
+   * Le reste, ligne à ligne, avec sa cause juste ; aFaire : ce qu'il faut faire, tel que le texte le dit ; declaration :
+   * la déclaration visée, quand la ligne du reste en vise une (feuille null : bloc <style> ou autre origine). verify
+   * --ajout reprend cause et aFaire pour la déclaration (docs/attendus/verify-se-reconnait.md).
+   * @typedef {{ feuille: string | null, ligne: number, selecteur: string, propriete: string }} DeclarationVisee
+   * @type {{ lignes: string[], cause: string, texte: string, aFaire?: string, declaration?: DeclarationVisee }[]}
+   */
   const hors = [];
   /**
    * Une ligne du reste : son texte (reste.md, inchangé) et, pour pertes.md, sa cause et son texte justes.
    * @param {string[]} lignes @param {string} cause @param {string} texte @param {string} [juste]
+   * @param {{ aFaire?: string, declaration?: DeclarationVisee }} [vise]
    */
-  const rester = (lignes, cause, texte, juste = texte) => {
+  const rester = (lignes, cause, texte, juste = texte, vise = {}) => {
     reste.push(texte);
-    hors.push({ lignes, cause, texte: juste });
+    hors.push({ lignes, cause, texte: juste, ...vise });
   };
   /** @type {Set<string>} */
   const pages = new Set();
@@ -166,22 +173,29 @@ export function buildModifications({ d, s, consigne, tokens, reperes = new Map()
     const bloc = !sheetOf(e.href, host);
     const cause = bloc ? 'bloc <style> ou autre origine' : causeDeValeur(e.written);
     const tete = `${r.id} ${r.title} : ${at(e)} : `;
+    const aFaire = what(e.written || r.value);
     rester(
       [r.id],
       cause,
       `${tete}${bloc ? 'déclaration hors des feuilles de la copie (bloc <style> ou autre origine)' : 'unité inconnue'} ; ${what(e.written ?? r.value)}`,
-      `${tete}${bloc ? 'déclaration hors des feuilles de la copie (bloc <style> ou autre origine)' : cause} ; ${what(e.written || r.value)}`,
+      `${tete}${bloc ? 'déclaration hors des feuilles de la copie (bloc <style> ou autre origine)' : cause} ; ${aFaire}`,
+      { aFaire, declaration: { feuille: sheetOf(e.href, host), ligne: e.line, selecteur: e.selector, propriete: e.property } },
     );
   };
-  const noDecl = (/** @type {any} */ r, /** @type {string} */ what) =>
-    rester([r.id], causeSansDeclaration(r.origin), `${r.id} ${r.title} : aucune déclaration tracée (point de départ : ${r.origin}) ; ${what} Cherche toutes les déclarations de ${r.value} pour cette propriété et cet usage.`);
+  const noDecl = (/** @type {any} */ r, /** @type {string} */ what) => {
+    const aFaire = `${what} Cherche toutes les déclarations de ${r.value} pour cette propriété et cet usage.`;
+    const texte = `${r.id} ${r.title} : aucune déclaration tracée (point de départ : ${r.origin}) ; ${aFaire}`;
+    rester([r.id], causeSansDeclaration(r.origin), texte, texte, { aFaire });
+  };
 
   // REMPLACEMENTS
   for (const r of s.applied.filter((x) => x.conflict !== 'total')) {
     const ds = (r.declarations ?? []).filter((/** @type {any} */ e) => !e.conflict);
     const goal = hasToken(r) ? withFallback(r.token, r.value) : `${r.new} (jeton absent)`;
     if (!hasToken(r)) {
-      rester([r.id], 'jeton absent', `${r.id} ${r.title} : jeton absent pour ${r.new} ; écris ${r.new} à la place de ${r.value} dans ses déclarations (${ds.map(at).join(', ') || r.origin}).`);
+      const aFaire = `écris ${r.new} à la place de ${r.value} dans ses déclarations (${ds.map(at).join(', ') || r.origin}).`;
+      const texte = `${r.id} ${r.title} : jeton absent pour ${r.new} ; ${aFaire}`;
+      rester([r.id], 'jeton absent', texte, texte, { aFaire });
       continue;
     }
     if (!ds.length) noDecl(r, `remplace ${r.value} par ${goal}.`);

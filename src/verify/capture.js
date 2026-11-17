@@ -6,7 +6,8 @@
  * Avec `ajout` (D37, D38, D39) : les feuilles ajoutées d'un dossier écrit par npm run ajout sont posées dans la page,
  * tokens.css avant toutes les feuilles, chaque feuille ajoutée juste après la sienne, avec le media de son lien ; la
  * fenêtre est celle du manifeste (la réduction) ; avant puis après la pose, dans le même chargement, chaque opération
- * de la simulation de la réduction est relevée, avec la hauteur de la page (src/verify/arrivee.js).
+ * de la simulation de la réduction est relevée, avec la hauteur de la page (src/verify/arrivee.js), transitions et
+ * animations coupées le temps du relevé ; tokens.css et les feuilles ajoutées y sont reconnus comme posés par verify.
  */
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -106,7 +107,10 @@ export async function capturePage({ url, viewport, waitMs = DEFAULT_WAIT_MS, sto
         .catch(() => null);
       const avant = await releverAvant(page, ajouts.manifeste);
       await poserAjouts(page, ajouts);
-      releve = await releverApres(page, ajouts.manifeste, avant, ajouts.feuilles, html);
+      /** @type {import('./arrivee.js').Pose[]} */
+      const poses = ajouts.feuilles.map((f) => ({ nom: f.ajout, texte: f.texte, sorte: 'ajout' }));
+      if (ajouts.tokens) poses.push({ nom: ajouts.tokens.chemin, texte: ajouts.tokens.texte, sorte: 'jetons' });
+      releve = await releverApres(page, ajouts.manifeste, avant, poses, html);
     }
     const aria = await page.ariaSnapshot();
     await hideThirdParty(page, thirdParty, true);

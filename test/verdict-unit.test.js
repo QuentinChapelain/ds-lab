@@ -15,6 +15,11 @@
  *   V5 textes : la ligne, son état et ses comptes ; pour une ligne qui n'arrive pas entière, chaque déclaration par
  *      page, ce qu'elle est (écrite, non écrite et sa cause, hors de modifications.json), ce qui tient la valeur et
  *      ce qu'il faut faire ; les causes hors de modifications.json de la ligne.
+ * Revus pour docs/attendus/verify-se-reconnait.md (décisions de Quentin du 17/11/2026), avant le code :
+ *   V5 chaque détail d'une déclaration non arrivée dit ce qu'elle est (écrite, non écrite, hors de
+ *      modifications.json), une cause, ce qui tient la valeur et ce qu'il faut faire ; la ligne finit par sa cause ;
+ *   V6 une ligne dont les déclarations non arrivées ont deux causes finit par « causes : voir le détail », et chaque
+ *      détail dit la sienne.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -22,8 +27,10 @@ import { juger } from '../src/verify/arrivee.js';
 
 /** @param {string} id @param {string[]} pages @param {Record<string, any>} [x] */
 const ligne = (id, pages, x = {}) => ({ id, titre: `Titre ${id}`, cles: [`k|${id}`], ancienne: '4px', nouvelle: '8px', jeton: '--e-8', pages, ...x });
-const ECRITE = { ecrite: true, cause: null, injectee: false };
-const CANAL = { categories: ['raccourci'], texte: 'raccourci padding de /s/a.css:9:1 .d', aFaire: 'écrire padding-left à part dans la source, avec var(--e-8, 4px)' };
+const ECRITE = { ecrite: true, cause: null, aFaire: null, injectee: false };
+const A_FAIRE_D = 'écrire padding-left à part dans la source, avec var(--e-8, 4px)';
+const CANAL = { cause: 'raccourci', categories: ['raccourci'], texte: 'raccourci padding de /s/a.css:9:1 .d', aFaire: A_FAIRE_D };
+const A_FAIRE_E = 'écris #abcdef à la place de 4px dans ses déclarations (/s/a.css:12 .e).';
 /** @param {string} l @param {number} element @param {string} declaration @param {string} avant @param {string} apres @param {Record<string, any>} [x] */
 const op = (l, element, declaration, avant, apres, x = {}) => ({ ligne: l, element, propriete: 'padding-left', declaration, annotation: ECRITE, avant, apres, visee: '8px', canal: null, ...x });
 
@@ -37,7 +44,7 @@ const MANIFESTE = {
     ligne('esp-06', ['/b']),
     ligne('coul-07', [], { etats: ['survol'] }),
   ],
-  hors: [{ lignes: ['coul-03'], cause: 'jeton absent', texte: 'coul-03 Titre coul-03 : jeton absent pour #abcdef ; …' }],
+  hors: [{ lignes: ['coul-03'], cause: 'jeton absent', texte: `coul-03 Titre coul-03 : jeton absent pour #abcdef ; ${A_FAIRE_E}`, aFaire: A_FAIRE_E }],
 };
 const RELEVES = [
   {
@@ -46,8 +53,11 @@ const RELEVES = [
     ops: [
       op('coul-01', 0, '/s/a.css:1:1 .a', '4px', '8px'),
       op('esp-02', 1, '/s/a.css:3:1 .c', '4px', '8px'),
-      op('esp-02', 2, '/s/a.css:9:1 .d', '4px', '4px', { annotation: { ecrite: false, cause: 'raccourci', injectee: false }, canal: CANAL }),
-      op('coul-03', 3, '/s/a.css:12:1 .e', '4px', '4px', { annotation: { ecrite: null, cause: null, injectee: false }, canal: { categories: ['autre règle'], texte: '/s/a.css:12:1 .e', aFaire: 'faire gagner 8px contre /s/a.css:12:1 .e' } }),
+      op('esp-02', 2, '/s/a.css:9:1 .d', '4px', '4px', { annotation: { ecrite: false, cause: 'raccourci', aFaire: A_FAIRE_D, injectee: false }, canal: CANAL }),
+      op('coul-03', 3, '/s/a.css:12:1 .e', '4px', '4px', {
+        annotation: { ecrite: null, cause: 'jeton absent', aFaire: A_FAIRE_E, injectee: false },
+        canal: { cause: 'jeton absent', categories: ['autre règle'], texte: '/s/a.css:12:1 .e', aFaire: A_FAIRE_E },
+      }),
       op('coul-04', 4, '/s/a.css:15:1 .f', '8px', '8px'),
     ],
   },
@@ -98,14 +108,14 @@ test('V5 textes : ligne, déclarations, ce qui tient la valeur, ce qu\'il faut f
   const j = juger(MANIFESTE, RELEVES);
   const t = Object.fromEntries(j.lignes.map((/** @type {any} */ l) => [l.id, l]));
   assert.equal(t['coul-01'].texte, 'coul-01 Titre coul-01 : arrivée (1 déclaration, 1 élément)');
-  assert.equal(t['esp-02'].texte, 'esp-02 Titre esp-02 : en partie (1 déclaration sur 2, 1 élément sur 2)');
+  assert.equal(t['esp-02'].texte, 'esp-02 Titre esp-02 : en partie (1 déclaration sur 2, 1 élément sur 2) ; cause : raccourci');
   assert.deepEqual(t['esp-02'].details, [
     '/a /s/a.css:3:1 .c { padding-left } : écrite ; arrivée (1 élément)',
-    '/a /s/a.css:9:1 .d { padding-left } : non écrite (raccourci) ; non arrivée (0 élément sur 1) ; tient : raccourci padding de /s/a.css:9:1 .d ; à faire : écrire padding-left à part dans la source, avec var(--e-8, 4px)',
+    '/a /s/a.css:9:1 .d { padding-left } : non écrite ; non arrivée (0 élément sur 1) ; cause : raccourci ; tient : raccourci padding de /s/a.css:9:1 .d ; à faire : écrire padding-left à part dans la source, avec var(--e-8, 4px)',
   ]);
-  assert.equal(t['coul-03'].texte, 'coul-03 Titre coul-03 : non arrivée (0 déclaration sur 1, 0 élément sur 1) ; hors de modifications.json : jeton absent');
+  assert.equal(t['coul-03'].texte, 'coul-03 Titre coul-03 : non arrivée (0 déclaration sur 1, 0 élément sur 1) ; cause : jeton absent');
   assert.deepEqual(t['coul-03'].details, [
-    '/a /s/a.css:12:1 .e { padding-left } : hors de modifications.json ; non arrivée (0 élément sur 1) ; tient : /s/a.css:12:1 .e ; à faire : faire gagner 8px contre /s/a.css:12:1 .e',
+    '/a /s/a.css:12:1 .e { padding-left } : hors de modifications.json ; non arrivée (0 élément sur 1) ; cause : jeton absent ; tient : /s/a.css:12:1 .e ; à faire : écris #abcdef à la place de 4px dans ses déclarations (/s/a.css:12 .e).',
   ]);
   assert.equal(t['coul-04'].texte, 'coul-04 Titre coul-04 : déjà en place (1 élément : la valeur visée y était avant la pose)');
   assert.equal(t['esp-05'].texte, 'esp-05 Titre esp-05 : non vue (aucun élément sur /a)');
@@ -121,4 +131,24 @@ test('V1 une déclaration sur deux pages : arrivée seulement si elle l\'est sur
   ];
   const l = juger(m, deux).lignes[0];
   assert.deepEqual([l.etat, l.declarations, l.elements], ['en partie', { arrivees: 0, total: 1 }, { arrivees: 1, total: 2 }]);
+});
+
+test('V6 deux causes sur une ligne : « causes : voir le détail », une cause par détail', () => {
+  const ATTRIBUT = { cause: 'attribut style', categories: ['attribut style'], texte: "attribut style de l'élément", aFaire: "retirer padding-left de l'attribut style de l'élément" };
+  const j = juger({ lignes: [ligne('esp-02', ['/a'])] }, [
+    {
+      page: '/a',
+      hauteurs: { intacte: 1, avecFeuilles: 1 },
+      ops: [
+        op('esp-02', 1, '/s/a.css:9:1 .d', '4px', '4px', { annotation: { ecrite: false, cause: 'raccourci', aFaire: A_FAIRE_D, injectee: false }, canal: CANAL }),
+        op('esp-02', 2, 'attribut style', '4px', '4px', { annotation: { ecrite: null, cause: null, aFaire: null, injectee: false }, canal: ATTRIBUT }),
+      ],
+    },
+  ]);
+  const l = j.lignes[0];
+  assert.equal(l.texte, 'esp-02 Titre esp-02 : non arrivée (0 déclaration sur 2, 0 élément sur 2) ; causes : voir le détail');
+  assert.deepEqual(l.details, [
+    `/a /s/a.css:9:1 .d { padding-left } : non écrite ; non arrivée (0 élément sur 1) ; cause : raccourci ; tient : raccourci padding de /s/a.css:9:1 .d ; à faire : ${A_FAIRE_D}`,
+    "/a attribut style { padding-left } : hors de modifications.json ; non arrivée (0 élément sur 1) ; cause : attribut style ; tient : attribut style de l'élément ; à faire : retirer padding-left de l'attribut style de l'élément",
+  ]);
 });

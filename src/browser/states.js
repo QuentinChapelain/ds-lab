@@ -4,8 +4,10 @@
  * interactifs, par le protocole DevTools (CSS.forcePseudoState), après
  * collectRendered (qui a gardé les éléments et la fonction de lecture dans la page).
  * Transitions et animations sont coupées le temps du relevé, sinon la valeur lue
- * juste après le changement d'état serait celle du départ de la transition.
+ * juste après le changement d'état serait celle du départ de la transition
+ * (src/browser/immobile.js).
  */
+import { immobiliser, liberer } from './immobile.js';
 
 const STATES = /** @type {const} */ ({
   hover: ['hover'],
@@ -67,13 +69,7 @@ export async function collectStates(page, pc, { max = MAX_STATE_SAMPLES } = {}) 
     await cdp.send('DOM.enable');
     await cdp.send('CSS.enable');
     await cdp.send('DOM.getDocument', { depth: 0 });
-    // Feuille construite : n'est pas soumise à une CSP qui interdirait un <style> en ligne.
-    await page.evaluate(() => {
-      const sheet = new CSSStyleSheet();
-      sheet.replaceSync('*, *::before, *::after { transition: none !important; animation: none !important; }');
-      /** @type {any} */ (window).__dsAuditStill = sheet;
-      document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-    });
+    await immobiliser(page);
     for (const s of picked) {
       const { result } = /** @type {any} */ (await cdp.send('Runtime.evaluate', { expression: `window.__dsAuditElements[${Number(s.index)}]` }));
       if (!result?.objectId) continue;
@@ -96,12 +92,7 @@ export async function collectStates(page, pc, { max = MAX_STATE_SAMPLES } = {}) 
       samples.push({ ...s, rest, states });
     }
   } finally {
-    await page
-      .evaluate(() => {
-        const sheet = /** @type {any} */ (window).__dsAuditStill;
-        document.adoptedStyleSheets = document.adoptedStyleSheets.filter((x) => x !== sheet);
-      })
-      .catch(() => {});
+    await liberer(page);
     await cdp.detach().catch(() => {});
   }
   return { samples, candidates, capped };

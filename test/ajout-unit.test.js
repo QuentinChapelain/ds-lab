@@ -427,6 +427,13 @@ test('F7 commande : 1 avec des pertes, 0 sans, 2 sur une panne ; fichiers écrit
       pages: ['/essai/page.html'],
       ecrite: !['.g', '.k'].includes(x.selector),
       cause: x.selector === '.g' ? "battue par l'ordre" : x.selector === '.k' ? 'garde' : null,
+      // docs/attendus/verify-se-reconnait.md : l'« à faire » du fichier des pertes, que verify --ajout reprend.
+      aFaire:
+        x.selector === '.g'
+          ? 'écrire var(--e-8, 4px) dans la source'
+          : x.selector === '.k'
+            ? "vérifier la déclaration ; si c'est bien elle, écrire var(--t-k, #999999) dans la source"
+            : null,
       important: x.selector === '.b',
       injectee: false,
     })),
@@ -466,7 +473,7 @@ test('F8 verdict par ligne décidée : arrivée, non vue, hors des pages vérifi
   // L'élément « a s », où .a perdait déjà (sa couleur est celle de .s), n'est pas visé : sa couleur n'est pas #111111.
   assert.deepEqual(
     /** @type {any[]} */ (shot.releve?.ops).filter((o) => o.ligne === 'coul-01').map((o) => [o.declaration, o.annotation]),
-    [['/essai/x.css:1:4 .a', { ecrite: true, cause: null, injectee: false }]],
+    [['/essai/x.css:1:4 .a', { ecrite: true, cause: null, aFaire: null, injectee: false }]],
   );
   assert.equal(j.sortie, 1);
   assert.equal(j.resume, 'Lignes décidées : 5 ; arrivées 2, en partie 0, non arrivées 0, déjà en place 0, non vues 1, hors des pages vérifiées 1, non vérifiables (état) 1.');
