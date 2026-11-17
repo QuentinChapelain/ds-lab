@@ -9,7 +9,8 @@
  *     variable est posée par l'attribut style de l'élément ;
  *   - coul-03, fond #f2f2f2, tenu par .encart-a (propriété longue, écrite) et .encart-b (raccourci background en
  *     var(), qui ne peut pas être écrit) ;
- *   - coul-01, texte #333333 (body, a) : arrivée.
+ *   - coul-01, texte #333333 (body, a) : arrivée ; .titre, qui hérite sa couleur de body, et les liens ont une
+ *     transition de couleur, les liens aussi de fond (docs/attendus/verify-se-reconnait.md).
  * Attendus écrits à la main avant le code (17/11/2026) :
  *   K1 modifications.json : simulation (la carte que la simulation applique), lignes (chaque ligne décidée, ses
  *      clés, son jeton, ses pages), hors (les lignes hors de modifications.json et leur cause) ; aucun de ces champs
@@ -23,6 +24,14 @@
  *   K5 hauteurs de la page intacte (lue avant la pose, dans le même chargement) et avec les feuilles ;
  *   K6 commande verify --ajout : chaque ligne, la phrase finale qui compte chaque état, les hauteurs ; sortie 1 ;
  *      jamais « chaque ligne écrite est arrivée ».
+ * Revus pour docs/attendus/verify-se-reconnait.md (décisions de Quentin du 17/11/2026), avant le code :
+ *   K4 une cause par déclaration, celle du manifeste d'abord : esp-03 a pour cause « attribut style » et pour « à faire »
+ *      celui du fichier des pertes ; l'attribut style reste nommé dans ce qui la tient ; la ligne coul-03 finit par
+ *      « cause : raccourci en var() » ; le détail de coul-02 dit « cause : bloc <style> ou autre origine » ;
+ *   K7 transitions : relevées transitions et animations coupées, les opérations de coul-01 (body, héritée par
+ *      .titre ; a) et celle de .bouton-feuille (coul-02) arrivent ; aucun canal n'est « posé par verify » ;
+ *   K8 la cause de chaque déclaration non arrivée est la même dans la ligne de verdict, le détail et le fichier des
+ *      pertes ; coul-02, coul-03, coul-04 et esp-03 finissent par leur cause.
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -32,7 +41,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { TOKENS } from './helpers/ajout.js';
+import { TOKENS, desaccords } from './helpers/ajout.js';
 import { runReduce } from '../src/reduce/run.js';
 import { feuillesAjoutees, ecrireAjouts, MANIFESTE } from '../src/apply/ajout.js';
 import { verifyPage } from '../src/verify/reference.js';
@@ -138,7 +147,8 @@ test('K4 canal en clair et ce qu\'il faut faire', () => {
   const ratees = (id) => /** @type {any[]} */ (preuve.releve?.ops ?? []).filter((o) => o.ligne === id && o.apres !== o.visee);
   const esp03 = ratees('esp-03');
   assert.deepEqual(esp03.map((o) => o.canal.categories), [['attribut style']]);
-  assert.match(esp03[0].canal.aFaire, /attribut style/);
+  assert.equal(esp03[0].canal.cause, 'attribut style');
+  assert.match(esp03[0].canal.texte, /attribut style/);
   assert.match(esp03[0].canal.aFaire, /var\(--espace-32, 30px\)/);
   assert.equal(esp03[0].annotation.ecrite, null);
   const coul02 = ratees('coul-02');
@@ -151,14 +161,17 @@ test('K4 canal en clair et ce qu\'il faut faire', () => {
     assert.match(o.canal.texte, /--trait-cadre/);
     assert.match(o.canal.texte, /attribut style de l'élément/);
     assert.match(o.canal.aFaire, /--couleur-neutre-6/);
-    assert.deepEqual(o.annotation, { ecrite: false, cause: 'raccourci', injectee: false });
+    assert.deepEqual([o.annotation.ecrite, o.annotation.cause, o.annotation.injectee], [false, 'raccourci', false]);
   }
   const coul03 = ratees('coul-03');
   assert.deepEqual(coul03.map((o) => o.canal.categories), [['raccourci', 'variable']]);
   assert.match(coul03[0].canal.texte, /--fond-encart/);
   assert.match(coul03[0].canal.texte, /repli/);
-  assert.ok(ligneDe('coul-03').texte.endsWith(' ; hors de modifications.json : raccourci en var()'), ligneDe('coul-03').texte);
-  assert.ok(ligneDe('coul-02').details.some((/** @type {string} */ d) => d.startsWith(`${PAGE} <style> .bouton-theme { background-color } : hors de modifications.json ; non arrivée (0 élément sur 1) ; tient : `)), ligneDe('coul-02').details.join('\n'));
+  assert.ok(ligneDe('coul-03').texte.endsWith(' ; cause : raccourci en var()'), ligneDe('coul-03').texte);
+  assert.ok(
+    ligneDe('coul-02').details.some((/** @type {string} */ d) => d.startsWith(`${PAGE} <style> .bouton-theme { background-color } : hors de modifications.json ; non arrivée (0 élément sur 1) ; cause : bloc <style> ou autre origine ; tient : `)),
+    ligneDe('coul-02').details.join('\n'),
+  );
 });
 
 test('K5 hauteurs : page intacte, avec les feuilles, référence', () => {
@@ -183,4 +196,26 @@ test('K6 commande verify --ajout : chaque ligne, phrase finale, hauteurs ; sorti
   assert.ok(stdout.includes(`${verdict.resume}\n`), stdout);
   assert.match(stdout, /Hauteur : page intacte \d+ px, avec les feuilles \d+ px, référence \d+ px/);
   assert.ok(!/écrite est arrivée/.test(stdout), stdout);
+});
+
+test('K7 transitions coupées le temps du relevé : coul-01 et .bouton-feuille arrivent', () => {
+  const ops = /** @type {any[]} */ (preuve.releve?.ops ?? []);
+  const coul01 = ops.filter((o) => o.ligne === 'coul-01');
+  assert.ok(coul01.some((o) => / body$/.test(o.declaration)) && coul01.some((o) => / a$/.test(o.declaration)), JSON.stringify(coul01));
+  for (const o of coul01) assert.equal(o.apres, o.visee, JSON.stringify(o));
+  const feuille = ops.filter((o) => o.ligne === 'coul-02' && / \.bouton-feuille$/.test(o.declaration));
+  assert.equal(feuille.length, 1);
+  assert.equal(feuille[0].apres, feuille[0].visee, JSON.stringify(feuille[0]));
+  for (const o of ops) if (o.canal) assert.ok(!o.canal.categories.includes('posé par verify'), JSON.stringify(o.canal));
+});
+
+test('K8 une cause par déclaration, la même dans le verdict, le détail et le fichier des pertes', () => {
+  assert.deepEqual(desaccords(verdict, ajout.pertes), []);
+  for (const [id, cause] of [
+    ['coul-02', 'bloc <style> ou autre origine'],
+    ['coul-03', 'raccourci en var()'],
+    ['coul-04', 'raccourci'],
+    ['esp-03', 'attribut style'],
+  ])
+    assert.ok(ligneDe(id).texte.endsWith(` ; cause : ${cause}`), ligneDe(id).texte);
 });

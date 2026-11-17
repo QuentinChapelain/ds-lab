@@ -6,3 +6,7 @@ a { color: #333333; }
 .cadre { border: 1px solid var(--trait-cadre); padding: 8px; margin-top: 16px; }
 .encart-a { background-color: #f2f2f2; padding: 8px; margin-top: 16px; }
 .encart-b { background: var(--fond-encart, #f2f2f2); padding: 8px; margin-top: 16px; }
+/* Transitions : lue juste après la pose des feuilles ajoutées, la valeur calculée serait celle du départ de la
+   transition, l'ancienne. .titre hérite sa couleur de body ; les liens portent leur couleur et leur fond. */
+.titre { transition: color .3s ease; }
+a { transition: color .3s ease, background-color .3s ease; }

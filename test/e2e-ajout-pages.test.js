@@ -12,13 +12,17 @@
  *   P4 chaque ligne décidée et non écrite, et chaque ligne du reste, est dans le fichier des pertes ; sur la page
  *      de marque, coul-06 (marque.css:41, border-bottom-color, simplement rattachée) est un rattachement non fait ;
  *   P5 proximité : seulement des lignes rattachées, aucune feuille ajoutée ; .message (proximite.css:67) n'est pas
- *      reprise, et ne passe plus devant .message-loin.
+ *      reprise, et ne passe plus devant .message-loin ;
+ *   P7 une seule cause par déclaration, la même dans la ligne de verdict, le détail et le fichier des pertes
+ *      (docs/attendus/verify-se-reconnait.md) : sur la page de marque, coul-09 et coul-11 ont pour cause « valeur en
+ *      var() » et pour « à faire » celui du fichier des pertes (écrire var(<jeton>, var(<variable de la page>)) à la
+ *      main), jamais « poser --marque-… là où elle est posée ».
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { preuve, lignesPerdues, pasArrivees } from './helpers/ajout.js';
+import { preuve, lignesPerdues, pasArrivees, desaccords } from './helpers/ajout.js';
 
 /** @type {Awaited<ReturnType<typeof startFixtureServers>>} */
 let servers;
@@ -80,4 +84,24 @@ test('P6 marque : coul-09 et coul-11, valeur en var() hors de modifications.json
   const ratees = R.marque.resultats.flatMap((x) => x.releve.ops).filter((/** @type {any} */ o) => o.apres !== o.visee && o.avant !== o.visee);
   assert.deepEqual([...new Set(ratees.map((/** @type {any} */ o) => o.ligne))].sort(), ['coul-09', 'coul-11']);
   for (const o of ratees) assert.ok(o.canal.categories.includes('variable'), JSON.stringify(o.canal));
+});
+
+for (const nom of ['pieges', 'proximite', 'marque']) {
+  test(`P7 ${nom} : une cause par déclaration, la même dans le verdict, le détail et le fichier des pertes`, () => {
+    assert.deepEqual(desaccords(R[nom].verdict, R[nom].ajout.pertes), []);
+  });
+}
+
+test('P7 marque : coul-09 et coul-11, cause « valeur en var() », à faire du fichier des pertes', () => {
+  for (const [id, aFaire] of [
+    ['coul-09', 'si la valeur calculée est bien #8f8f8f, écris var(--couleur-neutre-11, var(--marque-secondary-color)) à la main.'],
+    ['coul-11', 'si la valeur calculée est bien #c8553d, écris var(--couleur-terre-11, var(--marque-accent-color)) à la main.'],
+  ]) {
+    const l = /** @type {any} */ (R.marque.verdict.lignes.find((x) => x.id === id));
+    assert.ok(l.texte.endsWith(' ; cause : valeur en var()'), l.texte);
+    assert.equal(l.details.length, 1, l.details.join('\n'));
+    assert.ok(l.details[0].includes(' ; cause : valeur en var() ; tient : '), l.details[0]);
+    assert.ok(l.details[0].endsWith(` ; à faire : ${aFaire}`), l.details[0]);
+    assert.ok(!l.details[0].includes('poser --marque-'), l.details[0]);
+  }
 });

@@ -11,13 +11,16 @@
  *   P6 verdict par ligne décidée (docs/attendus/verdict-par-decision.md) : désordre et valise, chaque ligne décidée
  *      arrivée, sortie 0 ; passage 2c, les neuf lignes sans jeton dans la marque (hors de modifications.json) non
  *      arrivées, coul-26 (vue seulement au survol) non vérifiable (état), sortie 1 ;
- *   P4 chaque ligne décidée et non écrite, et chaque ligne du reste, est dans le fichier des pertes.
+ *   P4 chaque ligne décidée et non écrite, et chaque ligne du reste, est dans le fichier des pertes ;
+ *   P7 une seule cause par déclaration, la même dans la ligne de verdict, le détail et le fichier des pertes
+ *      (docs/attendus/verify-se-reconnait.md) : les neuf lignes sans jeton du passage 2c finissent par « cause : jeton
+ *      absent ».
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { preuve, lignesPerdues, pasArrivees } from './helpers/ajout.js';
+import { preuve, lignesPerdues, pasArrivees, desaccords } from './helpers/ajout.js';
 
 /** @type {Awaited<ReturnType<typeof startFixtureServers>>} */
 let servers;
@@ -67,6 +70,12 @@ test('P6 passage : lignes sans jeton non arrivées, survol non vérifiable ; sor
   assert.equal(R.passage.verdict.sortie, 1);
   for (const id of sansJeton) {
     const l = /** @type {any} */ (R.passage.verdict.lignes.find((x) => x.id === id));
-    assert.ok(l.texte.endsWith(' ; hors de modifications.json : jeton absent'), l.texte);
+    assert.ok(l.texte.endsWith(' ; cause : jeton absent'), l.texte);
   }
 });
+
+for (const nom of ['desordre', 'valise', 'passage']) {
+  test(`P7 ${nom} : une cause par déclaration, la même dans le verdict, le détail et le fichier des pertes`, () => {
+    assert.deepEqual(desaccords(R[nom].verdict, R[nom].ajout.pertes), []);
+  });
+}

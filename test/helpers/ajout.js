@@ -110,6 +110,45 @@ export function lignesPerdues(mods, ajout) {
 }
 
 /**
+ * Une seule cause par déclaration, la même dans la ligne de verdict, le détail et pertes.md
+ * (docs/attendus/verify-se-reconnait.md). Chaque détail d'une déclaration non arrivée dit une cause, ce qui la tient
+ * et un « à faire » ; pour une déclaration non écrite ou hors de modifications.json, pertes.md a une ligne qui porte
+ * cet « à faire », sous une section qui nomme cette cause. La ligne de verdict finit par « cause : <la cause> » si ses
+ * détails n'en ont qu'une, par « causes : voir le détail » sinon. Rend les désaccords.
+ * @param {{ lignes: { texte: string, details: string[] }[] }} verdict @param {string} pertes
+ */
+export function desaccords(verdict, pertes) {
+  const P = pertes.split('\n');
+  /** Section d'une ligne de pertes.md : le dernier titre au-dessus d'elle. @param {number} i */
+  const section = (i) => P.slice(0, i).findLast((l) => /^[A-ZÀ-Ý]/.test(l)) ?? '';
+  /** @type {string[]} */
+  const out = [];
+  for (const l of verdict.lignes) {
+    /** @type {Set<string>} */
+    const causes = new Set();
+    for (const d of l.details.filter((x) => / : (écrite|non écrite|hors de modifications\.json) ; (en partie|non arrivée)/.test(x))) {
+      const i = d.indexOf(' ; cause : ');
+      const j = d.indexOf(' ; tient : ');
+      const k = d.indexOf(' ; à faire : ');
+      if (i < 0 || j < i || k < j || d.indexOf(' ; cause : ', i + 1) >= 0) {
+        out.push(`détail sans une cause, un « tient » et un « à faire », dans cet ordre : ${d}`);
+        continue;
+      }
+      const cause = d.slice(i + ' ; cause : '.length, j);
+      const aFaire = d.slice(k + ' ; à faire : '.length);
+      causes.add(cause);
+      if (!/ : (non écrite|hors de modifications\.json) ; /.test(d)) continue;
+      const ok = P.some((x, n) => x.startsWith('- ') && x.includes(aFaire) && section(n).includes(cause.toUpperCase()));
+      if (!ok) out.push(`pertes.md ne dit pas « ${cause} » ni « ${aFaire} » : ${d}`);
+    }
+    if (!causes.size) continue;
+    const fin = causes.size === 1 ? ` ; cause : ${[...causes][0]}` : ' ; causes : voir le détail';
+    if (!l.texte.endsWith(fin)) out.push(`ligne de verdict sans « ${fin.slice(3)} » : ${l.texte}`);
+  }
+  return out;
+}
+
+/**
  * État de chaque ligne décidée qui n'est pas arrivée, par identifiant.
  * @param {Awaited<ReturnType<typeof preuve>>} r
  */
