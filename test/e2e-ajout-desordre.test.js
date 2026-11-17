@@ -8,13 +8,15 @@
  *      sans valise et les décisions du passage 2c, l'écart à la référence reste celui d'apply (lignes hors de
  *      modifications.json, KNOWN_ISSUES.md) ;
  *   P3 système en sombre : rendu identique au rendu en clair ;
+ *   P6 preuve par décision (docs/attendus/feuille-ajoutee-reel.md) : chaque ligne écrite est arrivée sur chaque page
+ *      où la réduction l'a tracée ;
  *   P4 chaque ligne décidée et non écrite, et chaque ligne du reste, est dans le fichier des pertes.
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { preuve, lignesPerdues } from './helpers/ajout.js';
+import { preuve, lignesPerdues, nonArrivees } from './helpers/ajout.js';
 
 /** @type {Awaited<ReturnType<typeof startFixtureServers>>} */
 let servers;
@@ -48,5 +50,12 @@ for (const nom of ['desordre', 'valise', 'passage']) {
 for (const nom of ['desordre', 'valise']) {
   test(`P2 ${nom} : 0 px et même arbre contre la référence`, () => {
     for (const x of R[nom].resultats) assert.deepEqual({ page: x.page, ...x.reference }, { page: x.page, px: 0, aria: true });
+  });
+}
+
+for (const nom of ['desordre', 'valise', 'passage']) {
+  test(`P6 ${nom} : chaque ligne écrite est arrivée sur ses pages`, () => {
+    assert.ok(R[nom].resultats.some((x) => x.decisions.length > 0) || R[nom].ajout.compte.ecrites === 0);
+    assert.deepEqual(nonArrivees(R[nom]), []);
   });
 }

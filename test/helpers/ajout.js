@@ -2,7 +2,8 @@
 /**
  * Preuve des feuilles ajoutées sur une réduction de fixtures (docs/attendus/feuille-ajoutee.md) : réduction avec ses
  * références, feuilles ajoutées sur le site intact, copie passée par apply ; captures de chaque page de la réduction
- * avec les feuilles ajoutées (clair, puis système en sombre) et de la copie appliquée.
+ * avec les feuilles ajoutées (clair, puis système en sombre) et de la copie appliquée ; preuve par décision lue dans
+ * la capture en clair (docs/attendus/feuille-ajoutee-reel.md).
  */
 import { readFile, writeFile, mkdtemp, cp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -49,7 +50,7 @@ export async function preuve(servers, opts) {
   }
   const appliquee = await startFixtureServers({ root: copie });
   const thirdParty = ['.tiers-cookies'];
-  /** @type {{ page: string, ajout: { px: number, aria: boolean }, reference: { px: number, aria: boolean }, sombre: number }[]} */
+  /** @type {{ page: string, ajout: { px: number, aria: boolean }, reference: { px: number, aria: boolean }, sombre: number, decisions: any[] }[]} */
   const resultats = [];
   try {
     for (const p of pages) {
@@ -63,6 +64,7 @@ export async function preuve(servers, opts) {
         ajout: { px: compareImages(app.png, clair.png).different, aria: compareAria(app.aria, clair.aria).identical },
         reference: { px: compareImages(await readFile(f.png), clair.png).different, aria: compareAria(refAria, clair.aria).identical },
         sombre: compareImages(clair.png, sombre.png).different,
+        decisions: clair.decisions ?? [],
       });
     }
   } finally {
@@ -77,15 +79,32 @@ export async function preuve(servers, opts) {
  * @param {any} mods @param {Awaited<ReturnType<typeof feuillesAjoutees>>} ajout
  */
 export function lignesPerdues(mods, ajout) {
-  const pertes = ajout.pertes.split('\n');
+  const tout = ajout.pertes.split('\n');
+  // Les lignes non écrites sont listées entre NON ÉCRITES et RATTACHEMENTS NON FAITS.
+  const pertes = tout.slice(tout.findIndex((l) => l.startsWith('NON ÉCRITES (')), tout.findIndex((l) => l.startsWith('RATTACHEMENTS NON FAITS (')));
+  const reste = tout.slice(tout.findIndex((l) => l.startsWith('HORS DE MODIFICATIONS.JSON (')));
   const texte = (/** @type {string} */ sheet) => ajout.feuilles.find((f) => f.feuille === sheet)?.texte ?? '';
   /** @type {string[]} */
   const out = [];
   for (const e of mods.entries.filter((/** @type {any} */ x) => x.section !== 'RATTACHE')) {
-    const ecrite = texte(e.sheet).includes(`${e.property}: ${e.value}; /* ${e.rows.join(', ')} */`);
-    const listee = pertes.some((l) => l.startsWith(`- ${e.rows.join(', ')} : ${e.sheet}:${e.line} ${e.selector} { ${e.property} } : `));
+    const t = texte(e.sheet);
+    const ecrite = t.includes(`${e.property}: ${e.value}; /* ${e.rows.join(', ')} */`) || t.includes(`${e.property}: ${e.value} !important; /* ${e.rows.join(', ')} ; `);
+    const vise = [`${e.sheet}:${e.line} `, `${e.sheet}:${e.line}:${e.column} `].map((r) => `- ${e.rows.join(', ')} : ${r}${e.selector} { ${e.property} } : `);
+    const listee = pertes.some((l) => vise.some((v) => l.startsWith(v)));
     if (ecrite === listee) out.push(`${e.rows.join(', ')} ${e.sheet}:${e.line} ${e.property} : ${ecrite ? 'écrite et listée' : 'ni écrite ni listée'}`);
   }
-  for (const t of mods.brief.reste) if (!pertes.includes(`- ${t}`)) out.push(`reste absent : ${t}`);
+  for (const t of mods.brief.reste) if (!reste.includes(`- ${t}`)) out.push(`reste absent : ${t}`);
+  return out;
+}
+
+/**
+ * Lignes écrites qui ne sont pas arrivées sur une page où la réduction les a tracées ; rend la liste de leurs textes.
+ * @param {Awaited<ReturnType<typeof preuve>>} r
+ */
+export function nonArrivees(r) {
+  /** @type {string[]} */
+  const out = [];
+  for (const x of r.resultats)
+    for (const d of x.decisions) if (d.ecrite && d.pages.includes(x.page) && d.statut !== 'arrivée') out.push(`${x.page} : ${d.texte}`);
   return out;
 }

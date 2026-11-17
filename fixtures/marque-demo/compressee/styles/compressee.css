@@ -1,0 +1,1 @@
+:root{--trait:#dadada}.carte{color:#333333}.carte-titre{margin-bottom:30px}.carte{background-color:#f2f2f2}.pied{background-color:#eeeeee!important}.bord{border:1px solid var(--trait)}.liste>li{color:#808080}li:nth-child(even){background-color:#eeeeee}@media (max-width:500px){.etroit{padding-left:36px}}

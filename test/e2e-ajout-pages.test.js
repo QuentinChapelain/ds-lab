@@ -6,6 +6,8 @@
  *   P2 0 px et même arbre contre la référence pour les pièges et la proximité ; la page de marque garde l'écart
  *      d'apply (valeurs en var(), KNOWN_ISSUES.md) ;
  *   P3 système en sombre : rendu identique au rendu en clair ;
+ *   P6 preuve par décision (docs/attendus/feuille-ajoutee-reel.md) : chaque ligne écrite est arrivée sur chaque page
+ *      où la réduction l'a tracée ;
  *   P4 chaque ligne décidée et non écrite, et chaque ligne du reste, est dans le fichier des pertes ; sur la page
  *      de marque, coul-06 (marque.css:41, border-bottom-color, simplement rattachée) est un rattachement non fait ;
  *   P5 proximité : seulement des lignes rattachées, aucune feuille ajoutée ; .message (proximite.css:67) n'est pas
@@ -15,7 +17,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { preuve, lignesPerdues } from './helpers/ajout.js';
+import { preuve, lignesPerdues, nonArrivees } from './helpers/ajout.js';
 
 /** @type {Awaited<ReturnType<typeof startFixtureServers>>} */
 let servers;
@@ -60,3 +62,10 @@ test('P5 proximité : aucune feuille ajoutée, .message rattachement non fait', 
   assert.deepEqual(R.proximite.ajout.feuilles, []);
   assert.ok(R.proximite.ajout.pertes.split('\n').some((l) => l.startsWith('- esp-03 : /proximite/styles/proximite.css:67 .message { margin-top } : ')), R.proximite.ajout.pertes);
 });
+
+for (const nom of ['pieges', 'proximite', 'marque']) {
+  test(`P6 ${nom} : chaque ligne écrite est arrivée sur ses pages`, () => {
+    assert.ok(R[nom].resultats.some((x) => x.decisions.length > 0) || R[nom].ajout.compte.ecrites === 0);
+    assert.deepEqual(nonArrivees(R[nom]), []);
+  });
+}

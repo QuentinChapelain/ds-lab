@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbe Café — compte (feuille compressée)</title>
+  <link rel="stylesheet" href="styles/compressee.css">
+  <link rel="stylesheet" href="styles/imprimable.css" media="screen, print">
+  <script>
+    // Feuille injectée par un script après le chargement, comme un morceau chargé à la demande.
+    addEventListener('load', () => {
+      const l = document.createElement('link');
+      l.rel = 'stylesheet';
+      l.href = 'styles/injectee.css';
+      document.head.append(l);
+    });
+  </script>
+</head>
+<body>
+  <main>
+    <section class="carte">
+      <h2 class="carte-titre">Mes commandes</h2>
+      <p>Trois commandes en cours.</p>
+    </section>
+    <div class="pied">Contact : par écrit, au comptoir.</div>
+    <div class="bord">Carte de fidélité : 7 tampons sur 10.</div>
+    <ul class="liste">
+      <li>Espresso</li>
+      <li>Allongé</li>
+      <li>Cappuccino</li>
+      <li>Chocolat</li>
+    </ul>
+    <p class="note">Les prix s'entendent toutes taxes comprises.</p>
+    <p class="bandeau">Nouveau : le café filtre du matin.</p>
+    <p class="etroit">Sur mobile, commande à emporter.</p>
+  </main>
+</body>
+</html>
