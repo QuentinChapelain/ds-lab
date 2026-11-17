@@ -12,6 +12,7 @@
     "apply": "node src/cli/apply.js",
     "audit": "node src/cli/audit.js",
     "contraste": "node src/cli/contraste.js",
+    "css": "node src/cli/css.js",
     "espacements": "node src/cli/espacements.js",
     "typo": "node src/cli/typo.js",
     "login": "node src/cli/login.js",
@@ -27,6 +28,8 @@
   },
   "dependencies": {
     "@projectwallace/css-analyzer": "9.9.7",
+    "@terrazzo/parser": "2.10.0",
+    "@terrazzo/plugin-css": "2.10.0",
     "culori": "4.0.2",
     "pixelmatch": "8.0.0",
     "playwright-core": "1.59.1",

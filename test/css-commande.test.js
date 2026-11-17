@@ -23,10 +23,10 @@ import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { feuilleCss } from '../src/tokens/css.js';
 import { dossiersDeMarque, RESOLVER } from '../src/tokens/resolver.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const moduleCss = () => import(new URL('../src/tokens/css.js', import.meta.url).href);
 /** @param {string[]} args */
 const lancer = (args) => spawnSync(process.execPath, ['src/cli/css.js', ...args], { cwd: ROOT, encoding: 'utf8' });
 
@@ -55,7 +55,6 @@ const MOTIF_K2 = "sombre et étroit changent les mêmes jetons : ecart.section ;
 const EN_PLUS = { ecart: { section: { $value: '{espace.64}', $description: 'Essai : la couche sombre change un écart.' } } };
 
 test('K1 seuil lu dans le resolver : 480 px', async () => {
-  const { feuilleCss } = await moduleCss();
   const dir = marqueEssai({ seuil: 480 });
   try {
     const r = await feuilleCss(dir);
@@ -68,7 +67,6 @@ test('K1 seuil lu dans le resolver : 480 px', async () => {
 });
 
 test('K2 sombre et étroit changent un même jeton : motif, sortie 1, rien d\'écrit', async () => {
-  const { feuilleCss } = await moduleCss();
   const dir = marqueEssai({ sombreEnPlus: EN_PLUS });
   try {
     const r = await feuilleCss(dir);
@@ -85,7 +83,6 @@ test('K2 sombre et étroit changent un même jeton : motif, sortie 1, rien d\'é
 });
 
 test('K3 --marque : cette marque seule, écrite puis inchangée', async () => {
-  const { feuilleCss } = await moduleCss();
   const dir = marqueEssai();
   try {
     const p = lancer(['--marque', dir]);

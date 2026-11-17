@@ -20,13 +20,13 @@
 import { cssVarFallback as withFallback, hasToken, m6Move, relationShort } from './consigne.js';
 
 /** Variable CSS d'un jeton DTCG. @param {string} token */
-const cssVar = (token) => `--${token.replace(/\./g, '-')}`;
+export const cssVar = (token) => `--${token.replace(/\./g, '-')}`;
 
 /**
  * Valeur CSS d'un jeton DTCG (couleur : hex ; dimension : valeur et unité), ou null.
  * @param {any} tokens @param {string} path
  */
-function tokenValue(tokens, path) {
+export function tokenValue(tokens, path) {
   let node = tokens;
   for (const k of path.split('.')) node = node?.[k];
   const v = node?.$value;

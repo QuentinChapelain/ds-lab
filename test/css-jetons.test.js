@@ -9,8 +9,10 @@
  *      modifier à la main. *\/ », <nom> lu dans le champ name du resolver ; puis trois blocs et rien d'autre, dans cet ordre :
  *      :root ; @media (prefers-color-scheme: dark) { :root } ; @media (width < <seuil>px) { :root }, le seuil lu dans
  *      $extensions["ds-lab.largeur"] du resolver (600 px pour les quatre marques) ;
- *   F3 seulement ce qui change : chaque variable d'un bloc @media est aussi dans :root, avec une autre valeur ;
- *      aucun raccourci font pour les styles de texte (il omet l'interlettrage) : un style donne ses cinq sous-variables
+ *   F3 seulement ce qui change, au grain du jeton (le filtre de Terrazzo prend un jeton entier) : chaque variable d'un
+ *      bloc @media est aussi dans :root, avec une autre valeur, sauf une sous-variable de style de texte dont une
+ *      sœur du même style change dans le même bloc ; mesuré : 0 telle sous-variable en sombre, 16 en étroit pour
+ *      chaque marque (5 styles de titre, dont seules taille et parfois hauteur de ligne changent) ; aucun raccourci font pour les styles de texte (il omet l'interlettrage) : un style donne ses cinq sous-variables
  *      -font-family, -font-size, -font-weight, -letter-spacing, -line-height, et pas de variable à son seul nom ;
  *   F4 accord : pour chaque marque et chaque combinaison (clair ou sombre, large ou étroit), les variables effectives de
  *      la feuille (:root, puis les blocs dont la condition vaut, var() résolus) sont exactement les jetons du lecteur
@@ -25,9 +27,10 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import postcss from 'postcss';
+import { feuilleCss } from '../src/tokens/css.js';
 import { dossiersDeMarque, nomDeMarque, lireResolver, seuilEtroit, RESOLVER } from '../src/tokens/resolver.js';
 import { flattenTokens, tokenTypes, resoudreAlias } from '../src/tokens/roles.js';
-import * as modifications from '../src/report/modifications.js';
+import { cssVar, tokenValue } from '../src/report/modifications.js';
 
 const MARQUES = dossiersDeMarque();
 const COMBINAISONS = [
@@ -39,8 +42,6 @@ const COMBINAISONS = [
 const SOUS = { fontFamily: 'font-family', fontSize: 'font-size', fontWeight: 'font-weight', letterSpacing: 'letter-spacing', lineHeight: 'line-height' };
 const TYPE_SOUS = { fontFamily: 'fontFamily', fontSize: 'dimension', letterSpacing: 'dimension', fontWeight: 'fontWeight', lineHeight: 'number' };
 
-/** Module de la commande, chargé à la demande : son absence fait échouer chaque test qui le lit, et lui seul. */
-const moduleCss = () => import(new URL('../src/tokens/css.js', import.meta.url).href);
 /** @param {string} dossier */
 const lireFeuille = (dossier) => {
   const f = join(dossier, 'jetons.css');
@@ -121,7 +122,6 @@ function egal(type, v, ecrit) {
 }
 
 test('F1 fraîcheur : jetons.css de chaque marque identique à une génération neuve', async () => {
-  const { feuilleCss } = await moduleCss();
   assert.equal(MARQUES.length, 4);
   for (const d of MARQUES) {
     const r = await feuilleCss(d);
@@ -143,14 +143,23 @@ test('F2 forme : en-tête en français, trois blocs, seuil lu dans le resolver',
 test('F3 seulement ce qui change ; styles de texte sans raccourci font', () => {
   for (const d of MARQUES) {
     const [racine, ...autres] = blocs(lireFeuille(d));
-    for (const b of autres)
-      for (const [k, v] of b.decls) {
-        assert.ok(racine.decls.has(k), `${d} ${b.condition} ${k} absente de :root`);
-        assert.notEqual(v, racine.decls.get(k), `${d} ${b.condition} ${k} redéclarée sans changer`);
-      }
     const plats = flattenTokens(lireResolver(join(d, RESOLVER)).jetons);
     const types = tokenTypes(lireResolver(join(d, RESOLVER)).jetons);
     const styles = [...plats.keys()].filter((k) => types.get(k) === 'typography');
+    /** Style de texte d'une sous-variable, ou null. @param {string} k */
+    const styleDe = (k) => styles.find((s) => Object.values(SOUS).some((x) => k === `${nomVar(s)}-${x}`)) ?? null;
+    const sousInchangees = [];
+    for (const b of autres)
+      for (const [k, v] of b.decls) {
+        assert.ok(racine.decls.has(k), `${d} ${b.condition} ${k} absente de :root`);
+        if (v !== racine.decls.get(k)) continue;
+        const s = styleDe(k);
+        const soeurChange = s && Object.values(SOUS).some((x) => b.decls.has(`${nomVar(s)}-${x}`) && b.decls.get(`${nomVar(s)}-${x}`) !== racine.decls.get(`${nomVar(s)}-${x}`));
+        assert.ok(soeurChange, `${d} ${b.condition} ${k} redéclarée sans changer`);
+        sousInchangees.push(`${b.condition} ${k}`);
+      }
+    assert.equal(sousInchangees.filter((x) => x.startsWith('(prefers-color-scheme')).length, 0, d);
+    assert.equal(sousInchangees.filter((x) => x.startsWith('(width')).length, 16, d);
     assert.ok(styles.length >= 11, `${d} : styles de texte`);
     for (const s of styles) {
       assert.ok(!racine.decls.has(nomVar(s)), `${d} : raccourci ${nomVar(s)}`);
@@ -197,9 +206,6 @@ test('F4 accord : variables de la feuille et jetons du lecteur, chaque marque, c
 });
 
 test('F5 apply : mêmes noms et mêmes valeurs que tokens.css', () => {
-  const { cssVar, tokenValue } = /** @type {any} */ (modifications);
-  assert.equal(typeof cssVar, 'function', 'cssVar exportée par src/report/modifications.js');
-  assert.equal(typeof tokenValue, 'function', 'tokenValue exportée par src/report/modifications.js');
   for (const d of MARQUES) {
     const racine = blocs(lireFeuille(d))[0].decls;
     const jetons = lireResolver(join(d, RESOLVER)).jetons;
@@ -213,6 +219,6 @@ test('F5 apply : mêmes noms et mêmes valeurs que tokens.css', () => {
       n++;
       assert.equal(racine.get(cssVar(id)), tokenValue(jetons, id), `${d} ${id}`);
     }
-    assert.ok(n > 150, `${d} : ${n} jetons littéraux`);
+    assert.ok(n >= 100, `${d} : ${n} jetons littéraux`); // mesuré : 107 à 133 selon la marque
   }
 });

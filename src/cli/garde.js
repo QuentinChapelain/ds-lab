@@ -31,15 +31,17 @@ export async function lancer(nom, main) {
  * D26 : un contrôle sur la marque de --marque <dossier>, ou, sans l'option, sur chaque marque de
  * tokens/ (dossiersDeMarque), sans en nommer aucune. Sans l'option, chaque bloc est précédé de « marque <nom> (<dossier>) »
  * et les blocs sont séparés par une ligne vide ; le code le plus haut l'emporte (1 si une marque échoue).
- * @param {string | undefined} option @param {(dossier: string) => number} controler
+ * Le contrôle peut rendre une promesse (npm run css) ; les marques passent l'une après l'autre.
+ * @param {string | undefined} option @param {(dossier: string) => number | Promise<number>} controler
+ * @returns {Promise<number>}
  */
-export function parMarque(option, controler) {
+export async function parMarque(option, controler) {
   if (option) return controler(option);
   let code = 0;
-  dossiersDeMarque().forEach((d, i) => {
+  for (const [i, d] of dossiersDeMarque().entries()) {
     if (i) console.log('');
     console.log(`marque ${nomDeMarque(d)} (${relative(process.cwd(), d)}/)`);
-    code = Math.max(code, controler(d));
-  });
+    code = Math.max(code, await controler(d));
+  }
   return code;
 }
