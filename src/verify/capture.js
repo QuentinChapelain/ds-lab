@@ -5,6 +5,7 @@
  * Mêmes réglages que la capture « après » de reduce (simulatePage), pour comparer à ses références.
  */
 import { gotoAndSettle, DEFAULT_WAIT_MS } from '../browser/navigate.js';
+import { lancerChromium } from '../browser/lancement.js';
 import { hideThirdParty } from '../browser/simulate.js';
 
 /**
@@ -14,8 +15,7 @@ import { hideThirdParty } from '../browser/simulate.js';
  * @returns {Promise<{ png: Buffer, aria: string, status: number | null, finalUrl: string }>}
  */
 export async function capturePage({ url, viewport = { width: 1366, height: 900 }, waitMs = DEFAULT_WAIT_MS, storageState, thirdParty = [] }) {
-  const { chromium } = await import('playwright-core');
-  const browser = await chromium.launch();
+  const browser = await lancerChromium();
   try {
     const context = await browser.newContext({ viewport, storageState: storageState ?? undefined });
     const page = await context.newPage();

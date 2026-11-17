@@ -7,12 +7,14 @@
  *   audit               audit.json, rapport.md et rapport.html de deux audits ;
  *   réduction           revue.html, table.json, migration.md et modifications.json de deux réductions
  *                       de la page de marque (ses deux captures pleine page variaient, D34) ;
- *   verify              deux captures de la page de marque par capturePage.
+ *   verify              deux captures de la page de marque par capturePage ;
+ *   lancement           aucun module de src/ ne lance Chromium hors de src/browser/lancement.js (D34).
  * Chaque paire tourne sur le même serveur : même port, donc même entrée.
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, mkdtemp, readdir } from 'node:fs/promises';
+import { readdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -110,4 +112,12 @@ test('verify : deux captures de la page de marque inchangée, même image à l�
   const a = await capturePage({ url, viewport: M.conditions.viewport, waitMs: 100 });
   const b = await capturePage({ url, viewport: M.conditions.viewport, waitMs: 100 });
   assert.ok(a.png.equals(b.png), 'les deux captures diffèrent');
+});
+
+test('lancement : aucun module de src/ ne lance Chromium hors de src/browser/lancement.js', () => {
+  const src = fileURLToPath(new URL('../src/', import.meta.url));
+  const lanceurs = readdirSync(src, { recursive: true, encoding: 'utf8' })
+    .filter((f) => f.endsWith('.js') && /\.launch\s*\(/.test(readFileSync(join(src, f), 'utf8')))
+    .sort();
+  assert.deepEqual(lanceurs, [join('browser', 'lancement.js')]);
 });

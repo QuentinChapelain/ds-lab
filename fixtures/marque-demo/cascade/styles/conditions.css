@@ -1,0 +1,6 @@
+@import url("a.css") screen and (min-width: 600px);
+@import url("d.css") print;
+@import url("e.css") supports(display: grid);
+@import url("f.css") supports(not (display: grid));
+@import url("h.css") layer(base);
+.conditions { color: #333333; }

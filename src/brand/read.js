@@ -9,6 +9,7 @@
  */
 import { gotoAndSettle, navigationWarnings, DEFAULT_WAIT_MS } from '../browser/navigate.js';
 import { collectSheets } from '../browser/sheets.js';
+import { lancerChromium } from '../browser/lancement.js';
 import { normalizeColor, isOpaque } from '../lib/color.js';
 import { contradictionsIn, isGrey } from './brand.js';
 
@@ -43,8 +44,7 @@ function readInPage(prefix) {
  *   `warnings`, avertissements de navigation (statut, redirection, feuilles illisibles).
  */
 export async function readBrand({ addresses, viewport = { width: 1366, height: 900 }, waitMs = DEFAULT_WAIT_MS, prefix = '--', storageState }) {
-  const { chromium } = await import('playwright-core');
-  const browser = await chromium.launch();
+  const browser = await lancerChromium();
   /** @type {Map<string, string>} */
   const variables = new Map();
   /** @type {import('../browser/navigate.js').AvertissementNavigation[]} */

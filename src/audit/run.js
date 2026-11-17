@@ -5,11 +5,11 @@
  */
 import { readFile, access } from 'node:fs/promises';
 import { basename, relative } from 'node:path';
-import { chromium } from 'playwright-core';
 import { resolveAddresses, groupByHost } from '../lib/addresses.js';
 import { loadSources } from '../lib/sources.js';
 import { gotoAndSettle, navigationWarnings, DEFAULT_WAIT_MS, NETWORK_IDLE_TIMEOUT_MS } from '../browser/navigate.js';
 import { collectSheets } from '../browser/sheets.js';
+import { lancerChromium } from '../browser/lancement.js';
 import { dedupeSheets, analyzeDeclared } from '../declared/analyze.js';
 import { createRenderedAggregator } from '../rendered/aggregate.js';
 import { relever, verser } from '../rendered/run.js';
@@ -94,7 +94,7 @@ export async function runAudit(opts) {
     }
   }
 
-  const browser = await chromium.launch();
+  const browser = await lancerChromium();
   const results = [];
   try {
     for (const [host, hostUrls] of groupByHost(urls)) {

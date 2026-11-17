@@ -16,6 +16,7 @@ import { mkdir, writeFile, rename, chmod } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { lancer } from './garde.js';
+import { lancerChromium } from '../browser/lancement.js';
 
 const USAGE = `Usage : npm run login -- <adresse> [--name <nom>]
 
@@ -87,9 +88,8 @@ async function main() {
     console.log(USAGE);
     return 0;
   }
-  const { chromium } = await import('playwright-core');
   await mkdir('.auth', { recursive: true, mode: 0o700 });
-  const browser = await chromium.launch({ headless: false });
+  const browser = await lancerChromium({ headless: false });
   const context = await browser.newContext({ viewport: null });
   const page = await context.newPage();
   await page.goto(parsed.url, { waitUntil: 'load', timeout: 60000 }).catch((e) => console.log(`! navigation vers ${parsed.url} échouée (${String(e?.message ?? e).split('\n')[0]}) ; la fenêtre reste ouverte`));

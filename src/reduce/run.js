@@ -14,6 +14,7 @@ import { createRenderedAggregator } from '../rendered/aggregate.js';
 import { measureRendered } from '../rendered/run.js';
 import { propose, mapping, rowKey, controlAfter, splitOf, brandOf, worstContrast, solidPairs, uncoveredValues, decisionKeysOrphelines, NON_STABILISE } from './propose.js';
 import { collectSheets } from '../browser/sheets.js';
+import { lancerChromium } from '../browser/lancement.js';
 import { contradictionsIn } from '../brand/brand.js';
 import { simulatePage, installLive, captureDecision, touchedElements, capturePlein, FRAME } from '../browser/simulate.js';
 import { renderReview } from '../report/review.js';
@@ -96,8 +97,7 @@ export async function runReduce(opts) {
       seen.set(n, u);
     }
   }
-  const { chromium } = await import('playwright-core');
-  const browser = await chromium.launch();
+  const browser = await lancerChromium();
   const results = [];
   try {
     for (const [host, hostUrls] of groupByHost(urls)) {
@@ -351,7 +351,7 @@ export async function runReduce(opts) {
     // Fenêtre visible, sur la première adresse. Aucune boucle : on attend la fermeture.
     const { map, first } = results[0];
     log(`fenêtre ouverte sur ${first} : barre avant / après en bas de page ; fermer la fenêtre pour finir`);
-    const headed = await chromium.launch({ headless: false });
+    const headed = await lancerChromium({ headless: false });
     try {
       const context = await headed.newContext({ viewport: null, storageState: opts.storageState ?? undefined });
       await installLive(context, { ...map, split: splitOf(results[0].table) }, { lines: linesOf(results[0].table) });

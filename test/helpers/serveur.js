@@ -4,6 +4,7 @@
  * - principale : http://127.0.0.1:<p1>/, racine fixtures/marque-demo/ (ou `root`)
  * - distante   : http://localhost:<p2>/, racine fixtures/marque-demo/distant/
  * `{{ORIGINE_DISTANTE}}` est remplacé dans les pages HTML par l'origine distante.
+ * REDIRECTIONS : chemins redirigés (302) vers un autre chemin de la même origine.
  */
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -18,6 +19,11 @@ const TYPES = /** @type {Record<string, string>} */ ({
   '.json': 'application/json; charset=utf-8',
 });
 
+/** Une feuille importée sous une adresse qui redirige : Chromium l'annonce sous l'adresse finale. */
+const REDIRECTIONS = /** @type {Record<string, string>} */ ({
+  '/cascade/styles/redirigee.css': '/cascade/styles/g.css',
+});
+
 /**
  * @param {string} root
  * @param {() => string} remoteOrigin
@@ -25,6 +31,10 @@ const TYPES = /** @type {Record<string, string>} */ ({
 function handler(root, remoteOrigin) {
   return async (/** @type {import('node:http').IncomingMessage} */ req, /** @type {import('node:http').ServerResponse} */ res) => {
     const path = decodeURIComponent(new URL(req.url ?? '/', 'http://x').pathname);
+    if (REDIRECTIONS[path]) {
+      res.writeHead(302, { location: REDIRECTIONS[path] }).end();
+      return;
+    }
     const rel = path.endsWith('/') ? path + 'index.html' : path;
     const file = normalize(join(root, rel));
     if (!file.startsWith(root.endsWith(sep) ? root : root + sep)) {

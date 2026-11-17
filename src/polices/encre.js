@@ -13,6 +13,7 @@
  */
 import { SIGNES } from './garde-fous.js';
 import { lirePolice } from './lecture.js';
+import { lancerChromium } from '../browser/lancement.js';
 
 /** Caractères mesurés : lettres et chiffres ASCII, et les signes français exigés. */
 const JEU = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789' + SIGNES;
@@ -46,11 +47,10 @@ export async function mesurerEncre(fichiers, graisses, consigne, { cadre = 1.5 }
   const premiere = lirePolice(fichiers[0].octets);
   if (!premiere.lisible || !premiere.capitale) throw new Error('hauteur de capitale absente du fichier : facteur de taille incalculable');
   const facteur = (consigne * premiere.unitesParEm) / premiere.capitale;
-  const { chromium } = await import('playwright-core');
   /** @type {import('playwright-core').Browser} */
   let navigateur;
   try {
-    navigateur = await chromium.launch();
+    navigateur = await lancerChromium();
   } catch (e) {
     throw new Error(`Chromium ne se lance pas (${/** @type {Error} */ (e).message.split('\n')[0]})`);
   }
