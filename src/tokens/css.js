@@ -21,6 +21,7 @@ import { pathToFileURL } from 'node:url';
 import { parse, build, defineConfig } from '@terrazzo/parser';
 import css, { FILE_PREFIX } from '@terrazzo/plugin-css';
 import { lireJson } from '../lib/fichiers.js';
+import { cssVar } from '../report/modifications.js';
 import { RESOLVER, lireResolver, seuilEtroit } from './resolver.js';
 import { flattenTokens, tokenTypes, resoudreAlias } from './roles.js';
 
@@ -32,8 +33,8 @@ const SOMBRE = { mode: 'sombre', largeur: 'large' };
 const ETROIT = { mode: 'clair', largeur: 'etroit' };
 const SOMBRE_ETROIT = { mode: 'sombre', largeur: 'etroit' };
 
-/** Variable CSS d'un jeton Terrazzo. @param {{ id: string }} t */
-const nomVar = (t) => `--${t.id.replace(/\./g, '-')}`;
+/** Variable CSS d'un jeton Terrazzo : la règle de tokens.css de npm run apply. @param {{ id: string }} t */
+const nomVar = (t) => cssVar(t.id);
 
 /**
  * Valeur CSS d'un jeton : le hex du jeton pour une couleur sans alias ; sinon undefined, et Terrazzo écrit la sienne.

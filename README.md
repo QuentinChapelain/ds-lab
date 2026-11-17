@@ -32,6 +32,7 @@ npm run saisie     -- <entree.json>                          saisir une marque :
 npm run contraste   -- [--marque <dossier>] [--paires <fichier>] [--mode clair|sombre] [--largeur large|etroit]   contrôler les paires de rôles de couleur
 npm run espacements -- [--marque <dossier>] [--semantique <fichier>] [--etroit <fichier>]   contrôler les espacements par relation
 npm run typo        -- [--marque <dossier>] [--semantique <fichier>] [--primitives <fichier>] [--couche-marque <fichier>] [--etroit <fichier>]   contrôler les styles de texte
+npm run css         -- [--marque <dossier>]                  écrire la feuille CSS complète de chaque marque (tokens/<marque>/jetons.css), par Terrazzo
 npm run types                                                vérifier les types JSDoc de src/ (non strict, sans rien émettre)
 npm run knip                                                 chercher ce qui ne sert plus : fichiers, exports, dépendances
 npm run dependances                                          chercher les cycles d'import et les modules orphelins de src/
@@ -80,6 +81,8 @@ Changer de marque, c'est changer la couche marque : les rôles restent les même
 - `npm run typo` : règles des styles de texte (hauteurs de ligne, hiérarchie en large et en étroit, consigne de hauteur de capitale des titres) ; les primitives sans rôle sont affichées. `--couche-marque <fichier>` lit une couche marque donnée à part.
 
 Trois planches par marque montrent la cible en situation, dans le dossier de la marque : `roles.html`, `espacements.html`, `typo.html` (pour Orbe Café, `tokens/orbe-cafe/roles.html`, `tokens/orbe-cafe/espacements.html`, `tokens/orbe-cafe/typo.html`). Même code pour toutes ; le nom de la marque est lu dans son resolver. Elles sont écrites par `node src/cli/planche.js [--marque <dossier>] [roles|espacements|typo]` : sans `--marque`, celles de chaque marque ; sans planche nommée, les trois (D27). Les règles et leurs raisons sont dans `docs/regles.md`, les décisions dans `docs/decisions.md`.
+
+Chaque marque a aussi sa feuille CSS complète, `jetons.css` dans son dossier (`tokens/orbe-cafe/jetons.css` pour Orbe Café), écrite par `npm run css` avec Terrazzo, un outil du marché qui lit le resolver tel quel (D36). Toutes les variables en clair et en large dans `:root` ; dans `@media (prefers-color-scheme: dark)`, les seules variables que le sombre change ; dans `@media (width < 600px)`, les seules que l'étroit change, le seuil lu dans le resolver. Une variable porte le chemin de son jeton, points remplacés par des tirets, comme `tokens.css` de `npm run apply` ; une couleur s'écrit au hex du jeton, un alias en `var()` de sa cible, un style de texte en cinq variables (`-font-family`, `-font-size`, `-font-weight`, `-letter-spacing`, `-line-height`), et la description de chaque jeton en commentaire. Avant d'écrire, la commande compare, dans les quatre combinaisons, chaque jeton vu par Terrazzo à celui de notre lecteur ; une marque dont une valeur diffère, ou dont sombre et étroit changent un même jeton (la feuille n'a pas de bloc pour les deux à la fois), est refusée avec son motif : sortie 1, sa feuille n'est pas écrite. Sortie 2 sur une panne, rien d'écrit. `--marque <dossier>` traite une marque ; sans l'option, chacune.
 
 ## Saisir une marque
 
@@ -173,8 +176,8 @@ Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier
 |---|---|
 | `src/` | Audit, réduction, simulation, rapports |
 | `tokens/commun/` | Couches communes à toutes les marques : primitives, statuts, mode sombre commun, police du produit, aplat plein, rôles, paires, contexte étroit |
-| `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive (entrée, échelles, marque, resolver) et les trois planches |
-| `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/` | Trois marques fictives saisies par fichier, et leurs trois planches |
+| `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive (entrée, échelles, marque, resolver), les trois planches et la feuille CSS `jetons.css` |
+| `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/` | Trois marques fictives saisies par fichier, leurs trois planches et leur feuille CSS |
 | `docs/` | Règles du design system, décisions, contrat de marque, identifiants de règles (`docs/identifiants.md`) ; dans `docs/attendus/`, l'attendu de chaque lot, écrit avant le code et gardé à sa date |
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles, attendus |
 | `fixtures/polices/` | Quatre polices d'essai sous licence libre, chacune avec sa licence |
@@ -182,7 +185,7 @@ Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier
 | `.github/workflows/` | La CI, `.github/workflows/ci.yml` |
 | `test/` | Tests, dont `noms-interdits` qui refuse tout nom réel dans un fichier ou un message de commit |
 
-Dépendances : `playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (conversions de couleurs et ΔE ; oracle des contrastes dans les tests), `pixelmatch` et `pngjs` (comparaison de captures). Dépendances de développement, en version exacte : `typescript` 7.0.2 et `@types/node` 22.20.5 pour `npm run types`, `knip` 6.45.1 pour `npm run knip` (configuration `knip.json`), `dependency-cruiser` 18.7.2 pour `npm run dependances` (configuration `.dependency-cruiser.json`).
+Dépendances : `playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (conversions de couleurs et ΔE ; oracle des contrastes dans les tests), `pixelmatch` et `pngjs` (comparaison de captures), `@terrazzo/parser` et `@terrazzo/plugin-css` 2.10.0 (feuille CSS des jetons ; npm installe aussi `@terrazzo/cli`, qu'elles demandent sans qu'aucune commande le charge). Dépendances de développement, en version exacte : `typescript` 7.0.2 et `@types/node` 22.20.5 pour `npm run types`, `knip` 6.45.1 pour `npm run knip` (configuration `knip.json`), `dependency-cruiser` 18.7.2 pour `npm run dependances` (configuration `.dependency-cruiser.json`).
 
 Node : `engines` demande `>=22`, la CI tourne sous Node 22. Le poste de travail tourne sous la version écrite dans `.node-version` (24.22.3, Node 24 LTS), qu'un gestionnaire de versions comme fnm choisit en entrant dans le dossier. dependency-cruiser ne démarre que sous Node 22, 24 ou 26 et plus : sous Node 25, `npm run dependances` refuse de tourner.
 

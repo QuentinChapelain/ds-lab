@@ -57,6 +57,18 @@
 - États forcés (D19) : les paires de contraste du texte sur un fond survolé ne sont pas créées ; une couleur de survol est rangée sans contrôle de contraste.
 - États forcés (D19) : une couleur de survol est comparée comme une couleur indépendante, au plus proche de la table, sans lien avec la couleur qu'elle survole. Avec une valise, un survol plus sombre que le pas 10 tombe hors table, fond sombre (R8) : `#24426f` sur les pages en désordre. Lecture à étudier : le survol d'un plein est l'état d'un rôle, à rattacher au survol du système plutôt qu'à un pas de la table.
 - Mode sombre : la carte (`fond.surface`, `#181818`) est jugée peu détachée de la page (`#121212`) sur image ; rapport carte sur page 1,055:1 en sombre contre 1,035:1 en clair [F], donc l'écart de teinte n'explique pas le jugement ; cause non établie [V], à reprendre à l'étape des composants.
+- Feuille CSS des jetons (`npm run css`, D36) :
+  - sortie Dart (ou toute autre plateforme que le CSS) non faite ;
+  - `@terrazzo/cli`, peerDependency de `@terrazzo/plugin-css`, est installé par npm avec vite, rolldown et lightningcss : 30 paquets, environ 35 Mo, qu'aucune commande ne charge ; Terrazzo ajoute 43 paquets et 54,4 Mo en tout sur le Mac [F]. L'éviter demanderait `legacy-peer-deps` dans `.npmrc`, qui change l'installation de tous les paquets ;
+  - sombre par `@media (prefers-color-scheme: dark)` seulement. Suite possible : un bouton de bascule (attribut sur `:root`), qui demande d'écrire le bloc sombre deux fois, sous la requête et sous l'attribut ; coût : 7,3 à 8,0 ko de plus par feuille, la taille du bloc sombre [F] ;
+  - le filtre de Terrazzo prend un jeton entier : un style de texte qui change en étroit y redéclare ses cinq sous-variables ; 16 sous-variables inchangées dans le bloc étroit de chaque marque (5 styles de titre) [F] ;
+  - la description d'un style de texte est répétée au-dessus de chacune de ses cinq sous-variables ; les descriptions font environ la moitié de la feuille ; `$extensions` n'y paraît pas ;
+  - Terrazzo met entre guillemets tout nom de police qui n'est pas un mot-clé générique (`"Arial", sans-serif`) ; même liste de polices, comparée comme telle par `test/css-jetons.test.js` ;
+  - le refus « Terrazzo et le lecteur diffèrent » est codé sans test : aucune marque connue ne le provoque sans modifier l'un des deux lecteurs ;
+  - la commande affiche « ✓ jetons.css écrite » pour chaque marque avant d'écrire, et n'écrit qu'une fois toutes les marques lues : sur une panne d'une marque suivante, rien n'est écrit malgré les lignes déjà affichées (sortie 2) ;
+  - la règle du nom d'une variable a deux écritures : `cssVar` (`src/report/modifications.js`), lue par apply et par `npm run css`, et `cssVarFallback` (`src/report/consigne.js`).
+- Planches des espacements et de la typo : l'étroit y est écrit `@media (max-width: 599.98px)` (`src/report/espacements.js`, `src/report/typo.js`), la feuille CSS en `@media (width < 600px)` ; même seuil, deux écritures. Les planches n'ont pas changé.
+- CI : chaque lot la fait tourner deux fois sur le même commit, sur sa branche puis sur main (D35), soit une exécution de plus par lot : 5 min 18 s pour la branche de ce lot (17/11/2026) [F].
 
 ## Revue de code du 15/11
 
