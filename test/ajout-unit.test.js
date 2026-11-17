@@ -28,15 +28,16 @@
  *   F7 commande : sortie 1 sur ce site (des lignes décidées non écrites), 0 quand tout est écrit, 2 sur une panne
  *      (option inconnue, dont --viewport : la fenêtre est celle de modifications.json ; --modifications sans
  *      --sortie) ; elle écrit x.ajout.css, tokens.css, pertes.md et feuilles-ajoutees.json dans --sortie ; le
- *      manifeste porte la fenêtre et chaque ligne décidée ;
- *   F8 preuve par décision sur /essai/page.html : arrivée pour .a (l'élément « a s », où .a perdait déjà, ne compte
- *      pas), .b, .c, .d, .e, .f, li:nth-child(even), .m, .q ; .k non écrite, non arrivée, .k (x.css:32:4) gagne ;
- *      .g et .p « non vues » (la règle d'origine perdait déjà partout avant la pose) ; .p, écrite, n'est vue sur
- *      aucune de ses pages : sortie 1 ;
- *   F9 /essai/partie.html : .a sur deux éléments, dont un dans .zone, qui redéfinit --t-a : arrivée en partie (1
- *      élément sur 2), la feuille ajoutée gagne mais la valeur n'est pas celle du jeton ; .absent (w.css), aucun
- *      élément sur la page : non vue, écrite, sortie 1 ; la commande verify --ajout dit chaque ligne et sort en 1,
- *      en 0 quand tout est arrivé, en 2 avec --viewport ;
+ *      manifeste porte la fenêtre, chaque déclaration décidée, et la simulation, les lignes décidées et les lignes
+ *      hors de modifications.json (vides ou tirées du reste pour un modifications.json qui ne les porte pas) ;
+ *   F8 verdict par ligne décidée (docs/attendus/verdict-par-decision.md), simulation et lignes écrites à la main, sur
+ *      /essai/page.html : coul-01 (.a ; l'élément « a s », dont la couleur est celle de .s, n'est pas visé) et
+ *      coul-03 (li:nth-child(even)) arrivées ; esp-09, sans élément sur sa page : non vue ; esp-10, d'une page non
+ *      vérifiée : hors des pages vérifiées ; coul-11, vue seulement au focus : non vérifiable (état) ; sortie 1 ;
+ *   F9 /essai/partie.html : .a sur deux éléments, dont un dans .zone, qui redéfinit --t-a : coul-01 en partie (0
+ *      déclaration sur 1, 1 élément sur 2), canal « variable », --t-a posée par .zone ; esp-09 non vue ; la commande
+ *      verify --ajout dit chaque ligne et la phrase finale, sort en 1, en 0 quand tout est arrivé, en 2 avec
+ *      --viewport, et en 2 sur un dossier tiré d'un modifications.json sans simulation ;
  *   F10 la fenêtre vient de modifications.json : sur /essai/etroit.html, .w (même spécificité, après .v dans v.css,
  *      sous @media (max-width: 500px)) gagne sur l'élément « v w » à 390 px : .v est battue par l'ordre avec la
  *      fenêtre 390×900 de modifications.json, écrite sans fenêtre (1366×900).
@@ -190,8 +191,8 @@ const ENTREES = [
 ];
 const RESTE = 'coul-90 Couleur du texte · texte « Essai » : jeton absent pour #abcdef ; écris #abcdef à la place de #123456 dans ses déclarations (x.css:1 .a { color: #111111 }).';
 const TOKENS = ':root {\n  --e-12: 12px;\n  --e-16: 16px;\n  --e-4: 4px;\n  --e-8: 8px;\n  --t-a: #0000ff;\n  --t-k: #00ff00;\n  --t-li: #ff0000;\n}\n';
-/** @param {any[]} entries @param {string[]} reste */
-const mods = (entries, reste) => ({
+/** @param {any[]} entries @param {string[]} reste @param {Record<string, any>} [extra]  simulation, lignes, hors */
+const mods = (entries, reste, extra = {}) => ({
   version: 1,
   host: 'essai.invalid',
   stamp: STAMP,
@@ -200,7 +201,20 @@ const mods = (entries, reste) => ({
   comments: [],
   tokensCss: { path: '/essai/tokens.css', content: TOKENS },
   brief: { pages: ['/essai/page.html'], sheets: ['/essai/x.css'], reste, changeAussi: [], neTouchePas: [], signale: [], verification: [] },
+  ...extra,
 });
+/** Carte de simulation écrite à la main : couleurs seulement. @param {Record<string, string>} colors */
+const simulation = (colors, spacing = {}) => ({ colors, spacing, radii: {}, fontSizes: {}, split: [], solid: [], couplings: [], thirdParty: [], conflits: [] });
+/** Ligne décidée écrite à la main. @param {string} id @param {string} cle @param {string} ancienne @param {string} nouvelle @param {string | null} jeton @param {string[]} pages @param {Record<string, any>} [x] */
+const decidee = (id, cle, ancienne, nouvelle, jeton, pages, x = {}) => ({ id, titre: `Ligne ${id}`, famille: cle.split('|')[0], cles: [cle], ancienne, nouvelle, jeton, pages, ...x });
+const LIGNES = [
+  decidee('coul-01', 'colors|#111111|texte', '#111111', '#0000ff', '--t-a', ['/essai/page.html']),
+  decidee('coul-03', 'colors|#eeeeee|fond', '#eeeeee', '#ff0000', '--t-li', ['/essai/page.html']),
+  decidee('esp-09', 'spacing|4px|gouttière', '4px', '8px', '--e-8', ['/essai/page.html']),
+  decidee('esp-10', 'spacing|6px|marge', '6px', '8px', '--e-8', ['/essai/autre.html']),
+  decidee('coul-11', 'colors|#abcdef|texte', '#abcdef', '#0000ff', '--t-a', [], { etats: ['focus'] }),
+];
+const SIMULATION = simulation({ '#111111': '#0000ff', '#eeeeee': '#ff0000' });
 
 const ATTENDU_X = `/* ds-lab : feuille ajoutée de /essai/x.css, à charger juste après elle. Tirée de modifications.json (jetons.tokens.json, ${STAMP}). */
 
@@ -399,7 +413,10 @@ test('F7 commande : 1 avec des pertes, 0 sans, 2 sur une panne ; fichiers écrit
     tokensCss: '/essai/tokens.css',
     feuilles: [{ feuille: '/essai/x.css', ajout: '/essai/x.ajout.css', injectee: false }],
     viewport: { width: 1366, height: 900 },
-    lignes: ENTREES.filter((x) => x.section !== 'RATTACHE').map((x) => ({
+    simulation: null,
+    lignes: [],
+    hors: [{ lignes: [], cause: null, texte: RESTE }],
+    declarations: ENTREES.filter((x) => x.section !== 'RATTACHE').map((x) => ({
       rows: x.rows,
       sheet: x.sheet,
       line: x.line,
@@ -429,67 +446,54 @@ test('F7 commande : 1 avec des pertes, 0 sans, 2 sur une panne ; fichiers écrit
   assert.equal(y.stderr, 'ajout : --modifications et --sortie sont attendus\n');
 });
 
-/** Ligne de preuve réduite à ce que les attendus disent. @param {any} d */
-const resume = (d) => [d.rows.join(', '), d.selector, d.property, d.ecrite, d.statut, d.n, d.m];
-
-test('F8 preuve par décision : arrivée, non arrivée et la règle qui gagne, non vue ; sortie 1 pour une ligne écrite vue nulle part', async () => {
+test('F8 verdict par ligne décidée : arrivée, non vue, hors des pages vérifiées, non vérifiable (état) ; sortie 1', async () => {
   const sortie = await mkdtemp(join(tmpdir(), 'ds-lab-ajout-sortie-'));
-  await ecrireAjouts(r, sortie);
+  await ecrireAjouts(await feuillesAjoutees(mods(ENTREES, [RESTE], { simulation: SIMULATION, lignes: LIGNES }), { origine: servers.origin, waitMs: 0 }), sortie);
+  const manifeste = JSON.parse(await readFile(join(sortie, 'feuilles-ajoutees.json'), 'utf8'));
+  assert.deepEqual([manifeste.simulation, manifeste.lignes], [SIMULATION, LIGNES]);
   const shot = await capturePage({ url: `${servers.origin}/essai/page.html`, waitMs: 0, ajout: sortie });
-  assert.deepEqual(shot.decisions.map(resume), [
-    ['coul-01', '.a', 'color', true, 'arrivée', 1, 1],
-    ['esp-01', '.b', 'margin-top', true, 'arrivée', 1, 1],
-    ['esp-02', '.c', 'padding-top', true, 'arrivée', 1, 1],
-    ['esp-02', '.d', 'padding-left', true, 'arrivée', 1, 1],
-    ['esp-02', '.e', 'padding-right', true, 'arrivée', 1, 1],
-    ['esp-03', '.f', 'margin-top', true, 'arrivée', 1, 1],
-    ['esp-02', '.g', 'margin-bottom', false, 'non vue : perdait déjà', 0, 0],
-    ['coul-02', '.k', 'border-top-color', false, 'non arrivée', 0, 1],
-    ['coul-03', 'li:nth-child(2n)', 'background-color', true, 'arrivée', 1, 1],
-    ['esp-02', '.m', 'margin-left', true, 'arrivée', 1, 1],
-    ['esp-02', '.p', 'margin-right', true, 'non vue : perdait déjà', 0, 0],
-    ['esp-05', '.q', 'margin-right', true, 'arrivée', 1, 1],
-  ]);
-  const k = shot.decisions.find((d) => d.selector === '.k');
-  assert.deepEqual(k?.gagnantes, ['/essai/x.css:32:4 .k']);
-  assert.equal(k?.texte, 'coul-02 /essai/x.css:32 .k { border-top-color } : non écrite (garde), non arrivée (0 élément sur 1) ; gagne : /essai/x.css:32:4 .k');
-  assert.equal(
-    shot.decisions.find((d) => d.selector === '.p')?.texte,
-    "esp-02 /essai/x.css:47 .p { margin-right } : non vue sur cette page (la règle d'origine perdait déjà partout avant la pose)",
+  const j = juger(manifeste, [/** @type {any} */ (shot.releve)]);
+  assert.deepEqual(
+    j.lignes.map((l) => [l.id, l.etat, l.declarations, l.elements]),
+    [
+      ['coul-01', 'arrivée', { arrivees: 1, total: 1 }, { arrivees: 1, total: 1 }],
+      ['coul-03', 'arrivée', { arrivees: 1, total: 1 }, { arrivees: 1, total: 1 }],
+      ['esp-09', 'non vue', { arrivees: 0, total: 0 }, { arrivees: 0, total: 0 }],
+      ['esp-10', 'hors des pages vérifiées', { arrivees: 0, total: 0 }, { arrivees: 0, total: 0 }],
+      ['coul-11', 'non vérifiable (état)', { arrivees: 0, total: 0 }, { arrivees: 0, total: 0 }],
+    ],
   );
-  assert.equal(shot.decisions[0].texte, 'coul-01 /essai/x.css:1 .a { color } : arrivée (1 élément)');
-  assert.deepEqual(juger([{ page: '/essai/page.html', decisions: shot.decisions }]), {
-    sortie: 1,
-    motifs: ['esp-02 /essai/x.css:47 .p { margin-right } : écrite, vue sur aucune de ses pages vérifiées'],
-  });
+  // L'élément « a s », où .a perdait déjà (sa couleur est celle de .s), n'est pas visé : sa couleur n'est pas #111111.
+  assert.deepEqual(
+    /** @type {any[]} */ (shot.releve?.ops).filter((o) => o.ligne === 'coul-01').map((o) => [o.declaration, o.annotation]),
+    [['/essai/x.css:1:4 .a', { ecrite: true, cause: null, injectee: false }]],
+  );
+  assert.equal(j.sortie, 1);
+  assert.equal(j.resume, 'Lignes décidées : 5 ; arrivées 2, en partie 0, non arrivées 0, déjà en place 0, non vues 1, hors des pages vérifiées 1, non vérifiables (état) 1.');
 });
 
-const PARTIE_ENTREES = [
-  { ...ENTREES[0], pages: ['/essai/partie.html'] },
-  { sheet: '/essai/w.css', line: 1, selector: '.absent', property: 'margin-top', written: '4px', value: 'var(--e-8, 4px)', rows: ['esp-09'], section: 'REMPLACEMENTS', pages: ['/essai/partie.html'] },
-];
-
-test('F9 arrivée en partie, aucun élément sur la page ; commande verify --ajout : 1, 0, 2', async () => {
-  const m = { ...mods(PARTIE_ENTREES, []), brief: { ...mods([], []).brief, pages: ['/essai/partie.html'] } };
+test('F9 en partie (variable redéfinie), non vue ; commande verify --ajout : 1, 0, 2', async () => {
+  const lignes = [decidee('coul-01', 'colors|#111111|texte', '#111111', '#0000ff', '--t-a', ['/essai/partie.html']), decidee('esp-09', 'spacing|4px|marge', '4px', '8px', '--e-8', ['/essai/partie.html'])];
+  const m = { ...mods([{ ...ENTREES[0], pages: ['/essai/partie.html'] }], [], { simulation: simulation({ '#111111': '#0000ff' }, { '4px|marge': '8px' }), lignes }), brief: { ...mods([], []).brief, pages: ['/essai/partie.html'] } };
   const sortie = await mkdtemp(join(tmpdir(), 'ds-lab-ajout-sortie-'));
   await ecrireAjouts(await feuillesAjoutees(m, { origine: servers.origin, waitMs: 0 }), sortie);
+  const manifeste = JSON.parse(await readFile(join(sortie, 'feuilles-ajoutees.json'), 'utf8'));
   const shot = await capturePage({ url: `${servers.origin}/essai/partie.html`, waitMs: 0, ajout: sortie });
-  assert.deepEqual(shot.decisions.map(resume), [
-    ['coul-01', '.a', 'color', true, 'arrivée en partie', 1, 2],
-    ['esp-09', '.absent', 'margin-top', true, 'non vue : aucun élément', 0, 0],
-  ]);
-  assert.equal(
-    shot.decisions[0].texte,
-    'coul-01 /essai/x.css:1 .a { color } : arrivée en partie (1 élément sur 2) ; gagne : feuille ajoutée /essai/x.ajout.css .a, valeur rgb(0, 255, 0) au lieu de rgb(0, 0, 255)',
-  );
-  assert.equal(shot.decisions[1].texte, 'esp-09 /essai/w.css:1 .absent { margin-top } : non vue sur cette page (aucun élément atteint par la règle)');
-  assert.deepEqual(juger([{ page: '/essai/partie.html', decisions: shot.decisions }]), {
-    sortie: 1,
-    motifs: [
-      'coul-01 /essai/x.css:1 .a { color } : arrivée en partie sur /essai/partie.html',
-      'esp-09 /essai/w.css:1 .absent { margin-top } : écrite, vue sur aucune de ses pages vérifiées',
+  const j = juger(manifeste, [/** @type {any} */ (shot.releve)]);
+  assert.deepEqual(
+    j.lignes.map((l) => [l.id, l.etat, l.declarations, l.elements]),
+    [
+      ['coul-01', 'en partie', { arrivees: 0, total: 1 }, { arrivees: 1, total: 2 }],
+      ['esp-09', 'non vue', { arrivees: 0, total: 0 }, { arrivees: 0, total: 0 }],
     ],
-  });
+  );
+  // Dans .zone, la feuille ajoutée gagne, mais --t-a y est redéfinie par un bloc <style> du HTML.
+  const zone = /** @type {any[]} */ (shot.releve?.ops).filter((o) => o.apres !== o.visee);
+  assert.equal(zone.length, 1);
+  assert.deepEqual(zone[0].canal.categories, ['variable']);
+  assert.match(zone[0].canal.texte, /--t-a/);
+  assert.match(zone[0].canal.texte, /\.zone/);
+  assert.equal(j.sortie, 1);
   // Commande : référence prise sur la page intacte, puis comparaison avec les feuilles ajoutées.
   const refs = await mkdtemp(join(tmpdir(), 'ds-lab-ajout-refs-'));
   const out = await mkdtemp(join(tmpdir(), 'ds-lab-ajout-verify-'));
@@ -499,15 +503,23 @@ test('F9 arrivée en partie, aucun élément sur la page ; commande verify --ajo
   }
   const un = /** @type {any} */ (await commande([`${servers.origin}/essai/partie.html`, '--reference', refs, '--ajout', sortie, '--out', out], 'verify'));
   assert.equal(un.status, 1, un.stderr);
-  assert.ok(un.stdout.includes(`  ${shot.decisions[0].texte}\n`), un.stdout);
+  for (const l of j.lignes) assert.ok(un.stdout.includes(`  ${l.texte}\n`), un.stdout);
+  assert.ok(un.stdout.includes(`${j.resume}\n`), un.stdout);
   assert.ok(un.stdout.includes('Pixels différents : '), un.stdout);
   const tout = await mkdtemp(join(tmpdir(), 'ds-lab-ajout-sortie-'));
-  await ecrireAjouts(await feuillesAjoutees(mods([ENTREES[0]], []), { origine: servers.origin, waitMs: 0 }), tout);
+  await ecrireAjouts(await feuillesAjoutees(mods([ENTREES[0]], [], { simulation: simulation({ '#111111': '#0000ff' }), lignes: [LIGNES[0]] }), { origine: servers.origin, waitMs: 0 }), tout);
   const zero = /** @type {any} */ (await commande([`${servers.origin}/essai/page.html`, '--reference', refs, '--ajout', tout, '--out', out], 'verify'));
   assert.equal(zero.status, 0, zero.stderr + zero.stdout);
+  assert.ok(zero.stdout.includes('Toutes les lignes décidées sont arrivées (1).\n'), zero.stdout);
   const deux = /** @type {any} */ (await commande([`${servers.origin}/essai/page.html`, '--reference', refs, '--ajout', tout, '--viewport', '390x900'], 'verify'));
   assert.equal(deux.status, 2);
   assert.equal(deux.stderr, "verify : --viewport ne s'emploie pas avec --ajout : la fenêtre est celle de la réduction\n");
+  // Un dossier écrit d'un modifications.json sans simulation : panne, il faut relancer reduce puis ajout.
+  const ancien = await mkdtemp(join(tmpdir(), 'ds-lab-ajout-sortie-'));
+  await ecrireAjouts(await feuillesAjoutees(mods([ENTREES[0]], []), { origine: servers.origin, waitMs: 0 }), ancien);
+  const vieux = /** @type {any} */ (await commande([`${servers.origin}/essai/page.html`, '--reference', refs, '--ajout', ancien, '--out', out], 'verify'));
+  assert.equal(vieux.status, 2);
+  assert.match(vieux.stderr, /sans simulation .*relancer npm run reduce, puis npm run ajout/);
 });
 
 test('F10 la fenêtre vient de modifications.json', async () => {

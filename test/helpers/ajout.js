@@ -2,8 +2,8 @@
 /**
  * Preuve des feuilles ajoutées sur une réduction de fixtures (docs/attendus/feuille-ajoutee.md) : réduction avec ses
  * références, feuilles ajoutées sur le site intact, copie passée par apply ; captures de chaque page de la réduction
- * avec les feuilles ajoutées (clair, puis système en sombre) et de la copie appliquée ; preuve par décision lue dans
- * la capture en clair (docs/attendus/feuille-ajoutee-reel.md).
+ * avec les feuilles ajoutées (clair, puis système en sombre) et de la copie appliquée ; verdict par ligne décidée tiré
+ * des relevés de la capture en clair (docs/attendus/verdict-par-decision.md).
  */
 import { readFile, writeFile, mkdtemp, cp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -11,10 +11,11 @@ import { join } from 'node:path';
 import { startFixtureServers, FIXTURE_DIR } from './serveur.js';
 import { runReduce } from '../../src/reduce/run.js';
 import { applyModifications } from '../../src/apply/apply.js';
-import { feuillesAjoutees, ecrireAjouts } from '../../src/apply/ajout.js';
+import { feuillesAjoutees, ecrireAjouts, MANIFESTE } from '../../src/apply/ajout.js';
 import { capturePage } from '../../src/verify/capture.js';
 import { referenceFiles } from '../../src/verify/reference.js';
 import { compareImages, compareAria } from '../../src/verify/compare.js';
+import { juger } from '../../src/verify/arrivee.js';
 
 export const TOKENS = new URL('../../tokens/orbe-cafe/marque.resolver.json', import.meta.url).pathname;
 const VIEWPORT = { width: 1366, height: 900 };
@@ -50,7 +51,7 @@ export async function preuve(servers, opts) {
   }
   const appliquee = await startFixtureServers({ root: copie });
   const thirdParty = ['.tiers-cookies'];
-  /** @type {{ page: string, ajout: { px: number, aria: boolean }, reference: { px: number, aria: boolean }, sombre: number, decisions: any[] }[]} */
+  /** @type {{ page: string, ajout: { px: number, aria: boolean }, reference: { px: number, aria: boolean }, sombre: number, releve: any }[]} */
   const resultats = [];
   try {
     for (const p of pages) {
@@ -64,18 +65,29 @@ export async function preuve(servers, opts) {
         ajout: { px: compareImages(app.png, clair.png).different, aria: compareAria(app.aria, clair.aria).identical },
         reference: { px: compareImages(await readFile(f.png), clair.png).different, aria: compareAria(refAria, clair.aria).identical },
         sombre: compareImages(clair.png, sombre.png).different,
-        decisions: clair.decisions ?? [],
+        releve: clair.releve,
       });
     }
   } finally {
     await appliquee.close();
   }
-  return { mods, ajout, sortie, resultats };
+  const manifeste = JSON.parse(await readFile(join(sortie, MANIFESTE), 'utf8'));
+  return {
+    mods,
+    ajout,
+    sortie,
+    resultats,
+    manifeste,
+    /** Verdict par ligne décidée sur les pages de la réduction, tiré des relevés en clair. */
+    get verdict() {
+      return juger(manifeste, resultats.map((x) => x.releve));
+    },
+  };
 }
 
 /**
- * Lignes décidées (REMPLACEMENTS, COUPLAGES) et lignes du reste : chacune est écrite dans sa feuille ajoutée ou
- * présente dans le fichier des pertes. Rend la liste de celles qui ne sont ni l'une ni l'autre.
+ * Lignes décidées (REMPLACEMENTS, COUPLAGES) et lignes hors de modifications.json : chacune est écrite dans sa
+ * feuille ajoutée ou présente dans le fichier des pertes. Rend la liste de celles qui ne sont ni l'une ni l'autre.
  * @param {any} mods @param {Awaited<ReturnType<typeof feuillesAjoutees>>} ajout
  */
 export function lignesPerdues(mods, ajout) {
@@ -93,18 +105,14 @@ export function lignesPerdues(mods, ajout) {
     const listee = pertes.some((l) => vise.some((v) => l.startsWith(v)));
     if (ecrite === listee) out.push(`${e.rows.join(', ')} ${e.sheet}:${e.line} ${e.property} : ${ecrite ? 'écrite et listée' : 'ni écrite ni listée'}`);
   }
-  for (const t of mods.brief.reste) if (!reste.includes(`- ${t}`)) out.push(`reste absent : ${t}`);
+  for (const h of mods.hors) if (!reste.includes(`- ${h.texte}`)) out.push(`hors de modifications.json, absente : ${h.texte}`);
   return out;
 }
 
 /**
- * Lignes écrites qui ne sont pas arrivées sur une page où la réduction les a tracées ; rend la liste de leurs textes.
+ * État de chaque ligne décidée qui n'est pas arrivée, par identifiant.
  * @param {Awaited<ReturnType<typeof preuve>>} r
  */
-export function nonArrivees(r) {
-  /** @type {string[]} */
-  const out = [];
-  for (const x of r.resultats)
-    for (const d of x.decisions) if (d.ecrite && d.pages.includes(x.page) && d.statut !== 'arrivée') out.push(`${x.page} : ${d.texte}`);
-  return out;
+export function pasArrivees(r) {
+  return Object.fromEntries(r.verdict.lignes.filter((l) => l.etat !== 'arrivée').map((l) => [l.id, l.etat]));
 }

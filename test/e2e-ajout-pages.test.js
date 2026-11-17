@@ -6,8 +6,9 @@
  *   P2 0 px et même arbre contre la référence pour les pièges et la proximité ; la page de marque garde l'écart
  *      d'apply (valeurs en var(), KNOWN_ISSUES.md) ;
  *   P3 système en sombre : rendu identique au rendu en clair ;
- *   P6 preuve par décision (docs/attendus/feuille-ajoutee-reel.md) : chaque ligne écrite est arrivée sur chaque page
- *      où la réduction l'a tracée ;
+ *   P6 verdict par ligne décidée (docs/attendus/verdict-par-decision.md) : pièges, chaque ligne décidée arrivée,
+ *      sortie 0 ; proximité, aucune ligne décidée, sortie 0 ; page de marque, coul-09 et coul-11 (valeur écrite en
+ *      var(), hors de modifications.json) non arrivées, la variable nommée, sortie 1 ;
  *   P4 chaque ligne décidée et non écrite, et chaque ligne du reste, est dans le fichier des pertes ; sur la page
  *      de marque, coul-06 (marque.css:41, border-bottom-color, simplement rattachée) est un rattachement non fait ;
  *   P5 proximité : seulement des lignes rattachées, aucune feuille ajoutée ; .message (proximite.css:67) n'est pas
@@ -17,7 +18,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
-import { preuve, lignesPerdues, nonArrivees } from './helpers/ajout.js';
+import { preuve, lignesPerdues, pasArrivees } from './helpers/ajout.js';
 
 /** @type {Awaited<ReturnType<typeof startFixtureServers>>} */
 let servers;
@@ -63,9 +64,20 @@ test('P5 proximité : aucune feuille ajoutée, .message rattachement non fait', 
   assert.ok(R.proximite.ajout.pertes.split('\n').some((l) => l.startsWith('- esp-03 : /proximite/styles/proximite.css:67 .message { margin-top } : ')), R.proximite.ajout.pertes);
 });
 
-for (const nom of ['pieges', 'proximite', 'marque']) {
-  test(`P6 ${nom} : chaque ligne écrite est arrivée sur ses pages`, () => {
-    assert.ok(R[nom].resultats.some((x) => x.decisions.length > 0) || R[nom].ajout.compte.ecrites === 0);
-    assert.deepEqual(nonArrivees(R[nom]), []);
-  });
-}
+test('P6 pièges : chaque ligne décidée arrivée, sortie 0', () => {
+  assert.ok(R.pieges.verdict.lignes.length > 0);
+  assert.deepEqual([pasArrivees(R.pieges), R.pieges.verdict.sortie], [{}, 0]);
+  assert.equal(R.pieges.verdict.resume, `Toutes les lignes décidées sont arrivées (${R.pieges.verdict.lignes.length}).`);
+});
+
+test('P6 proximité : aucune ligne décidée, sortie 0', () => {
+  assert.deepEqual([R.proximite.verdict.lignes, R.proximite.verdict.resume, R.proximite.verdict.sortie], [[], 'Aucune ligne décidée.', 0]);
+});
+
+test('P6 marque : coul-09 et coul-11, valeur en var() hors de modifications.json, non arrivées ; sortie 1', () => {
+  assert.deepEqual(pasArrivees(R.marque), { 'coul-09': 'non arrivée', 'coul-11': 'non arrivée' });
+  assert.equal(R.marque.verdict.sortie, 1);
+  const ratees = R.marque.resultats.flatMap((x) => x.releve.ops).filter((/** @type {any} */ o) => o.apres !== o.visee && o.avant !== o.visee);
+  assert.deepEqual([...new Set(ratees.map((/** @type {any} */ o) => o.ligne))].sort(), ['coul-09', 'coul-11']);
+  for (const o of ratees) assert.ok(o.canal.categories.includes('variable'), JSON.stringify(o.canal));
+});

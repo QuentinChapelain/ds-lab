@@ -18,8 +18,10 @@
  *      !important et « provisoire : !important d'origine » ; texte de compressee.ajout.css attendu à l'octet ;
  *   C3 pertes.md : .bord, quatre fois en cause « raccourci » ; une section pour l'!important d'origine, une pour la
  *      feuille injectée ; chargement : le media du lien, la feuille injectée et ce qu'il faut faire ;
- *   C4 preuve par décision, à la fenêtre de la réduction : chaque ligne écrite arrivée, la feuille injectée dite ;
- *      .bord non arrivée, la règle qui gagne nommée ; le compte de pixels reste donné.
+ *   C4 verdict par ligne décidée (docs/attendus/verdict-par-decision.md), à la fenêtre de la réduction : chaque ligne
+ *      arrivée sauf coul-06 (.bord, raccourci en var(), non écrit) : non arrivée, 0 déclaration sur 4, raccourci et
+ *      variable (--trait, posée par :root) ; sortie 1 ; coul-03, dont une déclaration est dans la feuille injectée,
+ *      le dit ; le compte de pixels reste donné.
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -29,7 +31,7 @@ import { join } from 'node:path';
 import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
 import { TOKENS } from './helpers/ajout.js';
 import { runReduce } from '../src/reduce/run.js';
-import { feuillesAjoutees, ecrireAjouts } from '../src/apply/ajout.js';
+import { feuillesAjoutees, ecrireAjouts, MANIFESTE } from '../src/apply/ajout.js';
 import { verifyPage } from '../src/verify/reference.js';
 import { juger } from '../src/verify/arrivee.js';
 
@@ -46,6 +48,8 @@ let mods;
 let ajout;
 /** @type {Awaited<ReturnType<typeof verifyPage>>} */
 let preuve;
+/** @type {any} */
+let manifeste;
 
 before(async () => {
   servers = await startFixtureServers();
@@ -66,6 +70,7 @@ before(async () => {
   const sortie = await mkdtemp(join(tmpdir(), 'ds-lab-compressee-sortie-'));
   await ecrireAjouts(ajout, sortie);
   preuve = await verifyPage({ url: servers.origin + PAGE, referenceDir: refs, waitMs: 100, ajout: sortie });
+  manifeste = JSON.parse(await readFile(join(sortie, MANIFESTE), 'utf8'));
 });
 
 after(async () => servers?.close());
@@ -181,32 +186,24 @@ test('C3 pertes.md : cinq causes distinctes, chargement avec le media et la feui
   assert.ok(!ajout.pertes.includes('ambiguë'), ajout.pertes);
 });
 
-test('C4 preuve par décision à la fenêtre de la réduction ; pixels donnés, sans décider', () => {
-  const vu = preuve.decisions.map((d) => [d.rows.join(', '), d.selector, d.property, d.statut, d.n, d.m]);
-  assert.deepEqual(
-    [...vu].sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
-    [
-      ['coul-04', '.pied', 'background-color', 'arrivée', 1, 1],
-      ['coul-04', 'li:nth-child(2n)', 'background-color', 'arrivée', 2, 2],
-      ['coul-07', '.carte', 'background-color', 'arrivée', 1, 1],
-      ['coul-06', '.bord', 'border-bottom-color', 'non arrivée', 0, 1],
-      ['coul-06', '.bord', 'border-left-color', 'non arrivée', 0, 1],
-      ['coul-06', '.bord', 'border-right-color', 'non arrivée', 0, 1],
-      ['coul-06', '.bord', 'border-top-color', 'non arrivée', 0, 1],
-      ['coul-01', '.liste > li', 'color', 'arrivée', 4, 4],
-      ['coul-03', '.carte', 'color', 'arrivée', 1, 1],
-      ['esp-03', '.carte-titre', 'margin-bottom', 'arrivée', 1, 1],
-      ['esp-04', '.etroit', 'padding-left', 'arrivée', 1, 1],
-      ['coul-05', '.note', 'color', 'arrivée', 1, 1],
-      ['coul-03', '.bandeau', 'color', 'arrivée', 1, 1],
-    ].sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
-  );
-  const bord = preuve.decisions.find((d) => d.property === 'border-top-color');
-  assert.deepEqual(bord?.gagnantes, [`${C}:1:154 .bord`]);
-  assert.equal(bord?.ecrite, false);
-  const bandeau = preuve.decisions.find((d) => d.selector === '.bandeau');
-  assert.ok(bandeau?.texte.endsWith('; feuille injectée par un script : posée après l\'injection'), bandeau?.texte);
-  assert.deepEqual(juger([{ page: PAGE, decisions: preuve.decisions }]), { sortie: 0, motifs: [] });
+test('C4 verdict par ligne décidée à la fenêtre de la réduction ; pixels donnés, sans décider', () => {
+  const j = juger(manifeste, [/** @type {any} */ (preuve.releve)]);
+  const etats = Object.fromEntries(j.lignes.map((l) => [l.id, l.etat]));
+  assert.deepEqual(Object.keys(etats).sort(), ['coul-01', 'coul-03', 'coul-04', 'coul-05', 'coul-06', 'coul-07', 'esp-03', 'esp-04']);
+  assert.deepEqual(Object.entries(etats).filter(([, e]) => e !== 'arrivée'), [['coul-06', 'non arrivée']]);
+  const bord = /** @type {any} */ (j.lignes.find((l) => l.id === 'coul-06'));
+  assert.deepEqual([bord.declarations, bord.elements], [{ arrivees: 0, total: 4 }, { arrivees: 0, total: 1 }]);
+  const ops = /** @type {any[]} */ (preuve.releve?.ops).filter((o) => o.ligne === 'coul-06');
+  assert.equal(ops.length, 4);
+  for (const o of ops) {
+    assert.deepEqual([o.declaration, o.annotation, o.canal.categories], [`${C}:1:154 .bord`, { ecrite: false, cause: 'raccourci', injectee: false }, ['raccourci', 'variable']]);
+    assert.match(o.canal.texte, /--trait/);
+    assert.match(o.canal.texte, /:root/);
+  }
+  const coul03 = /** @type {any} */ (j.lignes.find((l) => l.id === 'coul-03'));
+  assert.ok(coul03.texte.endsWith(" ; feuille injectée par un script : posée après l'injection"), coul03.texte);
+  assert.equal(j.sortie, 1);
+  assert.equal(j.resume, 'Lignes décidées : 8 ; arrivées 7, en partie 0, non arrivées 1, déjà en place 0, non vues 0, hors des pages vérifiées 0, non vérifiables (état) 0.');
   assert.equal(typeof preuve.pixels.different, 'number');
   assert.deepEqual(preuve.shot.viewport, { width: 390, height: 900 });
 });

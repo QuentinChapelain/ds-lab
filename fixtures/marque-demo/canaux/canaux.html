@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbe Café — fidélité (canaux)</title>
+  <link rel="stylesheet" href="styles/canaux.css">
+  <script>
+    // Bloc de style de thème injecté par un script.
+    addEventListener('DOMContentLoaded', () => {
+      const s = document.createElement('style');
+      s.textContent = '.bouton-theme { background-color: #e0e0e0; }';
+      document.head.append(s);
+    });
+  </script>
+</head>
+<body>
+  <main>
+    <p class="titre">Programme de fidélité</p>
+    <p class="en-ligne" style="padding-left: 30px">Retrait posé par un attribut style.</p>
+    <p><a class="bouton-feuille" href="#a">Voir mes tampons</a> <a class="bouton-theme" href="#b">Offrir un café</a></p>
+    <div class="cadre" style="--trait-cadre: #dadada">Cadre : bordure en raccourci, couleur d'une variable posée en ligne.</div>
+    <div class="encart-a">Encart A : fond écrit en propriété longue.</div>
+    <div class="encart-b">Encart B : fond écrit dans un raccourci avec var().</div>
+  </main>
+</body>
+</html>
