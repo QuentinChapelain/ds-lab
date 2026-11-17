@@ -1,6 +1,6 @@
 # Décisions
 
-Trente-deux décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/commun/` et dans le dossier de chaque marque.
+Trente-quatre décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/commun/` et dans le dossier de chaque marque.
 
 ### D01
 - **Décision** : les rôles se nomment propriété.sens.emphase.état.
