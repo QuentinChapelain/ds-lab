@@ -3,10 +3,10 @@
  * Capture d'une page servie, pleine page, et son arbre d'accessibilité
  * (page.ariaSnapshot()). Animations figées pour que deux captures du même état coïncident.
  * Mêmes réglages que la capture « après » de reduce (simulatePage), pour comparer à ses références.
- * Avec `ajout` (D37, D38) : les feuilles ajoutées d'un dossier écrit par npm run ajout sont posées dans la page,
+ * Avec `ajout` (D37, D38, D39) : les feuilles ajoutées d'un dossier écrit par npm run ajout sont posées dans la page,
  * tokens.css avant toutes les feuilles, chaque feuille ajoutée juste après la sienne, avec le media de son lien ; la
- * fenêtre est celle du manifeste (la réduction), et chaque ligne décidée tracée sur la page est jugée, avant puis
- * après la pose (src/verify/arrivee.js).
+ * fenêtre est celle du manifeste (la réduction) ; avant puis après la pose, dans le même chargement, chaque opération
+ * de la simulation de la réduction est relevée, avec la hauteur de la page (src/verify/arrivee.js).
  */
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -14,13 +14,13 @@ import { gotoAndSettle, DEFAULT_WAIT_MS } from '../browser/navigate.js';
 import { lancerChromium } from '../browser/lancement.js';
 import { hideThirdParty } from '../browser/simulate.js';
 import { MANIFESTE, FENETRE_PAR_DEFAUT } from '../apply/ajout.js';
-import { avantPose, apresPose } from './arrivee.js';
+import { releverAvant, releverApres } from './arrivee.js';
 
 /**
  * Manifeste d'un dossier écrit par npm run ajout, et le texte de ses feuilles.
  * @param {string} dossier
  */
-async function lireAjouts(dossier) {
+export async function lireAjouts(dossier) {
   let m;
   try {
     m = JSON.parse(await readFile(join(dossier, MANIFESTE), 'utf8'));
@@ -33,9 +33,9 @@ async function lireAjouts(dossier) {
   );
   /** @type {{ width: number, height: number }} */
   const viewport = m.viewport ?? FENETRE_PAR_DEFAUT;
-  /** @type {import('./arrivee.js').Ligne[]} */
-  const lignes = m.lignes ?? [];
-  return { tokens, feuilles, viewport, lignes };
+  /** @type {import('./arrivee.js').Manifeste} */
+  const manifeste = { simulation: m.simulation ?? null, lignes: m.lignes ?? [], hors: m.hors ?? [], declarations: m.declarations ?? [] };
+  return { dossier, tokens, feuilles, viewport, manifeste };
 }
 
 /**
@@ -79,33 +79,39 @@ export async function poserAjouts(page, dossier) {
  * les références de reduce --sources ; l'arbre d'accessibilité est lu avant le masque.
  * @param {{ url: string, viewport?: { width: number, height: number }, waitMs?: number, storageState?: string, thirdParty?: string[],
  *   ajout?: string, juger?: boolean, colorScheme?: 'light' | 'dark' }} opts
- *   ajout : dossier écrit par npm run ajout (la fenêtre est alors celle de son manifeste) ; juger : avec ajout, lire la
- *   preuve par décision (oui par défaut) ; colorScheme : préférence du système (sans elle, celle de Playwright : clair)
+ *   ajout : dossier écrit par npm run ajout (la fenêtre est alors celle de son manifeste) ; juger : avec ajout, relever
+ *   les opérations de la simulation avant et après la pose (oui par défaut) ; colorScheme : préférence du système (sans
+ *   elle, celle de Playwright : clair)
  * @returns {Promise<{ png: Buffer, aria: string, status: number | null, finalUrl: string, viewport: { width: number, height: number },
- *   decisions?: import('./arrivee.js').Decision[] }>}  decisions : avec ajout, les lignes décidées tracées sur la page
+ *   releve?: import('./arrivee.js').Releve }>}  releve : avec ajout, les opérations de la page et ses hauteurs
  */
 export async function capturePage({ url, viewport, waitMs = DEFAULT_WAIT_MS, storageState, thirdParty = [], ajout, juger = true, colorScheme }) {
   const ajouts = ajout ? await lireAjouts(ajout) : null;
+  if (ajouts && juger && !ajouts.manifeste.simulation)
+    throw new Error(`--ajout ${ajout} : ${MANIFESTE} sans simulation (tiré d'un modifications.json qui ne la porte pas) ; relancer npm run reduce, puis npm run ajout`);
   const fenetre = viewport ?? ajouts?.viewport ?? FENETRE_PAR_DEFAUT;
   const browser = await lancerChromium();
   try {
     const context = await browser.newContext({ viewport: fenetre, storageState: storageState ?? undefined, ...(colorScheme ? { colorScheme } : {}) });
     const page = await context.newPage();
     const nav = await gotoAndSettle(page, url, { waitMs });
-    /** @type {import('./arrivee.js').Decision[] | undefined} */
-    let decisions;
+    /** @type {import('./arrivee.js').Releve | undefined} */
+    let releve;
     if (ajouts && !juger) await poserAjouts(page, ajouts);
     else if (ajouts) {
-      const chemin = new URL(url).pathname;
-      const lignes = ajouts.lignes.filter((l) => l.pages.includes(chemin));
-      const avant = await avantPose(page, lignes);
+      // HTML brut de la page : un bloc <style> absent est inséré par un script.
+      const html = await context.request
+        .get(nav.finalUrl || url)
+        .then((r) => (r.ok() ? r.text() : null))
+        .catch(() => null);
+      const avant = await releverAvant(page, ajouts.manifeste);
       await poserAjouts(page, ajouts);
-      decisions = await apresPose(page, lignes, avant, ajouts.feuilles);
+      releve = await releverApres(page, ajouts.manifeste, avant, ajouts.feuilles, html);
     }
     const aria = await page.ariaSnapshot();
     await hideThirdParty(page, thirdParty, true);
     const png = await page.screenshot({ fullPage: true, animations: 'disabled' });
-    return { png, aria, status: nav.status, finalUrl: nav.finalUrl, viewport: fenetre, ...(decisions ? { decisions } : {}) };
+    return { png, aria, status: nav.status, finalUrl: nav.finalUrl, viewport: fenetre, ...(releve ? { releve } : {}) };
   } finally {
     await browser.close();
   }

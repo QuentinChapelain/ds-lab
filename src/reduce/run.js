@@ -315,6 +315,8 @@ export async function runReduce(opts) {
         witnesses,
         conflicts,
         reperes,
+        // Verdict par ligne décidée (verify --ajout) : la coupure par relation et les clés posées par page.
+        simulee: { split: splitOf(table), pages: pages.map((p) => ({ page: new URL(p.url).pathname, keys: p.keys })) },
         meta: {
           host,
           // Schéma des adresses (http, https) : l'adresse du site intact, pour npm run ajout, sans port de plus.

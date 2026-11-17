@@ -7,7 +7,7 @@
  * renvoyées avec le texte, pour les tests.
  */
 import { basename } from 'node:path';
-import { APPLIED, isOut, SLICES, decisionFor, decisionKeyFor, retenue, decisionKeysOrphelines, WHERE_TO_FIX, nearestOf, tieOf, onSolidOf } from '../reduce/propose.js';
+import { APPLIED, isOut, SLICES, decisionFor, decisionKeyFor, retenue, decisionKeysOrphelines, WHERE_TO_FIX, nearestOf, tieOf, onSolidOf, rowKey } from '../reduce/propose.js';
 
 export { onSolidOf };
 import { contrastRatio } from '../lib/color.js';
@@ -179,8 +179,10 @@ const shortValue = (v) => (/^-?[\d.]+px$/.test(v) ? `${fr(parseFloat(v))} px` : 
  * @param {Witness[]} [o.witnesses]  Pages témoins, hors de la table
  * @param {any[]} [o.conflicts]      Conflits de déclarations (attachDeclarations)
  * @param {Map<string, { column: number | null, important: boolean }>} [o.reperes]  repères des déclarations (reperesDe), pour modifications.json
+ * @param {{ split: string[], pages: { page: string, keys: string[] }[] }} [o.simulee]  coupure par relation et clés posées
+ *   par page de la simulation : modifications.json porte alors la simulation et les lignes décidées (verify --ajout)
  */
-export function buildMigration({ table, rendered, map, target, tokens, decisions = {}, meta, witnesses = [], conflicts = [], reperes = new Map() }) {
+export function buildMigration({ table, rendered, map, target, tokens, decisions = {}, meta, witnesses = [], conflicts = [], reperes = new Map(), simulee }) {
   const idx = tokens ? indexTokens(tokens) : null;
   /** @param {string} family @param {string | null} value @param {{ name?: string | null, pleinScales?: Set<string> }} [ctx] */
   const token = (family, value, ctx) => (value === null ? '—' : idx?.find(family, value, ctx) ?? 'jeton absent');
@@ -380,7 +382,10 @@ export function buildMigration({ table, rendered, map, target, tokens, decisions
   // D29 : une consigne structurée, écrite dans migration.md et lue par modifications.json.
   const agent = consigneAgent(data, s);
   // S1 : modifications.json, pour npm run apply (avec un fichier de jetons).
-  const modifications = tokens ? buildModifications({ d: data, s, consigne: agent, tokens, reperes }) : null;
+  // Clé de simulation de chaque ligne (famille|ancienne|usage|relation), pour le verdict par ligne décidée.
+  const cles = new Map(Object.entries(table.families).flatMap(([family, f]) => f.rows.map((/** @type {any} */ r) => [r.id ?? '', rowKey(family, r)])));
+  const simulation = simulee ? { carte: map, split: simulee.split, pages: simulee.pages, cles } : undefined;
+  const modifications = tokens ? buildModifications({ d: data, s, consigne: agent, tokens, reperes, simulation }) : null;
   return { data: { ...data, agent }, markdown: renderMarkdown(data, s) + '\n' + agent.markdown, modifications };
 }
 

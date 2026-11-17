@@ -8,15 +8,16 @@
  * et son arbre d'accessibilité dans le dossier de référence. Sans --save, capture à nouveau
  * et compare : pourcentage de pixels différents, image des différences, arbre identique ou diff.
  * Les fichiers sont ceux de reduce --references : <page>.reference.png, <page>.reference.aria.yml.
- * Avec --ajout <dossier> (D37, D38) : chaque page est comparée avec les feuilles ajoutées écrites par npm run ajout,
- * tokens.css en tête, chaque feuille ajoutée juste après la sienne, à la fenêtre de la réduction (manifeste) ; pour
- * chaque ligne décidée tracée sur la page, la preuve dit « arrivée », « arrivée en partie (n éléments sur m) »,
- * « non arrivée » avec la règle qui gagne, ou « non vue sur cette page ». Le compte de pixels reste donné, il ne
- * décide pas.
+ * Avec --ajout <dossier> (D37, D38, D39) : chaque page est comparée avec les feuilles ajoutées écrites par npm run
+ * ajout, tokens.css en tête, chaque feuille ajoutée juste après la sienne, à la fenêtre de la réduction (manifeste) ;
+ * la hauteur de la page intacte (lue avant la pose, dans le même chargement), avec les feuilles et de la référence ;
+ * puis le verdict par ligne décidée, sur les pages vérifiées : arrivée, en partie, non arrivée (chaque déclaration, ce
+ * qui tient la valeur, ce qu'il faut faire), déjà en place, non vue, hors des pages vérifiées, non vérifiable (état),
+ * et une phrase qui compte chaque état. Le compte de pixels reste donné, il ne décide pas.
  * D18 : sans --ajout, sort en 0, même quand des pixels diffèrent (la commande compare, elle ne juge pas) ; avec
- * --ajout, en 1 dès qu'une ligne écrite n'est pas arrivée sur une page, ou n'est vue sur aucune de ses pages
- * vérifiées (src/verify/arrivee.js, juger) ; en 2 sur une panne (option inconnue, référence absente, Chromium,
- * navigation), par la garde commune (src/cli/garde.js).
+ * --ajout, en 0 si aucune ligne décidée n'est en partie, non arrivée, déjà en place ou non vue, en 1 sinon
+ * (src/verify/arrivee.js, juger) ; en 2 sur une panne (option inconnue, référence absente, manifeste sans
+ * simulation, Chromium, navigation), par la garde commune (src/cli/garde.js).
  */
 import { parseArgs } from 'node:util';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -25,7 +26,7 @@ import { pathToFileURL } from 'node:url';
 import { resolveAddresses } from '../lib/addresses.js';
 import { loadSources } from '../lib/sources.js';
 import { stampOf, freeOutputDir } from '../report/json.js';
-import { capturePage } from '../verify/capture.js';
+import { capturePage, lireAjouts } from '../verify/capture.js';
 import { referenceFiles, writeReference, verifyPage, pageName } from '../verify/reference.js';
 import { juger } from '../verify/arrivee.js';
 import { lancer } from './garde.js';
@@ -40,7 +41,7 @@ const USAGE = `Usage : npm run verify -- <adresse> --reference <dossier> [--save
                              capture, comme dans les références de reduce --sources
   --ajout <dossier>          dossier écrit par npm run ajout : ses feuilles ajoutées sont posées sur chaque page
                              avant la capture (tokens.css en tête, chacune juste après sa feuille), à la fenêtre de
-                             la réduction ; chaque ligne décidée est dite arrivée ou non ; sans --save
+                             la réduction ; verdict par ligne décidée, hauteurs avant et après ; sans --save
   --viewport <LxH>           fenêtre (défaut : 1366x900) ; sans --ajout
   --out <dossier>            racine des sorties de comparaison (défaut : local/verify)
   -h, --help                 cette aide`;
@@ -97,8 +98,8 @@ async function main() {
   }
 
   const racine = await freeOutputDir(String(values.out), new URL(urls[0]).host, stampOf(new Date()));
-  /** @type {{ page: string, decisions: import('../verify/arrivee.js').Decision[] }[]} */
-  const verifiees = [];
+  /** @type {import('../verify/arrivee.js').Releve[]} */
+  const releves = [];
   for (const url of urls) {
     let r;
     try {
@@ -120,7 +121,7 @@ async function main() {
     await writeFile(
       join(dir, 'verification.json'),
       JSON.stringify(
-        { url, reference: r.files, viewport: shot.viewport, thirdParty, ...(values.ajout ? { ajout: values.ajout } : {}), pixels: counts, aria: { identical: aria.identical }, ...(values.ajout ? { decisions: r.decisions } : {}) },
+        { url, reference: r.files, viewport: shot.viewport, thirdParty, ...(values.ajout ? { ajout: values.ajout, hauteurs: r.hauteurs, operations: r.releve?.ops ?? [] } : {}), pixels: counts, aria: { identical: aria.identical } },
         null,
         2,
       ) + '\n',
@@ -131,21 +132,21 @@ async function main() {
     if (pixels.sizeMismatch) console.log(`Taille : référence ${pixels.sizeMismatch.reference.join('×')}, actuelle ${pixels.sizeMismatch.actual.join('×')}`);
     if (thirdParty.length) console.log(`Éléments tiers masqués : ${thirdParty.join(', ')}`);
     if (values.ajout) console.log(`Feuilles ajoutées : ${values.ajout} (fenêtre ${shot.viewport.width}×${shot.viewport.height})`);
+    if (r.hauteurs) console.log(`Hauteur : page intacte ${r.hauteurs.intacte} px, avec les feuilles ${r.hauteurs.avecFeuilles} px, référence ${r.hauteurs.reference} px`);
     console.log(`Arbre d'accessibilité : ${aria.identical ? 'identique' : 'différent (aria.diff)'}`);
-    if (values.ajout) {
-      console.log(`Preuve par décision (${r.decisions.length} ligne(s) décidée(s) tracée(s) sur la page) :`);
-      for (const d of r.decisions) console.log(`  ${d.texte}`);
-      verifiees.push({ page: new URL(url).pathname, decisions: r.decisions });
-    }
+    if (r.releve) releves.push(r.releve);
     console.log(`Sorties : ${dir}`);
   }
   if (!values.ajout) return;
-  const j = juger(verifiees);
-  if (!j.sortie) console.log('Chaque ligne écrite est arrivée sur les pages vérifiées.');
-  else {
-    console.log(`Lignes écrites non arrivées ou non vérifiées (${j.motifs.length}) :`);
-    for (const m of j.motifs) console.log(`  ${m}`);
+  const { manifeste } = await lireAjouts(String(values.ajout));
+  const j = juger(manifeste, releves);
+  await writeFile(join(racine, 'verdict.json'), JSON.stringify({ pages: releves.map((x) => x.page), ...j }, null, 2) + '\n');
+  console.log(`Verdict par ligne décidée (pages vérifiées : ${releves.map((x) => x.page).join(', ')}) :`);
+  for (const l of j.lignes) {
+    console.log(`  ${l.texte}`);
+    for (const d of l.details) console.log(`    ${d}`);
   }
+  console.log(j.resume);
   return j.sortie;
 }
 

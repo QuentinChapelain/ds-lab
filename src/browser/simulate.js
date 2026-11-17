@@ -586,7 +586,8 @@ export async function installLive(context, map, { delayMs = 800, lines = [] } = 
  * @param {import('playwright-core').Page} page
  * @param {Record<string, any>} map  comme scanInPage : par famille, ancien → nouveau ; split, solid, thirdParty, conflicts, couplings
  * @param {{ fullPage?: boolean }} [opts]
- * @returns {Promise<{ url: string, elements: number, operations: number, changed: number, byFamily: Record<string, number>, changes: SimulatedChange[], before: string | null, after: string | null }>}
+ * @returns {Promise<{ url: string, elements: number, operations: number, changed: number, byFamily: Record<string, number>, changes: SimulatedChange[], keys: string[], before: string | null, after: string | null }>}
+ *   keys : clés des opérations posées (conflits gelés exclus, couplages compris), triées
  */
 export async function simulatePage(page, map, { fullPage = true } = {}) {
   let scan = await page.evaluate(scanInPage, map);
@@ -600,6 +601,7 @@ export async function simulatePage(page, map, { fullPage = true } = {}) {
   await page.evaluate(showInPage, { on: true });
   const after = fullPage ? (await page.screenshot({ fullPage: true, animations: 'disabled' })).toString('base64') : null;
   await hideThirdParty(page, third, false);
+  const keys = await page.evaluate(() => [.../** @type {Set<string>} */ (new Set(/** @type {any} */ (window).__dsSim.ops.filter((/** @type {any} */ o) => !o.frozen).map((/** @type {any} */ o) => o.key)))].sort());
   return {
     url: page.url(),
     elements: scan.elements,
@@ -607,6 +609,7 @@ export async function simulatePage(page, map, { fullPage = true } = {}) {
     changed: scan.changed,
     byFamily: scan.byFamily,
     changes: scan.changes.map((/** @type {any} */ c) => ({ key: c.key, family: c.family, old: c.old, usage: c.usage, new: c.new, count: c.count, props: c.props })),
+    keys,
     before,
     after,
   };

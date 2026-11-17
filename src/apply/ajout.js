@@ -21,8 +21,11 @@
  *     spécificité, non reprise, gagne la propriété ; reprise après sa feuille, elle passerait devant ;
  *   - contexte : la feuille ajoutée ne sait pas le redire (règle imbriquée, couche anonyme) ;
  *   - feuille introuvable : le site ne la sert pas.
- * Les lignes simplement rattachées (RATTACHE) n'y entrent pas : « rattachement non fait ». Le reste de
- * modifications.json est recopié.
+ * Les lignes simplement rattachées (RATTACHE) n'y entrent pas : « rattachement non fait ». Les lignes hors de
+ * modifications.json (`hors`, ou le reste pour un fichier qui ne le porte pas) sont recopiées, rangées par cause.
+ * Le manifeste (feuilles-ajoutees.json) porte, pour verify --ajout, chaque déclaration décidée et ce qu'il en est
+ * advenu, et recopie de modifications.json la simulation, les lignes décidées et les lignes hors (verdict par ligne
+ * décidée, docs/attendus/verdict-par-decision.md).
  */
 import postcss from 'postcss';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -268,7 +271,10 @@ export async function feuillesAjoutees(mods, { origine, waitMs, storageState } =
   const importantes = candidates.filter((c) => c.important);
   const injectees = candidates.filter((c) => injectee(c.entry.sheet));
   const reste = /** @type {string[]} */ (mods.brief?.reste ?? []);
-  const compte = { ecrites: candidates.length, nonEcrites: nonEcrites.length, important: importantes.length, injectees: injectees.length, rattachements: rattachees.length, horsModifications: reste.length };
+  /** Lignes hors de modifications.json, avec leur cause ; sans le champ hors, le reste, sans cause. @type {{ lignes: string[], cause: string | null, texte: string }[]} */
+  const hors = Array.isArray(mods.hors) ? mods.hors : reste.map((t) => ({ lignes: [], cause: null, texte: t }));
+  const causesHors = [...new Set(hors.map((h) => h.cause).filter((c) => c !== null))];
+  const compte = { ecrites: candidates.length, nonEcrites: nonEcrites.length, important: importantes.length, injectees: injectees.length, rattachements: rattachees.length, horsModifications: hors.length };
   /** @param {any} e @param {number | null} [colonne] */
   const vise = (e, colonne) => `${e.rows.join(', ')} : ${repere(e.sheet, e.line, colonne ?? e.column)} ${e.selector} { ${e.property} }`;
   /** @param {FeuilleAjoutee} f */
@@ -307,8 +313,12 @@ export async function feuillesAjoutees(mods, { origine, waitMs, storageState } =
     `RATTACHEMENTS NON FAITS (${rattachees.length})`,
     ...rattachees.map((e) => `- ${vise(e)} : ${e.value}. À faire : rattacher dans la source quand le composant sera refait.`),
     '',
-    `HORS DE MODIFICATIONS.JSON (${reste.length})`,
-    ...reste.map((t) => `- ${t}`),
+    `HORS DE MODIFICATIONS.JSON (${hors.length})`,
+    ...hors.filter((h) => h.cause === null).map((h) => `- ${h.texte}`),
+    ...causesHors.flatMap((c) => {
+      const xs = hors.filter((h) => h.cause === c);
+      return ['', `HORS DE MODIFICATIONS.JSON, ${String(c).toUpperCase()} (${xs.length})`, ...xs.map((h) => `- ${h.texte}`)];
+    }),
   ];
   const ecrites = new Map(candidates.map((c) => [c.entry, c]));
   const perdues = new Map(nonEcrites.map((x) => [x.entry, x]));
@@ -316,8 +326,12 @@ export async function feuillesAjoutees(mods, { origine, waitMs, storageState } =
     tokensCss: tokensCss?.path ?? null,
     feuilles: feuilles.map((f) => ({ feuille: f.feuille, ajout: f.ajout, injectee: injectee(f.feuille) })),
     viewport: { width: viewport.width, height: viewport.height },
-    // Chaque ligne décidée, pour la preuve par décision (verify --ajout).
-    lignes: decidees.map((e) => ({
+    // Verdict par ligne décidée (verify --ajout) : la carte de la simulation, les lignes décidées, les lignes hors.
+    simulation: mods.simulation ?? null,
+    lignes: mods.lignes ?? [],
+    hors,
+    // Chaque déclaration décidée et ce qu'il en est advenu.
+    declarations: decidees.map((e) => ({
       rows: e.rows,
       sheet: e.sheet,
       line: e.line,

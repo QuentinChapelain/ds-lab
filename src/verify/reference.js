@@ -42,11 +42,15 @@ export async function writeReference(dir, url, { png, aria }) {
  * Capture la page et la compare à sa référence.
  * @param {{ url: string, referenceDir: string, viewport?: { width: number, height: number }, waitMs?: number, storageState?: string, thirdParty?: string[], ajout?: string }} opts
  *   ajout : dossier écrit par npm run ajout, posé sur la page avant la capture (D37) ; la fenêtre est alors celle de son
- *   manifeste, et `decisions` dit, pour chaque ligne décidée tracée sur la page, si elle est arrivée (D38)
+ *   manifeste ; `releve` donne les opérations de la simulation relevées avant et après la pose (D39), `hauteurs` la
+ *   hauteur de la page intacte, avec les feuilles, et celle de la référence
  */
 export async function verifyPage({ url, referenceDir, viewport, waitMs, storageState, thirdParty, ajout }) {
   const files = referenceFiles(referenceDir, url);
   const [refPng, refAria] = await Promise.all([readFile(files.png), readFile(files.aria, 'utf8')]);
   const shot = await capturePage({ url, viewport, waitMs, storageState, thirdParty, ajout });
-  return { files, shot, pixels: compareImages(refPng, shot.png), aria: compareAria(refAria.replace(/\n$/, ''), shot.aria), decisions: shot.decisions ?? [] };
+  // Hauteur d'une image PNG : en-tête IHDR, octets 20 à 23.
+  const reference = refPng.readUInt32BE(20);
+  const hauteurs = shot.releve ? { ...shot.releve.hauteurs, reference } : null;
+  return { files, shot, pixels: compareImages(refPng, shot.png), aria: compareAria(refAria.replace(/\n$/, ''), shot.aria), releve: shot.releve ?? null, hauteurs };
 }
