@@ -1,6 +1,6 @@
 # Décisions
 
-Trente-quatre décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/commun/` et dans le dossier de chaque marque.
+Trente-cinq décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/commun/` et dans le dossier de chaque marque.
 
 ### D01
 - **Décision** : les rôles se nomment propriété.sens.emphase.état.
@@ -184,3 +184,8 @@ Trente-quatre décisions, chacune avec sa raison et sa conséquence. Aucune vale
   - Une capture faite juste après `goto` est stable ; l'écart naît des invalidations de la fin du chargement et des sondes de style de la simulation, et change avec le délai.
   - Parmi six options essayées, seule celle-ci rend une seule capture sur 20 à délai variable. Mécanisme supposé : sans elle, Chromium ne redessine que la partie invalidée d'une tuile, et l'anticrénelage d'un coin dépend des invalidations passées [H].
 - **Conséquence** : `revue.html` de la page de marque et la capture de `verify` sont identiques d'un lancement à l'autre (`test/determinisme.test.js`, qui vérifie aussi qu'aucun autre module de `src/` ne lance Chromium). L'image « après » de la page de marque diffère d'un pixel, de 1/255, de sa variante la plus fréquente d'avant ; acceptée, ce n'est pas une valeur relevée. Les autres sorties sont identiques à l'octet. L'option est un réglage interne de Chromium, qui peut disparaître ; le test le dira (`KNOWN_ISSUES.md`).
+
+### D35
+- **Décision** : main n'avance que par un push en avance rapide d'un commit dont le check `controles` est vert ; historique linéaire, suppression interdite, sans pull request ni exception.
+- **Raison** : décision de Quentin du 17/11/2026. La CI rejouait les contrôles à chaque push sans rien empêcher : un commit rouge pouvait arriver sur main.
+- **Conséquence** : chaque lot passe par une branche poussée puis supprimée. Renommer le job `controles` fait refuser tout push sur main jusqu'à la mise à jour du ruleset.

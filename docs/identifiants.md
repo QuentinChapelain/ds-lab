@@ -1,6 +1,6 @@
 # Identifiants de règles
 
-Les sorties de l'outil citent des règles par un identifiant court, entre parenthèses : « (R9) », « (M6) ». Cette page dit, pour chaque identifiant affiché, sa règle en une phrase, où elle est codée et où elle s'affiche. Les règles du design system (DS1 à DS11) sont dans `docs/regles.md`, les décisions (D01 à D34) dans `docs/decisions.md`.
+Les sorties de l'outil citent des règles par un identifiant court, entre parenthèses : « (R9) », « (M6) ». Cette page dit, pour chaque identifiant affiché, sa règle en une phrase, où elle est codée et où elle s'affiche. Les règles du design system (DS1 à DS11) sont dans `docs/regles.md`, les décisions (D01 à D35) dans `docs/decisions.md`.
 
 Renommer un identifiant affiché change une sortie : c'est une décision à part, pas un nettoyage.
 

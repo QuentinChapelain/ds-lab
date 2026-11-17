@@ -192,6 +192,8 @@ Règles : marques fictives uniquement ; rien de `local/` ni de `.auth/` dans un 
 
 À chaque push, sur toute branche, et à la demande, GitHub rejoue sur une machine neuve (ubuntu-24.04, Node 22, borne basse de `engines`) ce qui est demandé avant un commit : `npm ci`, Chromium installé par `playwright-core` (la variante sans fenêtre), `npm run types`, `npm run knip`, `npm run dependances`, les trois contrôles de la cible (`npm run contraste`, `npm run espacements`, `npm run typo`), puis `npm test`. Une étape par commande : l'étape rouge dit laquelle échoue, et les suivantes ne tournent pas. Les deux tests des noms interdits y sont sautés : leur liste vit dans `local/`, jamais versionné. La CI ne remplace pas le lancement sur sa machine avant un commit. Fichier : `.github/workflows/ci.yml`.
 
+main est protégée (ruleset « main protégée ») : GitHub refuse tout push sur main dont le commit n'a pas le check `controles` vert, qui n'est pas en avance rapide (branche à jour) ou qui ferait un commit de fusion ; main ne peut pas être supprimée. Aucune pull request n'est demandée, personne n'y fait exception. Le chemin : pousser une branche, attendre la CI verte, `git push origin <branche>:main`, puis supprimer la branche.
+
 ## Limites
 
 - Validé sur des pages fictives et sur un vrai site en lecture seule, pas encore avec une équipe.

@@ -34,6 +34,8 @@ Les trois contrôles de la cible (contraste, espacements, typo) prennent `--marq
 
 Les trois contrôles de la cible, npm run types, npm run knip et npm run dependances restent à 0 échec, et npm test ne perd aucun vert, avant chaque commit et à la fin de chaque lot. La CI (`.github/workflows/ci.yml`) rejoue ces commandes à chaque push ; elle ne remplace pas le lancement local.
 
+main n'accepte qu'un push en avance rapide d'un commit dont le check `controles` est vert (ruleset « main protégée », D35) : pousser la branche, attendre la CI, pousser le même commit sur main, supprimer la branche.
+
 Node : la version de `.node-version` (Node 24 LTS). Vérifier `node -v` avant les commandes : sous Node 25, `npm run dependances` refuse de démarrer.
 
 ## Règles du design system
