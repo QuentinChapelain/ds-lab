@@ -8,7 +8,9 @@ import { writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { checkValise } from '../valise/generate.js';
 import { statutsTokens, valiseFromTokens } from '../tokens/primitives.js';
+import { garderVersion } from './version.js';
 
+garderVersion('statuts');
 const out = fileURLToPath(new URL('../../tokens/commun/statuts.tokens.json', import.meta.url));
 const tokens = statutsTokens();
 const fails = checkValise(valiseFromTokens(tokens));

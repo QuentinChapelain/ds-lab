@@ -21,8 +21,9 @@
  *      ou s'il trouve une paire en échec (incohérence de l'outil), sortie 2, le message le dit, rien n'est écrit, aucun
  *      fichier temporaire laissé.
  *
- * La copie (N6, N10) va dans le dossier temporaire du système, hors du dépôt : src/, tokens/ et package.json (pour
- * "type": "module") ; elle trouve ses dépendances par un lien symbolique node_modules vers celui du dépôt.
+ * La copie (N6, N10) va dans le dossier temporaire du système, hors du dépôt : src/, tokens/, package.json (pour
+ * "type": "module") et .node-version (la garde de version de chaque commande, D40) ; elle trouve ses dépendances par
+ * un lien symbolique node_modules vers celui du dépôt.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -70,12 +71,13 @@ function fichiersFaux() {
   return { absent: join(d, 'absent.json'), casse: join(d, 'casse.json'), dossier: d };
 }
 
-/** Copie de src/, tokens/ et package.json hors du dépôt, node_modules en lien symbolique. */
+/** Copie de src/, tokens/, package.json et .node-version hors du dépôt, node_modules en lien symbolique. */
 function copie() {
   const d = tmp('copie');
   cpSync(join(ROOT, 'src'), join(d, 'src'), { recursive: true });
   cpSync(join(ROOT, 'tokens'), join(d, 'tokens'), { recursive: true });
   cpSync(join(ROOT, 'package.json'), join(d, 'package.json'));
+  cpSync(join(ROOT, '.node-version'), join(d, '.node-version'));
   symlinkSync(join(ROOT, 'node_modules'), join(d, 'node_modules'), 'dir');
   return d;
 }

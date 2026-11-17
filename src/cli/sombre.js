@@ -12,7 +12,9 @@ import { checkValise } from '../valise/generate.js';
 import { sombreTokens, valiseFromTokens } from '../tokens/primitives.js';
 import { aplatTokens } from '../tokens/pleins.js';
 import { COMMUN } from '../tokens/resolver.js';
+import { garderVersion } from './version.js';
 
+garderVersion('sombre');
 const read = (/** @type {string} */ f) => JSON.parse(readFileSync(join(COMMUN, f), 'utf8'));
 const tokens = sombreTokens(read('primitives.tokens.json'), read('statuts.tokens.json'));
 const fails = checkValise(valiseFromTokens(tokens));

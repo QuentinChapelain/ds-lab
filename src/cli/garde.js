@@ -7,8 +7,11 @@
  *   2 l'entrée n'a pas pu être jugée : fichier absent ou illisible, option inconnue, panne de l'outil.
  * Une commande rend 0 ou 1 ; une exception est une panne : message d'une ligne préfixé par le nom de la commande, sans
  * pile, et sortie 2. Un refus n'est jamais une exception : la commande l'affiche avec ses motifs et rend 1.
+ * Sous une version majeure de Node autre que celle de .node-version, la commande ne lit rien et sort en 2 (D40,
+ * src/cli/version.js).
  */
 import { premiereLigne } from '../lib/fichiers.js';
+import { refus } from './version.js';
 import { relative } from 'node:path';
 import { dossiersDeMarque, nomDeMarque } from '../tokens/resolver.js';
 
@@ -19,6 +22,12 @@ import { dossiersDeMarque, nomDeMarque } from '../tokens/resolver.js';
  * @param {() => number | void | Promise<number | void>} main
  */
 export async function lancer(nom, main) {
+  const version = refus();
+  if (version) {
+    console.error(`${nom} : ${version}`);
+    process.exitCode = 2;
+    return;
+  }
   try {
     process.exitCode = /** @type {number} */ ((await main()) ?? 0);
   } catch (e) {

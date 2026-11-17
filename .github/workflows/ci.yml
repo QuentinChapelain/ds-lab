@@ -26,7 +26,7 @@ jobs:
           persist-credentials: false # aucune étape ne pousse
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 22 # borne basse de engines
+          node-version-file: .node-version # seule source de la version de Node (D40) ; une autre majeure, et les commandes sortent en 2
           cache: npm
       - run: npm ci
       # La variante que chromium.launch() lance sans option ; aucun test n'ouvre de fenêtre.

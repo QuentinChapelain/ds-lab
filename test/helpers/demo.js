@@ -9,6 +9,7 @@ import { parseArgs } from 'node:util';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { startFixtureServers, FIXTURE_DIR } from './serveur.js';
+import { garderVersion } from '../../src/cli/version.js';
 
 /** @param {string[]} argv */
 export function parseDemoArgs(argv) {
@@ -17,6 +18,7 @@ export function parseDemoArgs(argv) {
 }
 
 async function main() {
+  garderVersion('demo');
   const { root } = parseDemoArgs(process.argv.slice(2));
   const servers = await startFixtureServers({ root });
   console.log(`Orbe Café (marque fictive) : ${servers.origin}/`);
