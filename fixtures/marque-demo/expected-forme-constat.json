@@ -1,0 +1,73 @@
+{
+  "$comment": "Attendus de la forme du constat des composants, écrits à la main le 18/11/2026 avant le code, sur fixtures/marque-demo/annuaire/ (lancements A et B de fixtures/marque-demo/expected-composants.json, nom du site « Annuaire des cafés »). Les nombres viennent de l'attendu (docs/attendus/forme-constat.md) ; les ordres, les textes et les différences sont calculés à la main depuis la feuille des pages (fixtures/marque-demo/annuaire/styles/annuaire.css), l'arrondi en pourcentage converti en px et le cadre des champs Vuetify mesuré sur .v-field. En cas d'écart, ne corriger ni l'outil ni ce fichier : le signaler.",
+  "nom": "Annuaire des cafés",
+  "A": {
+    "entete": "Annuaire des cafés · 2 pages · Vuetify 4",
+    "phraseCourte": "27 éléments, de 7 types. Pour 4 types, le site a plusieurs versions du même élément.",
+    "aFaire": { "doublons": 4, "confirmer": 3, "blocs": 1 },
+    "lignesAFaire": [
+      "4 types à doublons : choisir la version à garder",
+      "3 types à une seule version : confirmer",
+      "1 bloc non identifié : le rattacher ou le laisser"
+    ],
+    "effort": "7 endroits à modifier pour n'avoir qu'une version par type.",
+    "doublons": ["bouton avec texte", "champ de texte", "bouton à icône seule", "liste déroulante"],
+    "uneVersion": ["carte", "onglet", "case à cocher"],
+    "aFaireParType": {
+      "bouton avec texte": "Choisir la version à garder. Si c'est la plus répandue, 3 endroits seront à remplacer.",
+      "champ de texte": "Choisir la version à garder. Si c'est la plus répandue, 2 endroits seront à remplacer.",
+      "bouton à icône seule": "Choisir la version à garder. Si c'est la plus répandue, 1 endroit sera à remplacer.",
+      "liste déroulante": "Choisir la version à garder. Si c'est la plus répandue, 1 endroit sera à remplacer.",
+      "carte": "Confirmer cette version comme version à garder.",
+      "onglet": "Confirmer cette version comme version à garder.",
+      "case à cocher": "Confirmer cette version comme version à garder."
+    },
+    "defauts": {
+      "bouton avec texte / Sans style / button": ["zone de clic trop petite"],
+      "bouton à icône seule / Fait maison / an-icone": ["sans nom pour les lecteurs d'écran"],
+      "liste déroulante / Fait maison / an-liste": ["1 sur 2 : hors d'atteinte au clavier"]
+    },
+    "plusRepandue": {
+      "bouton avec texte / Vuetify / v-btn": "la plus répandue",
+      "bouton à icône seule / Vuetify / v-btn": "la plus répandue",
+      "champ de texte / Fait maison / an-champ": "à égalité",
+      "champ de texte / Vuetify / v-text-field": "à égalité",
+      "liste déroulante / Fait maison / an-liste": "la plus répandue"
+    },
+    "differences": {
+      "bouton avec texte / Vuetify / v-btn": "hauteur 36 ou 28 px · sans bordure · arrondi 4 px · marge intérieure 0 16 ou 0 12 px · texte 14 ou 12 px · graisse 500",
+      "bouton avec texte / Fait maison / an-btn": "hauteur 40 px · bordure 2 px · arrondi 20 px · marge intérieure 0 20 px · texte 15 px · graisse 600",
+      "bouton avec texte / Sans style / button": "hauteur 21 px · bordure 2 px · arrondi 0 · marge intérieure 1 6 px · texte 13,33 px · graisse 400",
+      "bouton à icône seule / Vuetify / v-btn": "sans bordure · arrondi 20 px · sans marge intérieure · texte 14 px · graisse 500",
+      "bouton à icône seule / Fait maison / an-icone": "bordure 1 px · arrondi 8 px · marge intérieure 8 px · texte 13,33 px · graisse 400",
+      "champ de texte / Fait maison / an-champ": "arrondi 2 px · marge intérieure 0 10 px",
+      "champ de texte / Vuetify / v-text-field": "arrondi 4 px · marge intérieure 0 12 px",
+      "liste déroulante / Fait maison / an-liste": "arrondi 2 px · marge intérieure 0 10 px",
+      "liste déroulante / Vuetify / v-select": "arrondi 4 px · marge intérieure 0 12 px"
+    },
+    "info": 4
+  },
+  "B": {
+    "phraseCourte": "30 éléments, de 7 types. Pour 5 types, le site a plusieurs versions du même élément.",
+    "aFaire": { "doublons": 4, "confirmer": 2, "blocs": 0 },
+    "lignesAFaire": [
+      "4 types à doublons : choisir la version à garder",
+      "2 types à une seule version : confirmer"
+    ],
+    "effort": "10 endroits à modifier pour n'avoir qu'une version par type.",
+    "doublons": ["carte", "champ de texte", "bouton à icône seule", "liste déroulante", "bouton avec texte"],
+    "uneVersion": ["onglet", "case à cocher"],
+    "aFaireParType": {
+      "bouton avec texte": "Version à garder : v-btn. 3 endroits à remplacer.",
+      "champ de texte": "Choisir la version à garder. Si c'est la plus répandue, 2 endroits seront à remplacer.",
+      "carte": "Choisir la version à garder. Si c'est la plus répandue, 3 endroits seront à remplacer."
+    },
+    "info": 4
+  },
+  "mesures": {
+    "$comment": "Mesures du relevé qui changent : l'arrondi du bouton à icône de Vuetify (50 % d'une boîte de 40 px) et le cadre des champs Vuetify (.v-field : bordure 1 px, arrondi 4 px, marge intérieure 0 12 px, 42 px de haut). Aucun compte ne change.",
+    "bouton à icône seule / Vuetify / v-btn": { "avant": { "rayons": [50, 50, 50, 50] }, "apres": { "rayons": [20, 20, 20, 20] } },
+    "champ de texte / Vuetify / v-text-field": { "avant": { "hauteur": 42, "bordures": [0, 0, 0, 0], "rayons": [0, 0, 0, 0], "marges": [0, 0, 0, 0] }, "apres": { "hauteur": 42, "bordures": [1, 1, 1, 1], "rayons": [4, 4, 4, 4], "marges": [0, 12, 0, 12] } },
+    "liste déroulante / Vuetify / v-select": { "avant": { "hauteur": 42, "bordures": [0, 0, 0, 0], "rayons": [0, 0, 0, 0], "marges": [0, 0, 0, 0] }, "apres": { "hauteur": 42, "bordures": [1, 1, 1, 1], "rayons": [4, 4, 4, 4], "marges": [0, 12, 0, 12] } }
+  }
+}
