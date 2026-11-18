@@ -37,6 +37,8 @@ Jetons d'une marque (phase 1)
 
          thèmes Vuetify clair et sombre, par la table tokens/commun/vuetify.json :
          npm run vuetify, src/tokens/vuetify.js (D41) ; tokens/<marque>/vuetify.json
+                                      │
+         atelier des composants, Storybook 10 et Vuetify 4 : atelier/, son package.json et son verrou (D42)
 ```
 
 Chaque commande npm a son point d'entrée dans `src/cli/`, sauf `npm run demo` (`test/helpers/demo.js`), `npm run types` (`tsc`), `npm run knip` (`knip`), `npm run dependances` (`depcruise`) et `npm test` (`node --test`). L'orchestration de l'audit et de la réduction vit dans leur couche, `src/audit/run.js` et `src/reduce/run.js` (D30) ; aucun module de `src/` hors de `src/cli/` n'importe de `src/cli/`. Toute commande a trois issues (D18) : 0 tout passe, 1 l'entrée a été lue et jugée (règle en échec, marque refusée avec son motif), 2 l'entrée n'a pas pu être jugée (fichier absent ou illisible, option inconnue, panne), message d'une ligne préfixé par le nom de la commande ; la garde commune est `src/cli/garde.js`. Les sorties d'audit et de réduction sur un vrai site vont dans `local/`, jamais versionné.
@@ -105,6 +107,7 @@ Aucune branche de code ne dépend du nom d'une marque : une différence réelle 
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles et attendus des tests de bout en bout ; `fixtures/marque-demo/cascade/`, pages d'essai de l'ordre des feuilles (D33), dont un import redirigé par le serveur des tests (`test/helpers/serveur.js`) ; `fixtures/marque-demo/jetons/primitives.tokens.json`, primitives d'Orbe Café d'avant l'étape 4b, figées : référence de cet état passé seulement (`test/roles-statuts.test.js`), les tests de `npm run reduce` lisent le resolver d'Orbe Café (D28) ; `fixtures/polices/`, quatre polices d'essai sous licence libre, chacune avec sa licence |
 | `test/` | Tests `node --test`, nommés par sujet ; `test/helpers/` sert la marque fictive en local et porte le lexeur des gardes (`test/helpers/commentaires.js`) |
 | `config/` | Exemple de fichier de sources, à copier dans `local/` |
+| `atelier/` | Atelier des composants (D42) : Storybook 10 (`atelier/.storybook/main.js`, `atelier/.storybook/preview.js`), les stories (`atelier/stories/`), son `package.json` et son verrou ; il ne lit du dépôt que `tokens/<marque>/vuetify.json`, et rien de `src/` ; sa version construite, dans le dossier storybook-static de l'atelier, n'est pas versionnée |
 | `.github/workflows/` | La CI : un job, une étape par commande (`.github/workflows/ci.yml`) |
 | `knip.json`, `.dependency-cruiser.json` | Configurations de `npm run knip` (entrées : `src/cli/*.js` et les tests ; les scripts npm en ajoutent d'autres) et de `npm run dependances` (deux règles, chacune avec sa raison) |
 | `.node-version` | Version de Node (24.22.3), seule source : lue par un gestionnaire de versions sur le poste, par la CI (`node-version-file`) et par la garde de chaque commande (D40) |
@@ -130,7 +133,7 @@ Aucune branche de code ne dépend du nom d'une marque : une différence réelle 
 | Paires | `tokens/commun/paires.json` | à la main | `npm run contraste`, planche des rôles |
 | Resolver | `tokens/orbe-cafe/marque.resolver.json`, un par marque : jeux primitives, marque, rôles ; modificateurs mode et largeur | `npm run saisie` | `src/tokens/resolver.js`, lecteur maison ; Terrazzo, pour `npm run css` (D36) |
 | Table Vuetify | `tokens/commun/vuetify.json` : pour chaque couleur par défaut de Vuetify 4.3.4, son fond et son texte (une paire de `paires.json`), et les deux polices ; une raison par ligne | à la main | `npm run vuetify` |
-| Thèmes Vuetify | `tokens/orbe-cafe/vuetify.json`, un par marque : thèmes `<dossier>-clair` et `<dossier>-sombre`, couleurs et `on-` de chaque couleur, polices en variables | `npm run vuetify` | aucune commande de l'outil |
+| Thèmes Vuetify | `tokens/orbe-cafe/vuetify.json`, un par marque : thèmes `<dossier>-clair` et `<dossier>-sombre`, couleurs et `on-` de chaque couleur, polices en variables | `npm run vuetify` | l'atelier (`atelier/.storybook/preview.js`), aucune commande de l'outil |
 | Feuille CSS | `tokens/orbe-cafe/jetons.css`, une par marque : `:root` en clair et large, puis les seuls jetons que le sombre change (`prefers-color-scheme: dark`) et que l'étroit change (`width <` seuil du resolver) | `npm run css`, par Terrazzo | les pages d'un produit ; aucune commande de l'outil |
 
 Changer de marque, c'est changer la couche marque ; les rôles restent les mêmes. Le resolver fusionne les jeux dans l'ordre primitives, marque, rôles, puis le contexte de chaque modificateur ; le dernier jeton gagne, en entier.
@@ -181,15 +184,15 @@ Chacun est tenu par le code ou par un test, cité.
 - Aucun fichier, export ni dépendance qui ne sert plus : un export que rien n'importe perd le mot `export`, sans exception nommée (`npm run knip`).
 - Aucun cycle d'import ; aucun module de `src/` sans lien, ni importé ni importateur (`npm run dependances`).
 - Aucun nom réel dans un fichier versionné, un chemin ou un message de commit (`test/noms-interdits.test.js`).
-- Aucun nom de marque dans le code de `src/`, commentaires exclus (`test/marque-en-dur.test.js`, D26).
+- Aucun nom de marque dans le code de `src/` ni dans celui de l'atelier, commentaires exclus (`test/marque-en-dur.test.js`, D26, D42).
 - Les planches versionnées de chaque marque égalent la sortie de leur fonction (`test/planches-marques.test.js`, D27).
 - La feuille CSS versionnée de chaque marque égale une génération neuve ; dans chaque combinaison de contextes, ses variables effectives sont exactement les jetons du lecteur, avec la même valeur ; tout jeton qu'apply sait écrire y a le nom et la valeur de `tokens.css` (`test/css-jetons.test.js`, D36). Le seuil de l'étroit se lit dans le resolver ; une marque dont sombre et étroit changent un même jeton est refusée (`test/css-commande.test.js`).
 - Les thèmes Vuetify versionnés de chaque marque égalent une génération neuve ; chaque couleur égale le rôle que nomme la table, avec son texte, et couvre les couleurs par défaut de Vuetify : Vuetify ne calcule aucun texte ; chaque fond et son texte tiennent 4,5:1 (`test/theme-vuetify.test.js`, D41).
 - Rien de `local/` ni de `.auth/` n'est versionné (`.gitignore`).
 - Une commande de l'outil lancée sous une autre version majeure de Node que celle de `.node-version` sort en 2 sans rien lire (`test/version-node.test.js`, D40).
 - À chaque push, une machine neuve (ubuntu-24.04, Node de `.node-version`) rejoue `npm ci`, l'installation de Chromium, `npm run types`, `npm run knip`, `npm run dependances`, les trois contrôles de la cible et `npm test`, une étape par commande ; une étape en échec arrête les suivantes. Actions épinglées par empreinte, lecture seule, aucun secret (`.github/workflows/ci.yml`).
-- Chaque commande et chaque chemin cités dans la documentation existent, attendus exceptés : ils décrivent le dépôt à leur date (`test/derive-docs.test.js`).
-- Un commentaire dit sa raison, pas son histoire : aucun numéro de lot, d'étape ou de séance dans les commentaires de `src/` et de `test/`, les titres des tests ni les noms de fichiers de test ; un commentaire renvoie à une décision par son numéro (`test/histoire.test.js`). La même garde couvre les textes que l'outil écrit : chaînes de `src/` (y compris un commentaire placé dans le gabarit d'une page), descriptions des jetons de `tokens/`, `$comment` des cibles de `fixtures/marque-demo/`.
+- Chaque commande et chaque chemin cités dans la documentation existent, commandes de l'atelier (`npm --prefix atelier run …`) comprises, attendus exceptés : ils décrivent le dépôt à leur date (`test/derive-docs.test.js`).
+- Un commentaire dit sa raison, pas son histoire : aucun numéro de lot, d'étape ou de séance dans les commentaires de `src/`, de `test/` et de l'atelier, les titres des tests ni les noms de fichiers de test ; un commentaire renvoie à une décision par son numéro (`test/histoire.test.js`). La même garde couvre les textes que l'outil écrit : chaînes de `src/` (y compris un commentaire placé dans le gabarit d'une page), descriptions des jetons de `tokens/`, `$comment` des cibles de `fixtures/marque-demo/`.
 
 ## Dépendances
 
@@ -197,7 +200,9 @@ Chacun est tenu par le code ou par un test, cité.
 
 Terrazzo : `@terrazzo/parser` lit le resolver et résout chaque combinaison de contextes, `@terrazzo/plugin-css` écrit la feuille ; tous deux sont appelés depuis `src/tokens/css.js`, sans fichier de configuration ni ligne de commande. `@terrazzo/plugin-css` déclare `@terrazzo/cli` en peerDependency : npm l'installe avec vite, rolldown et lightningcss (30 paquets, environ 35 Mo), qu'aucune commande ne charge (`KNOWN_ISSUES.md`). Les `engines` les plus exigeants de cet arbre (vite, rolldown) demandent Node `^20.19.0 || >=22.12.0`.
 
-Dépendances de développement, en version exacte, pour les commandes d'analyse seulement :
+L'atelier (`atelier/package.json`, D42) a ses propres dépendances de développement, en version exacte, et son verrou : `storybook` et `@storybook/vue3-vite` 10.6.7, `vue` 3.5.45, `vuetify` 4.3.4, `vite` 8.3.8 ; 279 paquets, environ 200 Mo sur le Mac [F]. Aucun n'entre à la racine : le verrou racine ne change pas, `npm ci` à la racine ne les installe pas, et typescript 7 n'est pas vu par `@storybook/vue3`, qui le prendrait pour sa version de TypeScript. Ni `@vitejs/plugin-vue` (aucun fichier `.vue`) ni `typescript`. knip, dependency-cruiser et `npm run types` ne lisent pas l'atelier (`KNOWN_ISSUES.md`).
+
+Dépendances de développement de la racine, en version exacte, pour les commandes d'analyse seulement :
 
 - `typescript` 7.0.2 : vérifie les types JSDoc de `src/` selon `tsconfig.json` à la racine (`allowJs`, `checkJs`, `noEmit`, modules `nodenext`, `strict: false`). La version 7 est un compilateur natif : le paquet `typescript` n'est qu'un lanceur, le compilateur est un binaire par plateforme (`@typescript/typescript-<os>-<cpu>`), installé par les dépendances facultatives ; npm n'installe que celui de la machine, et `package-lock.json` les liste toutes. `npm ci --omit=optional` (ou `--no-optional`) rend `tsc` inutilisable.
 - `@types/node` 24.19.2 : types de la seule version majeure de Node prise en charge (`engines` : `^24`, D40), pour qu'un appel à une API plus récente soit signalé.

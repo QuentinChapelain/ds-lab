@@ -151,3 +151,6 @@ vite.config.ts.timestamp-*
 # ds-lab : jamais versionnés
 .auth/
 local/
+
+# Atelier : version construite de Storybook
+storybook-static/

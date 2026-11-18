@@ -7,7 +7,8 @@
  *
  * Les textes que l'outil écrit sont gardés aussi : les chaînes de src/ (pages, migration, jetons, y compris
  * un commentaire placé dans le gabarit d'une page), les descriptions des jetons de tokens/ et le $comment
- * des cibles de fixtures/marque-demo/, que les sorties recopient. Hors de la garde : les attendus de
+ * des cibles de fixtures/marque-demo/, que les sorties recopient. Le code de l'atelier (atelier/, D42) est gardé comme
+ * src/ : commentaires et chaînes. Hors de la garde : les attendus de
  * fixtures/ (notes datées) et la copie figée fixtures/marque-demo/jetons/, qui est une empreinte.
  * Le mot « étape » sans numéro (étape de chargement d'une page) n'est pas une mention d'histoire.
  */
@@ -134,4 +135,22 @@ test('aucun nom de fichier de test ne porte un lot, une étape ou une séance', 
     noms.filter((f) => FICHIER_HISTOIRE.test(f.split('/').pop() ?? '')),
     [],
   );
+});
+
+/** Code de l'atelier, relatif à la racine : ses fichiers .js, ceux de sa configuration et de ses stories. */
+const codeAtelier = () => [
+  ...readdirSync(join(ROOT, 'atelier')).filter((f) => f.endsWith('.js')).map((f) => join('atelier', f)),
+  ...['.storybook', 'stories'].flatMap((d) => fichiersJs(join('atelier', d))),
+];
+
+test('aucune mention d’histoire dans le code de l’atelier (commentaires et chaînes)', () => {
+  const fs = codeAtelier();
+  assert.ok(fs.some((f) => f.endsWith('preview.js')), 'la configuration de l’atelier est lue');
+  const out = fs.flatMap((f) => [
+    ...mentions(f),
+    ...lex(readFileSync(join(ROOT, f), 'utf8'))
+      .code.split('\n')
+      .flatMap((l, i) => (mentionne(l) ? [`${f}:${i + 1}  ${l.trim()}`] : [])),
+  ]);
+  assert.deepEqual(out, []);
 });

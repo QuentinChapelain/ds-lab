@@ -1,0 +1,22 @@
+{
+  "name": "ds-lab-atelier",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Atelier des composants de ds-lab : Storybook 10, Vue 3 et Vuetify 4, thèmes lus dans tokens/<marque>/vuetify.json",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": "^24"
+  },
+  "scripts": {
+    "dev": "storybook dev --port 6006 --host 127.0.0.1 --ci --no-open --no-version-updates --disable-telemetry",
+    "build": "storybook build --output-dir storybook-static --disable-telemetry"
+  },
+  "devDependencies": {
+    "@storybook/vue3-vite": "10.6.7",
+    "storybook": "10.6.7",
+    "vite": "8.3.8",
+    "vue": "3.5.45",
+    "vuetify": "4.3.4"
+  }
+}

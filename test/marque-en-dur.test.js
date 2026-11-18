@@ -9,7 +9,9 @@
  *   G2 les commentaires sont exclus ; les chaînes et les gabarits sont du code ;
  *   G3 la lecture est lexicale, sans parseur : chaque fichier doit finir hors de toute chaîne, de tout gabarit et de tout
  *      commentaire, sinon la lecture s'est perdue et le test le dit ;
- *   G4 aucune occurrence dans src/.
+ *   G4 aucune occurrence dans src/ ;
+ *   G5 aucune occurrence dans le code de l'atelier (D42) : les fichiers .js de atelier/, atelier/.storybook/ et
+ *      atelier/stories/, hors de node_modules/ et de la version construite (attendu du 18/11/2026).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -20,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const TOKENS = join(ROOT, 'tokens');
 const SRC = join(ROOT, 'src');
+const ATELIER = join(ROOT, 'atelier');
 
 /** Sans casse ni accent. @param {string} s */
 const plat = (s) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
@@ -143,6 +146,27 @@ test('G3 et G4 aucun nom de marque dans le code de src/', () => {
   const perdus = [];
   const trouves = [];
   for (const f of fichiers(SRC)) {
+    const { code, fin } = sansCommentaires(readFileSync(f, 'utf8'));
+    if (fin !== 'code') perdus.push(`${relative(ROOT, f)} : lecture perdue (${fin})`);
+    for (const o of occurrences(code, ms)) trouves.push(`${relative(ROOT, f)}:${o.ligne} (${o.marque}) ${o.texte}`);
+  }
+  assert.deepEqual(perdus, []);
+  assert.deepEqual(trouves, []);
+});
+
+/** Code de l'atelier : ses fichiers .js, ceux de sa configuration et de ses stories ; ni node_modules/ ni la version construite. */
+const codeAtelier = () => [
+  ...readdirSync(ATELIER).filter((f) => f.endsWith('.js')).map((f) => join(ATELIER, f)),
+  ...['.storybook', 'stories'].flatMap((d) => (existsSync(join(ATELIER, d)) ? fichiers(join(ATELIER, d)) : [])),
+];
+
+test('G5 aucun nom de marque dans le code de l\'atelier', () => {
+  const ms = marques();
+  const lus = codeAtelier();
+  assert.ok(lus.some((f) => f.endsWith('preview.js')), 'la configuration de l\'atelier est lue');
+  const perdus = [];
+  const trouves = [];
+  for (const f of lus) {
     const { code, fin } = sansCommentaires(readFileSync(f, 'utf8'));
     if (fin !== 'code') perdus.push(`${relative(ROOT, f)} : lecture perdue (${fin})`);
     for (const o of occurrences(code, ms)) trouves.push(`${relative(ROOT, f)}:${o.ligne} (${o.marque}) ${o.texte}`);

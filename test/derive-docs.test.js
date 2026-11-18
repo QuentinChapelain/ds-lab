@@ -2,7 +2,8 @@
 /**
  * Dérive de la documentation : chaque commande « npm run … » (et « npm test ») et chaque chemin
  * de fichier cités dans CLAUDE.md, README.md, ARCHITECTURE.md, KNOWN_ISSUES.md et docs/**.md
- * existent vraiment. Les attendus (docs/attendus/) ne sont pas lus : ils décrivent le dépôt à leur date,
+ * existent vraiment ; une commande de l'atelier, « npm --prefix atelier run … », existe dans
+ * atelier/package.json (D42). Les attendus (docs/attendus/) ne sont pas lus : ils décrivent le dépôt à leur date,
  * et un fichier renommé depuis y garde son ancien nom.
  *
  * Candidats chemins : le contenu de chaque code en ligne (`…`), la cible de chaque lien ](…)
@@ -33,6 +34,14 @@ export function commandes(text) {
   const out = [...text.matchAll(/\bnpm run ([a-z][\w:-]*)/g)].map((m) => m[1]);
   if (/\bnpm test\b/.test(text)) out.push('test');
   return [...new Set(out)];
+}
+
+/**
+ * Commandes de l'atelier citées : « npm --prefix atelier run <script> ».
+ * @param {string} text
+ */
+export function commandesAtelier(text) {
+  return [...new Set([...text.matchAll(/\bnpm --prefix atelier run ([a-z][\w:-]*)/g)].map((m) => m[1]))];
 }
 
 /**
@@ -77,6 +86,7 @@ test('l\'extracteur trouve les commandes et les chemins cités (attendu écrit �
   ].join('\n');
   const racine = new Set(['src', 'docs', 'tokens', 'ARCHITECTURE.md', 'README.md']);
   assert.deepEqual(commandes(texte).sort(), ['contraste', 'inexistante', 'test', 'typo']);
+  assert.deepEqual(commandesAtelier('npm --prefix atelier ci, puis npm --prefix atelier run dev ; npm run build'), ['dev']);
   assert.deepEqual(chemins(texte, racine).sort(), [
     'ARCHITECTURE.md',
     'docs/regles.md',
@@ -98,6 +108,20 @@ test('chaque commande npm citée dans la documentation existe dans package.json'
   const absentes = [];
   for (const f of [...DOCS, ...markdowns('docs')].filter((f) => existsSync(join(ROOT, f))))
     for (const c of commandes(readFileSync(join(ROOT, f), 'utf8'))) if (!(c in scripts)) absentes.push(`${f} : npm run ${c}`);
+  assert.deepEqual(absentes, []);
+});
+
+test('chaque commande de l\'atelier citée dans la documentation existe dans atelier/package.json', () => {
+  const scripts = JSON.parse(readFileSync(join(ROOT, 'atelier', 'package.json'), 'utf8')).scripts;
+  /** @type {string[]} */
+  const absentes = [];
+  let vues = 0;
+  for (const f of [...DOCS, ...markdowns('docs')].filter((f) => existsSync(join(ROOT, f))))
+    for (const c of commandesAtelier(readFileSync(join(ROOT, f), 'utf8'))) {
+      vues++;
+      if (!(c in scripts)) absentes.push(`${f} : npm --prefix atelier run ${c}`);
+    }
+  assert.ok(vues > 0, 'aucune commande de l\'atelier citée');
   assert.deepEqual(absentes, []);
 });
 

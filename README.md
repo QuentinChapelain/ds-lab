@@ -119,6 +119,18 @@ Chaque marque a deux niveaux d'aplat non cliquables, clair (pas 3) et plein (val
 
 Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier> <entree.json>...` écrit `calibrage.html` et `calibrage.md`. La table a une colonne par marque : verdict de la saisie, classe selon le générateur, classe selon la règle des pleins, couleur exacte sur le bouton ou non, et trois indicateurs qui ne refusent rien (primaire grise, statut le plus proche, accent proche du primaire). Le balayage montre, pour des teintes de 30° à 140° et des clartés de 0,60 à 0,92, le bouton selon la règle (D04) et, pour une case moyenne, celui du cas clair avec son contraste. Il ne change aucun seuil. Avec des marques témoins, la sortie va dans `local/`.
 
+## Atelier des composants
+
+Les composants seront des enveloppes autour de Vuetify 4 (Vue 3), montrées dans un atelier Storybook 10, dans `atelier/`, avec son propre `package.json` et son propre verrou : rien de ce qu'il installe n'entre à la racine (D42). Il n'a pour l'instant qu'un témoin, un `v-btn` nu, qui sera retiré avec la première enveloppe.
+
+```
+npm --prefix atelier ci             installer l'atelier (279 paquets, environ 200 Mo)
+npm --prefix atelier run dev        serveur de développement, sur http://127.0.0.1:6006 seulement
+npm --prefix atelier run build      version construite, dans le dossier storybook-static de l'atelier (non versionnée)
+```
+
+L'atelier lit les thèmes de chaque marque dans `tokens/<marque>/vuetify.json` (D41) : les relancer, c'est relancer `npm run vuetify` à la racine. Un sélecteur dans la barre de Storybook propose chaque marque, en clair et en sombre. Le thème est toujours passé par son nom, jamais par le défaut « system » de Vuetify, et un nom absent de la liste des marques (même `light` ou `dark`, que Vuetify connaît) remplace la story par l'erreur « thème inconnu : <nom> ». La police du texte et celle des titres sont celles de la marque. Télémétrie coupée (`--disable-telemetry` et `core.disableTelemetry`), recherche de mise à jour coupée (`--no-version-updates`) ; en développement, Storybook demande encore ses nouveautés à `storybook.js.org` à chaque ouverture (`KNOWN_ISSUES.md`).
+
 ## Glossaire
 
 ### Le système
@@ -193,8 +205,9 @@ Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier
 | `config/` | Exemple de fichier de sources, à copier dans `local/` |
 | `.github/workflows/` | La CI, `.github/workflows/ci.yml` |
 | `test/` | Tests, dont `noms-interdits` qui refuse tout nom réel dans un fichier ou un message de commit |
+| `atelier/` | Atelier des composants : Storybook 10, Vue 3 et Vuetify 4, son `package.json` et son verrou (D42) |
 
-Dépendances : `playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (conversions de couleurs et ΔE ; oracle des contrastes dans les tests), `pixelmatch` et `pngjs` (comparaison de captures), `@terrazzo/parser` et `@terrazzo/plugin-css` 2.10.0 (feuille CSS des jetons ; npm installe aussi `@terrazzo/cli`, qu'elles demandent sans qu'aucune commande le charge). Dépendances de développement, en version exacte : `typescript` 7.0.2 et `@types/node` 24.19.2 pour `npm run types`, `knip` 6.45.1 pour `npm run knip` (configuration `knip.json`), `dependency-cruiser` 18.7.2 pour `npm run dependances` (configuration `.dependency-cruiser.json`).
+Dépendances : `playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (conversions de couleurs et ΔE ; oracle des contrastes dans les tests), `pixelmatch` et `pngjs` (comparaison de captures), `@terrazzo/parser` et `@terrazzo/plugin-css` 2.10.0 (feuille CSS des jetons ; npm installe aussi `@terrazzo/cli`, qu'elles demandent sans qu'aucune commande le charge). Dépendances de développement, en version exacte : `typescript` 7.0.2 et `@types/node` 24.19.2 pour `npm run types`, `knip` 6.45.1 pour `npm run knip` (configuration `knip.json`), `dependency-cruiser` 18.7.2 pour `npm run dependances` (configuration `.dependency-cruiser.json`). L'atelier a les siennes, dans `atelier/package.json`, en version exacte : `storybook` et `@storybook/vue3-vite` 10.6.7, `vue` 3.5.45, `vuetify` 4.3.4, `vite` 8.3.8.
 
 Node : `.node-version` est la seule source de la version (24.22.3, Node 24 LTS, D40). Le poste de travail la lit par un gestionnaire de versions comme fnm, en entrant dans le dossier ; la CI la lit aussi ; `engines` demande `^24`. Chaque commande de l'outil compare la version majeure qui tourne à celle de `.node-version` : sous une autre, elle sort en 2 avant de lire son entrée, avec une ligne comme `contraste : Node 25.6.1, ds-lab demande Node 24 (.node-version : 24.22.3)`. Changer de Node, c'est changer `.node-version` (et `engines`, `@types/node`) dans un lot qui le dit.
 
