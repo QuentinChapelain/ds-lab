@@ -3,7 +3,8 @@
  * npm run composants sur les deux pages d'annuaire (D46, docs/attendus/audit-composants.md), contre
  * fixtures/marque-demo/expected-composants.json, écrit à la main avant le code.
  *   C1 relevé brut : rôle et nom calculés, atteinte au clavier (liste sans tabindex, onglets en tabindex itinérant), zone
- *      de clic (bouton nu à 21 px, case dans son label) ;
+ *      de clic (bouton nu à 21 px, case dans son label) ; un arrondi en pourcentage converti en px (bouton à icône, 50 % de
+ *      40 px), le cadre d'un champ Vuetify mesuré sur sa boîte intérieure (.v-field, D47) ;
  *   C2 lancement A, avec la table de Vuetify, sans décision : chiffres, phrase, types, égalité, apparences, gabarit ;
  *   C3 lancement B, recalculé depuis le relevé de A avec les décisions : chiffres, carte 7 fois en 2 versions, 3 rattachés ;
  *   C4 le constat de A recalculé sans navigateur est identique à l'octet ;
@@ -83,6 +84,11 @@ test('C1 relevé brut : rôle, nom, clavier et zone de clic calculés dans le na
   assert.equal(de(0, 'Ouvert le dimanche').zone[1], 32);
   assert.equal(de(0, 'Quartier').role, 'combobox');
   assert.equal(de(0, 'Quartier').piece.nom, 'v-select');
+  assert.deepEqual(de(0, 'Haut de page').mesures.rayons, [20, 20, 20, 20]);
+  for (const [page, nom] of /** @type {const} */ ([[0, 'Rechercher un café'], [0, 'Quartier'], [1, 'Votre nom']])) {
+    const m = de(page, nom).mesures;
+    assert.deepEqual([m.hauteur, m.bordures, m.rayons, m.marges], [42, [1, 1, 1, 1], [4, 4, 4, 4], [0, 12, 0, 12]], nom);
+  }
   const icone = releve.lignes.find((/** @type {any} */ l) => l.classes[0] === 'an-icone');
   assert.deepEqual([icone.role, icone.nom, icone.texte], ['button', '', false]);
 });

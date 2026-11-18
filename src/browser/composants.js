@@ -16,8 +16,9 @@
 const ROLES = ['button', 'link', 'textbox', 'searchbox', 'combobox', 'listbox', 'checkbox', 'radio', 'switch', 'tab', 'menu', 'menubar', 'dialog', 'alertdialog'];
 
 /**
- * @typedef {{ selecteur: string, nom: string, type?: string, framework: string }} Piece
- *   une signature d'une table, avec le nom de son framework
+ * @typedef {{ selecteur: string, nom: string, type?: string, boite?: string, framework: string }} Piece
+ *   une signature d'une table, avec le nom de son framework ; boite : l'élément intérieur qui porte le cadre visible de la
+ *   pièce, mesuré à sa place (D47)
  * @typedef {{ hauteur: number, rayons: number[], bordures: number[], marges: number[], taille: number, graisse: number }} Mesures
  *   marges : marge intérieure, haut, droite, bas, gauche ; rayons : haut-gauche, haut-droite, bas-droite, bas-gauche
  * @typedef {object} Releve
@@ -31,7 +32,7 @@ const ROLES = ['button', 'link', 'textbox', 'searchbox', 'combobox', 'listbox', 
  * @property {{ nom: string, type?: string, framework: string } | null} [piece]  signature trouvée
  * @property {string} balise
  * @property {string[]} classes                classes de la pièce (racine de la signature, sinon l'élément)
- * @property {Mesures} mesures                 mesures de la pièce
+ * @property {Mesures} mesures                 mesures de la pièce, ou de sa boîte intérieure si la signature en nomme une
  * @property {string} chemin                   chemin depuis le body, balise, première classe et rang parmi ses pareils
  * @property {string} selecteur                sélecteur court
  * @property {string} endroit                  repère de la page et titre qui précède
@@ -80,9 +81,12 @@ function releverDansLaPage({ pieces, roles }) {
   const mesures = (el) => {
     const cs = getComputedStyle(el);
     const cotes = ['top', 'right', 'bottom', 'left'];
+    const b = el.getBoundingClientRect();
+    // Un rayon en pourcentage (50 %) est converti en px depuis la boîte : le plus petit des deux côtés, celui qui se voit.
+    const rayon = (/** @type {string} */ v) => (v.trim().endsWith('%') ? r2((parseFloat(v) / 100) * Math.min(b.width, b.height)) : px(v));
     return {
-      hauteur: r2(el.getBoundingClientRect().height),
-      rayons: ['top-left', 'top-right', 'bottom-right', 'bottom-left'].map((c) => px(cs.getPropertyValue(`border-${c}-radius`))),
+      hauteur: r2(b.height),
+      rayons: ['top-left', 'top-right', 'bottom-right', 'bottom-left'].map((c) => rayon(cs.getPropertyValue(`border-${c}-radius`))),
       bordures: cotes.map((c) => (/^(none|hidden)$/.test(cs.getPropertyValue(`border-${c}-style`)) ? 0 : px(cs.getPropertyValue(`border-${c}-width`)))),
       marges: cotes.map((c) => px(cs.getPropertyValue(`padding-${c}`))),
       taille: px(cs.fontSize),
@@ -173,6 +177,8 @@ function releverDansLaPage({ pieces, roles }) {
     }
     const racine = sig ? sig.racine : el;
     racines.add(racine);
+    // La boîte intérieure que nomme la signature (le cadre d'un champ) est mesurée à la place de la racine.
+    const mesuree = (sig?.piece.boite && racine.querySelector(sig.piece.boite)) || racine;
     const a = /** @type {{ role: string, nom: string, focalisable: boolean }} */ (ax.get(el));
     // Zone de clic : la plus grande boîte, l'élément ou un label qui le contient ou le désigne.
     const boite = el.getBoundingClientRect();
@@ -204,7 +210,7 @@ function releverDansLaPage({ pieces, roles }) {
       piece: sig ? { nom: sig.piece.nom, framework: sig.piece.framework, ...(sig.piece.type ? { type: sig.piece.type } : {}) } : null,
       balise: el.tagName.toLowerCase(),
       classes: [...racine.classList],
-      mesures: mesures(racine),
+      mesures: mesures(mesuree),
       chemin: chemin(el),
       selecteur: selecteur(racine),
       endroit: endroit(el),
@@ -228,7 +234,7 @@ function releverDansLaPage({ pieces, roles }) {
       piece: { nom: p.nom, framework: p.framework, type: /** @type {string} */ (p.type) },
       balise: el.tagName.toLowerCase(),
       classes: [...el.classList],
-      mesures: mesures(el),
+      mesures: mesures((p.boite && el.querySelector(p.boite)) || el),
       chemin: chemin(el),
       selecteur: selecteur(el),
       endroit: endroit(el),

@@ -36,7 +36,8 @@ function lireSignatures(chemin) {
     if (!p || typeof p.selecteur !== 'string' || typeof p.nom !== 'string' || !p.selecteur.trim() || !p.nom.trim())
       throw err(`pièce ${i + 1} : « selecteur » et « nom » sont attendus`);
     if (p.type !== undefined && (typeof p.type !== 'string' || !p.type.trim())) throw err(`pièce ${i + 1} : « type » doit être un nom`);
-    return { selecteur: p.selecteur, nom: p.nom, ...(p.type ? { type: p.type } : {}), framework: t.framework };
+    if (p.boite !== undefined && (typeof p.boite !== 'string' || !p.boite.trim())) throw err(`pièce ${i + 1} : « boite » doit être un sélecteur`);
+    return { selecteur: p.selecteur, nom: p.nom, ...(p.type ? { type: p.type } : {}), ...(p.boite ? { boite: p.boite } : {}), framework: t.framework };
   });
   return { framework: t.framework, version: String(t.version ?? ''), pieces };
 }
