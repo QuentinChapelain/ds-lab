@@ -3,8 +3,10 @@
 // variables du bouton (--v-ds-*) sont celles des jetons, chaque variante et taille a, dans chaque état, les couleurs,
 // l'anneau et les dimensions des jetons (survol et focus forcés par le protocole DevTools), et le rendu est le même en
 // développement et en version construite. La planche de la version construite est enregistrée par thème dans
-// local/bouton-captures/, hors dépôt, pour être jugée sur image. Sortie 0 si tout passe, 1 si une vérification échoue,
-// 2 sur une panne (D18).
+// local/bouton-captures/, hors dépôt, pour être jugée sur image. Sur le premier thème, clavier et lecteur d'écran :
+// ordre de tabulation, inactifs muets au clavier, à la souris et par envoi implicite, chargement qui garde le focus et
+// s'annonce, anneau au focus clavier, arbre d'accessibilité, pleine largeur, refus d'un usage hors du menu. Sortie 0 si
+// tout passe, 1 si une vérification échoue, 2 sur une panne (D18).
 // La version construite doit exister (npm run build) ; le serveur de développement est lancé ici, sur 127.0.0.1, puis
 // arrêté.
 //
@@ -329,6 +331,126 @@ async function selecteur(contexte, base, themes) {
   return { entrees, cible: cible.nom, atteint: (classe ?? '').split(/\s+/).includes(`v-theme--${cible.nom}`) };
 }
 
+/** Ordre de tabulation attendu dans la story Clavier : désactivé et chargement restent atteignables. */
+const ORDRE_CLAVIER = ['champ-attente', 'chargement', 'champ-actif', 'envoi', 'desactive', 'bascule'];
+/** Arbre d'accessibilité attendu de chaque bouton de la story Clavier : aria-disabled lu comme désactivé, icône muette. */
+const ARBRE_CLAVIER = { chargement: '- button "Envoyer" [disabled]', envoi: '- button "Ajouter"', desactive: '- button "Supprimer" [disabled]', bascule: '- button "Commander"' };
+const ANNONCE = 'Chargement en cours';
+/** Erreurs attendues des stories de refus. */
+const REFUS = { 'refus-envoi': 'bouton : désactivé refusé sur type=submit', 'refus-attribut': 'bouton : attribut refusé : color' };
+
+/**
+ * Story du bouton, ouverte dans l'aperçu, avec ses erreurs de page et de console.
+ * @param {import('playwright-core').BrowserContext} contexte @param {string} base @param {string} story @param {string} theme
+ */
+async function ouvrir(contexte, base, story, theme) {
+  const page = await contexte.newPage();
+  /** @type {string[]} */
+  const erreurs = [];
+  page.on('pageerror', (e) => erreurs.push(e.message));
+  page.on('console', (m) => {
+    if (m.type() === 'error') erreurs.push(m.text());
+  });
+  await page.goto(`${base}/iframe.html?id=composants-bouton--${story}&viewMode=story&globals=theme:${theme}`, { waitUntil: 'networkidle' });
+  return { page, erreurs };
+}
+
+/**
+ * Clavier et lecteur d'écran, sur un thème : ordre de tabulation, activation au clavier et à la souris, envoi implicite
+ * d'un formulaire, chargement qui garde le focus et s'annonce, anneau au focus clavier, arbre d'accessibilité, pleine
+ * largeur, refus. Rend des [ok, ligne].
+ * @param {import('playwright-core').BrowserContext} contexte @param {string} base @param {{ nom: string, variables: Record<string, string> }} t
+ */
+async function clavier(contexte, base, t) {
+  /** @type {[boolean, string][]} */
+  const out = [];
+  const { page, erreurs } = await ouvrir(contexte, base, 'clavier', t.nom);
+  await page.locator('.ds-bouton').first().waitFor();
+  const bouton = (/** @type {string} */ cas) => page.locator(`[data-cas="${cas}"]`);
+  const actif = () => page.evaluate(() => /** @type {HTMLElement | null} */ (document.activeElement)?.dataset?.cas ?? document.activeElement?.tagName ?? null);
+  const journal = async () => JSON.parse((await page.locator('[data-journal]').textContent()) ?? '{}');
+  const attr = (/** @type {string} */ cas, /** @type {string} */ a) => bouton(cas).getAttribute(a);
+
+  // Arbre d'accessibilité, avant toute action ; aucune roue n'y paraît.
+  const arbres = Object.fromEntries(await Promise.all(Object.keys(ARBRE_CLAVIER).map(async (cas) => [cas, await bouton(cas).ariaSnapshot()])));
+  const progres = await page.locator('[role="progressbar"]').count();
+  out.push([JSON.stringify(arbres) === JSON.stringify(ARBRE_CLAVIER) && progres === 0, `${t.nom}, arbre d'accessibilité : ${Object.values(arbres).join(' ; ')} ; ${progres} progressbar`]);
+  const statut = await bouton('chargement').evaluate((e) => [e.nextElementSibling?.getAttribute('role'), e.nextElementSibling?.textContent]);
+  out.push([statut[0] === 'status' && statut[1] === ANNONCE, `${t.nom}, chargement annoncé : zone ${statut[0]}, « ${statut[1]} »`]);
+  const natifs = await page.locator('.ds-bouton[disabled]').count();
+  out.push([natifs === 0 && (await attr('desactive', 'aria-disabled')) === 'true' && (await attr('chargement', 'aria-disabled')) === 'true' && (await attr('chargement', 'aria-busy')) === 'true', `${t.nom}, désactivé et chargement : aria-disabled, aria-busy en chargement, ${natifs} attribut disabled natif`]);
+
+  // Ordre de tabulation, puis anneau au focus clavier.
+  /** @type {(string | null)[]} */
+  const ordre = [];
+  for (let i = 0; i < ORDRE_CLAVIER.length; i++) {
+    await page.keyboard.press('Tab');
+    ordre.push(await actif());
+  }
+  out.push([JSON.stringify(ordre) === JSON.stringify(ORDRE_CLAVIER), `${t.nom}, tabulation : ${ordre.join(' → ')}`]);
+  const anneau = await bouton('bascule').evaluate((e) => {
+    const s = getComputedStyle(e);
+    return { visible: e.matches(':focus-visible'), anneau: `${s.outlineStyle} ${s.outlineWidth} ${s.outlineColor} ${s.outlineOffset}` };
+  });
+  const attendu = `solid ${t.variables['ds-epaisseur-focus']} rgb(${t.variables['ds-focus'].split(',').join(', ')}) ${t.variables['ds-decalage-focus']}`;
+  out.push([anneau.visible && anneau.anneau === attendu, `${t.nom}, focus au clavier : ${anneau.anneau} (jetons ${attendu})`]);
+
+  // Inactifs : ni clic émis ni envoi, au clavier, à la souris et par envoi implicite (Entrée dans un champ).
+  await bouton('champ-attente').focus();
+  await page.keyboard.press('Enter');
+  for (const cas of ['chargement', 'desactive']) {
+    await bouton(cas).focus();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Space');
+    const b = await bouton(cas).boundingBox();
+    if (b) await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  }
+  // Témoin : le formulaire actif s'envoie, par Entrée dans son champ, et son bouton émet le clic.
+  await bouton('champ-actif').focus();
+  await page.keyboard.press('Enter');
+  const j1 = await journal();
+  out.push([JSON.stringify(j1) === JSON.stringify({ clics: ['envoi'], envois: { attente: 0, actif: 1 } }), `${t.nom}, inactifs muets au clavier et à la souris, envoi implicite bloqué ; le formulaire actif s'envoie : ${JSON.stringify(j1)}`]);
+
+  // Activation qui met en chargement : le focus reste, la largeur et le nom aussi, le chargement s'annonce ; une
+  // seconde activation n'émet rien.
+  await bouton('bascule').focus();
+  const avant = await bouton('bascule').evaluate((e) => e.getBoundingClientRect().width);
+  await page.keyboard.press('Enter');
+  await page.locator('[data-cas="bascule"][aria-busy="true"]').waitFor({ timeout: 5_000 }).catch(() => {});
+  await page.keyboard.press('Enter');
+  const apres = await bouton('bascule').evaluate((e) => ({ largeur: e.getBoundingClientRect().width, statut: e.nextElementSibling?.textContent }));
+  const focus = await actif();
+  const nom = await bouton('bascule').ariaSnapshot();
+  const j2 = await journal();
+  const ok = focus === 'bascule' && apres.largeur === avant && apres.statut === ANNONCE && nom === '- button "Commander" [disabled]' && (await attr('bascule', 'aria-busy')) === 'true' && j2.clics.filter((/** @type {string} */ c) => c === 'bascule').length === 1;
+  const activations = j2.clics.filter((/** @type {string} */ c) => c === 'bascule').length;
+  out.push([ok, `${t.nom}, activé puis en chargement : focus sur ${focus}, largeur ${avant} → ${apres.largeur}, « ${apres.statut} », ${nom}, ${activations} clic émis pour deux Entrée`]);
+  out.push([erreurs.length === 0, `${t.nom}, story Clavier : ${erreurs.length} erreur(s)${erreurs.length ? ` (${erreurs.join(' ; ')})` : ''}`]);
+  await page.close();
+
+  // Pleine largeur : le bouton prend la largeur de son parent ; sans l'option, la sienne.
+  const l = await ouvrir(contexte, base, 'largeur', t.nom);
+  await l.page.locator('.ds-bouton').first().waitFor();
+  const largeurs = await l.page.evaluate(() => {
+    const pleine = /** @type {HTMLElement} */ (document.querySelector('[data-cas="pleine"]'));
+    const propre = /** @type {HTMLElement} */ (document.querySelector('[data-cas="propre"]'));
+    return { parent: /** @type {HTMLElement} */ (pleine.parentElement).getBoundingClientRect().width, pleine: pleine.getBoundingClientRect().width, propre: propre.getBoundingClientRect().width };
+  });
+  out.push([largeurs.pleine === largeurs.parent && largeurs.propre < largeurs.parent, `${t.nom}, pleine largeur : ${largeurs.pleine} sur ${largeurs.parent} ; sans l'option ${largeurs.propre}`]);
+  await l.page.close();
+
+  // Refus : l'erreur qui nomme l'usage, et aucun bouton.
+  for (const [story, message] of Object.entries(REFUS)) {
+    const r = await ouvrir(contexte, base, story, t.nom);
+    // L'erreur arrive par la console de l'aperçu : attendue jusqu'à 5 s.
+    for (const fin = Date.now() + 5_000; Date.now() < fin && !r.erreurs.some((e) => e.includes(message)); ) await r.page.waitForTimeout(100);
+    const n = await r.page.locator('.ds-bouton').count();
+    out.push([n === 0 && r.erreurs.some((e) => e.includes(message)), `${t.nom}, ${story} : ${n} bouton, erreur ${r.erreurs.some((e) => e.includes(message)) ? `« ${message} »` : 'absente'}`]);
+    await r.page.close();
+  }
+  return out;
+}
+
 await lancer('preuve', async () => {
   const themes = attendus();
   /** @type {string[]} */
@@ -389,6 +511,7 @@ await lancer('preuve', async () => {
         await c.close();
         verifier(r.classe === `v-theme--${themes[0].nom}`, `${mode}, système ${schema === 'dark' ? 'sombre' : 'clair'}, sans thème : ${r.classe} (premier thème nommé, jamais « system »)`);
       }
+      for (const [ok, ligne] of await clavier(contexte, base, themes[0])) verifier(ok, `${mode}, ${ligne}`);
       const s = await selecteur(contexte, base, themes);
       verifier(JSON.stringify(s.entrees) === JSON.stringify(themes.map((t) => t.titre)), `${mode} : sélecteur, ${s.entrees.length} entrées dans l'ordre des marques`);
       verifier(s.atteint, `${mode} : clic sur « ${themes[themes.length - 1].titre} », thème posé sans recharger la story`);

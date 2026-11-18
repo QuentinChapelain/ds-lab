@@ -75,7 +75,7 @@ export default {
             'ds-bouton',
             `ds-bouton--${props.variante}`,
             `ds-bouton--${props.taille}`,
-            { 'ds-bouton--desactive': props.desactive, 'ds-bouton--chargement': props.chargement, 'ds-bouton--inactif': inactif },
+            { 'ds-bouton--pleine': props.pleineLargeur, 'ds-bouton--desactive': props.desactive, 'ds-bouton--chargement': props.chargement, 'ds-bouton--inactif': inactif },
           ],
           type: props.type,
           variant: 'flat',
@@ -119,6 +119,10 @@ export default {
 }
 .ds-bouton.v-btn.ds-bouton--petite {
   height: var(--v-ds-hauteur-controle-petite);
+}
+/* Pleine largeur : la largeur minimale nulle ci-dessus annulerait celle que Vuetify donne au bouton block. */
+.ds-bouton.v-btn.ds-bouton--pleine {
+  min-width: 100%;
 }
 /* Ni voile ni trait de focus de Vuetify : le survol est un jeton (D04), l'anneau aussi (DS2). */
 .ds-bouton.v-btn > .v-btn__overlay,

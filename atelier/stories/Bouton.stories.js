@@ -1,7 +1,7 @@
 // Stories du bouton (D43) : la planche, que la preuve force état par état et enregistre ; la vitrine, toutes les marques
 // en clair et en sombre côte à côte ; le bac à sable, réglable. Les marques sont lues dans leurs fichiers de thèmes,
 // comme dans l'aperçu : aucun nom n'est écrit ici.
-import { h } from 'vue';
+import { h, reactive, ref } from 'vue';
 import { VThemeProvider } from 'vuetify/components';
 import Bouton from '../composants/Bouton.vue';
 
@@ -94,4 +94,58 @@ export const BacASable = {
         h(Bouton, { variante: args.variante, taille: args.taille, icone: args.icone ? Plus : null, pleineLargeur: args.pleineLargeur, desactive: args.desactive, chargement: args.chargement }, () => args.texte),
       ]),
   }),
+};
+
+/**
+ * Clavier : deux formulaires, un désactivé et un bouton qui passe en chargement quand on l'active. Le journal (clics
+ * émis, envois de chaque formulaire) est écrit dans la page, où la preuve le lit.
+ */
+export const Clavier = {
+  render: () => ({
+    setup() {
+      const journal = reactive({ clics: /** @type {string[]} */ ([]), envois: { attente: 0, actif: 0 } });
+      const charge = ref(false);
+      const clic = (/** @type {string} */ cas) => () => journal.clics.push(cas);
+      /** @param {'attente' | 'actif'} nom */
+      const envoi = (nom) => (/** @type {Event} */ e) => {
+        e.preventDefault();
+        journal.envois[nom]++;
+      };
+      return () =>
+        h('div', { style: 'display:flex;flex-direction:column;gap:16px;padding:24px;align-items:flex-start' }, [
+          h('form', { 'data-formulaire': 'attente', onSubmit: envoi('attente'), style: 'display:flex;gap:16px' }, [
+            h('input', { 'aria-label': 'Champ du formulaire en attente', 'data-cas': 'champ-attente' }),
+            h(Bouton, { type: 'submit', chargement: true, 'data-cas': 'chargement', onClick: clic('chargement') }, () => 'Envoyer'),
+          ]),
+          h('form', { 'data-formulaire': 'actif', onSubmit: envoi('actif'), style: 'display:flex;gap:16px' }, [
+            h('input', { 'aria-label': 'Champ du formulaire actif', 'data-cas': 'champ-actif' }),
+            h(Bouton, { type: 'submit', icone: Plus, 'data-cas': 'envoi', onClick: clic('envoi') }, () => 'Ajouter'),
+          ]),
+          h(Bouton, { variante: 'secondaire', desactive: true, 'data-cas': 'desactive', onClick: clic('desactive') }, () => 'Supprimer'),
+          h(Bouton, { chargement: charge.value, 'data-cas': 'bascule', onClick: () => { journal.clics.push('bascule'); charge.value = true; } }, () => 'Commander'),
+          h('output', { 'data-journal': '' }, JSON.stringify(journal)),
+        ]);
+    },
+  }),
+};
+
+/** Pleine largeur : un bouton étiré sur son parent, un autre à sa largeur. */
+export const Largeur = {
+  render: () => ({
+    setup: () => () =>
+      h('div', { 'data-parent': '', style: 'width:480px;display:flex;flex-direction:column;gap:16px;padding:24px' }, [
+        h('div', [h(Bouton, { pleineLargeur: true, 'data-cas': 'pleine' }, () => 'Commander')]),
+        h('div', [h(Bouton, { 'data-cas': 'propre' }, () => 'Commander')]),
+      ]),
+  }),
+};
+
+/** Refus : désactivé sur un bouton d'envoi ; la story montre l'erreur, aucun bouton. */
+export const RefusEnvoi = {
+  render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(Bouton, { type: 'submit', desactive: true }, () => 'Envoyer')]) }),
+};
+
+/** Refus : attribut hors de la liste blanche ; la story montre l'erreur, aucun bouton. */
+export const RefusAttribut = {
+  render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(Bouton, { color: 'secondary' }, () => 'Envoyer')]) }),
 };
