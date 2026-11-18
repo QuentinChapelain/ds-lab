@@ -46,3 +46,10 @@ export const esc = (s) =>
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+
+/**
+ * Liste de polices DTCG → valeur CSS font-family : un nom qui contient une espace ou un guillemet est mis entre
+ * guillemets, les autres sont écrits tels quels.
+ * @param {string | string[]} v
+ */
+export const famille = (v) => (Array.isArray(v) ? v : [v]).map((f) => (/[\s"]/.test(f) ? `"${f.replace(/"/g, '\\"')}"` : f)).join(', ');

@@ -1,0 +1,81 @@
+{
+  "$description": "Table de correspondance rôle → couleur de thème Vuetify, commune à toutes les marques (D41). Écrite à la main, lue par npm run vuetify (src/tokens/vuetify.js), qui écrit les thèmes clair et sombre de chaque marque dans tokens/<marque>/vuetify.json. Chaque couleur nomme son fond et son texte : Vuetify reçoit on-<couleur> de nous et n'en calcule aucun. La liste couvre les couleurs que Vuetify 4.3.4 définit par défaut (13 fonds, et on-surface-variant) : une couleur absente resterait celle de Material, avec un texte calculé par Vuetify. Chaque fond et son texte forment une paire de texte de paires.json, contrôlée par npm run contraste. Les autres variables de Vuetify (bordure, ombre, opacités des états) restent les siennes (KNOWN_ISSUES.md).",
+  "vuetify": "4.3.4",
+  "couleurs": {
+    "background": {
+      "fond": "fond.app",
+      "texte": "texte.principal",
+      "$description": "Fond de la page, sous v-app."
+    },
+    "surface": {
+      "fond": "fond.surface",
+      "texte": "texte.principal",
+      "$description": "Surface posée sur la page : carte, menu, champ."
+    },
+    "surface-bright": {
+      "fond": "fond.surface",
+      "texte": "texte.principal",
+      "$description": "Surface la plus claire ; nous n'en avons qu'une, la même que surface [H], à juger sur les composants."
+    },
+    "surface-light": {
+      "fond": "fond.discret",
+      "texte": "texte.principal",
+      "$description": "Surface en retrait (fond de piste, squelette de chargement) : le fond discret [H], à juger sur les composants."
+    },
+    "surface-variant": {
+      "fond": "fond.inverse",
+      "texte": "texte.sur-inverse",
+      "$description": "Surface contrastée, dont Vuetify fait le fond des infobulles : le fond inverse [H], à juger sur les composants."
+    },
+    "primary": {
+      "fond": "fond.interactif.fort",
+      "texte": "texte.sur-interactif",
+      "$description": "Ce qui se clique (D05) : plein du bouton principal, texte fixé à la saisie (D03, D04)."
+    },
+    "primary-darken-1": {
+      "fond": "fond.interactif.fort.survol",
+      "texte": "texte.sur-interactif",
+      "$description": "Variante foncée du primaire : le survol du plein [H], à juger sur les composants."
+    },
+    "secondary": {
+      "fond": "fond.accent.fort",
+      "texte": "texte.sur-accent",
+      "$description": "Accent de la marque : identité, petites surfaces, jamais porteur d'un sens. Jamais une couleur de bouton (D05) ; la garde contre cet usage viendra avec l'enveloppe du bouton."
+    },
+    "secondary-darken-1": {
+      "fond": "fond.accent.fort",
+      "texte": "texte.sur-accent",
+      "$description": "Même valeur que secondary : l'accent n'a pas de survol, puisqu'il ne se clique pas. Jamais une couleur de bouton (D05)."
+    },
+    "error": {
+      "fond": "fond.erreur.fort",
+      "texte": "texte.sur-erreur",
+      "$description": "Plein du statut erreur, commun à toutes les marques."
+    },
+    "info": {
+      "fond": "fond.info.fort",
+      "texte": "texte.sur-info",
+      "$description": "Plein du statut info, commun à toutes les marques."
+    },
+    "success": {
+      "fond": "fond.succes.fort",
+      "texte": "texte.sur-succes",
+      "$description": "Plein du statut succès, commun à toutes les marques."
+    },
+    "warning": {
+      "fond": "fond.avertissement.fort",
+      "texte": "texte.sur-avertissement",
+      "$description": "Plein du statut avertissement, commun à toutes les marques."
+    }
+  },
+  "polices": {
+    "font-body": {
+      "jeton": "marque.police.texte",
+      "$description": "Police du texte, des libellés et des boutons (D16). Vuetify la lit dans --v-font-body, à défaut Roboto."
+    },
+    "font-heading": {
+      "jeton": "marque.police.titre",
+      "$description": "Police des titres (D16). Vuetify la lit dans --v-font-heading, à défaut --v-font-body."
+    }
+  }
+}

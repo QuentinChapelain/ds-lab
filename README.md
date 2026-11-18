@@ -34,6 +34,7 @@ npm run contraste   -- [--marque <dossier>] [--paires <fichier>] [--mode clair|s
 npm run espacements -- [--marque <dossier>] [--semantique <fichier>] [--etroit <fichier>]   contrôler les espacements par relation
 npm run typo        -- [--marque <dossier>] [--semantique <fichier>] [--primitives <fichier>] [--couche-marque <fichier>] [--etroit <fichier>]   contrôler les styles de texte
 npm run css         -- [--marque <dossier>]                  écrire la feuille CSS complète de chaque marque (tokens/<marque>/jetons.css), par Terrazzo
+npm run vuetify     -- [--marque <dossier>]                  écrire les thèmes Vuetify clair et sombre de chaque marque (tokens/<marque>/vuetify.json)
 npm run types                                                vérifier les types JSDoc de src/ (non strict, sans rien émettre)
 npm run knip                                                 chercher ce qui ne sert plus : fichiers, exports, dépendances
 npm run dependances                                          chercher les cycles d'import et les modules orphelins de src/
@@ -88,6 +89,8 @@ Changer de marque, c'est changer la couche marque : les rôles restent les même
 Trois planches par marque montrent la cible en situation, dans le dossier de la marque : `roles.html`, `espacements.html`, `typo.html` (pour Orbe Café, `tokens/orbe-cafe/roles.html`, `tokens/orbe-cafe/espacements.html`, `tokens/orbe-cafe/typo.html`). Même code pour toutes ; le nom de la marque est lu dans son resolver. Elles sont écrites par `node src/cli/planche.js [--marque <dossier>] [roles|espacements|typo]` : sans `--marque`, celles de chaque marque ; sans planche nommée, les trois (D27). Les règles et leurs raisons sont dans `docs/regles.md`, les décisions dans `docs/decisions.md`.
 
 Chaque marque a aussi sa feuille CSS complète, `jetons.css` dans son dossier (`tokens/orbe-cafe/jetons.css` pour Orbe Café), écrite par `npm run css` avec Terrazzo, un outil du marché qui lit le resolver tel quel (D36). Toutes les variables en clair et en large dans `:root` ; dans `@media (prefers-color-scheme: dark)`, les seules variables que le sombre change ; dans `@media (width < 600px)`, les seules que l'étroit change, le seuil lu dans le resolver. Une variable porte le chemin de son jeton, points remplacés par des tirets, comme `tokens.css` de `npm run apply` ; une couleur s'écrit au hex du jeton, un alias en `var()` de sa cible, un style de texte en cinq variables (`-font-family`, `-font-size`, `-font-weight`, `-letter-spacing`, `-line-height`), et la description de chaque jeton en commentaire. Avant d'écrire, la commande compare, dans les quatre combinaisons, chaque jeton vu par Terrazzo à celui de notre lecteur ; une marque dont une valeur diffère, ou dont sombre et étroit changent un même jeton (la feuille n'a pas de bloc pour les deux à la fois), est refusée avec son motif : sortie 1, sa feuille n'est pas écrite. Sortie 2 sur une panne, rien d'écrit. `--marque <dossier>` traite une marque ; sans l'option, chacune.
+
+Pour les composants, construits autour de Vuetify 4, chaque marque a aussi ses thèmes Vuetify, `vuetify.json` dans son dossier, écrits par `npm run vuetify` (D41) : `<dossier>-clair` et `<dossier>-sombre`, chacun avec ses couleurs et ses deux polices. Une seule table, commune à toutes les marques, dit quel rôle donne quelle couleur de Vuetify : `tokens/commun/vuetify.json`, écrite à la main, une raison par ligne. Elle couvre les 13 fonds que Vuetify définit par défaut ; chacun nomme aussi son texte, que le thème porte en `on-<couleur>` : Vuetify ne calcule aucun texte, et aucune couleur de Material ne reste. Chaque fond et son texte forment une paire de `paires.json`, donc contrôlée par `npm run contraste` ; une table qui en sort, qui nomme un rôle absent ou une clé en `on-` est une panne (sortie 2, rien d'écrit). `secondary` est l'accent : jamais une couleur de bouton (D05). Les polices passent par les variables du thème, que Vuetify lit en `--v-font-body` (texte, boutons) et `--v-font-heading` (titres). Quatre lignes sont des hypothèses, à juger sur les composants : `primary-darken-1`, `surface-variant`, `surface-bright`, `surface-light`.
 
 ## Saisir une marque
 
@@ -181,9 +184,9 @@ Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier
 | Dossier | Contenu |
 |---|---|
 | `src/` | Audit, réduction, simulation, rapports |
-| `tokens/commun/` | Couches communes à toutes les marques : primitives, statuts, mode sombre commun, police du produit, aplat plein, rôles, paires, contexte étroit |
-| `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive (entrée, échelles, marque, resolver), les trois planches et la feuille CSS `jetons.css` |
-| `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/`, `tokens/maison-alberto/` | Quatre marques fictives saisies par fichier, leurs trois planches et leur feuille CSS |
+| `tokens/commun/` | Couches communes à toutes les marques : primitives, statuts, mode sombre commun, police du produit, aplat plein, rôles, paires, contexte étroit ; table des thèmes Vuetify |
+| `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive (entrée, échelles, marque, resolver), les trois planches, la feuille CSS `jetons.css` et les thèmes Vuetify `vuetify.json` |
+| `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/`, `tokens/maison-alberto/` | Quatre marques fictives saisies par fichier, leurs trois planches, leur feuille CSS et leurs thèmes Vuetify |
 | `docs/` | Règles du design system, décisions, contrat de marque, identifiants de règles (`docs/identifiants.md`) ; dans `docs/attendus/`, l'attendu de chaque lot, écrit avant le code et gardé à sa date |
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles, attendus |
 | `fixtures/polices/` | Quatre polices d'essai sous licence libre, chacune avec sa licence |

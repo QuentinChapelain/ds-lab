@@ -1,0 +1,76 @@
+{
+  "$description": "Thèmes Vuetify de Écume et Sel, clair et sombre, écrits par npm run vuetify depuis marque.resolver.json et tokens/commun/vuetify.json. Ne pas modifier à la main.",
+  "nom": "Écume et Sel",
+  "themes": {
+    "ecume-et-sel-clair": {
+      "dark": false,
+      "colors": {
+        "background": "#fbfbfb",
+        "on-background": "#363026",
+        "surface": "#ffffff",
+        "on-surface": "#363026",
+        "surface-bright": "#ffffff",
+        "on-surface-bright": "#363026",
+        "surface-light": "#f8f8f7",
+        "on-surface-light": "#363026",
+        "surface-variant": "#363026",
+        "on-surface-variant": "#ffffff",
+        "primary": "#7fdbff",
+        "on-primary": "#003647",
+        "primary-darken-1": "#6fcbee",
+        "on-primary-darken-1": "#003647",
+        "secondary": "#bf3704",
+        "on-secondary": "#ffffff",
+        "secondary-darken-1": "#bf3704",
+        "on-secondary-darken-1": "#ffffff",
+        "error": "#cb1d2a",
+        "on-error": "#ffffff",
+        "info": "#006da6",
+        "on-info": "#ffffff",
+        "success": "#00774a",
+        "on-success": "#ffffff",
+        "warning": "#e5a000",
+        "on-warning": "#442d01"
+      },
+      "variables": {
+        "font-body": "Verdana, sans-serif",
+        "font-heading": "\"Trebuchet MS\", sans-serif"
+      }
+    },
+    "ecume-et-sel-sombre": {
+      "dark": true,
+      "colors": {
+        "background": "#121212",
+        "on-background": "#d8d5ce",
+        "surface": "#181818",
+        "on-surface": "#d8d5ce",
+        "surface-bright": "#181818",
+        "on-surface-bright": "#d8d5ce",
+        "surface-light": "#151515",
+        "on-surface-light": "#d8d5ce",
+        "surface-variant": "#d8d5ce",
+        "on-surface-variant": "#121212",
+        "primary": "#c9efff",
+        "on-primary": "#121212",
+        "primary-darken-1": "#ebf9ff",
+        "on-primary-darken-1": "#121212",
+        "secondary": "#bf3704",
+        "on-secondary": "#ffffff",
+        "secondary-darken-1": "#bf3704",
+        "on-secondary-darken-1": "#ffffff",
+        "error": "#ff978f",
+        "on-error": "#1a0f0e",
+        "info": "#5dbcff",
+        "on-info": "#0e1317",
+        "success": "#00cd84",
+        "on-success": "#0e1310",
+        "warning": "#ffd595",
+        "on-warning": "#121212"
+      },
+      "variables": {
+        "font-body": "Verdana, sans-serif",
+        "font-heading": "\"Trebuchet MS\", sans-serif"
+      }
+    }
+  }
+}

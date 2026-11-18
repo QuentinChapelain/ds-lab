@@ -1,0 +1,170 @@
+// @ts-check
+/**
+ * Thèmes Vuetify de chaque marque, écrits par npm run vuetify (src/tokens/vuetify.js) depuis la table commune
+ * tokens/commun/vuetify.json, versionnés dans tokens/<marque>/vuetify.json (docs/attendus/atelier.md ; D41).
+ *
+ * Attendus écrits à la main avant le code (18/11/2026) :
+ *   V1 la table nomme les 13 fonds que Vuetify 4.3.4 définit par défaut (genDefaults, lib/composables/theme.js de
+ *      vuetify) : background, surface, surface-bright, surface-light, surface-variant, primary, primary-darken-1,
+ *      secondary, secondary-darken-1, error, info, success, warning ; aucune clé en on- (le texte de chaque fond est
+ *      écrit on-<clé>) ; chaque fond et son texte forment une paire de type texte de paires.json ; polices : font-body
+ *      ← marque.police.texte, font-heading ← marque.police.titre ; les lignes primary-darken-1, surface-variant,
+ *      surface-bright et surface-light disent [H] ; secondary dit « Jamais une couleur de bouton (D05) » ;
+ *   V2 chaque marque a deux thèmes, <dossier>-clair (dark false) et <dossier>-sombre (dark true), et son nom lu dans
+ *      le resolver ; chaque thème a 26 couleurs (13 fonds, 13 textes) qui couvrent les 14 clés par défaut de Vuetify
+ *      (les 13 fonds et on-surface-variant) : Vuetify n'a aucun texte à calculer ;
+ *   V3 valeurs mesurées dans le navigateur par l'essai du 18/11/2026 (local/essai-storybook/rapport.md, Q2 et Q3,
+ *      fond et texte du bouton ; fond.app et fond.surface lus dans themes.generated.json de l'essai) :
+ *        orbe-cafe-clair      primary #2b4c7e, on-primary #ffffff, background #fbfbfb, surface #ffffff,
+ *                             on-background #363026, on-surface #363026 ;
+ *        orbe-cafe-sombre     primary #86b6fe, on-primary #0e1218, background #121212, surface #181818,
+ *                             on-background #d8d5ce, on-surface #d8d5ce ;
+ *        maison-alberto-clair primary #836304 (pas 11, plein moyen), on-primary #ffffff ;
+ *        maison-alberto-sombre primary #ffd060, on-primary #121212 ;
+ *      et, pour toutes les marques, chaque couleur égale la valeur du rôle que nomme la table, lue par le lecteur ;
+ *   V4 chaque couleur et son texte : au moins 4,5:1 (culori wcagContrast, oracle indépendant), dans chaque thème ;
+ *   V5 polices, au format des planches (nom entre guillemets s'il a une espace) :
+ *        orbe-cafe      font-body "Orbe Sans", Arial, sans-serif ; font-heading Georgia, serif ;
+ *        maison-alberto font-body system-ui, sans-serif (police du produit, D16) ; font-heading "National Park", sans-serif ;
+ *      et, pour toutes les marques, la liste des noms égale celle de --marque-police-texte et --marque-police-titre de
+ *      sa feuille jetons.css, écrite par Terrazzo ;
+ *   V6 tokens/<marque>/vuetify.json versionné égale une génération neuve ; deux générations sont identiques ;
+ *   V7 une table fausse est une panne qui la nomme : rôle absent (« rôle absent : fond.inexistant »), paire hors de
+ *      paires.json (« paire hors de paires.json : texte.principal sur fond.interactif.fort »), clé en on-
+ *      (« clé en on- : on-primary ») ;
+ *   V8 npm run vuetify -- --marque <dossier> : sortie 0, « ✓ vuetify.json inchangé » ; sans l'option, un bloc par
+ *      marque ; option inconnue : sortie 2.
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { wcagContrast } from 'culori';
+import { themesVuetify, texteThemes, lireTable, THEMES } from '../src/tokens/vuetify.js';
+import { dossiersDeMarque, nomDeMarque, COMMUN } from '../src/tokens/resolver.js';
+import { loadRoles, resolveRoles } from '../src/tokens/roles.js';
+
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
+const MARQUES = dossiersDeMarque();
+const FONDS = ['background', 'surface', 'surface-bright', 'surface-light', 'surface-variant', 'primary', 'primary-darken-1', 'secondary', 'secondary-darken-1', 'error', 'info', 'success', 'warning'];
+const DEFAUTS = [...FONDS, 'on-surface-variant'];
+/** @param {string} p */
+const lire = (p) => JSON.parse(readFileSync(p, 'utf8'));
+const brute = () => lire(join(COMMUN, 'vuetify.json'));
+const dossier = (/** @type {string} */ m) => join(ROOT, 'tokens', m);
+/** Noms d'une valeur CSS font-family, guillemets ôtés. @param {string} s */
+const noms = (s) => s.split(',').map((x) => x.trim().replace(/^"(.*)"$/, '$1'));
+
+test('V1 table : les 13 fonds par défaut de Vuetify, un texte chacun, en paire de paires.json', () => {
+  const t = brute();
+  assert.deepEqual(Object.keys(t.couleurs).filter((k) => !k.startsWith('$')), FONDS);
+  const paires = lire(join(COMMUN, 'paires.json')).paires.filter((/** @type {any} */ p) => p.type === 'texte');
+  for (const k of FONDS) {
+    const { fond, texte } = t.couleurs[k];
+    assert.ok(paires.some((/** @type {any} */ p) => p.fond === fond && p.devant === texte), `${k} : ${texte} sur ${fond}`);
+  }
+  assert.deepEqual(Object.fromEntries(Object.entries(t.polices).filter(([k]) => !k.startsWith('$')).map(([k, v]) => [k, /** @type {any} */ (v).jeton])), { 'font-body': 'marque.police.texte', 'font-heading': 'marque.police.titre' });
+  for (const k of ['primary-darken-1', 'surface-variant', 'surface-bright', 'surface-light']) assert.match(t.couleurs[k].$description, /\[H\]/, k);
+  for (const k of ['primary', 'background', 'surface', 'error', 'info', 'success', 'warning']) assert.doesNotMatch(t.couleurs[k].$description, /\[H\]/, k);
+  assert.match(t.couleurs.secondary.$description, /Jamais une couleur de bouton \(D05\)/);
+});
+
+test('V2 deux thèmes nommés par marque, 26 couleurs qui couvrent les défauts de Vuetify', () => {
+  assert.equal(MARQUES.length, 5);
+  for (const d of MARQUES) {
+    const r = themesVuetify(d);
+    const slug = d.split('/').filter(Boolean).pop();
+    assert.equal(r.nom, nomDeMarque(d));
+    assert.deepEqual(Object.keys(r.themes), [`${slug}-clair`, `${slug}-sombre`]);
+    assert.equal(r.themes[`${slug}-clair`].dark, false);
+    assert.equal(r.themes[`${slug}-sombre`].dark, true);
+    for (const [nom, th] of Object.entries(r.themes)) {
+      assert.equal(Object.keys(th.colors).length, 26, nom);
+      for (const k of DEFAUTS) assert.ok(k in th.colors, `${nom} : ${k}`);
+      for (const k of FONDS) assert.ok(`on-${k}` in th.colors, `${nom} : on-${k}`);
+    }
+  }
+});
+
+test('V3 valeurs de l\'essai, et chaque couleur égale son rôle', () => {
+  const orbe = themesVuetify(dossier('orbe-cafe')).themes;
+  const alberto = themesVuetify(dossier('maison-alberto')).themes;
+  const pris = (/** @type {any} */ c, /** @type {string[]} */ ks) => Object.fromEntries(ks.map((k) => [k, c[k]]));
+  const SIX = ['primary', 'on-primary', 'background', 'surface', 'on-background', 'on-surface'];
+  assert.deepEqual(pris(orbe['orbe-cafe-clair'].colors, SIX), { primary: '#2b4c7e', 'on-primary': '#ffffff', background: '#fbfbfb', surface: '#ffffff', 'on-background': '#363026', 'on-surface': '#363026' });
+  assert.deepEqual(pris(orbe['orbe-cafe-sombre'].colors, SIX), { primary: '#86b6fe', 'on-primary': '#0e1218', background: '#121212', surface: '#181818', 'on-background': '#d8d5ce', 'on-surface': '#d8d5ce' });
+  assert.deepEqual(pris(alberto['maison-alberto-clair'].colors, ['primary', 'on-primary']), { primary: '#836304', 'on-primary': '#ffffff' });
+  assert.deepEqual(pris(alberto['maison-alberto-sombre'].colors, ['primary', 'on-primary']), { primary: '#ffd060', 'on-primary': '#121212' });
+  const t = brute();
+  for (const d of MARQUES) {
+    const r = themesVuetify(d);
+    for (const [mode, th] of [['clair', Object.values(r.themes)[0]], ['sombre', Object.values(r.themes)[1]]]) {
+      const s = loadRoles(d, { mode: /** @type {string} */ (mode) });
+      const roles = resolveRoles(s.semantique, s.primitives, s.marque);
+      for (const k of FONDS) {
+        assert.equal(/** @type {any} */ (th).colors[k], roles.get(t.couleurs[k].fond)?.hex, `${d} ${mode} ${k}`);
+        assert.equal(/** @type {any} */ (th).colors[`on-${k}`], roles.get(t.couleurs[k].texte)?.hex, `${d} ${mode} on-${k}`);
+      }
+    }
+  }
+});
+
+test('V4 chaque couleur et son texte : au moins 4,5:1 (culori)', () => {
+  for (const d of MARQUES)
+    for (const [nom, th] of Object.entries(themesVuetify(d).themes))
+      for (const k of FONDS) {
+        const c = wcagContrast(th.colors[`on-${k}`], th.colors[k]);
+        assert.ok(c >= 4.5, `${nom} ${k} : ${c}`);
+      }
+});
+
+test('V5 polices du texte et des titres, comme la feuille jetons.css de la marque', () => {
+  const v = (/** @type {string} */ m) => Object.values(themesVuetify(dossier(m)).themes).map((th) => th.variables);
+  for (const x of v('orbe-cafe')) assert.deepEqual(x, { 'font-body': '"Orbe Sans", Arial, sans-serif', 'font-heading': 'Georgia, serif' });
+  for (const x of v('maison-alberto')) assert.deepEqual(x, { 'font-body': 'system-ui, sans-serif', 'font-heading': '"National Park", sans-serif' });
+  for (const d of MARQUES) {
+    const css = readFileSync(join(d, 'jetons.css'), 'utf8');
+    const decl = (/** @type {string} */ nom) => /** @type {string} */ (css.match(new RegExp(`--${nom}: ([^;]+);`))?.[1]);
+    for (const th of Object.values(themesVuetify(d).themes)) {
+      assert.deepEqual(noms(th.variables['font-body']), noms(decl('marque-police-texte')), d);
+      assert.deepEqual(noms(th.variables['font-heading']), noms(decl('marque-police-titre')), d);
+    }
+  }
+});
+
+test('V6 fichier versionné égal à une génération neuve ; deux générations identiques', () => {
+  for (const d of MARQUES) {
+    const neuf = texteThemes(d);
+    assert.equal(texteThemes(d), neuf, d);
+    assert.equal(readFileSync(join(d, THEMES), 'utf8'), neuf, `${d}${THEMES} : relancer npm run vuetify`);
+  }
+});
+
+test('V7 table fausse : panne qui la nomme', () => {
+  const avec = (/** @type {(t: any) => void} */ f) => {
+    const t = brute();
+    f(t);
+    return t;
+  };
+  const paires = lire(join(COMMUN, 'paires.json'));
+  const d = dossier('orbe-cafe');
+  // Un rôle inconnu n'est dans aucune paire : la table est passée sans lireTable, pour atteindre la lecture des rôles.
+  assert.throws(() => themesVuetify(d, { couleurs: { primary: { fond: 'fond.inexistant', texte: 'texte.sur-interactif' } }, polices: {} }), /rôle absent : fond\.inexistant/);
+  assert.throws(() => lireTable(avec((t) => { t.couleurs.primary.texte = 'texte.principal'; }), paires), /paire hors de paires\.json : texte\.principal sur fond\.interactif\.fort/);
+  assert.throws(() => lireTable(avec((t) => { t.couleurs['on-primary'] = { fond: 'fond.app', texte: 'texte.principal' }; }), paires), /clé en on- : on-primary/);
+});
+
+test('V8 npm run vuetify : une marque, toutes, option inconnue', () => {
+  const run = (/** @type {string[]} */ ...a) => spawnSync(process.execPath, ['src/cli/vuetify.js', ...a], { cwd: ROOT, encoding: 'utf8' });
+  const une = run('--marque', 'tokens/orbe-cafe');
+  assert.equal(une.status, 0, une.stderr);
+  assert.equal(une.stdout, `✓ ${THEMES} inchangé\n`);
+  const toutes = run();
+  assert.equal(toutes.status, 0, toutes.stderr);
+  assert.equal(toutes.stdout.match(/^marque /gm)?.length, 5);
+  const faux = run('--mode', 'nuit');
+  assert.equal(faux.status, 2);
+  assert.match(faux.stderr, /^vuetify : /);
+});

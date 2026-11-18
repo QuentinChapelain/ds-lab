@@ -11,7 +11,7 @@
  */
 import { largeurs, nomDeMarque } from '../tokens/resolver.js';
 import { typo } from '../tokens/typo.js';
-import { fr, esc } from '../lib/format.js';
+import { fr, esc, famille } from '../lib/format.js';
 import { espacements } from '../tokens/espacements.js';
 import { resolveRoles, flattenTokens } from '../tokens/roles.js';
 
@@ -21,8 +21,6 @@ const slug = (s) => s.replace(/\./g, '-');
 const D4 = { decimales: 4 };
 /** @param {number} n */
 const ligne = (n) => fr(n, { decimales: 2 });
-/** Liste de polices DTCG → valeur CSS. @param {string | string[]} v */
-const famille = (v) => (Array.isArray(v) ? v : [v]).map((f) => (/[\s"]/.test(f) ? `"${f.replace(/"/g, '\\"')}"` : f)).join(', ');
 
 /**
  * Élément de texte dans un style (input : sans contenu ni balise fermante).

@@ -16,6 +16,7 @@
     "css": "node src/cli/css.js",
     "espacements": "node src/cli/espacements.js",
     "typo": "node src/cli/typo.js",
+    "vuetify": "node src/cli/vuetify.js",
     "login": "node src/cli/login.js",
     "marque": "node src/cli/marque.js",
     "reduce": "node src/cli/reduce.js",

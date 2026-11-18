@@ -34,6 +34,9 @@ Jetons d'une marque (phase 1)
 
          feuille CSS de la marque, tous contextes : npm run css, src/tokens/css.js, par Terrazzo (D36)
          tokens/<marque>/jetons.css
+
+         thèmes Vuetify clair et sombre, par la table tokens/commun/vuetify.json :
+         npm run vuetify, src/tokens/vuetify.js (D41) ; tokens/<marque>/vuetify.json
 ```
 
 Chaque commande npm a son point d'entrée dans `src/cli/`, sauf `npm run demo` (`test/helpers/demo.js`), `npm run types` (`tsc`), `npm run knip` (`knip`), `npm run dependances` (`depcruise`) et `npm test` (`node --test`). L'orchestration de l'audit et de la réduction vit dans leur couche, `src/audit/run.js` et `src/reduce/run.js` (D30) ; aucun module de `src/` hors de `src/cli/` n'importe de `src/cli/`. Toute commande a trois issues (D18) : 0 tout passe, 1 l'entrée a été lue et jugée (règle en échec, marque refusée avec son motif), 2 l'entrée n'a pas pu être jugée (fichier absent ou illisible, option inconnue, panne), message d'une ligne préfixé par le nom de la commande ; la garde commune est `src/cli/garde.js`. Les sorties d'audit et de réduction sur un vrai site vont dans `local/`, jamais versionné.
@@ -52,7 +55,7 @@ Chaque commande npm a son point d'entrée dans `src/cli/`, sauf `npm run demo` (
 | `src/brand/` | Marque déclarée dans la cible ; lecture rapide de la marque d'un site, avant la réduction |
 | `src/polices/` | Police des titres d'une marque : lecture d'un WOFF2 (mesures, graisses, licence, couverture), sans dépendance ; garde-fous ; contrôle d'encre de deux lignes dans Chromium (`encre.js`, playwright-core déjà présent), lancé par la saisie quand l'entrée donne les fichiers |
 | `src/valise/` | Générateur d'échelles visé par contraste, et son contrôle `checkValise` |
-| `src/tokens/` | Jetons DTCG d'une marque : lecteur de resolver, liste des marques (`dossiersDeMarque`, `nomDeMarque`), primitives, pleins, rôles et paires, espacements, styles de texte ; calcul des trois contrôles de la cible (contraste, espacements, typo) ; écriture de la saisie, à côté puis en remplacement (`ecriture.js`, D31) ; feuille CSS complète d'une marque, écrite par Terrazzo depuis son resolver et comparée au lecteur avant écriture (`css.js`, D36) |
+| `src/tokens/` | Jetons DTCG d'une marque : lecteur de resolver, liste des marques (`dossiersDeMarque`, `nomDeMarque`), primitives, pleins, rôles et paires, espacements, styles de texte ; calcul des trois contrôles de la cible (contraste, espacements, typo) ; écriture de la saisie, à côté puis en remplacement (`ecriture.js`, D31) ; feuille CSS complète d'une marque, écrite par Terrazzo depuis son resolver et comparée au lecteur avant écriture (`css.js`, D36) ; thèmes Vuetify clair et sombre d'une marque, par la table commune, chaque fond avec son texte (`vuetify.js`, D41) |
 | `src/report/` | Sorties lisibles : rapport d'audit, revue, `migration.md`, planches des rôles, des espacements et de la typo d'une marque (`planche(dossier)`), calibrage des pleins ; consigne pour un agent, structurée (`consigne.js`, D29), et `modifications.json` (`modifications.js`) ; texte du contrôle de contraste (`contraste.js`) |
 | `src/apply/` | Application de `modifications.json` aux feuilles d'une copie du site, et feuilles ajoutées qui la posent à côté de l'ancien code, sur le site intact (`ajout.js`, D37) ; localisation d'une entrée et garde de sa valeur écrite, partagées par les deux (`localisation.js`) ; lit le fichier, n'importe rien de `src/reduce/` ni de `src/report/` (D30) |
 | `src/verify/` | Captures, références et comparaisons (pixels, arbre d'accessibilité), partagées par reduce et verify ; feuilles ajoutées posées sur la page avant une capture, avec le media du lien, à la fenêtre du manifeste (`poserAjouts`, `capturePage`, D37) ; verdict par ligne décidée : simulation de la réduction rejouée sans être allumée, relevée avant puis après la pose dans le même chargement, hauteurs, canal de ce qui n'arrive pas, jugement des pages vérifiées (`arrivee.js`, D39) |
@@ -74,6 +77,7 @@ Une règle écrite à plusieurs endroits a une seule définition ; chaque lecteu
 | Texte du contrôle de contraste | `lignesContraste` dans `src/report/contraste.js` (D31) | `npm run contraste`, saisie |
 | Consigne pour un agent | `consigneAgent` dans `src/report/consigne.js` : sections en listes d'entrées, consigne réduite de `reste.md` à côté (D29) | `migration.md` (texte), `modifications.json` (entrées) |
 | Valeur après la table d'une couleur, par usage | `mapped` dans `src/reduce/pleins.js` (D30) | cartes de plein, couplages, migration |
+| Liste de polices DTCG écrite en CSS (`font-family`) | `famille` dans `src/lib/format.js` : un nom avec une espace entre guillemets (D41) | planche de la typo, thèmes Vuetify |
 | Lecture d'un fichier JSON | `lireJson` dans `src/lib/fichiers.js` : message qui nomme le fichier (absent, dossier, JSON illisible) (D30) | commandes, `runReduce` |
 | Lancement de Chromium | `lancerChromium` dans `src/browser/lancement.js`, avec `--disable-partial-raster` (D34) | audit, reduce et `--live`, marque, verify, login, ajout, contrôle d'encre de la saisie |
 | Déclaration visée par une entrée de `modifications.json`, et garde de sa valeur écrite | `localiser` et `composantDe` dans `src/apply/localisation.js` : règle retrouvée par sa ligne et sa colonne quand l'entrée la donne (D38) | `npm run apply`, `npm run ajout` (D37) |
@@ -95,7 +99,7 @@ Aucune branche de code ne dépend du nom d'une marque : une différence réelle 
 
 | Dossier | Contenu |
 |---|---|
-| `tokens/commun/` | Couches communes à toutes les marques : primitives, statuts, mode sombre commun, police du produit, aplat plein, rôles, paires, contexte étroit |
+| `tokens/commun/` | Couches communes à toutes les marques : primitives, statuts, mode sombre commun, police du produit, aplat plein, rôles, paires, contexte étroit ; table des thèmes Vuetify (`vuetify.json`, D41) |
 | `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive d'entraînement : entrée, échelles écrites à la main, marque, resolver, ses trois planches HTML et sa feuille CSS `jetons.css`, générées |
 | `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/`, `tokens/maison-alberto/` | Quatre marques fictives saisies par fichier : entrée, échelles générées, couche marque, resolver, leurs trois planches HTML et leur feuille CSS `jetons.css`, générées |
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles et attendus des tests de bout en bout ; `fixtures/marque-demo/cascade/`, pages d'essai de l'ordre des feuilles (D33), dont un import redirigé par le serveur des tests (`test/helpers/serveur.js`) ; `fixtures/marque-demo/jetons/primitives.tokens.json`, primitives d'Orbe Café d'avant l'étape 4b, figées : référence de cet état passé seulement (`test/roles-statuts.test.js`), les tests de `npm run reduce` lisent le resolver d'Orbe Café (D28) ; `fixtures/polices/`, quatre polices d'essai sous licence libre, chacune avec sa licence |
@@ -125,6 +129,8 @@ Aucune branche de code ne dépend du nom d'une marque : une différence réelle 
 | Contexte étroit | `tokens/commun/largeur.etroit.tokens.json` : rôles qui changent sous 600 px, jeton entier | à la main | `npm run espacements`, `npm run typo`, planches |
 | Paires | `tokens/commun/paires.json` | à la main | `npm run contraste`, planche des rôles |
 | Resolver | `tokens/orbe-cafe/marque.resolver.json`, un par marque : jeux primitives, marque, rôles ; modificateurs mode et largeur | `npm run saisie` | `src/tokens/resolver.js`, lecteur maison ; Terrazzo, pour `npm run css` (D36) |
+| Table Vuetify | `tokens/commun/vuetify.json` : pour chaque couleur par défaut de Vuetify 4.3.4, son fond et son texte (une paire de `paires.json`), et les deux polices ; une raison par ligne | à la main | `npm run vuetify` |
+| Thèmes Vuetify | `tokens/orbe-cafe/vuetify.json`, un par marque : thèmes `<dossier>-clair` et `<dossier>-sombre`, couleurs et `on-` de chaque couleur, polices en variables | `npm run vuetify` | aucune commande de l'outil |
 | Feuille CSS | `tokens/orbe-cafe/jetons.css`, une par marque : `:root` en clair et large, puis les seuls jetons que le sombre change (`prefers-color-scheme: dark`) et que l'étroit change (`width <` seuil du resolver) | `npm run css`, par Terrazzo | les pages d'un produit ; aucune commande de l'outil |
 
 Changer de marque, c'est changer la couche marque ; les rôles restent les mêmes. Le resolver fusionne les jeux dans l'ordre primitives, marque, rôles, puis le contexte de chaque modificateur ; le dernier jeton gagne, en entier.
@@ -144,6 +150,7 @@ Changer de marque, c'est changer la couche marque ; les rôles restent les même
 | `npm run saisie` | Saisir une marque depuis son entrée : échelles, couche marque, mode sombre, resolver, contraste dans les deux modes ; sort en 1 si elle est refusée, avec motif et mode, en 2 sur une panne |
 | `npm run contraste` | Paires de rôles ; sort en 1 si une paire est sous son seuil sans exception écrite, ou si la marque redéfinit une échelle commune (D25), en 2 sur une panne ; `--mode clair|sombre` et `--largeur large|etroit` pour le contexte |
 | `npm run css` | Feuille CSS complète de chaque marque, tous contextes, par Terrazzo, dans `tokens/<marque>/jetons.css` ; sort en 1 si une marque est refusée (sombre et étroit changent un même jeton, ou Terrazzo et le lecteur diffèrent ; sa feuille n'est pas écrite), en 2 sur une panne, rien d'écrit (D36) |
+| `npm run vuetify` | Thèmes Vuetify clair et sombre de chaque marque, par la table commune, dans `tokens/<marque>/vuetify.json` ; ne juge rien : sort en 0, ou en 2 sur une panne (table fausse : paire hors de `paires.json`, clé en `on-`, rôle ou jeton absent), rien d'écrit (D41) |
 | `npm run espacements` | Écarts par relation, valeurs en étroit, règles de proximité ; sort en 1 si l'une échoue, en 2 sur une panne |
 | `npm run typo` | Règles des styles de texte ; sort en 1 si l'une échoue, en 2 sur une panne ; `--couche-marque <fichier>` pour une couche marque donnée à part |
 | `npm run types` | Types JSDoc des fichiers de `src/` (`@ts-check`) : `tsc -p tsconfig.json`, non strict, sans rien émettre ; sort en 1 s'il reste une erreur. Tenu à 0 avant chaque commit, comme les trois contrôles de la cible |
@@ -151,7 +158,7 @@ Changer de marque, c'est changer la couche marque ; les rôles restent les même
 | `npm run dependances` | Cycles d'import et modules orphelins de `src/` (`depcruise src test`, `.dependency-cruiser.json`) ; sort en 1 si une règle échoue. Tenu à 0 avant chaque commit |
 | `npm test` | Tous les tests |
 
-Les trois contrôles de la cible et `npm run css` prennent `--marque <dossier>` ; sans l'option, ils traitent chaque marque de `tokens/` qui a un resolver, un bloc par marque sous son en-tête, et sortent en 1 si une marque échoue (D26). Aucune commande ne prend de marque par défaut.
+Les trois contrôles de la cible, `npm run css` et `npm run vuetify` prennent `--marque <dossier>` ; sans l'option, ils traitent chaque marque de `tokens/` qui a un resolver, un bloc par marque sous son en-tête, et sortent en 1 si une marque échoue (D26). Aucune commande ne prend de marque par défaut.
 
 Générateurs sans commande npm, lancés avec `node` : `src/cli/statuts.js`, `src/cli/sombre.js`, `src/cli/calibrage.js`, et `src/cli/planche.js [--marque <dossier>] [roles|espacements|typo]`, qui écrit les planches d'une marque dans son dossier, ou de chaque marque sans `--marque` (les trois sans planche nommée ; D27).
 
@@ -177,6 +184,7 @@ Chacun est tenu par le code ou par un test, cité.
 - Aucun nom de marque dans le code de `src/`, commentaires exclus (`test/marque-en-dur.test.js`, D26).
 - Les planches versionnées de chaque marque égalent la sortie de leur fonction (`test/planches-marques.test.js`, D27).
 - La feuille CSS versionnée de chaque marque égale une génération neuve ; dans chaque combinaison de contextes, ses variables effectives sont exactement les jetons du lecteur, avec la même valeur ; tout jeton qu'apply sait écrire y a le nom et la valeur de `tokens.css` (`test/css-jetons.test.js`, D36). Le seuil de l'étroit se lit dans le resolver ; une marque dont sombre et étroit changent un même jeton est refusée (`test/css-commande.test.js`).
+- Les thèmes Vuetify versionnés de chaque marque égalent une génération neuve ; chaque couleur égale le rôle que nomme la table, avec son texte, et couvre les couleurs par défaut de Vuetify : Vuetify ne calcule aucun texte ; chaque fond et son texte tiennent 4,5:1 (`test/theme-vuetify.test.js`, D41).
 - Rien de `local/` ni de `.auth/` n'est versionné (`.gitignore`).
 - Une commande de l'outil lancée sous une autre version majeure de Node que celle de `.node-version` sort en 2 sans rien lire (`test/version-node.test.js`, D40).
 - À chaque push, une machine neuve (ubuntu-24.04, Node de `.node-version`) rejoue `npm ci`, l'installation de Chromium, `npm run types`, `npm run knip`, `npm run dependances`, les trois contrôles de la cible et `npm test`, une étape par commande ; une étape en échec arrête les suivantes. Actions épinglées par empreinte, lecture seule, aucun secret (`.github/workflows/ci.yml`).
