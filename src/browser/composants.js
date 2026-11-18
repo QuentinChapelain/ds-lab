@@ -326,8 +326,17 @@ async function suiteTab(page, max) {
     });
     if (fini) break;
   }
+  // Tab sélectionne le texte d'un champ atteint : la sélection est défaite, sinon elle resterait sur la capture.
   await page.evaluate(() => {
     /** @type {any} */ (document.activeElement)?.blur?.();
+    for (const el of /** @type {Set<any>} */ (/** @type {any} */ (window).__dsTabVu)) {
+      try {
+        el.setSelectionRange?.(0, 0);
+      } catch {
+        // champ sans sélection de texte (case, bouton) : rien à défaire
+      }
+    }
+    window.getSelection()?.removeAllRanges();
     window.scrollTo(0, 0);
   });
 }

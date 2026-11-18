@@ -8,11 +8,14 @@
  *     dans les non identifiés.
  *   - La version la plus répandue d'un type peut être à égalité : l'outil ne choisit pas, il nomme les ex aequo.
  *   - Une décision qui vise une cible absente de l'audit n'est pas appliquée ; elle est listée.
+ * Le guidage (D47, src/composants/guidage.js) ajoute ce qu'il reste à faire, les défauts et les différences de chaque
+ * version ; il ne change aucun chiffre.
  */
 import { occurrence, gabarit, identiteElement, apparenceDe, nomDeVersion } from './pieces.js';
 import { candidats } from './blocs.js';
 import { scores } from './scores.js';
 import { TEXTES } from '../report/textes.js';
+import { defauts, differences, mention, aFaireDuType, guidageGlobal } from './guidage.js';
 
 /**
  * @typedef {object} ReleveFichier
@@ -24,6 +27,7 @@ import { TEXTES } from '../report/textes.js';
  * @property {{ adresse: string, nom: string, statut: number | null, erreur?: string }[]} pages  pages demandées
  * @property {import('./pieces.js').Ligne[]} lignes  dans l'ordre des pages, puis du relevé
  * @property {string[]} captures  identifiants des lignes capturées (captures/<id>.png)
+ * @property {number} [densite]  densité des captures (pixels de l'image par px CSS) ; absente : 1
  *
  * @typedef {{ fois: number, mesures: import('../browser/composants.js').Mesures, capture: string | null }} VueApparence
  * @typedef {object} VueVersion
@@ -36,6 +40,9 @@ import { TEXTES } from '../report/textes.js';
  * @property {string | null} capture
  * @property {VueApparence[]} apparences
  * @property {{ classes: string[], endroit: string, selecteur: string, extrait: string }} code  première occurrence
+ * @property {string[]} defauts   défauts d'accessibilité de base, en mots simples (D47)
+ * @property {string | null} mention  « la plus répandue », « à égalité », ou rien (type à une version)
+ * @property {string} differences  mesures qui distinguent cette version des autres du type (D47)
  */
 
 /** Chemin de la capture d'une ligne, si elle a été prise. @param {string} id @param {Set<string>} captures */
@@ -76,9 +83,11 @@ function versionsDe(occ, releve, captures) {
   /** @type {Map<string, import('./pieces.js').Occurrence[]>} */
   const parVersion = new Map();
   for (const o of occ) parVersion.set(o.version, [...(parVersion.get(o.version) ?? []), o]);
-  return [...parVersion]
-    .map(([nom, os]) => ({ nom, origine: os[0].origine.libelle, nomCode: os[0].origine.nom, rattache: os.some((o) => o.rattache), ...vue(os, releve, captures) }))
+  const vs = [...parVersion]
+    .map(([nom, os]) => ({ nom, origine: os[0].origine.libelle, nomCode: os[0].origine.nom, rattache: os.some((o) => o.rattache), ...vue(os, releve, captures), defauts: defauts(os) }))
     .sort((a, b) => b.fois - a.fois || a.nom.localeCompare(b.nom, 'fr'));
+  const diffs = differences(vs);
+  return vs.map((v, i) => ({ ...v, mention: mention(vs, i), differences: diffs[i] }));
 }
 
 /** Ordre du relevé : page, puis rang. @param {{ page: number, ligne: { index: number } }} a @param {{ page: number, ligne: { index: number } }} b */
@@ -87,8 +96,9 @@ const ordre = (a, b) => a.page - b.page || a.ligne.index - b.ligne.index;
 /**
  * @param {ReleveFichier} releve
  * @param {import('./decisions.js').Decisions} [decisions]
+ * @param {{ nom?: string }} [opts]  nom : le nom du site affiché (sans lui : l'hôte de son adresse)
  */
-export function construireConstat(releve, decisions = { garder: [], blocs: [] }) {
+export function construireConstat(releve, decisions = { garder: [], blocs: [] }, { nom } = {}) {
   const captures = new Set(releve.captures ?? []);
   const vues = releve.pages.map((p, i) => ({ ...p, i })).filter((p) => !p.erreur);
   const nbPages = vues.length;
@@ -115,7 +125,7 @@ export function construireConstat(releve, decisions = { garder: [], blocs: [] })
         const type = /** @type {string} */ (d.type);
         rattaches.push({ id: l.id, page: l.page, type, origine, version: nomDeVersion(type, origine), apparence: apparenceDe(l.mesures), mesures: l.mesures, interactif: false, acces: null, rattache: true, nom: '', ligne: l });
       }
-    } else restants.push({ nom: c.nom, etat: d?.sort === 'laisser' ? 'laissé tel quel' : 'pas encore décidé', lignes: c.lignes });
+    } else restants.push({ nom: c.nom, etat: d?.sort === 'laisser' ? TEXTES.etats.laisse : TEXTES.etats.aDecider, lignes: c.lignes });
   }
 
   const elements = [...occ.filter((o) => !duGabarit.has(o.id)), ...rattaches].sort(ordre);
@@ -137,13 +147,15 @@ export function construireConstat(releve, decisions = { garder: [], blocs: [] })
       const versions = versionsDe(t.comptes, releve, captures);
       const plusGrand = versions.length ? versions[0].fois : 0;
       const g = garder.get(nom);
+      const garde = g && versions.some((v) => v.nom === g) ? g : null;
       return {
         nom,
         fois: t.comptes.length,
         sourceUnique: { x: plusGrand, y: t.comptes.length, plusRepandues: versions.filter((v) => v.fois === plusGrand).map((v) => v.nom) },
         versions,
         gabarit: { elements: t.gabarit.length, versions: versionsDe(t.gabarit, releve, captures).map((v) => ({ ...v, pages: vues.map((p) => p.nom) })) },
-        garder: g && versions.some((v) => v.nom === g) ? g : null,
+        garder: garde,
+        ...aFaireDuType({ fois: t.comptes.length, versions, garder: garde }),
         occurrences: t.comptes,
         plusGrand,
       };
@@ -153,7 +165,7 @@ export function construireConstat(releve, decisions = { garder: [], blocs: [] })
 
   const nonIdentifies = restants.map((r) => {
     const occs = r.lignes.map((l) => ({ id: l.id, page: l.page, apparence: apparenceDe(l.mesures), mesures: l.mesures, ligne: l }));
-    return { bloc: r.nom, etat: r.etat, ...vue(occs, releve, captures) };
+    return { bloc: r.nom, etat: r.etat, ...vue(occs, releve, captures), aFaire: r.etat === TEXTES.etats.aDecider ? TEXTES.guidage.bloc.decider : TEXTES.guidage.bloc.laisse };
   });
   const nonIdentifiesFois = nonIdentifies.reduce((s, b) => s + b.fois, 0);
   const s = scores(typesComptes, nonIdentifiesFois);
@@ -170,20 +182,25 @@ export function construireConstat(releve, decisions = { garder: [], blocs: [] })
   const fin = nonIdentifiesFois < 2 ? `${nonIdentifiesFois} bloc n'est pas identifié.` : `${nonIdentifiesFois} blocs ne sont pas identifiés.`;
 
   const largeur = `${releve.fenetre.width} × ${releve.fenetre.height} px`;
+  const guide = guidageGlobal(typesComptes, elements.length, nonIdentifies);
   return {
     outil: releve.outil,
     date: releve.date,
     site: releve.site,
+    nom: nom ?? new URL(releve.site).host,
+    densite: releve.densite ?? 1,
     fenetre: largeur,
     frameworks: releve.frameworks,
     pages: releve.pages,
     phrase: `${debut} ${milieu} ${fin}`,
+    phraseCourte: guide.phraseCourte,
+    aFaire: guide.aFaire,
     chiffres: { elements: elements.length, types: typesComptes.length, versions, frameworks: Object.fromEntries(parFramework), autrement, nonIdentifies: nonIdentifiesFois },
     scores: s,
     types: types.map(({ occurrences, plusGrand, ...t }) => t),
     nonIdentifies,
     decisionsSansCible: sansCible,
-    limites: TEXTES.limites.map((l) => l.replace('{largeur}', largeur).replace('{pages}', String(nbPages))),
+    limites: TEXTES.limites.map((/** @type {string} */ l) => l.replace('{largeur}', largeur).replace('{pages}', String(nbPages)).replace('{date}', releve.date)),
   };
 }
 

@@ -20,6 +20,9 @@ import { construireConstat, aCapturer } from './constat.js';
 import { lireDecisions } from './decisions.js';
 import { idDe } from './pieces.js';
 
+/** Densité des captures : pixels de l'image par px CSS. */
+const DENSITE = 2;
+
 const PKG = JSON.parse(await readFile(new URL('../../package.json', import.meta.url), 'utf8'));
 
 /**
@@ -50,6 +53,7 @@ const dateDe = (d) => stampOf(d).replace(/T(\d\d)(\d\d)$/, ' $1:$2');
  * @property {string[]} addresses
  * @property {string[]} [signatures]   tables de signatures (aucune : tout marche pareil, sans framework)
  * @property {string} [decisions]      fichier de décisions du designer
+ * @property {string} [nom]            nom du site affiché dans le constat (sans lui : l'hôte)
  * @property {{ width: number, height: number }} [viewport]
  * @property {number} [waitMs]
  * @property {string} [storageState]
@@ -78,7 +82,8 @@ export async function runComposants(opts) {
   const images = new Map();
   const browser = await lancerChromium();
   try {
-    const context = await browser.newContext({ viewport, storageState: storageState ?? undefined });
+    // Captures à densité 2, nettes sur un téléphone ; les mesures sont en px CSS, la densité ne les change pas (D47).
+    const context = await browser.newContext({ viewport, deviceScaleFactor: DENSITE, storageState: storageState ?? undefined });
     /** @type {Map<number, import('playwright-core').Page>} */
     const onglets = new Map();
     for (const [i, url] of urls.entries()) {
@@ -106,6 +111,7 @@ export async function runComposants(opts) {
       date: dateDe(now),
       site: new URL(urls[0]).origin,
       fenetre: viewport,
+      densite: DENSITE,
       frameworks: tables.map((t) => ({ nom: t.framework, version: t.version })),
       pages,
       lignes,
@@ -116,7 +122,7 @@ export async function runComposants(opts) {
       const l = /** @type {import('./pieces.js').Ligne} */ (lignes.find((x) => x.id === id));
       images.set(`captures/${id}.png`, await capturer(/** @type {import('playwright-core').Page} */ (onglets.get(l.page)), l.index));
     }
-    const constat = construireConstat(brut, decisions);
+    const constat = construireConstat(brut, decisions, { nom: opts.nom });
     const dir = await freeOutputDir(outRoot, hotes[0], stampOf(now));
     const fichiers = await ecrireConstat(dir, brut, constat, images);
     return { dir, fichiers, constat, tombees: pages.filter((p) => p.erreur).map((p) => `${p.adresse} (${p.erreur})`) };
@@ -127,9 +133,9 @@ export async function runComposants(opts) {
 
 /**
  * Constat recalculé depuis un relevé écrit (releve.json et ses captures), sans navigateur, avec les décisions données.
- * @param {{ releve: string, decisions?: string, outRoot?: string, now?: Date }} opts
+ * @param {{ releve: string, decisions?: string, nom?: string, outRoot?: string, now?: Date }} opts
  */
-export async function recalculer({ releve, decisions, outRoot = 'local/composants', now = new Date() }) {
+export async function recalculer({ releve, decisions, nom, outRoot = 'local/composants', now = new Date() }) {
   /** @type {import('./constat.js').ReleveFichier} */
   const brut = lireJson(join(releve, 'releve.json'));
   if (!brut || !Array.isArray(brut.lignes) || !Array.isArray(brut.pages) || typeof brut.site !== 'string') throw new Error(`${join(releve, 'releve.json')} : relevé illisible (lignes, pages, site attendus)`);
@@ -144,7 +150,7 @@ export async function recalculer({ releve, decisions, outRoot = 'local/composant
       throw new Error(`${join(releve, chemin)} : capture absente du relevé`);
     }
   }
-  const constat = construireConstat(brut, d);
+  const constat = construireConstat(brut, d, { nom });
   const dir = await freeOutputDir(outRoot, new URL(brut.site).host, stampOf(now));
   const fichiers = await ecrireConstat(dir, brut, constat, images);
   return { dir, fichiers, constat, tombees: brut.pages.filter((p) => p.erreur).map((p) => `${p.adresse} (${p.erreur})`) };

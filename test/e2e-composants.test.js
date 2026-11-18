@@ -9,14 +9,23 @@
  *   C3 lancement B, recalculé depuis le relevé de A avec les décisions : chiffres, carte 7 fois en 2 versions, 3 rattachés ;
  *   C4 le constat de A recalculé sans navigateur est identique à l'octet ;
  *   C5 lancement sans table : chiffres, phrase « Aucun framework reconnu. » ;
- *   C6 page HTML : blocs dans l'ordre, quatre cartes de score puis l'effort, une explication sur chaque titre et chaque
- *      score, aucune occurrence du mot « enveloppe », étiquettes d'origine d'un seul style, aucun défilement horizontal à
- *      390 px de large, aucune requête ni script ;
+ *   C6 page HTML (corrigé pour la forme du constat, D47) : blocs dans l'ordre de docs/attendus/forme-constat.md, quatre
+ *      cartes de score puis l'effort, quatre explications (i), aucune occurrence du mot « enveloppe », étiquettes d'origine
+ *      d'un seul style, aucun défilement horizontal à 390 px de large, aucune requête ni script ; la phrase longue reste
+ *      dans le Markdown ;
  *   C7 la commande : sortie 0 ; une page qui ne se charge pas : constat écrit sans elle, sortie 2, une ligne.
+ * Forme du constat (D47), contre fixtures/marque-demo/expected-forme-constat.json, écrit à la main avant le code :
+ *   C8 lancements A et B : en-tête, phrase courte, lignes « à faire », effort, ordre des fiches, « À faire » des types,
+ *      défauts, mentions, différences, quatre (i) ;
+ *   C9 chaque vignette est à la taille réelle de l'élément (largeur de l'image divisée par la densité 2), réduite seulement
+ *      si elle dépasse sa colonne ; hors de « Voir le code », aucun nom long ;
+ *   C10 clair et sombre à 390 px : aucun défilement ; fond et texte de la page égaux aux rôles fond.app et texte.principal
+ *      des jetons communs, lus ici par une résolution indépendante des fichiers.
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, mkdtemp, readdir } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
@@ -27,6 +36,7 @@ import { lancerChromium } from '../src/browser/lancement.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const E = JSON.parse(await readFile(join(ROOT, 'fixtures/marque-demo/expected-composants.json'), 'utf8'));
+const F = JSON.parse(await readFile(join(ROOT, 'fixtures/marque-demo/expected-forme-constat.json'), 'utf8'));
 const VUETIFY = join(ROOT, 'config/signatures/vuetify.json');
 const DECISIONS = join(ROOT, 'fixtures/marque-demo/decisions-composants.json');
 const NOW = new Date(2026, 10, 18, 19, 0);
@@ -37,6 +47,8 @@ let servers;
 let A;
 /** @type {Awaited<ReturnType<typeof runComposants>>} */
 let nu;
+/** @type {Awaited<ReturnType<typeof recalculer>>} */
+let B;
 /** @type {string} */
 let sortie;
 
@@ -44,8 +56,9 @@ before(async () => {
   servers = await startFixtureServers();
   sortie = await mkdtemp(join(tmpdir(), 'ds-lab-composants-'));
   const addresses = [`${servers.origin}/annuaire/liste.html`, '/annuaire/fiche.html'];
-  A = await runComposants({ addresses, signatures: [VUETIFY], waitMs: 0, outRoot: sortie, now: NOW });
+  A = await runComposants({ addresses, signatures: [VUETIFY], waitMs: 0, outRoot: sortie, now: NOW, nom: F.nom });
   nu = await runComposants({ addresses, waitMs: 0, outRoot: join(sortie, 'nu'), now: NOW });
+  B = await recalculer({ releve: A.dir, decisions: DECISIONS, outRoot: join(sortie, 'forme-b'), now: NOW, nom: F.nom });
 });
 
 after(async () => {
@@ -125,7 +138,7 @@ test('C3 lancement B : décisions relues sur le relevé de A', async () => {
 });
 
 test('C4 le constat de A recalculé sans navigateur est identique à l’octet', async () => {
-  const R = await recalculer({ releve: A.dir, outRoot: join(sortie, 'r'), now: NOW });
+  const R = await recalculer({ releve: A.dir, outRoot: join(sortie, 'r'), now: NOW, nom: F.nom });
   for (const f of ['releve.json', 'constat.json', 'constat.md', 'constat.html']) assert.ok((await readFile(join(A.dir, f))).equals(await readFile(join(R.dir, f))), f);
   assert.deepEqual(await readdir(join(R.dir, 'captures')), await readdir(join(A.dir, 'captures')));
 });
@@ -142,14 +155,12 @@ test('C6 page HTML : ordre des blocs, explications, mots, étiquettes, largeur d
     assert.ok(i >= 0, s);
     return i;
   };
-  const ordre = [repere('<dl class="entete">'), repere('<p class="phrase">'), repere('<div class="cartes">'), repere('<div class="effort">'), repere('<section class="type">'), repere('<section class="non-identifies">'), repere('Limites de cet audit')];
+  const ordre = ['<header class="entete">', '<p class="phrase">', '<section class="a-faire"', '<div class="cartes">', '<p class="effort">', 'id="doublons"', 'id="une-version"', 'id="non-identifies"', 'Comment lire ce constat', 'Limites de cet audit'].map(repere);
   assert.deepEqual(ordre, [...ordre].sort((a, b) => a - b));
   assert.equal(html.match(/class="carte-score"/g)?.length, 4);
-  const types = A.constat.types.length;
-  // Par type : son titre, Version, Origine, Version à garder ; puis les quatre scores, l'effort et les non identifiés.
-  assert.equal(html.match(/<details class="i">/g)?.length, types * 4 + 6);
+  assert.equal(html.match(/<details class="i">/g)?.length, F.A.info);
   for (const f of ['constat.html', 'constat.md', 'constat.json']) assert.doesNotMatch(await readFile(join(A.dir, f), 'utf8'), /enveloppe/i, f);
-  assert.match(html, /17 viennent de Vuetify/);
+  assert.match(await readFile(join(A.dir, 'constat.md'), 'utf8'), /17 viennent de Vuetify/);
   assert.doesNotMatch(html, /\sstyle="|<script|<link|https?:\/\/(?!127\.0\.0\.1)/);
   const origines = [...html.matchAll(/<span class="([^"]*)">(Vuetify|Fait maison|Sans style)<\/span>/g)].map((m) => m[1]);
   assert.ok(origines.length >= 12);
@@ -193,4 +204,124 @@ test('C7 la commande : 0 ; une page qui ne se charge pas : constat écrit sans e
   const [date] = await readdir(join(out, 'ko', hote));
   const c = JSON.parse(await readFile(join(out, 'ko', hote, date, 'constat.json'), 'utf8'));
   assert.deepEqual(c.pages.map((/** @type {any} */ p) => p.erreur ?? null), [null, 'statut HTTP 404']);
+});
+
+/**
+ * Textes de la page lus dans Chromium : en-tête, phrase, lignes à faire, effort, fiches dans l'ordre, nombre de (i).
+ * @param {string} fichier @param {{ colorScheme?: 'light' | 'dark' }} [opts]
+ */
+async function lirePage(fichier, { colorScheme = 'light' } = {}) {
+  const browser = await lancerChromium();
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 }, colorScheme });
+    await page.goto(`file://${fichier}`);
+    await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (/** @type {HTMLDetailsElement} */ (d).open = true)));
+    return await page.evaluate(() => {
+      const texte = (/** @type {Element | null} */ e) => (e?.textContent ?? '').replace(/\s+/g, ' ').trim();
+      const tous = (/** @type {string} */ s) => [...document.querySelectorAll(s)].map(texte);
+      const vignettes = [...document.querySelectorAll('.vignette img')].map((e) => {
+        const img = /** @type {HTMLImageElement} */ (e);
+        const cadre = /** @type {HTMLElement} */ (img.parentElement);
+        const cs = getComputedStyle(cadre);
+        return { naturelle: img.naturalWidth, attribut: Number(img.getAttribute('width')), affichee: img.getBoundingClientRect().width, colonne: cadre.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) };
+      });
+      const sansCode = /** @type {HTMLElement} */ (document.body.cloneNode(true));
+      sansCode.querySelectorAll('details.code').forEach((d) => d.remove());
+      const bs = getComputedStyle(document.body);
+      return {
+        entete: texte(document.querySelector('.sous-titre')),
+        phrase: texte(document.querySelector('.phrase')),
+        lignes: tous('.a-faire li'),
+        effort: texte(document.querySelector('.effort')),
+        doublons: tous('#doublons > article > h3'),
+        uneVersion: tous('#une-version > details > summary').map((x) => x.split(' · ')[0]),
+        info: document.querySelectorAll('details.i').length,
+        vignettes,
+        sansCode: sansCode.textContent ?? '',
+        largeur: document.documentElement.scrollWidth,
+        fond: bs.backgroundColor,
+        couleur: bs.color,
+      };
+    });
+  } finally {
+    await browser.close();
+  }
+}
+/** @param {string} s */
+const bas = (s) => s.charAt(0).toLowerCase() + s.slice(1);
+
+test('C8 forme du constat, lancements A et B : valeurs de l’attendu', async () => {
+  for (const [nom, r] of /** @type {const} */ ([['A', A], ['B', B]])) {
+    const f = F[nom];
+    const c = r.constat;
+    const p = await lirePage(join(r.dir, 'constat.html'));
+    assert.equal(c.phraseCourte, f.phraseCourte, nom);
+    assert.equal(p.phrase, f.phraseCourte, nom);
+    assert.deepEqual(c.aFaire, f.aFaire, nom);
+    assert.deepEqual(p.lignes, f.lignesAFaire, nom);
+    assert.equal(p.effort, f.effort, nom);
+    assert.deepEqual(p.doublons.map(bas), f.doublons, nom);
+    assert.deepEqual(p.uneVersion.map(bas), f.uneVersion, nom);
+    assert.equal(p.info, f.info, nom);
+    if (f.entete) assert.equal(p.entete, f.entete);
+    for (const [t, texte] of Object.entries(f.aFaireParType)) assert.equal(type(c, t).aFaire, texte, `${nom} ${t}`);
+    const versions = new Map(c.types.flatMap((/** @type {any} */ t) => t.versions.map((/** @type {any} */ v) => [v.nom, v])));
+    for (const [v, d] of Object.entries(f.defauts ?? {})) assert.deepEqual(versions.get(v).defauts, d, v);
+    for (const [v, m] of Object.entries(f.plusRepandue ?? {})) assert.equal(versions.get(v).mention, m, v);
+    for (const [v, d] of Object.entries(f.differences ?? {})) {
+      assert.equal(versions.get(v).differences, d, v);
+      assert.ok(p.sansCode.includes(d), v);
+    }
+  }
+  // Mesures du relevé changées par D47 (arrondi en pourcentage, cadre des champs) : celles de l'attendu.
+  const releve = JSON.parse(await readFile(join(A.dir, 'releve.json'), 'utf8'));
+  const versions = new Map(A.constat.types.flatMap((/** @type {any} */ t) => t.versions.map((/** @type {any} */ v) => [v.nom, v])));
+  for (const [v, { apres }] of Object.entries(F.mesures).filter(([k]) => !k.startsWith('$'))) {
+    const m = /** @type {any} */ (versions.get(v)).apparences[0].mesures;
+    for (const [k, x] of Object.entries(apres)) assert.deepEqual(m[k], x, `${v} ${k}`);
+  }
+  assert.equal(releve.densite, 2);
+});
+
+test('C9 vignettes à la taille réelle, réduites seulement si elles dépassent ; noms longs dans « Voir le code » seulement', async () => {
+  const p = await lirePage(join(A.dir, 'constat.html'));
+  assert.ok(p.vignettes.length >= 12);
+  for (const v of p.vignettes) {
+    assert.equal(v.attribut, Math.round(v.naturelle / 2));
+    assert.ok(Math.abs(v.affichee - Math.min(v.attribut, v.colonne)) <= 0.5, JSON.stringify(v));
+  }
+  assert.ok(p.vignettes.some((v) => v.attribut > v.colonne), 'une vignette réduite (la carte)');
+  assert.ok(p.vignettes.some((v) => v.affichee === v.attribut), 'une vignette à sa taille');
+  assert.doesNotMatch(p.sansCode, / \/ (Vuetify|Fait maison|Sans style) \//);
+});
+
+/** Couleur d'un rôle, en suivant les alias des fichiers de jetons communs, dans l'ordre donné ; le dernier gagne. @param {string[]} fichiers @param {string} role */
+function couleurDuRole(fichiers, role) {
+  /** @type {Record<string, any>} */
+  const plat = {};
+  /** @param {any} n @param {string[]} chemin */
+  const aplatir = (n, chemin) => {
+    for (const [k, v] of Object.entries(n)) {
+      if (k.startsWith('$') || !v || typeof v !== 'object') continue;
+      if ('$value' in v) plat[[...chemin, k].join('.')] = v.$value;
+      else aplatir(v, [...chemin, k]);
+    }
+  };
+  for (const f of fichiers) aplatir(JSON.parse(readFileSync(join(ROOT, 'tokens/commun', f), 'utf8')), []);
+  let v = plat[role];
+  while (typeof v === 'string' && v.startsWith('{')) v = plat[v.slice(1, -1)];
+  const [r, g, b] = v.components.map((/** @type {number} */ x) => Math.round(x * 255));
+  return { hex: v.hex, rgb: `rgb(${r}, ${g}, ${b})` };
+}
+
+test('C10 clair et sombre à 390 px : sans défilement, fond et texte des jetons communs', async () => {
+  const clair = ['primitives.tokens.json', 'statuts.tokens.json', 'semantique.tokens.json'];
+  const sombre = ['primitives.tokens.json', 'statuts.tokens.json', 'mode.sombre.tokens.json', 'semantique.tokens.json'];
+  for (const [mode, fichiers] of /** @type {const} */ ([['light', clair], ['dark', sombre]])) {
+    const p = await lirePage(join(A.dir, 'constat.html'), { colorScheme: mode });
+    assert.ok(p.largeur <= 390, `${mode} : ${p.largeur}`);
+    assert.equal(p.fond, couleurDuRole(fichiers, 'fond.app').rgb, mode);
+    assert.equal(p.couleur, couleurDuRole(fichiers, 'texte.principal').rgb, mode);
+  }
+  assert.notEqual(couleurDuRole(clair, 'fond.app').hex, couleurDuRole(sombre, 'fond.app').hex);
 });

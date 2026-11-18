@@ -3,17 +3,81 @@
     "equipe": "Fait maison",
     "nu": "Sans style"
   },
-  "info": {
+  "etats": {
+    "aDecider": "pas encore décidé",
+    "laisse": "laissé tel quel"
+  },
+  "scores": {
+    "Source unique": "Part des éléments qui utilisent la version la plus répandue de leur type. Plus c'est haut, moins il y a de doublons",
+    "Accessibilité de base": "Chaque élément a un nom lisible par un lecteur d'écran, s'atteint au clavier, et a une zone de clic assez grande. C'est un minimum, pas un audit complet",
+    "Versions choisies": "Types dont la version à garder est choisie par le designer",
+    "Éléments identifiés": "Part des éléments que l'outil a su identifier. Le reste est dans « Non identifiés »"
+  },
+  "definitions": {
     "Type d'élément": "Une famille de pièces d'interface qui font la même chose : bouton, champ, carte",
     "Version": "Une façon dont ce type est codé sur le site. Deux versions font le même travail avec un code différent",
     "Origine": "D'où vient le code : du jeu de pièces du site, de l'équipe, ou du navigateur sans habillage",
     "Version à garder": "La version que l'équipe garde pour ce type d'élément. Les autres seront remplacées par elle. Le designer la choisit, avec le développeur",
-    "Source unique": "Part des éléments qui utilisent la version la plus répandue de leur type. Plus c'est haut, moins il y a de doublons",
-    "Accessibilité de base": "Chaque élément a un nom lisible par un lecteur d'écran, s'atteint au clavier, et a une zone de clic assez grande. C'est un minimum, pas un audit complet",
-    "Versions à garder choisies": "Types dont la version à garder est choisie par le designer",
-    "Fiabilité de l'audit": "Part des éléments que l'outil a su identifier. Le reste est dans « Non identifiés »",
-    "Effort": "Nombre d'endroits à modifier pour n'avoir qu'une version par type",
     "Non identifiés": "Des blocs répétés que l'outil ne sait pas nommer. À laisser tels quels, ou à rattacher à un type"
+  },
+  "guidage": {
+    "elements": ["{n} élément", "{n} éléments"],
+    "types": ["{n} type", "{n} types"],
+    "phraseCourte": "{elements}, de {types}.",
+    "plusieurs": ["Pour {n} type, le site a plusieurs versions du même élément.", "Pour {n} types, le site a plusieurs versions du même élément."],
+    "uneSeule": "Chaque type n'a qu'une version.",
+    "aFaire": {
+      "titre": "Ce qu'il vous reste à faire",
+      "doublons": ["{n} type à doublons : choisir la version à garder", "{n} types à doublons : choisir la version à garder"],
+      "confirmer": ["{n} type à une seule version : confirmer", "{n} types à une seule version : confirmer"],
+      "blocs": ["{n} bloc non identifié : le rattacher ou le laisser", "{n} blocs non identifiés : les rattacher ou les laisser"],
+      "rien": "Rien à faire : toutes les versions à garder sont choisies."
+    },
+    "effort": ["{n} endroit à modifier pour n'avoir qu'une version par type.", "{n} endroits à modifier pour n'avoir qu'une version par type."],
+    "sections": {
+      "doublons": "Types à doublons",
+      "uneVersion": "Types à une seule version",
+      "nonIdentifies": "Non identifiés",
+      "lire": "Comment lire ce constat",
+      "limites": "Limites de cet audit",
+      "sansCible": "Décisions sans cible"
+    },
+    "type": {
+      "fois": ["{n} fois", "{n} fois"],
+      "versions": ["{n} version", "{n} versions"],
+      "resume": "{fois}, en {versions}.",
+      "plusRepandue": "la plus répandue",
+      "egalite": "à égalité",
+      "rattache": "rattaché à la main",
+      "aFaire": "À faire",
+      "choisir": ["Choisir la version à garder. Si c'est la plus répandue, {n} endroit sera à remplacer.", "Choisir la version à garder. Si c'est la plus répandue, {n} endroits seront à remplacer."],
+      "garde": ["Version à garder : {nom}. {n} endroit à remplacer.", "Version à garder : {nom}. {n} endroits à remplacer."],
+      "confirmer": "Confirmer cette version comme version à garder.",
+      "gardeSeule": "Version à garder : {nom}. Rien à remplacer.",
+      "gabarit": ["Gabarit : {n} élément, sur toutes les pages, hors des chiffres", "Gabarit : {n} éléments, sur toutes les pages, hors des chiffres"],
+      "voirLeCode": "Voir le code"
+    },
+    "bloc": {
+      "decider": "Le rattacher à un type, ou le laisser tel quel.",
+      "laisse": "Laissé tel quel."
+    },
+    "defauts": {
+      "nom": "sans nom pour les lecteurs d'écran",
+      "clavier": "hors d'atteinte au clavier",
+      "zone": "zone de clic trop petite",
+      "part": "{k} sur {x} : {defaut}"
+    },
+    "differences": {
+      "hauteur": "hauteur",
+      "bordure": "bordure",
+      "sansBordure": "sans bordure",
+      "arrondi": "arrondi",
+      "sansArrondi": "arrondi 0",
+      "marge": "marge intérieure",
+      "sansMarge": "sans marge intérieure",
+      "texte": "texte",
+      "graisse": "graisse"
+    }
   },
   "limites": [
     "Pages au repos, sans survol ni menus ouverts.",
@@ -25,6 +89,7 @@
     "L'outil regarde la page affichée et ne donne pas le fichier du projet.",
     "Les onglets, les menus et les groupes de boutons radio comptent comme atteints au clavier si l'un d'eux l'est. L'outil ne vérifie pas que les flèches marchent.",
     "La zone de clic compte l'élément ou son libellé cliquable. Sous 24 px, une commande laissée à la taille du navigateur compte comme un défaut, alors que les règles WCAG l'acceptent.",
-    "Un élément présent à l'identique sur toutes les pages est montré une fois et ne compte dans aucun chiffre."
+    "Un élément présent à l'identique sur toutes les pages est montré une fois et ne compte dans aucun chiffre.",
+    "Pages vues le {date}."
   ]
 }
