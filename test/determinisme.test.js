@@ -8,6 +8,8 @@
  *   réduction           revue.html, table.json, migration.md et modifications.json de deux réductions
  *                       de la page de marque (ses deux captures pleine page variaient, D34) ;
  *   verify              deux captures de la page de marque par capturePage ;
+ *   composants          releve.json, constat.json, constat.md, constat.html et chaque capture de deux constats des pages
+ *                       d'annuaire (D46) ;
  *   lancement           aucun module de src/ ne lance Chromium hors de src/browser/lancement.js (D34).
  * Chaque paire tourne sur le même serveur : même port, donc même entrée.
  */
@@ -24,6 +26,7 @@ import { gotoAndSettle } from '../src/browser/navigate.js';
 import { runAudit } from '../src/audit/run.js';
 import { runReduce } from '../src/reduce/run.js';
 import { capturePage } from '../src/verify/capture.js';
+import { runComposants } from '../src/composants/run.js';
 
 const D = JSON.parse(await readFile(new URL('../fixtures/marque-demo/expected-desordre.json', import.meta.url), 'utf8'));
 const M = JSON.parse(await readFile(new URL('../fixtures/marque-demo/expected-marque.json', import.meta.url), 'utf8'));
@@ -112,6 +115,20 @@ test('verify : deux captures de la page de marque inchangée, même image à l�
   const a = await capturePage({ url, viewport: M.conditions.viewport, waitMs: 100 });
   const b = await capturePage({ url, viewport: M.conditions.viewport, waitMs: 100 });
   assert.ok(a.png.equals(b.png), 'les deux captures diffèrent');
+});
+
+test('composants : deux constats des pages d’annuaire, relevé, constat et captures identiques à l’octet', async () => {
+  const opts = {
+    addresses: [`${servers.origin}/annuaire/liste.html`, '/annuaire/fiche.html'],
+    signatures: [fileURLToPath(new URL('../config/signatures/vuetify.json', import.meta.url))],
+    waitMs: 100,
+    now: NOW,
+  };
+  const a = await runComposants({ ...opts, outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-determinisme-composants-')) });
+  const b = await runComposants({ ...opts, outRoot: await mkdtemp(join(tmpdir(), 'ds-lab-determinisme-composants-')) });
+  assert.deepEqual([...(await filesOf(join(a.dir, 'captures'))).keys()].length, 15);
+  await assertSameFiles(join(a.dir, 'captures'), join(b.dir, 'captures'));
+  for (const f of ['releve.json', 'constat.json', 'constat.md', 'constat.html']) assert.ok((await readFile(join(a.dir, f))).equals(await readFile(join(b.dir, f))), f);
 });
 
 test('lancement : aucun module de src/ ne lance Chromium hors de src/browser/lancement.js', () => {

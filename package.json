@@ -12,6 +12,7 @@
     "apply": "node src/cli/apply.js",
     "ajout": "node src/cli/ajout.js",
     "audit": "node src/cli/audit.js",
+    "composants": "node src/cli/composants.js",
     "contraste": "node src/cli/contraste.js",
     "css": "node src/cli/css.js",
     "espacements": "node src/cli/espacements.js",

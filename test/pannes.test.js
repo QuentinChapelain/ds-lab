@@ -19,7 +19,9 @@
  *   N10 (D31 : l'exception de D18 est fermée) contrôle final de la saisie, fait sur les fichiers
  *      écrits à côté avant remplacement, sur une copie dont controlerEcrits (src/tokens/saisie.js) est forcé : s'il lève,
  *      ou s'il trouve une paire en échec (incohérence de l'outil), sortie 2, le message le dit, rien n'est écrit, aucun
- *      fichier temporaire laissé.
+ *      fichier temporaire laissé ;
+ *   N11 composants (D46) : option inconnue, aucune adresse, décisions ou signatures absentes, illisibles ou mal formées
+ *      (la ligne est nommée), relevé absent, Chromium qui ne se lance pas → 2, rien d'écrit.
  *
  * La copie (N6, N10) va dans le dossier temporaire du système, hors du dépôt : src/, tokens/, package.json (pour
  * "type": "module") et .node-version (la garde de version de chaque commande, D40) ; elle trouve ses dépendances par
@@ -194,4 +196,24 @@ test('N10 contrôle final avant remplacement : panne ou incohérence ; sortie 2,
     assert.doesNotMatch(p.stdout, /marque acceptée/);
     assert.deepEqual(readdirSync(e.dossier), ['entree.json'], 'rien d\'écrit');
   }
+});
+
+test('N11 composants : option inconnue, décisions et signatures absentes, illisibles ou mal formées, relevé absent, Chromium absent → 2, rien d\'écrit', () => {
+  const f = fichiersFaux();
+  const out = tmp('composants');
+  const site = 'http://127.0.0.1:9/';
+  const malFormees = join(f.dossier, 'decisions.json');
+  writeFileSync(malFormees, JSON.stringify({ blocs: [{ bloc: 'x', sort: 'jeter' }] }));
+  const sansPieces = join(f.dossier, 'signatures.json');
+  writeFileSync(sansPieces, JSON.stringify({ framework: 'Cadre', pieces: [] }));
+  panne(run('composants', ['--inconnu']), 'composants', /--inconnu/);
+  panne(run('composants', ['--out', out]), 'composants', /au moins une adresse/);
+  panne(run('composants', [site, '--decisions', f.absent, '--out', out]), 'composants', /absent\.json : fichier absent/);
+  panne(run('composants', [site, '--decisions', f.casse, '--out', out]), 'composants', /casse\.json : JSON illisible/);
+  panne(run('composants', [site, '--decisions', malFormees, '--out', out]), 'composants', /blocs, ligne 1 : sort « jeter » inconnu/);
+  panne(run('composants', [site, '--signatures', f.casse, '--out', out]), 'composants', /casse\.json : JSON illisible/);
+  panne(run('composants', [site, '--signatures', sansPieces, '--out', out]), 'composants', /« pieces »/);
+  panne(run('composants', ['--releve', f.dossier, '--out', out]), 'composants', /releve\.json : fichier absent/);
+  panne(run('composants', [site, '--out', out], SANS_CHROMIUM), 'composants', /Executable|Chromium|navigateur/i);
+  assert.deepEqual(readdirSync(out), [], 'rien d\'écrit');
 });

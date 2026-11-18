@@ -1,0 +1,30 @@
+{
+  "origines": {
+    "equipe": "Fait maison",
+    "nu": "Sans style"
+  },
+  "info": {
+    "Type d'élément": "Une famille de pièces d'interface qui font la même chose : bouton, champ, carte",
+    "Version": "Une façon dont ce type est codé sur le site. Deux versions font le même travail avec un code différent",
+    "Origine": "D'où vient le code : du jeu de pièces du site, de l'équipe, ou du navigateur sans habillage",
+    "Version à garder": "La version que l'équipe garde pour ce type d'élément. Les autres seront remplacées par elle. Le designer la choisit, avec le développeur",
+    "Source unique": "Part des éléments qui utilisent la version la plus répandue de leur type. Plus c'est haut, moins il y a de doublons",
+    "Accessibilité de base": "Chaque élément a un nom lisible par un lecteur d'écran, s'atteint au clavier, et a une zone de clic assez grande. C'est un minimum, pas un audit complet",
+    "Versions à garder choisies": "Types dont la version à garder est choisie par le designer",
+    "Fiabilité de l'audit": "Part des éléments que l'outil a su identifier. Le reste est dans « Non identifiés »",
+    "Effort": "Nombre d'endroits à modifier pour n'avoir qu'une version par type",
+    "Non identifiés": "Des blocs répétés que l'outil ne sait pas nommer. À laisser tels quels, ou à rattacher à un type"
+  },
+  "limites": [
+    "Pages au repos, sans survol ni menus ouverts.",
+    "Une seule largeur : {largeur}.",
+    "Nombre de pages vues : {pages}.",
+    "Source unique à 100 % ne veut pas dire « bien ».",
+    "L'accessibilité de base est un minimum.",
+    "Les types non vus sur ces pages ne sont pas comptés.",
+    "L'outil regarde la page affichée et ne donne pas le fichier du projet.",
+    "Les onglets, les menus et les groupes de boutons radio comptent comme atteints au clavier si l'un d'eux l'est. L'outil ne vérifie pas que les flèches marchent.",
+    "La zone de clic compte l'élément ou son libellé cliquable. Sous 24 px, une commande laissée à la taille du navigateur compte comme un défaut, alors que les règles WCAG l'acceptent.",
+    "Un élément présent à l'identique sur toutes les pages est montré une fois et ne compte dans aucun chiffre."
+  ]
+}
