@@ -4,7 +4,7 @@
  *
  * Attendus écrits à la main avant le code (16/11/2026) :
  *   D1 les marques sont les dossiers de tokens/ qui ont un marque.resolver.json, par ordre de nom : atelier-lavandine,
- *      ecume-et-sel, grenat-papeterie, orbe-cafe ; leur nom est le champ name de leur resolver ;
+ *      ecume-et-sel, grenat-papeterie, maison-alberto, orbe-cafe ; leur nom est le champ name de leur resolver ;
  *   D2 plus de constante ORBE ; loadRoles et largeurs exigent un dossier : sans lui, elles lèvent en le disant
  *      (« loadRoles : dossier de marque attendu », « largeurs : dossier de marque attendu ») ;
  *   D3 contraste, espacements et typo prennent --marque <dossier> ; avec l'option, la sortie est celle d'une seule marque ;
@@ -24,8 +24,8 @@ import * as resolver from '../src/tokens/resolver.js';
 import { loadRoles } from '../src/tokens/roles.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const MARQUES = ['atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'orbe-cafe'];
-const NOMS = ['Atelier Lavandine', 'Écume et Sel', 'Grenat Papeterie', 'Orbe Café'];
+const MARQUES = ['atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto', 'orbe-cafe'];
+const NOMS = ['Atelier Lavandine', 'Écume et Sel', 'Grenat Papeterie', 'Maison Alberto', 'Orbe Café'];
 /** @param {string} cli @param {...string} args */
 const run = (cli, ...args) => spawnSync(process.execPath, [`src/cli/${cli}.js`, ...args], { cwd: ROOT, encoding: 'utf8' });
 
@@ -67,7 +67,7 @@ test('D4 une marque qui échoue : sortie 1', () => {
   writeFileSync(join(dir, 'paires.json'), JSON.stringify(paires));
   const p = run('contraste', '--paires', join(dir, 'paires.json'));
   assert.equal(p.status, 1, p.stderr);
-  assert.equal(p.stdout.match(/^marque /gm)?.length, 4);
+  assert.equal(p.stdout.match(/^marque /gm)?.length, 5);
 });
 
 test('D5 typo : --couche-marque <fichier>', () => {

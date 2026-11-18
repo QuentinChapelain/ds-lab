@@ -4,8 +4,10 @@
  * contrastRatio de src/lib/color.js (réponse de Quentin du 16/11/2026) ; culori reste l'oracle indépendant des tests.
  *
  * Attendus écrits à la main avant le code (16/11/2026) :
- *   les deux calculs donnent le même nombre, à l'égalité exacte, sur toutes les paires de rôles des quatre marques, en
- *     clair et en sombre, en large et en étroit (paires et interdites) : mesuré à la confrontation, 1 248 paires, écart 0 ;
+ *   les deux calculs donnent le même nombre, à l'égalité exacte, sur toutes les paires de rôles des cinq marques, en
+ *     clair et en sombre, en large et en étroit (paires et interdites) : mesuré à la confrontation, 1 248 paires pour
+ *     quatre marques, écart 0 ; avec Maison Alberto (18/11/2026) : 5 marques × 4 contextes × (70 paires + 8 interdites)
+ *     = 1 560 ;
  *   une entrée qui n'est pas #rrggbb lève une erreur qui la nomme : « #fff », « white », « transparent », « #ffffff80 »
  *     (aujourd'hui : NaN, en silence) ;
  *   aucun fichier de src/ n'importe wcagContrast de culori (aujourd'hui : 5 fichiers).
@@ -20,7 +22,7 @@ import { contrastRatio } from '../src/lib/color.js';
 import { loadRoles, contratRoles } from '../src/tokens/roles.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const MARQUES = ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie'];
+const MARQUES = ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto'];
 
 test('W1 contrastRatio et culori : même nombre sur toutes les paires de rôles', () => {
   let n = 0;
@@ -33,7 +35,7 @@ test('W1 contrastRatio et culori : même nombre sur toutes les paires de rôles'
           assert.equal(contrastRatio(p.hexDevant, p.hexFond), wcagContrast(p.hexDevant, p.hexFond), `${m} ${mode} ${largeur} : ${p.devant} sur ${p.fond}`);
         }
       }
-  assert.equal(n, 1248);
+  assert.equal(n, 1560);
 });
 
 test('W2 une entrée qui n’est pas #rrggbb lève en la nommant', () => {

@@ -8,7 +8,7 @@
  *   F2 forme : première ligne « /* Jetons de <nom>, écrits par npm run css depuis marque.resolver.json (Terrazzo). Ne pas
  *      modifier à la main. *\/ », <nom> lu dans le champ name du resolver ; puis trois blocs et rien d'autre, dans cet ordre :
  *      :root ; @media (prefers-color-scheme: dark) { :root } ; @media (width < <seuil>px) { :root }, le seuil lu dans
- *      $extensions["ds-lab.largeur"] du resolver (600 px pour les quatre marques) ;
+ *      $extensions["ds-lab.largeur"] du resolver (600 px pour les cinq marques) ;
  *   F3 seulement ce qui change, au grain du jeton (le filtre de Terrazzo prend un jeton entier) : chaque variable d'un
  *      bloc @media est aussi dans :root, avec une autre valeur, sauf une sous-variable de style de texte dont une
  *      sœur du même style change dans le même bloc ; mesuré : 0 telle sous-variable en sombre, 16 en étroit pour
@@ -122,7 +122,7 @@ function egal(type, v, ecrit) {
 }
 
 test('F1 fraîcheur : jetons.css de chaque marque identique à une génération neuve', async () => {
-  assert.equal(MARQUES.length, 4);
+  assert.equal(MARQUES.length, 5);
   for (const d of MARQUES) {
     const r = await feuilleCss(d);
     assert.deepEqual(r.motifs, [], d);

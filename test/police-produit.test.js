@@ -10,8 +10,9 @@
  *      police du client ;
  *   P3 polices.titre reste demandée : absente, refus « polices.titre, liste de noms de familles attendue » ;
  *      polices.texte vide : refus « polices.texte, liste de noms de familles attendue » ;
- *   P4 une marque qui déclare polices.texte la garde (les 4 marques fictives) ; leur resolver lit le commun avant la
- *      couche marque.
+ *   P4 une marque qui déclare polices.texte la garde (quatre marques fictives) ; leur resolver lit le commun avant la
+ *      couche marque ; Maison Alberto, sans polices.texte (18/11/2026), prend la police du produit, comme en P2, et sa
+ *      couche marque n'écrit que police.titre ["National Park", "sans-serif"].
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -60,11 +61,14 @@ test('P3 polices.titre demandée ; polices.texte vide refusée', () => {
 });
 
 test('P4 les marques fictives gardent leur police de texte ; le commun est lu avant la couche marque', () => {
-  for (const m of ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie']) {
+  for (const m of ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto']) {
     const d = join(ROOT, 'tokens', m);
     const r = lire(join(d, 'marque.resolver.json'));
     const sources = r.sets.marque.sources.map((/** @type {any} */ s) => s.$ref);
     assert.ok(sources.indexOf('../commun/police.tokens.json') < sources.indexOf('marque.tokens.json'), m);
-    assert.deepEqual(partager(lireResolver(join(d, 'marque.resolver.json'))).marque.marque.police.texte.$value, lire(join(d, 'entree.json')).polices.texte, m);
+    assert.deepEqual(partager(lireResolver(join(d, 'marque.resolver.json'))).marque.marque.police.texte.$value, lire(join(d, 'entree.json')).polices.texte ?? PRODUIT, m);
   }
+  const police = lire(join(ROOT, 'tokens', 'maison-alberto', 'marque.tokens.json')).marque.police;
+  assert.deepEqual(Object.keys(police).filter((k) => !k.startsWith('$')), ['titre']);
+  assert.deepEqual(police.titre.$value, ['National Park', 'sans-serif']);
 });

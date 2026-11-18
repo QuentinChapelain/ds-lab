@@ -6,7 +6,7 @@
  *
  * Attendus écrits à la main avant le code (16/11/2026) :
  *   E1 echellesPropres(dossier) : le contenu de primitives.tokens.json du dossier, ou null ; Orbe Café donne bleu, terre,
- *      sable ; les trois autres marques n'en ont pas ;
+ *      sable ; les quatre autres marques n'en ont pas ;
  *   E2 sans ce fichier, nommer une échelle est refusé : « entrée invalide : primaire, échelle existante : aucune échelle
  *      écrite à la main dans le dossier de la marque (primitives.tokens.json) » ;
  *   E3 une marque quelconque qui a son fichier (dossier temporaire, échelle « olive » de 12 pas) nomme son échelle :
@@ -47,11 +47,11 @@ function avecOlive() {
 test('E1 echellesPropres : le fichier du dossier, ou null', () => {
   const o = echellesPropres(ORBE);
   assert.deepEqual(Object.keys(o?.couleur ?? {}).filter((k) => !k.startsWith('$')), ['bleu', 'terre', 'sable']);
-  for (const m of ['atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie']) assert.equal(echellesPropres(dossier(m)), null, m);
+  for (const m of ['atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto']) assert.equal(echellesPropres(dossier(m)), null, m);
 });
 
 test('E2 sans fichier d\'échelles écrites à la main, nommer une échelle est refusé', () => {
-  for (const m of ['atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie']) {
+  for (const m of ['atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto']) {
     const r = saisir({ nom: 'Essai', primaire: { echelle: 'bleu' }, polices: POLICES }, { dossier: dossier(m) });
     assert.deepEqual(r.motifs, [`entrée invalide : primaire, ${SANS_FICHIER}`], m);
   }

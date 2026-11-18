@@ -1,6 +1,7 @@
 // @ts-check
 /**
- * Trois marques fictives ajoutées par fichier (docs/attendus/etape-4-contrat-de-marque.md).
+ * Marques fictives ajoutées par fichier (docs/attendus/etape-4-contrat-de-marque.md ; Maison Alberto :
+ * docs/attendus/atelier.md).
  *
  * Attendus écrits à la main avant les fichiers (15/11/2026). Contraste du blanc sur la couleur saisie, OKLCH
  * (culori : wcagContrast, oklch), école du générateur (generateScale) et classe de plein (classePlein) ;
@@ -14,7 +15,13 @@
  * Règle des pleins (D04 ; culori, wcagContrast sur les échelles générées) : Lavandine primaire soutenu
  *   (blanc 5,01 sur le pas 9, 5,30 sur le pas 10), accent clair (pas 12 : 7,18 sur le pas 9, 6,10 sur le pas 10) ;
  *   Écume primaire clair (8,33 et 7,08), accent moyen (blanc 3,68, pas 12 : 3,52) ; Grenat inchangé.
- * Les trois sont acceptées (aucun motif) ; leurs fichiers versionnés sont ceux que produit la saisie ;
+ * Maison Alberto, attendus écrits à la main le 18/11/2026, mêmes règles, culori seul (wcagContrast, oklch sur la couleur
+ *   saisie ; wcagContrast sur l'échelle générée de echelles.tokens.json) ; commande :
+ *   node --input-type=module -e (wcagContrast(blanc, source), oklch(source), puis D04 sur les pas 9, 10 et 12) :
+ *   primaire #bf9b45 (blanc 2,63 ; L 0,706 ; h 86,3) école plein clair, plein moyen (blanc 2,63 ; pas 12 : 4,97 sur
+ *     le pas 9, 4,22 sur le pas 10) ; accent #ba4c99 (blanc 4,58 ; L 0,585 ; h 340,9) école normale, plein soutenu ;
+ *   sans polices.texte : la police du produit (D16).
+ * Les quatre sont acceptées (aucun motif) ; leurs fichiers versionnés sont ceux que produit la saisie ;
  * npm run contraste -- --marque <dossier> sort 0.
  * Survol de la classe soutenu (décision du 15/11/2026, 13 h 58) : couleur exacte sous un voile noir de 15 %, valeur
  *   calculée, formule en $extensions. Lavandine : culori, formatHex(interpolate(['#8a4fd8', '#000000'], 'rgb')(0.15))
@@ -36,6 +43,7 @@ const MARQUES = {
   'atelier-lavandine': ['Atelier Lavandine', '#8a4fd8', '#f2b705', ['normale', 'plein clair'], ['soutenu', 'clair']],
   'ecume-et-sel': ['Écume et Sel', '#7fdbff', '#e4572e', ['plein clair', 'normale'], ['clair', 'moyen']],
   'grenat-papeterie': ['Grenat Papeterie', '#7a1f3d', null, ['foncée', null], ['sombre', 'moyen']],
+  'maison-alberto': ['Maison Alberto', '#bf9b45', '#ba4c99', ['plein clair', 'normale'], ['moyen', 'soutenu']],
 };
 
 for (const [slug, [nom, primaire, accent, ecoles, pleins]] of Object.entries(MARQUES)) {

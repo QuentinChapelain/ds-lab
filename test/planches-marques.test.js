@@ -1,13 +1,13 @@
 // @ts-check
 /**
- * Planches des quatre marques, même code (docs/attendus/revue-lot-5-marque.md, Q4 et Q5).
+ * Planches des cinq marques, même code (docs/attendus/revue-lot-5-marque.md, Q4 et Q5).
  * Sans navigateur ; les tests de mise en page restent sur une marque (roles-, espacements-, typo-planche.test.js), après
- * une mesure faite une fois sur les quatre.
+ * une mesure faite une fois sur les quatre premières.
  *
  * Attendus écrits à la main avant le code (16/11/2026) :
  *   P1 chaque marque de tokens/ (dossiersDeMarque) a ses trois planches versionnées, roles.html, espacements.html et
  *      typo.html, égales à la sortie de leur fonction (planche(dossier) de src/report/roles.js, espacements.js, typo.js) :
- *      12 fichiers ;
+ *      15 fichiers ;
  *   P2 chaque planche nomme sa marque, lue dans le champ name du resolver, dans son <title> et dans son <h1>, et ne nomme
  *      aucune autre marque ;
  *   P3 le texte d'essai du spécimen de la typo est « <nom> ouvre le mardi », une fois par style (11 styles) ;
@@ -29,8 +29,8 @@ const NOMS = MARQUES.map(nomDeMarque);
 /** @param {string} s */
 const echap = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
-test('P1 douze planches versionnées, égales à la sortie de leur fonction', () => {
-  assert.equal(MARQUES.length, 4);
+test('P1 quinze planches versionnées, égales à la sortie de leur fonction', () => {
+  assert.equal(MARQUES.length, 5);
   for (const d of MARQUES) for (const [f, page] of PLANCHES) assert.equal(readFileSync(join(d, f), 'utf8'), page(d), join(d, f));
 });
 

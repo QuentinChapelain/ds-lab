@@ -1,0 +1,6 @@
+{
+  "nom": "Maison Alberto",
+  "primaire": "#bf9b45",
+  "accent": "#ba4c99",
+  "polices": { "titre": ["National Park", "sans-serif"] }
+}

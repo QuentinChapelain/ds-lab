@@ -18,7 +18,7 @@
  *      alias ; texte sur le plein ≥ 7:1 (DS1), environ 9:1 ; l'aplat plein (fond.marque.fort, texte.sur-marque), le
  *      bouton inversé, bordure.focus.inverse et l'accent fort gardent leurs valeurs claires ; texte.marque.grand ≥ 3:1
  *      sur les fonds sombres ;
- *   M6 fichiers sombres écrits = sortie de la saisie ; les 4 marques fictives passent le contraste en sombre.
+ *   M6 fichiers sombres écrits = sortie de la saisie ; les 5 marques fictives passent le contraste en sombre.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -33,7 +33,7 @@ import { saisir, serialiser } from '../src/tokens/saisie.js';
 import { COMMUN, RESOLVER, lireResolver, partager } from '../src/tokens/resolver.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const MARQUES = ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie'];
+const MARQUES = ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto'];
 const PAGE = 1.121;
 /** @param {string} p */
 const lire = (p) => JSON.parse(readFileSync(p, 'utf8'));
@@ -111,7 +111,7 @@ test('M5 bouton sombre : pas 11, 12 et 1 en alias, texte ≥ 7:1 ; aplat plein, 
   }
 });
 
-test('M6 fichiers sombres = sortie de la saisie ; les 4 marques fictives passent le contraste en sombre', () => {
+test('M6 fichiers sombres = sortie de la saisie ; les 5 marques fictives passent le contraste en sombre', () => {
   for (const m of MARQUES) {
     const dossier = join(ROOT, 'tokens', m);
     const r = saisir(lire(join(dossier, 'entree.json')), { dossier });

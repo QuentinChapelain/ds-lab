@@ -183,7 +183,7 @@ ${specimen}
         ${el('h2', 'titre.2', 'Page de contenu', ' id="titre-contenu"')}
         <article class="cadre article">
           <div class="bloc-titre">
-            ${el('h3', 'titre.1', 'Du grain à la tasse : comment nous choisissons, torréfions et servons chaque café de la maison', ' id="titre-long"')}
+            ${el('h3', 'titre.1', 'Du grain à la tasse : comment nous choisissons, torréfions et servons chaque café de notre carte', ' id="titre-long"')}
             ${el('p', 'corps.grand', 'Chaque mardi, la machine tourne avant l\'ouverture ; voici ce qui se passe entre le sac de café vert et la tasse posée sur le comptoir.', '', 'secondaire')}
           </div>
           <div class="bloc">

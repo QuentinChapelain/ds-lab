@@ -68,7 +68,7 @@ test('C4 la planche typo écrit la consigne sur les cinq styles de titre seuleme
 });
 
 test('C5 chaque marque fictive résout la consigne', () => {
-  for (const m of ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie']) {
+  for (const m of ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto']) {
     const l = largeurs(join(ROOT, 'tokens', m));
     const r = typo(l.large.semantique, l.large.primitives, l.large.marque, { ...l.etroit, semantique: enEtroit(l.large.semantique, l.contexte) });
     assert.deepEqual(r.styles.filter((s) => s.hauteurCapitale === 0.7).map((s) => s.style), SUR_POLICE_TITRE, m);

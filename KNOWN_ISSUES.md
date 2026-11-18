@@ -1,6 +1,6 @@
 # Dette connue
 
-État au 17/11/2026.
+État au 18/11/2026.
 
 - Tailles de texte en px : `indexTokens` (`src/report/migration.js`) n'indexe que les px ; bascule en rem à faire après adaptation (D12, `docs/decisions.md`).
 - Interlettrage à 0 partout, à régler avec une vraie police.
@@ -10,7 +10,7 @@
 - Consigne : la hauteur de ligne suit la taille calculée, pas la taille ajustée, mesuré dans Chromium 147 seulement ; Firefox et Safari non mesurés [V] (forme `cap-height <nombre>` : Chrome 127, Firefox 92, Safari 17, selon MDN).
 - Consigne : Oswald est rendu 14 % plus petit que sa taille nominale (capitale 810 sur 1 000 : 0,7 ÷ 0,81 = 0,864) ; EB Garamond 7,7 % plus grand (650 sur 1 000) ; Georgia d'Orbe Café 1 % plus grand. C'est le prix d'une même hauteur de capitale visible.
 - Contrôle d'encre : pire cas sur tout le jeu de caractères, même si cette capitale et cette descendante ne se suivent jamais ; le contrôle est prudent, il peut refuser une police qui passerait à l'œil. L'encre est lue dans les pixels du tracé à 1 000 px (D32) : une ligne de pixels vaut 0,001 em, et le lissage peut ajouter jusqu'à une ligne au bord ; macOS et Linux s'accordent à 0,001 em sur les polices d'essai [F]. Coût : environ 0,65 s par police sur un Mac, 1,9 s sur le runner de la CI, contre 0,11 s avec les bornes de `measureText` [F].
-- Police des titres sans fichier (Orbe Café, Georgia) : ni hauteur de capitale ni encre contrôlées ; Georgia touchait déjà avant la consigne avec les lignes de l'étape 3.
+- Police des titres sans fichier (Orbe Café, Georgia ; Maison Alberto, National Park) : ni hauteur de capitale ni encre contrôlées ; Georgia touchait déjà avant la consigne avec les lignes de l'étape 3. National Park n'est installée ni sur le poste ni sur le runner : elle est rendue dans la police de repli [H].
 - Image des titres de l'étape 4c (`local/lot-4c/titres.png`) et son script : dans `local/` seulement.
 - Primitives espace 0, 8, 12 et 64 sans rôle, à revoir après les composants.
 - Règle DS10 sans contrôle (`docs/regles.md`).
@@ -33,7 +33,7 @@
 - `npm run reduce --tokens <resolver>` lit le resolver dans ses contextes par défaut (clair, large) ; aucune option ne choisit le mode sombre ou l'étroit (D28).
 - Planches de typo et d'espacements : les situations (typo : hero d'une page d'accueil, page de contenu, écran dense ; espacements : réserver une table, trois salles, horaires) sont un contenu d'essai commun à toutes les marques, sur le thème d'un café ; la marque n'est nommée que dans le titre, l'en-tête et le texte d'essai du spécimen (D27).
 - Tests navigateur des planches (rôles, espacements, typo) : sur Orbe Café seulement ; lancés une fois sur les quatre marques au lot 5 de la revue (16/11/2026), tous passent sauf « T4 colonnes » pour trois marques, dont la référence `INTERDITES_ORBE_CAFE` (`test/roles-planche.test.js`) porte les ratios d'Orbe Café, écrits à la main [F]. Une marque ajoutée n'a que le test sans navigateur de ses planches (`test/planches-marques.test.js`).
-- Garde sans nom de marque (`test/marque-en-dur.test.js`) : lexicale, sans parseur ; elle interdit aussi le premier mot du dossier de chaque marque comme partie d'identifiant ou de mot dans le code de `src/`, chaînes comprises (aujourd'hui « orbe », « atelier », « ecume », « grenat »). Une marque dont le dossier commence par un mot courant le rendrait inutilisable dans `src/` [H].
+- Garde sans nom de marque (`test/marque-en-dur.test.js`) : lexicale, sans parseur ; elle interdit aussi le premier mot du dossier de chaque marque comme partie d'identifiant ou de mot dans le code de `src/`, chaînes comprises (aujourd'hui « orbe », « atelier », « ecume », « grenat », « maison »). Une marque dont le dossier commence par un mot courant le rend inutilisable dans `src/` [F] : avec Maison Alberto, la phrase du spécimen de la typo « …chaque café de la maison » (`src/report/typo.js`) a dû devenir « …de notre carte », et « atelier » reste interdit dans les chaînes de `src/`.
 - Table des 8 marques par mode (lot 3 de l'étape 4b) : dans `local/lot-4b/` seulement, témoins compris.
 - Trois fichiers source au-delà de 1 000 lignes ; pas de lint.
 - CI (`.github/workflows/ci.yml`) : les deux tests des noms interdits y sont toujours sautés, la liste vivant dans `local/` ; la garde ne tourne que sur la machine qui a la liste. Les actions sont épinglées par empreinte de commit (actions/checkout v7.0.1, actions/setup-node v7.1.0) : à mettre à jour à la main, sans Dependabot. `npm test` dure de 4 à 5 min et demie sur le runner selon l'exécution (243 s, 300 s, puis 314 s avec les tests de déterminisme), 1 min 42 sur le Mac (102 s) [F].

@@ -4,7 +4,7 @@
  * Table des marques (une colonne par marque) et balayage des teintes près des seuils du cas clair.
  * Aucun seuil ne change : la table et les planches servent la décision, sur image.
  *
- * Attendus écrits à la main avant le code (15/11/2026), pour les quatre marques versionnées.
+ * Attendus écrits à la main avant le code (15/11/2026), pour les quatre premières marques versionnées.
  * École du générateur (generateScale, recalculée sur le pas 9), classe de plein (classePlein), couleur exacte sur le
  * bouton (plein = pas 9 en sombre et en clair, pas 11 en moyen) :
  *   Orbe Café          école foncée,      plein sombre, couleur exacte sur le bouton : oui (pas 9) ;
@@ -18,6 +18,11 @@
  *   Écume et Sel       C 0,101 ; info, ΔE 26,5 ; accent à ΔE 35,3 ;
  *   Grenat Papeterie   C 0,127 ; erreur, ΔE 20,8 ; sans accent.
  *   Aucune n'est grise (C < 0,02, seuil gris de M1).
+ * Maison Alberto, écrits à la main le 18/11/2026, mêmes commandes (culori wcagContrast, oklch, differenceEuclidean
+ * ('oklab') sur les pas 9 de echelles.tokens.json et des statuts communs) : primaire #bf9b45, blanc 2,63, école plein
+ * clair ; plein moyen (pas 12 : 4,97 sur le pas 9, 4,22 sur le pas 10), bouton au pas 11, couleur exacte : non ;
+ * C 0,112 ; statut le plus proche avertissement, ΔE 6,8 (succès 19,8, erreur 22,0, info 27,3) ; accent à ΔE 25,5.
+ * Un primaire proche d'un statut est montré, jamais refusé (D13).
  * Règle des pleins décidée sur image (D04, src/tokens/pleins.js ; culori wcagContrast sur les échelles générées) :
  *   Atelier Lavandine  soutenu (blanc 5,01), couleur exacte : oui (pas 9) ;
  *   Écume et Sel       clair (pas 12 : 8,33 sur le pas 9, 7,08 sur le pas 10), oui (pas 9) ;
@@ -47,6 +52,7 @@ const ATTENDU = {
   'atelier-lavandine': ['normale', 'soutenu', true, 9, 0.201, 'info', 17.5, 42.8],
   'ecume-et-sel': ['plein clair', 'clair', true, 9, 0.101, 'info', 26.5, 35.3],
   'grenat-papeterie': ['foncée', 'sombre', true, 9, 0.127, 'erreur', 20.8, null],
+  'maison-alberto': ['plein clair', 'moyen', false, 11, 0.112, 'avertissement', 6.8, 25.5],
 };
 
 const r1 = (/** @type {number} */ n) => Math.round(n * 10) / 10;
@@ -91,6 +97,6 @@ test('sorties : HTML autonome, Markdown étiqueté', () => {
   assert.match(html, /^<!doctype html>/);
   assert.doesNotMatch(html, /<script|<link|https?:\/\//);
   const md = calibrageMd(cols);
-  assert.match(md, /\| Orbe Café \| Atelier Lavandine \| Écume et Sel \| Grenat Papeterie \|/);
+  assert.match(md, /\| Orbe Café \| Atelier Lavandine \| Écume et Sel \| Grenat Papeterie \| Maison Alberto \|/);
   assert.match(md, /\[F\]/);
 });

@@ -4,13 +4,13 @@
  * Attendus écrits à la main avant le code :
  *   C1 npm run contraste --mode clair : même sortie que sans option (un bloc par marque, D26) ; --mode sombre, --largeur etroit acceptés ;
  *      mode inconnu : erreur d'usage, code 2 ;
- *   C2 les 4 marques fictives sortent en 0 dans les deux modes et dans les deux largeurs ; 70 paires (66 + les 4
+ *   C2 les 5 marques fictives sortent en 0 dans les deux modes et dans les deux largeurs ; 70 paires (66 + les 4
  *      bordures de statut sur fond.surface) ;
  *   C3 bordure.erreur, .succes, .avertissement, .info sur fond.surface : paires de type bordure (3:1), déclarées ;
  *   C4 la saisie dit le mode d'un refus : avec un seuil de 3,15 sur bordure.forte sur fond.surface (clair 3,21:1,
  *      sombre 3,10:1 pour une marque quelconque), le seul motif est « contraste (sombre) : bordure.forte sur
  *      fond.surface, 3,10:1 < 3,15:1 ».
- *   C5 (D31) : pour les 4 marques fictives, en clair et en sombre, le contrat
+ *   C5 (D31) : pour les 5 marques fictives, en clair et en sombre, le contrat
  *      que saisir() a calculé (contrats, par la fusion du resolver, sur les fichiers de la marque donnés en mémoire) est
  *      égal au contrat de loadRoles(dossier, { mode }), lu sur les fichiers écrits.
  */
@@ -25,7 +25,7 @@ import { loadRoles, contratRoles } from '../src/tokens/roles.js';
 import { charger } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const MARQUES = ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie'];
+const MARQUES = ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto'];
 const POLICES = { titre: ['Georgia', 'serif'], texte: ['Arial', 'sans-serif'] };
 /** @param {string[]} args */
 const run = (...args) => spawnSync(process.execPath, [join(ROOT, 'src', 'cli', 'contraste.js'), ...args], { cwd: ROOT, encoding: 'utf8' });
@@ -38,14 +38,14 @@ test('C1 --mode et --largeur : clair = sans option ; mode inconnu = code 2', () 
   const sombre = run('--mode', 'sombre');
   assert.equal(sombre.status, 0, sombre.stdout);
   // D26 : sans --marque, un bloc par marque, chacun nomme son contexte après son en-tête.
-  assert.equal(sombre.stdout.match(/^marque [^\n]+\nmode sombre, largeur large$/gm)?.length, 4);
+  assert.equal(sombre.stdout.match(/^marque [^\n]+\nmode sombre, largeur large$/gm)?.length, 5);
   assert.equal(run('--largeur', 'etroit').status, 0);
   const faux = run('--mode', 'nuit');
   assert.equal(faux.status, 2);
   assert.match(faux.stderr, /contexte inconnu mode=nuit/);
 });
 
-test('C2 les 4 marques fictives : 0 échec dans les deux modes et les deux largeurs, 70 paires', () => {
+test('C2 les 5 marques fictives : 0 échec dans les deux modes et les deux largeurs, 70 paires', () => {
   for (const m of MARQUES)
     for (const mode of ['clair', 'sombre'])
       for (const largeur of ['large', 'etroit']) {
@@ -76,7 +76,7 @@ test('C4 la saisie dit le mode du refus', () => {
   assert.deepEqual(r.motifs, ['contraste (sombre) : bordure.forte sur fond.surface, 3,10:1 < 3,15:1']);
 });
 
-test('C5 contrat calculé par la saisie = contrat du resolver, 4 marques, clair et sombre', () => {
+test('C5 contrat calculé par la saisie = contrat du resolver, 5 marques, clair et sombre', () => {
   for (const m of MARQUES) {
     const dossier = join(ROOT, 'tokens', m);
     const s = saisir(JSON.parse(readFileSync(join(dossier, 'entree.json'), 'utf8')), { dossier });

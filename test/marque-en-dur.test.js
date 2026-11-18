@@ -123,7 +123,7 @@ export function occurrences(code, ms) {
 
 test('G1 marques lues dans leurs données', () => {
   const ms = marques();
-  assert.deepEqual(ms.map((m) => m.dossier).sort(), ['atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'orbe-cafe']);
+  assert.deepEqual(ms.map((m) => m.dossier).sort(), ['atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto', 'orbe-cafe']);
   const orbe = /** @type {any} */ (ms.find((m) => m.dossier === 'orbe-cafe'));
   for (const s of ["const ORBE = 1;", 'lirePropresOrbe()', "x('tokens/orbe-cafe/')", "'Orbe Café torréfie'", 'ORBE_X'])
     assert.equal(occurrences(s, [orbe]).length, 1, s);

@@ -1,0 +1,343 @@
+{
+  "$description": "Échelles de Maison Alberto en mode sombre, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues dans le contexte sombre de marque.resolver.json, après tokens/commun/mode.sombre.tokens.json.",
+  "couleur": {
+    "$type": "color",
+    "$description": "Échelles de Maison Alberto en mode sombre (generateScale, fond sombre [H]), pas 9 = pas 9 clair ; même nom que l'échelle claire, qu'elles remplacent dans le contexte sombre.",
+    "primaire": {
+      "1": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0706,
+            0.0706,
+            0.0706
+          ],
+          "hex": "#121212"
+        },
+        "$description": "fond d'application"
+      },
+      "2": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0824,
+            0.0824,
+            0.0824
+          ],
+          "hex": "#151515"
+        },
+        "$description": "fond discret"
+      },
+      "3": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1137,
+            0.1059,
+            0.0902
+          ],
+          "hex": "#1d1b17"
+        },
+        "$description": "fond de composant"
+      },
+      "4": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1412,
+            0.1294,
+            0.102
+          ],
+          "hex": "#24211a"
+        },
+        "$description": "fond de composant, survol"
+      },
+      "5": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1686,
+            0.1529,
+            0.1176
+          ],
+          "hex": "#2b271e"
+        },
+        "$description": "fond de composant, appui"
+      },
+      "6": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2078,
+            0.1882,
+            0.1451
+          ],
+          "hex": "#353025"
+        },
+        "$description": "bordure discrète"
+      },
+      "7": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2902,
+            0.2549,
+            0.1765
+          ],
+          "hex": "#4a412d"
+        },
+        "$description": "bordure de composant"
+      },
+      "8": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.4706,
+            0.3922,
+            0.2118
+          ],
+          "hex": "#786436"
+        },
+        "$description": "bordure d'interaction, focus (3:1)"
+      },
+      "9": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.749,
+            0.6078,
+            0.2706
+          ],
+          "hex": "#bf9b45"
+        },
+        "$description": "plein, couleur source"
+      },
+      "10": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.8588,
+            0.7294,
+            0.4353
+          ],
+          "hex": "#dbba6f"
+        },
+        "$description": "plein, survol"
+      },
+      "11": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.8157,
+            0.3765
+          ],
+          "hex": "#ffd060"
+        },
+        "$description": "texte secondaire (4,5:1)"
+      },
+      "12": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9961,
+            0.9333,
+            0.7961
+          ],
+          "hex": "#feeecb"
+        },
+        "$description": "texte principal"
+      },
+      "$description": "Primaire de Maison Alberto, mode sombre. Pas 9 = #bf9b45 exact ; autres pas générés par generateScale (src/valise/generate.js) en miroir [H] : mêmes cibles, contraste visé contre le noir au lieu du blanc ; école « foncée » lue contre le noir.",
+      "$extensions": {
+        "ds-lab.valise": {
+          "source": "#bf9b45",
+          "ecole": "foncée",
+          "pas10": "plus foncé",
+          "signaux": [],
+          "fond": "sombre"
+        }
+      },
+      "sur-plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0,
+            0
+          ],
+          "hex": "#000000"
+        },
+        "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
+      }
+    },
+    "accent": {
+      "1": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0941,
+            0.0627,
+            0.0824
+          ],
+          "hex": "#181015"
+        },
+        "$description": "fond d'application"
+      },
+      "2": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1059,
+            0.0745,
+            0.0941
+          ],
+          "hex": "#1b1318"
+        },
+        "$description": "fond discret"
+      },
+      "3": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1216,
+            0.102,
+            0.1137
+          ],
+          "hex": "#1f1a1d"
+        },
+        "$description": "fond de composant"
+      },
+      "4": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1765,
+            0.1098,
+            0.1529
+          ],
+          "hex": "#2d1c27"
+        },
+        "$description": "fond de composant, survol"
+      },
+      "5": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2,
+            0.1373,
+            0.1765
+          ],
+          "hex": "#33232d"
+        },
+        "$description": "fond de composant, appui"
+      },
+      "6": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2667,
+            0.1529,
+            0.2275
+          ],
+          "hex": "#44273a"
+        },
+        "$description": "bordure discrète"
+      },
+      "7": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.3843,
+            0.1922,
+            0.3216
+          ],
+          "hex": "#623152"
+        },
+        "$description": "bordure de composant"
+      },
+      "8": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.6471,
+            0.251,
+            0.5294
+          ],
+          "hex": "#a54087"
+        },
+        "$description": "bordure d'interaction, focus (3:1)"
+      },
+      "9": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.7294,
+            0.298,
+            0.6
+          ],
+          "hex": "#ba4c99"
+        },
+        "$description": "plein, couleur source"
+      },
+      "10": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.7725,
+            0.3569,
+            0.6431
+          ],
+          "hex": "#c55ba4"
+        },
+        "$description": "plein, survol"
+      },
+      "11": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9882,
+            0.5647,
+            0.8471
+          ],
+          "hex": "#fc90d8"
+        },
+        "$description": "texte secondaire (4,5:1)"
+      },
+      "12": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9922,
+            0.7725,
+            0.9098
+          ],
+          "hex": "#fdc5e8"
+        },
+        "$description": "texte principal"
+      },
+      "$description": "Accent de Maison Alberto, mode sombre. Pas 9 = #ba4c99 exact ; autres pas générés par generateScale (src/valise/generate.js) en miroir [H] : mêmes cibles, contraste visé contre le noir au lieu du blanc ; école « normale » lue contre le noir.",
+      "$extensions": {
+        "ds-lab.valise": {
+          "source": "#ba4c99",
+          "ecole": "normale",
+          "pas10": "plus foncé",
+          "signaux": [],
+          "fond": "sombre"
+        }
+      },
+      "sur-plein": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0,
+            0
+          ],
+          "hex": "#000000"
+        },
+        "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
+      }
+    }
+  }
+}

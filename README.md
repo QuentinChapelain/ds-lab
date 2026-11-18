@@ -103,13 +103,14 @@ Sans accent, l'accent se replie sur le neutre (D05). Les couches communes (neutr
 
 La saisie écrit aussi le mode sombre de la marque : une échelle sombre pour le primaire et l'accent, générée depuis le même pas 9, et une couche marque sombre. En sombre, la page est un gris très foncé (`#121212`) et chaque surface posée au-dessus est plus claire ; les textes de couleur sont plus lumineux (pas 11 à 9:1 sur la page) ; le bouton prend la version lumineuse de la couleur du client (pas 11, texte au pas 1), l'aplat plein garde la couleur exacte. Neutres et statuts sombres sont communs (`tokens/commun/mode.sombre.tokens.json`, écrit par `node src/cli/sombre.js`). Les rôles ne changent pas d'un mode à l'autre ; les cibles sombres sont des hypothèses jugées sur image.
 
-Trois marques fictives sont saisies de la même façon, toutes acceptées :
+Quatre marques fictives sont saisies de la même façon, toutes acceptées :
 
 | Marque | Primaire | Accent | Plein du primaire |
 |---|---|---|---|
 | Atelier Lavandine (`tokens/atelier-lavandine/`) | violet moyen | jaune | soutenu : couleur exacte, texte blanc, survol par voile noir de 15 % |
 | Écume et Sel (`tokens/ecume-et-sel/`) | cyan clair | orangé | clair : couleur exacte, texte au pas 12 |
 | Grenat Papeterie (`tokens/grenat-papeterie/`) | grenat foncé | aucun, repli sur le neutre | sombre : couleur exacte |
+| Maison Alberto (`tokens/maison-alberto/`) | or | fuchsia | moyen : pas 11, texte blanc, survol au pas 12 ; sans police de texte, elle prend celle du produit (D16) |
 
 Chaque marque a deux niveaux d'aplat non cliquables, clair (pas 3) et plein (valeur du bouton), et un texte de marque pour les grands titres, choisi à la saisie pour tenir 3:1 sur les fonds clairs. Sur l'aplat plein, texte, bouton et anneau de focus sont retournés (D14).
 
@@ -182,7 +183,7 @@ Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier
 | `src/` | Audit, réduction, simulation, rapports |
 | `tokens/commun/` | Couches communes à toutes les marques : primitives, statuts, mode sombre commun, police du produit, aplat plein, rôles, paires, contexte étroit |
 | `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive (entrée, échelles, marque, resolver), les trois planches et la feuille CSS `jetons.css` |
-| `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/` | Trois marques fictives saisies par fichier, leurs trois planches et leur feuille CSS |
+| `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/`, `tokens/maison-alberto/` | Quatre marques fictives saisies par fichier, leurs trois planches et leur feuille CSS |
 | `docs/` | Règles du design system, décisions, contrat de marque, identifiants de règles (`docs/identifiants.md`) ; dans `docs/attendus/`, l'attendu de chaque lot, écrit avant le code et gardé à sa date |
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles, attendus |
 | `fixtures/polices/` | Quatre polices d'essai sous licence libre, chacune avec sa licence |

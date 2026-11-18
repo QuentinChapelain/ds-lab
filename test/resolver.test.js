@@ -21,7 +21,7 @@ import { lireResolver, resoudre, fusionner, partager, RESOLVER, COMMUN } from '.
 import { saisir, serialiser } from '../src/tokens/saisie.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const MARQUES = ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie'];
+const MARQUES = ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto'];
 /** @param {string} p */
 const lire = (p) => JSON.parse(readFileSync(p, 'utf8'));
 const ref = (/** @type {string} */ r) => ({ $ref: r });
