@@ -1,5 +1,6 @@
 # Rejoue, sur une machine neuve, ce que CLAUDE.md demande avant un commit : types, ce qui ne sert plus (knip),
-# cycles et orphelins (dependency-cruiser), les trois contrôles de la cible, puis tous les tests avec Chromium. Une étape par commande : la ligne rouge dit laquelle échoue.
+# cycles et orphelins (dependency-cruiser), les trois contrôles de la cible, puis tous les tests avec Chromium, puis la
+# preuve de l'atelier (D42). Une étape par commande : la ligne rouge dit laquelle échoue.
 name: CI
 
 on:
@@ -18,7 +19,11 @@ concurrency:
 jobs:
   controles:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # Délai calculé sur les durées mesurées (KNOWN_ISSUES.md) : au pire constaté, Chromium et ses dépendances 376 s
+    # (miroir apt lent), npm test 443 s, le reste moins de 30 s, soit 14 min ; l'atelier ajoute environ 2 min [H].
+    # Chaque étape qui varie a son propre délai, son pire cas constaté plus une marge : celle qui dépasse est nommée,
+    # au lieu d'un arrêt du job ailleurs.
+    timeout-minutes: 20
     steps:
       # Actions épinglées par empreinte : une étiquette peut être déplacée sans trace dans ce dépôt.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -28,10 +33,15 @@ jobs:
         with:
           node-version-file: .node-version # seule source de la version de Node (D40) ; une autre majeure, et les commandes sortent en 2
           cache: npm
+          # Le cache de npm suit les deux verrous : celui de la racine et celui de l'atelier.
+          cache-dependency-path: |
+            package-lock.json
+            atelier/package-lock.json
       - run: npm ci
       # La variante que chromium.launch() lance sans option ; aucun test n'ouvre de fenêtre.
       - name: Chromium (sans fenêtre) et dépendances système
         run: npx playwright-core install --with-deps --only-shell chromium
+        timeout-minutes: 9 # 17 à 30 s d'habitude, 376 s au pire constaté (paquets apt à 94 ko/s) : près de 3 min de marge
       - run: npm run types
       - run: npm run knip
       - run: npm run dependances
@@ -39,3 +49,14 @@ jobs:
       - run: npm run espacements
       - run: npm run typo
       - run: npm test
+        timeout-minutes: 9 # 256 à 443 s mesurés
+      # Atelier (D42) : son installation, sa version construite, puis la preuve, avec le Chromium installé plus haut.
+      - name: Atelier, installation
+        run: npm ci --prefix atelier
+        timeout-minutes: 3
+      - name: Atelier, version construite
+        run: npm --prefix atelier run build
+        timeout-minutes: 3
+      - name: Atelier, preuve
+        run: npm --prefix atelier run preuve
+        timeout-minutes: 4

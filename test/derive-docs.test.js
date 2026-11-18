@@ -13,13 +13,17 @@
  * à la racine du dépôt. Ainsi `revue.html`, sortie de l'outil, n'est pas un chemin ; `scr/x.js`
  * en est un, et manque. Exclus : local/ et .auth/ (jamais versionnés), adresses, espaces, < > *,
  * et les noms de paquets npm (`@portee/nom`) ; un import @… n'est reconnu qu'en début de ligne.
+ * Un chemin existe s'il est dans le dépôt pour git : suivi, ou nouveau et non ignoré (git ls-files --cached --others
+ * --exclude-standard). Un dossier ignoré présent sur le poste (node_modules/, version construite de l'atelier) n'existe
+ * pas sur une machine neuve : il ne compte pas, sur le poste comme en CI.
  * Ce test ne lit jamais local/ ni .auth/.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DOCS = ['CLAUDE.md', 'README.md', 'ARCHITECTURE.md', 'KNOWN_ISSUES.md'];
@@ -125,14 +129,21 @@ test('chaque commande de l\'atelier citée dans la documentation existe dans ate
   assert.deepEqual(absentes, []);
 });
 
+/** Fichiers du dépôt pour git, et leurs dossiers (avec « / » final). */
+function depot() {
+  const fichiers = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], { cwd: ROOT, encoding: 'utf8' }).split('\n').filter(Boolean);
+  const dossiers = new Set(fichiers.flatMap((f) => f.split('/').slice(0, -1).map((_, i, a) => `${a.slice(0, i + 1).join('/')}/`)));
+  return { fichiers: new Set(fichiers), dossiers };
+}
+
 test('chaque chemin cité dans la documentation existe dans le dépôt', () => {
   const racine = new Set(readdirSync(ROOT).filter((e) => !NON_VERSIONNES.includes(e) && e !== 'node_modules' && e !== '.git'));
+  const { fichiers, dossiers } = depot();
   /** @type {string[]} */
   const absents = [];
   for (const f of [...DOCS, ...markdowns('docs')].filter((f) => existsSync(join(ROOT, f))))
     for (const c of chemins(readFileSync(join(ROOT, f), 'utf8'), racine)) {
-      const p = join(ROOT, c);
-      const ok = c.endsWith('/') ? existsSync(p) && statSync(p).isDirectory() : existsSync(p);
+      const ok = c.endsWith('/') ? dossiers.has(c) : fichiers.has(c) || dossiers.has(`${c}/`);
       if (!ok) absents.push(`${f} : ${c}`);
     }
   assert.deepEqual(absents, []);

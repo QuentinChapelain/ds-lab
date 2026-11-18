@@ -124,12 +124,15 @@ Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier
 Les composants seront des enveloppes autour de Vuetify 4 (Vue 3), montrées dans un atelier Storybook 10, dans `atelier/`, avec son propre `package.json` et son propre verrou : rien de ce qu'il installe n'entre à la racine (D42). Il n'a pour l'instant qu'un témoin, un `v-btn` nu, qui sera retiré avec la première enveloppe.
 
 ```
-npm --prefix atelier ci             installer l'atelier (279 paquets, environ 200 Mo)
+npm --prefix atelier ci             installer l'atelier (180 paquets, environ 200 Mo)
 npm --prefix atelier run dev        serveur de développement, sur http://127.0.0.1:6006 seulement
 npm --prefix atelier run build      version construite, dans le dossier storybook-static de l'atelier (non versionnée)
+npm --prefix atelier run preuve     preuve, sur la version construite et un serveur de développement qu'elle lance et arrête
 ```
 
 L'atelier lit les thèmes de chaque marque dans `tokens/<marque>/vuetify.json` (D41) : les relancer, c'est relancer `npm run vuetify` à la racine. Un sélecteur dans la barre de Storybook propose chaque marque, en clair et en sombre. Le thème est toujours passé par son nom, jamais par le défaut « system » de Vuetify, et un nom absent de la liste des marques (même `light` ou `dark`, que Vuetify connaît) remplace la story par l'erreur « thème inconnu : <nom> ». La police du texte et celle des titres sont celles de la marque. Télémétrie coupée (`--disable-telemetry` et `core.disableTelemetry`), recherche de mise à jour coupée (`--no-version-updates`) ; en développement, Storybook demande encore ses nouveautés à `storybook.js.org` à chaque ouverture (`KNOWN_ISSUES.md`).
+
+La preuve (`atelier/preuve.js`) rejoue l'attendu sur chaque thème de chaque marque, en développement et en version construite : le témoin a pour fond et pour texte les rôles que la table donne à `primary`, la page le fond de `background`, ses polices sont celles de la marque, et la feuille de thème de Vuetify porte exactement les 26 couleurs de la table, fonds et textes, sans couleur de Material ni texte calculé ; les deux rendus sont identiques au pixel (pixelmatch, seuil 0). Elle vérifie aussi qu'un nom inconnu, même `light`, est refusé, que le système en sombre ne change rien sans thème choisi, et que le sélecteur liste chaque thème et en pose un au clic, sans recharger la story. Les valeurs attendues sont relues dans les jetons par le lecteur du dépôt, pas dans les fichiers que l'atelier affiche. Elle emprunte à la racine le lancement de Chromium, `pixelmatch` et `pngjs` : elle demande l'installation de la racine. Sortie 0, 1 si une vérification échoue, 2 sur une panne (version construite absente, serveur qui ne répond pas).
 
 ## Glossaire
 
@@ -215,7 +218,7 @@ Règles : marques fictives uniquement ; rien de `local/` ni de `.auth/` dans un 
 
 ## Intégration continue
 
-À chaque push, sur toute branche, et à la demande, GitHub rejoue sur une machine neuve (ubuntu-24.04, Node de `.node-version`) ce qui est demandé avant un commit : `npm ci`, Chromium installé par `playwright-core` (la variante sans fenêtre), `npm run types`, `npm run knip`, `npm run dependances`, les trois contrôles de la cible (`npm run contraste`, `npm run espacements`, `npm run typo`), puis `npm test`. Une étape par commande : l'étape rouge dit laquelle échoue, et les suivantes ne tournent pas. Les deux tests des noms interdits y sont sautés : leur liste vit dans `local/`, jamais versionné. La CI ne remplace pas le lancement sur sa machine avant un commit. Fichier : `.github/workflows/ci.yml`.
+À chaque push, sur toute branche, et à la demande, GitHub rejoue sur une machine neuve (ubuntu-24.04, Node de `.node-version`) ce qui est demandé avant un commit : `npm ci`, Chromium installé par `playwright-core` (la variante sans fenêtre), `npm run types`, `npm run knip`, `npm run dependances`, les trois contrôles de la cible (`npm run contraste`, `npm run espacements`, `npm run typo`), puis `npm test`, puis l'installation de l'atelier, sa version construite et sa preuve. Une étape par commande : l'étape rouge dit laquelle échoue, et les suivantes ne tournent pas. Les deux tests des noms interdits y sont sautés : leur liste vit dans `local/`, jamais versionné. La CI ne remplace pas le lancement sur sa machine avant un commit. Le job a 20 minutes, calculées sur les durées mesurées, et chaque étape qui varie a son propre délai, qui la nomme si elle dépasse. Fichier : `.github/workflows/ci.yml`.
 
 main est protégée (ruleset « main protégée ») : GitHub refuse tout push sur main dont le commit n'a pas le check `controles` vert, qui n'est pas en avance rapide (branche à jour) ou qui ferait un commit de fusion ; main ne peut pas être supprimée. Aucune pull request n'est demandée, personne n'y fait exception. Le chemin : pousser une branche, attendre la CI verte, `git push origin <branche>:main`, puis supprimer la branche.
 

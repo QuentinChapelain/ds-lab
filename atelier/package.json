@@ -10,7 +10,8 @@
   },
   "scripts": {
     "dev": "storybook dev --port 6006 --host 127.0.0.1 --ci --no-open --no-version-updates --disable-telemetry",
-    "build": "storybook build --output-dir storybook-static --disable-telemetry"
+    "build": "storybook build --output-dir storybook-static --disable-telemetry",
+    "preuve": "node preuve.js"
   },
   "devDependencies": {
     "@storybook/vue3-vite": "10.6.7",
