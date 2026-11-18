@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 
 /** Dossiers de code de l'atelier, hors de node_modules/ et de la version construite. */
-const DOSSIERS = ['.storybook', 'stories', 'composants'];
+const DOSSIERS = ['.storybook', 'stories', 'composants', 'preuve'];
 
 /** Fichiers de code de l'atelier, relatifs à la racine : les .js de sa racine, et les .js et .vue de ses dossiers de code. */
 export function codeAtelier() {
