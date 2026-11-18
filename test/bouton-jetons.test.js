@@ -13,6 +13,8 @@
  *   B3 couleurs de chaque variante, au repos et au survol, dans chaque thème, et leurs rapports (2 décimales) :
  *      tableaux de l'attendu, recopiés ci-dessous ; chaque texte actif tient 4,5:1, le contour et l'anneau 3:1 sur la
  *      page ; le désactivé reste entre 3,32 et 4,26, sous 4,5, avec son exception écrite ;
+ *   Correction du 18/11/2026 (D45, docs/attendus/finitions-bouton.md) : survol du principal et du danger = clarté
+ *      OKLCH du plein − 0,05 en clair, + 0,05 en sombre ; valeurs et rapports du tableau de cet attendu ;
  *   B4 aucun groupe de rôles ne porte le nom d'un groupe de primitives : le lecteur range un groupe entier dans la
  *      couche des rôles dès que son nom y paraît (partager, src/tokens/resolver.js ; correction de l'attendu).
  */
@@ -39,16 +41,16 @@ const VARIANTES = {
 
 /** Ce qui varie avec la marque : principal [fond, texte, repos, survol, rapport survol], discret [texte, rapport, survol, rapport], focus [couleur, rapport]. */
 const PAR_THEME = {
-  'atelier-lavandine-clair': { principal: ['#8a4fd8', '#ffffff', 5.01, '#7543b8', 6.46], discret: ['#8247ce', 5.42, '#f5f1fe', 5.05], focus: ['#8247ce', 5.42] },
-  'atelier-lavandine-sombre': { principal: ['#c4a4fe', '#131019', 9.04, '#ddcefd', 12.83], discret: ['#c4a4fe', 9.0, '#1d1925', 8.28], focus: ['#c4a4fe', 9.0] },
+  'atelier-lavandine-clair': { principal: ['#8a4fd8', '#ffffff', 5.01, '#7b3ec7', 6.26], discret: ['#8247ce', 5.42, '#f5f1fe', 5.05], focus: ['#8247ce', 5.42] },
+  'atelier-lavandine-sombre': { principal: ['#c4a4fe', '#131019', 9.04, '#d4b5ff', 10.62], discret: ['#c4a4fe', 9.0, '#1d1925', 8.28], focus: ['#c4a4fe', 9.0] },
   'ecume-et-sel-clair': { principal: ['#7fdbff', '#003647', 8.33, '#6fcbee', 7.08], discret: ['#21708b', 5.4, '#e3f6fe', 5.03], focus: ['#21708b', 5.4] },
-  'ecume-et-sel-sombre': { principal: ['#c9efff', '#121212', 15.41, '#ebf9ff', 17.42], discret: ['#c9efff', 15.41, '#1b1b1b', 14.17], focus: ['#c9efff', 15.41] },
-  'grenat-papeterie-clair': { principal: ['#7a1f3d', '#ffffff', 10.04, '#85314d', 8.26], discret: ['#4f0020', 15.0, '#fcf0f2', 13.95], focus: ['#4f0020', 15.0] },
-  'grenat-papeterie-sombre': { principal: ['#fc96ae', '#1e0d11', 9.02, '#fec7d2', 12.77], discret: ['#fc96ae', 9.02, '#2f1119', 8.32], focus: ['#fc96ae', 9.02] },
-  'maison-alberto-clair': { principal: ['#836304', '#ffffff', 5.6, '#402e00', 13.05], discret: ['#836304', 5.41, '#fbf3e1', 5.07], focus: ['#836304', 5.41] },
-  'maison-alberto-sombre': { principal: ['#ffd060', '#121212', 12.88, '#feeecb', 16.33], discret: ['#ffd060', 12.88, '#1d1b17', 11.83], focus: ['#ffd060', 12.88] },
-  'orbe-cafe-clair': { principal: ['#2b4c7e', '#ffffff', 8.61, '#3c5a88', 6.98], discret: ['#4c6994', 5.4, '#f1f3f7', 5.03], focus: ['#4c6994', 5.4] },
-  'orbe-cafe-sombre': { principal: ['#86b6fe', '#0e1218', 9.06, '#bdd7fe', 12.8], discret: ['#86b6fe', 9.04, '#111b2a', 8.35], focus: ['#86b6fe', 9.04] },
+  'ecume-et-sel-sombre': { principal: ['#c9efff', '#121212', 15.41, '#ddffff', 17.68], discret: ['#c9efff', 15.41, '#1b1b1b', 14.17], focus: ['#c9efff', 15.41] },
+  'grenat-papeterie-clair': { principal: ['#7a1f3d', '#ffffff', 10.04, '#6a0d30', 12.26], discret: ['#4f0020', 15.0, '#fcf0f2', 13.95], focus: ['#4f0020', 15.0] },
+  'grenat-papeterie-sombre': { principal: ['#fc96ae', '#1e0d11', 9.02, '#ffa7be', 10.28], discret: ['#fc96ae', 9.02, '#2f1119', 8.32], focus: ['#fc96ae', 9.02] },
+  'maison-alberto-clair': { principal: ['#836304', '#ffffff', 5.6, '#745500', 6.9], discret: ['#836304', 5.41, '#fbf3e1', 5.07], focus: ['#836304', 5.41] },
+  'maison-alberto-sombre': { principal: ['#ffd060', '#121212', 12.88, '#ffe17e', 14.56], discret: ['#ffd060', 12.88, '#1d1b17', 11.83], focus: ['#ffd060', 12.88] },
+  'orbe-cafe-clair': { principal: ['#2b4c7e', '#ffffff', 8.61, '#1e3e6f', 10.64], discret: ['#4c6994', 5.4, '#f1f3f7', 5.03], focus: ['#4c6994', 5.4] },
+  'orbe-cafe-sombre': { principal: ['#86b6fe', '#0e1218', 9.06, '#97c6ff', 10.58], discret: ['#86b6fe', 9.04, '#111b2a', 8.35], focus: ['#86b6fe', 9.04] },
 };
 
 /** Ce qui ne dépend que du mode, identique dans les cinq marques. */
@@ -57,7 +59,7 @@ const PAR_MODE = {
     page: '#fbfbfb',
     secondaire: ['#ffffff', '#363026', 13.06, '#ecebe9', 10.96],
     contour: ['#958f84', 3.1],
-    danger: ['#cb1d2a', '#ffffff', 5.6, '#6a0000', 13.02],
+    danger: ['#cb1d2a', '#ffffff', 5.6, '#b9001a', 6.82],
     'danger-discret': ['#cb1d2a', 5.41, '#fff0ee', 5.06],
     desactive: ['#f3f2f1', '#8a8478', 3.32, 3.59, '#d8d6d2'],
   },
@@ -65,7 +67,7 @@ const PAR_MODE = {
     page: '#121212',
     secondaire: ['#181818', '#d8d5ce', 12.12, '#212121', 10.99],
     contour: ['#6a665c', 3.27],
-    danger: ['#ff978f', '#1a0f0e', 9.01, '#fcc9c4', 12.78],
+    danger: ['#ff978f', '#1a0f0e', 9.01, '#ffaaa2', 10.3],
     'danger-discret': ['#ff978f', 8.99, '#231918', 8.23],
     desactive: ['#1b1b1b', '#7d786c', 3.92, 4.26, '#303030'],
   },

@@ -24,6 +24,8 @@
  *     primaire sombre (bleu 9, survol = bleu 9 + voile blanc 8 %, texte blanc), accent, erreur, succès et
  *     info moyens (pas 11, survol pas 12, texte blanc), avertissement clair (pas 9, survol pas 10, texte pas 12).
  *   décision du 15/11/2026 : bordure.focus → marque.primaire.11 pour toutes les marques ;
+ *   D45 (18/11/2026) : le survol du plein est la clarté OKLCH du plein − 0,05, formule en $extensions["ds-lab.survol"]
+ *     (base bleu 9, clarte −0,05) ;
  *   Le fichier porte aussi des rôles d'espacement (type dimension) ; les tests
  *     ci-dessous portent sur les rôles de type color, toujours 42.
  * Les alias sont résolus ici par un résolveur propre au test, indépendant du code.
@@ -40,7 +42,7 @@ const DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'tokens', 'orbe-
 const load = charger;
 
 const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
-/** Rôle → primitive visée (échelle.pas), ou « voile:<échelle.pas> » pour un survol calculé. 19 fonds, 15 textes, 8 bordures = 42. */
+/** Rôle → primitive visée (échelle.pas), ou « survol:<échelle.pas> » pour un survol calculé (D45). 19 fonds, 15 textes, 8 bordures = 42. */
 const EXPECTED = /** @type {Record<string, string>} */ ({
   'fond.app': 'neutre.1',
   'fond.discret': 'neutre.2',
@@ -51,7 +53,7 @@ const EXPECTED = /** @type {Record<string, string>} */ ({
   'fond.composant.appui': 'neutre.5',
   'fond.interactif.discret': 'bleu.3',
   'fond.interactif.fort': 'bleu.9',
-  'fond.interactif.fort.survol': 'voile:bleu.9',
+  'fond.interactif.fort.survol': 'survol:bleu.9',
   'fond.accent.fort': 'terre.11',
   ...Object.fromEntries(STATUTS.flatMap((s) => [[`fond.${s}.discret`, `${s}.3`], [`fond.${s}.fort`, s === 'avertissement' ? `${s}.9` : `${s}.11`]])),
   'texte.principal': 'neutre.12',
@@ -124,10 +126,10 @@ test('T1 chaque rôle est un alias vers la primitive attendue (directement ou pa
   for (const [role, target] of Object.entries(EXPECTED)) {
     const v = roles.get(role)?.$value;
     const slot = VIA_MARQUE[role];
-    if (target.startsWith('voile:')) {
+    if (target.startsWith('survol:')) {
       assert.equal(v, `{${slot}}`, `${role} : par la marque`);
-      const x = marque.get(slot)?.$extensions?.['ds-lab.voile'];
-      assert.deepEqual(x && { base: x.base, blanc: x.blanc }, { base: `{couleur.${target.slice(6)}}`, blanc: 0.08 }, `${role} : voile`);
+      const x = marque.get(slot)?.$extensions?.['ds-lab.survol'];
+      assert.deepEqual(x && { base: x.base, clarte: x.clarte }, { base: `{couleur.${target.slice(7)}}`, clarte: -0.05 }, `${role} : survol`);
       continue;
     }
     if (slot) {

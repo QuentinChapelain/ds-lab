@@ -257,7 +257,7 @@
   --fond-erreur-discret: var(--couleur-erreur-3);
   /* texte secondaire (4,5:1) */
   --fond-erreur-fort: var(--marque-erreur-plein);
-  /* texte principal */
+  /* Plein qui signale une erreur ou une action destructrice, survolé. */
   --fond-erreur-fort-survol: var(--marque-erreur-plein-survol);
   /* fond de composant */
   --fond-info-discret: var(--couleur-info-3);
@@ -267,7 +267,7 @@
   --fond-interactif-discret: var(--marque-primaire-3);
   /* texte secondaire (4,5:1) */
   --fond-interactif-fort: var(--marque-primaire-plein);
-  /* texte principal */
+  /* Plein de l'action principale survolée. */
   --fond-interactif-fort-survol: var(--marque-primaire-plein-survol);
   --fond-interactif-inverse: var(--marque-primaire-sur-aplat);
   /* texte principal */
@@ -319,24 +319,24 @@
   --marque-accent-12: var(--couleur-accent-12);
   /* plein, couleur source */
   --marque-accent-plein: var(--couleur-accent-9);
-  /* plein survolé : pas 9 sous un voile noir de 15 %, valeur calculée */
-  --marque-accent-plein-survol: #9e4182;
+  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
+  --marque-accent-plein-survol: #a93c8a;
   --marque-accent-sur-plein: var(--couleur-blanc);
   /* plein, couleur source */
   --marque-avertissement-plein: var(--couleur-avertissement-9);
-  /* plein, survol */
-  --marque-avertissement-plein-survol: var(--couleur-avertissement-10);
+  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
+  --marque-avertissement-plein-survol: #d49000;
   /* texte principal */
   --marque-avertissement-sur-plein: var(--couleur-avertissement-12);
   /* texte secondaire (4,5:1) */
   --marque-erreur-plein: var(--couleur-erreur-11);
-  /* texte principal */
-  --marque-erreur-plein-survol: var(--couleur-erreur-12);
+  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
+  --marque-erreur-plein-survol: #b9001a;
   --marque-erreur-sur-plein: var(--couleur-blanc);
   /* texte secondaire (4,5:1) */
   --marque-info-plein: var(--couleur-info-11);
-  /* texte principal */
-  --marque-info-plein-survol: var(--couleur-info-12);
+  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
+  --marque-info-plein-survol: #005e96;
   --marque-info-sur-plein: var(--couleur-blanc);
   /* Police du texte (titres 4, corps, mentions) : la police du produit, sauf si l'entrée de la marque déclare polices.texte. */
   --marque-police-texte: var(--police-produit);
@@ -368,20 +368,20 @@
   --marque-primaire-12: var(--couleur-primaire-12);
   /* texte secondaire (4,5:1) */
   --marque-primaire-aplat: var(--marque-primaire-plein);
-  /* texte principal */
+  /* aplat plein (fond.marque.fort et bouton inversé) : plein-survol du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json) */
   --marque-primaire-aplat-survol: var(--marque-primaire-plein-survol);
   /* texte secondaire (4,5:1) */
   --marque-primaire-plein: var(--couleur-primaire-11);
-  /* texte principal */
-  --marque-primaire-plein-survol: var(--couleur-primaire-12);
+  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
+  --marque-primaire-plein-survol: #745500;
   --marque-primaire-sur-aplat: var(--marque-primaire-sur-plein);
   --marque-primaire-sur-plein: var(--couleur-blanc);
   /* texte secondaire (4,5:1) */
   --marque-primaire-texte-grand: var(--couleur-primaire-11);
   /* texte secondaire (4,5:1) */
   --marque-succes-plein: var(--couleur-succes-11);
-  /* texte principal */
-  --marque-succes-plein-survol: var(--couleur-succes-12);
+  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
+  --marque-succes-plein-survol: #00683c;
   --marque-succes-sur-plein: var(--couleur-blanc);
   /* Police du produit, commune à toutes les marques : texte par défaut (marque.police.texte) et, toujours, libellés (D44). Valeur à choisir avec une vraie police [H]. */
   --police-produit: system-ui, sans-serif;
@@ -439,7 +439,7 @@
   --texte-sur-interactif: var(--marque-primaire-sur-plein);
   /* texte secondaire (4,5:1) */
   --texte-sur-interactif-inverse: var(--marque-primaire-aplat);
-  /* texte principal */
+  /* aplat plein (fond.marque.fort et bouton inversé) : plein-survol du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json) */
   --texte-sur-interactif-inverse-survol: var(--marque-primaire-aplat-survol);
   /* Texte posé sur fond.inverse (texte.sur-inverse) : blanc en clair ; en sombre, la référence du miroir. */
   --texte-sur-inverse: var(--couleur-sur-inverse);
@@ -739,24 +739,32 @@
     --marque-accent-plein: #ba4c99;
     /* plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur */
     --marque-avertissement-plein: var(--couleur-avertissement-11);
-    /* plein, survol */
-    --marque-avertissement-plein-survol: var(--couleur-avertissement-12);
+    /* plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45) */
+    --marque-avertissement-plein-survol: #ffe6ac;
     /* texte principal */
     --marque-avertissement-sur-plein: var(--couleur-avertissement-1);
+    /* plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45) */
+    --marque-erreur-plein-survol: #ffaaa2;
     /* texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1) */
     --marque-erreur-sur-plein: var(--couleur-erreur-1);
+    /* plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45) */
+    --marque-info-plein-survol: #73ccff;
     /* texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1) */
     --marque-info-sur-plein: var(--couleur-info-1);
     /* texte secondaire (4,5:1) */
     --marque-primaire-aplat: #836304;
-    /* texte principal */
-    --marque-primaire-aplat-survol: #402e00;
+    /* aplat plein en sombre : plein-survol du primaire en clair, figé (couleur exacte du client) */
+    --marque-primaire-aplat-survol: #745500;
+    /* plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45) */
+    --marque-primaire-plein-survol: #ffe17e;
     /* aplat plein en sombre : sur-plein du primaire en clair, figé (couleur exacte du client) */
     --marque-primaire-sur-aplat: var(--couleur-blanc);
     /* texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1) */
     --marque-primaire-sur-plein: var(--couleur-primaire-1);
     /* texte secondaire (4,5:1) */
     --marque-primaire-texte-grand: var(--couleur-primaire-9);
+    /* plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45) */
+    --marque-succes-plein-survol: #31de93;
     /* texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1) */
     --marque-succes-sur-plein: var(--couleur-succes-1);
   }

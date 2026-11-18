@@ -12,7 +12,7 @@
 import { oklch, formatHex, clampChroma, differenceEuclidean } from 'culori';
 import { contrastRatio } from '../lib/color.js';
 import { generateScale, HUED_CHROMA } from '../valise/generate.js';
-import { classePlein, voileBlanc, voileNoir, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL } from '../tokens/pleins.js';
+import { classePlein, survolPlein, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL } from '../tokens/pleins.js';
 import { saisir, chargerCommun, echellesPropres } from '../tokens/saisie.js';
 import { fr, esc } from '../lib/format.js';
 
@@ -29,10 +29,10 @@ const dE = (a, b) => 100 * dEok(a, b);
 
 /** Bouton d'une échelle selon une classe de plein (D04). @param {string[]} steps @param {Classe} classe @returns {Bouton} */
 function bouton(steps, classe) {
-  if (classe === 'sombre') return { plein: steps[8], survol: voileBlanc(steps[8]), texte: WHITE, pas: 9 };
-  if (classe === 'soutenu') return { plein: steps[8], survol: voileNoir(steps[8]), texte: WHITE, pas: 9 };
-  if (classe === 'moyen') return { plein: steps[10], survol: steps[11], texte: WHITE, pas: 11 };
-  return { plein: steps[8], survol: steps[9], texte: steps[11], pas: 9 };
+  // Survol : une règle pour toutes les classes (D45).
+  if (classe === 'sombre' || classe === 'soutenu') return { plein: steps[8], survol: survolPlein(steps[8], 'clair'), texte: WHITE, pas: 9 };
+  if (classe === 'moyen') return { plein: steps[10], survol: survolPlein(steps[10], 'clair'), texte: WHITE, pas: 11 };
+  return { plein: steps[8], survol: survolPlein(steps[8], 'clair'), texte: steps[11], pas: 9 };
 }
 
 /** Une échelle (12 pas) lue sur la règle et le générateur. @param {string[]} steps */
@@ -131,7 +131,7 @@ export function balayage() {
 /** @param {string} bg @param {string} fg @param {string} txt @param {string} [title] */
 const pastille = (bg, fg, txt, title = '') => `<span class="b" style="background:${bg};color:${fg}"${title ? ` title="${esc(title)}"` : ''}>${esc(txt)}</span>`;
 /** La règle en une phrase. */
-const REGLE = `blanc ≥ ${fr(BLANC_MIN, { decimales: 1, zeros: true })} sur le pas 9 : couleur exacte, texte blanc (survol par voile blanc si blanc ≥ ${fr(SOMBRE_BLANC, { decimales: 1, zeros: true })}, sinon par voile noir de 15 %) ; sinon, pas 12 ≥ ${TEXTE_FONCE} sur le pas 9 et ≥ ${fr(TEXTE_FONCE_SURVOL, { decimales: 1, zeros: true })} sur le pas 10 : couleur exacte, texte au pas 12 ; sinon pas 11, texte blanc. Primaire et accent seulement ; statuts figés.`;
+const REGLE = `blanc ≥ ${fr(BLANC_MIN, { decimales: 1, zeros: true })} sur le pas 9 : couleur exacte, texte blanc (classe sombre si blanc ≥ ${fr(SOMBRE_BLANC, { decimales: 1, zeros: true })}, sinon soutenu) ; sinon, pas 12 ≥ ${TEXTE_FONCE} sur le pas 9 et ≥ ${fr(TEXTE_FONCE_SURVOL, { decimales: 1, zeros: true })} sur le pas 10 : couleur exacte, texte au pas 12 ; sinon pas 11, texte blanc. Primaire et accent seulement ; statuts figés. Survol de tous les pleins : clarté OKLCH − 0,05 (D45).`;
 const LETTRE = /** @type {Record<string, string>} */ ({ sombre: 'S', soutenu: 'T', clair: 'C', moyen: 'M' });
 const ouiNon = (/** @type {boolean | null} */ v) => (v === null ? '—' : v ? 'oui' : 'non');
 

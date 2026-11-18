@@ -14,6 +14,11 @@
  *   Emplacements : primaire, accent (12 pas + plein, plein-survol, sur-plein) ; erreur, succes, avertissement,
  *   info (plein, plein-survol, sur-plein). Le voile est la seule valeur calculée : couleur en DTCG, formule en
  *   $extensions["ds-lab.voile"] (base, blanc), recalculée ici avec culori (interpolate en sRGB, comme le navigateur).
+ * Correction du 18/11/2026 (D45, docs/attendus/finitions-bouton.md) : le survol de tous les pleins, statuts compris,
+ *   est la clarté OKLCH du plein − 0,05 (teinte et chroma gardées, chroma réduite hors gamut sRGB), valeur calculée,
+ *   formule en $extensions["ds-lab.survol"] (base, clarte), recalculée ici avec culori (oklch, toGamut). Orbe Café en
+ *   clair : primaire #2b4c7e → #1e3e6f, accent #b3422b → #a2321b, erreur #cb1d2a → #b9001a, succès #00774a → #00683c,
+ *   avertissement #e5a000 → #d49000, info #006da6 → #005e96 ; les six survols sont les valeurs calculées du fichier.
  *
  * Attendu écrit à la main avant le code. Classes et OKLCH du pas 9 (culori, oklch()), commande :
  *   node local/scripts/criteres-pleins.mjs "$PWD" (essai du 15/11/2026, avant le code) :
@@ -38,12 +43,12 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { interpolate, formatHex, rgb } from 'culori';
+import { formatHex, rgb, oklch, toGamut } from 'culori';
 import { generateScale } from '../src/valise/generate.js';
 import { loadRoles, resolveRoles, contratRoles } from '../src/tokens/roles.js';
 import { fondsClairs } from '../src/tokens/saisie.js';
 import { AJOUTS, AJOUTS_BOUTON, N_PAIRES } from './helpers/roles-ajoutes.js';
-import { classePlein, voileBlanc, marqueTokens, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL, STATUTS_FIGES, VOILE_BLANC } from '../src/tokens/pleins.js';
+import { classePlein, survolPlein, marqueTokens, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL, STATUTS_FIGES, SURVOL_CLARTE } from '../src/tokens/pleins.js';
 import { charger, avecAplat, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -57,15 +62,17 @@ const POLICES = { titre: ['Georgia', 'serif'], texte: ['Orbe Sans', 'Arial', 'sa
 /** Emplacements de couleur seulement (sans marque.police). @param {any} m */
 const couleurs = (m) => Object.entries(m).filter(([k, g]) => !k.startsWith('$') && g.$type !== 'fontFamily');
 
-/** Emplacement → [échelle, classe, plein, plein-survol (alias ou « voile »), sur-plein]. */
+/** Emplacement → [échelle, classe, plein, plein-survol (hex calculé, D45), sur-plein]. */
 const EMPLACEMENTS = {
-  primaire: ['bleu', 'sombre', '{couleur.bleu.9}', 'voile', '{couleur.blanc}'],
-  accent: ['terre', 'moyen', '{couleur.terre.11}', '{couleur.terre.12}', '{couleur.blanc}'],
-  erreur: ['erreur', 'moyen', '{couleur.erreur.11}', '{couleur.erreur.12}', '{couleur.blanc}'],
-  succes: ['succes', 'moyen', '{couleur.succes.11}', '{couleur.succes.12}', '{couleur.blanc}'],
-  avertissement: ['avertissement', 'clair', '{couleur.avertissement.9}', '{couleur.avertissement.10}', '{couleur.avertissement.12}'],
-  info: ['info', 'moyen', '{couleur.info.11}', '{couleur.info.12}', '{couleur.blanc}'],
+  primaire: ['bleu', 'sombre', '{couleur.bleu.9}', '#1e3e6f', '{couleur.blanc}'],
+  accent: ['terre', 'moyen', '{couleur.terre.11}', '#a2321b', '{couleur.blanc}'],
+  erreur: ['erreur', 'moyen', '{couleur.erreur.11}', '#b9001a', '{couleur.blanc}'],
+  succes: ['succes', 'moyen', '{couleur.succes.11}', '#00683c', '{couleur.blanc}'],
+  avertissement: ['avertissement', 'clair', '{couleur.avertissement.9}', '#d49000', '{couleur.avertissement.12}'],
+  info: ['info', 'moyen', '{couleur.info.11}', '#005e96', '{couleur.blanc}'],
 };
+/** Survol d'un plein en clair recalculé ici (culori, sans le code) : clarté OKLCH − 0,05, gamut sRGB. @param {string} hex */
+const survolAttendu = (hex) => { const c = /** @type {any} */ (oklch(hex)); return formatHex(toGamut('rgb', 'oklch')({ ...c, l: c.l - 0.05 })); };
 
 /** Rôles qui passent par la marque, et leur case. */
 const VIA_MARQUE = {
@@ -92,7 +99,7 @@ const HEX = new Map([
   ['fond.composant.appui', '#e3e2df'],
   ['fond.interactif.discret', '#f1f3f7'],
   ['fond.interactif.fort', '#2b4c7e'],
-  ['fond.interactif.fort.survol', '#3c5a88'],
+  ['fond.interactif.fort.survol', '#1e3e6f'],
   ['fond.accent.fort', '#b3422b'],
   ['fond.erreur.discret', '#fff0ee'],
   ['fond.erreur.fort', '#cb1d2a'],
@@ -133,12 +140,12 @@ const prim = load('primitives.tokens.json').couleur;
 const stat = load('statuts.tokens.json').couleur;
 const stepsOf = (/** @type {string} */ s) => STEPS.map((k) => (prim[s] ?? stat[s])[k].$value.hex);
 
-test('Pleins : seuils de la règle (blanc 4,5 et 5,5 ; texte foncé 7 et 4,5 sur le survol ; voile 8 %)', () => {
+test('Pleins : seuils de la règle (blanc 4,5 et 5,5 ; texte foncé 7 et 4,5 ; survol à 0,05 de clarté)', () => {
   assert.equal(BLANC_MIN, 4.5);
   assert.equal(SOMBRE_BLANC, 5.5);
   assert.equal(TEXTE_FONCE, 7);
   assert.equal(TEXTE_FONCE_SURVOL, 4.5);
-  assert.equal(VOILE_BLANC, 0.08);
+  assert.equal(SURVOL_CLARTE, 0.05);
 });
 
 test('Pleins : classe des six emplacements d\'Orbe Café (primaire et accent par la règle, statuts figés)', () => {
@@ -158,10 +165,11 @@ test('Pleins : cas limites fictifs', () => {
   assert.equal(c('#9d5bd2'), 'moyen', 'ni blanc 4,5 ni pas 12 à 7');
 });
 
-test('Pleins : voile blanc 8 % recalculé avec culori (sRGB)', () => {
-  const want = formatHex(interpolate(['#2b4c7e', '#ffffff'], 'rgb')(0.08));
-  assert.equal(want, '#3c5a88');
-  assert.equal(voileBlanc('#2b4c7e', 0.08), want);
+test('Pleins : survol recalculé avec culori (clarté OKLCH − 0,05 en clair, + 0,05 en sombre)', () => {
+  assert.equal(survolAttendu('#2b4c7e'), '#1e3e6f');
+  assert.equal(survolPlein('#2b4c7e', 'clair'), '#1e3e6f');
+  assert.equal(survolPlein('#86b6fe', 'sombre'), '#97c6ff', 'bleu 11 sombre d\'Orbe Café (attendu)');
+  assert.equal(survolPlein('#cb1d2a', 'clair'), '#b9001a', 'chroma réduite : la teinte gardée sortirait du gamut');
 });
 
 test('M0 marque.tokens.json : DTCG 2025.10, six emplacements', () => {
@@ -193,24 +201,24 @@ test('Pleins : classe, plein, survol et sur-plein de chaque emplacement', () => 
     assert.equal(g.$extensions?.['ds-lab.plein']?.classe, classe, `${slot} : classe`);
     assert.equal(g.plein.$value, plein, `${slot}.plein`);
     assert.equal(g['sur-plein'].$value, sur, `${slot}.sur-plein`);
-    if (survol === 'voile') {
-      const t = g['plein-survol'];
-      assert.deepEqual({ base: t.$extensions?.['ds-lab.voile']?.base, blanc: t.$extensions?.['ds-lab.voile']?.blanc }, { base: `{couleur.${scale}.9}`, blanc: 0.08 }, `${slot} : formule`);
-      const hex = formatHex(interpolate([stepsOf(scale)[8], '#ffffff'], 'rgb')(0.08));
-      assert.equal(t.$value.hex, hex, `${slot} : voile recalculé`);
-      assert.equal(t.$value.colorSpace, 'srgb');
-      const c = /** @type {any} */ (rgb(hex));
-      assert.deepEqual(t.$value.components, [c.r, c.g, c.b].map((x) => Math.round(x * 10000) / 10000));
-    } else assert.equal(g['plein-survol'].$value, survol, `${slot}.plein-survol`);
+    const t = g['plein-survol'];
+    const x = t.$extensions?.['ds-lab.survol'];
+    assert.deepEqual({ base: x?.base, clarte: x?.clarte, espace: x?.espace }, { base: plein, clarte: -0.05, espace: 'oklch' }, `${slot} : formule`);
+    const pas = Number(/\.(\d+)\}$/.exec(plein)?.[1]);
+    assert.equal(survolAttendu(stepsOf(scale)[pas - 1]), survol, `${slot} : survol recalculé`);
+    assert.equal(t.$value.hex, survol, `${slot}.plein-survol`);
+    assert.equal(t.$value.colorSpace, 'srgb');
+    const c = /** @type {any} */ (rgb(survol));
+    assert.deepEqual(t.$value.components, [c.r, c.g, c.b].map((v) => Math.round(v * 10000) / 10000));
   }
 });
 
-test('Pleins : seule valeur calculée du fichier, le voile', () => {
+test('Pleins : seules valeurs calculées du fichier, les six survols', () => {
   const computed = [];
   for (const [slot, g] of couleurs(marque.marque)) {
     for (const [k, t] of Object.entries(g)) if (!k.startsWith('$') && typeof t.$value !== 'string') computed.push(`${slot}.${k}`);
   }
-  assert.deepEqual(computed, ['primaire.plein-survol']);
+  assert.deepEqual(computed, Object.keys(EMPLACEMENTS).map((e) => `${e}.plein-survol`));
 });
 
 test('Pleins : le fichier versionné est celui que produit marqueTokens', () => {
@@ -250,7 +258,7 @@ test('M0 une autre marque se branche sans toucher aux rôles (témoin fictif, so
   const set = { ...loadRoles(DIR), marque: avecAplat(m), echelles: [echelle] };
   const roles = resolveRoles(set.semantique, set.primitives, set.marque, ...set.echelles);
   assert.equal(roles.get('fond.interactif.fort')?.hex, g.steps[8]);
-  assert.equal(roles.get('fond.interactif.fort.survol')?.hex, voileBlanc(g.steps[8], 0.08));
+  assert.equal(roles.get('fond.interactif.fort.survol')?.hex, survolAttendu(g.steps[8]));
   assert.equal(roles.get('texte.sur-interactif')?.hex, '#ffffff');
   assert.equal(roles.get('texte.principal')?.hex, HEX.get('texte.principal'));
   assert.equal(contratRoles(set).pairs.length, N_PAIRES, '+ 4 bordures de statut sur fond.surface, + les paires du bouton');

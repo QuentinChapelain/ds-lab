@@ -14,7 +14,8 @@ export const AJOUTS = {
   'texte.marque.grand': ['marque.primaire.texte-grand', '#2b4c7e'],
   'fond.interactif.inverse': ['marque.primaire.sur-aplat', '#ffffff'],
   'texte.sur-interactif.inverse': ['marque.primaire.aplat', '#2b4c7e'],
-  'texte.sur-interactif.inverse.survol': ['marque.primaire.aplat-survol', '#3c5a88'],
+  // Survol du plein en clair (D45) : clarté OKLCH du bleu 9 − 0,05.
+  'texte.sur-interactif.inverse.survol': ['marque.primaire.aplat-survol', '#1e3e6f'],
   'bordure.focus.inverse': ['marque.primaire.sur-aplat', '#ffffff'],
 };
 
@@ -44,7 +45,8 @@ export const INTERDITES_AJOUTEES = ['texte.marque.grand', 'texte.interactif', 'f
  * docs/attendus/bouton.md (culori, résolveur indépendant de src/). Ajoutés après les 51 rôles ci-dessus.
  */
 export const AJOUTS_BOUTON = {
-  'fond.erreur.fort.survol': ['marque.erreur.plein-survol', '#6a0000'],
+  // Survol du plein d'erreur (D45, docs/attendus/finitions-bouton.md) : clarté OKLCH de l'erreur 11 − 0,05.
+  'fond.erreur.fort.survol': ['marque.erreur.plein-survol', '#b9001a'],
   'fond.desactive': ['couleur.neutre.3', '#f3f2f1'],
   'texte.desactive': ['couleur.neutre.9', '#8a8478'],
 };

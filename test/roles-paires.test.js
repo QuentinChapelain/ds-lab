@@ -37,6 +37,7 @@
  * (wcagContrast sur les pas lus dans primitives et statuts ; voile = interpolate([bleu 9, blanc], 'rgb')(0,08) = #3c5a88) :
  *   blanc sur bleu 9 + voile 8 % : 6,9765 ; blanc sur terre 11 : 5,6287 ; sur erreur 11 : 5,6023 ;
  *   sur succes 11 : 5,6186 ; sur info 11 : 5,6178 ; avertissement 12 sur avertissement 9 : 5,7721.
+ * D45 (18/11/2026) : survol du plein = clarté OKLCH du bleu 9 − 0,05 = #1e3e6f ; wcagContrast('#ffffff', '#1e3e6f') = 10,6394.
  * Décision du 15/11/2026 : bordure.focus → marque.primaire.11 (bleu 11 #4c6994) ; ratios culori
  *   (wcagContrast('#4c6994', fond)) : fond.app 5,4037, fond.surface 5,5917, fond.discret 5,2619, fond.composant 5,0011.
  * Décision du 15/11/2026 : interdite bordure.focus sur fond.interactif.fort (bleu 11 sur bleu 9 :
@@ -89,7 +90,7 @@ texte.info | fond.app | 5.4289 | 4.5
 texte.info | fond.surface | 5.6178 | 4.5
 texte.info | fond.info.discret | 5.0657 | 4.5
 texte.sur-interactif | fond.interactif.fort | 8.6144 | 4.5
-texte.sur-interactif | fond.interactif.fort.survol | 6.9765 | 4.5
+texte.sur-interactif | fond.interactif.fort.survol | 10.6394 | 4.5
 texte.sur-accent | fond.accent.fort | 5.6287 | 4.5
 texte.sur-erreur | fond.erreur.fort | 5.6023 | 4.5
 texte.sur-succes | fond.succes.fort | 5.6186 | 4.5

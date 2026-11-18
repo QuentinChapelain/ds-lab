@@ -1,5 +1,5 @@
 {
-  "$description": "Couche marque de Écume et Sel en mode sombre, écrite par la saisie. Format DTCG 2025.10. Posée sur marque.tokens.json dans le contexte sombre : les boutons gardent leurs valeurs claires (D04), le texte de marque des grands titres est choisi sur l'échelle sombre.",
+  "$description": "Couche marque de Écume et Sel en mode sombre, écrite par la saisie. Format DTCG 2025.10. Posée sur marque.tokens.json dans le contexte sombre : les boutons prennent la version lumineuse de la couleur (pas 11 de l'échelle sombre, survol calculé, D04 et D45), l'aplat plein garde ses valeurs claires, le texte de marque des grands titres est choisi sur l'échelle sombre.",
   "marque": {
     "primaire": {
       "plein": {
@@ -7,8 +7,24 @@
         "$description": "plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur"
       },
       "plein-survol": {
-        "$value": "{couleur.primaire.12}",
-        "$description": "plein survolé en sombre : pas 12 de l'échelle sombre"
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.8667,
+            1,
+            1
+          ],
+          "hex": "#ddffff"
+        },
+        "$description": "plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45)",
+        "$extensions": {
+          "ds-lab.survol": {
+            "base": "{couleur.primaire.11}",
+            "clarte": 0.05,
+            "espace": "oklch",
+            "gamut": "srgb, chroma réduite (CSS Color 4)"
+          }
+        }
       },
       "sur-plein": {
         "$value": "{couleur.primaire.1}",
@@ -58,12 +74,7 @@
           ],
           "hex": "#6fcbee"
         },
-        "$description": "aplat plein en sombre : plein-survol du primaire en clair, figé (couleur exacte du client)",
-        "$extensions": {
-          "ds-lab.mode": {
-            "clair": "{couleur.primaire.10}"
-          }
-        }
+        "$description": "aplat plein en sombre : plein-survol du primaire en clair, figé (couleur exacte du client)"
       },
       "texte-grand": {
         "$value": "{couleur.primaire.9}",
@@ -76,8 +87,24 @@
         "$description": "plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur"
       },
       "plein-survol": {
-        "$value": "{couleur.erreur.12}",
-        "$description": "plein survolé en sombre : pas 12 de l'échelle sombre"
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.6667,
+            0.6353
+          ],
+          "hex": "#ffaaa2"
+        },
+        "$description": "plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45)",
+        "$extensions": {
+          "ds-lab.survol": {
+            "base": "{couleur.erreur.11}",
+            "clarte": 0.05,
+            "espace": "oklch",
+            "gamut": "srgb, chroma réduite (CSS Color 4)"
+          }
+        }
       },
       "sur-plein": {
         "$value": "{couleur.erreur.1}",
@@ -90,8 +117,24 @@
         "$description": "plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur"
       },
       "plein-survol": {
-        "$value": "{couleur.succes.12}",
-        "$description": "plein survolé en sombre : pas 12 de l'échelle sombre"
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1922,
+            0.8706,
+            0.5765
+          ],
+          "hex": "#31de93"
+        },
+        "$description": "plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45)",
+        "$extensions": {
+          "ds-lab.survol": {
+            "base": "{couleur.succes.11}",
+            "clarte": 0.05,
+            "espace": "oklch",
+            "gamut": "srgb, chroma réduite (CSS Color 4)"
+          }
+        }
       },
       "sur-plein": {
         "$value": "{couleur.succes.1}",
@@ -104,8 +147,24 @@
         "$description": "plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur"
       },
       "plein-survol": {
-        "$value": "{couleur.avertissement.12}",
-        "$description": "plein survolé en sombre : pas 12 de l'échelle sombre"
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.902,
+            0.6745
+          ],
+          "hex": "#ffe6ac"
+        },
+        "$description": "plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45)",
+        "$extensions": {
+          "ds-lab.survol": {
+            "base": "{couleur.avertissement.11}",
+            "clarte": 0.05,
+            "espace": "oklch",
+            "gamut": "srgb, chroma réduite (CSS Color 4)"
+          }
+        }
       },
       "sur-plein": {
         "$value": "{couleur.avertissement.1}",
@@ -118,8 +177,24 @@
         "$description": "plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur"
       },
       "plein-survol": {
-        "$value": "{couleur.info.12}",
-        "$description": "plein survolé en sombre : pas 12 de l'échelle sombre"
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.451,
+            0.8,
+            1
+          ],
+          "hex": "#73ccff"
+        },
+        "$description": "plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45)",
+        "$extensions": {
+          "ds-lab.survol": {
+            "base": "{couleur.info.11}",
+            "clarte": 0.05,
+            "espace": "oklch",
+            "gamut": "srgb, chroma réduite (CSS Color 4)"
+          }
+        }
       },
       "sur-plein": {
         "$value": "{couleur.info.1}",
@@ -148,18 +223,13 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.3765,
-            0.0902,
-            0.0039
+            0.6824,
+            0.1412,
+            0
           ],
-          "hex": "#601701"
+          "hex": "#ae2400"
         },
-        "$description": "plein survolé : pas 12, valeur du mode clair, figée en sombre",
-        "$extensions": {
-          "ds-lab.mode": {
-            "clair": "{couleur.accent.12}"
-          }
-        }
+        "$description": "plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45), valeur du mode clair, figée en sombre"
       },
       "sur-plein": {
         "$value": "{couleur.blanc}",

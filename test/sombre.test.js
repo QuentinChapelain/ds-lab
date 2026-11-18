@@ -19,6 +19,10 @@
  *      bouton inversé, bordure.focus.inverse et l'accent fort gardent leurs valeurs claires ; texte.marque.grand ≥ 3:1
  *      sur les fonds sombres ;
  *   M6 fichiers sombres écrits = sortie de la saisie ; les 5 marques fictives passent le contraste en sombre.
+ * Correction du 18/11/2026 (D45, docs/attendus/finitions-bouton.md) : M5, le survol n'est plus le pas 12 mais la
+ *   clarté OKLCH du pas 11 + 0,05, valeur calculée, formule en $extensions["ds-lab.survol"] ; il s'éclaircit.
+ *   Primaire : Atelier Lavandine #d4b5ff, Écume et Sel #ddffff, Grenat Papeterie #ffa7be, Maison Alberto #ffe17e,
+ *   Orbe Café #97c6ff ; statuts, toutes marques : erreur #ffaaa2, succès #31de93, avertissement #ffe6ac, info #73ccff.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -89,7 +93,13 @@ test('M4 rôles identiques dans les deux modes ; surface et texte sur inverse bl
   assert.equal(c('texte.sur-inverse'), '#ffffff');
 });
 
-test('M5 bouton sombre : pas 11, 12 et 1 en alias, texte ≥ 7:1 ; aplat plein, bouton inversé et accent fort aux valeurs claires', () => {
+/** Survols attendus en sombre (D45), écrits à la main depuis l'attendu. */
+const SURVOLS_SOMBRES = {
+  primaire: { 'atelier-lavandine': '#d4b5ff', 'ecume-et-sel': '#ddffff', 'grenat-papeterie': '#ffa7be', 'maison-alberto': '#ffe17e', 'orbe-cafe': '#97c6ff' },
+  erreur: '#ffaaa2', succes: '#31de93', avertissement: '#ffe6ac', info: '#73ccff',
+};
+
+test('M5 bouton sombre : pas 11 et 1 en alias, survol calculé qui éclaircit, texte ≥ 7:1 ; aplat plein, bouton inversé et accent fort aux valeurs claires', () => {
   const figes = ['fond.marque.fort', 'texte.sur-marque', 'fond.interactif.inverse', 'texte.sur-interactif.inverse', 'texte.sur-interactif.inverse.survol', 'bordure.focus.inverse', 'fond.accent.fort', 'texte.sur-accent'];
   for (const m of MARQUES) {
     const d = join(ROOT, 'tokens', m);
@@ -97,7 +107,10 @@ test('M5 bouton sombre : pas 11, 12 et 1 en alias, texte ≥ 7:1 ; aplat plein, 
     const scale = /^\{couleur\.([^.]+)\.\d+\}$/.exec(lire(join(d, 'marque.tokens.json')).marque.primaire['1'].$value)?.[1];
     for (const [e, s] of [['primaire', scale], ['erreur', 'erreur'], ['succes', 'succes'], ['avertissement', 'avertissement'], ['info', 'info']]) {
       assert.equal(sombre[e].plein.$value, `{couleur.${s}.11}`, `${m} ${e}`);
-      assert.equal(sombre[e]['plein-survol'].$value, `{couleur.${s}.12}`, `${m} ${e}`);
+      const survol = sombre[e]['plein-survol'];
+      const attendu = e === 'primaire' ? SURVOLS_SOMBRES.primaire[m] : SURVOLS_SOMBRES[e];
+      assert.equal(survol.$value.hex, attendu, `${m} ${e} : survol`);
+      assert.deepEqual({ base: survol.$extensions['ds-lab.survol'].base, clarte: survol.$extensions['ds-lab.survol'].clarte }, { base: `{couleur.${s}.11}`, clarte: 0.05 }, `${m} ${e} : formule`);
       assert.equal(sombre[e]['sur-plein'].$value, `{couleur.${s}.1}`, `${m} ${e}`);
     }
     const h = roles(m, 'sombre');
@@ -105,6 +118,7 @@ test('M5 bouton sombre : pas 11, 12 et 1 en alias, texte ≥ 7:1 ; aplat plein, 
     const ds1 = wcagContrast(h('texte.sur-interactif'), h('fond.interactif.fort'));
     assert.ok(ds1 >= 7, `${m} : ${ds1}`);
     assert.ok(wcagContrast(h('texte.sur-interactif'), h('fond.interactif.fort.survol')) >= 4.5, m);
+    assert.ok(/** @type {any} */ (oklch(h('fond.interactif.fort.survol'))).l > /** @type {any} */ (oklch(h('fond.interactif.fort'))).l, `${m} : le survol éclaircit`);
     for (const s of ['erreur', 'succes', 'avertissement', 'info']) assert.ok(wcagContrast(h(`texte.sur-${s}`), h(`fond.${s}.fort`)) >= 7, `${m} ${s}`);
     for (const r of figes) assert.equal(h(r), c(r), `${m} : ${r}`);
     for (const f of ['fond.app', 'fond.surface', 'fond.discret', 'fond.marque.discret']) assert.ok(wcagContrast(h('texte.marque.grand'), h(f)) >= 3, `${m} : ${f}`);

@@ -2,33 +2,32 @@
 /**
  * Règle des pleins, déclarée dans la couche marque (jamais dans les rôles), D04 :
  * décisions de Quentin sur image (15/11/2026, 13 h 18 à 13 h 48). La classe se lit sur l'échelle, dans cet ordre :
- *   1. blanc ≥ 4,5 sur le pas 9 → couleur exacte (plein = pas 9), texte blanc ;
- *        sombre  : blanc ≥ 5,5 → survol = pas 9 + voile blanc 8 % ;
- *        soutenu : blanc entre 4,5 et 5,5 → survol = pas 9 sous un voile noir de 15 % (décision du 15/11/2026,
- *                  13 h 58 : le pas 10 était à ΔE 1,33 du repos, invisible) ;
- *   2. clair : sinon, pas 12 sur le pas 9 ≥ 7 et pas 12 sur le pas 10 ≥ 4,5 → plein = pas 9, texte = pas 12,
- *      survol = pas 10 (seuil 7 calibré à l'œil, KNOWN_ISSUES.md) ;
- *   3. moyen : le reste → plein = pas 11, texte blanc, survol = pas 12.
- * Cette règle vaut pour le primaire et l'accent. Les quatre statuts gardent leur bouton d'origine, figé ici
- * (STATUTS_FIGES), pour que la couche marque d'Orbe Café reste identique.
- * Les voiles (blanc du cas sombre, noir du cas soutenu) sont les seules valeurs calculées de la couche marque :
- * couleur DTCG, formule en $extensions.
+ *   1. blanc ≥ 4,5 sur le pas 9 → couleur exacte (plein = pas 9), texte blanc ; sombre si blanc ≥ 5,5, soutenu
+ *      sinon (les deux ne différaient que par le survol, KNOWN_ISSUES.md) ;
+ *   2. clair : sinon, pas 12 sur le pas 9 ≥ 7 et pas 12 sur le pas 10 ≥ 4,5 → plein = pas 9, texte = pas 12
+ *      (seuil 7 calibré à l'œil, KNOWN_ISSUES.md) ;
+ *   3. moyen : le reste → plein = pas 11, texte blanc.
+ * Cette règle vaut pour le primaire et l'accent. Les quatre statuts gardent leur plein et leur texte d'origine, figés
+ * ici (STATUTS_FIGES).
+ * Survol, une seule règle pour tous les pleins, statuts compris (D45, décision de Quentin du 18/11/2026) : la clarté
+ * OKLCH du plein baisse de 0,05 en clair et monte de 0,05 en sombre, teinte et chroma gardées, chroma réduite si la
+ * couleur sort du gamut sRGB (méthode de CSS Color 4). Le survol s'éloigne de la page, du même pas perçu pour tous.
+ * Les survols sont les seules valeurs calculées de la couche marque : couleur DTCG, formule en $extensions.
  */
-import { interpolate, formatHex } from 'culori';
+import { formatHex, oklch, toGamut } from 'culori';
 import { contrastRatio } from '../lib/color.js';
 import { colorValue } from './primitives.js';
 
 /** Couleur exacte et texte blanc : contraste du blanc sur le pas 9. */
 export const BLANC_MIN = 4.5;
-/** Survol par voile blanc au-delà de ce contraste du blanc sur le pas 9 ; en dessous, voile noir. */
+/** Classe sombre au-delà de ce contraste du blanc sur le pas 9 ; en dessous, soutenu. */
 export const SOMBRE_BLANC = 5.5;
 /** Texte foncé (pas 12) sur le plein (pas 9) : seuil calibré à l'œil ; sur le survol (pas 10) : 4,5. */
 export const TEXTE_FONCE = 7;
 export const TEXTE_FONCE_SURVOL = 4.5;
-/** Voile blanc du survol sombre. */
-export const VOILE_BLANC = 0.08;
-/** Voile noir du survol soutenu. */
-const VOILE_NOIR = 0.15;
+/** Pas de clarté OKLCH du survol d'un plein (D45) : retranché en clair, ajouté en sombre. */
+export const SURVOL_CLARTE = 0.05;
+const versSrgb = toGamut('rgb', 'oklch');
 
 const WHITE = '#ffffff';
 
@@ -48,27 +47,45 @@ export function classePlein(steps) {
  * Avertissement : texte foncé à 5,77 sur le plein, sous le seuil des couleurs du client (KNOWN_ISSUES.md).
  */
 export const STATUTS_FIGES = /** @type {Record<string, { classe: Classe, regle: string }>} */ ({
-  erreur: { classe: 'moyen', regle: 'moyen : plein = pas 11, texte blanc, survol = pas 12' },
-  succes: { classe: 'moyen', regle: 'moyen : plein = pas 11, texte blanc, survol = pas 12' },
-  avertissement: { classe: 'clair', regle: 'clair, jaune ou orangé : plein = pas 9, texte = pas 12, survol = pas 10' },
-  info: { classe: 'moyen', regle: 'moyen : plein = pas 11, texte blanc, survol = pas 12' },
+  erreur: { classe: 'moyen', regle: 'moyen : plein = pas 11, texte blanc' },
+  succes: { classe: 'moyen', regle: 'moyen : plein = pas 11, texte blanc' },
+  avertissement: { classe: 'clair', regle: 'clair, jaune ou orangé : plein = pas 9, texte = pas 12' },
+  info: { classe: 'moyen', regle: 'moyen : plein = pas 11, texte blanc' },
 });
 
-/** Blanc posé à `a` d'opacité sur `hex` (composition source-over en sRGB, comme le navigateur). @param {string} hex @param {number} [a] */
-export function voileBlanc(hex, a = VOILE_BLANC) {
-  return formatHex(interpolate([hex, WHITE], 'rgb')(a));
+/**
+ * Survol d'un plein (D45) : clarté OKLCH − 0,05 en clair, + 0,05 en sombre, bornée à [0, 1] ; teinte et chroma
+ * gardées, puis ramené dans le gamut sRGB en réduisant la chroma (toGamut, CSS Color 4).
+ * @param {string} hex @param {'clair' | 'sombre'} mode
+ */
+export function survolPlein(hex, mode) {
+  const c = oklch(hex);
+  if (!c) throw new Error(`couleur illisible : ${hex}`);
+  const l = Math.min(1, Math.max(0, c.l + (mode === 'clair' ? -SURVOL_CLARTE : SURVOL_CLARTE)));
+  return formatHex(versSrgb({ ...c, l }));
 }
 
-/** Noir posé à `a` d'opacité sur `hex` (source-over en sRGB). @param {string} hex @param {number} [a] */
-export function voileNoir(hex, a = VOILE_NOIR) {
-  return formatHex(interpolate([hex, '#000000'], 'rgb')(a));
+/** Phrase du survol, commune à toutes les classes. */
+const SURVOL = 'survol = clarté OKLCH du plein − 0,05 (D45)';
+
+/**
+ * Jeton du plein survolé : valeur calculée, formule en $extensions.
+ * @param {string} base alias du plein @param {string} hex valeur du plein @param {'clair' | 'sombre'} mode
+ */
+function jetonSurvol(base, hex, mode) {
+  const clarte = mode === 'clair' ? -SURVOL_CLARTE : SURVOL_CLARTE;
+  return {
+    $value: colorValue(survolPlein(hex, mode)),
+    $description: `plein survolé : clarté OKLCH du plein ${mode === 'clair' ? '−' : '+'} 0,05, teinte et chroma gardées, valeur calculée (D45)`,
+    $extensions: { 'ds-lab.survol': { base, clarte, espace: 'oklch', gamut: 'srgb, chroma réduite (CSS Color 4)' } },
+  };
 }
 
 const REGLES = {
-  sombre: 'sombre (blanc ≥ 5,5 sur le pas 9) : plein = pas 9, texte blanc, survol = plein + voile blanc 8 %',
-  soutenu: 'soutenu (blanc ≥ 4,5 et < 5,5 sur le pas 9) : plein = pas 9, texte blanc, survol = plein + voile noir 15 %',
-  moyen: 'moyen : plein = pas 11, texte blanc, survol = pas 12',
-  clair: 'clair (pas 12 ≥ 7 sur le pas 9 et ≥ 4,5 sur le pas 10) : plein = pas 9, texte = pas 12, survol = pas 10',
+  sombre: `sombre (blanc ≥ 5,5 sur le pas 9) : plein = pas 9, texte blanc ; ${SURVOL}`,
+  soutenu: `soutenu (blanc ≥ 4,5 et < 5,5 sur le pas 9) : plein = pas 9, texte blanc ; ${SURVOL}`,
+  moyen: `moyen : plein = pas 11, texte blanc ; ${SURVOL}`,
+  clair: `clair (pas 12 ≥ 7 sur le pas 9 et ≥ 4,5 sur le pas 10) : plein = pas 9, texte = pas 12 ; ${SURVOL}`,
 };
 const LABELS = /** @type {Record<string, string>} */ ({
   primaire: 'Primaire (actions)',
@@ -93,34 +110,13 @@ function emplacement(name, { scale, steps }, withSteps) {
   /** @type {Record<string, any>} */
   const g = {
     $description: `${LABELS[name] ?? name} : échelle ${scale}, plein ${classe}.`,
-    $extensions: { 'ds-lab.plein': { classe, regle: fige?.regle ?? REGLES[classe] } },
+    $extensions: { 'ds-lab.plein': { classe, regle: fige ? `${fige.regle} ; ${SURVOL}` : REGLES[classe] } },
   };
   if (withSteps) for (let i = 1; i <= 12; i++) g[String(i)] = { $value: ref(i), $description: `${STEP_WORD} ${i} de l'échelle ${scale}` };
-  if (classe === 'sombre') {
-    g.plein = { $value: ref(9), $description: 'plein : pas 9' };
-    g['plein-survol'] = {
-      $value: colorValue(voileBlanc(steps[8])),
-      $description: 'plein survolé : pas 9 sous un voile blanc de 8 %, valeur calculée',
-      $extensions: { 'ds-lab.voile': { base: ref(9), blanc: VOILE_BLANC, composition: 'blanc posé sur la base, source-over en sRGB' } },
-    };
-    g['sur-plein'] = { $value: '{couleur.blanc}', $description: 'texte sur le plein : blanc' };
-  } else if (classe === 'soutenu') {
-    g.plein = { $value: ref(9), $description: 'plein : pas 9, couleur exacte' };
-    g['plein-survol'] = {
-      $value: colorValue(voileNoir(steps[8])),
-      $description: 'plein survolé : pas 9 sous un voile noir de 15 %, valeur calculée',
-      $extensions: { 'ds-lab.voile': { base: ref(9), noir: VOILE_NOIR, composition: 'noir posé sur la base, source-over en sRGB' } },
-    };
-    g['sur-plein'] = { $value: '{couleur.blanc}', $description: 'texte sur le plein : blanc' };
-  } else if (classe === 'moyen') {
-    g.plein = { $value: ref(11), $description: 'plein : pas 11' };
-    g['plein-survol'] = { $value: ref(12), $description: 'plein survolé : pas 12' };
-    g['sur-plein'] = { $value: '{couleur.blanc}', $description: 'texte sur le plein : blanc' };
-  } else {
-    g.plein = { $value: ref(9), $description: 'plein : pas 9, couleur exacte' };
-    g['plein-survol'] = { $value: ref(10), $description: 'plein survolé : pas 10' };
-    g['sur-plein'] = { $value: ref(12), $description: 'texte sur le plein : pas 12' };
-  }
+  const pas = classe === 'moyen' ? 11 : 9;
+  g.plein = { $value: ref(pas), $description: `plein : pas ${pas}${pas === 9 && classe !== 'sombre' ? ', couleur exacte' : ''}` };
+  g['plein-survol'] = jetonSurvol(ref(pas), steps[pas - 1], 'clair');
+  g['sur-plein'] = classe === 'clair' ? { $value: ref(12), $description: 'texte sur le plein : pas 12' } : { $value: '{couleur.blanc}', $description: 'texte sur le plein : blanc' };
   return g;
 }
 
@@ -150,13 +146,13 @@ export function marqueTokens({ primaire, accent, statuts, polices, fonds, descri
   /** @type {Record<string, any>} */
   const m = {
     $type: 'color',
-    $description: "Emplacements de marque : primaire et accent (12 pas, plein, plein survolé, texte sur plein), statuts (plein, plein survolé, texte sur plein). Règle des pleins en trois cas, lue sur le pas 9 : sombre, moyen, clair.",
+    $description: "Emplacements de marque : primaire et accent (12 pas, plein, plein survolé, texte sur plein), statuts (plein, plein survolé, texte sur plein). Règle des pleins en trois cas, lue sur le pas 9 : sombre, moyen, clair. Survol de tous les pleins : clarté OKLCH du plein − 0,05 (D45).",
     primaire: emplacement('primaire', primaire, true),
     accent: emplacement('accent', accent, true),
   };
-  // Phrase complétée seulement si un emplacement est soutenu, pour qu'Orbe Café reste identique octet par octet.
+  // Phrase complétée seulement si un emplacement est soutenu.
   if ([m.primaire, m.accent].some((g) => g.$extensions['ds-lab.plein'].classe === 'soutenu'))
-    m.$description += ' Variante soutenue du cas sombre (blanc entre 4,5 et 5,5 sur le pas 9) : survol par voile noir de 15 %.';
+    m.$description += ' Variante soutenue du cas sombre : blanc entre 4,5 et 5,5 sur le pas 9.';
   const grand = pasTexteGrand(primaire.steps, fonds);
   m.primaire['texte-grand'] = {
     $value: `{couleur.${primaire.scale}.${grand}}`,
@@ -196,16 +192,16 @@ export function aplatTokens() {
 
 /**
  * Couche marque du mode sombre, posée par-dessus la claire dans le contexte sombre (D04).
- *   Bouton du primaire et des quatre statuts, règle unique : plein = pas 11 de l'échelle sombre, survol = pas 12, texte =
- *   pas 1, en alias, sans valeur calculée.
+ *   Bouton du primaire et des quatre statuts, règle unique : plein = pas 11 de l'échelle sombre, texte = pas 1, en
+ *   alias ; survol = clarté OKLCH du plein + 0,05, valeur calculée (D45).
  *   Aplat plein du primaire (aplat, sur-aplat, aplat-survol) et accent fort : valeurs du clair, écrites telles quelles
  *   (le blanc reste un alias).
  *   texte-grand : choisi de nouveau sur l'échelle sombre du primaire, contre les fonds sombres (pasTexteGrand).
- * @param {{ marque: any, clairs: Record<string, string[]>, echelles: Record<string, string>, primaireSombre: { scale: string, steps: string[] }, fonds: string[], description: string }} spec
+ * @param {{ marque: any, clairs: Record<string, string[]>, echelles: Record<string, string>, sombres: Record<string, string[]>, primaireSombre: { scale: string, steps: string[] }, fonds: string[], description: string }} spec
  *   marque claire (marqueTokens) ; pas clairs par emplacement ; nom de l'échelle sombre par emplacement à bouton ;
- *   échelle sombre du primaire ; fonds sombres
+ *   pas sombres par emplacement à bouton ; échelle sombre du primaire ; fonds sombres
  */
-export function marqueSombreTokens({ marque, clairs, echelles, primaireSombre, fonds, description }) {
+export function marqueSombreTokens({ marque, clairs, echelles, sombres, primaireSombre, fonds, description }) {
   const m0 = marque.marque;
   /** Valeur claire d'un emplacement, à figer. @param {string} name @param {string} k */
   const figee = (name, k) => {
@@ -217,12 +213,14 @@ export function marqueSombreTokens({ marque, clairs, echelles, primaireSombre, f
   };
   /** @type {Record<string, any>} */
   const m = {};
-  for (const [name, scale] of Object.entries(echelles))
+  for (const [name, scale] of Object.entries(echelles)) {
+    if (!sombres[name]) throw new Error(`échelle sombre absente : ${name}`);
     m[name] = {
       plein: { $value: `{couleur.${scale}.11}`, $description: "plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur" },
-      'plein-survol': { $value: `{couleur.${scale}.12}`, $description: "plein survolé en sombre : pas 12 de l'échelle sombre" },
+      'plein-survol': jetonSurvol(`{couleur.${scale}.11}`, sombres[name][10], 'sombre'),
       'sur-plein': { $value: `{couleur.${scale}.1}`, $description: "texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1)" },
     };
+  }
   for (const [k, v] of Object.entries(APLAT)) m.primaire[k] = { ...figee('primaire', v), $description: `aplat plein en sombre : ${v} du primaire en clair, figé (couleur exacte du client)` };
   m.accent = Object.fromEntries(['plein', 'plein-survol', 'sur-plein'].map((k) => [k, figee('accent', k)]));
   const grand = pasTexteGrand(primaireSombre.steps, fonds);

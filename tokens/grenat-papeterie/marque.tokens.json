@@ -2,7 +2,7 @@
   "$description": "Emplacements de marque de Grenat Papeterie, écrits par la saisie depuis entree.json. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers marque.<emplacement>.* ; chaque emplacement pointe vers une échelle (générées dans echelles.tokens.json, communes dans tokens/commun/), et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9. Sans accent saisi : repli sur le neutre (D05).",
   "marque": {
     "$type": "color",
-    "$description": "Emplacements de marque : primaire et accent (12 pas, plein, plein survolé, texte sur plein), statuts (plein, plein survolé, texte sur plein). Règle des pleins en trois cas, lue sur le pas 9 : sombre, moyen, clair.",
+    "$description": "Emplacements de marque : primaire et accent (12 pas, plein, plein survolé, texte sur plein), statuts (plein, plein survolé, texte sur plein). Règle des pleins en trois cas, lue sur le pas 9 : sombre, moyen, clair. Survol de tous les pleins : clarté OKLCH du plein − 0,05 (D45).",
     "primaire": {
       "1": {
         "$value": "{couleur.primaire.1}",
@@ -56,7 +56,7 @@
       "$extensions": {
         "ds-lab.plein": {
           "classe": "sombre",
-          "regle": "sombre (blanc ≥ 5,5 sur le pas 9) : plein = pas 9, texte blanc, survol = plein + voile blanc 8 %"
+          "regle": "sombre (blanc ≥ 5,5 sur le pas 9) : plein = pas 9, texte blanc ; survol = clarté OKLCH du plein − 0,05 (D45)"
         }
       },
       "plein": {
@@ -67,18 +67,19 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.5216,
-            0.1922,
-            0.302
+            0.4157,
+            0.051,
+            0.1882
           ],
-          "hex": "#85314d"
+          "hex": "#6a0d30"
         },
-        "$description": "plein survolé : pas 9 sous un voile blanc de 8 %, valeur calculée",
+        "$description": "plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45)",
         "$extensions": {
-          "ds-lab.voile": {
+          "ds-lab.survol": {
             "base": "{couleur.primaire.9}",
-            "blanc": 0.08,
-            "composition": "blanc posé sur la base, source-over en sRGB"
+            "clarte": -0.05,
+            "espace": "oklch",
+            "gamut": "srgb, chroma réduite (CSS Color 4)"
           }
         }
       },
@@ -144,7 +145,7 @@
       "$extensions": {
         "ds-lab.plein": {
           "classe": "moyen",
-          "regle": "moyen : plein = pas 11, texte blanc, survol = pas 12"
+          "regle": "moyen : plein = pas 11, texte blanc ; survol = clarté OKLCH du plein − 0,05 (D45)"
         }
       },
       "plein": {
@@ -152,8 +153,24 @@
         "$description": "plein : pas 11"
       },
       "plein-survol": {
-        "$value": "{couleur.neutre.12}",
-        "$description": "plein survolé : pas 12"
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.3725,
+            0.349,
+            0.302
+          ],
+          "hex": "#5f594d"
+        },
+        "$description": "plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45)",
+        "$extensions": {
+          "ds-lab.survol": {
+            "base": "{couleur.neutre.11}",
+            "clarte": -0.05,
+            "espace": "oklch",
+            "gamut": "srgb, chroma réduite (CSS Color 4)"
+          }
+        }
       },
       "sur-plein": {
         "$value": "{couleur.blanc}",
@@ -165,7 +182,7 @@
       "$extensions": {
         "ds-lab.plein": {
           "classe": "moyen",
-          "regle": "moyen : plein = pas 11, texte blanc, survol = pas 12"
+          "regle": "moyen : plein = pas 11, texte blanc ; survol = clarté OKLCH du plein − 0,05 (D45)"
         }
       },
       "plein": {
@@ -173,8 +190,24 @@
         "$description": "plein : pas 11"
       },
       "plein-survol": {
-        "$value": "{couleur.erreur.12}",
-        "$description": "plein survolé : pas 12"
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.7255,
+            0,
+            0.102
+          ],
+          "hex": "#b9001a"
+        },
+        "$description": "plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45)",
+        "$extensions": {
+          "ds-lab.survol": {
+            "base": "{couleur.erreur.11}",
+            "clarte": -0.05,
+            "espace": "oklch",
+            "gamut": "srgb, chroma réduite (CSS Color 4)"
+          }
+        }
       },
       "sur-plein": {
         "$value": "{couleur.blanc}",
@@ -186,7 +219,7 @@
       "$extensions": {
         "ds-lab.plein": {
           "classe": "moyen",
-          "regle": "moyen : plein = pas 11, texte blanc, survol = pas 12"
+          "regle": "moyen : plein = pas 11, texte blanc ; survol = clarté OKLCH du plein − 0,05 (D45)"
         }
       },
       "plein": {
@@ -194,8 +227,24 @@
         "$description": "plein : pas 11"
       },
       "plein-survol": {
-        "$value": "{couleur.succes.12}",
-        "$description": "plein survolé : pas 12"
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0.4078,
+            0.2353
+          ],
+          "hex": "#00683c"
+        },
+        "$description": "plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45)",
+        "$extensions": {
+          "ds-lab.survol": {
+            "base": "{couleur.succes.11}",
+            "clarte": -0.05,
+            "espace": "oklch",
+            "gamut": "srgb, chroma réduite (CSS Color 4)"
+          }
+        }
       },
       "sur-plein": {
         "$value": "{couleur.blanc}",
@@ -207,7 +256,7 @@
       "$extensions": {
         "ds-lab.plein": {
           "classe": "clair",
-          "regle": "clair, jaune ou orangé : plein = pas 9, texte = pas 12, survol = pas 10"
+          "regle": "clair, jaune ou orangé : plein = pas 9, texte = pas 12 ; survol = clarté OKLCH du plein − 0,05 (D45)"
         }
       },
       "plein": {
@@ -215,8 +264,24 @@
         "$description": "plein : pas 9, couleur exacte"
       },
       "plein-survol": {
-        "$value": "{couleur.avertissement.10}",
-        "$description": "plein survolé : pas 10"
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.8314,
+            0.5647,
+            0
+          ],
+          "hex": "#d49000"
+        },
+        "$description": "plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45)",
+        "$extensions": {
+          "ds-lab.survol": {
+            "base": "{couleur.avertissement.9}",
+            "clarte": -0.05,
+            "espace": "oklch",
+            "gamut": "srgb, chroma réduite (CSS Color 4)"
+          }
+        }
       },
       "sur-plein": {
         "$value": "{couleur.avertissement.12}",
@@ -228,7 +293,7 @@
       "$extensions": {
         "ds-lab.plein": {
           "classe": "moyen",
-          "regle": "moyen : plein = pas 11, texte blanc, survol = pas 12"
+          "regle": "moyen : plein = pas 11, texte blanc ; survol = clarté OKLCH du plein − 0,05 (D45)"
         }
       },
       "plein": {
@@ -236,8 +301,24 @@
         "$description": "plein : pas 11"
       },
       "plein-survol": {
-        "$value": "{couleur.info.12}",
-        "$description": "plein survolé : pas 12"
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0.3686,
+            0.5882
+          ],
+          "hex": "#005e96"
+        },
+        "$description": "plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45)",
+        "$extensions": {
+          "ds-lab.survol": {
+            "base": "{couleur.info.11}",
+            "clarte": -0.05,
+            "espace": "oklch",
+            "gamut": "srgb, chroma réduite (CSS Color 4)"
+          }
+        }
       },
       "sur-plein": {
         "$value": "{couleur.blanc}",

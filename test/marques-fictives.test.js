@@ -27,6 +27,9 @@
  *   calculée, formule en $extensions. Lavandine : culori, formatHex(interpolate(['#8a4fd8', '#000000'], 'rgb')(0.15))
  *   = #7543b8 ; blanc dessus 6,46:1 ; ΔE OKLab × 100 avec le repos 6,68 (le pas 10 était à 1,33).
  * Les quatre statuts ont le même bouton que chez Orbe Café (statuts figés, D04).
+ * Correction du 18/11/2026 (D45, docs/attendus/finitions-bouton.md) : le survol de tous les pleins est la clarté OKLCH
+ *   du plein − 0,05, formule en $extensions["ds-lab.survol"] ; primaire en clair : Atelier Lavandine #7b3ec7, Écume et
+ *   Sel #6fcbee, Grenat Papeterie #6a0d30, Maison Alberto #745500 ; le voile noir du survol soutenu disparaît.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -45,6 +48,9 @@ const MARQUES = {
   'grenat-papeterie': ['Grenat Papeterie', '#7a1f3d', null, ['foncée', null], ['sombre', 'moyen']],
   'maison-alberto': ['Maison Alberto', '#bf9b45', '#ba4c99', ['plein clair', 'normale'], ['moyen', 'soutenu']],
 };
+
+/** Survol du primaire en clair (D45), écrit à la main depuis l'attendu. */
+const SURVOLS = /** @type {Record<string, string>} */ ({ 'atelier-lavandine': '#7b3ec7', 'ecume-et-sel': '#6fcbee', 'grenat-papeterie': '#6a0d30', 'maison-alberto': '#745500' });
 
 for (const [slug, [nom, primaire, accent, ecoles, pleins]] of Object.entries(MARQUES)) {
   const dir = join(ROOT, 'tokens', slug);
@@ -73,12 +79,12 @@ for (const [slug, [nom, primaire, accent, ecoles, pleins]] of Object.entries(MAR
     assert.equal(marque.accent['9'].$value, accent ? '{couleur.accent.9}' : '{couleur.neutre.9}');
   });
 
-  if (slug === 'atelier-lavandine')
-    test('Atelier Lavandine : survol soutenu, voile noir de 15 %', () => {
-      const t = JSON.parse(read('marque.tokens.json')).marque.primaire['plein-survol'];
-      assert.equal(t.$value.hex, '#7543b8');
-      assert.deepEqual(t.$extensions['ds-lab.voile'], { base: '{couleur.primaire.9}', noir: 0.15, composition: 'noir posé sur la base, source-over en sRGB' });
-    });
+  test(`${nom} : survol du primaire, clarté OKLCH du plein − 0,05`, () => {
+    const p = JSON.parse(read('marque.tokens.json')).marque.primaire;
+    const t = p['plein-survol'];
+    assert.equal(t.$value.hex, SURVOLS[slug], slug);
+    assert.deepEqual({ base: t.$extensions['ds-lab.survol'].base, clarte: t.$extensions['ds-lab.survol'].clarte }, { base: p.plein.$value, clarte: -0.05 });
+  });
 
   test(`${nom} : statuts identiques à ceux d'Orbe Café`, () => {
     const orbe = JSON.parse(readFileSync(join(ROOT, 'tokens', 'orbe-cafe', 'marque.tokens.json'), 'utf8')).marque;

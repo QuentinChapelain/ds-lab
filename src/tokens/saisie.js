@@ -287,6 +287,8 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
 
   /** @param {string} s @returns {Source} */
   const commune = (s) => ({ scale: s, steps: Array.from({ length: 12 }, (_, i) => commun.primitives.couleur[s][String(i + 1)].$value.hex) });
+  /** Pas d'une échelle commune en mode sombre. @param {string} s */
+  const communeSombre = (s) => Array.from({ length: 12 }, (_, i) => communSombre.primitives.couleur[s][String(i + 1)].$value.hex);
   const noms = Object.keys(generees);
   /** @type {any} */
   let echelles = null;
@@ -337,9 +339,11 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
       ...Object.fromEntries(STATUTS.map((s) => [s, commune(s).steps])),
     },
     echelles: { primaire: primaire.scale, ...Object.fromEntries(STATUTS.map((s) => [s, s])) },
+    // Pas sombres des emplacements à bouton, pour leur survol (D45) : primaire généré ici, statuts communs.
+    sombres: { primaire: sombres.primaire, ...Object.fromEntries(STATUTS.map((s) => [s, communeSombre(s)])) },
     primaireSombre: { scale: primaire.scale, steps: sombres.primaire },
     fonds: fondsClairs(communSombre),
-    description: `Couche marque de ${entree.nom} en mode sombre, écrite par la saisie. Format DTCG 2025.10. Posée sur marque.tokens.json dans le contexte sombre : les boutons gardent leurs valeurs claires (D04), le texte de marque des grands titres est choisi sur l'échelle sombre.`,
+    description: `Couche marque de ${entree.nom} en mode sombre, écrite par la saisie. Format DTCG 2025.10. Posée sur marque.tokens.json dans le contexte sombre : les boutons prennent la version lumineuse de la couleur (pas 11 de l'échelle sombre, survol calculé, D04 et D45), l'aplat plein garde ses valeurs claires, le texte de marque des grands titres est choisi sur l'échelle sombre.`,
   });
   const resolver = modeleResolver({
     nom: entree.nom,
