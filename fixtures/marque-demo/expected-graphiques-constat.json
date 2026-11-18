@@ -1,0 +1,61 @@
+{
+  "$comment": "Attendus des graphiques du constat des composants, écrits à la main le 18/11/2026 avant le code, sur fixtures/marque-demo/annuaire/ (lancements A et B de fixtures/marque-demo/expected-composants.json, nom du site « Annuaire des cafés », et lancement sans table). Les nombres de A et B viennent de l'attendu (docs/attendus/graphiques-constat.md) ; ceux du lancement sans table, l'ordre des segments (celui des versions de la fiche : par nombre, puis par nom stable) et les longueurs (nombre du type ÷ nombre du plus grand type × 100, à 4 décimales) sont calculés à la main. En cas d'écart, ne corriger ni l'outil ni ce fichier : le signaler.",
+  "A": {
+    "anneau": { "total": 27, "origines": [["Vuetify", 17], ["Fait maison", 7], ["Sans style", 3]] },
+    "lignes": ["17 viennent de Vuetify", "7 sont faits maison", "3 sont sans style"],
+    "scores": [[20, 27], [20, 23], [0, 7], [27, 30]],
+    "types": [
+      ["bouton avec texte", 6, 100, [["Vuetify", "v-btn", 3], ["Fait maison", "an-btn", 2], ["Sans style", "button", 1]]],
+      ["champ de texte", 4, 66.6667, [["Fait maison", "an-champ", 2], ["Vuetify", "v-text-field", 2]]],
+      ["bouton à icône seule", 5, 83.3333, [["Vuetify", "v-btn", 4], ["Fait maison", "an-icone", 1]]],
+      ["liste déroulante", 3, 50, [["Fait maison", "an-liste", 2], ["Vuetify", "v-select", 1]]],
+      ["carte", 4, 66.6667, [["Vuetify", "v-card", 4]]],
+      ["onglet", 3, 50, [["Vuetify", "v-tab", 3]]],
+      ["case à cocher", 2, 33.3333, [["Sans style", "input", 2]]]
+    ],
+    "plusLongue": "bouton avec texte",
+    "fichesOuvertes": 0,
+    "resumes": {
+      "bouton avec texte": "Bouton avec texte · 6 fois, en 3 versions · Choisir la version à garder",
+      "carte": "Carte · 4 fois, en 1 version · Confirmer la version"
+    }
+  },
+  "B": {
+    "anneau": { "total": 30, "origines": [["Vuetify", 17], ["Fait maison", 10], ["Sans style", 3]] },
+    "lignes": ["17 viennent de Vuetify", "10 sont faits maison", "3 sont sans style"],
+    "scores": [[20, 30], [20, 23], [1, 7], [30, 30]],
+    "types": [
+      ["carte", 7, 100, [["Vuetify", "v-card", 4], ["Fait maison", "an-carte", 3]]],
+      ["champ de texte", 4, 57.1429, [["Fait maison", "an-champ", 2], ["Vuetify", "v-text-field", 2]]],
+      ["bouton à icône seule", 5, 71.4286, [["Vuetify", "v-btn", 4], ["Fait maison", "an-icone", 1]]],
+      ["liste déroulante", 3, 42.8571, [["Fait maison", "an-liste", 2], ["Vuetify", "v-select", 1]]],
+      ["bouton avec texte", 6, 85.7143, [["Vuetify", "v-btn", 3], ["Fait maison", "an-btn", 2], ["Sans style", "button", 1]]],
+      ["onglet", 3, 42.8571, [["Vuetify", "v-tab", 3]]],
+      ["case à cocher", 2, 28.5714, [["Sans style", "input", 2]]]
+    ],
+    "plusLongue": "carte",
+    "fichesOuvertes": 0,
+    "resumes": {
+      "bouton avec texte": "Bouton avec texte · 6 fois, en 3 versions · Version à garder : v-btn"
+    }
+  },
+  "sansTable": {
+    "anneau": { "total": 23, "origines": [["Fait maison", 20], ["Sans style", 3]] },
+    "lignes": ["Aucun framework reconnu", "20 sont faits maison", "3 sont sans style"],
+    "types": [
+      ["bouton avec texte", 6, 100, [["Fait maison", "v-btn", 3], ["Fait maison", "an-btn", 2], ["Sans style", "button", 1]]],
+      ["champ de texte", 4, 66.6667, [["Fait maison", "an-champ", 2], ["Fait maison", "v-field__input", 2]]],
+      ["bouton à icône seule", 5, 83.3333, [["Fait maison", "v-btn", 4], ["Fait maison", "an-icone", 1]]],
+      ["liste déroulante", 3, 50, [["Fait maison", "an-liste", 2], ["Fait maison", "v-field__input", 1]]],
+      ["onglet", 3, 50, [["Fait maison", "v-tab", 3]]],
+      ["case à cocher", 2, 33.3333, [["Sans style", "input", 2]]]
+    ],
+    "plusLongue": "bouton avec texte"
+  },
+  "how": {
+    "anneau A": "Vuetify 3 + 4 + 2 + 1 + 3 + 4 = 17 ; fait maison an-btn 2 + an-icone 1 + an-champ 2 + an-liste 2 = 7 ; sans style bouton nu 1 + cases 2 = 3",
+    "anneau B": "les 3 an-carte rattachés à la carte comptent en fait maison : 7 + 3 = 10",
+    "anneau sans table": "23 - 3 sans style = 20 fait maison",
+    "ordre des types": "ordre des fiches (D47) : doublons à choisir par éléments à remplacer puis par nom, puis les choisis ; types à une version par nombre puis par nom"
+  }
+}
