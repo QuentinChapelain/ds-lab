@@ -142,3 +142,13 @@ for (const d of readdirSync(T).filter((d) => existsSync(join(T, d, 'entree.json'
   }
 }
 ```
+
+## Correction du 18/11/2026, validée avant le commit des jetons
+
+Les rôles `rayon.controle`, `hauteur.controle.*`, `epaisseur.focus` et `taille-icone.*` portaient le nom d'un groupe de primitives (`rayon.*`, déjà là ; `hauteur.*`, `epaisseur.*`, `taille-icone.*`, de cet attendu). Le lecteur range un groupe entier dans la couche des rôles dès que son nom paraît dans les rôles (`partager`, `src/tokens/resolver.js`) : les primitives de ces groupes passaient pour des rôles [F, test R3 de `test/resolver.test.js` en échec]. Aucun groupe de rôles ne partageait jusqu'ici son nom avec un groupe de primitives (`espace` et `ecart`, `taille-texte` et `typo`). Décision : renommer, sans toucher au lecteur.
+
+- `rayon.controle` devient `arrondi.controle` → `{rayon.8}` (8 px) ; les primitives `rayon.*` gardent leur nom, que la migration écrit dans ses sorties.
+- Primitives : `taille.16`, `taille.20`, `taille.32`, `taille.40` et `trait.2` remplacent `hauteur.32|40`, `taille-icone.16|20` et `epaisseur.2`.
+- Rôles inchangés, cibles nouvelles : `hauteur.controle.normale` → `{taille.40}`, `hauteur.controle.petite` → `{taille.32}`, `epaisseur.focus` → `{trait.2}`, `taille-icone.normale` → `{taille.20}`, `taille-icone.petite` → `{taille.16}`.
+
+Valeurs en px, couleurs et rapports inchangés.

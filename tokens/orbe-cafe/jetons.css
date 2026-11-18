@@ -1,6 +1,8 @@
 /* Jetons de Orbe Café, écrits par npm run css depuis marque.resolver.json (Terrazzo). Ne pas modifier à la main. */
 
 :root {
+  /* Arrondi d'un contrôle, comme un bouton, le même à toutes les tailles. */
+  --arrondi-controle: var(--rayon-8);
   /* Contour d'un champ ou d'un encadré d'avertissement (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app. */
   --bordure-avertissement: var(--couleur-avertissement-8);
   /* Contour ordinaire d'une carte ou d'un champ, décoratif, jamais seule pour repérer un champ ou un état. */
@@ -238,8 +240,12 @@
   --ecart-entre-composants: var(--espace-16);
   /* Écart entre deux groupes d'une même section, comme un titre de section et son contenu ou les champs d'un formulaire et ses boutons. */
   --ecart-entre-groupes: var(--espace-24);
+  /* Écart entre l'icône et le texte d'un contrôle, comme un bouton ; hors du contrôle d'ordre des écarts (DS5), comme marge-interieure.composant. */
+  --ecart-icone-texte: var(--espace-8);
   /* Écart entre deux sections de la page, la plus grande respiration verticale ; plus petit en étroit (largeur.etroit.tokens.json). */
   --ecart-section: var(--espace-48);
+  /* Épaisseur de l'anneau de focus clavier (bordure.focus), décalé de 2 px sur le fond de la page (DS2). */
+  --epaisseur-focus: var(--trait-2);
   --espace-0: 0px;
   --espace-4: 4px;
   --espace-8: 8px;
@@ -265,12 +271,16 @@
   --fond-composant-appui: var(--couleur-neutre-5);
   /* fond de composant, survol */
   --fond-composant-survol: var(--couleur-neutre-4);
+  /* fond de composant */
+  --fond-desactive: var(--couleur-neutre-3);
   /* fond discret */
   --fond-discret: var(--couleur-neutre-2);
   /* fond de composant */
   --fond-erreur-discret: var(--couleur-erreur-3);
   /* texte secondaire (4,5:1) */
   --fond-erreur-fort: var(--marque-erreur-plein);
+  /* texte principal */
+  --fond-erreur-fort-survol: var(--marque-erreur-plein-survol);
   /* fond de composant */
   --fond-info-discret: var(--couleur-info-3);
   /* texte secondaire (4,5:1) */
@@ -300,6 +310,10 @@
   --graisse-600: 600;
   /* grasse, affichage et titres */
   --graisse-700: 700;
+  /* Hauteur d'un contrôle de taille normale, comme un bouton. */
+  --hauteur-controle-normale: var(--taille-40);
+  /* Hauteur d'un contrôle de petite taille, comme un bouton. */
+  --hauteur-controle-petite: var(--taille-32);
   --marge-interieure-composant: var(--espace-16);
   /* fond d'application */
   --marque-accent-1: var(--couleur-terre-1);
@@ -399,6 +413,14 @@
   --rayon-8: 8px;
   --rayon-12: 12px;
   --rayon-pilule: 9999px;
+  --taille-16: 16px;
+  --taille-20: 20px;
+  --taille-32: 32px;
+  --taille-40: 40px;
+  /* Icône d'un contrôle de taille normale. */
+  --taille-icone-normale: var(--taille-20);
+  /* Icône d'un contrôle de petite taille. */
+  --taille-icone-petite: var(--taille-16);
   --taille-texte-12: 12px;
   --taille-texte-14: 14px;
   --taille-texte-16: 16px;
@@ -413,6 +435,8 @@
   --texte-accent: var(--marque-accent-11);
   /* texte secondaire (4,5:1) */
   --texte-avertissement: var(--couleur-avertissement-11);
+  /* plein, couleur source */
+  --texte-desactive: var(--couleur-neutre-9);
   /* texte secondaire (4,5:1) */
   --texte-erreur: var(--couleur-erreur-11);
   /* texte secondaire (4,5:1) */
@@ -441,6 +465,7 @@
   --texte-sur-inverse: var(--couleur-sur-inverse);
   --texte-sur-marque: var(--marque-primaire-sur-aplat);
   --texte-sur-succes: var(--marque-succes-sur-plein);
+  --trait-2: 2px;
   /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */
   --typo-affichage-grand-font-family: var(--marque-police-titre);
   /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */

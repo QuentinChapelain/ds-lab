@@ -26,7 +26,9 @@
  *     strict reste conforme (12 < 16 < 24 < 48) ;
  *   La sortie liste aussi les primitives espace.* sans rôle, affichées, non
  *     contrôlées ; une primitive citée seulement par une valeur en étroit compte comme utilisée ;
- *     Orbe Café : espace.0, espace.8, espace.12, espace.64 (espace.32 sert à ecart.section en étroit).
+ *     Orbe Café : espace.0, espace.8, espace.12, espace.64 (espace.32 sert à ecart.section en étroit) ; espace.8 sert à
+ *     ecart.icone-texte depuis le 18/11/2026 (docs/attendus/bouton.md), affiché hors du contrôle d'ordre avec
+ *     marge-interieure.composant.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -85,17 +87,18 @@ test('vert : Orbe Café, 4 < 16 < 24 < 48, rapports affichés, code 0', () => {
   assert.deepEqual(r.ecarts.map((e) => e.role), ['ecart.dans-composant', 'ecart.entre-composants', 'ecart.entre-groupes', 'ecart.section']);
   assert.deepEqual(r.voisins.map((v) => v.rapport), [4, 1.5, 2]);
   assert.deepEqual(r.fails, []);
-  assert.deepEqual(r.horsControle.map((e) => [e.role, e.px]), [['marge-interieure.composant', 16]]);
+  assert.deepEqual(r.horsControle.map((e) => [e.role, e.px]), [['ecart.icone-texte', 8], ['marge-interieure.composant', 16]]);
   const p = run();
   assert.equal(p.status, 0, p.stdout + p.stderr);
   assert.match(p.stdout, /✓ ecart\.dans-composant < ecart\.entre-composants : 4 → 16 px, rapport 4\n/);
   assert.match(p.stdout, /✓ ecart\.entre-composants < ecart\.entre-groupes : 16 → 24 px, rapport 1,5\n/);
   assert.match(p.stdout, /✓ ecart\.entre-groupes < ecart\.section : 24 → 48 px, rapport 2\n/);
+  assert.match(p.stdout, /ecart\.icone-texte +8 px/);
   assert.match(p.stdout, /marge-interieure\.composant +16 px/);
   assert.match(p.stdout, /3 paires de voisins, aucune en échec\./);
   assert.doesNotMatch(p.stdout, /✗/);
-  assert.deepEqual(r.sansRole, ['espace.0', 'espace.8', 'espace.12', 'espace.64']);
-  assert.match(p.stdout, /primitives sans rôle \(affiché, non contrôlé\)\n {2}espace\.0, espace\.8, espace\.12, espace\.64\n/);
+  assert.deepEqual(r.sansRole, ['espace.0', 'espace.12', 'espace.64']);
+  assert.match(p.stdout, /primitives sans rôle \(affiché, non contrôlé\)\n {2}espace\.0, espace\.12, espace\.64\n/);
 });
 
 test('vert, en étroit : ecart.section en étroit, 32 px sous 600 px, > 24 et ≤ 48, code 0', () => {

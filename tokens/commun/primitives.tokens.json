@@ -1,5 +1,5 @@
 {
-  "$description": "Primitives communes à toutes les marques : blanc, neutre, erreur, succès, espaces, tailles de texte, graisses, rayons. Reprises telles quelles des primitives d'Orbe Café (11/11/2026). Format DTCG 2025.10.",
+  "$description": "Primitives communes à toutes les marques : blanc, neutre, erreur, succès, espaces, tailles de texte, graisses, rayons, tailles de contrôle et d'icône, traits. Reprises telles quelles des primitives d'Orbe Café (11/11/2026). Format DTCG 2025.10.",
   "couleur": {
     "$type": "color",
     "$description": "Échelles de 12 pas. Pas 9 = couleur source exacte ; autres pas générés par contraste visé contre le blanc (Leonardo, hors dépôt) ; paires d'usage vérifiées en WCAG 2.1 AA.",
@@ -690,5 +690,43 @@
         "unit": "px"
       }
     }
+  },
+  "taille": {
+    "16": {
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      }
+    },
+    "20": {
+      "$value": {
+        "value": 20,
+        "unit": "px"
+      }
+    },
+    "32": {
+      "$value": {
+        "value": 32,
+        "unit": "px"
+      }
+    },
+    "40": {
+      "$value": {
+        "value": 40,
+        "unit": "px"
+      }
+    },
+    "$type": "dimension",
+    "$description": "Tailles de contrôle et d'icône (hauteur d'un bouton, côté d'une icône), en px."
+  },
+  "trait": {
+    "2": {
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      }
+    },
+    "$type": "dimension",
+    "$description": "Épaisseurs de trait, en px."
   }
 }

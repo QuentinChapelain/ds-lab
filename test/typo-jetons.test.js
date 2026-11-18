@@ -39,6 +39,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { resolveRoles } from '../src/tokens/roles.js';
 import { charger, COMMUN, ORBE } from './helpers/jetons.js';
+import { N_ROLES } from './helpers/roles-ajoutes.js';
 
 const DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'tokens', 'orbe-cafe');
 const load = charger;
@@ -140,6 +141,6 @@ test('typo sémantique : une phrase d\'usage, hauteur visée en px, sans couleur
   }
 });
 
-test('typo : la couche couleur ne change pas, 42 rôles plus les 9 ajoutés', () => {
-  assert.equal(resolveRoles(sem, prims, load('statuts.tokens.json'), marque).size, 51);
+test('typo : la couche couleur ne change pas, 42 rôles plus les ajouts (helpers/roles-ajoutes.js)', () => {
+  assert.equal(resolveRoles(sem, prims, load('statuts.tokens.json'), marque).size, N_ROLES);
 });

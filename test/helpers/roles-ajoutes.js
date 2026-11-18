@@ -38,3 +38,26 @@ export const PAIRES_AJOUTEES = [
   ['bordure.focus.inverse', 'fond.marque.fort', 'focus'],
 ];
 export const INTERDITES_AJOUTEES = ['texte.marque.grand', 'texte.interactif', 'fond.interactif.fort', 'bordure.focus'];
+
+/**
+ * Rôles de couleur du bouton → [cible de l'alias, hex chez Orbe Café en clair], écrits à la main dans
+ * docs/attendus/bouton.md (culori, résolveur indépendant de src/). Ajoutés après les 51 rôles ci-dessus.
+ */
+export const AJOUTS_BOUTON = {
+  'fond.erreur.fort.survol': ['marque.erreur.plein-survol', '#6a0000'],
+  'fond.desactive': ['couleur.neutre.3', '#f3f2f1'],
+  'texte.desactive': ['couleur.neutre.9', '#8a8478'],
+};
+
+/** Paires du bouton, en fin de paires.json, après les 70 d'avant ; les deux du désactivé portent une exception écrite. */
+export const PAIRES_BOUTON = [
+  ['texte.sur-erreur', 'fond.erreur.fort.survol', 'texte'],
+  ['texte.desactive', 'fond.desactive', 'texte'],
+  ['texte.desactive', 'fond.app', 'texte'],
+];
+/** Paires du bouton sous leur seuil, avec exception écrite (composant inactif, WCAG 1.4.3). */
+export const EXCEPTIONS_BOUTON = ['texte.desactive sur fond.desactive', 'texte.desactive sur fond.app'];
+
+/** Rôles de couleur et paires de chaque marque, ajouts compris. */
+export const N_ROLES = 42 + Object.keys(AJOUTS).length + Object.keys(AJOUTS_BOUTON).length;
+export const N_PAIRES = 70 + PAIRES_BOUTON.length;

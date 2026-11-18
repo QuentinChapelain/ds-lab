@@ -50,7 +50,7 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { loadRoles, resolveRoles, contratRoles, contrat } from '../src/tokens/roles.js';
-import { PAIRES_AJOUTEES, INTERDITES_AJOUTEES } from './helpers/roles-ajoutes.js';
+import { PAIRES_AJOUTEES, INTERDITES_AJOUTEES, PAIRES_BOUTON, EXCEPTIONS_BOUTON, N_PAIRES } from './helpers/roles-ajoutes.js';
 import { charger, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -128,7 +128,7 @@ const sem = load('semantique.tokens.json');
 
 test('T2 paires.json : seuils 4,5 texte, 3 bordure et focus (et grand texte) ; 48 paires en tête, sans doublon, dans l\'ordre', () => {
   assert.deepEqual(paires.seuils, { texte: 4.5, bordure: 3, focus: 3, 'grand-texte': 3 });
-  assert.equal(paires.paires.length, 48 + PAIRES_AJOUTEES.length + 4, '+ 4 bordures de statut sur fond.surface');
+  assert.equal(paires.paires.length, 48 + PAIRES_AJOUTEES.length + 4 + PAIRES_BOUTON.length, '+ 4 bordures de statut sur fond.surface, + les paires du bouton');
   const keys = paires.paires.map((/** @type {any} */ p) => `${p.devant}|${p.fond}`);
   assert.equal(new Set(keys).size, keys.length);
   assert.deepEqual(paires.paires.slice(0, 48).map((/** @type {any} */ p) => [p.devant, p.fond]), TABLE.map((t) => [t.devant, t.fond]));
@@ -166,7 +166,7 @@ test('T2 couverture : chaque texte et chaque bordure non décorative a une paire
 
 test('T2 contratRoles : ratios égaux à culori (± 0,0001), seuil par type', () => {
   const c = contratRoles(loadRoles(DIR));
-  assert.equal(c.pairs.length, TABLE.length + PAIRES_AJOUTEES.length + 4, '+ 4 bordures de statut sur fond.surface');
+  assert.equal(c.pairs.length, TABLE.length + PAIRES_AJOUTEES.length + 4 + PAIRES_BOUTON.length, '+ 4 bordures de statut sur fond.surface, + les paires du bouton');
   c.pairs.slice(0, TABLE.length).forEach((/** @type {any} */ p, /** @type {number} */ i) => {
     assert.equal(p.devant, TABLE[i].devant);
     assert.equal(p.fond, TABLE[i].fond);
@@ -224,10 +224,10 @@ test('T2 contrat : par échelle (ordre, 80 paires, trois échecs, trois rapports
     assert.ok(Math.abs(/** @type {number} */ (ratio(scale, fg, bg)) - want) <= 1e-4, `${scale} ${fg} sur ${bg} : ${ratio(scale, fg, bg)}`);
 });
 
-test('T3 aucun échec, aucune exception écrite', () => {
+test('T3 aucun échec ; seules exceptions écrites, les deux paires du désactivé', () => {
   const c = contratRoles(loadRoles(DIR));
   assert.deepEqual(c.fails, []);
-  assert.deepEqual(c.exceptions, []);
+  assert.deepEqual(c.exceptions.map((/** @type {any} */ f) => `${f.devant} sur ${f.fond}`), EXCEPTIONS_BOUTON);
 });
 
 test('T3 paire sous le seuil : échec sans exception ; exception écrite : listée à part ; exception vide refusée', () => {
@@ -238,7 +238,7 @@ test('T3 paire sous le seuil : échec sans exception ; exception écrite : list�
   set.paires.paires[set.paires.paires.length - 1] = { ...added, exception: 'Champ toujours doublé de son libellé.' };
   const c = contratRoles(set);
   assert.deepEqual(c.fails, []);
-  assert.deepEqual(c.exceptions.map((/** @type {any} */ f) => `${f.devant} sur ${f.fond}`), ['bordure.forte sur fond.composant.appui']);
+  assert.deepEqual(c.exceptions.map((/** @type {any} */ f) => `${f.devant} sur ${f.fond}`), [...EXCEPTIONS_BOUTON, 'bordure.forte sur fond.composant.appui']);
   set.paires.paires[set.paires.paires.length - 1] = { ...added, exception: '  ' };
   assert.throws(() => contratRoles(set), /exception vide/);
 });
@@ -262,7 +262,7 @@ test('T3 paire invalide : rôle inconnu, type inconnu, interdite déclarée, rè
 test('T3 npm run contraste : sort en 0 sur les fichiers du dépôt ; en 1 avec une paire sous le seuil', () => {
   const cli = join(ROOT, 'src', 'cli', 'contraste.js');
   const ok = execFileSync(process.execPath, [cli], { cwd: ROOT, encoding: 'utf8' });
-  assert.match(ok, /70 paires de rôles, 0 paire en échec, 0 exception écrite, 8 paires interdites\./);
+  assert.match(ok, new RegExp(`${N_PAIRES} paires de rôles, 0 paire en échec, ${EXCEPTIONS_BOUTON.length} exceptions écrites, 8 paires interdites\\.`));
   for (const p of INTERDITES) assert.ok(ok.includes(`${p.devant} sur ${p.fond}`) && ok.includes(p.regle), `interdite listée : ${p.devant}`);
 
   const tmp = mkdtempSync(join(tmpdir(), 'contraste-'));

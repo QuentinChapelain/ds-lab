@@ -5,7 +5,8 @@
  *
  * Attendus écrits à la main avant le code (16/11/2026) :
  *   J1 un resolver (version et resolutionOrder) est résolu depuis son dossier, dans ses contextes par défaut : le resolver
- *      d'Orbe Café donne 133 entrées à l'index (108 chemins de couleur, 25 de dimension), dont chaque chemin de la copie
+ *      d'Orbe Café donne 133 entrées à l'index (108 chemins de couleur, 25 de dimension), 138 avec les cinq primitives
+ *      du bouton (hauteur, épaisseur, taille d'icône ; docs/attendus/bouton.md), dont chaque chemin de la copie
  *      figée d'origine, avec sa valeur ; un fichier de jetons est lu tel quel (copie figée : 104 entrées) ;
  *   J2 un fichier qui ne donne aucun jeton ({}, ou les rôles seuls, tout en alias) : sortie 2, une ligne
  *      « reduce : --tokens <chemin> : aucun jeton lu (couleur en hex, dimension en px) ; un fichier .tokens.json ou un
@@ -53,7 +54,7 @@ function feuilles(t) {
 
 test('J1 un resolver est résolu depuis son dossier ; un fichier de jetons est lu tel quel', () => {
   const r = jetonsDe(lire(RESOLVER), RESOLVER);
-  assert.equal(indexTokens(r).size, 133);
+  assert.equal(indexTokens(r).size, 138);
   const copie = lire(COPIE);
   assert.equal(jetonsDe(copie, COPIE), copie);
   assert.equal(indexTokens(copie).size, 104);

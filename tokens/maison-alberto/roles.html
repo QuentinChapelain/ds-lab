@@ -45,9 +45,9 @@
     <main>
     <h1>Rôles de couleur, Maison Alberto</h1>
     <p>Marque fictive. Paires déclarées dans paires.json, rôles dans semantique.tokens.json ; contraste WCAG 2.1, ratio tronqué à 2 décimales.</p>
-    <p class="bilan">70 paires, 0 en échec, 0 exception écrite, 8 paires interdites.</p>
+    <p class="bilan">73 paires, 0 en échec, 2 exceptions écrites, 8 paires interdites.</p>
     <section data-propriete="texte">
-      <h2>Texte <span class="compte">52 paires, 4 interdites</span></h2>
+      <h2>Texte <span class="compte">55 paires, 4 interdites</span></h2>
       <p>Texte posé sur un fond de rôle, seuil 4,5:1 (WCAG 2.1, 1.4.3) ; 3:1 pour le texte de marque des grands titres.</p>
       <div class="table-wrap"><table>
         <thead><tr><th>Fond</th><th>Mot écrit</th><th>Ratio</th><th>Seuil</th><th>Verdict</th></tr></thead>
@@ -415,6 +415,27 @@
           <td data-label="Ratio" class="num">13,05:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
+        </tr>
+        <tr data-devant="texte.sur-erreur" data-fond="fond.erreur.fort.survol" class="conforme">
+          <td data-label="Fond"><span class="pastille" style="background:#6a0000"></span><code>fond.erreur.fort.survol</code> <span class="hex">#6a0000</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#6a0000;color:#ffffff">Réserver une table</span><span class="paire"><code>texte.sur-erreur</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>fond.erreur.fort.survol</code></span></span></td>
+          <td data-label="Ratio" class="num">13,02:1</td>
+          <td data-label="Seuil" class="num">4,5:1</td>
+          <td data-label="Verdict"><span class="verdict">conforme</span></td>
+        </tr>
+        <tr data-devant="texte.desactive" data-fond="fond.desactive" class="exception">
+          <td data-label="Fond"><span class="pastille" style="background:#f3f2f1"></span><code>fond.desactive</code> <span class="hex">#f3f2f1</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#8a8478">Réserver une table</span><span class="paire"><code>texte.desactive</code> <span class="hex">#8a8478</span> <span class="sur">sur <code>fond.desactive</code></span></span></td>
+          <td data-label="Ratio" class="num">3,32:1</td>
+          <td data-label="Seuil" class="num">4,5:1</td>
+          <td data-label="Verdict"><span class="verdict">exception</span> <span class="motif">composant désactivé, exempté du seuil de contraste (WCAG 1.4.3) ; valeur à juger sur la planche du bouton</span></td>
+        </tr>
+        <tr data-devant="texte.desactive" data-fond="fond.app" class="exception">
+          <td data-label="Fond"><span class="pastille" style="background:#fbfbfb"></span><code>fond.app</code> <span class="hex">#fbfbfb</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#8a8478">Réserver une table</span><span class="paire"><code>texte.desactive</code> <span class="hex">#8a8478</span> <span class="sur">sur <code>fond.app</code></span></span></td>
+          <td data-label="Ratio" class="num">3,59:1</td>
+          <td data-label="Seuil" class="num">4,5:1</td>
+          <td data-label="Verdict"><span class="verdict">exception</span> <span class="motif">composant désactivé sans fond (bouton discret), exempté du seuil de contraste (WCAG 1.4.3) ; valeur à juger sur la planche du bouton</span></td>
         </tr>
         <tr data-devant="texte.secondaire" data-fond="fond.composant.appui" class="interdite">
           <td data-label="Fond"><span class="pastille" style="background:#e3e2df"></span><code>fond.composant.appui</code> <span class="hex">#e3e2df</span></td>

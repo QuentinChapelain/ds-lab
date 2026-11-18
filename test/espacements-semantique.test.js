@@ -8,12 +8,13 @@
  *     ecart.dans-composant → {espace.4}, ecart.entre-composants → {espace.16},
  *     ecart.entre-groupes → {espace.24}, ecart.section → {espace.48},
  *     marge-interieure.composant → {espace.16} ;
+ *   puis un sixième, du bouton (18/11/2026, docs/attendus/bouton.md) : ecart.icone-texte → {espace.8} ;
  *   chaque cible existe dans primitives.tokens.json et y est de type dimension ;
  *   une phrase d'usage chacun (majuscule, point final, une seule phrase) ;
  *   la description racine du fichier parle des espacements et garde « DTCG 2025.10 » ;
  *   resolveRoles ne garde que les jetons de type color (type hérité du groupe le plus proche) :
  *     un rôle de type dimension dans semantique.tokens.json ne le casse pas, et le compte reste
- *     à 42 rôles de couleur, aucun sous ecart.* ni marge-interieure.* ;
+ *     à 42 rôles de couleur (plus les ajouts de helpers/roles-ajoutes.js), aucun sous ecart.* ni marge-interieure.* ;
  *   un jeton sans aucun $type reste traité comme avant (couleur attendue, erreur si illisible) ;
  *   ecart.section garde 48 px et porte sa valeur en étroit dans
  *     $extensions["ds-lab.etroit"] = { valeur: "{espace.32}", sous: 600 px, seuil: "[H]" } ;
@@ -26,6 +27,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { resolveRoles } from '../src/tokens/roles.js';
 import { charger, COMMUN, ORBE } from './helpers/jetons.js';
+import { N_ROLES } from './helpers/roles-ajoutes.js';
 
 const DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'tokens', 'orbe-cafe');
 const load = charger;
@@ -35,6 +37,7 @@ const EXPECTED = /** @type {Record<string, string>} */ ({
   'ecart.entre-composants': '{espace.16}',
   'ecart.entre-groupes': '{espace.24}',
   'ecart.section': '{espace.48}',
+  'ecart.icone-texte': '{espace.8}',
   'marge-interieure.composant': '{espace.16}',
 });
 
@@ -43,8 +46,8 @@ const prims = load('primitives.tokens.json');
 /** @param {any} node @param {string} path */
 const at = (node, path) => path.split('.').reduce((n, k) => n?.[k], node);
 
-test('cinq rôles d\'espacement, alias vers espace.*, type dimension', () => {
-  assert.deepEqual(Object.keys(sem.ecart).filter((k) => !k.startsWith('$')).sort(), ['dans-composant', 'entre-composants', 'entre-groupes', 'section']);
+test('six rôles d\'espacement, alias vers espace.*, type dimension', () => {
+  assert.deepEqual(Object.keys(sem.ecart).filter((k) => !k.startsWith('$')).sort(), ['dans-composant', 'entre-composants', 'entre-groupes', 'icone-texte', 'section']);
   assert.deepEqual(Object.keys(sem['marge-interieure']).filter((k) => !k.startsWith('$')), ['composant']);
   for (const [role, alias] of Object.entries(EXPECTED)) {
     const t = at(sem, role);
@@ -81,9 +84,9 @@ test('description racine : espacements, DTCG 2025.10', () => {
   assert.match(sem.$description, /espacement/i);
 });
 
-test('resolveRoles : un rôle de type dimension ne le casse pas, 51 rôles de couleur (42 + 9 rôles ajoutés)', () => {
+test('resolveRoles : un rôle de type dimension ne le casse pas, rôles de couleur comptés par helpers/roles-ajoutes.js', () => {
   const roles = resolveRoles(sem, prims, load('statuts.tokens.json'), load('marque.tokens.json'));
-  assert.equal(roles.size, 51);
+  assert.equal(roles.size, N_ROLES);
   for (const r of roles.keys()) assert.match(r, /^(fond|texte|bordure)\./, r);
 });
 

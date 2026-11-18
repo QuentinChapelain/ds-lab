@@ -36,6 +36,7 @@ import { wcagContrast } from 'culori';
 import { saisir, serialiser, COMMUN, chargerCommun } from '../src/tokens/saisie.js';
 import { resolveRoles, loadRoles } from '../src/tokens/roles.js';
 import { fondsClairs } from '../src/tokens/saisie.js';
+import { N_PAIRES } from './helpers/roles-ajoutes.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const ORBE = join(ROOT, 'tokens', 'orbe-cafe');
@@ -124,7 +125,7 @@ test('S6 commande saisie : codes de sortie, motif, fichiers', () => {
   assert.equal(r2.status, 0, r2.stderr);
   assert.match(r2.stdout, /marque acceptée : Essai/);
   assert.match(r2.stdout, /mode sombre, largeur large\n/);
-  assert.equal(r2.stdout.match(/70 paires de rôles, 0 paire en échec/g)?.length, 2, 'les deux modes');
+  assert.equal(r2.stdout.match(new RegExp(`${N_PAIRES} paires de rôles, 0 paire en échec`, 'g'))?.length, 2, 'les deux modes');
   assert.ok(existsSync(join(ok, 'marque.tokens.json')) && existsSync(join(ok, 'echelles.tokens.json')));
 });
 

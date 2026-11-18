@@ -42,7 +42,7 @@ import { interpolate, formatHex, rgb } from 'culori';
 import { generateScale } from '../src/valise/generate.js';
 import { loadRoles, resolveRoles, contratRoles } from '../src/tokens/roles.js';
 import { fondsClairs } from '../src/tokens/saisie.js';
-import { AJOUTS } from './helpers/roles-ajoutes.js';
+import { AJOUTS, AJOUTS_BOUTON, N_PAIRES } from './helpers/roles-ajoutes.js';
 import { classePlein, voileBlanc, marqueTokens, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL, STATUTS_FIGES, VOILE_BLANC } from '../src/tokens/pleins.js';
 import { charger, avecAplat, COMMUN, ORBE } from './helpers/jetons.js';
 
@@ -234,9 +234,9 @@ test('M0 rôles : les pleins et les couleurs de marque passent par marque.* ; au
   for (const [role, slot] of Object.entries(VIA_MARQUE)) assert.equal(tokenOf(role).$value, `{${slot}}`, role);
 });
 
-test('Pleins : les 42 rôles se résolvent vers les hex attendus, plus les 9 ajoutés (helpers/roles-ajoutes.js)', () => {
+test('Pleins : les 42 rôles se résolvent vers les hex attendus, plus les ajouts (helpers/roles-ajoutes.js)', () => {
   const roles = resolveRoles(load('semantique.tokens.json'), load('primitives.tokens.json'), load('statuts.tokens.json'), avecAplat(marque));
-  const all = new Map([...HEX, ...Object.entries(AJOUTS).map(([r, [, hex]]) => /** @type {[string, string]} */ ([r, hex]))]);
+  const all = new Map([...HEX, ...Object.entries({ ...AJOUTS, ...AJOUTS_BOUTON }).map(([r, [, hex]]) => /** @type {[string, string]} */ ([r, hex]))]);
   assert.deepEqual([...roles.keys()].sort(), [...all.keys()].sort());
   for (const [role, hex] of all) assert.equal(roles.get(role)?.hex, hex, role);
 });
@@ -253,5 +253,5 @@ test('M0 une autre marque se branche sans toucher aux rôles (témoin fictif, so
   assert.equal(roles.get('fond.interactif.fort.survol')?.hex, voileBlanc(g.steps[8], 0.08));
   assert.equal(roles.get('texte.sur-interactif')?.hex, '#ffffff');
   assert.equal(roles.get('texte.principal')?.hex, HEX.get('texte.principal'));
-  assert.equal(contratRoles(set).pairs.length, 70, '+ 4 bordures de statut sur fond.surface');
+  assert.equal(contratRoles(set).pairs.length, N_PAIRES, '+ 4 bordures de statut sur fond.surface, + les paires du bouton');
 });

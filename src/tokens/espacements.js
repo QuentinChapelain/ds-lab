@@ -3,7 +3,8 @@
  * Espacements par relation de la couche sémantique (semantique.tokens.json, type dimension),
  * résolus vers espace.* (primitives.tokens.json).
  * Les quatre ecart, du plus proche au plus lointain, doivent être strictement croissants ; le rapport
- * entre voisins est calculé pour information, jamais contrôlé. marge-interieure.* est hors contrôle.
+ * entre voisins est calculé pour information, jamais contrôlé. marge-interieure.* et ecart.icone-texte (écart interne
+ * d'un contrôle, hors de l'échelle des relations) sont hors contrôle.
  * Un ecart peut avoir une valeur en étroit (le rôle du contexte étroit, largeur.etroit.tokens.json,
  * quand il diffère du large ; seuil sur le modificateur largeur) ; elle doit rester strictement supérieure à l'ecart
  * précédent (sa valeur en étroit s'il en a une) et inférieure ou égale à sa propre valeur large.
@@ -16,7 +17,7 @@ import { flattenTokens, primitivesSansRole, resoudreAlias } from './roles.js';
 /** Ordre des relations, du plus proche au plus lointain. */
 const ORDRE = ['ecart.dans-composant', 'ecart.entre-composants', 'ecart.entre-groupes', 'ecart.section'];
 /** Rôles affichés sans contrôle d'ordre. */
-const HORS_CONTROLE = ['marge-interieure.composant'];
+const HORS_CONTROLE = ['ecart.icone-texte', 'marge-interieure.composant'];
 
 /**
  * @typedef {{ role: string, alias: string, cible: string, px: number, description: string }} Espace

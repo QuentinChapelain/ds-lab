@@ -33,7 +33,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { AJOUTS } from './helpers/roles-ajoutes.js';
+import { AJOUTS, AJOUTS_BOUTON } from './helpers/roles-ajoutes.js';
 import { charger, COMMUN, ORBE } from './helpers/jetons.js';
 
 const DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'tokens', 'orbe-cafe');
@@ -115,9 +115,9 @@ test('T1 description racine et DTCG 2025.10', () => {
   assert.ok(typeof sem.$description === 'string' && /DTCG 2025\.10/.test(sem.$description));
 });
 
-test('T1 liste exacte des 42 rôles, plus les 9 ajoutés (helpers/roles-ajoutes.js)', () => {
+test('T1 liste exacte des 42 rôles, plus les ajouts (helpers/roles-ajoutes.js)', () => {
   assert.equal(Object.keys(EXPECTED).length, 42);
-  assert.deepEqual([...roles.keys()].sort(), [...Object.keys(EXPECTED), ...Object.keys(AJOUTS)].sort());
+  assert.deepEqual([...roles.keys()].sort(), [...Object.keys(EXPECTED), ...Object.keys(AJOUTS), ...Object.keys(AJOUTS_BOUTON)].sort());
 });
 
 test('T1 chaque rôle est un alias vers la primitive attendue (directement ou par la marque), sans valeur en dur', () => {

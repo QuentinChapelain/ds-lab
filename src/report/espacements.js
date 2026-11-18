@@ -25,15 +25,21 @@ const COTE = /** @type {Record<string, string>} */ ({
   'ecart.entre-composants': '#1971c2',
   'ecart.entre-groupes': '#2b8a3e',
   'ecart.section': '#d9480f',
+  'ecart.icone-texte': '#0c8599',
   'marge-interieure.composant': '#7048e8',
 });
+/** Couleur de cote d'un rôle ; un rôle sans couleur lève, au lieu d'écrire « undefined » dans la planche. @param {string} role */
+const couleurCote = (role) => {
+  if (!Object.hasOwn(COTE, role)) throw new Error(`planche des espacements : rôle sans couleur de cote : ${role}`);
+  return COTE[role];
+};
 
 /**
  * Cote d'un écart : bande posée sous son hôte, de la hauteur de l'écart, avec le nom et la valeur.
  * @param {string} role @param {string} valeur texte de la valeur (large, et en étroit s'il y a lieu)
  */
 const cote = (role, valeur) =>
-  `<span class="cote" data-cote="${role}" aria-hidden="true" style="--c:${COTE[role]};height:var(${cssVar(role)})"><span class="etiquette">${role} · ${valeur}</span></span>`;
+  `<span class="cote" data-cote="${role}" aria-hidden="true" style="--c:${couleurCote(role)};height:var(${cssVar(role)})"><span class="etiquette">${role} · ${valeur}</span></span>`;
 
 /**
  * @param {ReturnType<typeof espacements>} r
@@ -61,7 +67,7 @@ function espacementsHtml(r, roles, nom) {
   const legende = tous
     .map(
       (e) => `          <li>
-            <span class="barre-case"><span class="barre" style="--c:${COTE[e.role]};width:var(${cssVar(e.role)})"></span></span>
+            <span class="barre-case"><span class="barre" style="--c:${couleurCote(e.role)};width:var(${cssVar(e.role)})"></span></span>
             <div class="legende-texte">
               <code>${e.role}</code>
               <span class="valeur">${e.px} px · ${esc(e.alias)}${etroit.has(e.role) ? ` ; en étroit, sous ${etroit.get(e.role)?.sous} px ${esc(etroit.get(e.role)?.seuil ?? '')} : ${etroit.get(e.role)?.px} px · ${esc(etroit.get(e.role)?.alias ?? '')}` : ''}</span>
@@ -206,7 +212,7 @@ ${legende}
             <h3>Le comptoir</h3>
             <p>Huit tabourets face aux machines, pour un café serré ou un déjeuner rapide.</p>
             <p class="meta">8 places</p>
-            <span class="cote-cadre" data-cote="marge-interieure.composant" aria-hidden="true" style="--c:${COTE['marge-interieure.composant']}"><span class="etiquette">marge-interieure.composant · ${px['marge-interieure.composant']} px</span></span>
+            <span class="cote-cadre" data-cote="marge-interieure.composant" aria-hidden="true" style="--c:${couleurCote('marge-interieure.composant')}"><span class="etiquette">marge-interieure.composant · ${px['marge-interieure.composant']} px</span></span>
           </article>
           <article class="carte">
             <h3>La verrière</h3>

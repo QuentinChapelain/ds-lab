@@ -29,7 +29,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { loadRoles, resolveRoles, contratRoles } from '../src/tokens/roles.js';
 import { serialiser } from '../src/tokens/saisie.js';
-import { AJOUTS, PAIRES_AJOUTEES, INTERDITES_AJOUTEES } from './helpers/roles-ajoutes.js';
+import { AJOUTS, PAIRES_AJOUTEES, INTERDITES_AJOUTEES, PAIRES_BOUTON, N_ROLES, N_PAIRES } from './helpers/roles-ajoutes.js';
 import { charger, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -43,7 +43,7 @@ test('Orbe Café : les 9 rôles ajoutés, en alias vers la couche marque, et leu
     assert.equal(roles.get(role)?.alias, `{${slot}}`, role);
     assert.equal(roles.get(role)?.hex, hex, role);
   }
-  assert.equal(roles.size, 51);
+  assert.equal(roles.size, N_ROLES, 'plus les rôles du bouton (helpers/roles-ajoutes.js)');
 });
 
 test('fond.accent.fort : petites surfaces, comme une étiquette', () => {
@@ -64,20 +64,21 @@ test('Orbe Café : sans l\'emplacement texte-grand, la couche marque redevient i
 test('paires.json : 48 paires d\'origine en tête, 18 ajoutées, 4 interdites ajoutées', () => {
   const p = charger('paires.json');
   assert.equal(p.seuils['grand-texte'], 3);
-  assert.equal(p.paires.length, 70, '+ 4 bordures de statut sur fond.surface');
+  assert.equal(p.paires.length, N_PAIRES, '+ 4 bordures de statut sur fond.surface, + les paires du bouton');
+  assert.deepEqual(p.paires.slice(70).map((/** @type {any} */ x) => [x.devant, x.fond, x.type]), PAIRES_BOUTON);
   assert.deepEqual(p.paires.slice(48, 66).map((/** @type {any} */ x) => [x.devant, x.fond, x.type]), PAIRES_AJOUTEES);
   assert.equal(p.interdites.length, 8);
   assert.deepEqual(p.interdites.slice(4).map((/** @type {any} */ x) => [x.devant, x.fond]), INTERDITES_AJOUTEES.map((d) => [d, 'fond.marque.fort']));
   for (const x of p.interdites.slice(4)) assert.ok(x.regle.length > 10, x.devant);
 });
 
-test('les cinq marques fictives : 0 paire en échec, 70 paires, 8 interdites', () => {
+test('les cinq marques fictives : 0 paire en échec, toutes les paires, 8 interdites', () => {
   for (const slug of ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto']) {
     const d = join(ROOT, 'tokens', slug);
     // Le jeu de chaque marque, lu par son resolver (avant : rôles et primitives d'Orbe Café
     // pour chacune, couche marque et échelles fusionnées à la main).
     const c = contratRoles(loadRoles(d));
-    assert.equal(c.pairs.length, 70, slug);
+    assert.equal(c.pairs.length, N_PAIRES, slug);
     assert.deepEqual(c.fails, [], slug);
     assert.equal(c.interdites.length, 8, slug);
   }

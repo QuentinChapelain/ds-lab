@@ -5,7 +5,7 @@
  *   C1 npm run contraste --mode clair : même sortie que sans option (un bloc par marque, D26) ; --mode sombre, --largeur etroit acceptés ;
  *      mode inconnu : erreur d'usage, code 2 ;
  *   C2 les 5 marques fictives sortent en 0 dans les deux modes et dans les deux largeurs ; 70 paires (66 + les 4
- *      bordures de statut sur fond.surface) ;
+ *      bordures de statut sur fond.surface), puis 73 avec les paires du bouton (18/11/2026, docs/attendus/bouton.md) ;
  *   C3 bordure.erreur, .succes, .avertissement, .info sur fond.surface : paires de type bordure (3:1), déclarées ;
  *   C4 la saisie dit le mode d'un refus : avec un seuil de 3,15 sur bordure.forte sur fond.surface (clair 3,21:1,
  *      sombre 3,10:1 pour une marque quelconque), le seul motif est « contraste (sombre) : bordure.forte sur
@@ -23,6 +23,7 @@ import { fileURLToPath } from 'node:url';
 import { saisir, chargerCommun } from '../src/tokens/saisie.js';
 import { loadRoles, contratRoles } from '../src/tokens/roles.js';
 import { charger } from './helpers/jetons.js';
+import { N_PAIRES } from './helpers/roles-ajoutes.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const MARQUES = ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto'];
@@ -45,13 +46,13 @@ test('C1 --mode et --largeur : clair = sans option ; mode inconnu = code 2', () 
   assert.match(faux.stderr, /contexte inconnu mode=nuit/);
 });
 
-test('C2 les 5 marques fictives : 0 échec dans les deux modes et les deux largeurs, 70 paires', () => {
+test('C2 les 5 marques fictives : 0 échec dans les deux modes et les deux largeurs, toutes les paires', () => {
   for (const m of MARQUES)
     for (const mode of ['clair', 'sombre'])
       for (const largeur of ['large', 'etroit']) {
         const p = run('--marque', join('tokens', m), '--mode', mode, '--largeur', largeur);
         assert.equal(p.status, 0, `${m} ${mode} ${largeur}\n${p.stdout}`);
-        assert.match(p.stdout, /70 paires de rôles, 0 paire en échec/, `${m} ${mode} ${largeur}`);
+        assert.match(p.stdout, new RegExp(`${N_PAIRES} paires de rôles, 0 paire en échec`), `${m} ${mode} ${largeur}`);
       }
 });
 
@@ -59,7 +60,7 @@ test('C3 bordures de statut sur fond.surface : paires déclarées, type bordure'
   const paires = charger('paires.json').paires;
   for (const s of ['erreur', 'succes', 'avertissement', 'info'])
     assert.ok(paires.some((/** @type {any} */ p) => p.devant === `bordure.${s}` && p.fond === 'fond.surface' && p.type === 'bordure'), s);
-  assert.equal(paires.length, 70);
+  assert.equal(paires.length, N_PAIRES);
 });
 
 test('C4 la saisie dit le mode du refus', () => {
@@ -83,7 +84,7 @@ test('C5 contrat calculé par la saisie = contrat du resolver, 5 marques, clair 
     assert.deepEqual(s.motifs, [], m);
     for (const mode of /** @type {const} */ (['clair', 'sombre'])) {
       const saisie = /** @type {any} */ (s.contrats)?.[mode];
-      assert.equal(saisie?.pairs.length, 70, `${m} ${mode}`);
+      assert.equal(saisie?.pairs.length, N_PAIRES, `${m} ${mode}`);
       assert.deepEqual(saisie, contratRoles(loadRoles(dossier, { mode })), `${m} ${mode}`);
     }
   }

@@ -25,6 +25,7 @@ import { chromium } from 'playwright-core';
 import { loadRoles, contratRoles } from '../src/tokens/roles.js';
 import { rolesHtml } from '../src/report/roles.js';
 import { charger, COMMUN, ORBE } from './helpers/jetons.js';
+import { PAIRES_BOUTON } from './helpers/roles-ajoutes.js';
 
 const DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'tokens', 'orbe-cafe');
 const FILE = join(DIR, 'roles.html');
@@ -61,10 +62,10 @@ test('T4 page autonome, en français, titrée', () => {
   assert.doesNotMatch(html, /(src|href)="https?:/);
 });
 
-test('T4 groupes par propriété : texte (37 + 15 ajoutées, et 4 interdites) puis bordure (11 + 3 + 4 de statut, et 3 interdites)', () => {
+test('T4 groupes par propriété : texte (37 + 15 ajoutées + 3 du bouton, et 4 interdites) puis bordure (11 + 3 + 4 de statut, et 3 interdites)', () => {
   const sections = [...html.matchAll(/<section data-propriete="([^"]+)">([^]*?)<\/section>/g)];
   assert.deepEqual(sections.map((s) => s[1]), ['texte', 'bordure']);
-  assert.equal(rows(sections[0][2]).length, 56);
+  assert.equal(rows(sections[0][2]).length, 56 + PAIRES_BOUTON.length, '+ les paires du bouton');
   assert.equal(rows(sections[1][2]).length, 21, '+ 4 bordures de statut sur fond.surface');
   for (const r of rows(sections[0][2])) assert.match(r.devant, /^texte\./);
   for (const r of rows(sections[1][2])) assert.match(r.devant, /^bordure\./);
@@ -103,7 +104,8 @@ test('T4 colonnes : fond, mot écrit, ratio, seuil, verdict ; nom du fond aussi 
     if (forbidden) {
       assert.equal(text(verdict), `interdite ${forbidden.regle}`, key);
       assert.equal(text(ratio), `${trunc(forbidden.ratio)}:1`, key);
-    } else assert.equal(text(verdict), 'conforme', key);
+    } else if (p.exception) assert.equal(text(verdict), `exception ${p.exception}`, key);
+    else assert.equal(text(verdict), 'conforme', key);
   }
 });
 
@@ -149,7 +151,7 @@ test('T4 à 420 px : le nom du fond se lit dans chaque ligne, sans défilement h
     return { vw, scroll: document.documentElement.scrollWidth, rows: out };
   });
   await page.close();
-  assert.equal(res.rows.length, 77, '+ 4 bordures de statut sur fond.surface');
+  assert.equal(res.rows.length, 77 + PAIRES_BOUTON.length, '+ 4 bordures de statut sur fond.surface, + les paires du bouton');
   for (const r of res.rows) assert.ok(r.seen, `${r.key} : nom du fond visible à 420 px`);
   assert.ok(res.scroll <= res.vw, `défilement horizontal : ${res.scroll} > ${res.vw}`);
 });
