@@ -13,9 +13,10 @@
  *     intérieure, taille du texte, graisse) dont la valeur n'est pas la même pour toutes les versions ; la valeur d'une
  *     version est celle de ses apparences, par nombre d'éléments puis dans l'ordre où elles paraissent, jointes par
  *     « ou » ; aucune couleur.
+ * Graphiques (D48) : parts des éléments par origine, et, par type dans l'ordre des fiches, un segment par version.
  * Les textes sont ceux de src/report/constat.textes.json.
  */
-import { fr } from '../lib/format.js';
+import { fr, r4 } from '../lib/format.js';
 import { TEXTES } from '../report/textes.js';
 
 const G = TEXTES.guidage;
@@ -128,7 +129,14 @@ export function aFaireDuType(t) {
     : t.garder
       ? G.type.gardeSeule.replace('{nom}', nom)
       : G.type.confirmer;
-  return { plusieurs, remplacer, aFaire: texte };
+  const court = plusieurs
+    ? t.garder
+      ? G.type.court.garde.replace('{nom}', nom)
+      : G.type.court.choisir
+    : t.garder
+      ? G.type.court.gardeSeule.replace('{nom}', nom)
+      : G.type.court.confirmer;
+  return { plusieurs, remplacer, aFaire: texte, aFaireCourt: court };
 }
 
 /**
@@ -156,4 +164,63 @@ export function guidageGlobal(types, elements, nonIdentifies) {
     blocs: nonIdentifies.filter((b) => b.etat === TEXTES.etats.aDecider).length,
   };
   return { phraseCourte, aFaire };
+}
+
+/**
+ * @typedef {{ nom: string, fois: number, plusieurs: boolean, garder: string | null, remplacer: number,
+ *   versions: { nom: string, origine: string, origineCle: string, nomCode: string, fois: number }[] }} TypeGuide
+ */
+
+/**
+ * Ordre guidé des types (D47) : à plusieurs versions d'abord, ceux qui restent à choisir avant ceux qui sont choisis,
+ * par éléments à remplacer, puis par nom ; à une seule version ensuite, ceux à confirmer d'abord, par nombre, puis par
+ * nom. Un type présent seulement dans le gabarit vient à la fin des types à une version.
+ * @template {TypeGuide} T
+ * @param {{ types: T[] }} c
+ */
+export function ordreGuide(c) {
+  const parNom = (/** @type {T} */ a, /** @type {T} */ b) => a.nom.localeCompare(b.nom, 'fr');
+  const choisi = (/** @type {T} */ t) => (t.garder ? 1 : 0);
+  const doublons = c.types.filter((t) => t.plusieurs).sort((a, b) => choisi(a) - choisi(b) || b.remplacer - a.remplacer || parNom(a, b));
+  const uneVersion = c.types.filter((t) => !t.plusieurs && t.fois > 0).sort((a, b) => choisi(a) - choisi(b) || b.fois - a.fois || parNom(a, b));
+  const gabaritSeul = c.types.filter((t) => t.fois === 0).sort(parNom);
+  return { doublons, uneVersion: [...uneVersion, ...gabaritSeul] };
+}
+
+/** Rang d'une origine dans l'anneau : les frameworks (dans l'ordre des tables), puis l'équipe, puis le navigateur nu. */
+const RANGS = /** @type {Record<string, number>} */ ({ framework: 0, equipe: 1, nu: 2 });
+
+/**
+ * Données des graphiques (D48) : parts des éléments par origine, sans les origines à 0 ; types comptés dans l'ordre des
+ * fiches, chacun avec sa longueur (son nombre ÷ celui du plus grand type × 100) et un segment par version, dans l'ordre
+ * des versions de sa fiche. Un bloc rattaché à la main compte avec l'équipe.
+ * @param {TypeGuide[]} types @param {{ nom: string }[]} frameworks tables de signatures du relevé
+ */
+export function graphiques(types, frameworks) {
+  const { doublons, uneVersion } = ordreGuide({ types });
+  const comptes = [...doublons, ...uneVersion].filter((t) => t.fois > 0);
+  /** @type {Map<string, { cle: string, libelle: string, fois: number }>} */
+  const parOrigine = new Map();
+  for (const t of comptes)
+    for (const v of t.versions) {
+      const k = `${v.origineCle}|${v.origine}`;
+      const o = parOrigine.get(k) ?? { cle: v.origineCle, libelle: v.origine, fois: 0 };
+      o.fois += v.fois;
+      parOrigine.set(k, o);
+    }
+  const rangFramework = (/** @type {string} */ nom) => {
+    const i = frameworks.findIndex((f) => f.nom === nom);
+    return i < 0 ? frameworks.length : i;
+  };
+  const origines = [...parOrigine.values()].sort((a, b) => RANGS[a.cle] - RANGS[b.cle] || rangFramework(a.libelle) - rangFramework(b.libelle));
+  const plusGrand = Math.max(0, ...comptes.map((t) => t.fois));
+  return {
+    origines,
+    types: comptes.map((t) => ({
+      nom: t.nom,
+      fois: t.fois,
+      longueur: plusGrand ? r4((t.fois / plusGrand) * 100) : 0,
+      segments: t.versions.map((v) => ({ version: v.nom, origine: v.origine, cle: v.origineCle, nomCode: v.nomCode, fois: v.fois })),
+    })),
+  };
 }

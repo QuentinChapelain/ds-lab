@@ -1,10 +1,13 @@
 // @ts-check
 /**
- * Sorties du constat des composants (D46, D47) : constat.json, constat.md, constat.html, à côté du relevé brut
+ * Sorties du constat des composants (D46, D47, D48) : constat.json, constat.md, constat.html, à côté du relevé brut
  * (releve.json) et des captures (captures/<id>.png).
- * La page HTML guide : ce qu'il reste à faire, puis les scores, les types à doublons, les types à une seule version
- * (repliés), les non identifiés, « Comment lire ce constat » (replié) et les limites. Quatre explications (i), sur les
- * scores. Un seul fichier, lisible sur un téléphone : les captures y sont en data:, à la taille réelle de l'élément
+ * La page HTML guide : l'anneau des origines, ce qu'il reste à faire, les scores et leurs barres, le sommaire des
+ * versions type par type, les fiches des types (toutes repliées ; un lien du sommaire vise le contenu d'une fiche, que le
+ * navigateur ouvre), les non identifiés, « Comment lire ce constat » (replié) et les limites. Quatre explications (i), sur
+ * les scores. Graphiques en SVG écrit par le rendu, couleurs d'origine des jetons communs (framework `texte.info`, équipe
+ * `texte.principal`, navigateur nu `bordure.forte` hachuré), un espace de la surface entre deux segments ; chaque arc et
+ * chaque segment a son texte de remplacement. Un seul fichier, lisible sur un téléphone : les captures y sont en data:, à la taille réelle de l'élément
  * (réduites seulement si elles dépassent la colonne) ; aucun script, aucune requête ; clair et sombre selon le système,
  * couleurs prises dans les rôles neutres communs des jetons (`couleursDuConstat`), accent : `texte.info`. Les étiquettes
  * d'origine ont toutes le même style neutre. Toute chaîne venue de la page auditée est échappée.
@@ -12,10 +15,10 @@
 import { readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { esc, famille } from '../lib/format.js';
+import { esc, famille, r4 } from '../lib/format.js';
 import { flattenTokens, resoudreAlias } from '../tokens/roles.js';
 import { COMMUN } from '../tokens/resolver.js';
-import { accorde, cotes, px } from '../composants/guidage.js';
+import { accorde, cotes, px, ordreGuide } from '../composants/guidage.js';
 import { TEXTES } from './textes.js';
 
 /** @typedef {ReturnType<typeof import('../composants/constat.js').construireConstat>} Constat */
@@ -41,6 +44,7 @@ const ROLES_DU_CONSTAT = /** @type {Record<string, string>} */ ({
   doux: 'texte.secondaire',
   trait: 'bordure.discrete',
   'trait-fort': 'bordure.defaut',
+  'trait-soutenu': 'bordure.forte',
   accent: 'texte.info',
   'accent-fond': 'fond.info.discret',
   'accent-trait': 'bordure.info',
@@ -101,21 +105,6 @@ const lignesAFaire = (c) =>
     [c.aFaire.blocs, accorde(G.aFaire.blocs, c.aFaire.blocs), 'non-identifies'],
   ]).filter(([n]) => n > 0);
 
-/**
- * Ordre guidé des types (D47) : à plusieurs versions d'abord, ceux qui restent à choisir avant ceux qui sont choisis,
- * par éléments à remplacer, puis par nom ; à une seule version ensuite, ceux à confirmer d'abord, par nombre, puis par
- * nom. Un type présent seulement dans le gabarit vient à la fin des types à une version.
- * @param {Constat} c
- */
-export function ordreGuide(c) {
-  const parNom = (/** @type {TypeDuConstat} */ a, /** @type {TypeDuConstat} */ b) => a.nom.localeCompare(b.nom, 'fr');
-  const choisi = (/** @type {TypeDuConstat} */ t) => (t.garder ? 1 : 0);
-  const doublons = c.types.filter((t) => t.plusieurs).sort((a, b) => choisi(a) - choisi(b) || b.remplacer - a.remplacer || parNom(a, b));
-  const uneVersion = c.types.filter((t) => !t.plusieurs && t.fois > 0).sort((a, b) => choisi(a) - choisi(b) || b.fois - a.fois || parNom(a, b));
-  const gabaritSeul = c.types.filter((t) => t.fois === 0).sort(parNom);
-  return { doublons, uneVersion: [...uneVersion, ...gabaritSeul] };
-}
-
 // ---------------------------------------------------------------------------------------------------------------- HTML
 
 /** Largeur et hauteur d'une image PNG, lues dans son en-tête IHDR. @param {Buffer} png */
@@ -133,8 +122,86 @@ function image(chemin, images, densite, alt, classe) {
 }
 
 /** Carte de score : le titre et son (i) sur la même ligne, l'explication dessous. @param {string} titre @param {string} valeur */
-const carteScore = (titre, valeur) =>
-  `<div class="carte-score"><details class="i"><summary><h3>${esc(titre)}</h3><span class="bouton-i" aria-hidden="true">i</span><span class="cache">, explication</span></summary><p>${esc(TEXTES.scores[titre])}</p></details><p class="valeur">${esc(valeur)}</p></div>`;
+const carteScore = (titre, valeur, part) =>
+  `<div class="carte-score"><details class="i"><summary><h3>${esc(titre)}</h3><span class="bouton-i" aria-hidden="true">i</span><span class="cache">, explication</span></summary><p>${esc(TEXTES.scores[titre])}</p></details><p class="valeur">${esc(valeur)}</p>${barreScore(part)}</div>`;
+
+/** Barre fine d'un score : le plein de la couleur du texte, la piste discrète ; cachée aux lecteurs d'écran, qui lisent « x sur y ». @param {number} part de 0 à 1 */
+const barreScore = (part) =>
+  `<svg class="progres" width="100%" height="6" aria-hidden="true"><rect class="piste" width="100%" height="6" rx="3"/><rect class="plein" width="${r4(part * 100)}%" height="6" rx="3" data-part="${r4(part)}"/></svg>`;
+
+/** Ancre d'une fiche : son type, sans accent ni espace. @param {string} nom */
+const ancre = (nom) => `fiche-${nom.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
+
+/** Classe de couleur d'une origine (D48). @param {string} cle */
+const classeOrigine = (cle) => `seg seg-${cle === 'framework' ? 'framework' : cle === 'equipe' ? 'equipe' : 'nu'}`;
+
+/** Motif de hachures du navigateur nu, une fois par page, lu par les arcs et les segments. */
+const DEFS = `<svg class="defs" width="0" height="0" aria-hidden="true" focusable="false"><defs><pattern id="hachures" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)"><rect class="hachure-fond" width="6" height="6"/><rect class="hachure-trait" width="3" height="6"/></pattern></defs></svg>`;
+
+/** Pastille d'une origine, pour la légende et les lignes de l'anneau. @param {string} cle */
+const pastille = (cle) => `<svg class="pastille" width="14" height="14" aria-hidden="true"><rect class="${classeOrigine(cle)}" width="14" height="14" rx="3"/></svg>`;
+
+/** Lignes de l'anneau : une par origine non nulle ; sans table de signatures, « Aucun framework reconnu » d'abord. @param {Constat} c */
+const lignesAnneau = (c) => {
+  /** @type {[string | null, string][]} */
+  const l = c.frameworks.length ? [] : [[null, G.anneau.aucun]];
+  for (const o of c.graphiques.origines) l.push([o.cle, o.cle === 'framework' ? accorde(G.anneau.framework, o.fois, { nom: o.libelle }) : accorde(G.anneau[o.cle], o.fois)]);
+  return l;
+};
+
+/**
+ * Anneau des origines : un arc par origine, dans l'ordre framework(s), équipe, navigateur nu, séparés par un espace ; le
+ * nombre d'éléments au centre. Rayon 46, trait de 16 : la circonférence est 2π × 46.
+ * @param {Constat} c
+ */
+function anneau(c) {
+  const total = c.chiffres.elements;
+  const C = 2 * Math.PI * 46;
+  const espace = c.graphiques.origines.length > 1 ? 2 : 0;
+  let debut = 0;
+  const arcs = c.graphiques.origines
+    .map((o) => {
+      const long = total ? (o.fois / total) * C : 0;
+      const trait = Math.max(0, long - espace);
+      const arc = `<circle class="${classeOrigine(o.cle)}" cx="60" cy="60" r="46" stroke-dasharray="${r4(trait)} ${r4(C - trait)}" stroke-dashoffset="${r4(-debut)}" data-origine="${esc(o.libelle)}" data-fois="${o.fois}"><title>${esc(accorde(G.anneau.arc, o.fois, { origine: o.libelle }))}</title></circle>`;
+      debut += long;
+      return arc;
+    })
+    .join('');
+  const titre = `${G.anneau.titre} : ${c.graphiques.origines.map((o) => `${o.libelle} ${o.fois}`).join(', ')}`;
+  const svg = `<svg class="anneau-svg" width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="${esc(titre)}"><g transform="rotate(-90 60 60)">${arcs}</g><text x="60" y="60" text-anchor="middle" dominant-baseline="central" class="centre">${total}</text></svg>`;
+  const lignes = lignesAnneau(c)
+    .map(([cle, texte]) => `<li>${cle ? pastille(cle) : ''}<span>${esc(texte)}</span></li>`)
+    .join('');
+  return `<section class="anneau carte">${svg}<ul class="lignes-anneau">${lignes}</ul></section>`;
+}
+
+/**
+ * Sommaire des versions, type par type : une ligne par type, lien vers sa fiche, barre de longueur proportionnelle au
+ * nombre d'éléments du type, un segment par version, coloré par origine, séparés par un espace de 2 px.
+ * @param {Constat} c
+ */
+function sommaire(c) {
+  const lignes = c.graphiques.types
+    .map((t) => {
+      let x = 0;
+      const segs = [];
+      for (const [i, s] of t.segments.entries()) {
+        const w = (s.fois / t.fois) * t.longueur;
+        const titre = G.sommaire.segment.replace('{origine}', s.origine).replace('{nom}', s.nomCode).replace('{fois}', accorde(G.type.fois, s.fois));
+        segs.push(`<rect class="${classeOrigine(s.cle)}" x="${r4(x)}%" width="${r4(w)}%" height="14" data-origine="${esc(s.origine)}" data-fois="${s.fois}"><title>${esc(titre)}</title></rect>`);
+        if (i > 0) segs.push(`<rect class="espace" x="${r4(x)}%" width="2" height="14"/>`);
+        x += w;
+      }
+      const n = t.segments.length;
+      return `<li><a href="#${ancre(t.nom)}"><span class="nom-type">${esc(majuscule(t.nom))}</span> <span class="doux">${esc(accorde(G.type.versions, n))}</span><svg class="barre" width="100%" height="14" data-longueur="${t.longueur}">${segs.join('')}</svg></a></li>`;
+    })
+    .join('\n');
+  const cles = [...new Set(c.graphiques.origines.map((o) => o.cle))];
+  const legende = c.graphiques.origines.map((o) => `<li>${pastille(o.cle)}${esc(o.libelle)}</li>`).join('');
+  return `<section class="partie carte" id="sommaire"><h2>${esc(G.sommaire.titre)}</h2><p class="doux">${esc(G.sommaire.aide)}</p><ul class="sommaire">${lignes}</ul><p class="legende-titre doux">${esc(G.sommaire.legende)}</p><ul class="legende" data-origines="${cles.length}">${legende}</ul></section>`;
+}
+
 
 /**
  * Une version : vignette pleine largeur, origine, nom court, nombre, mention ; défauts ; différences.
@@ -184,10 +251,11 @@ function ficheType(t, images, densite) {
   const gabarit = t.gabarit.elements
     ? `<p class="gabarit">${esc(accorde(G.type.gabarit, t.gabarit.elements))}</p><ul class="versions">${t.gabarit.versions.map((v) => ligneVersion({ ...v, mention: null, differences: '', defauts: [] }, images, densite)).join('')}</ul>`
     : '';
-  return `<article class="fiche"><h3>${esc(majuscule(t.nom))}</h3><p class="resume">${esc(resumeDuType(t))}</p>
+  const resume = [majuscule(t.nom), resumeDuType(t).replace(/\.$/, ''), t.fois ? t.aFaireCourt : ''].filter(Boolean).join(' · ');
+  return `<details class="repliee"><summary>${esc(resume)}</summary><article class="fiche" id="${ancre(t.nom)}"><h3>${esc(majuscule(t.nom))}</h3><p class="resume">${esc(resumeDuType(t))}</p>
 <ul class="versions">${t.versions.map((v) => ligneVersion(v, images, densite)).join('\n')}</ul>
 ${gabarit}${voirLeCode([...t.versions, ...t.gabarit.versions], images, densite)}
-${t.fois ? encadreAFaire(t.aFaire) : ''}</article>`;
+${t.fois ? encadreAFaire(t.aFaire) : ''}</article></details>`;
 }
 
 const STYLE = (/** @type {ReturnType<typeof couleursDuConstat>} */ k) => {
@@ -251,15 +319,42 @@ ul.apparences li { display: flex; gap: 8px; align-items: center; margin: 6px 0; 
 .mini img { display: block; max-width: 100%; height: auto; }
 .a-faire-fiche { margin-top: 16px; border: 1px solid var(--accent-trait); background: var(--accent-fond); border-radius: 8px; padding: 10px 12px; }
 .a-faire-fiche .etiquette { color: var(--accent); font-weight: 700; font-size: 14px; }
-details.replie { margin: 0 0 12px; }
-details.replie > summary { cursor: pointer; background: var(--surface); border: 1px solid var(--trait); border-radius: 12px; padding: 12px 16px; min-height: 24px; }
-details.replie[open] > summary { margin-bottom: 8px; }
 details.lire > summary { cursor: pointer; }
 details.lire > summary h2 { display: inline; }
 details.lire dt { font-weight: 600; margin-top: 10px; }
 details.lire dd { margin: 2px 0 0; color: var(--doux); }
 ul.limites { padding-left: 20px; color: var(--doux); }
 code { font-size: 14px; overflow-wrap: anywhere; }
+.carte { background: var(--surface); border: 1px solid var(--trait); border-radius: 12px; padding: 16px; }
+.anneau { display: flex; align-items: center; gap: 16px; margin: 16px 0 20px; }
+.anneau-svg { flex: 0 0 120px; }
+.anneau-svg circle { fill: none; stroke-width: 16; }
+.anneau-svg .centre { fill: var(--texte); font-size: 26px; font-weight: 700; }
+.lignes-anneau, .legende { list-style: none; padding: 0; margin: 0; }
+.lignes-anneau li, .legende li { display: flex; align-items: center; gap: 8px; min-height: 24px; }
+.lignes-anneau li + li { margin-top: 4px; }
+.pastille { flex: 0 0 14px; }
+.seg-framework { fill: var(--accent); stroke: var(--accent); }
+.seg-equipe { fill: var(--texte); stroke: var(--texte); }
+.seg-nu { fill: url(#hachures); stroke: url(#hachures); }
+.hachure-fond { fill: var(--surface); }
+.hachure-trait { fill: var(--trait-soutenu); }
+.espace { fill: var(--surface); }
+.defs { position: absolute; }
+.progres { display: block; margin-top: 8px; }
+.progres .piste { fill: var(--trait); }
+.progres .plein { fill: var(--texte); }
+ul.sommaire { list-style: none; padding: 0; margin: 12px 0 0; }
+ul.sommaire li + li { margin-top: 12px; }
+ul.sommaire a { display: block; text-decoration: none; min-height: 24px; }
+ul.sommaire a:hover .nom-type, ul.sommaire a:focus-visible .nom-type { text-decoration: underline; }
+.nom-type { font-weight: 600; }
+.barre { display: block; margin-top: 4px; }
+.legende-titre { margin-top: 16px; font-size: 14px; }
+.legende { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+details.repliee { margin: 0 0 12px; }
+details.repliee > summary { cursor: pointer; background: var(--surface); border: 1px solid var(--trait); border-radius: 12px; padding: 12px 16px; min-height: 24px; }
+details.repliee[open] > summary { margin-bottom: 8px; }
 .cache { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 `;
 };
@@ -276,11 +371,11 @@ function htmlConstat(c, images) {
   const aFaire = lignes.length
     ? `<ul>${lignes.map(([n, texte, ancre]) => `<li><a href="#${ancre}">${esc(texte).replace(new RegExp(`^${n}`), `<span class="nombre">${n}</span>`)}</a></li>`).join('')}</ul>`
     : `<p>${esc(G.aFaire.rien)}</p>`;
-  const cartes = SCORES.map(([titre, cle]) => carteScore(titre, sur(s[cle]))).join('\n');
+  const cartes = SCORES.map(([titre, cle]) => carteScore(titre, sur(s[cle]), s[cle].y ? s[cle].x / s[cle].y : 0)).join('\n');
   const partieDoublons = doublons.length ? `<section class="partie" id="doublons"><h2>${esc(G.sections.doublons)}</h2>\n${doublons.map((t) => ficheType(t, images, d)).join('\n')}</section>` : '';
   const partieUne = uneVersion.length
     ? `<section class="partie" id="une-version"><h2>${esc(G.sections.uneVersion)}</h2>\n${uneVersion
-        .map((t) => `<details class="replie"><summary>${esc([majuscule(t.nom), accorde(G.type.fois, t.fois), t.versions[0]?.origine ?? ''].filter(Boolean).join(' · '))}</summary>${ficheType(t, images, d)}</details>`)
+        .map((t) => ficheType(t, images, d))
         .join('\n')}</section>`
     : '';
   const partieBlocs = c.nonIdentifies.length
@@ -310,11 +405,13 @@ ${encadreAFaire(b.aFaire)}</article>`,
 <body>
 <main>
 <header class="entete"><h1>Constat des composants</h1><p class="sous-titre">${esc(enTete(c))}</p></header>
-<p class="phrase">${esc(c.phraseCourte)}</p>
+${DEFS}
+${anneau(c)}
 <section class="a-faire" aria-labelledby="titre-a-faire"><h2 id="titre-a-faire">${esc(G.aFaire.titre)}</h2>${aFaire}</section>
 <section class="partie scores" aria-label="Scores"><div class="cartes">
 ${cartes}
 </div><p class="effort">${esc(accorde(G.effort, s.effort))}</p></section>
+${sommaire(c)}
 ${partieDoublons}
 ${partieUne}
 ${partieBlocs}
@@ -339,7 +436,7 @@ function markdownConstat(c) {
   const s = c.scores;
   const { doublons, uneVersion } = ordreGuide(c);
   const lignes = lignesAFaire(c);
-  const l = ['# Constat des composants', '', enTete(c), '', c.phraseCourte, '', c.phrase, '', `## ${G.aFaire.titre}`, ''];
+  const l = ['# Constat des composants', '', enTete(c), '', c.phraseCourte, '', ...lignesAnneau(c).map(([, texte]) => `- ${texte}`), '', c.phrase, '', `## ${G.aFaire.titre}`, ''];
   if (lignes.length) l.push(...lignes.map(([, texte]) => `- ${texte}`), '');
   else l.push(G.aFaire.rien, '');
   l.push('## Scores', '', '| Score | Valeur |', '|---|---|', ...SCORES.map(([titre, cle]) => `| ${titre} | ${sur(s[cle])} |`), '', accorde(G.effort, s.effort), '');

@@ -15,7 +15,7 @@ import { occurrence, gabarit, identiteElement, apparenceDe, nomDeVersion } from 
 import { candidats } from './blocs.js';
 import { scores } from './scores.js';
 import { TEXTES } from '../report/textes.js';
-import { defauts, differences, mention, aFaireDuType, guidageGlobal } from './guidage.js';
+import { defauts, differences, mention, aFaireDuType, guidageGlobal, graphiques } from './guidage.js';
 
 /**
  * @typedef {object} ReleveFichier
@@ -33,6 +33,7 @@ import { defauts, differences, mention, aFaireDuType, guidageGlobal } from './gu
  * @typedef {object} VueVersion
  * @property {string} nom          nom stable, « <type> / <origine> / <nom> »
  * @property {string} origine      étiquette d'origine : le framework, ou l'une des deux étiquettes neutres
+ * @property {'framework' | 'equipe' | 'nu'} origineCle  sorte d'origine, pour la couleur des graphiques (D48)
  * @property {string} nomCode      nom de la pièce dans le code : signature, première classe ou balise
  * @property {number} fois
  * @property {string[]} pages
@@ -84,7 +85,7 @@ function versionsDe(occ, releve, captures) {
   const parVersion = new Map();
   for (const o of occ) parVersion.set(o.version, [...(parVersion.get(o.version) ?? []), o]);
   const vs = [...parVersion]
-    .map(([nom, os]) => ({ nom, origine: os[0].origine.libelle, nomCode: os[0].origine.nom, rattache: os.some((o) => o.rattache), ...vue(os, releve, captures), defauts: defauts(os) }))
+    .map(([nom, os]) => ({ nom, origine: os[0].origine.libelle, origineCle: os[0].origine.cle, nomCode: os[0].origine.nom, rattache: os.some((o) => o.rattache), ...vue(os, releve, captures), defauts: defauts(os) }))
     .sort((a, b) => b.fois - a.fois || a.nom.localeCompare(b.nom, 'fr'));
   const diffs = differences(vs);
   return vs.map((v, i) => ({ ...v, mention: mention(vs, i), differences: diffs[i] }));
@@ -183,6 +184,7 @@ export function construireConstat(releve, decisions = { garder: [], blocs: [] },
 
   const largeur = `${releve.fenetre.width} × ${releve.fenetre.height} px`;
   const guide = guidageGlobal(typesComptes, elements.length, nonIdentifies);
+  const sortie = types.map(({ occurrences, plusGrand, ...t }) => t);
   return {
     outil: releve.outil,
     date: releve.date,
@@ -197,7 +199,8 @@ export function construireConstat(releve, decisions = { garder: [], blocs: [] },
     aFaire: guide.aFaire,
     chiffres: { elements: elements.length, types: typesComptes.length, versions, frameworks: Object.fromEntries(parFramework), autrement, nonIdentifies: nonIdentifiesFois },
     scores: s,
-    types: types.map(({ occurrences, plusGrand, ...t }) => t),
+    types: sortie,
+    graphiques: graphiques(sortie, releve.frameworks),
     nonIdentifies,
     decisionsSansCible: sansCible,
     limites: TEXTES.limites.map((/** @type {string} */ l) => l.replace('{largeur}', largeur).replace('{pages}', String(nbPages)).replace('{date}', releve.date)),

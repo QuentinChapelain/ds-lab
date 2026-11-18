@@ -21,19 +21,40 @@
     "Non identifiés": "Des blocs répétés que l'outil ne sait pas nommer. À laisser tels quels, ou à rattacher à un type"
   },
   "guidage": {
-    "elements": ["{n} élément", "{n} éléments"],
-    "types": ["{n} type", "{n} types"],
+    "elements": [
+      "{n} élément",
+      "{n} éléments"
+    ],
+    "types": [
+      "{n} type",
+      "{n} types"
+    ],
     "phraseCourte": "{elements}, de {types}.",
-    "plusieurs": ["Pour {n} type, le site a plusieurs versions du même élément.", "Pour {n} types, le site a plusieurs versions du même élément."],
+    "plusieurs": [
+      "Pour {n} type, le site a plusieurs versions du même élément.",
+      "Pour {n} types, le site a plusieurs versions du même élément."
+    ],
     "uneSeule": "Chaque type n'a qu'une version.",
     "aFaire": {
       "titre": "Ce qu'il vous reste à faire",
-      "doublons": ["{n} type à doublons : choisir la version à garder", "{n} types à doublons : choisir la version à garder"],
-      "confirmer": ["{n} type à une seule version : confirmer", "{n} types à une seule version : confirmer"],
-      "blocs": ["{n} bloc non identifié : le rattacher ou le laisser", "{n} blocs non identifiés : les rattacher ou les laisser"],
+      "doublons": [
+        "{n} type à doublons : choisir la version à garder",
+        "{n} types à doublons : choisir la version à garder"
+      ],
+      "confirmer": [
+        "{n} type à une seule version : confirmer",
+        "{n} types à une seule version : confirmer"
+      ],
+      "blocs": [
+        "{n} bloc non identifié : le rattacher ou le laisser",
+        "{n} blocs non identifiés : les rattacher ou les laisser"
+      ],
       "rien": "Rien à faire : toutes les versions à garder sont choisies."
     },
-    "effort": ["{n} endroit à modifier pour n'avoir qu'une version par type.", "{n} endroits à modifier pour n'avoir qu'une version par type."],
+    "effort": [
+      "{n} endroit à modifier pour n'avoir qu'une version par type.",
+      "{n} endroits à modifier pour n'avoir qu'une version par type."
+    ],
     "sections": {
       "doublons": "Types à doublons",
       "uneVersion": "Types à une seule version",
@@ -43,19 +64,40 @@
       "sansCible": "Décisions sans cible"
     },
     "type": {
-      "fois": ["{n} fois", "{n} fois"],
-      "versions": ["{n} version", "{n} versions"],
+      "fois": [
+        "{n} fois",
+        "{n} fois"
+      ],
+      "versions": [
+        "{n} version",
+        "{n} versions"
+      ],
       "resume": "{fois}, en {versions}.",
       "plusRepandue": "la plus répandue",
       "egalite": "à égalité",
       "rattache": "rattaché à la main",
       "aFaire": "À faire",
-      "choisir": ["Choisir la version à garder. Si c'est la plus répandue, {n} endroit sera à remplacer.", "Choisir la version à garder. Si c'est la plus répandue, {n} endroits seront à remplacer."],
-      "garde": ["Version à garder : {nom}. {n} endroit à remplacer.", "Version à garder : {nom}. {n} endroits à remplacer."],
+      "choisir": [
+        "Choisir la version à garder. Si c'est la plus répandue, {n} endroit sera à remplacer.",
+        "Choisir la version à garder. Si c'est la plus répandue, {n} endroits seront à remplacer."
+      ],
+      "garde": [
+        "Version à garder : {nom}. {n} endroit à remplacer.",
+        "Version à garder : {nom}. {n} endroits à remplacer."
+      ],
       "confirmer": "Confirmer cette version comme version à garder.",
       "gardeSeule": "Version à garder : {nom}. Rien à remplacer.",
-      "gabarit": ["Gabarit : {n} élément, sur toutes les pages, hors des chiffres", "Gabarit : {n} éléments, sur toutes les pages, hors des chiffres"],
-      "voirLeCode": "Voir le code"
+      "gabarit": [
+        "Gabarit : {n} élément, sur toutes les pages, hors des chiffres",
+        "Gabarit : {n} éléments, sur toutes les pages, hors des chiffres"
+      ],
+      "voirLeCode": "Voir le code",
+      "court": {
+        "choisir": "Choisir la version à garder",
+        "garde": "Version à garder : {nom}",
+        "confirmer": "Confirmer la version",
+        "gardeSeule": "Version à garder : {nom}"
+      }
     },
     "bloc": {
       "decider": "Le rattacher à un type, ou le laisser tel quel.",
@@ -77,6 +119,32 @@
       "sansMarge": "sans marge intérieure",
       "texte": "texte",
       "graisse": "graisse"
+    },
+    "anneau": {
+      "framework": [
+        "{n} vient de {nom}",
+        "{n} viennent de {nom}"
+      ],
+      "equipe": [
+        "{n} est fait maison",
+        "{n} sont faits maison"
+      ],
+      "nu": [
+        "{n} est sans style",
+        "{n} sont sans style"
+      ],
+      "aucun": "Aucun framework reconnu",
+      "arc": [
+        "{origine}, {n} élément",
+        "{origine}, {n} éléments"
+      ],
+      "titre": "Origine des éléments"
+    },
+    "sommaire": {
+      "titre": "Les versions, type par type",
+      "aide": "Une barre d'une seule couleur : une seule version.",
+      "legende": "Origines",
+      "segment": "{origine}, {nom}, {fois}"
     }
   },
   "limites": [

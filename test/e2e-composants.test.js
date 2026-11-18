@@ -21,6 +21,13 @@
  *      si elle dépasse sa colonne ; hors de « Voir le code », aucun nom long ;
  *   C10 clair et sombre à 390 px : aucun défilement ; fond et texte de la page égaux aux rôles fond.app et texte.principal
  *      des jetons communs, lus ici par une résolution indépendante des fichiers.
+ * Graphiques du constat (D48), contre fixtures/marque-demo/expected-graphiques-constat.json, écrit à la main avant le code :
+ *   C11 lancements A, B et sans table : anneau (total, parts, lignes), barres des scores, segments de chaque type dans
+ *      l'ordre des fiches, barre la plus longue à pleine longueur, résumés des fiches, aucune fiche ouverte au chargement ;
+ *   C12 chaque arc et chaque segment a son texte de remplacement ; aucune couleur verte, orange ou rouge : toutes neutres
+ *      ou de la teinte d'information (culori) ; chaque couleur d'origine tient 3:1 contre la surface, en clair et en
+ *      sombre ; un espace entre deux segments ; le plus petit segment fait au moins 24 px à 390 px ;
+ *   C13 un lien du sommaire ouvre la fiche visée, sans script (Chromium).
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -155,7 +162,7 @@ test('C6 page HTML : ordre des blocs, explications, mots, étiquettes, largeur d
     assert.ok(i >= 0, s);
     return i;
   };
-  const ordre = ['<header class="entete">', '<p class="phrase">', '<section class="a-faire"', '<div class="cartes">', '<p class="effort">', 'id="doublons"', 'id="une-version"', 'id="non-identifies"', 'Comment lire ce constat', 'Limites de cet audit'].map(repere);
+  const ordre = ['<header class="entete">', '<section class="anneau', '<section class="a-faire"', '<div class="cartes">', '<p class="effort">', 'id="sommaire"', 'id="doublons"', 'id="une-version"', 'id="non-identifies"', 'Comment lire ce constat', 'Limites de cet audit'].map(repere);
   assert.deepEqual(ordre, [...ordre].sort((a, b) => a - b));
   assert.equal(html.match(/class="carte-score"/g)?.length, 4);
   assert.equal(html.match(/<details class="i">/g)?.length, F.A.info);
@@ -215,8 +222,27 @@ async function lirePage(fichier, { colorScheme = 'light' } = {}) {
   try {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 }, colorScheme });
     await page.goto(`file://${fichier}`);
+    const ouvertes = await page.evaluate(() => document.querySelectorAll('details[open]').length);
+    const graphes = await page.evaluate(() => {
+      const nb = (/** @type {Element} */ e, /** @type {string} */ a) => Number(e.getAttribute(a));
+      return {
+        centre: document.querySelector('.anneau-svg .centre')?.textContent ?? '',
+        arcs: [...document.querySelectorAll('.anneau-svg circle')].map((c) => [c.getAttribute('data-origine'), nb(c, 'data-fois'), c.querySelector('title')?.textContent ?? '']),
+        lignesAnneau: [...document.querySelectorAll('.lignes-anneau li')].map((l) => (l.textContent ?? '').trim()),
+        parts: [...document.querySelectorAll('.progres .plein')].map((r) => nb(r, 'data-part')),
+        barres: [...document.querySelectorAll('ul.sommaire li')].map((li) => ({
+          nom: li.querySelector('.nom-type')?.textContent ?? '',
+          longueur: nb(/** @type {Element} */ (li.querySelector('.barre')), 'data-longueur'),
+          segments: [...li.querySelectorAll('.barre rect.seg')].map((r) => [r.getAttribute('data-origine'), nb(r, 'data-fois'), r.querySelector('title')?.textContent ?? '', r.getBoundingClientRect().width]),
+          espaces: li.querySelectorAll('.barre rect.espace').length,
+          largeur: li.querySelector('.barre')?.getBoundingClientRect().width ?? 0,
+        })),
+        resumes: [...document.querySelectorAll('details.repliee > summary')].map((x) => (x.textContent ?? '').replace(/\s+/g, ' ').trim()),
+        style: document.querySelector('style')?.textContent ?? '',
+      };
+    });
     await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (/** @type {HTMLDetailsElement} */ (d).open = true)));
-    return await page.evaluate(() => {
+    const lu = await page.evaluate(() => {
       const texte = (/** @type {Element | null} */ e) => (e?.textContent ?? '').replace(/\s+/g, ' ').trim();
       const tous = (/** @type {string} */ s) => [...document.querySelectorAll(s)].map(texte);
       const vignettes = [...document.querySelectorAll('.vignette img')].map((e) => {
@@ -233,7 +259,7 @@ async function lirePage(fichier, { colorScheme = 'light' } = {}) {
         phrase: texte(document.querySelector('.phrase')),
         lignes: tous('.a-faire li'),
         effort: texte(document.querySelector('.effort')),
-        doublons: tous('#doublons > article > h3'),
+        doublons: tous('#doublons > details > summary').map((x) => x.split(' · ')[0]),
         uneVersion: tous('#une-version > details > summary').map((x) => x.split(' · ')[0]),
         info: document.querySelectorAll('details.i').length,
         vignettes,
@@ -243,6 +269,7 @@ async function lirePage(fichier, { colorScheme = 'light' } = {}) {
         couleur: bs.color,
       };
     });
+    return { ...lu, ...graphes, ouvertes };
   } finally {
     await browser.close();
   }
@@ -256,7 +283,7 @@ test('C8 forme du constat, lancements A et B : valeurs de l’attendu', async ()
     const c = r.constat;
     const p = await lirePage(join(r.dir, 'constat.html'));
     assert.equal(c.phraseCourte, f.phraseCourte, nom);
-    assert.equal(p.phrase, f.phraseCourte, nom);
+    assert.ok((await readFile(join(r.dir, 'constat.md'), 'utf8')).includes(f.phraseCourte), nom);
     assert.deepEqual(c.aFaire, f.aFaire, nom);
     assert.deepEqual(p.lignes, f.lignesAFaire, nom);
     assert.equal(p.effort, f.effort, nom);
@@ -324,4 +351,79 @@ test('C10 clair et sombre à 390 px : sans défilement, fond et texte des jetons
     assert.equal(p.couleur, couleurDuRole(fichiers, 'texte.principal').rgb, mode);
   }
   assert.notEqual(couleurDuRole(clair, 'fond.app').hex, couleurDuRole(sombre, 'fond.app').hex);
+});
+
+const GR = JSON.parse(await readFile(join(ROOT, 'fixtures/marque-demo/expected-graphiques-constat.json'), 'utf8'));
+
+test('C11 graphiques, lancements A, B et sans table : valeurs de l’attendu', async () => {
+  for (const [nom, r] of /** @type {const} */ ([['A', A], ['B', B], ['sansTable', nu]])) {
+    const g = GR[nom];
+    const p = await lirePage(join(r.dir, 'constat.html'));
+    assert.equal(p.centre, String(g.anneau.total), nom);
+    assert.deepEqual(p.arcs.map(([o, n]) => [o, n]), g.anneau.origines, nom);
+    assert.deepEqual(p.lignesAnneau, g.lignes, nom);
+    assert.deepEqual(r.constat.graphiques.origines.map((o) => [o.libelle, o.fois]), g.anneau.origines, nom);
+    if (g.scores) assert.deepEqual(p.parts, g.scores.map(([x, y]) => Math.round((x / y) * 10000) / 10000), nom);
+    assert.deepEqual(
+      p.barres.map((b) => [bas(b.nom), b.segments.reduce((n, s) => n + s[1], 0), b.longueur]),
+      g.types.map((/** @type {any[]} */ [t, fois, longueur]) => [t, fois, longueur]),
+      nom,
+    );
+    assert.deepEqual(
+      r.constat.graphiques.types.map((t) => [t.nom, t.fois, t.longueur, t.segments.map((s) => [s.origine, s.nomCode, s.fois])]),
+      g.types,
+      nom,
+    );
+    for (const [i, b] of p.barres.entries()) assert.deepEqual(b.segments.map(([o, n]) => [o, n]), g.types[i][3].map((/** @type {any[]} */ [o, , n]) => [o, n]), `${nom} ${b.nom}`);
+    const plusLongue = p.barres.find((b) => b.longueur === 100);
+    assert.equal(bas(plusLongue?.nom ?? ''), g.plusLongue, nom);
+    assert.equal(p.ouvertes, 0, nom);
+    for (const [t, resume] of Object.entries(g.resumes ?? {})) assert.ok(p.resumes.includes(resume), `${nom} ${t} : ${p.resumes.join(' | ')}`);
+  }
+});
+
+/** Couleurs d'une règle CSS de variables : nom → valeur. @param {string} bloc */
+const variables = (bloc) => Object.fromEntries([...bloc.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6})/g)].map((m) => [m[1], m[2]]));
+
+test('C12 textes de remplacement, couleurs sans jugement, 3:1 contre la surface, espaces, plus petit segment', async () => {
+  const { converter, wcagContrast } = await import('culori');
+  const oklch = converter('oklch');
+  const p = await lirePage(join(A.dir, 'constat.html'));
+  for (const [o, n, titre] of p.arcs) assert.equal(titre, `${o}, ${n} éléments`);
+  for (const b of p.barres) {
+    for (const [o, n, titre] of b.segments) assert.match(String(titre), new RegExp(`^${o}, [^,]+, ${n} fois$`));
+    assert.equal(b.espaces, b.segments.length - 1, b.nom);
+  }
+  const plusPetit = Math.min(...p.barres.flatMap((b) => b.segments.map((s) => Number(s[3]))));
+  assert.ok(plusPetit >= 24, `plus petit segment : ${plusPetit} px`);
+  const clair = variables(p.style.split('@media')[0]);
+  const sombre = variables(/prefers-color-scheme: dark\) \{([^}]*)\}/.exec(p.style)?.[1] ?? '');
+  assert.ok(Object.keys(sombre).length >= 10);
+  const teinteInfo = /** @type {number} */ (oklch(clair.accent)?.h);
+  for (const [mode, vars] of /** @type {const} */ ([['clair', clair], ['sombre', sombre]])) {
+    for (const [nomVar, hex] of Object.entries(vars)) {
+      const c = /** @type {any} */ (oklch(hex));
+      const neutre = (c.c ?? 0) < 0.03;
+      const ecart = Math.abs((((c.h ?? 0) - teinteInfo + 540) % 360) - 180);
+      assert.ok(neutre || ecart < 25, `${mode} --${nomVar} ${hex} : ni neutre ni teinte d'information`);
+    }
+    for (const origine of ['accent', 'texte', 'trait-soutenu']) assert.ok(wcagContrast(vars[origine], vars.surface) >= 3, `${mode} ${origine} contre la surface`);
+  }
+  assert.doesNotMatch(p.style, /\b(red|green|orange)\b/i);
+});
+
+test('C13 un lien du sommaire ouvre la fiche visée, sans script', async () => {
+  const browser = await lancerChromium();
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    await page.goto(`file://${join(A.dir, 'constat.html')}`);
+    const ouverte = () => page.evaluate(() => /** @type {HTMLDetailsElement} */ (document.getElementById('fiche-carte')?.closest('details')).open);
+    assert.equal(await ouverte(), false);
+    await page.click('a[href="#fiche-carte"]');
+    await page.waitForFunction(() => /** @type {HTMLDetailsElement} */ (document.getElementById('fiche-carte')?.closest('details')).open, null, { timeout: 2000 });
+    assert.equal(await ouverte(), true);
+    assert.ok((await page.evaluate(() => document.getElementById('fiche-carte')?.getBoundingClientRect().top ?? 9999)) < 844);
+  } finally {
+    await browser.close();
+  }
 });

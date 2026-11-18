@@ -14,7 +14,9 @@
  *   X3 les limites : chaque réserve du premier attendu commence une limite (première lettre en capitale), les trois
  *      limites ajoutées par ses réponses y sont à l'identique, et la date s'y ajoute (onze limites) ;
  *   X4 les deux étiquettes d'origine sont celles du premier attendu : « Fait maison », « Sans style » ;
- *   X5 les textes du guidage sont ceux de l'attendu de la forme, leurs nombres écrits par ses lettres (N, T, D, E, nom).
+ *   X5 les textes du guidage sont ceux de l'attendu de la forme, leurs nombres écrits par ses lettres (N, T, D, E, nom) ;
+ *   X6 les textes des graphiques sont ceux de leur attendu (docs/attendus/graphiques-constat.md) : lignes de l'anneau,
+ *      « Aucun framework reconnu », titre et phrase du sommaire, « À faire » courts retenus du plan.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -25,6 +27,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const T = JSON.parse(readFileSync(`${ROOT}src/report/constat.textes.json`, 'utf8'));
 const ATTENDU = readFileSync(`${ROOT}docs/attendus/audit-composants.md`, 'utf8');
 const FORME = readFileSync(`${ROOT}docs/attendus/forme-constat.md`, 'utf8');
+const GRAPHIQUES = readFileSync(`${ROOT}docs/attendus/graphiques-constat.md`, 'utf8');
 const RENOMMES = /** @type {Record<string, string>} */ ({ 'Versions à garder choisies': 'Versions choisies', "Fiabilité de l'audit": 'Éléments identifiés' });
 const SCORES = ['Source unique', 'Accessibilité de base', 'Versions à garder choisies', "Fiabilité de l'audit"];
 
@@ -96,4 +99,20 @@ test('X5 textes du guidage, mot pour mot l’attendu de la forme', () => {
   for (const t of ['« 1 type à doublons »', '« 1 bloc non identifié : le rattacher ou le laisser »', '« 1 endroit sera à remplacer »'])
     assert.ok(FORME.includes(t), t);
   assert.deepEqual([G.aFaire.doublons[0], G.aFaire.blocs[0], G.type.choisir[0].split('. ')[1]], ['{n} type à doublons : choisir la version à garder', '{n} bloc non identifié : le rattacher ou le laisser', "Si c'est la plus répandue, {n} endroit sera à remplacer."]);
+});
+
+test('X6 textes des graphiques, mot pour mot leur attendu', () => {
+  const G = T.guidage;
+  const textes = [
+    `« ${G.anneau.framework[1].replace('{n}', 'N').replace('{nom}', '[framework]')} »`,
+    `« ${G.anneau.equipe[1].replace('{n}', 'N')} »`,
+    `« ${G.anneau.nu[1].replace('{n}', 'N')} »`,
+    `« ${G.anneau.aucun} »`,
+    G.sommaire.titre,
+    `« ${G.sommaire.aide} »`,
+    ...['choisir', 'confirmer'].map((k) => `« ${G.type.court[k]} »`),
+    `« ${G.type.court.garde.replace('{nom}', 'v-btn')} »`,
+    `« ${G.type.court.gardeSeule.replace('{nom}', 'v-card')} »`,
+  ];
+  for (const t of textes) assert.ok(GRAPHIQUES.includes(t), t);
 });

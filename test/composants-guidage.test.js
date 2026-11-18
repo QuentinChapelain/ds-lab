@@ -14,14 +14,18 @@
  *   F5 différences : les familles égales entre versions sont omises ; deux apparences s'écrivent « 36 ou 28 px » ; une
  *      valeur nulle prend son mot (« sans bordure », « arrondi 0 ») ; rien pour un type à une version ;
  *   F6 ordre guidé : doublons à choisir par éléments à remplacer puis par nom, puis les choisis ; types à une version, à
- *      confirmer d'abord, par nombre puis par nom.
+ *      confirmer d'abord, par nombre puis par nom ;
+ *   F7 graphiques (D48, attendu du 18/11/2026, docs/attendus/graphiques-constat.md) : parts par origine dans l'ordre
+ *      frameworks (ordre des tables), équipe, navigateur nu, sans les origines à 0, un bloc rattaché compté avec l'équipe ;
+ *      types dans l'ordre des fiches, longueur = nombre ÷ nombre du plus grand × 100, segments dans l'ordre des versions ;
+ *      résumé court « À faire » de chaque type.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { construireConstat } from '../src/composants/constat.js';
 import { validerDecisions } from '../src/composants/decisions.js';
 import { idDe } from '../src/composants/pieces.js';
-import { ordreGuide } from '../src/report/constat.js';
+import { ordreGuide } from '../src/composants/guidage.js';
 
 /** @param {Partial<Record<string, any>>} [m] */
 const mesures = (m = {}) => ({ hauteur: 36, rayons: [4, 4, 4, 4], bordures: [0, 0, 0, 0], marges: [0, 16, 0, 16], taille: 14, graisse: 500, ...m });
@@ -102,4 +106,33 @@ test('F6 ordre guidé des types', () => {
   const o = ordreGuide(construireConstat(r, d));
   assert.deepEqual(o.doublons.map((t) => t.nom), ['bouton avec texte', 'lien', 'champ de texte']);
   assert.deepEqual(o.uneVersion.map((t) => t.nom), ['interrupteur', 'case à cocher', 'onglet']);
+});
+
+test('F7 données des graphiques', () => {
+  const r = releve([[
+    { piece: { nom: 'x-btn', framework: 'Cadre' } }, { piece: { nom: 'x-btn', framework: 'Cadre' } }, { classes: ['b'] }, { classes: [] },
+    { role: 'link', piece: { nom: 'y-lien', framework: 'Autre' } }, { role: 'tab', classes: ['t'] },
+    bloc('pave', 1), bloc('pave', 2),
+  ]]);
+  r.frameworks = [{ nom: 'Cadre', version: '1' }, { nom: 'Autre', version: '1' }];
+  const d = validerDecisions({ blocs: [{ bloc: 'pave', sort: 'rattacher', type: 'carte' }], garder: [{ type: 'onglet', version: 'onglet / Fait maison / t' }] });
+  const c = construireConstat(r, d);
+  assert.deepEqual(c.graphiques.origines.map((o) => [o.cle, o.libelle, o.fois]), [['framework', 'Cadre', 2], ['framework', 'Autre', 1], ['equipe', 'Fait maison', 4], ['nu', 'Sans style', 1]]);
+  assert.deepEqual(
+    c.graphiques.types.map((t) => [t.nom, t.fois, t.longueur, t.segments.map((s) => [s.cle, s.nomCode, s.fois])]),
+    [
+      ['bouton avec texte', 4, 100, [['framework', 'x-btn', 2], ['equipe', 'b', 1], ['nu', 'button', 1]]],
+      ['carte', 2, 50, [['equipe', 'pave', 2]]],
+      ['lien', 1, 25, [['framework', 'y-lien', 1]]],
+      ['onglet', 1, 25, [['equipe', 't', 1]]],
+    ],
+  );
+  assert.deepEqual(c.types.map((t) => [t.nom, t.aFaireCourt]).sort(), [
+    ['bouton avec texte', 'Choisir la version à garder'],
+    ['carte', 'Confirmer la version'],
+    ['lien', 'Confirmer la version'],
+    ['onglet', 'Version à garder : t'],
+  ]);
+  const sans = construireConstat(releve([[{ classes: ['a'] }, { classes: [] }]]));
+  assert.deepEqual(sans.graphiques.origines.map((o) => o.cle), ['equipe', 'nu']);
 });
