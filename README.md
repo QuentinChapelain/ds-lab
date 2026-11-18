@@ -134,12 +134,14 @@ Le designer décide dans un fichier facultatif, écrit à la main et passé par 
 
 | Fichier | Pour qui | Contenu |
 |---|---|---|
-| `constat.html` | Le décideur, le designer | Un seul fichier, lisible sur un téléphone, en clair et en sombre : l'en-tête, une phrase, ce qu'il reste à faire, quatre scores, les types à doublons, puis ceux à une seule version (repliés), les non identifiés, « Comment lire ce constat » et les limites ; chaque fiche montre ses versions à la taille réelle, leurs défauts d'accessibilité, ce qui les distingue et ce qu'il reste à faire (D47) |
-| `constat.md` | Le développeur | Les mêmes blocs, captures en lien, et la phrase longue (framework, faits autrement, blocs) |
-| `constat.json` | L'outil | Tous les chiffres, versions et décisions |
+| `constat.html` | Le décideur, le designer | Un seul fichier, lisible sur un téléphone, en clair et en sombre : l'en-tête, l'anneau des origines, ce qu'il reste à faire, quatre scores et leurs barres, le sommaire des versions type par type (une barre par type, un segment par version, lien vers sa fiche), les fiches des types, toutes repliées, les non identifiés, « Comment lire ce constat » et les limites ; chaque fiche montre ses versions à la taille réelle, leurs défauts d'accessibilité, ce qui les distingue et ce qu'il reste à faire (D47, D48) |
+| `constat.md` | Le développeur | Les mêmes blocs, captures en lien, les lignes de l'anneau et la phrase longue (framework, faits autrement, blocs) ; aucun graphique |
+| `constat.json` | L'outil | Tous les chiffres, versions et décisions, et de quoi redessiner les graphiques (`graphiques` : parts par origine, segments par type) |
 | `releve.json` et le dossier des captures | L'outil | Le relevé brut : `--releve <dossier>` refait le constat sans navigateur, avec d'autres décisions |
 
 Le constat guide (D47) : il dit d'abord ce qu'il reste à faire (choisir la version à garder d'un type à doublons, confirmer celle d'un type à une seule version, rattacher ou laisser un bloc), puis, sur chaque fiche, la ligne « À faire » et le nombre d'endroits à remplacer. Confirmer une version, c'est l'écrire comme version à garder dans le fichier de décisions. `--nom` donne le nom du site affiché (sans lui, l'hôte). Les couleurs de la page viennent des rôles neutres communs des jetons, et les captures sont prises à densité 2, nettes sur un téléphone.
+
+Les graphiques (D48) sont du SVG écrit par le rendu, sans script ni dépendance. Chaque origine a sa couleur, prise dans les jetons communs, sans couleur de jugement : le framework en bleu d'information, « Fait maison » de la couleur du texte, « Sans style » en hachures ; un espace sépare deux segments, chaque segment a son texte de remplacement, et la légende est écrite. Un lien du sommaire ouvre la fiche visée dans Chromium ; ailleurs, il peut falloir l'ouvrir d'un toucher.
 
 Les sorties vont dans `local/composants/<hôte>/<horodatage>/`. La commande sort en 0, ou en 2 sur une panne : fichier absent ou mal formé, page qui ne se charge pas (le constat est écrit sans elle). Sur les deux pages d'annuaire fictives (`fixtures/marque-demo/annuaire/`), avec la table de Vuetify : 27 éléments, 7 types, 12 versions ; 17 viennent de Vuetify, 10 sont faits autrement ; 3 blocs non identifiés ; source unique 20 sur 27, accessibilité de base 20 sur 23.
 
