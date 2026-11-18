@@ -1,0 +1,91 @@
+{
+  "$comment": "Attendus de l'audit des composants, écrits à la main le 18/11/2026 avant le code, sur fixtures/marque-demo/annuaire/liste.html et fiche.html. Les chiffres de A et de B sont ceux de l'attendu (docs/attendus/audit-composants.md) ; ceux du lancement sans table sont calculés à la main depuis la composition des pages. En cas d'écart, ne corriger ni l'outil ni ce fichier : le signaler.",
+  "composition": {
+    "liste": "en-tête (gabarit : 2 boutons Vuetify avec texte) ; boutons avec texte : v-btn « Rechercher » (36 px), v-btn « Ajouter un café » (28 px, v-btn--size-small), an-btn « Voir plus », bouton nu « Effacer » (21 px) ; boutons à icône : v-btn « Haut de page », v-btn « Partager », an-icone sans nom ; champs : v-text-field « Rechercher un café », an-champ « Ville » ; listes : v-select « Quartier », an-liste « Tri » (tabindex 0) ; 2 cases nues dans un label de 32 px ; 4 v-card",
+    "fiche": "même en-tête ; 3 onglets v-tab (tabindex 0, -1, -1) ; champs : v-text-field « Votre nom », an-champ « Votre courriel » ; liste : an-liste « Note » sans tabindex ; boutons avec texte : v-btn « Envoyer l'avis », an-btn « Annuler » ; boutons à icône : v-btn « Ajouter aux favoris », v-btn « Imprimer » ; 3 an-carte"
+  },
+  "A": {
+    "elements": 27,
+    "types": 7,
+    "versions": 12,
+    "frameworks": { "Vuetify": 17 },
+    "autrement": 10,
+    "nonIdentifies": 3,
+    "sourceUnique": [20, 27],
+    "accessibilite": [20, 23],
+    "versionsAGarder": [0, 7],
+    "fiabilite": [27, 30],
+    "effort": 7,
+    "phrase": "27 éléments relevés, de 7 types, en 12 versions. 17 viennent de Vuetify, 10 sont faits autrement. 3 blocs ne sont pas identifiés.",
+    "parType": {
+      "bouton avec texte": { "fois": 6, "versions": 3, "sourceUnique": [3, 6] },
+      "bouton à icône seule": { "fois": 5, "versions": 2, "sourceUnique": [4, 5] },
+      "champ de texte": { "fois": 4, "versions": 2, "sourceUnique": [2, 4], "egalite": ["champ de texte / Fait maison / an-champ", "champ de texte / Vuetify / v-text-field"] },
+      "liste déroulante": { "fois": 3, "versions": 2, "sourceUnique": [2, 3] },
+      "case à cocher": { "fois": 2, "versions": 1, "sourceUnique": [2, 2] },
+      "onglet": { "fois": 3, "versions": 1, "sourceUnique": [3, 3] },
+      "carte": { "fois": 4, "versions": 1, "sourceUnique": [4, 4] }
+    },
+    "apparences": { "bouton avec texte / Vuetify / v-btn": 2 },
+    "gabarit": { "bouton avec texte / Vuetify / v-btn": 2 },
+    "echecsAccessibilite": {
+      "bouton avec texte / Sans style / button": "zone de clic 21 px de haut",
+      "bouton à icône seule / Fait maison / an-icone": "sans nom accessible",
+      "liste déroulante / Fait maison / an-liste (fiche)": "non atteignable au clavier"
+    },
+    "how": {
+      "elements": "6 + 5 + 4 + 3 + 2 + 3 + 4 = 27 ; les 2 boutons de l'en-tête sont du gabarit, hors des chiffres",
+      "versions": "bouton avec texte 3 (Vuetify v-btn, Fait maison an-btn, Sans style button) + icône 2 (v-btn, an-icone) + champ 2 (v-text-field, an-champ) + liste 2 (v-select, an-liste) + case 1 + onglet 1 + carte 1 = 12",
+      "frameworks": "3 + 4 + 2 + 1 + 3 + 4 = 17 ; autrement 2 + 1 + 1 + 2 + 2 + 2 = 10",
+      "sourceUnique": "plus grand compte par type : 3 + 4 + 2 + 2 + 2 + 3 + 4 = 20, sur 27",
+      "accessibilite": "interactifs : tous sauf les 4 cartes, 23 ; échecs : bouton nu à 21 px, an-icone sans nom, an-liste de la fiche hors clavier ; 20 sur 23",
+      "fiabilite": "27 identifiés, 3 an-carte non identifiés : 27 sur 30",
+      "effort": "27 - 20 = 7 (3 + 1 + 2 + 1 + 0 + 0 + 0)"
+    }
+  },
+  "B": {
+    "decisions": "fixtures/marque-demo/decisions-composants.json",
+    "elements": 30,
+    "types": 7,
+    "versions": 13,
+    "frameworks": { "Vuetify": 17 },
+    "autrement": 13,
+    "nonIdentifies": 0,
+    "sourceUnique": [20, 30],
+    "accessibilite": [20, 23],
+    "versionsAGarder": [1, 7],
+    "fiabilite": [30, 30],
+    "effort": 10,
+    "phrase": "30 éléments relevés, de 7 types, en 13 versions. 17 viennent de Vuetify, 13 sont faits autrement. 0 bloc n'est pas identifié.",
+    "carte": { "fois": 7, "versions": 2, "rattaches": 3 },
+    "garder": { "bouton avec texte": "bouton avec texte / Vuetify / v-btn" },
+    "how": {
+      "elements": "27 + 3 an-carte rattachés à la carte = 30",
+      "versions": "12 + carte / Fait maison / an-carte = 13",
+      "sourceUnique": "la carte garde v-card (4) pour plus répandue : 20, sur 30",
+      "effort": "bouton avec texte : 3 hors de la version à garder (v-btn) ; icône 1 ; champ 2 ; liste 1 ; carte 3 ; total 10"
+    }
+  },
+  "sansTable": {
+    "elements": 23,
+    "types": 6,
+    "versions": 11,
+    "frameworks": {},
+    "nonIdentifies": 10,
+    "candidats": { "v-card": 4, "v-field": 3, "an-carte": 3 },
+    "sourceUnique": [16, 23],
+    "accessibilite": [20, 23],
+    "versionsAGarder": [0, 6],
+    "fiabilite": [23, 33],
+    "effort": 7,
+    "phrase": "23 éléments relevés, de 6 types, en 11 versions. Aucun framework reconnu. 10 blocs ne sont pas identifiés.",
+    "how": {
+      "elements": "sans signature, les cartes v-card n'ont ni rôle ni type : 27 - 4 = 23",
+      "versions": "bouton avec texte 3 (Fait maison v-btn, an-btn, Sans style button) + icône 2 (v-btn, an-icone) + champ 2 (v-field__input, an-champ) + liste 2 (v-field__input, an-liste) + case 1 + onglet 1 (v-tab) = 11",
+      "candidats": "sans signature, la pièce d'un champ Vuetify est le champ lui-même : son cadre v-field (bordure) devient un bloc répété, 3 fois (deux sur la liste, un sur la fiche) ; v-card 4 ; an-carte 3 ; total 10",
+      "sourceUnique": "3 + 4 + 2 + 2 + 2 + 3 = 16, sur 23",
+      "fiabilite": "23 sur 23 + 10 = 33",
+      "effort": "23 - 16 = 7"
+    }
+  }
+}

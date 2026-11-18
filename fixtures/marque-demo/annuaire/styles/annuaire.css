@@ -1,0 +1,40 @@
+/* Annuaire fictif des cafés : pièces écrites à la main, classes et attributs de Vuetify 4 (aucune feuille de Vuetify),
+   pièces de l'équipe (an-), et pièces du navigateur sans classe. Seules les pièces portent une surface : fond, bordure,
+   ombre ou rayon. Les conteneurs de mise en page n'en ont pas. */
+html { font-family: system-ui, sans-serif; font-size: 16px; color: #222222; }
+body { margin: 0; background: #ffffff; }
+h1 { font-size: 28px; margin: 16px 0; }
+h2 { font-size: 20px; margin: 16px 0 8px; }
+h3 { font-size: 16px; margin: 0 0 4px; }
+p { margin: 0; }
+
+.an-entete { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; border-bottom: 1px solid #d0d0d0; }
+.an-titre-site { font-weight: 700; }
+.an-entete-actions { display: flex; gap: 8px; }
+.an-page { padding: 0 16px 32px; }
+.an-recherche, .an-section { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+.an-filtres { display: flex; gap: 16px; }
+.an-filtres label { display: flex; align-items: center; gap: 8px; min-height: 32px; }
+.an-resultats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
+.an-pied-liste { display: flex; gap: 8px; align-items: center; }
+.an-voisins { display: flex; flex-direction: column; gap: 12px; }
+
+/* Vuetify : bouton, champ, liste, onglets, carte. */
+.v-btn { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 0 16px; border: 0; border-radius: 4px; background: #3f51b5; color: #ffffff; font: inherit; font-size: 14px; font-weight: 500; }
+.v-btn--size-small { height: 28px; padding: 0 12px; font-size: 12px; }
+.v-btn--icon { width: 40px; height: 40px; padding: 0; border-radius: 50%; }
+.mdi { display: inline-block; width: 20px; height: 20px; }
+.v-input { display: block; }
+.v-field { display: flex; align-items: center; border: 1px solid #8a8a8a; border-radius: 4px; padding: 0 12px; }
+.v-field__input { height: 40px; width: 180px; border: 0; padding: 0; font: inherit; font-size: 16px; background: transparent; }
+.v-tabs { display: flex; gap: 0; margin-bottom: 16px; }
+.v-tab { height: 48px; border-radius: 0; background: #eeeeee; color: #222222; }
+.v-card { padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); font-size: 14px; }
+.v-card-title { font-size: 18px; font-weight: 600; }
+
+/* L'équipe : bouton, bouton à icône, champ, liste, carte. */
+.an-btn { height: 40px; padding: 0 20px; border: 2px solid #3f51b5; border-radius: 20px; background: #ffffff; color: #3f51b5; font: inherit; font-size: 15px; font-weight: 600; }
+.an-icone { width: 40px; height: 40px; padding: 8px; border: 1px solid #8a8a8a; border-radius: 8px; background: #ffffff; }
+.an-champ { height: 40px; width: 180px; padding: 0 10px; border: 1px solid #555555; border-radius: 2px; font: inherit; font-size: 16px; }
+.an-liste { display: flex; align-items: center; height: 40px; width: 160px; padding: 0 10px; border: 1px solid #555555; border-radius: 2px; font-size: 16px; }
+.an-carte { padding: 12px; border: 1px solid #c8c8c8; border-radius: 12px; font-size: 14px; }

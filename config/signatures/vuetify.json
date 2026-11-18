@@ -1,0 +1,22 @@
+{
+  "$comment": "Signatures de Vuetify 4, une donnée lue par npm run composants -- --signatures. Classes racines relues dans le code de Vuetify 4.3.4 (atelier/node_modules/vuetify/lib/components/). Une pièce sans type se trouve en remontant d'un élément qui a un rôle, jusqu'à la limite de sa pièce ; une pièce avec un type se trouve sur l'élément lui-même et donne le type d'une pièce sans rôle. Dans l'ordre : la première signature qui convient l'emporte (un onglet porte aussi la classe du bouton).",
+  "framework": "Vuetify",
+  "version": "4",
+  "pieces": [
+    { "selecteur": ".v-tab", "nom": "v-tab" },
+    { "selecteur": ".v-select", "nom": "v-select" },
+    { "selecteur": ".v-autocomplete", "nom": "v-autocomplete" },
+    { "selecteur": ".v-combobox", "nom": "v-combobox" },
+    { "selecteur": ".v-textarea", "nom": "v-textarea" },
+    { "selecteur": ".v-text-field", "nom": "v-text-field" },
+    { "selecteur": ".v-checkbox", "nom": "v-checkbox" },
+    { "selecteur": ".v-radio", "nom": "v-radio" },
+    { "selecteur": ".v-switch", "nom": "v-switch" },
+    { "selecteur": ".v-list-item", "nom": "v-list-item" },
+    { "selecteur": ".v-btn", "nom": "v-btn" },
+    { "selecteur": ".v-chip", "nom": "v-chip", "type": "puce" },
+    { "selecteur": ".v-card", "nom": "v-card", "type": "carte" },
+    { "selecteur": ".v-avatar", "nom": "v-avatar", "type": "avatar" },
+    { "selecteur": ".v-badge", "nom": "v-badge", "type": "badge" }
+  ]
+}

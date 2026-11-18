@@ -1,0 +1,5 @@
+{
+  "$comment": "Décisions du designer pour le lancement B de l'audit des composants, sur les pages d'annuaire : le bloc an-carte rattaché au type carte, la version à garder du bouton avec texte est celle de Vuetify.",
+  "garder": [{ "type": "bouton avec texte", "version": "bouton avec texte / Vuetify / v-btn" }],
+  "blocs": [{ "bloc": "an-carte", "sort": "rattacher", "type": "carte" }]
+}

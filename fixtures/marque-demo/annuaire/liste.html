@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Annuaire des cafés — liste</title>
+  <link rel="stylesheet" href="/annuaire/styles/annuaire.css">
+</head>
+<body>
+  <header class="an-entete">
+    <span class="an-titre-site">Annuaire des cafés</span>
+    <nav class="an-entete-actions" aria-label="Compte">
+      <button type="button" class="v-btn v-btn--variant-text"><span class="v-btn__content">Aide</span></button>
+      <button type="button" class="v-btn v-btn--variant-flat"><span class="v-btn__content">Se connecter</span></button>
+    </nav>
+  </header>
+  <main class="an-page">
+    <h1>Les cafés</h1>
+    <form class="an-recherche" role="search" action="#">
+      <div class="v-input v-text-field"><div class="v-field"><input class="v-field__input" type="text" aria-label="Rechercher un café"></div></div>
+      <input class="an-champ" type="text" aria-label="Ville">
+      <div class="v-input v-text-field v-select"><div class="v-field"><input class="v-field__input" type="text" readonly role="combobox" aria-label="Quartier" aria-expanded="false" value="Tous les quartiers"></div></div>
+      <div class="an-liste" role="combobox" tabindex="0" aria-label="Tri" aria-expanded="false">Par nom</div>
+      <div class="an-filtres">
+        <label><input type="checkbox"> Ouvert le dimanche</label>
+        <label><input type="checkbox"> Terrasse</label>
+      </div>
+      <button type="submit" class="v-btn v-btn--variant-flat"><span class="v-btn__content">Rechercher</span></button>
+      <button type="reset">Effacer</button>
+    </form>
+    <div class="an-resultats">
+      <div class="v-card"><div class="v-card-title">Café des Tanneurs</div><div class="v-card-text">12 rue des Tanneurs</div></div>
+      <div class="v-card"><div class="v-card-title">La Grange</div><div class="v-card-text">3 place du Marché</div></div>
+      <div class="v-card"><div class="v-card-title">Le Comptoir</div><div class="v-card-text">48 quai Nord</div></div>
+      <div class="v-card"><div class="v-card-title">Torréfaction Sud</div><div class="v-card-text">7 avenue du Parc</div></div>
+    </div>
+    <div class="an-pied-liste">
+      <button type="button" class="v-btn v-btn--size-small v-btn--variant-flat"><span class="v-btn__content">Ajouter un café</span></button>
+      <button type="button" class="an-btn">Voir plus</button>
+      <button type="button" class="v-btn v-btn--icon" aria-label="Haut de page"><i class="mdi mdi-arrow-up" aria-hidden="true"></i></button>
+      <button type="button" class="v-btn v-btn--icon" aria-label="Partager"><i class="mdi mdi-share" aria-hidden="true"></i></button>
+      <button type="button" class="an-icone"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20"><path d="M2 10h16M10 2v16" stroke="#555555" stroke-width="2"/></svg></button>
+    </div>
+  </main>
+</body>
+</html>

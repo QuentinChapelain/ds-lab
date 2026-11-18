@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Annuaire des cafés — fiche</title>
+  <link rel="stylesheet" href="/annuaire/styles/annuaire.css">
+</head>
+<body>
+  <header class="an-entete">
+    <span class="an-titre-site">Annuaire des cafés</span>
+    <nav class="an-entete-actions" aria-label="Compte">
+      <button type="button" class="v-btn v-btn--variant-text"><span class="v-btn__content">Aide</span></button>
+      <button type="button" class="v-btn v-btn--variant-flat"><span class="v-btn__content">Se connecter</span></button>
+    </nav>
+  </header>
+  <main class="an-page">
+    <h1>Café des Tanneurs</h1>
+    <div class="v-tabs" role="tablist" aria-label="Sections de la fiche">
+      <button type="button" class="v-tab v-btn" role="tab" aria-selected="true" tabindex="0"><span class="v-btn__content">Présentation</span></button>
+      <button type="button" class="v-tab v-btn" role="tab" aria-selected="false" tabindex="-1"><span class="v-btn__content">Horaires</span></button>
+      <button type="button" class="v-tab v-btn" role="tab" aria-selected="false" tabindex="-1"><span class="v-btn__content">Accès</span></button>
+    </div>
+    <section class="an-section">
+      <h2>Laisser un avis</h2>
+      <div class="v-input v-text-field"><div class="v-field"><input class="v-field__input" type="text" aria-label="Votre nom"></div></div>
+      <input class="an-champ" type="email" aria-label="Votre courriel">
+      <div class="an-liste" role="combobox" aria-label="Note" aria-expanded="false">4 sur 5</div>
+      <button type="button" class="v-btn v-btn--variant-flat"><span class="v-btn__content">Envoyer l'avis</span></button>
+      <button type="button" class="an-btn">Annuler</button>
+      <button type="button" class="v-btn v-btn--icon" aria-label="Ajouter aux favoris"><i class="mdi mdi-heart" aria-hidden="true"></i></button>
+      <button type="button" class="v-btn v-btn--icon" aria-label="Imprimer"><i class="mdi mdi-printer" aria-hidden="true"></i></button>
+    </section>
+    <section class="an-section">
+      <h2>Cafés voisins</h2>
+      <div class="an-voisins">
+        <article class="an-carte"><h3 class="an-carte__titre">La Grange</h3><p class="an-carte__texte">À 300 m, ouvert le dimanche.</p></article>
+        <article class="an-carte"><h3 class="an-carte__titre">Le Comptoir</h3><p class="an-carte__texte">À 450 m, terrasse.</p></article>
+        <article class="an-carte"><h3 class="an-carte__titre">Torréfaction Sud</h3><p class="an-carte__texte">À 900 m, vente de grains.</p></article>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
