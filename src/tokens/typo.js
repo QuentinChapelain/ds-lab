@@ -17,8 +17,11 @@ const TOLERANCE = 0.01;
 const MIN_PX = 12;
 /** Affichage et titres, du plus grand au plus petit. */
 const ORDRE = ['affichage.grand', 'affichage.moyen', 'titre.1', 'titre.2', 'titre.3', 'titre.4'];
-/** Styles sur police.titre ; tous les autres sur police.texte. */
+/** Styles sur police.titre ; le libellé sur la police du produit (D44) ; tous les autres sur police.texte. */
 export const SUR_POLICE_TITRE = ['affichage.grand', 'affichage.moyen', 'titre.1', 'titre.2', 'titre.3'];
+const SUR_POLICE_PRODUIT = ['libelle'];
+/** Alias de police attendu d'un style. @param {string} style */
+const policeAttendue = (style) => (SUR_POLICE_TITRE.includes(style) ? '{marque.police.titre}' : SUR_POLICE_PRODUIT.includes(style) ? '{police.produit}' : '{marque.police.texte}');
 /** Clé de la consigne commune de hauteur de capitale, dans $extensions d'un style de titre. */
 export const CONSIGNE = 'ds-lab.hauteur-capitale';
 /** Interlignes minimaux. */
@@ -158,9 +161,9 @@ export function typo(semantique, primitives, marque, largeurEtroite) {
   );
   regle(
     'police',
-    'police par rôle : affichage et titres 1 à 3 sur police.titre, le reste sur police.texte',
+    'police par rôle : affichage et titres 1 à 3 sur police.titre, libellé sur police.produit, le reste sur police.texte',
     styles.flatMap((s) => {
-      const attendu = SUR_POLICE_TITRE.includes(s.style) ? '{marque.police.titre}' : '{marque.police.texte}';
+      const attendu = policeAttendue(s.style);
       return s.police === attendu ? [] : [`${s.style} : ${s.police}, attendu ${attendu}`];
     }),
   );

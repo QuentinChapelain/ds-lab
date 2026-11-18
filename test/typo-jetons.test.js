@@ -17,6 +17,8 @@
  *     valeur en étroit sous la forme ds-lab.etroit, comme ecart.section :
  *     { valeur: { fontSize, lineHeight }, sous: 600 px, seuil: "[H]" }, pour affichage et titres 1 à 3 ;
  *   la couche couleur ne change pas : resolveRoles rend toujours 42 rôles.
+ *   Correction du 18/11/2026 (D44) : libelle prend {police.produit}, la police du produit, que la couche marque ne
+ *   remplace pas.
  * Table (taille / ligne en large ; en étroit ; graisse ; usage) :
  *   affichage.grand 60/68 ; 36/40 ; 700 ; hero d'une page d'accueil
  *   affichage.moyen 48/56 ; 30/36 ; 700 ; grand chiffre, bandeau
@@ -48,7 +50,7 @@ const marque = load('marque.tokens.json');
 const sem = load('semantique.tokens.json');
 
 /** style → [taille, ligne, taille étroit, ligne étroit, graisse, police, rapport, rapport étroit, usage (début de la description)] */
-const STYLES = /** @type {Record<string, [number, number, number | null, number | null, number, 'titre' | 'texte', number, number | null, string]>} */ ({
+const STYLES = /** @type {Record<string, [number, number, number | null, number | null, number, 'titre' | 'texte' | 'produit', number, number | null, string]>} */ ({
   'affichage.grand': [60, 76, 36, 48, 700, 'titre', 1.2667, 1.3333, "Hero d'une page d'accueil"],
   'affichage.moyen': [48, 60, 30, 40, 700, 'titre', 1.25, 1.3333, 'Grand chiffre ou bandeau'],
   'titre.1': [30, 40, 24, 32, 700, 'titre', 1.3333, 1.3333, 'Titre de page'],
@@ -58,7 +60,7 @@ const STYLES = /** @type {Record<string, [number, number, number | null, number 
   'corps.grand': [18, 28, null, null, 400, 'texte', 1.5556, null, 'Chapô'],
   'corps.moyen': [16, 24, null, null, 400, 'texte', 1.5, null, 'Texte courant'],
   'corps.petit': [14, 20, null, null, 400, 'texte', 1.4286, null, 'Texte de tableau'],
-  libelle: [14, 20, null, null, 600, 'texte', 1.4286, null, 'Libellé de champ'],
+  libelle: [14, 20, null, null, 600, 'produit', 1.4286, null, 'Libellé de champ'],
   mention: [12, 16, null, null, 400, 'texte', 1.3333, null, 'Aide'],
 });
 
@@ -97,7 +99,7 @@ test('typo sémantique : onze styles composites, DTCG 2025.10, alias et rapports
   for (const [style, [taille, , , , graisse, police, rapport]] of Object.entries(STYLES)) {
     const v = at(sem.typo, style).$value;
     assert.deepEqual(v, {
-      fontFamily: `{marque.police.${police}}`,
+      fontFamily: police === 'produit' ? '{police.produit}' : `{marque.police.${police}}`,
       fontSize: `{taille-texte.${taille}}`,
       fontWeight: `{graisse.${graisse}}`,
       letterSpacing: { value: 0, unit: 'px' },

@@ -13,7 +13,7 @@ import { largeurs, nomDeMarque } from '../tokens/resolver.js';
 import { typo } from '../tokens/typo.js';
 import { fr, esc, famille } from '../lib/format.js';
 import { espacements } from '../tokens/espacements.js';
-import { resolveRoles, flattenTokens } from '../tokens/roles.js';
+import { resolveRoles, flattenTokens, resoudreAlias } from '../tokens/roles.js';
 
 /** Nom CSS d'un style ou d'un rôle. @param {string} s */
 const slug = (s) => s.replace(/\./g, '-');
@@ -66,7 +66,7 @@ function typoHtml(t, e, roles, extra) {
   for (const x of e.etroits) etroits.set(x.sous, [...(etroits.get(x.sous) ?? []), `--${slug(x.role)}: ${x.px}px;`]);
   const classes = t.styles
     .map((s) => {
-      const police = String(s.police).replace(/^\{marque\.police\.(.*)\}$/, '$1');
+      const police = String(s.police).replace(/^\{marque\.police\.(.*)\}$/, '$1').replace(/^\{police\.produit\}$/, 'produit');
       return `      .t-${slug(s.style)} { font-family: var(--police-${police}); font-size: var(--${slug(s.style)}-taille); line-height: var(--${slug(s.style)}-interligne); font-weight: ${s.graisse}; letter-spacing: ${extra.espacementLettres[s.style] ?? '0px'};${s.hauteurCapitale !== null ? ` font-size-adjust: cap-height ${s.hauteurCapitale};` : ''} }`;
     })
     .join('\n');
@@ -79,7 +79,7 @@ function typoHtml(t, e, roles, extra) {
         `rapport ${fr(s.large.interligne, D4)}`,
         ...(s.etroit ? [`étroit ${fr(s.etroit.taille, D4)} / ${ligne(s.etroit.ligne)} px`, `rapport ${fr(s.etroit.interligne, D4)}`] : []),
         String(s.graisse),
-        esc(String(s.police).replace(/^\{marque\.(.*)\}$/, '$1')),
+        esc(String(s.police).replace(/^\{(?:marque\.)?(.*)\}$/, '$1')),
         ...(s.hauteurCapitale !== null ? [`capitale ${fr(s.hauteurCapitale, D4)} × taille`] : []),
       ].join(' · ');
       return `          <li data-specimen="${s.style}">
@@ -238,7 +238,13 @@ export function planche(dir) {
   /** @type {Record<string, string | string[]>} */
   const polices = {};
   // Titre puis texte, quel que soit l'ordre de fusion (la police du produit vient du commun, avant la couche marque).
-  for (const k of ['titre', 'texte', ...Object.keys(police).filter((x) => !['titre', 'texte'].includes(x))]) if (!k.startsWith('$') && police[k]) polices[k] = police[k].$value;
+  // Une police peut être un alias (la police du texte du commun pointe vers police.produit) : résolue ici.
+  const jetons = new Map([...flattenTokens(prims), ...flattenTokens(marque)]);
+  /** @param {string} chemin */
+  const famillePolice = (chemin) => resoudreAlias(jetons, /** @type {any} */ (jetons.get(chemin)).$value, { depuis: chemin, chaine: [chemin] }).valeur;
+  for (const k of ['titre', 'texte', ...Object.keys(police).filter((x) => !['titre', 'texte'].includes(x))]) if (!k.startsWith('$') && police[k]) polices[k] = famillePolice(`marque.police.${k}`);
+  // Police du produit, que le libellé prend toujours (D44).
+  if (jetons.has('police.produit')) polices.produit = famillePolice('police.produit');
   /** @type {Record<string, string>} */
   const espacementLettres = {};
   for (const [path, tok] of flattenTokens(sem.typo ?? {})) {

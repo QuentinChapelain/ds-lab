@@ -26,6 +26,8 @@
  *   R6 corps.moyen → {taille-texte.14}, interligne 1,7143 (24 px) ;
  *   R7 primitive d'essai taille-texte.10 (10 px), mention → {taille-texte.10}, interligne 1,6 (16 px) ;
  *   R8 titre.2 → {marque.police.texte}.
+ * Correction du 18/11/2026 (D44) : R8 met le libellé sur {police.produit}, police du produit que la couche marque ne
+ *   remplace pas ; rouge : libelle → {marque.police.texte}.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -134,6 +136,10 @@ test('typo rouge R7 : mention à 10 px', () => {
   prims['taille-texte']['10'] = { $value: { value: 10, unit: 'px' } };
   const sem = variant((s) => { Object.assign(s.typo.mention.$value, { fontSize: '{taille-texte.10}', lineHeight: 1.6 }); });
   rouge(sem, prims, 'min-12', 'mention en large : 10 px < 12 px');
+});
+
+test('typo rouge R8 : libellé sur police.texte', () => {
+  rouge(variant((s) => { s.typo.libelle.$value.fontFamily = '{marque.police.texte}'; }), undefined, 'police', 'libelle : {marque.police.texte}, attendu {police.produit}');
 });
 
 test('typo rouge R8 : titre.2 sur police.texte', () => {

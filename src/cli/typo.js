@@ -42,7 +42,7 @@ await lancer('typo', () => {
       s.etroit ? `étroit ${fr(s.etroit.taille, D4)} / ${ligne(s.etroit.ligne)} px` : '',
       s.etroit ? `rapport ${fr(s.etroit.interligne, D4)}` : '',
       String(s.graisse),
-      String(s.police).replace(/^\{marque\.(.*)\}$/, '$1'),
+      String(s.police).replace(/^\{(?:marque\.)?(.*)\}$/, '$1'),
       s.hauteurCapitale !== null ? `capitale ${fr(s.hauteurCapitale, D4)} × taille` : '',
     ]);
     const w = cols[0].map((_, i) => Math.max(...cols.map((c) => c[i].length)));

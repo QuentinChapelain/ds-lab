@@ -166,7 +166,7 @@ export function marqueTokens({ primaire, accent, statuts, polices, fonds, descri
   if (polices) {
     m.police = {
       $type: 'fontFamily',
-      $description: 'Polices de la marque : titre pour les styles affichage et titre 1 à 3, texte pour tout le reste.',
+      $description: 'Polices de la marque : titre pour les styles affichage et titre 1 à 3, texte pour les autres, sauf le libellé, dans la police du produit (D44).',
       titre: {
         $value: polices.titre,
         $description: 'Police des styles affichage et titre 1 à 3.',
@@ -175,7 +175,7 @@ export function marqueTokens({ primaire, accent, statuts, polices, fonds, descri
       },
     };
     // Sans police de texte saisie, la police du produit vient du commun (tokens/commun/police.tokens.json).
-    if (polices.texte) m.police.texte = { $value: polices.texte, $description: 'Police des titres 4, du corps, des libellés et des mentions.' };
+    if (polices.texte) m.police.texte = { $value: polices.texte, $description: 'Police des titres 4, du corps et des mentions ; le libellé garde la police du produit (D44).' };
   }
   return { $description: description, marque: m };
 }

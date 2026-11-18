@@ -58,6 +58,7 @@
         "ds-taille-icone-petite": "16px",
         "ds-ecart-icone-texte": "8px",
         "ds-marge-interieure-composant": "16px",
+        "ds-libelle-police": "system-ui, sans-serif",
         "ds-libelle-taille": "14px",
         "ds-libelle-graisse": "600",
         "ds-libelle-interligne": "1.4286"
@@ -119,6 +120,7 @@
         "ds-taille-icone-petite": "16px",
         "ds-ecart-icone-texte": "8px",
         "ds-marge-interieure-composant": "16px",
+        "ds-libelle-police": "system-ui, sans-serif",
         "ds-libelle-taille": "14px",
         "ds-libelle-graisse": "600",
         "ds-libelle-interligne": "1.4286"

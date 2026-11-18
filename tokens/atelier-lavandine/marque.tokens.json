@@ -246,7 +246,7 @@
     },
     "police": {
       "$type": "fontFamily",
-      "$description": "Polices de la marque : titre pour les styles affichage et titre 1 à 3, texte pour tout le reste.",
+      "$description": "Polices de la marque : titre pour les styles affichage et titre 1 à 3, texte pour les autres, sauf le libellé, dans la police du produit (D44).",
       "titre": {
         "$value": [
           "Georgia",
@@ -259,7 +259,7 @@
           "Arial",
           "sans-serif"
         ],
-        "$description": "Police des titres 4, du corps, des libellés et des mentions."
+        "$description": "Police des titres 4, du corps et des mentions ; le libellé garde la police du produit (D44)."
       }
     }
   }

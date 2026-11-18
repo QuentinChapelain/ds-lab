@@ -7,7 +7,8 @@
  * La table est vérifiée avant toute marque : chaque fond et son texte forment une paire de texte de paires.json
  * (contrôlée par npm run contraste), et aucune clé n'est écrite en on-. Un rôle absent d'une marque lève.
  * Les variables de la table (traits et dimensions de l'enveloppe du bouton) vont aussi dans les variables du thème,
- * sous une clé en ds- : une couleur en hex (Vuetify l'écrit en r, g, b), une dimension en px, un nombre tel quel ; champ
+ * sous une clé en ds- : une couleur en hex (Vuetify l'écrit en r, g, b), une dimension en px, un nombre tel quel, une
+ * police en liste CSS (famille) ; champ
  * prend une partie d'un style de texte. Une variable de couleur est le trait devant d'une paire de paires.json, ou porte
  * sa raison (sansPaire) ; sinon, panne.
  */
@@ -24,7 +25,7 @@ export const THEMES = 'vuetify.json';
 const MODES = /** @type {const} */ ([['clair', false], ['sombre', true]]);
 
 /** Parties d'un style de texte qu'une variable peut prendre. */
-const CHAMPS = ['fontSize', 'fontWeight', 'lineHeight'];
+const CHAMPS = ['fontFamily', 'fontSize', 'fontWeight', 'lineHeight'];
 /** Préfixe des variables de la table : aucune variable de Vuetify ne le porte. */
 const PREFIXE = 'ds-';
 
@@ -66,7 +67,7 @@ export function lireTable(brute = JSON.parse(readFileSync(join(COMMUN, 'vuetify.
 }
 
 /**
- * Valeur d'une variable du thème : hex d'une couleur, px d'une dimension, nombre tel quel.
+ * Valeur d'une variable du thème : hex d'une couleur, px d'une dimension, nombre tel quel, liste CSS d'une police.
  * @param {Map<string, any>} jetons @param {string} cle @param {Variable} v @param {string} ou marque et mode, pour les messages
  */
 function valeurVariable(jetons, cle, v, ou) {
@@ -78,12 +79,13 @@ function valeurVariable(jetons, cle, v, ou) {
     valeur = resoudreAlias(jetons, valeur[v.champ], { depuis: v.jeton, chaine: [v.jeton] }).valeur;
   }
   if (typeof valeur === 'number') return String(valeur);
+  if (Array.isArray(valeur) && valeur.length && valeur.every((f) => typeof f === 'string')) return famille(valeur);
   if (typeof valeur?.hex === 'string') {
     if (!v.paire && !v.sansPaire) throw new Error(`table Vuetify : couleur sans paire : ${v.jeton} (${cle}) ; la déclarer dans paires.json, ou dire pourquoi (sansPaire)`);
     return valeur.hex.toLowerCase();
   }
   if (typeof valeur?.value === 'number' && valeur.unit === 'px') return `${valeur.value}px`;
-  throw new Error(`table Vuetify : valeur illisible pour ${cle} : ${v.jeton} (couleur, dimension en px ou nombre attendus)`);
+  throw new Error(`table Vuetify : valeur illisible pour ${cle} : ${v.jeton} (couleur, dimension en px, nombre ou police attendus)`);
 }
 
 /**

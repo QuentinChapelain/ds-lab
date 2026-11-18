@@ -107,7 +107,7 @@ export default {
   min-width: 0;
   padding: 0 var(--v-ds-marge-interieure-composant);
   border-radius: var(--v-ds-arrondi-controle);
-  font-family: var(--v-font-body);
+  font-family: var(--v-ds-libelle-police);
   font-size: var(--v-ds-libelle-taille);
   font-weight: var(--v-ds-libelle-graisse);
   line-height: var(--v-ds-libelle-interligne);

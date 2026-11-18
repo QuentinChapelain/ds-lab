@@ -1,5 +1,5 @@
 {
-  "$description": "Table de correspondance rôle → couleur de thème Vuetify, commune à toutes les marques (D41). Écrite à la main, lue par npm run vuetify (src/tokens/vuetify.js), qui écrit les thèmes clair et sombre de chaque marque dans tokens/<marque>/vuetify.json. Chaque couleur nomme son fond et son texte : Vuetify reçoit on-<couleur> de nous et n'en calcule aucun. La liste couvre les couleurs que Vuetify 4.3.4 définit par défaut (13 fonds, et on-surface-variant) : une couleur absente resterait celle de Material, avec un texte calculé par Vuetify. Viennent ensuite les couleurs de l'enveloppe du bouton, nommées d'après nos rôles, que Vuetify ne connaît pas. Les variables (variables) portent les traits et les dimensions du bouton, chacune vers un jeton ; Vuetify les écrit en --v-<clé>, une couleur en r, g, b. Chaque fond et son texte forment une paire de texte de paires.json, contrôlée par npm run contraste. Les autres variables de Vuetify (bordure, ombre, opacités des états) restent les siennes ; l'enveloppe du bouton ne les lit pas (KNOWN_ISSUES.md).",
+  "$description": "Table de correspondance rôle → couleur de thème Vuetify, commune à toutes les marques (D41). Écrite à la main, lue par npm run vuetify (src/tokens/vuetify.js), qui écrit les thèmes clair et sombre de chaque marque dans tokens/<marque>/vuetify.json. Chaque couleur nomme son fond et son texte : Vuetify reçoit on-<couleur> de nous et n'en calcule aucun. La liste couvre les couleurs que Vuetify 4.3.4 définit par défaut (13 fonds, et on-surface-variant) : une couleur absente resterait celle de Material, avec un texte calculé par Vuetify. Viennent ensuite les couleurs de l'enveloppe du bouton, nommées d'après nos rôles, que Vuetify ne connaît pas. Les variables (variables) portent les traits, les dimensions et la police du libellé du bouton, chacune vers un jeton ; Vuetify les écrit en --v-<clé>, une couleur en r, g, b. Chaque fond et son texte forment une paire de texte de paires.json, contrôlée par npm run contraste. Les autres variables de Vuetify (bordure, ombre, opacités des états) restent les siennes ; l'enveloppe du bouton ne les lit pas (KNOWN_ISSUES.md).",
   "vuetify": "4.3.4",
   "couleurs": {
     "background": {
@@ -157,6 +157,11 @@
     "ds-marge-interieure-composant": {
       "jeton": "marge-interieure.composant",
       "$description": "Marge intérieure gauche et droite du bouton, aux deux tailles [H], à juger sur la planche."
+    },
+    "ds-libelle-police": {
+      "jeton": "typo.libelle",
+      "champ": "fontFamily",
+      "$description": "Police du texte du bouton (style libellé) : toujours la police du produit (D44), alors que --v-font-body porte la police du texte de la marque."
     },
     "ds-libelle-taille": {
       "jeton": "typo.libelle",

@@ -339,7 +339,7 @@
   /* texte principal */
   --marque-info-plein-survol: var(--couleur-info-12);
   --marque-info-sur-plein: var(--couleur-blanc);
-  /* Police des titres 4, du corps, des libellés et des mentions. */
+  /* Police des titres 4, du corps et des mentions ; le libellé garde la police du produit (D44). */
   --marque-police-texte: "Verdana", sans-serif;
   /* Police des styles affichage et titre 1 à 3. */
   --marque-police-titre: "Trebuchet MS", sans-serif;
@@ -386,6 +386,8 @@
   /* texte principal */
   --marque-succes-plein-survol: var(--couleur-succes-12);
   --marque-succes-sur-plein: var(--couleur-blanc);
+  /* Police du produit, commune à toutes les marques : texte par défaut (marque.police.texte) et, toujours, libellés (D44). Valeur à choisir avec une vraie police [H]. */
+  --police-produit: system-ui, sans-serif;
   /* Consigne commune des styles de titre (affichage, titres 1 à 3), D17 : hauteur de capitale = 0,7 × la taille du style, quelle que soit la police (CSS font-size-adjust: cap-height 0.7). Une règle pour toutes les marques, aucun réglage par marque. Valeur [H], à juger sur image. */
   --police-titre-hauteur-capitale: 0.7;
   --rayon-0: 0px;
@@ -500,15 +502,15 @@
   --typo-corps-petit-letter-spacing: 0px;
   /* Texte de tableau ; ligne visée 20 px. */
   --typo-corps-petit-line-height: 1.4286;
-  /* Libellé de champ, de bouton ou d'onglet ; ligne visée 20 px. */
-  --typo-libelle-font-family: var(--marque-police-texte);
-  /* Libellé de champ, de bouton ou d'onglet ; ligne visée 20 px. */
+  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit (D44) ; ligne visée 20 px. */
+  --typo-libelle-font-family: var(--police-produit);
+  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit (D44) ; ligne visée 20 px. */
   --typo-libelle-font-size: var(--taille-texte-14);
-  /* Libellé de champ, de bouton ou d'onglet ; ligne visée 20 px. */
+  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit (D44) ; ligne visée 20 px. */
   --typo-libelle-font-weight: var(--graisse-600);
-  /* Libellé de champ, de bouton ou d'onglet ; ligne visée 20 px. */
+  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit (D44) ; ligne visée 20 px. */
   --typo-libelle-letter-spacing: 0px;
-  /* Libellé de champ, de bouton ou d'onglet ; ligne visée 20 px. */
+  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit (D44) ; ligne visée 20 px. */
   --typo-libelle-line-height: 1.4286;
   /* Aide, message d'erreur ou légende ; ligne visée 16 px. */
   --typo-mention-font-family: var(--marque-police-texte);

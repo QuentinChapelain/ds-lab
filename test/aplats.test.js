@@ -58,7 +58,7 @@ test('texte-grand choisi à la saisie : pas 9, 10 ou 11', () => {
 test('Orbe Café : sans l\'emplacement texte-grand, la couche marque redevient identique octet par octet', () => {
   const m = load(DIR, 'marque.tokens.json');
   delete m.marque.primaire['texte-grand'];
-  assert.equal(createHash('sha256').update(serialiser(m)).digest('hex'), '2abaca339a3b57ac84a9bf999bee8814e9c1c2bb9b556a401b855353ca0d0a73');
+  assert.equal(createHash('sha256').update(serialiser(m)).digest('hex'), '063f67df59e2a54ad0288a2e3041889983929b5183ddff3257e3bfd535ae1815');
 });
 
 test('paires.json : 48 paires d\'origine en tête, 18 ajoutées, 4 interdites ajoutées', () => {

@@ -11,6 +11,7 @@
  *   police de son style ; à 420 px la valeur en étroit quand le style en a une (sous 600 px), à 1 200 px la
  *   valeur large ;
  *   polices calculées : 'Georgia, serif' (police.titre), '"Orbe Sans", Arial, sans-serif' (police.texte) ;
+ *   libellé : 'system-ui, sans-serif', police du produit (correction du 18/11/2026, D44) ;
  *   décisions du 15/11/2026 prises sur la planche : mention à 12 / 16 dans les jetons ; hero et corps.petit
  *   inchangés ; plus aucun réglage (ni bouton radio, ni « réglage ») : la planche lit ses valeurs dans les jetons ;
  *   gap et padding seulement : marge calculée nulle partout, une seule déclaration margin (la remise à zéro),
@@ -33,6 +34,7 @@ const html = readFileSync(FILE, 'utf8');
 
 const TITRE = 'Georgia, serif';
 const TEXTE = '"Orbe Sans", Arial, sans-serif';
+const PRODUIT = 'system-ui, sans-serif';
 /** style → [taille, ligne, taille étroit, ligne étroit, graisse, police] */
 const STYLES = /** @type {Record<string, [number, number, number | null, number | null, number, string]>} */ ({
   'affichage.grand': [60, 76, 36, 48, 700, TITRE],
@@ -44,7 +46,7 @@ const STYLES = /** @type {Record<string, [number, number, number | null, number 
   'corps.grand': [18, 28, null, null, 400, TEXTE],
   'corps.moyen': [16, 24, null, null, 400, TEXTE],
   'corps.petit': [14, 20, null, null, 400, TEXTE],
-  libelle: [14, 20, null, null, 600, TEXTE],
+  libelle: [14, 20, null, null, 600, PRODUIT],
   mention: [12, 16, null, null, 400, TEXTE],
 });
 /** @param {string} style @param {number} width @returns {[number, number]} */

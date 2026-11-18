@@ -46,6 +46,12 @@
  *      le lecteur ; chez Orbe Café #4c6994, #958f84, #d8d6d2 en clair et #86b6fe, #6a665c, #303030 en sombre ;
  *   V7 variable fausse, panne qui la nomme : sans le préfixe ds-, champ inconnu, couleur sans paire ni sansPaire,
  *      sansPaire sur un trait qui a sa paire, jeton absent.
+ *
+ * Ajouts pour la police du libellé (18/11/2026, D44, docs/attendus/finitions-bouton.md) :
+ *   V9 une 17e variable, ds-libelle-police = system-ui, sans-serif dans les dix thèmes, alors que font-body garde la
+ *      police du texte de la marque ;
+ *   V5 la feuille jetons.css écrit la police du texte du commun en renvoi (var(--police-produit)) : la comparaison
+ *      suit le renvoi.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -146,7 +152,12 @@ test('V5 polices du texte et des titres, comme la feuille jetons.css de la marqu
   for (const x of v('maison-alberto')) assert.deepEqual(x, { 'font-body': 'system-ui, sans-serif', 'font-heading': '"National Park", sans-serif' });
   for (const d of MARQUES) {
     const css = readFileSync(join(d, 'jetons.css'), 'utf8');
-    const decl = (/** @type {string} */ nom) => /** @type {string} */ (css.match(new RegExp(`--${nom}: ([^;]+);`))?.[1]);
+    /** Valeur d'une variable de la feuille, renvois var(--…) suivis. @param {string} nom @returns {string} */
+    const decl = (nom) => {
+      const v = /** @type {string} */ (css.match(new RegExp(`--${nom}: ([^;]+);`))?.[1]);
+      const renvoi = /^var\(--([\w-]+)\)$/.exec(v);
+      return renvoi ? decl(renvoi[1]) : v;
+    };
     for (const th of Object.values(themesVuetify(d).themes)) {
       assert.deepEqual(noms(th.variables['font-body']), noms(decl('marque-police-texte')), d);
       assert.deepEqual(noms(th.variables['font-heading']), noms(decl('marque-police-titre')), d);
@@ -185,7 +196,7 @@ test('V9 variables ds- du bouton : dimensions dans les dix thèmes, traits égau
   const DIMENSIONS = {
     'ds-arrondi-controle': '8px', 'ds-hauteur-controle-normale': '40px', 'ds-hauteur-controle-petite': '32px', 'ds-epaisseur-contour': '1px', 'ds-epaisseur-focus': '2px', 'ds-decalage-focus': '2px',
     'ds-taille-icone-normale': '20px', 'ds-taille-icone-petite': '16px', 'ds-ecart-icone-texte': '8px', 'ds-marge-interieure-composant': '16px',
-    'ds-libelle-taille': '14px', 'ds-libelle-graisse': '600', 'ds-libelle-interligne': '1.4286',
+    'ds-libelle-taille': '14px', 'ds-libelle-graisse': '600', 'ds-libelle-interligne': '1.4286', 'ds-libelle-police': 'system-ui, sans-serif',
   };
   const TRAITS = { 'ds-focus': 'bordure.focus', 'ds-contour': 'bordure.forte', 'ds-contour-desactive': 'bordure.discrete' };
   for (const d of MARQUES) {

@@ -27,6 +27,7 @@ import { lancerChromium } from '../src/browser/lancement.js';
 import { dossiersDeMarque, nomDeMarque } from '../src/tokens/resolver.js';
 import { loadRoles, resolveRoles, flattenTokens, resoudreAlias } from '../src/tokens/roles.js';
 import { lireTable } from '../src/tokens/vuetify.js';
+import { famille } from '../src/lib/format.js';
 
 const ICI = fileURLToPath(new URL('./', import.meta.url));
 const CONSTRUITE = join(ICI, 'storybook-static');
@@ -60,6 +61,7 @@ function variable(jetons, { jeton, champ }) {
   let { valeur } = resoudreAlias(jetons, jetons.get(jeton).$value, { depuis: jeton, chaine: [jeton] });
   if (champ) valeur = resoudreAlias(jetons, valeur[champ], { depuis: jeton, chaine: [jeton] }).valeur;
   if (typeof valeur === 'number') return String(valeur);
+  if (Array.isArray(valeur)) return famille(valeur).replace(/\s/g, '');
   if (typeof valeur?.hex === 'string') return rgb(valeur.hex);
   return `${valeur.value}${valeur.unit}`;
 }
@@ -73,8 +75,9 @@ const TRANSPARENT = 'rgba(0, 0, 0, 0)';
  * Couleurs : clés de la table (fond et texte de chaque couleur) ; traits et dimensions : variables de la table.
  * @param {(k: string) => { fond: string, texte: string }} c couleur de la table, en r,g,b
  * @param {Record<string, string>} v variables de la table, au format de variable()
+ * @param {string[]} police noms de la police du libellé (D44)
  */
-function attenduBoutons(c, v) {
+function attenduBoutons(c, v, police) {
   /** Variante → [couleur au repos, couleur au survol, fond transparent au repos]. */
   const VARIANTES = {
     principal: ['primary', 'primary-darken-1', false],
@@ -101,6 +104,7 @@ function attenduBoutons(c, v) {
           marge: v['ds-marge-interieure-composant'],
           taille: v['ds-libelle-taille'],
           graisse: v['ds-libelle-graisse'],
+          police: police.join('|'),
           icone: v[`ds-taille-icone-${taille}`],
           ecart: v['ds-ecart-icone-texte'],
         });
@@ -139,10 +143,12 @@ function attendus() {
         ),
         policeTexte: police(table.polices['font-body'].jeton),
         policeTitre: police(table.polices['font-heading'].jeton),
+        // Police du libellé du bouton : celle du produit, jamais celle du texte de la marque (D44).
+        policeLibelle: resoudreAlias(tous, tous.get('typo.libelle').$value.fontFamily, { depuis: 'typo.libelle', chaine: ['typo.libelle'] }).valeur,
         // Variables du bouton (--v-ds-<clé>), relues dans les jetons : couleur en r,g,b comme Vuetify l'écrit, dimension
         // en px, nombre tel quel ; rangées par nom.
         variables,
-        boutons: attenduBoutons((k) => ({ fond: rgb(hex(table.couleurs[k].fond)), texte: rgb(hex(table.couleurs[k].texte)) }), variables),
+        boutons: attenduBoutons((k) => ({ fond: rgb(hex(table.couleurs[k].fond)), texte: rgb(hex(table.couleurs[k].texte)) }), variables, resoudreAlias(tous, tous.get('typo.libelle').$value.fontFamily, { depuis: 'typo.libelle', chaine: ['typo.libelle'] }).valeur),
       };
     }),
   );
@@ -261,6 +267,7 @@ async function releve(contexte, base, theme) {
       police: b ? getComputedStyle(b).fontFamily : null,
       page: app ? hex(getComputedStyle(app).backgroundColor) : null,
       titre: app ? getComputedStyle(app).getPropertyValue('--v-font-heading').trim() : null,
+      corps: app ? getComputedStyle(app).getPropertyValue('--v-font-body').trim() : null,
       etire: b ? b.getBoundingClientRect().width >= /** @type {HTMLElement} */ (b.parentElement).getBoundingClientRect().width : null,
       couleurs,
       variables,
@@ -287,6 +294,7 @@ async function releve(contexte, base, theme) {
           marge: s.paddingLeft === s.paddingRight ? s.paddingLeft : `${s.paddingLeft}/${s.paddingRight}`,
           taille: s.fontSize,
           graisse: s.fontWeight,
+          police: s.fontFamily.split(',').map((x) => x.trim().replace(/^"(.*)"$/, '$1')).join('|'),
           icone: icone ? getComputedStyle(icone).width : 'absente',
           // Écart mesuré à l'écran, du bord droit de l'icône au bord gauche du texte.
           ecart: icone && texte ? `${Math.round((texte.getBoundingClientRect().left - icone.getBoundingClientRect().right) * 100) / 100}px` : 'absent',
@@ -476,13 +484,14 @@ await lancer('preuve', async () => {
           r.fond === t.fond &&
           r.texte === t.texte &&
           r.page === t.page &&
-          noms(r.police ?? '').join('|') === t.policeTexte.join('|') &&
+          noms(r.police ?? '').join('|') === t.policeLibelle.join('|') &&
+          noms(r.corps ?? '').join('|') === t.policeTexte.join('|') &&
           noms(r.titre ?? '').join('|') === t.policeTitre.join('|') &&
           r.etire === false &&
           JSON.stringify(r.couleurs) === JSON.stringify(t.couleurs) &&
           JSON.stringify(r.variables) === JSON.stringify(t.variables) &&
           r.erreurs.length === 0;
-        verifier(ok, `${t.nom}, ${mode}, bouton principal : fond ${r.fond} (jeton ${t.fond}), texte ${r.texte} (jeton ${t.texte}), page ${r.page}, police ${r.police}, titres ${r.titre}, ${Object.keys(r.couleurs).length} couleurs du thème${JSON.stringify(r.couleurs) === JSON.stringify(t.couleurs) ? ' égales à la table' : ' différentes de la table'}, ${Object.keys(r.variables).length} variables ds-${JSON.stringify(r.variables) === JSON.stringify(t.variables) ? ' égales aux jetons' : ` différentes des jetons (${JSON.stringify(r.variables)})`}${r.etire ? ', bouton étiré' : ''}${r.erreur ? `, erreur ${r.erreur}` : ''}${r.erreurs.length ? `, ${r.erreurs.join(' ; ')}` : ''}`);
+        verifier(ok, `${t.nom}, ${mode}, bouton principal : fond ${r.fond} (jeton ${t.fond}), texte ${r.texte} (jeton ${t.texte}), page ${r.page}, libellé ${r.police}, texte ${r.corps}, titres ${r.titre}, ${Object.keys(r.couleurs).length} couleurs du thème${JSON.stringify(r.couleurs) === JSON.stringify(t.couleurs) ? ' égales à la table' : ' différentes de la table'}, ${Object.keys(r.variables).length} variables ds-${JSON.stringify(r.variables) === JSON.stringify(t.variables) ? ' égales aux jetons' : ` différentes des jetons (${JSON.stringify(r.variables)})`}${r.etire ? ', bouton étiré' : ''}${r.erreur ? `, erreur ${r.erreur}` : ''}${r.erreurs.length ? `, ${r.erreurs.join(' ; ')}` : ''}`);
       }
       for (const [mode, r] of [['développement', dev], ['construite', bld]]) {
         const ecarts = [...t.boutons].flatMap(([cle, attendu]) => {
