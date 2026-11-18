@@ -1,6 +1,10 @@
-// Preuve rejouable de l'atelier (D42) : pour chaque thème de chaque marque, le témoin rendu par Storybook a le fond,
-// le texte et les polices des jetons, Vuetify n'a calculé aucun texte, les variables du bouton (--v-ds-*) sont celles
-// des jetons, et le rendu est le même en développement et en version construite. Sortie 0 si tout passe, 1 si une vérification échoue, 2 sur une panne (D18).
+// Preuve rejouable de l'atelier (D42, D43) : pour chaque thème de chaque marque, sur la planche du bouton rendue par
+// Storybook, le bouton principal a le fond, le texte et les polices des jetons, Vuetify n'a calculé aucun texte, les
+// variables du bouton (--v-ds-*) sont celles des jetons, chaque variante et taille a, dans chaque état, les couleurs,
+// l'anneau et les dimensions des jetons (survol et focus forcés par le protocole DevTools), et le rendu est le même en
+// développement et en version construite. La planche de la version construite est enregistrée par thème dans
+// local/bouton-captures/, hors dépôt, pour être jugée sur image. Sortie 0 si tout passe, 1 si une vérification échoue,
+// 2 sur une panne (D18).
 // La version construite doit exister (npm run build) ; le serveur de développement est lancé ici, sur 127.0.0.1, puis
 // arrêté.
 //
@@ -11,7 +15,7 @@
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { existsSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { basename, extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pixelmatch from 'pixelmatch';
@@ -24,8 +28,14 @@ import { lireTable } from '../src/tokens/vuetify.js';
 
 const ICI = fileURLToPath(new URL('./', import.meta.url));
 const CONSTRUITE = join(ICI, 'storybook-static');
-const STORY = encodeURIComponent('témoin-bouton--plein');
-const CADRE = { width: 400, height: 200 };
+const STORY = 'composants-bouton--planche';
+const CADRE = { width: 1100, height: 700 };
+/** Planches enregistrées, hors dépôt (local/ n'est jamais versionné). */
+const CAPTURES = join(ICI, '..', 'local', 'bouton-captures');
+/** Le bouton principal de la planche, au repos, de taille normale. */
+const PRINCIPAL = '.ds-bouton[data-variante="principal"][data-taille="normale"][data-etat="repos"]';
+/** États que la preuve force sur les boutons de leur colonne. */
+const FORCES = { survol: ['hover'], focus: ['focus', 'focus-visible'] };
 const MODES = ['clair', 'sombre'];
 /**
  * Variables de Vuetify écrites sous le même préfixe que les couleurs du thème (--v-theme-…) mais qui n'en sont pas :
@@ -52,6 +62,50 @@ function variable(jetons, { jeton, champ }) {
   return `${valeur.value}${valeur.unit}`;
 }
 
+/** Couleur CSS calculée par le navigateur, depuis r,g,b. @param {string} x */
+const css = (x) => `rgb(${x.split(',').join(', ')})`;
+const TRANSPARENT = 'rgba(0, 0, 0, 0)';
+
+/**
+ * Mesures attendues de chaque bouton de la planche, par « variante|taille|état », au format de getComputedStyle.
+ * Couleurs : clés de la table (fond et texte de chaque couleur) ; traits et dimensions : variables de la table.
+ * @param {(k: string) => { fond: string, texte: string }} c couleur de la table, en r,g,b
+ * @param {Record<string, string>} v variables de la table, au format de variable()
+ */
+function attenduBoutons(c, v) {
+  /** Variante → [couleur au repos, couleur au survol, fond transparent au repos]. */
+  const VARIANTES = {
+    principal: ['primary', 'primary-darken-1', false],
+    secondaire: ['surface', 'composant-survol', false],
+    discret: ['interactif-discret', 'interactif-discret', true],
+    danger: ['error', 'erreur-fort-survol', false],
+    'danger-discret': ['erreur-discret', 'erreur-discret', true],
+  };
+  /** @type {Map<string, Record<string, string>>} */
+  const out = new Map();
+  for (const [variante, [repos, survol, discret]] of Object.entries(VARIANTES))
+    for (const taille of ['normale', 'petite'])
+      for (const etat of ['repos', 'survol', 'focus', 'désactivé', 'chargement']) {
+        const desactive = etat === 'désactivé';
+        const couleur = desactive ? 'desactive' : etat === 'survol' ? survol : repos;
+        const transparent = discret && (etat !== 'survol');
+        out.set(`${variante}|${taille}|${etat}`, {
+          fond: transparent ? TRANSPARENT : css(c(couleur).fond),
+          texte: css(c(couleur).texte),
+          ...(variante === 'secondaire' ? { contour: `${v['ds-epaisseur-contour']} ${css(v[desactive ? 'ds-contour-desactive' : 'ds-contour'])}` } : {}),
+          anneau: etat === 'focus' ? `solid ${v['ds-epaisseur-focus']} ${css(v['ds-focus'])} ${v['ds-decalage-focus']}` : 'none',
+          hauteur: v[`ds-hauteur-controle-${taille}`],
+          rayon: v['ds-arrondi-controle'],
+          marge: v['ds-marge-interieure-composant'],
+          taille: v['ds-libelle-taille'],
+          graisse: v['ds-libelle-graisse'],
+          icone: v[`ds-taille-icone-${taille}`],
+          ecart: v['ds-ecart-icone-texte'],
+        });
+      }
+  return out;
+}
+
 /** Thèmes attendus, dans l'ordre du sélecteur : marques de tokens/, puis clair et sombre. */
 function attendus() {
   const table = lireTable();
@@ -63,6 +117,11 @@ function attendus() {
       const jetons = new Map([...flattenTokens(set.primitives), ...flattenTokens(set.marque)]);
       const police = (/** @type {string} */ j) => resoudreAlias(jetons, jetons.get(j).$value, { depuis: j, chaine: [j] }).valeur;
       const tous = new Map([...jetons, ...flattenTokens(set.semantique)]);
+      const variables = Object.fromEntries(
+        Object.entries(table.variables)
+          .map(([k, v]) => [k, variable(tous, v)])
+          .sort(([a], [b]) => (a < b ? -1 : 1)),
+      );
       return {
         nom: `${basename(dossier)}-${mode}`,
         titre: `${nomDeMarque(dossier)}, ${mode}`,
@@ -80,11 +139,8 @@ function attendus() {
         policeTitre: police(table.polices['font-heading'].jeton),
         // Variables du bouton (--v-ds-<clé>), relues dans les jetons : couleur en r,g,b comme Vuetify l'écrit, dimension
         // en px, nombre tel quel ; rangées par nom.
-        variables: Object.fromEntries(
-          Object.entries(table.variables)
-            .map(([k, v]) => [k, variable(tous, v)])
-            .sort(([a], [b]) => (a < b ? -1 : 1)),
-        ),
+        variables,
+        boutons: attenduBoutons((k) => ({ fond: rgb(hex(table.couleurs[k].fond)), texte: rgb(hex(table.couleurs[k].texte)) }), variables),
       };
     }),
   );
@@ -150,7 +206,22 @@ async function servirDeveloppement() {
 }
 
 /**
- * Relevé du témoin dans l'aperçu d'une story, thème passé par son nom.
+ * Force un état CSS (survol, focus) sur les boutons de sa colonne de la planche, par le protocole DevTools.
+ * @param {import('playwright-core').Page} page
+ */
+async function forcerEtats(page) {
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('DOM.enable');
+  await cdp.send('CSS.enable');
+  const { root } = await cdp.send('DOM.getDocument', { depth: -1 });
+  for (const [etat, classes] of Object.entries(FORCES)) {
+    const { nodeIds } = await cdp.send('DOM.querySelectorAll', { nodeId: root.nodeId, selector: `.ds-bouton[data-etat="${etat}"]` });
+    for (const nodeId of nodeIds) await cdp.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: classes });
+  }
+}
+
+/**
+ * Relevé de la planche du bouton dans l'aperçu, thème passé par son nom.
  * @param {import('playwright-core').BrowserContext} contexte @param {string} base @param {string | null} theme
  */
 async function releve(contexte, base, theme) {
@@ -158,12 +229,12 @@ async function releve(contexte, base, theme) {
   const erreurs = [];
   page.on('pageerror', (e) => erreurs.push(e.message));
   await page.goto(`${base}/iframe.html?id=${STORY}&viewMode=story${theme === null ? '' : `&globals=theme:${theme}`}`, { waitUntil: 'networkidle' });
-  await page.waitForFunction(() => document.querySelector('.v-btn') || document.body.classList.contains('sb-show-errordisplay'), null, { timeout: 30_000 });
+  await page.waitForFunction(() => document.querySelector('.ds-bouton') || document.body.classList.contains('sb-show-errordisplay'), null, { timeout: 30_000 });
   await page.evaluate(() => document.fonts.ready);
-  const m = await page.evaluate(() => {
+  const m = await page.evaluate((PRINCIPAL) => {
     const hex = (/** @type {string} */ c) => '#' + (c.match(/\d+/g) ?? []).slice(0, 3).map((n) => Number(n).toString(16).padStart(2, '0')).join('');
     const app = document.querySelector('.v-application');
-    const b = document.querySelector('.v-btn');
+    const b = document.querySelector(PRINCIPAL);
     const classe = app ? [...app.classList].find((c) => c.startsWith('v-theme--')) ?? null : null;
     /** Couleurs écrites par Vuetify pour le thème posé : --v-theme-<clé>, hors multiplicateurs d'opacité. */
     const couleurs = {};
@@ -192,12 +263,42 @@ async function releve(contexte, base, theme) {
       couleurs,
       variables,
     };
-  });
-  const image = m.erreur === null ? await page.screenshot() : null;
+  }, PRINCIPAL);
+  /** @type {Record<string, Record<string, string>>} */
+  let boutons = {};
+  if (m.erreur === null) {
+    await forcerEtats(page);
+    boutons = await page.evaluate(() => {
+      /** @type {Record<string, Record<string, string>>} */
+      const out = {};
+      for (const e of /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.ds-bouton[data-etat]'))) {
+        const s = getComputedStyle(e);
+        const icone = e.querySelector('.ds-bouton__icone');
+        const texte = e.querySelector('.ds-bouton__texte');
+        out[`${e.dataset.variante}|${e.dataset.taille}|${e.dataset.etat}`] = {
+          fond: s.backgroundColor,
+          texte: s.color,
+          ...(e.dataset.variante === 'secondaire' ? { contour: `${s.borderTopWidth} ${s.borderTopColor}` } : {}),
+          anneau: s.outlineStyle === 'none' ? 'none' : `${s.outlineStyle} ${s.outlineWidth} ${s.outlineColor} ${s.outlineOffset}`,
+          hauteur: s.height,
+          rayon: s.borderTopLeftRadius,
+          marge: s.paddingLeft === s.paddingRight ? s.paddingLeft : `${s.paddingLeft}/${s.paddingRight}`,
+          taille: s.fontSize,
+          graisse: s.fontWeight,
+          icone: icone ? getComputedStyle(icone).width : 'absente',
+          // Écart mesuré à l'écran, du bord droit de l'icône au bord gauche du texte.
+          ecart: icone && texte ? `${Math.round((texte.getBoundingClientRect().left - icone.getBoundingClientRect().right) * 100) / 100}px` : 'absent',
+        };
+      }
+      return out;
+    });
+  }
+  // Roues de chargement arrêtées (animations disabled), pour que deux captures du même état coïncident.
+  const image = m.erreur === null ? await page.screenshot({ fullPage: true, animations: 'disabled' }) : null;
   await page.close();
   const couleurs = Object.fromEntries(Object.entries(m.couleurs).filter(([k]) => !VARIABLES_VUETIFY.includes(k)).sort(([a], [b]) => (a < b ? -1 : 1)));
   const variables = Object.fromEntries(Object.entries(m.variables).sort(([a], [b]) => (a < b ? -1 : 1)));
-  return { ...m, couleurs, variables, image, erreurs };
+  return { ...m, couleurs, variables, boutons, image, erreurs };
 }
 
 /** Pixels différents entre deux captures PNG de même taille, seuil 0. @param {Buffer} a @param {Buffer} b */
@@ -217,7 +318,7 @@ async function selecteur(contexte, base, themes) {
   await page.setViewportSize({ width: 1000, height: 700 });
   await page.goto(`${base}/?path=/story/${STORY}`, { waitUntil: 'networkidle' });
   const apercu = page.frameLocator('#storybook-preview-iframe');
-  await apercu.locator('.v-btn').waitFor();
+  await apercu.locator('.ds-bouton').first().waitFor();
   await page.getByRole('button', { name: 'Thème Vuetify : marque et mode' }).click();
   const entrees = (await page.getByRole('option').allTextContents()).map((t) => t.trim());
   const cible = themes[themes.length - 1];
@@ -259,7 +360,20 @@ await lancer('preuve', async () => {
           JSON.stringify(r.couleurs) === JSON.stringify(t.couleurs) &&
           JSON.stringify(r.variables) === JSON.stringify(t.variables) &&
           r.erreurs.length === 0;
-        verifier(ok, `${t.nom}, ${mode} : fond ${r.fond} (jeton ${t.fond}), texte ${r.texte} (jeton ${t.texte}), page ${r.page}, police ${r.police}, titres ${r.titre}, ${Object.keys(r.couleurs).length} couleurs du thème${JSON.stringify(r.couleurs) === JSON.stringify(t.couleurs) ? ' égales à la table' : ' différentes de la table'}, ${Object.keys(r.variables).length} variables ds-${JSON.stringify(r.variables) === JSON.stringify(t.variables) ? ' égales aux jetons' : ` différentes des jetons (${JSON.stringify(r.variables)})`}${r.etire ? ', bouton étiré' : ''}${r.erreur ? `, erreur ${r.erreur}` : ''}${r.erreurs.length ? `, ${r.erreurs.join(' ; ')}` : ''}`);
+        verifier(ok, `${t.nom}, ${mode}, bouton principal : fond ${r.fond} (jeton ${t.fond}), texte ${r.texte} (jeton ${t.texte}), page ${r.page}, police ${r.police}, titres ${r.titre}, ${Object.keys(r.couleurs).length} couleurs du thème${JSON.stringify(r.couleurs) === JSON.stringify(t.couleurs) ? ' égales à la table' : ' différentes de la table'}, ${Object.keys(r.variables).length} variables ds-${JSON.stringify(r.variables) === JSON.stringify(t.variables) ? ' égales aux jetons' : ` différentes des jetons (${JSON.stringify(r.variables)})`}${r.etire ? ', bouton étiré' : ''}${r.erreur ? `, erreur ${r.erreur}` : ''}${r.erreurs.length ? `, ${r.erreurs.join(' ; ')}` : ''}`);
+      }
+      for (const [mode, r] of [['développement', dev], ['construite', bld]]) {
+        const ecarts = [...t.boutons].flatMap(([cle, attendu]) => {
+          const vu = r.boutons[cle];
+          if (!vu) return [`${cle} absent`];
+          return Object.entries(attendu).flatMap(([k, v]) => (vu[k] === v ? [] : [`${cle} ${k} ${vu[k]} (attendu ${v})`]));
+        });
+        const n = Object.keys(r.boutons).length;
+        verifier(ecarts.length === 0 && n === t.boutons.size, `${t.nom}, ${mode}, planche : ${n} boutons sur ${t.boutons.size}${ecarts.length ? `, ${ecarts.length} écart(s) : ${ecarts.slice(0, 6).join(' ; ')}` : ', couleurs, anneau et dimensions égaux aux jetons dans chaque état'}`);
+      }
+      if (bld.image) {
+        mkdirSync(CAPTURES, { recursive: true });
+        writeFileSync(join(CAPTURES, `${t.nom}.png`), bld.image);
       }
       const px = dev.image && bld.image ? ecart(dev.image, bld.image) : Infinity;
       verifier(px === 0, `${t.nom} : développement et construite, ${px} pixel(s) différent(s)`);
@@ -284,6 +398,7 @@ await lancer('preuve', async () => {
     developpement.arreter();
     await construite.arreter();
   }
+  console.log(`Planches enregistrées dans ${CAPTURES}.`);
   console.log(echecs.length ? `${echecs.length} vérification(s) en échec.` : `Toutes les vérifications passent : ${themes.length} thèmes.`);
   return echecs.length ? 1 : 0;
 });

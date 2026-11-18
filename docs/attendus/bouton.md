@@ -156,3 +156,8 @@ Valeurs en px, couleurs et rapports inchangés.
 ## Correction du 18/11/2026, validée avant le commit de l'enveloppe
 
 Le décalage de l'anneau de focus (2 px, DS2) n'avait pas de jeton. Décision : un rôle `decalage.focus` → `{trait.2}` (2 px), passé au thème par la variable `ds-decalage-focus` de la table Vuetify, et vérifié par la preuve avec les autres variables `ds-`. L'enveloppe lit cette variable, sans valeur écrite à la main.
+
+## Correction du 18/11/2026, validée sur la planche, avant le commit de l'enveloppe
+
+- Le contour du bouton secondaire était écrit à la main (1 px). Décision : un rôle `epaisseur.contour` → `{trait.1}` (1 px, primitive ajoutée), passé au thème par la variable `ds-epaisseur-contour`, et vérifié par la preuve avec la couleur du contour.
+- La roue de chargement est dessinée par l'enveloppe : la roue indéterminée de Vuetify 4.3.4 (`VProgressCircular`) fige la page quand le thème change sur place, même seule dans une story [F]. Sa vitesse (un tour par seconde) reste écrite à la main, sans jeton : le dépôt n'a aucun jeton de durée ; le mouvement sera un sujet à part (dette).

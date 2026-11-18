@@ -128,7 +128,7 @@ test('primitives communes et échelles d\'Orbe Café réunies = primitives d\'av
   delete apres.couleur['sur-inverse'];
   // Groupes ajoutés pour le bouton (docs/attendus/bouton.md) : tailles de contrôle et d'icône, trait.
   assert.deepEqual(Object.keys(apres.taille).filter((k) => !k.startsWith('$')), ['16', '20', '32', '40']);
-  assert.deepEqual(Object.keys(apres.trait).filter((k) => !k.startsWith('$')), ['2']);
+  assert.deepEqual(Object.keys(apres.trait).filter((k) => !k.startsWith('$')), ['1', '2']);
   delete apres.taille;
   delete apres.trait;
   const tri = (/** @type {any} */ o) => JSON.stringify(o, (_, v) => (v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => a.localeCompare(b))) : v));

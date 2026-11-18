@@ -481,6 +481,10 @@
   "epaisseur": {
     "$type": "dimension",
     "$description": "Épaisseurs de trait.",
+    "contour": {
+      "$value": "{trait.1}",
+      "$description": "Épaisseur du contour d'un contrôle, comme le bouton secondaire."
+    },
     "focus": {
       "$value": "{trait.2}",
       "$description": "Épaisseur de l'anneau de focus clavier (bordure.focus), décalé de 2 px sur le fond de la page (DS2)."

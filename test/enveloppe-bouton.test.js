@@ -1,0 +1,74 @@
+// @ts-check
+/**
+ * Garde de l'enveloppe du bouton (D43, docs/attendus/bouton.md) : le bouton de Vuetify ne paraît que dans
+ * atelier/composants/Bouton.vue.
+ *
+ * Attendus écrits à la main avant le code (18/11/2026) :
+ *   E1 la détection prend VBtn (et ses composés VBtnGroup, VBtnToggle, un import vuetify/components/VBtn) et v-btn
+ *      (balise, classe, sélecteur) ; elle ne prend ni un commentaire, ni ds-bouton, ni un mot qui contient v-btn sans
+ *      le commencer (nav-btn) ;
+ *   E2 dans le code de src/ et de l'atelier (.js et .vue, commentaires exclus), une seule occurrence de fichier :
+ *      atelier/composants/Bouton.vue, qui importe bien VBtn ; le témoin (atelier/stories/Temoin.stories.js) n'existe
+ *      plus ;
+ *   E3 un composant .vue est découpé à lignes égales : script lu comme du JavaScript, gabarit et style à part, leurs
+ *      commentaires HTML et CSS rendus à part ; une apostrophe du gabarit ne perd pas la lecture du script.
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { codeAtelier, partiesVue } from './helpers/atelier.js';
+import { lex } from './helpers/commentaires.js';
+
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
+const ENVELOPPE = join('atelier', 'composants', 'Bouton.vue');
+
+/** Bouton de Vuetify : le composant (et ses composés), la balise ou la classe. */
+const VUETIFY_BOUTON = /\bVBtn|(?<![\w-])v-btn/;
+
+/** Code sans commentaires d'un fichier, .js ou .vue, relatif à la racine. @param {string} f */
+function code(f) {
+  const src = readFileSync(join(ROOT, f), 'utf8');
+  if (!f.endsWith('.vue')) return lex(src).code;
+  const v = partiesVue(src);
+  return `${lex(v.script).code}\n${v.reste}`;
+}
+
+test('E1 détection du bouton de Vuetify', () => {
+  for (const s of ["import { VBtn } from 'vuetify/components';", "import { VBtnToggle } from 'vuetify/components';", "import x from 'vuetify/components/VBtn';", '<v-btn>Ok</v-btn>', "document.querySelector('.v-btn__prepend')", 'h(VBtn)'])
+    assert.ok(VUETIFY_BOUTON.test(s), s);
+  for (const s of ['// v-btn dans un commentaire', 'h(Bouton)', "'.ds-bouton'", "'nav-btn'"])
+    assert.ok(!VUETIFY_BOUTON.test(lex(s).code), s);
+});
+
+test('E2 le bouton de Vuetify ne paraît que dans l\'enveloppe', () => {
+  const src = readdirSync(join(ROOT, 'src'), { recursive: true, encoding: 'utf8' }).filter((f) => f.endsWith('.js')).map((f) => join('src', f));
+  const fichiers = [...src, ...codeAtelier()];
+  assert.ok(fichiers.includes(ENVELOPPE), 'l\'enveloppe est lue');
+  assert.deepEqual(fichiers.filter((f) => VUETIFY_BOUTON.test(code(f))), [ENVELOPPE]);
+  assert.match(code(ENVELOPPE), /import \{ VBtn \} from 'vuetify\/components';/);
+  assert.equal(existsSync(join(ROOT, 'atelier', 'stories', 'Temoin.stories.js')), false, 'témoin retiré');
+});
+
+test('E3 découpage d\'un composant .vue, lignes gardées', () => {
+  const src = [
+    '<template>',
+    "  <p>L'apostrophe</p> <!-- note -->",
+    '</template>',
+    '<script>',
+    "const a = 'x'; // fin",
+    '</script>',
+    '<style>',
+    '.a { color: red; } /* trait */',
+    '</style>',
+  ].join('\n');
+  const v = partiesVue(src);
+  assert.equal(v.script.split('\n').length, 9);
+  assert.equal(v.reste.split('\n').length, 9);
+  assert.equal(v.script.split('\n')[4], "const a = 'x'; // fin");
+  assert.equal(v.script.split('\n')[1], '');
+  assert.deepEqual(lex(v.script).comments.map((c) => [c.line, c.text.trim()]), [[5, '// fin']]);
+  assert.ok(v.reste.includes("<p>L'apostrophe</p>") && !v.reste.includes('const a') && !v.reste.includes('note') && !v.reste.includes('trait'));
+  assert.deepEqual(v.commentaires.map((c) => [c.line, c.text]), [[2, '<!-- note -->'], [8, '/* trait */']]);
+});

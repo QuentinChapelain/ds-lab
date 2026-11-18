@@ -220,6 +220,8 @@
   --ecart-icone-texte: var(--espace-8);
   /* Écart entre deux sections de la page, la plus grande respiration verticale ; plus petit en étroit (largeur.etroit.tokens.json). */
   --ecart-section: var(--espace-48);
+  /* Épaisseur du contour d'un contrôle, comme le bouton secondaire. */
+  --epaisseur-contour: var(--trait-1);
   /* Épaisseur de l'anneau de focus clavier (bordure.focus), décalé de 2 px sur le fond de la page (DS2). */
   --epaisseur-focus: var(--trait-2);
   --espace-0: 0px;
@@ -441,6 +443,7 @@
   --texte-sur-inverse: var(--couleur-sur-inverse);
   --texte-sur-marque: var(--marque-primaire-sur-aplat);
   --texte-sur-succes: var(--marque-succes-sur-plein);
+  --trait-1: 1px;
   --trait-2: 2px;
   /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */
   --typo-affichage-grand-font-family: var(--marque-police-titre);

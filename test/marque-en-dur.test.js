@@ -11,18 +11,20 @@
  *      commentaire, sinon la lecture s'est perdue et le test le dit ;
  *   G4 aucune occurrence dans src/ ;
  *   G5 aucune occurrence dans le code de l'atelier (D42) : les fichiers .js de atelier/, atelier/.storybook/ et
- *      atelier/stories/, hors de node_modules/ et de la version construite (attendu du 18/11/2026).
+ *      atelier/stories/, hors de node_modules/ et de la version construite (attendu du 18/11/2026) ; puis, avec les
+ *      composants (D43, docs/attendus/bouton.md), les .js et .vue de atelier/composants/ aussi : d'un .vue, le bloc
+ *      script est lu comme du JavaScript, le gabarit et le style comme du texte, leurs commentaires exclus.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { codeAtelier, partiesVue } from './helpers/atelier.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const TOKENS = join(ROOT, 'tokens');
 const SRC = join(ROOT, 'src');
-const ATELIER = join(ROOT, 'atelier');
 
 /** Sans casse ni accent. @param {string} s */
 const plat = (s) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
@@ -154,22 +156,20 @@ test('G3 et G4 aucun nom de marque dans le code de src/', () => {
   assert.deepEqual(trouves, []);
 });
 
-/** Code de l'atelier : ses fichiers .js, ceux de sa configuration et de ses stories ; ni node_modules/ ni la version construite. */
-const codeAtelier = () => [
-  ...readdirSync(ATELIER).filter((f) => f.endsWith('.js')).map((f) => join(ATELIER, f)),
-  ...['.storybook', 'stories'].flatMap((d) => (existsSync(join(ATELIER, d)) ? fichiers(join(ATELIER, d)) : [])),
-];
-
 test('G5 aucun nom de marque dans le code de l\'atelier', () => {
   const ms = marques();
   const lus = codeAtelier();
   assert.ok(lus.some((f) => f.endsWith('preview.js')), 'la configuration de l\'atelier est lue');
+  assert.ok(lus.some((f) => f.endsWith('.vue')), 'les composants .vue de l\'atelier sont lus');
   const perdus = [];
   const trouves = [];
   for (const f of lus) {
-    const { code, fin } = sansCommentaires(readFileSync(f, 'utf8'));
-    if (fin !== 'code') perdus.push(`${relative(ROOT, f)} : lecture perdue (${fin})`);
-    for (const o of occurrences(code, ms)) trouves.push(`${relative(ROOT, f)}:${o.ligne} (${o.marque}) ${o.texte}`);
+    const src = readFileSync(join(ROOT, f), 'utf8');
+    const vue = f.endsWith('.vue') ? partiesVue(src) : null;
+    const { code, fin } = sansCommentaires(vue ? vue.script : src);
+    if (fin !== 'code') perdus.push(`${f} : lecture perdue (${fin})`);
+    for (const texte of vue ? [code, vue.reste] : [code])
+      for (const o of occurrences(texte, ms)) trouves.push(`${f}:${o.ligne} (${o.marque}) ${o.texte}`);
   }
   assert.deepEqual(perdus, []);
   assert.deepEqual(trouves, []);

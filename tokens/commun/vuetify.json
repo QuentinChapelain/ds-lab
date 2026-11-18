@@ -130,6 +130,10 @@
       "jeton": "hauteur.controle.petite",
       "$description": "Hauteur du bouton de petite taille."
     },
+    "ds-epaisseur-contour": {
+      "jeton": "epaisseur.contour",
+      "$description": "Épaisseur du contour du bouton secondaire."
+    },
     "ds-epaisseur-focus": {
       "jeton": "epaisseur.focus",
       "$description": "Épaisseur de l'anneau de focus."

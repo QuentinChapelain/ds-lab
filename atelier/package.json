@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@storybook/vue3-vite": "10.6.7",
+    "@vitejs/plugin-vue": "6.0.10",
     "storybook": "10.6.7",
     "vite": "8.3.8",
     "vue": "3.5.45",

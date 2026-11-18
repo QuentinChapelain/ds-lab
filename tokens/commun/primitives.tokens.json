@@ -720,6 +720,12 @@
     "$description": "Tailles de contrôle et d'icône (hauteur d'un bouton, côté d'une icône), en px."
   },
   "trait": {
+    "1": {
+      "$value": {
+        "value": 1,
+        "unit": "px"
+      }
+    },
     "2": {
       "$value": {
         "value": 2,

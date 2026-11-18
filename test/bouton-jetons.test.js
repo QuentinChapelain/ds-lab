@@ -8,8 +8,8 @@
  *      {couleur.neutre.3}, texte.desactive → {couleur.neutre.9} ;
  *   B2 dimensions : arrondi.controle 8 px ({rayon.8}), hauteur.controle.normale 40 px et .petite 32 px ({taille.40},
  *      {taille.32}), epaisseur.focus 2 px ({trait.2}), taille-icone.normale 20 px et .petite 16 px ({taille.20},
- *      {taille.16}), ecart.icone-texte 8 px ({espace.8}), decalage.focus 2 px ({trait.2}, DS2 ; correction de
- *      l'attendu) ; les mêmes dans les dix thèmes ;
+ *      {taille.16}), ecart.icone-texte 8 px ({espace.8}), decalage.focus 2 px ({trait.2}, DS2) et epaisseur.contour
+ *      1 px ({trait.1}), ajoutés par correction de l'attendu ; les mêmes dans les dix thèmes ;
  *   B3 couleurs de chaque variante, au repos et au survol, dans chaque thème, et leurs rapports (2 décimales) :
  *      tableaux de l'attendu, recopiés ci-dessous ; chaque texte actif tient 4,5:1, le contour et l'anneau 3:1 sur la
  *      page ; le désactivé reste entre 3,32 et 4,26, sous 4,5, avec son exception écrite ;
@@ -75,6 +75,7 @@ const DIMENSIONS = {
   'arrondi.controle': ['{rayon.8}', 8],
   'hauteur.controle.normale': ['{taille.40}', 40],
   'hauteur.controle.petite': ['{taille.32}', 32],
+  'epaisseur.contour': ['{trait.1}', 1],
   'epaisseur.focus': ['{trait.2}', 2],
   'decalage.focus': ['{trait.2}', 2],
   'taille-icone.normale': ['{taille.20}', 20],
