@@ -17,6 +17,7 @@ Laboratoire de design system multi-marque, de l'audit à la génération par IA.
 - Aucun nom de marque dans le code de `src/`, chaînes comprises, commentaires exclus (`test/marque-en-dur.test.js`, D26).
 - Aucun numéro de lot, d'étape ou de séance dans les commentaires, les titres de tests, les noms de fichiers de test ni les textes que l'outil écrit (`test/histoire.test.js`).
 - Aucun module de `src/` hors de `src/cli/` n'importe de `src/cli/` (`test/couches.test.js`).
+- Aucun bouton de Vuetify (`VBtn`, `v-btn`) hors de `atelier/composants/Bouton.vue` : passer par l'enveloppe (`test/enveloppe-bouton.test.js`, D43).
 
 ## Commandes
 

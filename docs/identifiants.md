@@ -81,7 +81,9 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 
 | Famille | Sujet | Défini dans |
 |---|---|---|
+| B1 à B4 | Jetons du bouton dans les dix thèmes | `test/bouton-jetons.test.js` |
 | C1 à C13 | Fenêtre des candidats, grisé des marges, bilan par usage | `test/candidats.test.js`, `test/e2e-candidats-revue.test.js`, `fixtures/marque-demo/expected-candidats.json` |
+| E1 à E3 | Garde de l'enveloppe du bouton, découpage d'un composant `.vue` | `test/enveloppe-bouton.test.js` |
 | G0 à G8 | Générateur de valise | `src/valise/generate.js`, `test/valise-generate.test.js`, `test/gris-neutre.test.js` |
 | I1 à I7 | Rattacher les valeurs inchangées à leur jeton | `test/e2e-migration.test.js` |
 | J1 à J9 | Captures, contraste des candidats, texte sur plein et sur image, panneau de la revue | `test/candidats-contraste.test.js`, `test/captures-hors-page.test.js`, `test/texte-sur-plein-candidats.test.js`, `test/revue-apercu.test.js`, `test/fond-sous-image.test.js` |
