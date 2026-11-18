@@ -24,6 +24,7 @@ Sur les pages fictives d'Orbe Café, une fois la cible posée (valise d'Orbe Caf
 npm run audit  -- <adresse> [options]                        mesurer l'existant
 npm run reduce -- <adresse> --target <cible.json> [options]  ranger, revoir, produire la consigne
 npm run marque -- <adresse> --prefix <préfixe> [options]     lire la marque d'un site avant la réduction (ne décide rien)
+npm run composants -- <adresse> [<chemin>…] [--signatures <fichier>] [--decisions <fichier>]   constat des pièces d'interface, au repos (ne juge rien) ; --releve <dossier> le refait sans navigateur
 npm run login                                                enregistrer une session (dans .auth/)
 npm run verify -- <adresse> [<chemin>…] --reference <dossier> [--save] [--sources <fichier>] [--ajout <dossier>]   vérifier qu'une page n'a pas bougé (pixels, arbre d'accessibilité) ; avec --sources, ses éléments tiers sont masqués, comme dans les références de reduce --sources ; avec --ajout, les feuilles ajoutées sont posées sur chaque page avant la capture, à la fenêtre de la réduction, et chaque ligne décidée est jugée arrivée ou non, avec le canal qui l'en empêche
 npm run apply  -- --modifications <fichier> --racine <dossier> [--essai]   appliquer au CSS la part tranchée
@@ -121,6 +122,25 @@ Chaque marque a deux niveaux d'aplat non cliquables, clair (pas 3) et plein (val
 
 Calibrage de la règle des pleins : `node src/cli/calibrage.js --sortie <dossier> <entree.json>...` écrit `calibrage.html` et `calibrage.md`. La table a une colonne par marque : verdict de la saisie, classe selon le générateur, classe selon la règle des pleins, couleur exacte sur le bouton ou non, et trois indicateurs qui ne refusent rien (primaire grise, statut le plus proche, accent proche du primaire). Le balayage montre, pour des teintes de 30° à 140° et des clartés de 0,60 à 0,92, le bouton selon la règle (D04) et, pour une case moyenne, celui du cas clair avec son contraste. Il ne change aucun seuil. Avec des marques témoins, la sortie va dans `local/`.
 
+## Constat des composants
+
+`npm run composants` regarde les pages d'une même origine, au repos, et rend un constat de leurs pièces d'interface, pour un décideur, un designer et un développeur. Il ne juge rien : ni verdict, ni catalogue, ni comparaison à une cible (D46).
+
+Pour chaque élément : son type, par le rôle que le navigateur calcule pour l'accessibilité (bouton avec texte, bouton à icône seule, lien, champ de texte, liste déroulante, case à cocher, radio, interrupteur, onglet, menu, fenêtre) ; pour une pièce sans rôle (carte, puce, avatar, badge), par la signature de son framework. Son origine : le framework, par une table de signatures facultative (`config/signatures/vuetify.json`, passée par `--signatures`) ; sinon « Fait maison », nommée par sa classe ; sinon « Sans style ». Son rendu : hauteur, arrondi, bordure, marge intérieure, taille et graisse de police, ni couleur ni largeur. Son poids : nombre de fois et pages. Une capture de la première occurrence de chaque version, et son code : classes, endroit, extrait HTML. Une version est un type, une origine et un nom ; ses apparences sont comptées sur sa ligne. Un élément présent à l'identique sur toutes les pages est du gabarit : montré une fois sous son type, il n'entre dans aucun chiffre. Les blocs répétés sans rôle ni signature (une classe vue au moins deux fois, avec une surface visible) sont listés à part, « Non identifiés ».
+
+Cinq scores, chacun en « x sur y », sans note globale : source unique (éléments sur la version la plus répandue de leur type ; à égalité, l'outil nomme les deux et ne choisit pas), accessibilité de base (un nom lisible, l'atteinte au clavier, une zone de clic d'au moins 24 px de côté, l'élément ou son label), versions à garder choisies, fiabilité de l'audit, et l'effort, le nombre d'éléments à changer.
+
+Le designer décide dans un fichier facultatif, écrit à la main et passé par `--decisions` : la version à garder d'un type, par son nom stable (`bouton avec texte / Vuetify / v-btn`, que le constat affiche dans « Voir le code »), et le sort d'un bloc non identifié, par sa classe : le laisser tel quel, ou le rattacher à un type, existant ou nouveau (`fixtures/marque-demo/decisions-composants.json`). Les décisions se réappliquent à l'audit suivant ; une ligne qui vise une cible absente n'est pas appliquée et le constat la liste.
+
+| Fichier | Pour qui | Contenu |
+|---|---|---|
+| `constat.html` | Le décideur, le designer | Un seul fichier, lisible sur un téléphone : l'en-tête, une phrase, les scores, une section par type, les non identifiés, les limites ; une explication (i) sur chaque titre et chaque score |
+| `constat.md` | Le développeur | Les mêmes blocs, captures en lien |
+| `constat.json` | L'outil | Tous les chiffres, versions et décisions |
+| `releve.json` et le dossier des captures | L'outil | Le relevé brut : `--releve <dossier>` refait le constat sans navigateur, avec d'autres décisions |
+
+Les sorties vont dans `local/composants/<hôte>/<horodatage>/`. La commande sort en 0, ou en 2 sur une panne : fichier absent ou mal formé, page qui ne se charge pas (le constat est écrit sans elle). Sur les deux pages d'annuaire fictives (`fixtures/marque-demo/annuaire/`), avec la table de Vuetify : 27 éléments, 7 types, 12 versions ; 17 viennent de Vuetify, 10 sont faits autrement ; 3 blocs non identifiés ; source unique 20 sur 27, accessibilité de base 20 sur 23.
+
 ## Atelier des composants
 
 Les composants sont des enveloppes autour de Vuetify 4 (Vue 3), montrées dans un atelier Storybook 10, dans `atelier/`, avec son propre `package.json` et son propre verrou : rien de ce qu'il installe n'entre à la racine (D42). Le premier est le bouton, `atelier/composants/Bouton.vue` (D43).
@@ -177,6 +197,10 @@ La preuve (`atelier/preuve.js`) rejoue l'attendu sur chaque thème de chaque mar
 
 | Terme | Définition |
 |---|---|
+| Version d'un composant | Une façon dont un type d'élément est codé : un type, une origine, un nom (`bouton avec texte / Vuetify / v-btn`) ; ses apparences sont ses jeux de mesures distincts (D46) |
+| Signature | Une classe qui dit qu'une pièce vient d'un framework, dans une table de données (`config/signatures/`) |
+| Gabarit | Un élément présent à l'identique sur toutes les pages vues : montré une fois, hors des chiffres |
+| Bloc non identifié | Un bloc répété, sans rôle ni signature, que l'outil ne sait pas nommer ; le designer le laisse ou le rattache à un type |
 | Pages en désordre | Pages fictives écrites avec des défauts connus (`fixtures/marque-demo/desordre/`) |
 | Piège | Un défaut observé sur un vrai site, reproduit sur une page fictive et écrit avant elle, pour prouver qu'une règle le corrige |
 | Simulation | Les nouvelles valeurs posées dans le navigateur, le temps des captures |
@@ -204,14 +228,14 @@ La preuve (`atelier/preuve.js`) rejoue l'attendu sur chaque thème de chaque mar
 
 | Dossier | Contenu |
 |---|---|
-| `src/` | Audit, réduction, simulation, rapports |
+| `src/` | Audit, réduction, simulation, rapports, constat des composants |
 | `tokens/commun/` | Couches communes à toutes les marques : primitives, statuts, mode sombre commun, police du produit, aplat plein, rôles, paires, contexte étroit ; table des thèmes Vuetify |
 | `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive (entrée, échelles, marque, resolver), les trois planches, la feuille CSS `jetons.css` et les thèmes Vuetify `vuetify.json` |
 | `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/`, `tokens/maison-alberto/` | Quatre marques fictives saisies par fichier, leurs trois planches, leur feuille CSS et leurs thèmes Vuetify |
 | `docs/` | Règles du design system, décisions, contrat de marque, identifiants de règles (`docs/identifiants.md`) ; dans `docs/attendus/`, l'attendu de chaque lot, écrit avant le code et gardé à sa date |
 | `fixtures/marque-demo/` | Pages fictives, pièges, cibles, attendus |
 | `fixtures/polices/` | Quatre polices d'essai sous licence libre, chacune avec sa licence |
-| `config/` | Exemple de fichier de sources, à copier dans `local/` |
+| `config/` | Exemple de fichier de sources, à copier dans `local/` ; tables de signatures de framework (`config/signatures/vuetify.json`) |
 | `.github/workflows/` | La CI, `.github/workflows/ci.yml` |
 | `test/` | Tests, dont `noms-interdits` qui refuse tout nom réel dans un fichier ou un message de commit |
 | `atelier/` | Atelier des composants : Storybook 10, Vue 3 et Vuetify 4, son `package.json` et son verrou (D42) ; les composants dans `atelier/composants/`, le bouton d'abord (D43) |
@@ -237,6 +261,7 @@ main est protégée (ruleset « main protégée ») : GitHub refuse tout push su
 - `verify --ajout` ne rejoue pas les états (survol, focus) : une ligne vue seulement à un état est « non vérifiable (état) ». Il nomme le canal d'après ce que Chromium dit de la règle qui gagne : un attribut style posé par un script ne se distingue pas d'un attribut du HTML. Il juge la cascade, transitions et animations coupées : une valeur qu'une animation tient à l'écran n'est pas jugée.
 - `npm run ajout` ne juge l'ordre de la cascade que sur les pages de la réduction, à sa fenêtre ; une feuille ajoutée doit suivre sa feuille partout où celle-ci se charge, morceau chargé à la demande compris : une feuille injectée par un script est reconnue sur ces pages, et `verify --ajout` la pose après coup, comme le script devra le faire.
 - Les contrastes ne sont pas mesurés sur les pages témoins : seules les pages de la table entrent dans les paires texte sur fond et dans la liste des paires sous le seuil.
+- Le constat des composants regarde des pages au repos, à une seule largeur, et ne compte que les types vus ; il ne presse pas les flèches dans un groupe d'onglets ou de radios ; il donne la page affichée, pas le fichier du projet. Ses limites sont écrites dans chaque constat.
 - La dette connue est tenue à jour dans [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 Licence MIT.
