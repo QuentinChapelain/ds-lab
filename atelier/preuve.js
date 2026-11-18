@@ -1,6 +1,6 @@
 // Preuve rejouable de l'atelier (D42) : pour chaque thème de chaque marque, le témoin rendu par Storybook a le fond,
-// le texte et les polices des jetons, Vuetify n'a calculé aucun texte, et le rendu est le même en développement et en
-// version construite. Sortie 0 si tout passe, 1 si une vérification échoue, 2 sur une panne (D18).
+// le texte et les polices des jetons, Vuetify n'a calculé aucun texte, les variables du bouton (--v-ds-*) sont celles
+// des jetons, et le rendu est le même en développement et en version construite. Sortie 0 si tout passe, 1 si une vérification échoue, 2 sur une panne (D18).
 // La version construite doit exister (npm run build) ; le serveur de développement est lancé ici, sur 127.0.0.1, puis
 // arrêté.
 //
@@ -40,6 +40,18 @@ const noms = (s) => s.split(',').map((x) => x.trim().replace(/^"(.*)"$/, '$1'));
 /** @param {string} hex */
 const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(',');
 
+/**
+ * Valeur attendue d'une variable de la table, lue dans les jetons, au format de la feuille de Vuetify sans espaces.
+ * @param {Map<string, any>} jetons @param {{ jeton: string, champ?: string }} v
+ */
+function variable(jetons, { jeton, champ }) {
+  let { valeur } = resoudreAlias(jetons, jetons.get(jeton).$value, { depuis: jeton, chaine: [jeton] });
+  if (champ) valeur = resoudreAlias(jetons, valeur[champ], { depuis: jeton, chaine: [jeton] }).valeur;
+  if (typeof valeur === 'number') return String(valeur);
+  if (typeof valeur?.hex === 'string') return rgb(valeur.hex);
+  return `${valeur.value}${valeur.unit}`;
+}
+
 /** Thèmes attendus, dans l'ordre du sélecteur : marques de tokens/, puis clair et sombre. */
 function attendus() {
   const table = lireTable();
@@ -50,6 +62,7 @@ function attendus() {
       const hex = (/** @type {string} */ role) => /** @type {string} */ (roles.get(role)?.hex);
       const jetons = new Map([...flattenTokens(set.primitives), ...flattenTokens(set.marque)]);
       const police = (/** @type {string} */ j) => resoudreAlias(jetons, jetons.get(j).$value, { depuis: j, chaine: [j] }).valeur;
+      const tous = new Map([...jetons, ...flattenTokens(set.semantique)]);
       return {
         nom: `${basename(dossier)}-${mode}`,
         titre: `${nomDeMarque(dossier)}, ${mode}`,
@@ -65,6 +78,13 @@ function attendus() {
         ),
         policeTexte: police(table.polices['font-body'].jeton),
         policeTitre: police(table.polices['font-heading'].jeton),
+        // Variables du bouton (--v-ds-<clé>), relues dans les jetons : couleur en r,g,b comme Vuetify l'écrit, dimension
+        // en px, nombre tel quel ; rangées par nom.
+        variables: Object.fromEntries(
+          Object.entries(table.variables)
+            .map(([k, v]) => [k, variable(tous, v)])
+            .sort(([a], [b]) => (a < b ? -1 : 1)),
+        ),
       };
     }),
   );
@@ -147,6 +167,8 @@ async function releve(contexte, base, theme) {
     const classe = app ? [...app.classList].find((c) => c.startsWith('v-theme--')) ?? null : null;
     /** Couleurs écrites par Vuetify pour le thème posé : --v-theme-<clé>, hors multiplicateurs d'opacité. */
     const couleurs = {};
+    /** Variables du bouton écrites par Vuetify pour le thème posé : --v-ds-<clé>. */
+    const variables = {};
     const feuille = /** @type {HTMLStyleElement | null} */ (document.getElementById('vuetify-theme-stylesheet'));
     const parcourir = (/** @type {CSSRuleList} */ regles) => {
       for (const r of regles) {
@@ -154,6 +176,7 @@ async function releve(contexte, base, theme) {
         else if (r instanceof CSSStyleRule && classe && r.selectorText === `.${classe}`)
           for (const p of r.style)
             if (p.startsWith('--v-theme-') && !p.endsWith('-overlay-multiplier')) couleurs[p.slice('--v-theme-'.length)] = r.style.getPropertyValue(p).replace(/\s/g, '');
+            else if (p.startsWith('--v-ds-')) variables[p.slice('--v-'.length)] = r.style.getPropertyValue(p).replace(/\s/g, '');
       }
     };
     if (feuille?.sheet) parcourir(feuille.sheet.cssRules);
@@ -167,12 +190,14 @@ async function releve(contexte, base, theme) {
       titre: app ? getComputedStyle(app).getPropertyValue('--v-font-heading').trim() : null,
       etire: b ? b.getBoundingClientRect().width >= /** @type {HTMLElement} */ (b.parentElement).getBoundingClientRect().width : null,
       couleurs,
+      variables,
     };
   });
   const image = m.erreur === null ? await page.screenshot() : null;
   await page.close();
   const couleurs = Object.fromEntries(Object.entries(m.couleurs).filter(([k]) => !VARIABLES_VUETIFY.includes(k)).sort(([a], [b]) => (a < b ? -1 : 1)));
-  return { ...m, couleurs, image, erreurs };
+  const variables = Object.fromEntries(Object.entries(m.variables).sort(([a], [b]) => (a < b ? -1 : 1)));
+  return { ...m, couleurs, variables, image, erreurs };
 }
 
 /** Pixels différents entre deux captures PNG de même taille, seuil 0. @param {Buffer} a @param {Buffer} b */
@@ -232,8 +257,9 @@ await lancer('preuve', async () => {
           noms(r.titre ?? '').join('|') === t.policeTitre.join('|') &&
           r.etire === false &&
           JSON.stringify(r.couleurs) === JSON.stringify(t.couleurs) &&
+          JSON.stringify(r.variables) === JSON.stringify(t.variables) &&
           r.erreurs.length === 0;
-        verifier(ok, `${t.nom}, ${mode} : fond ${r.fond} (jeton ${t.fond}), texte ${r.texte} (jeton ${t.texte}), page ${r.page}, police ${r.police}, titres ${r.titre}, ${Object.keys(r.couleurs).length} couleurs du thème${JSON.stringify(r.couleurs) === JSON.stringify(t.couleurs) ? ' égales à la table' : ' différentes de la table'}${r.etire ? ', bouton étiré' : ''}${r.erreur ? `, erreur ${r.erreur}` : ''}${r.erreurs.length ? `, ${r.erreurs.join(' ; ')}` : ''}`);
+        verifier(ok, `${t.nom}, ${mode} : fond ${r.fond} (jeton ${t.fond}), texte ${r.texte} (jeton ${t.texte}), page ${r.page}, police ${r.police}, titres ${r.titre}, ${Object.keys(r.couleurs).length} couleurs du thème${JSON.stringify(r.couleurs) === JSON.stringify(t.couleurs) ? ' égales à la table' : ' différentes de la table'}, ${Object.keys(r.variables).length} variables ds-${JSON.stringify(r.variables) === JSON.stringify(t.variables) ? ' égales aux jetons' : ` différentes des jetons (${JSON.stringify(r.variables)})`}${r.etire ? ', bouton étiré' : ''}${r.erreur ? `, erreur ${r.erreur}` : ''}${r.erreurs.length ? `, ${r.erreurs.join(' ; ')}` : ''}`);
       }
       const px = dev.image && bld.image ? ecart(dev.image, bld.image) : Infinity;
       verifier(px === 0, `${t.nom} : développement et construite, ${px} pixel(s) différent(s)`);

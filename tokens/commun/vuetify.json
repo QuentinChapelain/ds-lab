@@ -1,5 +1,5 @@
 {
-  "$description": "Table de correspondance rôle → couleur de thème Vuetify, commune à toutes les marques (D41). Écrite à la main, lue par npm run vuetify (src/tokens/vuetify.js), qui écrit les thèmes clair et sombre de chaque marque dans tokens/<marque>/vuetify.json. Chaque couleur nomme son fond et son texte : Vuetify reçoit on-<couleur> de nous et n'en calcule aucun. La liste couvre les couleurs que Vuetify 4.3.4 définit par défaut (13 fonds, et on-surface-variant) : une couleur absente resterait celle de Material, avec un texte calculé par Vuetify. Chaque fond et son texte forment une paire de texte de paires.json, contrôlée par npm run contraste. Les autres variables de Vuetify (bordure, ombre, opacités des états) restent les siennes (KNOWN_ISSUES.md).",
+  "$description": "Table de correspondance rôle → couleur de thème Vuetify, commune à toutes les marques (D41). Écrite à la main, lue par npm run vuetify (src/tokens/vuetify.js), qui écrit les thèmes clair et sombre de chaque marque dans tokens/<marque>/vuetify.json. Chaque couleur nomme son fond et son texte : Vuetify reçoit on-<couleur> de nous et n'en calcule aucun. La liste couvre les couleurs que Vuetify 4.3.4 définit par défaut (13 fonds, et on-surface-variant) : une couleur absente resterait celle de Material, avec un texte calculé par Vuetify. Viennent ensuite les couleurs de l'enveloppe du bouton, nommées d'après nos rôles, que Vuetify ne connaît pas. Les variables (variables) portent les traits et les dimensions du bouton, chacune vers un jeton ; Vuetify les écrit en --v-<clé>, une couleur en r, g, b. Chaque fond et son texte forment une paire de texte de paires.json, contrôlée par npm run contraste. Les autres variables de Vuetify (bordure, ombre, opacités des états) restent les siennes ; l'enveloppe du bouton ne les lit pas (KNOWN_ISSUES.md).",
   "vuetify": "4.3.4",
   "couleurs": {
     "background": {
@@ -66,6 +66,31 @@
       "fond": "fond.avertissement.fort",
       "texte": "texte.sur-avertissement",
       "$description": "Plein du statut avertissement, commun à toutes les marques."
+    },
+    "erreur-fort-survol": {
+      "fond": "fond.erreur.fort.survol",
+      "texte": "texte.sur-erreur",
+      "$description": "Plein du bouton danger survolé ; Vuetify n'en a pas, son survol est un voile."
+    },
+    "composant-survol": {
+      "fond": "fond.composant.survol",
+      "texte": "texte.principal",
+      "$description": "Fond du bouton secondaire survolé ; au repos, il prend surface."
+    },
+    "interactif-discret": {
+      "fond": "fond.interactif.discret",
+      "texte": "texte.interactif",
+      "$description": "Bouton discret : son texte au repos, sur la page (on-interactif-discret), et son fond au survol."
+    },
+    "erreur-discret": {
+      "fond": "fond.erreur.discret",
+      "texte": "texte.erreur",
+      "$description": "Bouton danger discret : son texte au repos, sur la page (on-erreur-discret), et son fond au survol."
+    },
+    "desactive": {
+      "fond": "fond.desactive",
+      "texte": "texte.desactive",
+      "$description": "Bouton désactivé, quelle que soit sa variante ; un discret désactivé garde la page pour fond. Sa paire porte une exception écrite (WCAG 1.4.3, composant inactif) : seule couleur de la table sous 4,5:1."
     }
   },
   "polices": {
@@ -76,6 +101,69 @@
     "font-heading": {
       "jeton": "marque.police.titre",
       "$description": "Police des titres (D16). Vuetify la lit dans --v-font-heading, à défaut --v-font-body."
+    }
+  },
+  "variables": {
+    "$description": "Variables du thème pour l'enveloppe du bouton, préfixées ds- pour ne croiser aucune variable de Vuetify. Chacune nomme un jeton ; champ prend une partie d'un style de texte. Une couleur est le trait devant d'une paire de paires.json, ou dit pourquoi elle n'en a pas (sansPaire).",
+    "ds-focus": {
+      "jeton": "bordure.focus",
+      "$description": "Anneau de focus clavier, posé sur la page, décalé de 2 px (DS2)."
+    },
+    "ds-contour": {
+      "jeton": "bordure.forte",
+      "$description": "Contour du bouton secondaire (3:1 sur la page)."
+    },
+    "ds-contour-desactive": {
+      "jeton": "bordure.discrete",
+      "sansPaire": "bordure décorative, sans paire (D07) ; le composant inactif est exempté (WCAG 1.4.11)",
+      "$description": "Contour du bouton secondaire désactivé."
+    },
+    "ds-arrondi-controle": {
+      "jeton": "arrondi.controle",
+      "$description": "Arrondi du bouton, à toutes les tailles."
+    },
+    "ds-hauteur-controle-normale": {
+      "jeton": "hauteur.controle.normale",
+      "$description": "Hauteur du bouton de taille normale."
+    },
+    "ds-hauteur-controle-petite": {
+      "jeton": "hauteur.controle.petite",
+      "$description": "Hauteur du bouton de petite taille."
+    },
+    "ds-epaisseur-focus": {
+      "jeton": "epaisseur.focus",
+      "$description": "Épaisseur de l'anneau de focus."
+    },
+    "ds-taille-icone-normale": {
+      "jeton": "taille-icone.normale",
+      "$description": "Icône du bouton de taille normale."
+    },
+    "ds-taille-icone-petite": {
+      "jeton": "taille-icone.petite",
+      "$description": "Icône du bouton de petite taille."
+    },
+    "ds-ecart-icone-texte": {
+      "jeton": "ecart.icone-texte",
+      "$description": "Écart entre l'icône et le texte du bouton."
+    },
+    "ds-marge-interieure-composant": {
+      "jeton": "marge-interieure.composant",
+      "$description": "Marge intérieure gauche et droite du bouton, aux deux tailles [H], à juger sur la planche."
+    },
+    "ds-libelle-taille": {
+      "jeton": "typo.libelle",
+      "champ": "fontSize",
+      "$description": "Taille du texte du bouton (style libellé)."
+    },
+    "ds-libelle-graisse": {
+      "jeton": "typo.libelle",
+      "champ": "fontWeight",
+      "$description": "Graisse du texte du bouton (style libellé)."
+    },
+    "ds-libelle-interligne": {
+      "jeton": "typo.libelle",
+      "champ": "lineHeight",
+      "$description": "Interligne du texte du bouton (style libellé), sans unité."
     }
   }
 }

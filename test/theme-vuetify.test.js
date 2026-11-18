@@ -34,6 +34,18 @@
  *      (« clé en on- : on-primary ») ;
  *   V8 npm run vuetify -- --marque <dossier> : sortie 0, « ✓ vuetify.json inchangé » ; sans l'option, un bloc par
  *      marque ; option inconnue : sortie 2.
+ *
+ * Ajouts pour l'enveloppe du bouton (18/11/2026, docs/attendus/bouton.md), écrits à la main avant le code :
+ *   V1 après les 13 fonds, cinq couleurs nommées d'après nos rôles : erreur-fort-survol, composant-survol,
+ *      interactif-discret, erreur-discret, desactive, chacune en paire de paires.json ;
+ *   V2 36 couleurs par thème (18 fonds, 18 textes) ;
+ *   V4 seule desactive est sous 4,5:1, et sa paire porte une exception écrite (3,32 en clair, 3,92 en sombre) ;
+ *   V9 variables ds- de chaque thème : arrondi 8px, hauteurs 40px et 32px, anneau 2px, icônes 20px et 16px, écart
+ *      icône-texte 8px, marge intérieure 16px, libellé 14px, graisse 600, interligne 1.4286, dans les dix thèmes ;
+ *      ds-focus, ds-contour et ds-contour-desactive égaux à bordure.focus, bordure.forte et bordure.discrete lus par
+ *      le lecteur ; chez Orbe Café #4c6994, #958f84, #d8d6d2 en clair et #86b6fe, #6a665c, #303030 en sombre ;
+ *   V7 variable fausse, panne qui la nomme : sans le préfixe ds-, champ inconnu, couleur sans paire ni sansPaire,
+ *      sansPaire sur un trait qui a sa paire, jeton absent.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -50,6 +62,9 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const MARQUES = dossiersDeMarque();
 const FONDS = ['background', 'surface', 'surface-bright', 'surface-light', 'surface-variant', 'primary', 'primary-darken-1', 'secondary', 'secondary-darken-1', 'error', 'info', 'success', 'warning'];
 const DEFAUTS = [...FONDS, 'on-surface-variant'];
+/** Couleurs de l'enveloppe du bouton, après les fonds de Vuetify. */
+const BOUTON = ['erreur-fort-survol', 'composant-survol', 'interactif-discret', 'erreur-discret', 'desactive'];
+const COULEURS = [...FONDS, ...BOUTON];
 /** @param {string} p */
 const lire = (p) => JSON.parse(readFileSync(p, 'utf8'));
 const brute = () => lire(join(COMMUN, 'vuetify.json'));
@@ -57,11 +72,11 @@ const dossier = (/** @type {string} */ m) => join(ROOT, 'tokens', m);
 /** Noms d'une valeur CSS font-family, guillemets ôtés. @param {string} s */
 const noms = (s) => s.split(',').map((x) => x.trim().replace(/^"(.*)"$/, '$1'));
 
-test('V1 table : les 13 fonds par défaut de Vuetify, un texte chacun, en paire de paires.json', () => {
+test('V1 table : les 13 fonds par défaut de Vuetify, puis ceux du bouton, un texte chacun, en paire de paires.json', () => {
   const t = brute();
-  assert.deepEqual(Object.keys(t.couleurs).filter((k) => !k.startsWith('$')), FONDS);
+  assert.deepEqual(Object.keys(t.couleurs).filter((k) => !k.startsWith('$')), COULEURS);
   const paires = lire(join(COMMUN, 'paires.json')).paires.filter((/** @type {any} */ p) => p.type === 'texte');
-  for (const k of FONDS) {
+  for (const k of COULEURS) {
     const { fond, texte } = t.couleurs[k];
     assert.ok(paires.some((/** @type {any} */ p) => p.fond === fond && p.devant === texte), `${k} : ${texte} sur ${fond}`);
   }
@@ -71,7 +86,7 @@ test('V1 table : les 13 fonds par défaut de Vuetify, un texte chacun, en paire 
   assert.match(t.couleurs.secondary.$description, /Jamais une couleur de bouton \(D05\)/);
 });
 
-test('V2 deux thèmes nommés par marque, 26 couleurs qui couvrent les défauts de Vuetify', () => {
+test('V2 deux thèmes nommés par marque, 36 couleurs qui couvrent les défauts de Vuetify', () => {
   assert.equal(MARQUES.length, 5);
   for (const d of MARQUES) {
     const r = themesVuetify(d);
@@ -81,7 +96,7 @@ test('V2 deux thèmes nommés par marque, 26 couleurs qui couvrent les défauts 
     assert.equal(r.themes[`${slug}-clair`].dark, false);
     assert.equal(r.themes[`${slug}-sombre`].dark, true);
     for (const [nom, th] of Object.entries(r.themes)) {
-      assert.equal(Object.keys(th.colors).length, 26, nom);
+      assert.equal(Object.keys(th.colors).length, 36, nom);
       for (const k of DEFAUTS) assert.ok(k in th.colors, `${nom} : ${k}`);
       for (const k of FONDS) assert.ok(`on-${k}` in th.colors, `${nom} : on-${k}`);
     }
@@ -103,7 +118,7 @@ test('V3 valeurs de l\'essai, et chaque couleur égale son rôle', () => {
     for (const [mode, th] of [['clair', Object.values(r.themes)[0]], ['sombre', Object.values(r.themes)[1]]]) {
       const s = loadRoles(d, { mode: /** @type {string} */ (mode) });
       const roles = resolveRoles(s.semantique, s.primitives, s.marque);
-      for (const k of FONDS) {
+      for (const k of COULEURS) {
         assert.equal(/** @type {any} */ (th).colors[k], roles.get(t.couleurs[k].fond)?.hex, `${d} ${mode} ${k}`);
         assert.equal(/** @type {any} */ (th).colors[`on-${k}`], roles.get(t.couleurs[k].texte)?.hex, `${d} ${mode} on-${k}`);
       }
@@ -111,17 +126,22 @@ test('V3 valeurs de l\'essai, et chaque couleur égale son rôle', () => {
   }
 });
 
-test('V4 chaque couleur et son texte : au moins 4,5:1 (culori)', () => {
+test('V4 chaque couleur et son texte : au moins 4,5:1 (culori), sauf desactive, dont la paire porte son exception', () => {
+  const t = brute();
+  const exception = lire(join(COMMUN, 'paires.json')).paires.find((/** @type {any} */ p) => p.fond === t.couleurs.desactive.fond && p.devant === t.couleurs.desactive.texte)?.exception;
+  assert.ok(typeof exception === 'string' && exception.length > 10, 'exception écrite du désactivé');
   for (const d of MARQUES)
     for (const [nom, th] of Object.entries(themesVuetify(d).themes))
-      for (const k of FONDS) {
+      for (const k of COULEURS) {
         const c = wcagContrast(th.colors[`on-${k}`], th.colors[k]);
-        assert.ok(c >= 4.5, `${nom} ${k} : ${c}`);
+        if (k === 'desactive') assert.ok(c < 4.5 && c >= 3.32, `${nom} ${k} : ${c}`);
+        else assert.ok(c >= 4.5, `${nom} ${k} : ${c}`);
       }
 });
 
 test('V5 polices du texte et des titres, comme la feuille jetons.css de la marque', () => {
-  const v = (/** @type {string} */ m) => Object.values(themesVuetify(dossier(m)).themes).map((th) => th.variables);
+  const polices = (/** @type {Record<string, string>} */ x) => ({ 'font-body': x['font-body'], 'font-heading': x['font-heading'] });
+  const v = (/** @type {string} */ m) => Object.values(themesVuetify(dossier(m)).themes).map((th) => polices(th.variables));
   for (const x of v('orbe-cafe')) assert.deepEqual(x, { 'font-body': '"Orbe Sans", Arial, sans-serif', 'font-heading': 'Georgia, serif' });
   for (const x of v('maison-alberto')) assert.deepEqual(x, { 'font-body': 'system-ui, sans-serif', 'font-heading': '"National Park", sans-serif' });
   for (const d of MARQUES) {
@@ -154,6 +174,35 @@ test('V7 table fausse : panne qui la nomme', () => {
   assert.throws(() => themesVuetify(d, { couleurs: { primary: { fond: 'fond.inexistant', texte: 'texte.sur-interactif' } }, polices: {} }), /rôle absent : fond\.inexistant/);
   assert.throws(() => lireTable(avec((t) => { t.couleurs.primary.texte = 'texte.principal'; }), paires), /paire hors de paires\.json : texte\.principal sur fond\.interactif\.fort/);
   assert.throws(() => lireTable(avec((t) => { t.couleurs['on-primary'] = { fond: 'fond.app', texte: 'texte.principal' }; }), paires), /clé en on- : on-primary/);
+  assert.throws(() => lireTable(avec((t) => { t.variables.focus = { jeton: 'bordure.focus' }; }), paires), /variable sans le préfixe ds- : focus/);
+  assert.throws(() => lireTable(avec((t) => { t.variables['ds-libelle-taille'].champ = 'letterSpacing'; }), paires), /champ inconnu : letterSpacing/);
+  assert.throws(() => lireTable(avec((t) => { t.variables['ds-focus'].sansPaire = 'essai'; }), paires), /sansPaire sur un trait qui a sa paire : bordure\.focus/);
+  assert.throws(() => themesVuetify(d, lireTable(avec((t) => { delete t.variables['ds-contour-desactive'].sansPaire; }), paires)), /couleur sans paire : bordure\.discrete/);
+  assert.throws(() => themesVuetify(d, lireTable(avec((t) => { t.variables['ds-arrondi-controle'].jeton = 'arrondi.inexistant'; }), paires)), /jeton absent : arrondi\.inexistant/);
+});
+
+test('V9 variables ds- du bouton : dimensions dans les dix thèmes, traits égaux à leurs rôles', () => {
+  const DIMENSIONS = {
+    'ds-arrondi-controle': '8px', 'ds-hauteur-controle-normale': '40px', 'ds-hauteur-controle-petite': '32px', 'ds-epaisseur-focus': '2px',
+    'ds-taille-icone-normale': '20px', 'ds-taille-icone-petite': '16px', 'ds-ecart-icone-texte': '8px', 'ds-marge-interieure-composant': '16px',
+    'ds-libelle-taille': '14px', 'ds-libelle-graisse': '600', 'ds-libelle-interligne': '1.4286',
+  };
+  const TRAITS = { 'ds-focus': 'bordure.focus', 'ds-contour': 'bordure.forte', 'ds-contour-desactive': 'bordure.discrete' };
+  for (const d of MARQUES) {
+    const themes = Object.values(themesVuetify(d).themes);
+    for (const [i, mode] of /** @type {const} */ (['clair', 'sombre']).entries()) {
+      const x = themes[i].variables;
+      assert.deepEqual(Object.keys(x).filter((k) => k.startsWith('ds-')).sort(), [...Object.keys(DIMENSIONS), ...Object.keys(TRAITS)].sort(), `${d} ${mode}`);
+      for (const [k, v] of Object.entries(DIMENSIONS)) assert.equal(x[k], v, `${d} ${mode} ${k}`);
+      const s = loadRoles(d, { mode });
+      const roles = resolveRoles(s.semantique, s.primitives, s.marque);
+      for (const [k, r] of Object.entries(TRAITS)) assert.equal(x[k], roles.get(r)?.hex, `${d} ${mode} ${k}`);
+    }
+  }
+  const orbe = themesVuetify(dossier('orbe-cafe')).themes;
+  const traits = (/** @type {Record<string, string>} */ x) => [x['ds-focus'], x['ds-contour'], x['ds-contour-desactive']];
+  assert.deepEqual(traits(orbe['orbe-cafe-clair'].variables), ['#4c6994', '#958f84', '#d8d6d2']);
+  assert.deepEqual(traits(orbe['orbe-cafe-sombre'].variables), ['#86b6fe', '#6a665c', '#303030']);
 });
 
 test('V8 npm run vuetify : une marque, toutes, option inconnue', () => {

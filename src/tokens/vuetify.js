@@ -6,6 +6,10 @@
  * écrit en --v-font-body et --v-font-heading.
  * La table est vérifiée avant toute marque : chaque fond et son texte forment une paire de texte de paires.json
  * (contrôlée par npm run contraste), et aucune clé n'est écrite en on-. Un rôle absent d'une marque lève.
+ * Les variables de la table (traits et dimensions de l'enveloppe du bouton) vont aussi dans les variables du thème,
+ * sous une clé en ds- : une couleur en hex (Vuetify l'écrit en r, g, b), une dimension en px, un nombre tel quel ; champ
+ * prend une partie d'un style de texte. Une variable de couleur est le trait devant d'une paire de paires.json, ou porte
+ * sa raison (sansPaire) ; sinon, panne.
  */
 import { readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
@@ -19,8 +23,14 @@ export const THEMES = 'vuetify.json';
 /** Modes du resolver, et la valeur dark de Vuetify qui va avec. */
 const MODES = /** @type {const} */ ([['clair', false], ['sombre', true]]);
 
+/** Parties d'un style de texte qu'une variable peut prendre. */
+const CHAMPS = ['fontSize', 'fontWeight', 'lineHeight'];
+/** Préfixe des variables de la table : aucune variable de Vuetify ne le porte. */
+const PREFIXE = 'ds-';
+
 /**
- * @typedef {{ couleurs: Record<string, { fond: string, texte: string }>, polices: Record<string, { jeton: string }> }} Table
+ * @typedef {{ jeton: string, champ?: string, paire: boolean, sansPaire?: string }} Variable
+ * @typedef {{ couleurs: Record<string, { fond: string, texte: string }>, polices: Record<string, { jeton: string }>, variables: Record<string, Variable> }} Table
  */
 
 /** Clés d'un objet de la table, sans les clés DTCG ($description). @param {Record<string, any>} o */
@@ -33,7 +43,7 @@ const cles = (o) => Object.keys(o ?? {}).filter((k) => !k.startsWith('$'));
  */
 export function lireTable(brute = JSON.parse(readFileSync(join(COMMUN, 'vuetify.json'), 'utf8')), paires = JSON.parse(readFileSync(join(COMMUN, 'paires.json'), 'utf8'))) {
   /** @type {Table} */
-  const table = { couleurs: {}, polices: {} };
+  const table = { couleurs: {}, polices: {}, variables: {} };
   for (const k of cles(brute.couleurs)) {
     if (k.startsWith('on-')) throw new Error(`table Vuetify : clé en on- : ${k}`);
     const { fond, texte } = brute.couleurs[k];
@@ -42,7 +52,38 @@ export function lireTable(brute = JSON.parse(readFileSync(join(COMMUN, 'vuetify.
     table.couleurs[k] = { fond, texte };
   }
   for (const k of cles(brute.polices)) table.polices[k] = { jeton: brute.polices[k].jeton };
+  for (const k of cles(brute.variables)) {
+    if (!k.startsWith(PREFIXE)) throw new Error(`table Vuetify : variable sans le préfixe ${PREFIXE} : ${k}`);
+    const { jeton, champ, sansPaire } = brute.variables[k];
+    if (typeof jeton !== 'string' || !jeton) throw new Error(`table Vuetify : variable sans jeton : ${k}`);
+    if (champ !== undefined && !CHAMPS.includes(champ)) throw new Error(`table Vuetify : champ inconnu : ${champ} (${k} ; ${CHAMPS.join(', ')})`);
+    if (sansPaire !== undefined && !(typeof sansPaire === 'string' && sansPaire.trim())) throw new Error(`table Vuetify : sansPaire vide : ${k}`);
+    const paire = (paires.paires ?? []).some((/** @type {any} */ p) => p.devant === jeton);
+    if (paire && sansPaire !== undefined) throw new Error(`table Vuetify : sansPaire sur un trait qui a sa paire : ${jeton} (${k})`);
+    table.variables[k] = { jeton, ...(champ ? { champ } : {}), paire, ...(sansPaire ? { sansPaire } : {}) };
+  }
   return table;
+}
+
+/**
+ * Valeur d'une variable du thème : hex d'une couleur, px d'une dimension, nombre tel quel.
+ * @param {Map<string, any>} jetons @param {string} cle @param {Variable} v @param {string} ou marque et mode, pour les messages
+ */
+function valeurVariable(jetons, cle, v, ou) {
+  const t = jetons.get(v.jeton);
+  if (!t) throw new Error(`table Vuetify : jeton absent : ${v.jeton} (${ou})`);
+  let { valeur } = resoudreAlias(jetons, t.$value, { depuis: v.jeton, chaine: [v.jeton] });
+  if (v.champ) {
+    if (!valeur || typeof valeur !== 'object' || !(v.champ in valeur)) throw new Error(`table Vuetify : ${v.jeton} n'a pas de champ ${v.champ} (${cle})`);
+    valeur = resoudreAlias(jetons, valeur[v.champ], { depuis: v.jeton, chaine: [v.jeton] }).valeur;
+  }
+  if (typeof valeur === 'number') return String(valeur);
+  if (typeof valeur?.hex === 'string') {
+    if (!v.paire && !v.sansPaire) throw new Error(`table Vuetify : couleur sans paire : ${v.jeton} (${cle}) ; la déclarer dans paires.json, ou dire pourquoi (sansPaire)`);
+    return valeur.hex.toLowerCase();
+  }
+  if (typeof valeur?.value === 'number' && valeur.unit === 'px') return `${valeur.value}px`;
+  throw new Error(`table Vuetify : valeur illisible pour ${cle} : ${v.jeton} (couleur, dimension en px ou nombre attendus)`);
 }
 
 /**
@@ -77,6 +118,8 @@ export function themesVuetify(dossier, table = lireTable()) {
       if (!t) throw new Error(`table Vuetify : jeton absent : ${jeton} (${slug}, ${mode})`);
       variables[k] = famille(resoudreAlias(jetons, t.$value, { depuis: jeton, chaine: [jeton] }).valeur);
     }
+    const tous = new Map([...jetons, ...flattenTokens(set.semantique)]);
+    for (const [k, v] of Object.entries(table.variables)) variables[k] = valeurVariable(tous, k, v, `${slug}, ${mode}`);
     themes[`${slug}-${mode}`] = { dark, colors, variables };
   }
   return { nom: nomDeMarque(dossier), themes };

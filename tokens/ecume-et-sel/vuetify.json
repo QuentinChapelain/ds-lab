@@ -30,11 +30,35 @@
         "success": "#00774a",
         "on-success": "#ffffff",
         "warning": "#e5a000",
-        "on-warning": "#442d01"
+        "on-warning": "#442d01",
+        "erreur-fort-survol": "#6a0000",
+        "on-erreur-fort-survol": "#ffffff",
+        "composant-survol": "#ecebe9",
+        "on-composant-survol": "#363026",
+        "interactif-discret": "#e3f6fe",
+        "on-interactif-discret": "#21708b",
+        "erreur-discret": "#fff0ee",
+        "on-erreur-discret": "#cb1d2a",
+        "desactive": "#f3f2f1",
+        "on-desactive": "#8a8478"
       },
       "variables": {
         "font-body": "Verdana, sans-serif",
-        "font-heading": "\"Trebuchet MS\", sans-serif"
+        "font-heading": "\"Trebuchet MS\", sans-serif",
+        "ds-focus": "#21708b",
+        "ds-contour": "#958f84",
+        "ds-contour-desactive": "#d8d6d2",
+        "ds-arrondi-controle": "8px",
+        "ds-hauteur-controle-normale": "40px",
+        "ds-hauteur-controle-petite": "32px",
+        "ds-epaisseur-focus": "2px",
+        "ds-taille-icone-normale": "20px",
+        "ds-taille-icone-petite": "16px",
+        "ds-ecart-icone-texte": "8px",
+        "ds-marge-interieure-composant": "16px",
+        "ds-libelle-taille": "14px",
+        "ds-libelle-graisse": "600",
+        "ds-libelle-interligne": "1.4286"
       }
     },
     "ecume-et-sel-sombre": {
@@ -65,11 +89,35 @@
         "success": "#00cd84",
         "on-success": "#0e1310",
         "warning": "#ffd595",
-        "on-warning": "#121212"
+        "on-warning": "#121212",
+        "erreur-fort-survol": "#fcc9c4",
+        "on-erreur-fort-survol": "#1a0f0e",
+        "composant-survol": "#212121",
+        "on-composant-survol": "#d8d5ce",
+        "interactif-discret": "#1b1b1b",
+        "on-interactif-discret": "#c9efff",
+        "erreur-discret": "#231918",
+        "on-erreur-discret": "#ff978f",
+        "desactive": "#1b1b1b",
+        "on-desactive": "#7d786c"
       },
       "variables": {
         "font-body": "Verdana, sans-serif",
-        "font-heading": "\"Trebuchet MS\", sans-serif"
+        "font-heading": "\"Trebuchet MS\", sans-serif",
+        "ds-focus": "#c9efff",
+        "ds-contour": "#6a665c",
+        "ds-contour-desactive": "#303030",
+        "ds-arrondi-controle": "8px",
+        "ds-hauteur-controle-normale": "40px",
+        "ds-hauteur-controle-petite": "32px",
+        "ds-epaisseur-focus": "2px",
+        "ds-taille-icone-normale": "20px",
+        "ds-taille-icone-petite": "16px",
+        "ds-ecart-icone-texte": "8px",
+        "ds-marge-interieure-composant": "16px",
+        "ds-libelle-taille": "14px",
+        "ds-libelle-graisse": "600",
+        "ds-libelle-interligne": "1.4286"
       }
     }
   }
