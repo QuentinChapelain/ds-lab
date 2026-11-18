@@ -90,7 +90,7 @@ export async function runComposants(opts) {
         lignes.push(...releve.map((r) => ({ ...r, page: i, id: idDe(i, r.index) })));
         pages.push({ adresse: url, nom, statut: nav.status });
         onglets.set(i, page);
-        log(`${url} : ${releve.length} éléments relevés`);
+        log(`${url} : ${releve.length} lignes de relevé (pièces et blocs)`);
       } catch (e) {
         const erreur = String(/** @type {any} */ (e)?.message ?? e).split('\n')[0];
         pages.push({ adresse: url, nom, statut: null, erreur });
