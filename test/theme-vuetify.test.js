@@ -40,7 +40,7 @@
  *      interactif-discret, erreur-discret, desactive, chacune en paire de paires.json ;
  *   V2 36 couleurs par thème (18 fonds, 18 textes) ;
  *   V4 seule desactive est sous 4,5:1, et sa paire porte une exception écrite (3,32 en clair, 3,92 en sombre) ;
- *   V9 variables ds- de chaque thème : arrondi 8px, hauteurs 40px et 32px, anneau 2px, icônes 20px et 16px, écart
+ *   V9 variables ds- de chaque thème : arrondi 8px, hauteurs 40px et 32px, anneau 2px décalé de 2px, icônes 20px et 16px, écart
  *      icône-texte 8px, marge intérieure 16px, libellé 14px, graisse 600, interligne 1.4286, dans les dix thèmes ;
  *      ds-focus, ds-contour et ds-contour-desactive égaux à bordure.focus, bordure.forte et bordure.discrete lus par
  *      le lecteur ; chez Orbe Café #4c6994, #958f84, #d8d6d2 en clair et #86b6fe, #6a665c, #303030 en sombre ;
@@ -183,7 +183,7 @@ test('V7 table fausse : panne qui la nomme', () => {
 
 test('V9 variables ds- du bouton : dimensions dans les dix thèmes, traits égaux à leurs rôles', () => {
   const DIMENSIONS = {
-    'ds-arrondi-controle': '8px', 'ds-hauteur-controle-normale': '40px', 'ds-hauteur-controle-petite': '32px', 'ds-epaisseur-focus': '2px',
+    'ds-arrondi-controle': '8px', 'ds-hauteur-controle-normale': '40px', 'ds-hauteur-controle-petite': '32px', 'ds-epaisseur-focus': '2px', 'ds-decalage-focus': '2px',
     'ds-taille-icone-normale': '20px', 'ds-taille-icone-petite': '16px', 'ds-ecart-icone-texte': '8px', 'ds-marge-interieure-composant': '16px',
     'ds-libelle-taille': '14px', 'ds-libelle-graisse': '600', 'ds-libelle-interligne': '1.4286',
   };

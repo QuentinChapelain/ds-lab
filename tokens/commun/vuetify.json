@@ -134,6 +134,10 @@
       "jeton": "epaisseur.focus",
       "$description": "Épaisseur de l'anneau de focus."
     },
+    "ds-decalage-focus": {
+      "jeton": "decalage.focus",
+      "$description": "Décalage de l'anneau de focus hors du bouton (DS2)."
+    },
     "ds-taille-icone-normale": {
       "jeton": "taille-icone.normale",
       "$description": "Icône du bouton de taille normale."

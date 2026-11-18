@@ -152,3 +152,7 @@ Les rôles `rayon.controle`, `hauteur.controle.*`, `epaisseur.focus` et `taille-
 - Rôles inchangés, cibles nouvelles : `hauteur.controle.normale` → `{taille.40}`, `hauteur.controle.petite` → `{taille.32}`, `epaisseur.focus` → `{trait.2}`, `taille-icone.normale` → `{taille.20}`, `taille-icone.petite` → `{taille.16}`.
 
 Valeurs en px, couleurs et rapports inchangés.
+
+## Correction du 18/11/2026, validée avant le commit de l'enveloppe
+
+Le décalage de l'anneau de focus (2 px, DS2) n'avait pas de jeton. Décision : un rôle `decalage.focus` → `{trait.2}` (2 px), passé au thème par la variable `ds-decalage-focus` de la table Vuetify, et vérifié par la preuve avec les autres variables `ds-`. L'enveloppe lit cette variable, sans valeur écrite à la main.
