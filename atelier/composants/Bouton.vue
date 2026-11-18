@@ -1,7 +1,7 @@
 <script>
-// Enveloppe du bouton (D43) : seul endroit du dépôt où paraît le bouton de Vuetify. Elle n'accepte que son menu
-// (variante, taille, icône, pleine largeur, désactivé, chargement, type) et une liste blanche d'attributs ; tout le reste
-// lève, et aucun bouton n'est rendu. Couleurs, dimensions et texte viennent des variables du thème de la marque
+// Enveloppe du bouton (D43) : seul endroit du dépôt où paraît le bouton de Vuetify. Son menu (Bouton.menu.js) et la
+// liste blanche d'attributs sont vérifiés par la fabrique commune (fabrique.js, D51) : tout le reste lève, et aucun
+// bouton n'est rendu. Couleurs, dimensions et texte viennent des variables du thème de la marque
 // (tokens/<marque>/vuetify.json, D41) : aucune valeur n'est écrite ici.
 //
 // Ce que fait v-btn, lu dans vuetify 4.3.4 : disabled pose l'attribut natif (bouton hors du focus) ; loading pose
@@ -12,10 +12,9 @@
 // page quand le thème change sur place, même seule dans une story (KNOWN_ISSUES.md).
 import { h } from 'vue';
 import { VBtn } from 'vuetify/components';
+import { definirEnveloppe } from './fabrique.js';
+import MENU from './Bouton.menu.js';
 
-const VARIANTES = ['principal', 'secondaire', 'discret', 'danger', 'danger-discret'];
-const TAILLES = ['normale', 'petite'];
-const TYPES = ['button', 'submit', 'reset'];
 /** Annonce de la zone de statut pendant le chargement. */
 const ANNONCE = 'Chargement en cours';
 
@@ -25,79 +24,47 @@ const roue = () =>
     h('circle', { cx: 12, cy: 12, r: 9, fill: 'none', stroke: 'currentColor', 'stroke-width': 2.5, 'stroke-linecap': 'round', 'stroke-dasharray': '42 100' }),
   ]);
 
-/** Attribut admis en plus des props : id, aria-*, data-*, écouteurs. @param {string} cle */
-const admis = (cle) => cle === 'id' || /^aria-/.test(cle) || /^data-/.test(cle) || /^on[A-Z]/.test(cle);
-
-/**
- * Refus d'un usage hors du menu : une erreur qui le nomme.
- * @param {Record<string, any>} props @param {Record<string, unknown>} attrs
- */
-function verifier(props, attrs) {
-  const refuses = Object.keys(attrs).filter((k) => !admis(k));
-  if (refuses.length) throw new Error(`bouton : attribut refusé : ${refuses.join(', ')}`);
-  if (!VARIANTES.includes(props.variante)) throw new Error(`bouton : variante inconnue : ${props.variante} (${VARIANTES.join(', ')})`);
-  if (!TAILLES.includes(props.taille)) throw new Error(`bouton : taille inconnue : ${props.taille} (${TAILLES.join(', ')})`);
-  if (!TYPES.includes(props.type)) throw new Error(`bouton : type inconnu : ${props.type} (${TYPES.join(', ')})`);
-  if (props.desactive && props.type === 'submit') throw new Error('bouton : désactivé refusé sur type=submit');
-}
-
-export default {
-  name: 'Bouton',
-  inheritAttrs: false,
-  props: {
-    variante: { type: String, default: 'principal' },
-    taille: { type: String, default: 'normale' },
-    icone: { type: [Object, Function], default: null },
-    pleineLargeur: { type: Boolean, default: false },
-    desactive: { type: Boolean, default: false },
-    chargement: { type: Boolean, default: false },
-    type: { type: String, default: 'button' },
-  },
-  emits: ['click'],
-  setup(props, { attrs, emit, slots }) {
-    verifier(props, attrs);
-    /** @param {MouseEvent} e */
-    const clic = (e) => {
-      if (props.desactive || props.chargement) {
-        e.preventDefault();
-        return;
-      }
-      emit('click', e);
-    };
-    return () => {
-      verifier(props, attrs);
-      const inactif = props.desactive || props.chargement;
-      const bouton = h(
-        VBtn,
-        {
-          ...attrs,
-          class: [
-            'ds-bouton',
-            `ds-bouton--${props.variante}`,
-            `ds-bouton--${props.taille}`,
-            { 'ds-bouton--pleine': props.pleineLargeur, 'ds-bouton--desactive': props.desactive, 'ds-bouton--chargement': props.chargement, 'ds-bouton--inactif': inactif },
-          ],
-          type: props.type,
-          variant: 'flat',
-          ripple: false,
-          block: props.pleineLargeur,
-          'aria-disabled': inactif ? 'true' : undefined,
-          'aria-busy': props.chargement ? 'true' : undefined,
-          onClick: clic,
-        },
-        {
-          ...(props.icone ? { prepend: () => h('span', { class: 'ds-bouton__icone', 'aria-hidden': 'true' }, [h(props.icone)]) } : {}),
-          default: () => [
-            h('span', { class: 'ds-bouton__texte' }, slots.default?.()),
-            props.chargement ? h('span', { class: 'ds-bouton__roue', 'aria-hidden': 'true' }, [roue()]) : null,
-          ],
-        },
-      );
-      const statut = h('span', { class: 'ds-bouton__statut', role: 'status' }, props.chargement ? ANNONCE : '');
-      return [bouton, statut];
-    };
-  },
-};
+export default definirEnveloppe(MENU, (props, { attrs, emit, slots }) => {
+  /** @param {MouseEvent} e */
+  const clic = (e) => {
+    if (props.desactive || props.chargement) {
+      e.preventDefault();
+      return;
+    }
+    emit('click', e);
+  };
+  return () => {
+    const inactif = props.desactive || props.chargement;
+    const bouton = h(
+      VBtn,
+      {
+        ...attrs,
+        class: [
+          'ds-bouton',
+          `ds-bouton--${props.variante}`,
+          `ds-bouton--${props.taille}`,
+          { 'ds-bouton--pleine': props.pleineLargeur, 'ds-bouton--desactive': props.desactive, 'ds-bouton--chargement': props.chargement, 'ds-bouton--inactif': inactif },
+        ],
+        type: props.type,
+        variant: 'flat',
+        ripple: false,
+        block: props.pleineLargeur,
+        'aria-disabled': inactif ? 'true' : undefined,
+        'aria-busy': props.chargement ? 'true' : undefined,
+        onClick: clic,
+      },
+      {
+        ...(props.icone ? { prepend: () => h('span', { class: 'ds-bouton__icone', 'aria-hidden': 'true' }, [h(props.icone)]) } : {}),
+        default: () => [
+          h('span', { class: 'ds-bouton__texte' }, slots.default?.()),
+          props.chargement ? h('span', { class: 'ds-bouton__roue', 'aria-hidden': 'true' }, [roue()]) : null,
+        ],
+      },
+    );
+    const statut = h('span', { class: 'ds-bouton__statut', role: 'status' }, props.chargement ? ANNONCE : '');
+    return [bouton, statut];
+  };
+});
 </script>
 
 <style>
