@@ -12,7 +12,7 @@
 - Contrôle d'encre : pire cas sur tout le jeu de caractères, même si cette capitale et cette descendante ne se suivent jamais ; le contrôle est prudent, il peut refuser une police qui passerait à l'œil. L'encre est lue dans les pixels du tracé à 1 000 px (D32) : une ligne de pixels vaut 0,001 em, et le lissage peut ajouter jusqu'à une ligne au bord ; macOS et Linux s'accordent à 0,001 em sur les polices d'essai [F]. Coût : environ 0,65 s par police sur un Mac, 1,9 s sur le runner de la CI, contre 0,11 s avec les bornes de `measureText` [F].
 - Police des titres sans fichier (Orbe Café, Georgia ; Maison Alberto, National Park) : ni hauteur de capitale ni encre contrôlées ; Georgia touchait déjà avant la consigne avec les lignes de l'étape 3. National Park n'est installée ni sur le poste ni sur le runner : elle est rendue dans la police de repli [H].
 - Image des titres de l'étape 4c (`local/lot-4c/titres.png`) et son script : dans `local/` seulement.
-- Primitives espace 0, 12 et 64 sans rôle (espace.8 sert à `ecart.icone-texte` depuis le bouton, D43), à revoir avec les composants suivants ; la carte n'a pas eu besoin de `espace.12` (D50, jugé sur les planches). Primitive `rayon.pilule` sans rôle (voir « Trous du design system », B10).
+- Primitives espace 0 et 64 sans rôle (espace.8 sert à `ecart.icone-texte` depuis le bouton, D43, et à `ecart.entre-etiquettes` ; espace.12 à `marge-interieure.etiquette` depuis l'étiquette, D54), à revoir avec les composants suivants. `rayon.pilule` a un rôle, `arrondi.pilule` (B10, D54).
 - Règle DS10 sans contrôle (`docs/regles.md`).
 - `texte.marque.grand` réservé à l'affichage et aux titres 1 et 2 (D14) : aucun contrôle ne vérifie cette limite, comme DS10.
 - Bouton principal sur l'aplat clair d'une marque claire : 1,40:1 (Écume et Sel) entre le bouton et l'aplat ; jugé suffisant sur image, sans paire ni refus. Piste : un contour très léger de la teinte du bouton.
@@ -136,6 +136,15 @@
 - Bouton à icône (D52) : le plein principal d'Écume et Sel en clair (`#7fdbff`) est à 1,51 contre la page et 1,56 contre la surface [F] ; l'icône s'y lit à 8,33, mais le carré se détache peu. Gardé sans changement (planches du 19/11/2026).
 - Bouton à icône (D52) : pas de bouton bascule (`aria-pressed`, « ajouter aux favoris ») ; `aria-pressed` passe pourtant la liste blanche, comme sur le bouton. Pièce à venir.
 - Icônes (D52) : `@mdi/js` 7.4.47 est la dernière version, publiée le 27/12/2023 [F]. Sa licence (« Pictogrammers Free License ») met les icônes sous Apache 2.0, « certaines redistribuées sous leur propre licence » ; la licence de chaque icône employée n'est pas vérifiée une à une [V].
+- **À reprendre sur la carte membre** (D55, planches du 19/11/2026) : en sombre, l'étiquette neutre disparaît presque sur une surface, `fond.composant` étant à 1,03 contre `fond.surface` dans les dix thèmes [F] ; le pastel de marque aussi (1,03). Le texte reste lisible (11,75 et plus), mais la forme se perd ; la carte membre posera ses étiquettes sur une surface.
+- **À reprendre sur la carte membre** (D55) : chez Écume et Sel en sombre, le ton marque a le même fond que le neutre (`fond.marque.discret` = `fond.composant` = `#1b1b1b`) ; seul le texte (`#ebf9ff` contre `#d8d5ce`) distingue « Mentor » des autres étiquettes [F].
+- Avatar (D54) : la photo est posée par-dessus les initiales ; une photo à fond transparent les laisse voir dessous [H].
+- Avatar (D54) : limites de la règle des initiales : un double nom espagnol donne la lettre du dernier mot (« Ana María Ruiz Soler » : AS) ; un titre (« Dr ») compte comme un mot ; une capitale de plusieurs caractères (`ß` → `SS`) n'est pas tronquée [H].
+- Avatar (D54) : ni badge d'état (il appartient à la navigation), ni groupe d'avatars, ni couleur par personne, ni autre forme que le rond.
+- Étiquette (D55) : la puce de Vuetify range son texte dans un `div`, enfant de son `span`, ce que le modèle de contenu HTML n'admet pas, et pose `draggable="false"` [F] ; sans effet observé. Règle d'usage : l'étiquette se pose dans une ligne ou dans un `<li>`.
+- Étiquette (D55) : un texte coupé par « … » reste entier pour un lecteur d'écran, mais l'œil n'en lit que le début ; aucune info-bulle (B1).
+- Étiquette (D55) : les puces de filtre (sélection dans un groupe) et les puces supprimables (bouton de fermeture) sont d'autres pièces, à venir ; `closable`, `filter`, `link`, `href` et `to` sont refusés.
+- Atelier : le nom de la ligne « en situation » de l'étiquette prend le titre 4 par un style écrit dans la story (`atelier/stories/Etiquette.stories.js`) : le titre 4 n'a pas de variable du thème ; à reprendre avec la carte membre.
 - Feuille CSS des jetons : Terrazzo écrit au-dessus de certains alias la description d'un autre jeton (`--fond-desactive` porte « fond de composant », `--fond-erreur-fort` « texte secondaire (4,5:1) ») [F, `tokens/orbe-cafe/jetons.css`] ; cause non cherchée [V]. Les valeurs sont justes (`test/css-jetons.test.js`).
 
 ## Trous du design system (relevés le 19/11/2026)
@@ -148,12 +157,12 @@ Relevés avec le champ et la carte (`docs/attendus/champ-carte.md`), avec le mom
 | B2 | Aucun jeton de mouvement (durées, courbes) ; le bouton gère `prefers-reduced-motion` à la main | Menu, fenêtre, focus animé | D'accord, et ça mord déjà : les animations du champ de Vuetify (contour, 250 ms) sont coupées ; avec des jetons de mouvement, reprendre le bouton et le champ |
 | B3 | Pas d'état « sélectionné » ni « coché » en rôle | Onglet, case à cocher | D'accord |
 | B4 | Pas de police d'icônes choisie | Bouton à icône seule | **Choisi, D52** : Material Design Icons en chemins SVG (`@mdi/js` 7.4.47), dans l'atelier ; l'aide `atelier/composants/icone.js`. Restent : l'erreur du champ sans icône (le texte suffit, WCAG 1.4.1), le mot de passe sans bouton « afficher » |
-| B5 | Avatar et étiquette sans enveloppe (l'avatar, la plus grosse dette) | Carte membre | D'accord |
+| B5 | Avatar et étiquette sans enveloppe (l'avatar, la plus grosse dette) | Carte membre | **Choisi, D54 et D55** : avatar rond au pastel de la marque, initiales en repli ; étiquette en pilule à fond teinté, deux tons, statique. Restent : le badge (navigation), le groupe d'avatars, les puces de filtre et supprimables |
 | B6 | Pas de grille ni de largeurs de conteneur ; seuil étroit 600 px [H] | Liste d'annuaire | D'accord, et j'y ajoute le thème Vuetify sans contexte de largeur : le titre de carte ne rétrécit pas en étroit |
 | B7 | Motifs de formulaire absents : groupe de champs, résumé d'erreurs, état vide, chargement d'une liste | Formulaires, listes | D'accord ; le résumé d'erreurs dira aussi si une erreur s'annonce et qui valide (le champ ne valide rien, sa story coupe la validation du navigateur) |
 | B8 | Aucune règle d'usage écrite (un seul bouton principal par vue, quand une carte est un lien) | Fiches d'usage | D'accord ; D50 en écrit deux : le texte d'une carte à lien ne contient ni lien ni bouton ; une carte se clique par un lien, jamais par un écouteur |
 | B9 | Pas de jeton de soulignement (épaisseur, décalage) ni d'enveloppe de lien | Lien dans le texte, pied de page | Ajouté : le titre souligné de la carte prend le soulignement par défaut du navigateur |
-| B10 | Pas de rôle pour `rayon.pilule` | Étiquette, avatar | Ajouté |
+| B10 | Pas de rôle pour `rayon.pilule` | Étiquette, avatar | **Comblé, D54** : `arrondi.pilule` |
 | B11 | Pas de règle d'usage pour le texte d'exemple | Fiches d'usage, avec B8 | Ajouté ; D49 l'écrit pour le champ : jamais à la place du libellé ni de l'aide |
 
 ## Revue de code du 15/11

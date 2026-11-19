@@ -81,9 +81,10 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 
 | Famille | Sujet | Défini dans |
 |---|---|---|
+| A1 à A4 | Règle des initiales de l'avatar, jetons, contrastes et variables `ds-` de l'avatar et de l'étiquette dans les dix thèmes | `test/avatar-etiquette.test.js` |
 | B1 à B5 | Jetons du bouton dans les dix thèmes, contrastes de l'icône du bouton à icône | `test/bouton-jetons.test.js` |
 | C1 à C13 | Fenêtre des candidats, grisé des marges, bilan par usage | `test/candidats.test.js`, `test/e2e-candidats-revue.test.js`, `fixtures/marque-demo/expected-candidats.json` |
-| E1 à E8 | Gardes des enveloppes (bouton, champ de texte, carte, bouton à icône), découpage d'un composant `.vue` | `test/enveloppe-bouton.test.js` |
+| E1 à E12 | Gardes des enveloppes (bouton, champ de texte, carte, bouton à icône, avatar, étiquette), découpage d'un composant `.vue` | `test/enveloppe-bouton.test.js` |
 | G0 à G8 | Générateur de valise | `src/valise/generate.js`, `test/valise-generate.test.js`, `test/gris-neutre.test.js` |
 | H1 à H4 | Jetons du champ de texte et de la carte dans les dix thèmes | `test/champ-carte-jetons.test.js` |
 | I1 à I7 | Rattacher les valeurs inchangées à leur jeton | `test/e2e-migration.test.js` |
