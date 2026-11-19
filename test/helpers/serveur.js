@@ -78,7 +78,10 @@ export async function startFixtureServers({ root = FIXTURE_DIR } = {}) {
   const main = createServer(handler(resolve(root), () => remoteOrigin));
   const remote = createServer(handler(join(FIXTURE_DIR, 'distant'), () => remoteOrigin));
   const p1 = await listen(main, '127.0.0.1');
-  const p2 = await listen(remote, 'localhost');
+  // Le distant écoute sur 127.0.0.1 et garde le nom localhost : l'origine diffère de la principale par le nom d'hôte.
+  // Écouter sur « localhost » prendrait la première adresse du système, ::1 dans un conteneur, où fetch ne cherche
+  // que 127.0.0.1.
+  const p2 = await listen(remote, '127.0.0.1');
   remoteOrigin = `http://localhost:${p2}`;
   const close = () =>
     Promise.all([main, remote].map((s) => new Promise((r) => s.close(() => r(undefined))))).then(() => undefined);
