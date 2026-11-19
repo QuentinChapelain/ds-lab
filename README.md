@@ -145,6 +145,10 @@ Les graphiques (D48) sont du SVG écrit par le rendu, sans script ni dépendance
 
 Les sorties vont dans `local/composants/<hôte>/<horodatage>/`. La commande sort en 0, ou en 2 sur une panne : fichier absent ou mal formé, page qui ne se charge pas (le constat est écrit sans elle). Sur les deux pages d'annuaire fictives (`fixtures/marque-demo/annuaire/`), avec la table de Vuetify : 27 éléments, 7 types, 12 versions ; 17 viennent de Vuetify, 10 sont faits autrement ; 3 blocs non identifiés ; source unique 20 sur 27, accessibilité de base 20 sur 23.
 
+## Règles
+
+Les règles du langage que l'outil produit, pour tout utilisateur : le design system, le nommage, les composants et leur documentation, chacune avec sa raison et son contrôle, sont dans `docs/regles.md`. Les fiches des composants les suivent : `docs/composants/README.md`.
+
 ## Atelier des composants
 
 Les composants sont des enveloppes autour de Vuetify 4 (Vue 3), montrées dans un atelier Storybook 10, dans `atelier/`, avec son propre `package.json` et son propre verrou : rien de ce qu'il installe n'entre à la racine (D42). Il y en a six : le bouton, `atelier/composants/Bouton.vue` (D43), le champ de texte, `atelier/composants/ChampTexte.vue` (D49), la carte, `atelier/composants/Carte.vue` (D50), le bouton à icône seule, `atelier/composants/BoutonIcone.vue` (D52), l'avatar, `atelier/composants/Avatar.vue` (D54), et l'étiquette, `atelier/composants/Etiquette.vue` (D55).

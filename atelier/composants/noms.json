@@ -1,0 +1,671 @@
+{
+  "$description": "Table des noms de l'interface publique des composants (NM1 à NM3, docs/regles.md) : pour chaque composant, son ancien nom, son nom en français et la source de son nom ; pour chaque prop, chaque valeur texte, chaque événement et chaque slot, son ancien nom et sa source (html, vuetify, vue ou courant). Les noms de composant sont relevés dans Component Gallery le 19/11/2026, en HTML brut, un nom compté une fois par système, sans casse ni espace ni tiret (docs/attendus/fiches.md) ; les sources « courant » des props et des valeurs ne sont pas relevées. Lue par npm --prefix atelier run fiches -- --verifier, qui refuse un nom absent, mal formé ou sans emploi.",
+  "composants": {
+    "DsButton": {
+      "ancien": "Bouton",
+      "fr": "bouton",
+      "source": "courant",
+      "galerie": {
+        "page": "component.gallery/components/button/",
+        "retenu": "Button",
+        "systemes": 84,
+        "liste": [
+          "98.css",
+          "A11Y Style Guide",
+          "Ant Design",
+          "Ariakit",
+          "Atlassian Design System",
+          "Auro",
+          "Aurora",
+          "Backpack",
+          "Base Web",
+          "Blueprint",
+          "Bootstrap",
+          "Brighton & Hove City Council Website pattern library",
+          "Bulma",
+          "Carbon Design System",
+          "Cauldron",
+          "Cedar",
+          "Chakra UI",
+          "Clarity Design System",
+          "Coral",
+          "Crayons",
+          "Decathlon Design System",
+          "Dell Design System",
+          "Duet Design System",
+          "Elastic UI framework",
+          "Elisa Design System",
+          "Flowbite",
+          "Fluent UI",
+          "Forma 36",
+          "GOLD Design System",
+          "GOV.UK Design System",
+          "Geist Design System",
+          "Gestalt",
+          "Grommet",
+          "Headless UI",
+          "Helios",
+          "Helsinki Design System",
+          "HeroUI",
+          "Instructure-UI",
+          "Jøkul Designsystem",
+          "Lightning Design System",
+          "Material Design",
+          "Morningstar Product System",
+          "Mozilla Protocol",
+          "Nessie",
+          "NewsKit",
+          "No Style Design System",
+          "Nord Design System",
+          "ONS Design System",
+          "Ontario Design System",
+          "Orbit",
+          "Pajamas",
+          "Paste",
+          "PatternFly",
+          "Pharos",
+          "Polaris",
+          "Porsche Design System",
+          "Primer",
+          "Purple3",
+          "Quasar Framework",
+          "Red Hat design system",
+          "Ruter Components",
+          "SEB Design Library",
+          "Sainsbury's Design System",
+          "Seeds",
+          "Seek style guide",
+          "Shoelace",
+          "Source",
+          "Spectrum",
+          "Stacks",
+          "SubZero",
+          "Thumbprint",
+          "United States Web Design System",
+          "Visa Product Design System",
+          "W3C design system",
+          "Wanda",
+          "Web Awesome",
+          "West Midlands Network Design System",
+          "Wise Design",
+          "Workday Canvas Design System",
+          "eBay MIND Patterns",
+          "eBay Playbook",
+          "giffgaff design system",
+          "shadcn/ui",
+          "uStyle"
+        ],
+        "ecartes": []
+      },
+      "props": {
+        "variant": {
+          "ancien": "variante",
+          "source": "vuetify",
+          "valeurs": {
+            "primary": {
+              "ancien": "principal",
+              "source": "courant"
+            },
+            "secondary": {
+              "ancien": "secondaire",
+              "source": "courant"
+            },
+            "ghost": {
+              "ancien": "discret",
+              "source": "courant"
+            },
+            "danger": {
+              "ancien": "danger",
+              "source": "courant"
+            },
+            "danger-ghost": {
+              "ancien": "danger-discret",
+              "source": "courant"
+            }
+          }
+        },
+        "size": {
+          "ancien": "taille",
+          "source": "vuetify",
+          "valeurs": {
+            "medium": {
+              "ancien": "normale",
+              "source": "courant"
+            },
+            "small": {
+              "ancien": "petite",
+              "source": "vuetify"
+            }
+          }
+        },
+        "prependIcon": {
+          "ancien": "icone",
+          "source": "vuetify"
+        },
+        "block": {
+          "ancien": "pleineLargeur",
+          "source": "vuetify"
+        },
+        "disabled": {
+          "ancien": "desactive",
+          "source": "html"
+        },
+        "loading": {
+          "ancien": "chargement",
+          "source": "vuetify"
+        },
+        "type": {
+          "ancien": "type",
+          "source": "html",
+          "valeurs": {
+            "button": {
+              "ancien": "button",
+              "source": "html"
+            },
+            "submit": {
+              "ancien": "submit",
+              "source": "html"
+            },
+            "reset": {
+              "ancien": "reset",
+              "source": "html"
+            }
+          }
+        }
+      },
+      "evenements": {
+        "click": {
+          "ancien": "click",
+          "source": "html"
+        }
+      },
+      "slots": {
+        "default": {
+          "ancien": "default",
+          "source": "vue"
+        }
+      }
+    },
+    "DsIconButton": {
+      "ancien": "BoutonIcone",
+      "fr": "bouton à icône",
+      "source": "courant",
+      "galerie": {
+        "page": "component.gallery/components/button/",
+        "retenu": "Icon button",
+        "systemes": 9,
+        "liste": [
+          "Cauldron",
+          "Chakra UI",
+          "Forma 36",
+          "Gestalt",
+          "Instructure-UI",
+          "Jøkul Designsystem",
+          "Primer",
+          "Shoelace",
+          "Wanda"
+        ],
+        "ecartes": []
+      },
+      "props": {
+        "label": {
+          "ancien": "libelle",
+          "source": "courant"
+        },
+        "icon": {
+          "ancien": "icone",
+          "source": "vuetify"
+        },
+        "variant": {
+          "ancien": "variante",
+          "source": "vuetify",
+          "valeurs": {
+            "ghost": {
+              "ancien": "discret",
+              "source": "courant"
+            },
+            "secondary": {
+              "ancien": "secondaire",
+              "source": "courant"
+            },
+            "primary": {
+              "ancien": "principal",
+              "source": "courant"
+            },
+            "danger-ghost": {
+              "ancien": "danger-discret",
+              "source": "courant"
+            }
+          }
+        },
+        "size": {
+          "ancien": "taille",
+          "source": "vuetify",
+          "valeurs": {
+            "medium": {
+              "ancien": "normale",
+              "source": "courant"
+            },
+            "small": {
+              "ancien": "petite",
+              "source": "vuetify"
+            }
+          }
+        },
+        "disabled": {
+          "ancien": "desactive",
+          "source": "html"
+        },
+        "type": {
+          "ancien": "type",
+          "source": "html",
+          "valeurs": {
+            "button": {
+              "ancien": "button",
+              "source": "html"
+            },
+            "submit": {
+              "ancien": "submit",
+              "source": "html"
+            },
+            "reset": {
+              "ancien": "reset",
+              "source": "html"
+            }
+          }
+        }
+      },
+      "evenements": {
+        "click": {
+          "ancien": "click",
+          "source": "html"
+        }
+      },
+      "slots": {}
+    },
+    "DsTextInput": {
+      "ancien": "ChampTexte",
+      "fr": "champ de texte",
+      "source": "courant",
+      "galerie": {
+        "page": "component.gallery/components/text-input/",
+        "retenu": "Text input",
+        "systemes": 25,
+        "liste": [
+          "Backpack",
+          "Carbon Design System",
+          "Decathlon Design System",
+          "Dell Design System",
+          "Evergreen",
+          "Forma 36",
+          "GOLD Design System",
+          "GOV.UK Design System",
+          "Grommet",
+          "Helios",
+          "Instructure-UI",
+          "Jøkul Designsystem",
+          "NHS Digital service manual",
+          "Nucleus Design System",
+          "Ontario Design System",
+          "Pajamas",
+          "PatternFly",
+          "Pharos",
+          "Primer",
+          "Sainsbury's Design System",
+          "United States Web Design System",
+          "West Midlands Network Design System",
+          "Wise Design",
+          "Workday Canvas Design System",
+          "giffgaff design system"
+        ],
+        "ecartes": [
+          {
+            "nom": "Input",
+            "systemes": 26,
+            "raison": "un seul mot, et le nom d'un élément HTML (NM2)"
+          },
+          {
+            "nom": "Text field",
+            "systemes": 12,
+            "raison": "moins courant",
+            "liste": [
+              "Atlassian Design System",
+              "Cauldron",
+              "Elastic UI framework",
+              "Fluent UI",
+              "Gestalt",
+              "Material Design",
+              "NewsKit",
+              "Polaris",
+              "Seek style guide",
+              "Spectrum",
+              "Wanda",
+              "eBay Playbook"
+            ]
+          }
+        ]
+      },
+      "props": {
+        "label": {
+          "ancien": "libelle",
+          "source": "vuetify"
+        },
+        "hint": {
+          "ancien": "aide",
+          "source": "vuetify"
+        },
+        "errorMessage": {
+          "ancien": "erreur",
+          "source": "vuetify"
+        },
+        "required": {
+          "ancien": "obligatoire",
+          "source": "html"
+        },
+        "disabled": {
+          "ancien": "desactive",
+          "source": "html"
+        },
+        "type": {
+          "ancien": "type",
+          "source": "html",
+          "valeurs": {
+            "text": {
+              "ancien": "text",
+              "source": "html"
+            },
+            "email": {
+              "ancien": "email",
+              "source": "html"
+            },
+            "search": {
+              "ancien": "search",
+              "source": "html"
+            },
+            "password": {
+              "ancien": "password",
+              "source": "html"
+            }
+          }
+        },
+        "prependInnerIcon": {
+          "ancien": "icone",
+          "source": "vuetify"
+        },
+        "modelValue": {
+          "ancien": "modelValue",
+          "source": "vue"
+        },
+        "name": {
+          "ancien": "nom",
+          "source": "html"
+        },
+        "autocomplete": {
+          "ancien": "autocomplete",
+          "source": "html"
+        },
+        "placeholder": {
+          "ancien": "exemple",
+          "source": "html"
+        }
+      },
+      "evenements": {
+        "update:modelValue": {
+          "ancien": "update:modelValue",
+          "source": "vue"
+        }
+      },
+      "slots": {}
+    },
+    "DsCard": {
+      "ancien": "Carte",
+      "fr": "carte",
+      "source": "courant",
+      "galerie": {
+        "page": "component.gallery/components/card/",
+        "retenu": "Card",
+        "systemes": 53,
+        "liste": [
+          "A11Y Style Guide",
+          "Ant Design",
+          "Auro",
+          "Aurora",
+          "Base Web",
+          "Blueprint",
+          "Bolt Design System",
+          "Bootstrap",
+          "Bulma",
+          "Cedar",
+          "Chakra UI",
+          "Clarity Design System",
+          "Coral",
+          "Decathlon Design System",
+          "Dell Design System",
+          "Duet Design System",
+          "Elastic UI framework",
+          "Elisa Design System",
+          "Flowbite",
+          "Forma 36",
+          "GOLD Design System",
+          "Helios",
+          "Helsinki Design System",
+          "HeroUI",
+          "Inclusive Components",
+          "Jøkul Designsystem",
+          "Lightning Design System",
+          "Material Design",
+          "Morningstar Product System",
+          "Mozilla Protocol",
+          "NHS Digital service manual",
+          "NewsKit",
+          "Nord Design System",
+          "Nucleus Design System",
+          "ONS Design System",
+          "Orbit",
+          "Pajamas",
+          "Paste",
+          "PatternFly",
+          "Quasar Framework",
+          "Red Hat design system",
+          "Ruter Components",
+          "SEB Design Library",
+          "Seek style guide",
+          "Shoelace",
+          "Spectrum",
+          "Stacks",
+          "W3C design system",
+          "Wanda",
+          "Web Awesome",
+          "Workday Canvas Design System",
+          "giffgaff design system",
+          "shadcn/ui"
+        ],
+        "ecartes": []
+      },
+      "props": {
+        "title": {
+          "ancien": "titre",
+          "source": "vuetify"
+        },
+        "headingLevel": {
+          "ancien": "niveau",
+          "source": "courant"
+        },
+        "image": {
+          "ancien": "media",
+          "source": "vuetify"
+        },
+        "imageAlt": {
+          "ancien": "texteAlternatif",
+          "source": "html"
+        },
+        "href": {
+          "ancien": "lien",
+          "source": "html"
+        }
+      },
+      "evenements": {},
+      "slots": {
+        "default": {
+          "ancien": "default",
+          "source": "vue"
+        },
+        "actions": {
+          "ancien": "actions",
+          "source": "vuetify"
+        }
+      }
+    },
+    "DsAvatar": {
+      "ancien": "Avatar",
+      "fr": "avatar",
+      "source": "courant",
+      "galerie": {
+        "page": "component.gallery/components/avatar/",
+        "retenu": "Avatar",
+        "systemes": 35,
+        "liste": [
+          "Ant Design",
+          "Atlassian Design System",
+          "Auro",
+          "Base Web",
+          "Chakra UI",
+          "Crayons",
+          "Elastic UI framework",
+          "Evergreen",
+          "Flowbite",
+          "Geist Design System",
+          "Gestalt",
+          "HeroUI",
+          "Instructure-UI",
+          "Lightning Design System",
+          "Momentum Design",
+          "Morningstar Product System",
+          "Nord Design System",
+          "Pajamas",
+          "PatternFly",
+          "Polaris",
+          "Primer",
+          "Quasar Framework",
+          "Radix Primitives",
+          "Red Hat design system",
+          "Shoelace",
+          "Spectrum",
+          "Stacks",
+          "SubZero",
+          "Thumbprint",
+          "Visa Product Design System",
+          "Wanda",
+          "Web Awesome",
+          "Wise Design",
+          "eBay Playbook",
+          "shadcn/ui"
+        ],
+        "ecartes": []
+      },
+      "props": {
+        "name": {
+          "ancien": "nom",
+          "source": "courant"
+        },
+        "image": {
+          "ancien": "image",
+          "source": "vuetify"
+        },
+        "decorative": {
+          "ancien": "decoratif",
+          "source": "courant"
+        },
+        "size": {
+          "ancien": "taille",
+          "source": "vuetify",
+          "valeurs": {
+            "medium": {
+              "ancien": "normale",
+              "source": "courant"
+            },
+            "large": {
+              "ancien": "grande",
+              "source": "vuetify"
+            }
+          }
+        }
+      },
+      "evenements": {},
+      "slots": {}
+    },
+    "DsTag": {
+      "ancien": "Etiquette",
+      "fr": "étiquette",
+      "source": "courant",
+      "galerie": {
+        "page": "component.gallery/components/badge/",
+        "retenu": "Tag",
+        "systemes": 32,
+        "liste": [
+          "Ant Design",
+          "Atlassian Design System",
+          "Base Web",
+          "Blueprint",
+          "Bulma",
+          "Carbon Design System",
+          "Cauldron",
+          "Chakra UI",
+          "Coral",
+          "Crayons",
+          "Decathlon Design System",
+          "Dell Design System",
+          "GOLD Design System",
+          "GOV.UK Design System",
+          "Gestalt",
+          "Helios",
+          "Helsinki Design System",
+          "Instructure-UI",
+          "Jøkul Designsystem",
+          "Morningstar Product System",
+          "NHS Digital service manual",
+          "NewsKit",
+          "Orbit",
+          "Porsche Design System",
+          "Red Hat design system",
+          "Sainsbury's Design System",
+          "Shoelace",
+          "Spectrum",
+          "Stacks",
+          "SubZero",
+          "United States Web Design System",
+          "Web Awesome"
+        ],
+        "ecartes": [
+          {
+            "nom": "Badge",
+            "systemes": 44,
+            "raison": "désigne surtout un statut ou un compteur, pièce à venir de la navigation (B5) ; NM2 retient le nom le plus courant parmi ceux qui désignent la fonction de classer"
+          }
+        ]
+      },
+      "props": {
+        "text": {
+          "ancien": "texte",
+          "source": "vuetify"
+        },
+        "tone": {
+          "ancien": "ton",
+          "source": "courant",
+          "valeurs": {
+            "neutral": {
+              "ancien": "neutre",
+              "source": "courant"
+            },
+            "brand": {
+              "ancien": "marque",
+              "source": "courant"
+            }
+          }
+        }
+      },
+      "evenements": {},
+      "slots": {}
+    }
+  }
+}
