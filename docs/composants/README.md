@@ -5,6 +5,11 @@ Une fiche par composant de l'atelier : à quoi il sert, ses props, ce qu'il refu
 
 | Composant | Fiche | À quoi il sert |
 |---|---|---|
+| `DsButton` | [DsButton (bouton)](button.md) | Un bouton qui lance une action sur la page : enregistrer, ajouter, supprimer ; il ne mène pas vers une autre page. |
+| `DsIconButton` | [DsIconButton (bouton à icône)](icon-button.md) | Un bouton carré, une icône sans texte, pour une action connue de tous : fermer, rechercher, modifier, supprimer. |
+| `DsTextInput` | [DsTextInput (champ de texte)](text-input.md) | Un champ pour une saisie d'une ligne, avec son libellé au-dessus, une aide et un message d'erreur. |
+| `DsCard` | [DsCard (carte)](card.md) | Une surface qui groupe un titre, un texte, une image et des actions, ou qui mène tout entière vers une page. |
+| `DsAvatar` | [DsAvatar (avatar)](avatar.md) | Un rond qui montre la photo d'une personne, ou ses initiales quand la photo manque. |
 | `DsTag` | [DsTag (étiquette)](tag.md) | Un mot court sur un fond teinté, pour classer un membre (ville, secteur) ou mettre une qualité en avant (« Mentor ») ; il ne se clique pas. |
 <!-- /genere:index -->
 

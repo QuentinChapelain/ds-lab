@@ -24,7 +24,7 @@
  *   U8 exemples acceptés (l'étiquette en liste, un bouton à icône et son événement, une carte et son slot actions, un
  *      champ et v-model) et refusés avec le message des props ; syntaxes hors grammaire en panne ;
  *   U9 bloc de l'index du DsTag seul à l'octet ; le glossaire, écrit sous le bloc, est gardé ;
- *   U10 le contrôle sort en 0 sur le dépôt ;
+ *   U10 le contrôle sort en 0 sur le dépôt, les six fiches présentes ; une fiche qui manque est un écart (DOC1) ;
  *   U11 bloc tokens (anatomie) du DsTag à l'octet ; le bouton à icône n'a aucune ligne « variant danger » ; un token cité
  *      sans description, ou un token posé par le parent inconnu, est une panne ; une description citée qui porte un
  *      numéro de règle ou de décision, un nom de token, une mesure, un pas d'échelle ou plus d'une phrase est à réécrire ;
@@ -53,6 +53,7 @@ import {
   ecartsEcrits,
   ecartsGlossaire,
   ecartsNoms,
+  fichesAbsentes,
   entete,
   lireComposant,
   lireDescriptions,
@@ -329,8 +330,11 @@ test('U9 bloc de l\'index du DsTag seul ; le glossaire sous le bloc est gardé',
   );
   const index = lire('docs/composants/README.md');
   assert.ok(index.includes(ligne));
-  assert.equal(regenererIndex(index, bloc), index, 'l\'index du dépôt est à jour, glossaire compris');
-  assert.equal(regenererIndex(index.replace(ligne, '| vieux |'), bloc), index);
+  // Le bloc du dépôt, six fiches : le régénérer garde le glossaire à l'octet et rend une ligne changée.
+  const blocDuDepot = index.slice(0, index.indexOf('<!-- /genere:index -->') + '<!-- /genere:index -->'.length);
+  assert.equal(regenererIndex(index, blocDuDepot), index, 'l\'index du dépôt est à jour, glossaire compris');
+  assert.equal(regenererIndex(index.replace(ligne, '| vieux |'), blocDuDepot), index);
+  assert.ok(regenererIndex(index, bloc).endsWith(index.slice(index.indexOf('<!-- /genere:index -->') + '<!-- /genere:index -->'.length)), 'glossaire gardé');
   assert.equal(regenererIndex(null, bloc), `${bloc}\n`);
 });
 
@@ -339,6 +343,10 @@ test('U10 le contrôle des fiches sort en 0 sur le dépôt', () => {
   assert.match(sortie, /^✓ docs\/composants\/tag\.md$/m);
   assert.match(sortie, /^✓ docs\/composants\/README\.md$/m);
   assert.match(sortie, /^✓ atelier\/composants\/noms\.json$/m);
+  for (const f of ['button', 'icon-button', 'text-input', 'card', 'avatar', 'tag']) assert.match(sortie, new RegExp(`^✓ docs/composants/${f}\\.md$`, 'm'), f);
+  // Une fiche par composant (DOC1) : la fiche d'un composant qui manque est un écart.
+  assert.deepEqual(fichesAbsentes(MENUS, ['button.md', 'card.md']), ['icon-button', 'text-input', 'avatar', 'tag'].map((f) => `docs/composants/${f}.md`));
+  assert.deepEqual(fichesAbsentes(MENUS, MENUS.map((m) => `${m.fiche}.md`)), []);
   assert.doesNotMatch(sortie, /✗/);
 });
 

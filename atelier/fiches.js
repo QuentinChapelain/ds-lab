@@ -12,7 +12,7 @@ import { ICI, NOMS, RACINE, calculer } from './fiches/fiche.js';
 
 await lancer('fiches', async () => {
   const { values } = parseArgs({ options: { verifier: { type: 'boolean', default: false } } });
-  const { fiches, index, horsTable, noms } = await calculer();
+  const { fiches, index, horsTable, absentes, noms } = await calculer();
   if (!values.verifier) {
     for (const f of fiches) if (f.attendu !== f.actuel) writeFileSync(join(RACINE, f.chemin), f.attendu);
     if (index.attendu !== index.actuel) writeFileSync(join(RACINE, index.chemin), index.attendu);
@@ -20,6 +20,7 @@ await lancer('fiches', async () => {
     // Les écarts des parties écrites ne se régénèrent pas : ils restent à lire.
     const restes = [
       ...fiches.flatMap((f) => f.ecarts.filter((e) => !e.includes('à régénérer')).map((e) => `✗ ${f.chemin} : ${e}`)),
+      ...absentes.map((a) => `✗ ${a} : fiche absente`),
       ...index.ecarts.map((e) => `✗ ${index.chemin} : ${e}`),
       ...noms.map((e) => `✗ ${NOMS} : ${e}`),
     ];
@@ -35,6 +36,7 @@ await lancer('fiches', async () => {
   };
   for (const f of fiches) juger(f.chemin, f.ecarts);
   for (const h of horsTable) juger(h, ['fiche sans composant']);
+  for (const a of absentes) juger(a, ['fiche absente']);
   juger(index.chemin, [...(index.attendu === index.actuel ? [] : [`index à régénérer (npm --prefix ${ICI} run fiches)`]), ...index.ecarts]);
   juger(NOMS, noms);
   return code;

@@ -793,7 +793,7 @@ export function ecartsGlossaire(texte) {
 
 /**
  * Chaque fiche présente, son texte régénéré et ses écarts, puis l'index et la table des noms.
- * @returns {Promise<{ fiches: { chemin: string, actuel: string, attendu: string, ecarts: string[] }[], index: { chemin: string, actuel: string | null, attendu: string, ecarts: string[] }, horsTable: string[], noms: string[] }>}
+ * @returns {Promise<{ fiches: { chemin: string, actuel: string, attendu: string, ecarts: string[] }[], index: { chemin: string, actuel: string | null, attendu: string, ecarts: string[] }, horsTable: string[], absentes: string[], noms: string[] }>}
  */
 export async function calculer() {
   const menus = await lireMenus();
@@ -815,6 +815,7 @@ export async function calculer() {
   const ecartsDesNoms = ecartsNoms(menus, new Map([...composants].map(([n, c]) => [n, c.emplacements])), noms);
   const presentes = existsSync(join(RACINE, DOSSIER)) ? readdirSync(join(RACINE, DOSSIER)).filter((f) => f.endsWith('.md') && f !== 'README.md') : [];
   const horsTable = presentes.filter((f) => !FICHES.some(([, fiche]) => `${fiche}.md` === f)).map((f) => `${DOSSIER}/${f}`);
+  const absentes = fichesAbsentes(menus, presentes);
   const fiches = [];
   /** @type {string[]} */
   const lignesIndex = [];
@@ -852,8 +853,14 @@ export async function calculer() {
   const bloc = blocIndex(lignesIndex);
   const attendu = regenererIndex(actuel, bloc);
   const index = { chemin: INDEX, actuel, attendu, ecarts: actuel === null ? ['index absent'] : [...motsRefuses(actuel), ...ecartsGlossaire(actuel)] };
-  return { fiches, index, horsTable, noms: ecartsDesNoms };
+  return { fiches, index, horsTable, absentes, noms: ecartsDesNoms };
 }
+
+/**
+ * Fiches qui manquent : chaque composant a la sienne (DOC1).
+ * @param {{ fiche: string }[]} menus @param {string[]} presentes noms des fichiers de docs/composants/
+ */
+export const fichesAbsentes = (menus, presentes) => menus.filter((m) => !presentes.includes(`${m.fiche}.md`)).map((m) => `${DOSSIER}/${m.fiche}.md`);
 
 /** Bloc généré de l'index, marques comprises. @param {string[]} lignes */
 export function blocIndex(lignes) {
