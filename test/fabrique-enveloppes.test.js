@@ -17,6 +17,8 @@
  *   W6 props du menu du bouton = son ancien bloc props, recopié ici ;
  *   W7 definirEnveloppe : nom, inheritAttrs, emits tirés du menu ; un usage refusé lève au montage, avant le setup de
  *      l'enveloppe ; une prop devenue fausse lève au rendu suivant ;
+ *      les messages du champ, mot pour mot de l'attendu : libellé obligatoire, type inconnu, aria-describedby et
+ *      aria-invalid posés à la main refusés ;
  *   W8 chaque .vue de atelier/composants/ passe par la fabrique et son menu, sans déclarer lui-même props, inheritAttrs
  *      ni emits ; chaque menu est importé par un seul .vue.
  */
@@ -27,6 +29,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { definirEnveloppe, propsDuMenu, verifierUsage } from '../atelier/composants/fabrique.js';
 import BOUTON from '../atelier/composants/Bouton.menu.js';
+import CHAMP from '../atelier/composants/ChampTexte.menu.js';
 import { partiesVue } from './helpers/atelier.js';
 import { lex } from './helpers/commentaires.js';
 
@@ -34,7 +37,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const COMPOSANTS = join(ROOT, 'atelier', 'composants');
 
 /** Menus réels, par nom de fichier. */
-const MENUS = { 'Bouton.menu.js': BOUTON };
+const MENUS = { 'Bouton.menu.js': BOUTON, 'ChampTexte.menu.js': CHAMP };
 
 /** Props avec les défauts du menu, comme Vue les donne quand rien n'est passé. @param {any} menu */
 const defauts = (menu) => Object.fromEntries(Object.entries(menu.options).map(([k, o]) => [k, /** @type {any} */ (o).defaut]));
@@ -114,6 +117,13 @@ test('W5 refus rejoués sur chaque menu réel', () => {
   assert.equal(leve(BOUTON, { ...p, type: 'submit', desactive: true }), 'bouton : désactivé refusé sur type=submit');
   assert.equal(leve(BOUTON, { ...p, type: 'submit', chargement: true }), null);
   assert.equal(leve(BOUTON, p, { onClick: () => {}, id: 'b', 'aria-label': 'x', 'data-cas': 'y' }), null);
+  const c = { ...defauts(CHAMP), libelle: 'Nom' };
+  assert.equal(leve(CHAMP, { ...c, libelle: undefined }), 'champ : libellé obligatoire');
+  assert.equal(leve(CHAMP, { ...c, type: 'tel' }), 'champ : type inconnu : tel (text, email, search, password)');
+  assert.equal(leve(CHAMP, c, { variant: 'filled' }), 'champ : attribut refusé : variant');
+  assert.equal(leve(CHAMP, c, { 'aria-describedby': 'ailleurs' }), 'champ : attribut refusé : aria-describedby');
+  assert.equal(leve(CHAMP, c, { 'aria-invalid': 'true' }), 'champ : attribut refusé : aria-invalid');
+  assert.equal(leve(CHAMP, c, { id: 'x', 'aria-label': 'y', onFocus: () => {}, 'data-cas': 'z' }), null);
 });
 
 test('W6 props du bouton inchangées', () => {

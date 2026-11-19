@@ -12,6 +12,13 @@
  *      plus ;
  *   E3 un composant .vue est découpé à lignes égales : script lu comme du JavaScript, gabarit et style à part, leurs
  *      commentaires HTML et CSS rendus à part ; une apostrophe du gabarit ne perd pas la lecture du script.
+ *
+ * Ajouts pour le champ de texte (19/11/2026, D49, docs/attendus/champ-carte.md) :
+ *   E4 la détection du champ prend VTextField et ses pièces VField et VInput (et leurs composés, VFieldLabel…), un
+ *      import vuetify/components/VTextField, et v-text-field, v-field, v-input (balise, classe, sélecteur) ; elle ne
+ *      prend ni un commentaire, ni ds-champ, ni -webkit-input-placeholder, ni nav-field, ni VFieldset ;
+ *   E5 dans le code de src/ et de l'atelier, une seule occurrence de fichier : atelier/composants/ChampTexte.vue, qui
+ *      importe bien VTextField.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -26,6 +33,10 @@ const ENVELOPPE = join('atelier', 'composants', 'Bouton.vue');
 
 /** Bouton de Vuetify : le composant (et ses composés), la balise ou la classe. */
 const VUETIFY_BOUTON = /\bVBtn|(?<![\w-])v-btn/;
+
+/** Champ de Vuetify : le composant et ses pièces (et leurs composés), la balise ou la classe. */
+const VUETIFY_CHAMP = /\bV(?:TextField|Field|Input)(?![a-z])|(?<![\w-])v-(?:text-field|field|input)(?![a-z])/;
+const ENVELOPPE_CHAMP = join('atelier', 'composants', 'ChampTexte.vue');
 
 /** Code sans commentaires d'un fichier, .js ou .vue, relatif à la racine. @param {string} f */
 function code(f) {
@@ -71,4 +82,21 @@ test('E3 découpage d\'un composant .vue, lignes gardées', () => {
   assert.deepEqual(lex(v.script).comments.map((c) => [c.line, c.text.trim()]), [[5, '// fin']]);
   assert.ok(v.reste.includes("<p>L'apostrophe</p>") && !v.reste.includes('const a') && !v.reste.includes('note') && !v.reste.includes('trait'));
   assert.deepEqual(v.commentaires.map((c) => [c.line, c.text]), [[2, '<!-- note -->'], [8, '/* trait */']]);
+});
+
+/** Fichiers de code lus par les gardes : src/ (.js) et l'atelier (.js et .vue). */
+const fichiersDeCode = () => [...readdirSync(join(ROOT, 'src'), { recursive: true, encoding: 'utf8' }).filter((f) => f.endsWith('.js')).map((f) => join('src', f)), ...codeAtelier()];
+
+test('E4 détection du champ de Vuetify', () => {
+  for (const s of ["import { VTextField } from 'vuetify/components';", "import { VField, VFieldLabel } from 'vuetify/components';", "import x from 'vuetify/components/VTextField';", 'h(VInput)', '<v-text-field label="x" />', "document.querySelector('.v-field__outline')", "'.v-input--disabled'"])
+    assert.ok(VUETIFY_CHAMP.test(s), s);
+  for (const s of ['// v-field dans un commentaire', "'.ds-champ__champ > * > *'", "'-webkit-input-placeholder'", "'nav-field'", 'h(VFieldset)', 'h(ChampTexte)'])
+    assert.ok(!VUETIFY_CHAMP.test(lex(s).code), s);
+});
+
+test('E5 le champ de Vuetify ne paraît que dans son enveloppe', () => {
+  const fichiers = fichiersDeCode();
+  assert.ok(fichiers.includes(ENVELOPPE_CHAMP), 'l\'enveloppe est lue');
+  assert.deepEqual(fichiers.filter((f) => VUETIFY_CHAMP.test(code(f))), [ENVELOPPE_CHAMP]);
+  assert.match(code(ENVELOPPE_CHAMP), /import \{ VTextField \} from 'vuetify\/components';/);
 });
