@@ -1,9 +1,12 @@
 // @ts-check
 /**
- * Jetons de l'avatar et de l'étiquette dans les dix thèmes (cinq marques fictives, clair et sombre).
+ * Règle des initiales de l'avatar, et jetons de l'avatar et de l'étiquette dans les dix thèmes (cinq marques
+ * fictives, clair et sombre).
  *
  * Attendus écrits à la main avant le code (19/11/2026, docs/attendus/avatar-etiquette.md) ; couleurs lues dans les
  * jetons par un résolveur écrit à part, rapports par culori 4.0.2 (wcagContrast) ; script et commande dans l'attendu :
+ *   A1 la règle des initiales (atelier/composants/initiales.js), sur les quinze cas de l'attendu, noms fictifs : une ou
+ *      deux capitales, ou rien pour un nom sans lettre ; le nom lu, débarrassé de ses espaces en trop ;
  *   A2 primitives taille.24 et taille.56 ; neuf rôles ajoutés, leurs alias et leurs valeurs, les mêmes dans les dix
  *      thèmes sauf texte.marque (pas 12 du primaire) ; deux styles des initiales ; la paire texte.marque sur
  *      fond.marque.discret en fin de paires.json ;
@@ -22,10 +25,32 @@ import { wcagContrast } from 'culori';
 import { loadRoles, resolveRoles, flattenTokens, resoudreAlias } from '../src/tokens/roles.js';
 import { themesVuetify } from '../src/tokens/vuetify.js';
 import { charger } from './helpers/jetons.js';
+import { initiales, nomLu } from '../atelier/composants/initiales.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const MARQUES = ['atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto', 'orbe-cafe'];
 const MODES = /** @type {const} */ (['clair', 'sombre']);
+
+/** Les quinze cas de la règle des initiales → lettres attendues ; « » pour un nom vide ou sans lettre, refusé par le menu. */
+const INITIALES = [
+  ['Camille Ferrand', 'CF'],
+  ['Jean-Baptiste Morel', 'JM'],
+  ['Marie-Lou', 'ML'],
+  ['Noé', 'N'],
+  ['Hugo de Lassalle', 'HL'],
+  ['de Lassalle', 'L'],
+  ["Inès d'Aubrac", 'IA'],
+  ['Inès d’Aubrac', 'IA'],
+  ['Émile Brun', 'ÉB'],
+  ['élodie brun', 'ÉB'],
+  ['  Camille   Ferrand ', 'CF'],
+  ['Ana María Ruiz Soler', 'AS'],
+  ['李小龙', '李'],
+  ['', ''],
+  ['   ', ''],
+  ['123', ''],
+  ['—', ''],
+];
 
 /** Rôles de dimension ajoutés → [alias, valeur], les mêmes dans les dix thèmes. */
 const DIMENSIONS = {
@@ -99,6 +124,12 @@ function theme(marque, mode) {
   const jetons = new Map([...flattenTokens(set.primitives), ...flattenTokens(set.marque), ...flattenTokens(set.semantique)]);
   return { hex, jetons };
 }
+
+test('A1 règle des initiales : les quinze cas de l\'attendu', () => {
+  for (const [nom, lettres] of INITIALES) assert.equal(initiales(nom), lettres, JSON.stringify(nom));
+  assert.equal(nomLu('  Camille   Ferrand '), 'Camille Ferrand');
+  assert.equal(nomLu('Inès d’Aubrac'), 'Inès d’Aubrac');
+});
 
 test('A2 primitives, rôles, styles et paire de l\'avatar et de l\'étiquette', () => {
   const prims = charger('primitives.tokens.json');

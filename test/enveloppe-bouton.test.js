@@ -30,6 +30,12 @@
  * Ajout pour le bouton à icône seule (19/11/2026, D52, docs/attendus/bouton-icone.md) :
  *   E8 atelier/composants/BoutonIcone.vue rend l'enveloppe du bouton (import de ./Bouton.vue) et n'importe rien de
  *      Vuetify ; E2 reste vrai mot pour mot.
+ *
+ * Ajouts pour l'avatar (19/11/2026, D54, docs/attendus/avatar-etiquette.md) :
+ *   E9 la détection de l'avatar prend VAvatar, un import vuetify/components/VAvatar, et v-avatar et ses classes
+ *      (balise, classe, sélecteur, v-avatar__underlay) ; elle ne prend ni un commentaire, ni ds-avatar, ni nav-avatar ;
+ *   E10 dans le code de src/ et de l'atelier, une seule occurrence de fichier : atelier/composants/Avatar.vue, qui
+ *      importe bien VAvatar.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -51,6 +57,9 @@ const ENVELOPPE_CHAMP = join('atelier', 'composants', 'ChampTexte.vue');
 /** Carte de Vuetify : le composant et ses composés, la balise ou la classe. */
 const VUETIFY_CARTE = /\bVCard(?![a-z])|(?<![\w-])v-card(?![a-z])/;
 const ENVELOPPE_CARTE = join('atelier', 'composants', 'Carte.vue');
+/** Avatar de Vuetify : le composant, la balise ou la classe. */
+const VUETIFY_AVATAR = /\bVAvatar(?![a-z])|(?<![\w-])v-avatar(?![a-z])/;
+const ENVELOPPE_AVATAR = join('atelier', 'composants', 'Avatar.vue');
 
 /** Code sans commentaires d'un fichier, .js ou .vue, relatif à la racine. @param {string} f */
 function code(f) {
@@ -134,4 +143,18 @@ test('E8 le bouton à icône passe par l\'enveloppe du bouton', () => {
   assert.ok(fichiersDeCode().includes(f), 'le bouton à icône est lu');
   assert.match(code(f), /import Bouton from '\.\/Bouton\.vue';/);
   assert.doesNotMatch(code(f), /from 'vuetify/);
+});
+
+test('E9 détection de l\'avatar de Vuetify', () => {
+  for (const s of ["import { VAvatar } from 'vuetify/components';", "import x from 'vuetify/components/VAvatar';", '<v-avatar>CF</v-avatar>', "'.v-avatar__underlay'", 'h(VAvatar)'])
+    assert.ok(VUETIFY_AVATAR.test(s), s);
+  for (const s of ['// v-avatar dans un commentaire', "'.ds-avatar__initiales'", "'nav-avatar'", 'h(Avatar)'])
+    assert.ok(!VUETIFY_AVATAR.test(lex(s).code), s);
+});
+
+test('E10 l\'avatar de Vuetify ne paraît que dans son enveloppe', () => {
+  const fichiers = fichiersDeCode();
+  assert.ok(fichiers.includes(ENVELOPPE_AVATAR), 'l\'enveloppe est lue');
+  assert.deepEqual(fichiers.filter((f) => VUETIFY_AVATAR.test(code(f))), [ENVELOPPE_AVATAR]);
+  assert.match(code(ENVELOPPE_AVATAR), /import \{ VAvatar \} from 'vuetify\/components';/);
 });

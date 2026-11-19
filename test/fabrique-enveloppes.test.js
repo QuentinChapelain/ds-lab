@@ -27,6 +27,9 @@
  *      taille et type inconnus, aria-label, aria-labelledby et color refusés, désactivé refusé sur type=submit ; id,
  *      aria-describedby, data-* et onClick passent ; la carte admet un BoutonIcone dans ses actions, et son message de
  *      refus devient « carte : actions : seuls Bouton et BoutonIcone sont admis » ;
+ *   Ajouts pour l'avatar (19/11/2026, D54, docs/attendus/avatar-etiquette.md) : W5 rejoue son menu ; ses messages mot
+ *      pour mot : nom obligatoire (absent, null, vide, fait d'espaces), nom sans lettre ("123", "—"), taille inconnue,
+ *      aria-label, aria-labelledby, aria-hidden, class et onClick refusés ; id, aria-describedby et data-* passent ;
  *   W8 chaque .vue de atelier/composants/ passe par la fabrique et son menu, sans déclarer lui-même props, inheritAttrs
  *      ni emits ; chaque menu est importé par un seul .vue.
  */
@@ -40,6 +43,7 @@ import BOUTON from '../atelier/composants/Bouton.menu.js';
 import CHAMP from '../atelier/composants/ChampTexte.menu.js';
 import CARTE from '../atelier/composants/Carte.menu.js';
 import BOUTON_ICONE from '../atelier/composants/BoutonIcone.menu.js';
+import AVATAR from '../atelier/composants/Avatar.menu.js';
 import { partiesVue } from './helpers/atelier.js';
 import { lex } from './helpers/commentaires.js';
 
@@ -47,7 +51,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const COMPOSANTS = join(ROOT, 'atelier', 'composants');
 
 /** Menus réels, par nom de fichier. */
-const MENUS = { 'Bouton.menu.js': BOUTON, 'ChampTexte.menu.js': CHAMP, 'Carte.menu.js': CARTE, 'BoutonIcone.menu.js': BOUTON_ICONE };
+const MENUS = { 'Bouton.menu.js': BOUTON, 'ChampTexte.menu.js': CHAMP, 'Carte.menu.js': CARTE, 'BoutonIcone.menu.js': BOUTON_ICONE, 'Avatar.menu.js': AVATAR };
 
 /** Props avec les défauts du menu, comme Vue les donne quand rien n'est passé. @param {any} menu */
 const defauts = (menu) => Object.fromEntries(Object.entries(menu.options).map(([k, o]) => [k, /** @type {any} */ (o).defaut]));
@@ -179,6 +183,17 @@ test('W5 refus rejoués sur chaque menu réel', () => {
   assert.equal(leve(BOUTON_ICONE, i, { id: 'b', 'aria-describedby': 'aide', 'data-cas': 'y', onClick: () => {} }), null);
   assert.equal(BOUTON_ICONE.options.variante.defaut, 'discret');
   assert.equal(carte(k, { id: 'c', 'aria-label': 'x', 'data-cas': 'y' }), null);
+  const a = { ...defauts(AVATAR), nom: 'Camille Ferrand' };
+  assert.equal(leve(AVATAR, a), null);
+  for (const nom of [undefined, null, '', '   ']) assert.equal(leve(AVATAR, { ...a, nom }), 'avatar : nom obligatoire', String(nom));
+  for (const nom of ['123', '—']) assert.equal(leve(AVATAR, { ...a, nom }), 'avatar : nom sans lettre', nom);
+  assert.equal(leve(AVATAR, { ...a, taille: 'petite' }), 'avatar : taille inconnue : petite (normale, grande)');
+  for (const k of ['aria-label', 'aria-labelledby', 'aria-hidden', 'class']) assert.equal(leve(AVATAR, a, { [k]: 'x' }), `avatar : attribut refusé : ${k}`, k);
+  assert.equal(leve(AVATAR, a, { onClick: () => {} }), 'avatar : attribut refusé : onClick');
+  assert.equal(leve(AVATAR, a, { id: 'a', 'aria-describedby': 'promo', 'data-cas': 'y' }), null);
+  assert.equal(leve(AVATAR, { ...a, image: 'portrait.png', decoratif: true, taille: 'grande' }), null);
+  assert.equal(AVATAR.options.taille.defaut, 'normale');
+  assert.equal(AVATAR.options.decoratif.defaut, false);
 });
 
 test('W6 props du bouton inchangées', () => {
