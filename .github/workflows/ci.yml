@@ -1,6 +1,9 @@
-# Rejoue, sur une machine neuve, ce que CLAUDE.md demande avant un commit : types, ce qui ne sert plus (knip),
-# cycles et orphelins (dependency-cruiser), les trois contrôles de la cible, puis tous les tests avec Chromium, puis la
-# preuve de l'atelier (D42). Une étape par commande : la ligne rouge dit laquelle échoue.
+# Rejoue, sur des machines neuves, ce que CLAUDE.md demande avant un commit, en trois jobs parallèles et un verdict :
+# - rapides : types, ce qui ne sert plus (knip), cycles et orphelins (dependency-cruiser), les trois contrôles de la cible ;
+# - tests : npm test, en trois parts (un fichier de test dans une part et une seule) ;
+# - atelier : son installation, sa version construite, puis la preuve (D42) ;
+# - controles : le verdict, seul check exigé par le ruleset de main (D35).
+# Une étape par commande : la ligne rouge dit laquelle échoue.
 name: CI
 
 on:
@@ -17,13 +20,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  controles:
+  rapides:
     runs-on: ubuntu-24.04
-    # Délai calculé sur les durées mesurées (KNOWN_ISSUES.md) : au pire constaté, Chromium et ses dépendances 376 s
-    # (miroir apt lent), npm test 443 s, le reste moins de 30 s, soit 14 min ; l'atelier ajoute environ 2 min [H].
-    # Chaque étape qui varie a son propre délai, son pire cas constaté plus une marge : celle qui dépasse est nommée,
-    # au lieu d'un arrêt du job ailleurs.
-    timeout-minutes: 20
+    timeout-minutes: 5
     steps:
       # Actions épinglées par empreinte : une étiquette peut être déplacée sans trace dans ce dépôt.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -33,24 +32,79 @@ jobs:
         with:
           node-version-file: .node-version # seule source de la version de Node (D40) ; une autre majeure, et les commandes sortent en 2
           cache: npm
-          # Le cache de npm suit les deux verrous : celui de la racine et celui de l'atelier.
-          cache-dependency-path: |
-            package-lock.json
-            atelier/package-lock.json
+          cache-dependency-path: package-lock.json
       - run: npm ci
-      # La variante que chromium.launch() lance sans option ; aucun test n'ouvre de fenêtre.
-      - name: Chromium (sans fenêtre) et dépendances système
-        run: npx playwright-core install --with-deps --only-shell chromium
-        timeout-minutes: 9 # 17 à 30 s d'habitude, 376 s au pire constaté (paquets apt à 94 ko/s) : près de 3 min de marge
       - run: npm run types
       - run: npm run knip
       - run: npm run dependances
       - run: npm run contraste
       - run: npm run espacements
       - run: npm run typo
-      - run: npm test
-        timeout-minutes: 9 # 256 à 443 s mesurés
-      # Atelier (D42) : son installation, sa version construite, puis la preuve, avec le Chromium installé plus haut.
+
+  tests:
+    name: tests (${{ matrix.part }}/3)
+    runs-on: ubuntu-24.04
+    # Image officielle de Playwright, à la version de playwright-core (package.json) : Chromium et ses dépendances
+    # système y sont déjà, aucun paquet apt n'est tiré pendant la CI. Épinglée par empreinte ; à monter avec
+    # playwright-core. git y est, pour les tests qui lisent le dépôt.
+    # --user 1001 : l'utilisateur du runner, propriétaire du dossier de travail monté (git refuse sinon un dépôt
+    # d'un autre propriétaire) ; --ipc=host : la mémoire partagée de l'hôte, que Chromium demande dans un conteneur.
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-noble@sha256:b0ab6f3cb99aa7803adbc14d9027ec1785fc6e433b97e134e0f8fe61683b6b53
+      options: --user 1001 --ipc=host
+    strategy:
+      fail-fast: false # une part rouge laisse finir les autres : tous les échecs se lisent dans la même exécution
+      matrix:
+        part: [1, 2, 3]
+    timeout-minutes: 12 # provisoire, à recalculer sur les durées mesurées
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version # passe devant le Node de l'image
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      # Trace : node --test lance au plus availableParallelism() - 1 fichiers à la fois.
+      - name: Processeurs du runner
+        run: echo "nproc $(nproc), availableParallelism $(node -p 'require("node:os").availableParallelism()')"
+      # Chromium de l'image, lancé comme les commandes le lancent (D34) : un écart de version entre l'image et
+      # playwright-core rougit ici, et non au milieu des tests.
+      - name: Chromium de l'image
+        run: node --input-type=module -e "import { lancerChromium } from './src/browser/lancement.js'; const b = await lancerChromium(); console.log('Chromium', b.version()); await b.close();"
+        timeout-minutes: 1
+      # L'option de la part passe par NODE_OPTIONS : écrite après le motif de npm test, node --test l'ignorerait.
+      - name: npm test, part ${{ matrix.part }}/3
+        run: npm test
+        env:
+          NODE_OPTIONS: --test-shard=${{ matrix.part }}/3
+        timeout-minutes: 8 # provisoire, à recalculer sur les durées mesurées
+
+  atelier:
+    runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-noble@sha256:b0ab6f3cb99aa7803adbc14d9027ec1785fc6e433b97e134e0f8fe61683b6b53
+      options: --user 1001 --ipc=host
+    timeout-minutes: 12 # provisoire, à recalculer sur les durées mesurées
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+          # Le cache de npm suit les deux verrous : celui de la racine et celui de l'atelier.
+          cache-dependency-path: |
+            package-lock.json
+            atelier/package-lock.json
+      # La preuve emprunte à la racine le lancement de Chromium, le lecteur des jetons et la comparaison de pixels.
+      - run: npm ci
+      - name: Chromium de l'image
+        run: node --input-type=module -e "import { lancerChromium } from './src/browser/lancement.js'; const b = await lancerChromium(); console.log('Chromium', b.version()); await b.close();"
+        timeout-minutes: 1
       - name: Atelier, installation
         run: npm ci --prefix atelier
         timeout-minutes: 3
@@ -59,4 +113,25 @@ jobs:
         timeout-minutes: 3
       - name: Atelier, preuve
         run: npm --prefix atelier run preuve
-        timeout-minutes: 4
+        timeout-minutes: 5 # provisoire, à recalculer sur les durées mesurées
+
+  # Seul check exigé par le ruleset de main (D35) : renommer ce job bloquerait tout push sur main. Il tourne toujours
+  # et juge lui-même le résultat des autres : un job requis sauté compterait sinon comme réussi.
+  controles:
+    if: always()
+    needs: [rapides, tests, atelier]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Verdict des jobs
+        env:
+          RAPIDES: ${{ needs.rapides.result }}
+          TESTS: ${{ needs.tests.result }}
+          ATELIER: ${{ needs.atelier.result }}
+        run: |
+          echec=0
+          for job in "rapides:$RAPIDES" "tests:$TESTS" "atelier:$ATELIER"; do
+            nom=${job%%:*}; resultat=${job#*:}
+            if [ "$resultat" = success ]; then echo "$nom : $resultat"; else echo "::error::$nom : $resultat"; echec=1; fi
+          done
+          exit $echec
