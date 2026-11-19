@@ -1,39 +1,39 @@
 ---
-nom: DsTag
-titre: DsTag
-fichier: atelier/composants/DsTag.vue
-menu: atelier/composants/DsTag.menu.js
-enveloppe: VChip
+name: DsTag
+title: DsTag (étiquette)
+file: atelier/composants/DsTag.vue
+props: atelier/composants/DsTag.menu.js
+wraps: VChip
 decisions: [D55, D51]
 stories: atelier/stories/DsTag.stories.js
-preuve: npm --prefix atelier run preuve -- tag
+test: npm --prefix atelier run preuve -- tag
 ---
 
 <!-- genere:titre : écrit par npm --prefix atelier run fiches -->
-# DsTag
+# DsTag (étiquette)
 <!-- /genere:titre -->
 
 Un mot court sur un fond teinté, pour classer un membre (ville, secteur) ou mettre une qualité en avant (« Mentor ») ; il ne se clique pas.
 
 ## Quand l'utiliser
 
-- Pour une information courte qui classe : une ville, un secteur, une promo. Ton `neutral`.
-- Pour mettre en avant ce qui compte le plus, comme « Mentor » : ton `brand`.
+- Pour une information courte qui classe : une ville, un secteur, une promo. `tone` `neutral`.
+- Pour mettre en avant ce qui compte le plus, comme « Mentor » : `tone` `brand`.
 - Plusieurs étiquettes forment une liste : un `<ul>`, une étiquette par `<li>`.
 - Pour lancer une action, prendre un `DsButton`. Pour aller vers une autre page, un lien : à venir (B9).
 - Pour filtrer une liste, une puce de filtre : à venir (B5). Pour retirer une valeur, une puce supprimable : à venir (B5).
-- Pour dire un statut (réussi, en erreur), rien encore : l'étiquette n'a que deux tons, sans couleur par catégorie (D55).
+- Pour dire un statut (réussi, en erreur), rien encore : deux tons seulement, sans couleur par catégorie (D55).
 
-## Menu
+## Props
 
-<!-- genere:menu : écrit par npm --prefix atelier run fiches -->
-| Option | Type | Obligatoire | Défaut | Valeurs admises |
-|---|---|---|---|---|
-| `text` | texte | oui | aucun | libre |
-| `tone` | texte | non | `'neutral'` | `'neutral'`, `'brand'` |
+<!-- genere:props : écrit par npm --prefix atelier run fiches -->
+| Prop | Type | Obligatoire | Défaut | Valeurs admises | Nom repris de |
+|---|---|---|---|---|---|
+| `text` | texte | oui | aucun | libre | Vuetify |
+| `tone` | texte | non | `'neutral'` | `'neutral'`, `'brand'` | usage courant |
 
-Événements émis : aucun. Emplacements : aucun.
-<!-- /genere:menu -->
+Événements émis : aucun. Slots : aucun.
+<!-- /genere:props -->
 
 - `text` : le mot affiché, lu tel quel par un lecteur d'écran. Aucune limite de longueur : trop long pour la place, il est coupé par « … ».
 - `tone` : `neutral` pour classer, `brand` pour mettre en avant.
@@ -41,7 +41,7 @@ Un mot court sur un fond teinté, pour classer un membre (ville, secteur) ou met
 ## Refusé
 
 <!-- genere:refus : écrit par npm --prefix atelier run fiches -->
-Attributs admis en plus des options : `id`, `aria-*`, `data-*`. Retirés : `aria-label`, `aria-labelledby`. Écouteurs : refusés.
+Attributs admis en plus des props : `id`, `aria-*`, `data-*`. Retirés : `aria-label`, `aria-labelledby`. Attributs `on…` d'événement : refusés.
 
 Tout autre usage lève une erreur, et rien n'est rendu. Messages, dans l'ordre où ils sont vérifiés :
 
@@ -52,27 +52,29 @@ Tout autre usage lève une erreur, et rien n'est rendu. Messages, dans l'ordre o
 
 Une étiquette ne se ferme pas, ne filtre pas et ne mène nulle part : `closable`, `filter`, `link`, `href`, `to` et `tabindex` sont refusés, comme tout attribut hors de la liste.
 
-## Jetons
+## Anatomie et tokens
 
-<!-- genere:jetons : écrit par npm --prefix atelier run fiches -->
-| Jeton | Variables du thème |
-|---|---|
-| `fond.marque.discret` | `marque-discret` |
-| `texte.marque` | `on-marque-discret` |
-| `fond.composant` | `composant` |
-| `texte.principal` | `on-composant` |
-| `arrondi.pilule` | `ds-arrondi-pilule` |
-| `hauteur.etiquette` | `ds-hauteur-etiquette` |
-| `marge-interieure.etiquette` | `ds-marge-interieure-etiquette` |
-| `typo.corps.petit` | `ds-corps-petit-police`, `ds-corps-petit-taille`, `ds-corps-petit-graisse`, `ds-corps-petit-interligne` |
-<!-- /genere:jetons -->
+<!-- genere:tokens : écrit par npm --prefix atelier run fiches -->
+Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en dur : chaque marque donne la sienne, et changer un token change toutes ses instances.
 
-- `ds-ecart-entre-etiquettes` (`ecart.entre-etiquettes`, 8 px) : l'écart entre deux étiquettes d'une suite, en ligne et entre deux lignes. C'est le parent qui le pose ; l'étiquette n'a pas de marge.
+| Partie | Token | Ce qu'il règle |
+|---|---|---|
+| Couleur, tone neutral | `fond.composant` | Fond d'un composant au repos, plus soutenu que la surface ; un champ, une carte et le bouton secondaire se posent sur fond.surface. |
+| Couleur, tone neutral | `texte.principal` | Texte courant et titres. |
+| Couleur, tone brand | `fond.marque.discret` | Aplat clair de la marque, non cliquable, comme un bandeau, une section ou un encadré. |
+| Couleur, tone brand | `texte.marque` | Texte de marque posé sur fond.marque.discret, comme les initiales d'un avatar ou une étiquette mise en avant ; pas 12 du primaire, et non la couleur des liens (D05). |
+| Forme | `arrondi.pilule` | Arrondi complet d'une forme ronde ou en pilule, comme un avatar ou une étiquette. |
+| Forme | `hauteur.etiquette` | Hauteur d'une étiquette, sur une ligne. |
+| Forme | `marge-interieure.etiquette` | Marge intérieure gauche et droite d'une étiquette, de part et d'autre de son texte. |
+| Texte | `typo.corps.petit` | Texte de tableau ; ligne visée 20 px. |
+<!-- /genere:tokens -->
+
+- Posé par le parent : `ecart.entre-etiquettes` (`ds-ecart-entre-etiquettes`) : l'écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes. L'étiquette n'a pas de marge.
 
 ## Accessibilité
 
 - Aucun nom à donner : le texte se lit, en entier, même quand l'œil n'en voit que le début.
-- Aucun rôle et aucun arrêt au clavier : la touche Tab passe sans s'y arrêter, et un clic n'y fait rien.
+- Rien à atteindre au clavier : la touche Tab passe sans s'arrêter, et un clic n'y fait rien.
 - En liste, un lecteur d'écran lit la suite comme une liste.
 - Le texte se lit sur son fond dans les dix thèmes, au-dessus du seuil :
 
@@ -99,19 +101,18 @@ import DsTag from './composants/DsTag.vue';
 </template>
 ```
 
-La liste se range en ligne, avec retour à la ligne : `display: flex`, `flex-wrap: wrap`, et l'écart `var(--v-ds-ecart-entre-etiquettes)` en `gap`, sans puces ni marges.
+La liste se range en ligne, avec retour à la ligne (`display: flex`, `flex-wrap: wrap`), sans puces ni marges, et prend l'écart posé par le parent en `gap`.
 
-Stories : [atelier/stories/DsTag.stories.js](../../atelier/stories/DsTag.stories.js), story « En situation » (grand avatar, nom, promo et étiquettes), et story « Planche » (les deux tons, une rangée, un texte long).
+Stories : [atelier/stories/DsTag.stories.js](../../atelier/stories/DsTag.stories.js), story « En situation » (une ligne d'annuaire) et story « Planche » (chaque cas).
 
 ## Décisions et dette
 
-- D55 : l'étiquette, son menu, son rendu, la suite en liste. D51 : la fabrique, qui refuse tout usage hors du menu.
+- D55 : l'étiquette, ses props, son rendu, la suite en liste. D51 : tout usage hors des props est refusé.
 - B5 : l'étiquette est faite ; restent les puces de filtre et les puces supprimables.
 - À reprendre sur la carte membre (D55) : en sombre, l'étiquette disparaît presque sur une surface (1,03 entre les deux fonds) ; chez Écume et Sel en sombre, les deux tons ont le même fond.
-- La puce de Vuetify range le texte dans un `div`, dans un `span` : sans effet vu. Poser l'étiquette dans une ligne ou dans un `<li>` (D55).
 - Un texte coupé reste entier pour un lecteur d'écran, mais l'œil n'en lit que le début ; pas encore d'info-bulle (B1).
 
-## Preuve
+## Test de rendu
 
 `npm --prefix atelier run preuve -- tag` vérifie, dans les dix thèmes, en développement et en version construite :
 

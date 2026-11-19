@@ -191,13 +191,13 @@ export default definirEnveloppe(MENU, (props, { attrs, emit, slots }) => {
   width: var(--v-ds-taille-icone-normale);
   height: var(--v-ds-taille-icone-normale);
   /* Durée sans jeton : le dépôt n'a pas encore de jeton de durée (KNOWN_ISSUES.md). */
-  animation: ds-button-roue 1s linear infinite;
+  animation: ds-button-spinner 1s linear infinite;
 }
 .ds-button--small .ds-button__spinner > svg {
   width: var(--v-ds-taille-icone-petite);
   height: var(--v-ds-taille-icone-petite);
 }
-@keyframes ds-button-roue {
+@keyframes ds-button-spinner {
   to {
     transform: rotate(360deg);
   }

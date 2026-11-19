@@ -1,28 +1,35 @@
 // @ts-check
 /**
- * Fiches des composants (D56, docs/attendus/fiches.md) : en-tête et blocs générés depuis le menu, le composant, sa story
- * et les jetons ; parties écrites contrôlées ; exemple lu par une grammaire fermée et vérifié par la fabrique ; index.
+ * Fiches des composants (D56, D57, docs/attendus/fiches.md) : en-tête et blocs générés depuis les props, le composant,
+ * sa story, la table des noms et les tokens ; parties écrites contrôlées ; exemple lu par une grammaire fermée et vérifié
+ * contre les props ; index et glossaire ; règles NM1 à NM3 et DOC1 à DOC5 (docs/regles.md).
  *
- * Attendus écrits à la main avant le code (19/11/2026), recopiés de l'attendu :
- *   U1 en-tête de l'étiquette à l'octet ; celui du bouton à icône nomme la pièce du bouton (« VBtn (par Bouton) ») et
- *      ses décisions (D52, D51) ;
- *   U2 bloc menu de l'étiquette à l'octet ; niveau et emplacements de la carte, icône et événement du bouton ;
- *   U3 bloc refus de l'étiquette à l'octet ; pour les six menus, la liste des attributs admis confrontée à verifierUsage
- *      (id, aria-describedby ou un autre aria-* s'il est retiré, data-x passent ; chaque retiré lève ; onClick passe si et seulement si les écouteurs sont
- *      admis ; class lève) ; pour chacune des sept règles, le message tiré du texte de la fonction est celui que lève
- *      verifierUsage sur un cas qui la déclenche ; une règle sans message lisible est une panne ;
- *   U4 bloc jetons de l'étiquette à l'octet ; le bouton à icône a les jetons du bouton qu'il rend ; une variable du
- *      thème inconnue de la table, ou une variable ds- écrite et inconnue, est une panne ;
- *   U5 bloc contrastes de l'étiquette à l'octet (11,65 et 11,68 : culori 4.0.2, wcagContrast, sur les couleurs de
+ * Attendus écrits à la main avant le code (19/11/2026), recopiés de l'attendu, à la forme de la suite (vocabulaire du
+ * métier, noms anglais) :
+ *   U1 en-tête du DsTag à l'octet ; celui du bouton à icône nomme la pièce du bouton (« VBtn (par DsButton) ») et ses
+ *      décisions (D52, D51) ;
+ *   U2 bloc props du DsTag à l'octet ; headingLevel et slots de la carte, prependIcon et événement du bouton ;
+ *   U3 bloc refus du DsTag à l'octet ; pour les six composants, la liste des attributs admis confrontée à verifierUsage
+ *      (id, aria-describedby ou un autre aria-* s'il est retiré, data-x passent ; chaque retiré lève ; onClick passe si
+ *      et seulement si les attributs on… sont admis ; class lève) ; pour chacune des sept règles, le message tiré du texte
+ *      de la fonction est celui que lève verifierUsage sur un cas qui la déclenche ; une règle sans message lisible est
+ *      une panne ;
+ *   U4 une variable du thème inconnue de la table, ou une variable ds- écrite et inconnue, est une panne ;
+ *   U5 bloc contrastes du DsTag à l'octet (11,65 et 11,68 : culori 4.0.2, wcagContrast, sur les couleurs de
  *      tokens/<marque>/vuetify.json, commande dans l'attendu) ; la paire du texte désactivé du bouton porte « exception
  *      écrite » ; une couleur dont la paire manque à paires.json est une panne ;
  *   U6 une marque absente, en double ou ouverte sans fin est une panne nommée ; régénérer garde les parties écrites à
  *      l'octet, et une seconde passe ne change rien ;
  *   U7 chaque écart des parties écrites donne sa ligne, mot pour mot ;
- *   U8 exemples acceptés (l'étiquette en liste, un bouton à icône et écouteur, une carte et ses actions, un champ et
- *      v-model) et refusés avec le message de la fabrique ; syntaxes hors grammaire en panne ;
- *   U9 index de l'étiquette seule à l'octet ;
- *   U10 le contrôle sort en 0 sur le dépôt.
+ *   U8 exemples acceptés (l'étiquette en liste, un bouton à icône et son événement, une carte et son slot actions, un
+ *      champ et v-model) et refusés avec le message des props ; syntaxes hors grammaire en panne ;
+ *   U9 bloc de l'index du DsTag seul à l'octet ; le glossaire, écrit sous le bloc, est gardé ;
+ *   U10 le contrôle sort en 0 sur le dépôt ;
+ *   U11 bloc tokens (anatomie) du DsTag à l'octet ; le bouton à icône n'a aucune ligne « variant danger » ; un token cité
+ *      sans description, ou un token posé par le parent inconnu, est une panne ;
+ *   U12 un mot refusé hors code donne son écart, en code rien ; une fiche de 501 mots écrits dépasse le plafond ; le
+ *      glossaire contient chaque mot refusé ;
+ *   U13 chaque écart de la table des noms, sur une table d'essai ; la table du dépôt n'en donne aucun.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -33,23 +40,31 @@ import { execFileSync } from 'node:child_process';
 import { verifierUsage } from '../atelier/composants/fabrique.js';
 import { HorsGrammaire, verifierExemple } from '../atelier/fiches/exemple.js';
 import {
+  MOTS_REFUSES,
+  anatomie,
   blocContrastes,
-  blocJetons,
-  blocMenu,
+  blocIndex,
+  blocProps,
   blocRefus,
+  blocTokens,
   decouper,
   ecartsEcrits,
+  ecartsGlossaire,
+  ecartsNoms,
   entete,
-  jetonsDe,
   lireComposant,
+  lireDescriptions,
   lireMenus,
+  lireNoms,
   lireStories,
   lireTable,
   messageDeRegle,
   mesurerThemes,
+  motsEcrits,
+  motsRefuses,
   pairesDe,
   regenerer,
-  texteIndex,
+  regenererIndex,
 } from '../atelier/fiches/fiche.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -59,67 +74,71 @@ const MENUS = await lireMenus();
 const TABLE = lireTable();
 const PAIRES = JSON.parse(lire('tokens/commun/paires.json'));
 const THEMES = mesurerThemes();
+const NOMS = lireNoms();
+const DESCRIPTIONS = lireDescriptions();
 const parNom = (/** @type {string} */ n) => /** @type {any} */ (MENUS.find((m) => m.nom === n));
 const menuDe = (/** @type {string} */ f) => parNom(f).menu;
 const FICHE = 'docs/composants/tag.md';
 
-/** Tout ce que le script écrit pour une enveloppe. @param {string} nom */
+const PAR_NOM = new Map(MENUS.map((m) => [m.nom, m.menu]));
+
+/** Tout ce que le script écrit pour un composant. @param {string} nom */
 function genere(nom) {
   const e = parNom(nom);
   const c = lireComposant(nom);
   const s = lireStories(nom);
   return {
-    entete: entete(e, c, s),
-    titre: `# ${s.titre}`,
-    menu: blocMenu(e.menu, c),
+    entete: entete(e, c, s, NOMS),
+    titre: `# ${nom} (${NOMS.composants[nom].fr})`,
+    props: blocProps(e.menu, c, NOMS),
     refus: blocRefus(e.menu, nom),
-    jetons: blocJetons(jetonsDe(c, TABLE, nom)),
+    tokens: blocTokens(anatomie(c, e.menu, TABLE, DESCRIPTIONS, nom, PAR_NOM)),
     contrastes: blocContrastes(pairesDe(c, TABLE, PAIRES, nom), THEMES, nom),
   };
 }
 
-const ctx = () => ({ table: TABLE, stories: lireStories('DsTag'), decisions: lire('docs/decisions.md'), dette: lire('KNOWN_ISSUES.md'), menuDe });
+const ctx = () => ({ table: TABLE, stories: lireStories('DsTag'), decisions: lire('docs/decisions.md'), dette: lire('KNOWN_ISSUES.md'), descriptions: DESCRIPTIONS, menuDe });
 
-test('U1 en-tête de l\'étiquette, et du bouton à icône par le bouton', () => {
+test('U1 en-tête du DsTag, et du bouton à icône par le bouton', () => {
   assert.equal(
     genere('DsTag').entete,
     [
       '---',
-      'nom: DsTag',
-      'titre: DsTag',
-      'fichier: atelier/composants/DsTag.vue',
-      'menu: atelier/composants/DsTag.menu.js',
-      'enveloppe: VChip',
+      'name: DsTag',
+      'title: DsTag (étiquette)',
+      'file: atelier/composants/DsTag.vue',
+      'props: atelier/composants/DsTag.menu.js',
+      'wraps: VChip',
       'decisions: [D55, D51]',
       'stories: atelier/stories/DsTag.stories.js',
-      'preuve: npm --prefix atelier run preuve -- tag',
+      'test: npm --prefix atelier run preuve -- tag',
       '---',
     ].join('\n'),
   );
   const bi = genere('DsIconButton').entete;
-  assert.match(bi, /^enveloppe: VBtn \(par DsButton\)$/m);
+  assert.match(bi, /^wraps: VBtn \(par DsButton\)$/m);
   assert.match(bi, /^decisions: \[D52, D51\]$/m);
-  assert.match(bi, /^titre: DsIconButton$/m);
+  assert.match(bi, /^title: DsIconButton \(bouton à icône\)$/m);
 });
 
-test('U2 bloc menu de l\'étiquette ; carte et bouton', () => {
+test('U2 bloc props du DsTag ; carte et bouton', () => {
   assert.equal(
-    genere('DsTag').menu,
+    genere('DsTag').props,
     [
-      '| Option | Type | Obligatoire | Défaut | Valeurs admises |',
-      '|---|---|---|---|---|',
-      '| `text` | texte | oui | aucun | libre |',
-      '| `tone` | texte | non | `\'neutral\'` | `\'neutral\'`, `\'brand\'` |',
+      '| Prop | Type | Obligatoire | Défaut | Valeurs admises | Nom repris de |',
+      '|---|---|---|---|---|---|',
+      '| `text` | texte | oui | aucun | libre | Vuetify |',
+      '| `tone` | texte | non | `\'neutral\'` | `\'neutral\'`, `\'brand\'` | usage courant |',
       '',
-      'Événements émis : aucun. Emplacements : aucun.',
+      'Événements émis : aucun. Slots : aucun.',
     ].join('\n'),
   );
-  const carte = genere('DsCard').menu;
-  assert.match(carte, /^\| `headingLevel` \| nombre \| non \| `3` \| `2`, `3`, `4` \|$/m);
-  assert.match(carte, /^Événements émis : aucun\. Emplacements : `default`, `actions`\.$/m);
-  const bouton = genere('DsButton').menu;
-  assert.match(bouton, /^\| `prependIcon` \| objet ou fonction \| non \| `null` \| libre \|$/m);
-  assert.match(bouton, /^Événements émis : `click`\. Emplacements : `default`\.$/m);
+  const carte = genere('DsCard').props;
+  assert.match(carte, /^\| `headingLevel` \| nombre \| non \| `3` \| `2`, `3`, `4` \| usage courant \|$/m);
+  assert.match(carte, /^Événements émis : aucun\. Slots : `default`, `actions`\.$/m);
+  const bouton = genere('DsButton').props;
+  assert.match(bouton, /^\| `prependIcon` \| objet ou fonction \| non \| `null` \| libre \| Vuetify \|$/m);
+  assert.match(bouton, /^Événements émis : `click`\. Slots : `default`\.$/m);
 });
 
 /** Options valides d'une enveloppe, défauts du menu appliqués, comme Vue. @param {any} menu @param {Record<string, unknown>} props */
@@ -135,11 +154,11 @@ const VALIDES = /** @type {Record<string, Record<string, unknown>>} */ ({
   DsTag: { text: 'Lyon' },
 });
 
-test('U3 bloc refus de l\'étiquette ; attributs admis confrontés à la fabrique ; messages des règles', () => {
+test('U3 bloc refus du DsTag ; attributs admis confrontés à verifierUsage ; messages des règles', () => {
   assert.equal(
     genere('DsTag').refus,
     [
-      'Attributs admis en plus des options : `id`, `aria-*`, `data-*`. Retirés : `aria-label`, `aria-labelledby`. Écouteurs : refusés.',
+      'Attributs admis en plus des props : `id`, `aria-*`, `data-*`. Retirés : `aria-label`, `aria-labelledby`. Attributs `on…` d\'événement : refusés.',
       '',
       'Tout autre usage lève une erreur, et rien n\'est rendu. Messages, dans l\'ordre où ils sont vérifiés :',
       '',
@@ -159,7 +178,7 @@ test('U3 bloc refus de l\'étiquette ; attributs admis confrontés à la fabriqu
     else assert.doesNotThrow(essai({ onClick: () => null }), nom);
     assert.throws(essai({ class: 'x' }), { message: `${menu.nom} : attribut refusé : class` }, nom);
     const refus = genere(nom).refus;
-    assert.match(refus, menu.ecouteurs === false ? /Écouteurs : refusés\.$/m : /Écouteurs \(`on…`\) : admis\.$/m, nom);
+    assert.match(refus, menu.ecouteurs === false ? /Attributs `on…` d'événement : refusés\.$/m : /Attributs `on…` d'événement : admis\.$/m, nom);
     assert.match(refus, (menu.attributsRetires ?? []).length ? new RegExp(`Retirés : ${menu.attributsRetires.map((/** @type {string} */ r) => `\`${r}\``).join(', ')}\\.`) : /Retirés : aucun\./, nom);
   }
   // Sept règles, chacune avec un cas qui la déclenche et son message, écrits à la main.
@@ -187,33 +206,15 @@ test('U3 bloc refus de l\'étiquette ; attributs admis confrontés à la fabriqu
   assert.throws(() => messageDeRegle(() => null, 'essai'), /essai : règle sans message lisible/);
 });
 
-test('U4 bloc jetons de l\'étiquette ; le bouton à icône prend ceux du bouton ; variable inconnue en panne', () => {
-  assert.equal(
-    genere('DsTag').jetons,
-    [
-      '| Jeton | Variables du thème |',
-      '|---|---|',
-      '| `fond.marque.discret` | `marque-discret` |',
-      '| `texte.marque` | `on-marque-discret` |',
-      '| `fond.composant` | `composant` |',
-      '| `texte.principal` | `on-composant` |',
-      '| `arrondi.pilule` | `ds-arrondi-pilule` |',
-      '| `hauteur.etiquette` | `ds-hauteur-etiquette` |',
-      '| `marge-interieure.etiquette` | `ds-marge-interieure-etiquette` |',
-      '| `typo.corps.petit` | `ds-corps-petit-police`, `ds-corps-petit-taille`, `ds-corps-petit-graisse`, `ds-corps-petit-interligne` |',
-    ].join('\n'),
-  );
-  const bi = genere('DsIconButton').jetons;
-  assert.match(bi, /^\| `fond\.interactif\.fort` \| `primary` \|$/m);
-  assert.match(bi, /^\| `bordure\.focus` \| `ds-focus` \|$/m);
+test('U4 variable du thème inconnue, variable ds- écrite inconnue : pannes', () => {
   const vide = { theme: new Set(), ds: new Set(), emplacements: [] };
-  assert.throws(() => jetonsDe({ ...vide, ds: new Set(['ds-inconnue']) }, TABLE, 'essai.vue'), { message: 'essai.vue : variable inconnue de la table : --v-ds-inconnue' });
-  assert.throws(() => jetonsDe({ ...vide, theme: new Set(['inconnue']) }, TABLE, 'essai.vue'), { message: 'essai.vue : variable inconnue de la table : --v-theme-inconnue' });
-  const texte = lire(FICHE).replace('- `ds-ecart-entre-etiquettes`', '- `ds-ecart-inconnu`');
+  assert.throws(() => pairesDe({ ...vide, ds: new Set(['ds-inconnue']) }, TABLE, PAIRES, 'essai.vue'), { message: 'essai.vue : variable inconnue de la table : --v-ds-inconnue' });
+  assert.throws(() => pairesDe({ ...vide, theme: new Set(['inconnue']) }, TABLE, PAIRES, 'essai.vue'), { message: 'essai.vue : variable inconnue de la table : --v-theme-inconnue' });
+  const texte = lire(FICHE).replace('(`ds-ecart-entre-etiquettes`)', '(`ds-ecart-inconnu`)');
   assert.throws(() => ecartsEcrits(texte, FICHE, parNom('DsTag'), ctx()), { message: `${FICHE} : variable inconnue de la table : ds-ecart-inconnu` });
 });
 
-test('U5 bloc contrastes de l\'étiquette ; exception écrite ; paire absente en panne', () => {
+test('U5 bloc contrastes du DsTag ; exception écrite ; paire absente en panne', () => {
   assert.equal(
     genere('DsTag').contrastes,
     [
@@ -230,10 +231,10 @@ test('U5 bloc contrastes de l\'étiquette ; exception écrite ; paire absente en
 
 test('U6 marques en panne ; régénérer garde les parties écrites, deux fois de suite', () => {
   const texte = lire(FICHE);
-  const ouv = '<!-- genere:menu : écrit par npm --prefix atelier run fiches -->';
-  assert.throws(() => decouper(texte.replace(ouv, ''), 'x.md'), { message: 'x.md : marque genere:menu absente' });
-  assert.throws(() => decouper(`${texte}\n${ouv}\n`, 'x.md'), { message: 'x.md : marque genere:menu en double' });
-  assert.throws(() => decouper(texte.replace('<!-- /genere:menu -->', ''), 'x.md'), { message: 'x.md : marque genere:menu ouverte sans fin' });
+  const ouv = '<!-- genere:props : écrit par npm --prefix atelier run fiches -->';
+  assert.throws(() => decouper(texte.replace(ouv, ''), 'x.md'), { message: 'x.md : marque genere:props absente' });
+  assert.throws(() => decouper(`${texte}\n${ouv}\n`, 'x.md'), { message: 'x.md : marque genere:props en double' });
+  assert.throws(() => decouper(texte.replace('<!-- /genere:props -->', ''), 'x.md'), { message: 'x.md : marque genere:props ouverte sans fin' });
   assert.throws(() => decouper(texte.replace(/^---\n[\s\S]*?\n---\n/, ''), 'x.md'), { message: 'x.md : en-tête absent' });
   const g = genere('DsTag');
   assert.equal(regenerer(texte, FICHE, g), texte, 'la fiche du dépôt est à jour');
@@ -253,8 +254,8 @@ test('U7 écarts des parties écrites, mot pour mot', () => {
   assert.deepEqual(ecarts(texte.replace('## Refusé', '## Refus')), ['sections : attendu « ## Refusé » en place 3, trouvé « ## Refus »']);
   assert.deepEqual(ecarts(texte.replace(/^Un mot court.*$/m, '')), ['phrase de rôle absente']);
   assert.deepEqual(ecarts(texte.replace(/^(Un mot court.*)pas\.$/m, '$1pas')), ['phrase de rôle sans point final']);
-  assert.deepEqual(ecarts(texte.replace(/^- `tone` : .*\n/m, '')), ['option sans sa ligne : tone']);
-  assert.deepEqual(ecarts(texte.replace(/^(- `tone` : .*)$/m, '$1\n- `couleur` : une couleur.')), ['ligne d\'une option hors du menu : couleur']);
+  assert.deepEqual(ecarts(texte.replace(/^- `tone` : .*\n/m, '')), ['prop sans sa ligne : tone']);
+  assert.deepEqual(ecarts(texte.replace(/^(- `tone` : .*)$/m, '$1\n- `couleur` : une couleur.')), ['ligne d\'une prop hors du composant : couleur']);
   assert.deepEqual(ecarts(texte.replace('- D55 : l\'étiquette', '- D99 : l\'étiquette')), ['décision inconnue : D99']);
   assert.deepEqual(ecarts(texte.replace('- B5 : l\'étiquette', '- B99 : l\'étiquette')), ['dette inconnue : B99']);
   assert.deepEqual(ecarts(texte.replace('story « Planche »', 'story « Planche bis »')), ['story inconnue : « Planche bis »']);
@@ -276,7 +277,7 @@ const IMPORTS = [
 ].join('\n');
 const exemple = (/** @type {string} */ gabarit) => () => verifierExemple(vue(IMPORTS, gabarit), menuDe);
 
-test('U8 exemples acceptés, refusés par la fabrique, ou hors grammaire', () => {
+test('U8 exemples acceptés, refusés par les props, ou hors grammaire', () => {
   const fiche = lire(FICHE);
   const bloc = /** @type {RegExpExecArray} */ (/^```vue\n([\s\S]*?)\n```$/m.exec(fiche))[1];
   assert.deepEqual(verifierExemple(bloc, menuDe), ['DsTag']);
@@ -292,7 +293,7 @@ test('U8 exemples acceptés, refusés par la fabrique, ou hors grammaire', () =>
   refus('  <DsCard title="T" href="/x"><template #actions><DsButton>Voir</DsButton></template></DsCard>', 'DsCard : href : refusé avec le slot actions');
   refus('  <DsCard title="T"><template #actions><a href="/x">Voir</a></template></DsCard>', 'DsCard : slot actions : seuls DsButton et DsIconButton sont admis');
   refus('  <DsButton type="submit" disabled>Envoyer</DsButton>', 'DsButton : disabled : refusé avec type=submit');
-  // L'enveloppe passe avant son contenu : la carte est refusée avant le bouton de ses actions.
+  // Le composant passe avant son contenu : la carte est refusée avant le bouton de son slot actions.
   refus('  <DsCard title="T" heading-level="5"><template #actions><DsButton variant="x">V</DsButton></template></DsCard>', 'DsCard : headingLevel : valeur inconnue : 5 (2, 3, 4)');
 
   const hors = (/** @type {() => unknown} */ f, /** @type {RegExp} */ motif) => assert.throws(f, (/** @type {any} */ err) => err instanceof HorsGrammaire && motif.test(err.message), String(motif));
@@ -305,29 +306,102 @@ test('U8 exemples acceptés, refusés par la fabrique, ou hors grammaire', () =>
   hors(() => verifierExemple(vue("import DsTag from './composants/DsTag.vue';\nlet x = 1;", '  <DsTag text="Lyon" />'), menuDe), /^exemple hors grammaire : ligne de script : let x = 1;$/);
 });
 
-test('U9 index de l\'étiquette seule', () => {
+test('U9 bloc de l\'index du DsTag seul ; le glossaire sous le bloc est gardé', () => {
   const phrase = 'Un mot court sur un fond teinté, pour classer un membre (ville, secteur) ou mettre une qualité en avant (« Mentor ») ; il ne se clique pas.';
+  const ligne = `| \`DsTag\` | [DsTag (étiquette)](tag.md) | ${phrase} |`;
+  const bloc = blocIndex([ligne]);
   assert.equal(
-    texteIndex([`| \`DsTag\` | [DsTag](tag.md) | ${phrase} |`]),
+    bloc,
     [
       '<!-- genere:index : écrit par npm --prefix atelier run fiches -->',
       '# Fiches des composants',
       '',
-      'Une fiche par enveloppe de l\'atelier : son rôle, son menu, ce qu\'elle refuse, ses jetons, son accessibilité, un exemple à copier. Les blocs `genere` de chaque fiche, et cette liste, sont écrits par `npm --prefix atelier run fiches` depuis les menus, les composants et les jetons ; `npm --prefix atelier run fiches -- --verifier` refuse une fiche qui ne leur correspond plus.',
+      'Une fiche par composant de l\'atelier : à quoi il sert, ses props, ce qu\'il refuse, ses tokens, son accessibilité, un exemple à copier. Les règles qu\'ils suivent sont dans [docs/regles.md](../regles.md). Les blocs `genere` de chaque fiche, et cette liste, sont écrits par `npm --prefix atelier run fiches` depuis les props, les composants et les tokens ; `npm --prefix atelier run fiches -- --verifier` refuse une fiche qui ne leur correspond plus.',
       '',
-      '| Composant | Fiche | Rôle |',
+      '| Composant | Fiche | À quoi il sert |',
       '|---|---|---|',
-      `| \`DsTag\` | [DsTag](tag.md) | ${phrase} |`,
+      ligne,
       '<!-- /genere:index -->',
-      '',
     ].join('\n'),
   );
-  assert.ok(lire('docs/composants/README.md').includes(`| \`DsTag\` | [DsTag](tag.md) | ${phrase} |`));
+  const index = lire('docs/composants/README.md');
+  assert.ok(index.includes(ligne));
+  assert.equal(regenererIndex(index, bloc), index, 'l\'index du dépôt est à jour, glossaire compris');
+  assert.equal(regenererIndex(index.replace(ligne, '| vieux |'), bloc), index);
+  assert.equal(regenererIndex(null, bloc), `${bloc}\n`);
 });
 
 test('U10 le contrôle des fiches sort en 0 sur le dépôt', () => {
   const sortie = execFileSync(process.execPath, [join(ROOT, 'atelier', 'fiches.js'), '--verifier'], { cwd: ROOT, encoding: 'utf8' });
   assert.match(sortie, /^✓ docs\/composants\/tag\.md$/m);
   assert.match(sortie, /^✓ docs\/composants\/README\.md$/m);
+  assert.match(sortie, /^✓ atelier\/composants\/noms\.json$/m);
   assert.doesNotMatch(sortie, /✗/);
+});
+
+test('U11 anatomie du DsTag ; le bouton à icône sans danger plein ; tokens sans description en panne', () => {
+  assert.equal(
+    genere('DsTag').tokens,
+    [
+      'Un token est le nom d\'une valeur de design. Le composant n\'a aucune valeur en dur : chaque marque donne la sienne, et changer un token change toutes ses instances.',
+      '',
+      '| Partie | Token | Ce qu\'il règle |',
+      '|---|---|---|',
+      '| Couleur, tone neutral | `fond.composant` | Fond d\'un composant au repos, plus soutenu que la surface ; un champ, une carte et le bouton secondaire se posent sur fond.surface. |',
+      '| Couleur, tone neutral | `texte.principal` | Texte courant et titres. |',
+      '| Couleur, tone brand | `fond.marque.discret` | Aplat clair de la marque, non cliquable, comme un bandeau, une section ou un encadré. |',
+      '| Couleur, tone brand | `texte.marque` | Texte de marque posé sur fond.marque.discret, comme les initiales d\'un avatar ou une étiquette mise en avant ; pas 12 du primaire, et non la couleur des liens (D05). |',
+      '| Forme | `arrondi.pilule` | Arrondi complet d\'une forme ronde ou en pilule, comme un avatar ou une étiquette. |',
+      '| Forme | `hauteur.etiquette` | Hauteur d\'une étiquette, sur une ligne. |',
+      '| Forme | `marge-interieure.etiquette` | Marge intérieure gauche et droite d\'une étiquette, de part et d\'autre de son texte. |',
+      '| Texte | `typo.corps.petit` | Texte de tableau ; ligne visée 20 px. |',
+    ].join('\n'),
+  );
+  const bi = genere('DsIconButton').tokens;
+  assert.doesNotMatch(bi, /variant danger(?!-)/);
+  assert.match(bi, /^\| Couleur, variant danger-ghost \| `texte\.erreur` \|/m);
+  assert.doesNotMatch(bi, /block|loading/);
+  assert.match(genere('DsButton').tokens, /^\| Couleur, variant danger \| `fond\.erreur\.fort` \|/m);
+  assert.match(genere('DsTextInput').tokens, /^\| Couleur, errorMessage \| `bordure\.erreur` \|/m);
+  const c = lireComposant('DsTag');
+  const sans = new Map([...DESCRIPTIONS].filter(([k]) => k !== 'hauteur.etiquette'));
+  assert.throws(() => anatomie(c, PAR_NOM.get('DsTag'), TABLE, sans, 'essai.vue', PAR_NOM), { message: 'essai.vue : token sans description : hauteur.etiquette' });
+  const pose = lire(FICHE).replace('`ecart.entre-etiquettes` (`ds-ecart-entre-etiquettes`)', '`ecart.inconnu` (`ds-ecart-entre-etiquettes`)');
+  assert.throws(() => ecartsEcrits(pose, FICHE, parNom('DsTag'), ctx()), { message: `${FICHE} : token sans description : ecart.inconnu` });
+});
+
+test('U12 mots refusés hors code, plafond de mots, glossaire', () => {
+  const essai = ['---', 'name: X', '---', '', 'Le test de rendu remplace la preuve.', '', 'La commande `npm --prefix atelier run preuve` reste en code.', '', '```', 'preuve', '```'].join('\n');
+  assert.deepEqual(motsRefuses(essai), ['mot refusé : preuve (ligne 5)']);
+  assert.deepEqual(motsRefuses(`${essai}\n\n## Glossaire\n\n| test de rendu | … | preuve |`), ['mot refusé : preuve (ligne 5)']);
+  assert.deepEqual(motsRefuses('Des Jetons et un écouteur.'), ['mot refusé : jetons (ligne 1)']);
+  assert.deepEqual(motsRefuses('Un tokenisé, une optionnelle.'), [], 'mots entiers seulement');
+  const longue = lire(FICHE).replace('## Test de rendu', `${'mot '.repeat(600)}\n\n## Test de rendu`);
+  const n = motsEcrits(longue);
+  assert.ok(n > 500);
+  assert.ok(ecartsEcrits(longue, FICHE, parNom('DsTag'), ctx()).includes(`fiche trop longue : ${n} mots écrits, 500 au plus`));
+  assert.ok(motsEcrits(lire(FICHE)) <= 500);
+  assert.equal(motsEcrits(['---', 'a: b c d', '---', '', '| un | deux |', '', 'trois quatre - cinq', '```', 'six', '```'].join('\n')), 3);
+  const index = lire('docs/composants/README.md');
+  assert.deepEqual(ecartsGlossaire(index), []);
+  for (const m of MOTS_REFUSES) assert.match(index.slice(index.indexOf('## Glossaire')), new RegExp(m));
+  assert.deepEqual(ecartsGlossaire(index.replace('| emplacement |', '| place |')), ['glossaire : ancien mot absent : emplacement']);
+  assert.deepEqual(ecartsGlossaire('# Fiches'), ['glossaire absent']);
+});
+
+test('U13 table des noms : écarts sur une table d\'essai, aucun sur le dépôt', () => {
+  const slots = new Map(MENUS.map((m) => [m.nom, lireComposant(m.nom).emplacements]));
+  assert.deepEqual(ecartsNoms(MENUS, slots, NOMS), []);
+  const tag = MENUS.filter((m) => m.nom === 'DsTag');
+  const table = (/** @type {any} */ props, /** @type {any} */ autres = {}) => ({ composants: { DsTag: { source: 'courant', props, evenements: {}, slots: {}, ...autres } } });
+  const tone = { source: 'courant', valeurs: { neutral: { source: 'courant' }, brand: { source: 'courant' } } };
+  assert.deepEqual(ecartsNoms(tag, new Map([['DsTag', []]]), table({ text: { source: 'vuetify' }, tone })), []);
+  assert.deepEqual(ecartsNoms(tag, new Map([['DsTag', []]]), table({ tone })), ['prop absente de la table : DsTag.text']);
+  assert.deepEqual(ecartsNoms(tag, new Map([['DsTag', []]]), table({ text: { source: 'vuetify' }, tone: { source: 'courant', valeurs: { neutral: { source: 'courant' } } } })), ['valeur absente de la table : DsTag.tone.brand']);
+  assert.deepEqual(ecartsNoms(tag, new Map([['DsTag', []]]), table({ text: { source: 'vuetify' }, tone, size: { source: 'vuetify' } })), ['entrée sans emploi : DsTag.size']);
+  assert.deepEqual(ecartsNoms(tag, new Map([['DsTag', []]]), table({ text: { source: 'wikipedia' }, tone })), ['source inconnue : DsTag.text (wikipedia)']);
+  const mal = [{ nom: 'DsTag', menu: { ...tag[0].menu, options: { ...tag[0].menu.options, Tone: { type: String } } } }];
+  assert.deepEqual(ecartsNoms(mal, new Map([['DsTag', []]]), table({ text: { source: 'vuetify' }, tone, Tone: { source: 'courant' } })), ['nom mal formé : DsTag.Tone']);
+  assert.deepEqual(ecartsNoms(tag, new Map([['DsTag', ['default']]]), table({ text: { source: 'vuetify' }, tone })), ['slot absent de la table : DsTag.default']);
+  assert.deepEqual(ecartsNoms(tag, new Map([['DsTag', []]]), { composants: {} }), ['composant absent de la table : DsTag']);
 });

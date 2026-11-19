@@ -1,12 +1,14 @@
-// Fiches des composants (D56) : une fiche Markdown par enveloppe, dans docs/composants/, dont l'en-tête et cinq blocs
-// sont écrits depuis le menu, le composant, sa story et les jetons ; le reste est écrit à la main, et en partie
-// contrôlé. L'index docs/composants/README.md est écrit en entier. Les contrastes viennent de la fonction même de
-// npm run contraste (loadRoles, contratRoles), écrits comme elle les écrit.
+// Fiches des composants (D56) : une fiche Markdown par composant, dans docs/composants/, dont l'en-tête et cinq blocs
+// sont écrits depuis les props, le composant, sa story, la table des noms et les tokens ; le reste est écrit à la main, et
+// en partie contrôlé. L'index docs/composants/README.md a son bloc écrit ici ; le glossaire, sous le bloc, est écrit à
+// la main. Les contrastes viennent de la fonction même de npm run contraste (loadRoles, contratRoles), écrits comme elle
+// les écrit. Les règles contrôlées ici sont dans docs/regles.md : NM1 à NM3 (table des noms), DOC1 à DOC5.
 //
 // Un bloc : une ligne « <!-- genere:<bloc> : écrit par … --> », son contenu, une ligne « <!-- /genere:<bloc> --> ».
-// Une marque absente, en double ou ouverte sans fin est une panne, comme une variable du thème inconnue de la table, une
-// variable ds- écrite et inconnue, une règle sans message lisible ou un exemple hors grammaire : l'erreur nomme le
-// fichier. Un écart (bloc à régénérer, section, ligne d'option, décision, dette, story, exemple refusé) est une ligne.
+// Une marque absente, en double ou ouverte sans fin est une panne, comme une variable du thème inconnue de la table, un
+// token sans description, une variable ds- écrite et inconnue, une règle sans message lisible ou un exemple hors
+// grammaire : l'erreur nomme le fichier. Un écart (bloc à régénérer, section, ligne de prop, décision, dette, story,
+// exemple refusé, mot refusé, fiche trop longue, nom hors de la table) est une ligne.
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -20,9 +22,10 @@ export const RACINE = fileURLToPath(new URL('../../', import.meta.url));
 export const ICI = basename(fileURLToPath(new URL('../', import.meta.url)));
 export const DOSSIER = 'docs/composants';
 export const INDEX = `${DOSSIER}/README.md`;
+export const NOMS = `${ICI}/composants/noms.json`;
 const COMMANDE = `npm --prefix ${ICI} run fiches`;
 
-/** Fiche de chaque menu, par son nom : celui de sa preuve (atelier/preuve/<fiche>.js), dans l'ordre de l'index. */
+/** Fiche de chaque composant, par son nom : celui de son test de rendu (atelier/preuve/<fiche>.js), dans l'ordre de l'index. */
 export const FICHES = /** @type {const} */ ([
   ['DsButton', 'button'],
   ['DsIconButton', 'icon-button'],
@@ -33,10 +36,28 @@ export const FICHES = /** @type {const} */ ([
 ]);
 
 /** Blocs générés d'une fiche, en plus de l'en-tête. */
-export const BLOCS = ['titre', 'menu', 'refus', 'jetons', 'contrastes'];
+export const BLOCS = ['titre', 'props', 'refus', 'tokens', 'contrastes'];
 
 /** Titres de niveau 2 d'une fiche, dans l'ordre. */
-export const SECTIONS = ['Quand l\'utiliser', 'Menu', 'Refusé', 'Jetons', 'Accessibilité', 'En situation', 'Décisions et dette', 'Preuve'];
+export const SECTIONS = ['Quand l\'utiliser', 'Props', 'Refusé', 'Anatomie et tokens', 'Accessibilité', 'En situation', 'Décisions et dette', 'Test de rendu'];
+
+/** Mots propres à ds-lab, refusés dans le texte des fiches et de l'index, hors code et hors glossaire (DOC4). */
+export const MOTS_REFUSES = ['jeton', 'menu', 'option', 'emplacement', 'écouteur', 'rôle', 'enveloppe', 'fabrique', 'preuve'];
+const REFUSE = new RegExp(`(?<![\\p{L}])(${MOTS_REFUSES.map((m) => `${m}s?`).join('|')})(?![\\p{L}])`, 'iu');
+
+/** Plafond de mots écrits d'une fiche (DOC5). */
+export const PLAFOND = 500;
+
+/** Sources admises d'un nom (NM3). */
+const SOURCES = new Map([
+  ['html', 'HTML'],
+  ['vuetify', 'Vuetify'],
+  ['vue', 'Vue'],
+  ['courant', 'usage courant'],
+]);
+
+/** Phrase de tête de la section « Anatomie et tokens ». */
+export const PHRASE_TOKENS = 'Un token est le nom d\'une valeur de design. Le composant n\'a aucune valeur en dur : chaque marque donne la sienne, et changer un token change toutes ses instances.';
 
 const MODES = ['clair', 'sombre'];
 const D2 = { decimales: 2, zeros: true };
@@ -48,6 +69,12 @@ const TYPES = new Map([
   [Function, 'fonction'],
   [Array, 'tableau'],
 ]);
+const FAMILLES = ['Couleur', 'Forme', 'Texte'];
+const ETATS = [
+  ['', ''],
+  [':hover', 'au survol'],
+  [':focus-visible', 'au focus'],
+];
 
 /** @param {string} chemin relatif à la racine */
 const lire = (chemin) => readFileSync(join(RACINE, chemin), 'utf8');
@@ -64,23 +91,25 @@ export const fermeture = (b) => `<!-- /genere:${b} -->`;
 const litteral = (v) => (typeof v === 'string' ? `'${v}'` : String(v));
 /** @param {string} s */
 const code = (s) => `\`${s}\``;
+/** Nom de composant en tirets, sans son préfixe : DsIconButton → icon-button. @param {string} nom */
+const tirets = (nom) => nom.replace(/^Ds/, '').replace(/(?<=[a-z0-9])([A-Z])/g, '-$1').toLowerCase();
 
 // ─── Sources ────────────────────────────────────────────────────────────────
 
 /**
- * Menus de atelier/composants/, dans l'ordre de FICHES. Un menu absent de la table, ou une fiche sans preuve, est une
- * panne.
+ * Menus de atelier/composants/, dans l'ordre de FICHES. Un menu absent de la table, ou une fiche sans test de rendu,
+ * est une panne.
  * @returns {Promise<{ nom: string, fiche: string, menu: any, texteMenu: string }[]>}
  */
 export async function lireMenus() {
   const fichiers = readdirSync(join(RACINE, ICI, 'composants')).filter((f) => f.endsWith('.menu.js')).sort();
   const noms = fichiers.map((f) => f.replace(/\.menu\.js$/, ''));
   const horsTable = noms.filter((n) => !FICHES.some(([m]) => m === n));
-  if (horsTable.length) throw new Error(`${ICI}/fiches/fiche.js : menu sans fiche dans la table : ${horsTable.join(', ')}`);
+  if (horsTable.length) throw new Error(`${ICI}/fiches/fiche.js : composant sans fiche dans la table : ${horsTable.join(', ')}`);
   const out = [];
   for (const [nom, fiche] of FICHES) {
-    if (!noms.includes(nom)) throw new Error(`${ICI}/fiches/fiche.js : fiche sans menu : ${fiche} (${nom}.menu.js)`);
-    if (!existsSync(join(RACINE, ICI, 'preuve', `${fiche}.js`))) throw new Error(`${ICI}/fiches/fiche.js : fiche sans preuve : ${ICI}/preuve/${fiche}.js`);
+    if (!noms.includes(nom)) throw new Error(`${ICI}/fiches/fiche.js : fiche sans composant : ${fiche} (${nom}.menu.js)`);
+    if (!existsSync(join(RACINE, ICI, 'preuve', `${fiche}.js`))) throw new Error(`${ICI}/fiches/fiche.js : fiche sans test de rendu : ${ICI}/preuve/${fiche}.js`);
     const chemin = `${ICI}/composants/${nom}.menu.js`;
     const menu = (await import(pathToFileURL(join(RACINE, chemin)).href)).default;
     if (menu.nom !== nom) throw new Error(`${chemin} : nom ${menu.nom}, attendu ${nom}`);
@@ -96,42 +125,111 @@ export function lireTable() {
   return { couleurs: /** @type {Record<string, { fond: string, texte: string }>} */ (t.couleurs), variables: /** @type {Record<string, any>} */ (variables) };
 }
 
+/** Table des noms (NM1 à NM3). */
+export const lireNoms = () => JSON.parse(lire(NOMS));
+
 /**
- * Ce que dit le .vue d'une enveloppe : la pièce de Vuetify enveloppée, les variables du thème lues (les siennes et
- * celles des .vue qu'il importe), ses emplacements.
+ * Descriptions des tokens communs : chemin → $description, le $root d'un groupe compris (DTCG 2025.10).
+ * @returns {Map<string, string>}
+ */
+export function lireDescriptions() {
+  /** @type {Map<string, string>} */
+  const out = new Map();
+  /** @param {any} n @param {string[]} p */
+  const parcourir = (n, p) => {
+    if (!n || typeof n !== 'object') return;
+    const jeton = '$value' in n ? n : n.$root;
+    if (jeton && typeof jeton.$description === 'string' && !out.has(p.join('.'))) out.set(p.join('.'), jeton.$description);
+    for (const [k, v] of Object.entries(n)) if (!k.startsWith('$')) parcourir(v, [...p, k]);
+  };
+  for (const f of ['semantique.tokens.json', 'police.tokens.json']) parcourir(JSON.parse(lire(`tokens/commun/${f}`)), []);
+  return out;
+}
+
+/**
+ * Une feuille de style en règles : sélecteur (un par élément d'une liste) et variables du thème lues dans son corps.
+ * Les @keyframes sont sautées ; les règles d'un @media sont lues comme les autres.
+ * @param {string} css
+ * @returns {{ selecteur: string, variables: string[] }[]}
+ */
+export function reglesCss(css) {
+  const t = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  /** @type {{ selecteur: string, variables: string[] }[]} */
+  const out = [];
+  let i = 0;
+  /** @param {number} fin */
+  const lireBloc = (fin) => {
+    while (i < fin) {
+      const ouvre = t.indexOf('{', i);
+      if (ouvre === -1 || ouvre >= fin) return;
+      const tete = t.slice(i, ouvre).trim();
+      let profondeur = 1;
+      let j = ouvre + 1;
+      while (j < t.length && profondeur) {
+        if (t[j] === '{') profondeur++;
+        else if (t[j] === '}') profondeur--;
+        j++;
+      }
+      const corps = t.slice(ouvre + 1, j - 1);
+      if (tete.startsWith('@media') || tete.startsWith('@supports')) {
+        i = ouvre + 1;
+        lireBloc(j - 1);
+      } else if (!tete.startsWith('@')) {
+        const variables = [...corps.matchAll(/--v-(theme-[a-z0-9-]+|ds-[a-z0-9-]+)/g)].map((m) => m[1]);
+        if (variables.length) for (const s of tete.split(',')) out.push({ selecteur: s.trim(), variables });
+      }
+      i = j;
+    }
+  };
+  lireBloc(t.length);
+  return out;
+}
+
+/**
+ * Ce que dit le .vue d'un composant : la pièce de Vuetify enveloppée, les variables du thème lues (les siennes et celles
+ * des .vue qu'il importe), ses slots, ses règles CSS (avec le composant qui les porte) et le sens de ses classes de
+ * modificateur, lu dans ses liaisons de classe : `ds-x--${props.P}` (une valeur de P) et 'ds-x--y': props.P (P présent).
  * @param {string} nom
- * @returns {{ enveloppe: string, theme: Set<string>, ds: Set<string>, emplacements: string[] }}
+ * @returns {{ enveloppe: string, theme: Set<string>, ds: Set<string>, emplacements: string[], regles: { source: string, selecteur: string, variables: string[] }[], modificateurs: Map<string, { base: string, valeurs: string[], presence: Map<string, string> }> }}
  */
 export function lireComposant(nom) {
   const chemin = `${ICI}/composants/${nom}.vue`;
-  const t = sansCommentaires(lire(chemin));
+  const brut = lire(chemin);
+  const t = sansCommentaires(brut);
   const theme = new Set([...t.matchAll(/--v-theme-([a-z0-9-]+)/g)].map((m) => m[1]));
   const ds = new Set([...t.matchAll(/--v-(ds-[a-z0-9-]+)/g)].map((m) => m[1]));
   const emplacements = [...new Set([...t.matchAll(/\bslots\.(\w+)/g)].map((m) => m[1]))];
   const vuetify = /import\s*\{\s*(V\w+)\s*\}\s*from\s*'vuetify\/components'/.exec(t);
   const importe = /import\s+\w+\s+from\s+'\.\/(\w+)\.vue'/.exec(t);
+  const style = /<style>([\s\S]*?)<\/style>/.exec(brut)?.[1] ?? '';
+  const regles = reglesCss(style).map((r) => ({ source: nom, ...r }));
+  const base = `ds-${tirets(nom)}`;
+  const valeurs = [...t.matchAll(new RegExp(`\`${base}--\\$\\{props\\.(\\w+)\\}\``, 'g'))].map((m) => m[1]);
+  const presence = new Map([...t.matchAll(new RegExp(`'${base}--([a-z-]+)':\\s*!*props\\.(\\w+)`, 'g'))].map((m) => [m[1], m[2]]));
+  const modificateurs = new Map([[nom, { base, valeurs, presence }]]);
   let enveloppe = vuetify?.[1];
   if (importe) {
     const autre = lireComposant(importe[1]);
     for (const v of autre.theme) theme.add(v);
     for (const v of autre.ds) ds.add(v);
+    regles.push(...autre.regles);
+    for (const [k, v] of autre.modificateurs) modificateurs.set(k, v);
     enveloppe ??= `${autre.enveloppe} (par ${importe[1]})`;
   }
-  if (!enveloppe) throw new Error(`${chemin} : aucune pièce de Vuetify ni enveloppe importée`);
-  return { enveloppe, theme, ds, emplacements };
+  if (!enveloppe) throw new Error(`${chemin} : aucune pièce de Vuetify ni composant importé`);
+  return { enveloppe, theme, ds, emplacements, regles, modificateurs };
 }
 
 /**
- * Stories d'une enveloppe : son titre lisible et les noms de ses stories (exports et name).
+ * Stories d'un composant : ses noms de stories (exports et name).
  * @param {string} nom
  */
 export function lireStories(nom) {
   const chemin = `${ICI}/stories/${nom}.stories.js`;
   const t = lire(chemin);
-  const titre = /export default \{ title: '([^']+)'/.exec(t)?.[1];
-  if (!titre) throw new Error(`${chemin} : titre des stories introuvable`);
+  if (!/export default \{ title: '[^']+'/.test(t)) throw new Error(`${chemin} : titre des stories introuvable`);
   const noms = new Set([...[...t.matchAll(/^export const (\w+)/gm)].map((m) => m[1]), ...[...t.matchAll(/^\s*name: '([^']+)'/gm)].map((m) => m[1])]);
-  return { chemin, titre: /** @type {string} */ (titre.split('/').pop()), noms };
+  return { chemin, noms };
 }
 
 /**
@@ -150,6 +248,9 @@ function decisionsDuMenu(texteMenu, quoi) {
   if (!m) throw new Error(`${quoi} : décisions absentes de la première ligne`);
   return m[1].split(', ');
 }
+
+/** Titre lisible d'une fiche : le nom de code, puis le nom en français de la table des noms. @param {string} nom @param {any} noms */
+const titreDe = (nom, noms) => (noms.composants?.[nom]?.fr ? `${nom} (${noms.composants[nom].fr})` : nom);
 
 // ─── Contrastes ─────────────────────────────────────────────────────────────
 
@@ -178,34 +279,35 @@ export function mesurerThemes() {
 
 // ─── Blocs ──────────────────────────────────────────────────────────────────
 
-/** @param {any} e entrée de lireMenus @param {any} composant @param {any} stories */
-export function entete(e, composant, stories) {
+/** @param {any} e entrée de lireMenus @param {any} composant @param {any} stories @param {any} noms */
+export function entete(e, composant, stories, noms) {
   const quoi = `${ICI}/composants/${e.nom}.menu.js`;
   return [
     '---',
-    `nom: ${e.menu.nom}`,
-    `titre: ${stories.titre}`,
-    `fichier: ${ICI}/composants/${e.nom}.vue`,
-    `menu: ${quoi}`,
-    `enveloppe: ${composant.enveloppe}`,
+    `name: ${e.menu.nom}`,
+    `title: ${titreDe(e.nom, noms)}`,
+    `file: ${ICI}/composants/${e.nom}.vue`,
+    `props: ${quoi}`,
+    `wraps: ${composant.enveloppe}`,
     `decisions: [${decisionsDuMenu(e.texteMenu, quoi).join(', ')}]`,
     `stories: ${stories.chemin}`,
-    `preuve: npm --prefix ${ICI} run preuve -- ${e.fiche}`,
+    `test: npm --prefix ${ICI} run preuve -- ${e.fiche}`,
     '---',
   ].join('\n');
 }
 
-/** @param {any} menu @param {any} composant */
-export function blocMenu(menu, composant) {
-  const lignes = ['| Option | Type | Obligatoire | Défaut | Valeurs admises |', '|---|---|---|---|---|'];
+/** @param {any} menu @param {any} composant @param {any} noms */
+export function blocProps(menu, composant, noms) {
+  const lignes = ['| Prop | Type | Obligatoire | Défaut | Valeurs admises | Nom repris de |', '|---|---|---|---|---|---|'];
   for (const [cle, o] of Object.entries(menu.options)) {
     const type = [o.type].flat().map((t) => TYPES.get(t) ?? t.name).join(' ou ');
     const defaut = 'defaut' in o ? code(litteral(o.defaut)) : 'aucun';
     const valeurs = o.valeurs ? o.valeurs.map((/** @type {unknown} */ v) => code(litteral(v))).join(', ') : 'libre';
-    lignes.push(`| ${code(cle)} | ${type} | ${o.obligatoire ? 'oui' : 'non'} | ${defaut} | ${valeurs} |`);
+    const source = SOURCES.get(noms.composants?.[menu.nom]?.props?.[cle]?.source) ?? 'inconnu';
+    lignes.push(`| ${code(cle)} | ${type} | ${o.obligatoire ? 'oui' : 'non'} | ${defaut} | ${valeurs} | ${source} |`);
   }
   const liste = (/** @type {string[]} */ l) => (l.length ? l.map(code).join(', ') : 'aucun');
-  lignes.push('', `Événements émis : ${liste(menu.evenements ?? [])}. Emplacements : ${liste(composant.emplacements)}.`);
+  lignes.push('', `Événements émis : ${liste(menu.evenements ?? [])}. Slots : ${liste(composant.emplacements)}.`);
   return lignes.join('\n');
 }
 
@@ -213,7 +315,7 @@ export function blocMenu(menu, composant) {
 export function blocRefus(menu, quoi) {
   const p = menu.nom;
   const retires = menu.attributsRetires ?? [];
-  const tete = `Attributs admis en plus des options : \`id\`, \`aria-*\`, \`data-*\`. Retirés : ${retires.length ? retires.map(code).join(', ') : 'aucun'}. ${menu.ecouteurs === false ? 'Écouteurs : refusés.' : 'Écouteurs (`on…`) : admis.'}`;
+  const tete = `Attributs admis en plus des props : \`id\`, \`aria-*\`, \`data-*\`. Retirés : ${retires.length ? retires.map(code).join(', ') : 'aucun'}. Attributs \`on…\` d'événement : ${menu.ecouteurs === false ? 'refusés' : 'admis'}.`;
   /** @type {string[]} */
   const messages = [`${p} : attribut refusé : <attributs>`];
   /** @type {Map<string, string>} */
@@ -233,40 +335,122 @@ export function blocRefus(menu, quoi) {
 }
 
 /**
- * Jetons d'une enveloppe : jeton → variables du thème, couleurs d'abord (ordre de la table, fond puis texte), puis
- * variables (ordre de la table).
- * @param {any} composant @param {any} table @param {string} quoi
- * @returns {Map<string, string[]>}
+ * Token d'une variable du thème : `theme-<couleur>` donne le fond, `theme-on-<couleur>` le texte, `ds-<clé>` le token
+ * de la table. Une variable absente de la table est une panne.
+ * @param {string} variable @param {any} table @param {string} quoi
  */
-export function jetonsDe(composant, table, quoi) {
-  for (const v of composant.theme) {
-    const base = v.startsWith('on-') ? v.slice(3) : v;
-    if (!(base in table.couleurs)) throw new Error(`${quoi} : variable inconnue de la table : --v-theme-${v}`);
+function tokenDe(variable, table, quoi) {
+  if (variable.startsWith('theme-')) {
+    const c = variable.slice(6);
+    const base = c.startsWith('on-') ? c.slice(3) : c;
+    if (!(base in table.couleurs)) throw new Error(`${quoi} : variable inconnue de la table : --v-${variable}`);
+    return c.startsWith('on-') ? table.couleurs[base].texte : table.couleurs[base].fond;
   }
-  for (const v of composant.ds) if (!(v in table.variables)) throw new Error(`${quoi} : variable inconnue de la table : --v-${v}`);
-  /** @type {Map<string, string[]>} */
-  const out = new Map();
-  /** @param {string} jeton @param {string} variable */
-  const ajouter = (jeton, variable) => {
-    if (!out.has(jeton)) out.set(jeton, []);
-    out.get(jeton)?.push(variable);
-  };
-  for (const [c, { fond, texte }] of Object.entries(table.couleurs)) {
-    if (composant.theme.has(c)) ajouter(fond, c);
-    if (composant.theme.has(`on-${c}`)) ajouter(texte, `on-${c}`);
-  }
-  for (const [k, v] of Object.entries(table.variables)) if (composant.ds.has(k)) ajouter(v.jeton, k);
-  return out;
+  if (!(variable in table.variables)) throw new Error(`${quoi} : variable inconnue de la table : --v-${variable}`);
+  return table.variables[variable].jeton;
 }
 
-/** @param {Map<string, string[]>} jetons */
-export function blocJetons(jetons) {
-  return ['| Jeton | Variables du thème |', '|---|---|', ...[...jetons].map(([j, vs]) => `| ${code(j)} | ${vs.map(code).join(', ')} |`)].join('\n');
+/** Rang de chaque token dans la table : couleurs (fond puis texte), puis variables. @param {any} table */
+function rangsDesTokens(table) {
+  /** @type {Map<string, number>} */
+  const rangs = new Map();
+  for (const { fond, texte } of Object.values(table.couleurs)) for (const j of [fond, texte]) if (!rangs.has(j)) rangs.set(j, rangs.size);
+  for (const v of Object.values(table.variables)) if (!rangs.has(v.jeton)) rangs.set(v.jeton, rangs.size);
+  return rangs;
+}
+
+/** Famille d'un token : Couleur, Texte ou Forme. @param {string} token */
+const familleDe = (token) => (/^(texte|fond|bordure)\./.test(token) ? 'Couleur' : /^(typo|police)\./.test(token) ? 'Texte' : 'Forme');
+
+/**
+ * Précision d'une règle pour un composant : les props et valeurs que ses classes de modificateur désignent, puis l'état.
+ * Une classe `ds-x--<valeur>` désigne une valeur de la prop liée par `ds-x--${props.P}` ; une classe 'ds-x--y' liée à
+ * props.P désigne la présence de P ; une classe d'état de Vuetify (v-field--disabled) désigne une prop booléenne du menu.
+ * Rend null si la règle vise une valeur ou une prop du composant qui la porte, absente du menu du composant lu (une
+ * règle du danger plein du bouton, lue pour le bouton à icône, qui n'en a pas). Les classes dans :not() sont ignorées.
+ * @param {{ source: string, selecteur: string }} regle @param {any} composant @param {any} menu
+ * @param {Map<string, any>} menus props de chaque composant, par son nom
+ * @returns {{ props: Map<string, string | null>, etat: number } | null}
+ */
+function precision(regle, composant, menu, menus) {
+  const sel = regle.selecteur.replace(/:not\([^)]*\)/g, '');
+  /** @type {Map<string, string | null>} */
+  const props = new Map();
+  for (const [source, m] of composant.modificateurs) {
+    const menuSource = menus.get(source) ?? menu;
+    for (const [, x] of sel.matchAll(new RegExp(`\\.${m.base}--([a-z0-9-]+)(?![a-z0-9-])`, 'g'))) {
+      const presence = m.presence.get(x);
+      if (presence) {
+        if (!(presence in menu.options)) return null;
+        props.set(presence, null);
+        continue;
+      }
+      const p = m.valeurs.find((/** @type {string} */ q) => (menu.options[q]?.valeurs ?? []).includes(x));
+      if (p) props.set(p, x);
+      else if (m.valeurs.some((/** @type {string} */ q) => (menuSource.options[q]?.valeurs ?? []).includes(x))) return null;
+    }
+  }
+  for (const [, x] of sel.matchAll(/\.v-[a-z-]+--([a-z]+)(?![a-z-])/g)) if (menu.options[x]?.type === Boolean) props.set(x, null);
+  const etat = ETATS.reduce((k, [motif], i) => (motif && sel.includes(motif) ? i : k), 0);
+  return { props, etat };
+}
+
+/**
+ * Anatomie d'un composant : une ligne par partie et par token, avec ce qu'il règle ; dans une partie, le fond, puis le
+ * texte, puis la bordure, puis l'ordre de la table. Un token cité sans description est une panne (DOC3).
+ * @param {any} composant @param {any} menu @param {any} table @param {Map<string, string>} descriptions @param {string} quoi
+ * @param {Map<string, any>} [menus] props de chaque composant, par son nom, pour les règles des composants importés
+ * @returns {{ partie: string, token: string, regle: string }[]}
+ */
+export function anatomie(composant, menu, table, descriptions, quoi, menus = new Map()) {
+  const rangs = rangsDesTokens(table);
+  const options = Object.keys(menu.options);
+  /** @type {Map<string, { partie: string, token: string, cle: number[] }>} */
+  const lignes = new Map();
+  for (const r of composant.regles) {
+    const p = precision(r, composant, menu, menus);
+    if (!p) continue;
+    for (const v of r.variables) {
+      const token = tokenDe(v, table, quoi);
+      const famille = familleDe(token);
+      const morceaux = [famille];
+      /** @type {number[]} */
+      const cle = [FAMILLES.indexOf(famille)];
+      for (const o of options) {
+        if (!p.props.has(o)) {
+          cle.push(0);
+          continue;
+        }
+        const val = p.props.get(o);
+        morceaux.push(val === null || val === undefined ? o : `${o} ${val}`);
+        cle.push(val === null || val === undefined ? 1 : 1 + menu.options[o].valeurs.indexOf(val));
+      }
+      if (p.etat) morceaux.push(ETATS[p.etat][1]);
+      cle.push(p.etat, ['fond.', 'texte.', 'bordure.'].findIndex((f) => token.startsWith(f)), rangs.get(token) ?? 9999);
+      const partie = morceaux.join(', ');
+      const id = `${partie}|${token}`;
+      if (!lignes.has(id)) lignes.set(id, { partie, token, cle });
+    }
+  }
+  const tri = [...lignes.values()].sort((a, b) => {
+    for (let k = 0; k < a.cle.length; k++) if (a.cle[k] !== b.cle[k]) return a.cle[k] - b.cle[k];
+    return 0;
+  });
+  return tri.map(({ partie, token }) => {
+    const regle = descriptions.get(token);
+    if (!regle) throw new Error(`${quoi} : token sans description : ${token}`);
+    return { partie, token, regle };
+  });
+}
+
+/** @param {{ partie: string, token: string, regle: string }[]} lignes */
+export function blocTokens(lignes) {
+  return [PHRASE_TOKENS, '', '| Partie | Token | Ce qu\'il règle |', '|---|---|---|', ...lignes.map((l) => `| ${l.partie} | ${code(l.token)} | ${l.regle.replace(/\|/g, '\\|')} |`)].join('\n');
 }
 
 /**
  * Paires de la pièce : celle de chaque couleur employée (fond ou texte), puis, pour chaque variable de texte ou de
- * bordure, les paires où son jeton est devant, sur un fond de la pièce, sur fond.app ou sur fond.surface.
+ * bordure, les paires où son token est devant, sur un fond de la pièce, sur fond.app ou sur fond.surface.
  * @param {any} composant @param {any} table @param {any} paires @param {string} quoi
  * @returns {{ devant: string, fond: string }[]}
  */
@@ -277,6 +461,8 @@ export function pairesDe(composant, table, paires, quoi) {
   const ajouter = (devant, fond) => {
     if (!out.some((p) => p.devant === devant && p.fond === fond)) out.push({ devant, fond });
   };
+  for (const v of composant.theme) tokenDe(`theme-${v}`, table, quoi);
+  for (const v of composant.ds) tokenDe(v, table, quoi);
   const fonds = new Set(['fond.app', 'fond.surface']);
   for (const [c, { fond, texte }] of Object.entries(table.couleurs)) {
     if (!composant.theme.has(c) && !composant.theme.has(`on-${c}`)) continue;
@@ -306,29 +492,82 @@ export function blocContrastes(paires, themes, quoi) {
   return lignes.join('\n');
 }
 
+// ─── Table des noms (NM1 à NM3) ─────────────────────────────────────────────
+
+/**
+ * Écarts entre la table des noms et les composants : nom absent, sans emploi, mal formé, source inconnue.
+ * @param {{ nom: string, menu: any }[]} menus @param {Map<string, string[]>} slots slots de chaque composant @param {any} noms
+ * @returns {string[]}
+ */
+export function ecartsNoms(menus, slots, noms) {
+  /** @type {string[]} */
+  const ecarts = [];
+  const table = noms.composants ?? {};
+  /** @param {string} quoi @param {any} entree */
+  const source = (quoi, entree) => {
+    if (!SOURCES.has(entree?.source)) ecarts.push(`source inconnue : ${quoi} (${entree?.source ?? 'aucune'})`);
+  };
+  /** @param {string} quoi @param {string} nom @param {RegExp} forme */
+  const forme = (quoi, nom, forme) => {
+    if (!forme.test(nom)) ecarts.push(`nom mal formé : ${quoi}`);
+  };
+  /** @param {string} quoi @param {string[]} emplois @param {Record<string, any>} entrees @param {string} sorte @param {RegExp} motif */
+  const confronter = (quoi, emplois, entrees, sorte, motif) => {
+    for (const n of emplois) {
+      forme(`${quoi}.${n}`, n, motif);
+      if (!(n in entrees)) ecarts.push(`${sorte} absent${sorte === 'prop' || sorte === 'valeur' ? 'e' : ''} de la table : ${quoi}.${n}`);
+      else source(`${quoi}.${n}`, entrees[n]);
+    }
+    for (const n of Object.keys(entrees)) if (!emplois.includes(n)) ecarts.push(`entrée sans emploi : ${quoi}.${n}`);
+  };
+  for (const { nom, menu } of menus) {
+    forme(nom, nom, /^Ds[A-Z][A-Za-z0-9]*$/);
+    const t = table[nom];
+    if (!t) {
+      ecarts.push(`composant absent de la table : ${nom}`);
+      continue;
+    }
+    source(nom, t);
+    confronter(nom, Object.keys(menu.options), t.props ?? {}, 'prop', /^[a-z][A-Za-z0-9]*$/);
+    for (const [k, o] of Object.entries(menu.options)) {
+      const textes = (/** @type {any} */ (o).valeurs ?? []).filter((/** @type {unknown} */ v) => typeof v === 'string');
+      if (t.props?.[k] && (textes.length || t.props[k].valeurs)) confronter(`${nom}.${k}`, textes, t.props[k].valeurs ?? {}, 'valeur', /^[a-z][a-z0-9-]*$/);
+    }
+    confronter(nom, menu.evenements ?? [], t.evenements ?? {}, 'événement', /^[a-z]+(:[a-z][A-Za-z]*)?$/);
+    confronter(nom, slots.get(nom) ?? [], t.slots ?? {}, 'slot', /^[a-z][a-z0-9-]*$/);
+  }
+  for (const n of Object.keys(table)) if (!menus.some((m) => m.nom === n)) ecarts.push(`entrée sans emploi : ${n}`);
+  return ecarts;
+}
+
 // ─── Lecture d'une fiche ────────────────────────────────────────────────────
 
 /**
  * Une fiche en morceaux : l'en-tête, et pour chaque bloc ses lignes d'ouverture et de fermeture. Une marque absente, en
  * double ou ouverte sans fin est une panne.
- * @param {string} texte @param {string} chemin
+ * @param {string} texte @param {string} chemin @param {string[]} [blocs]
  */
-export function decouper(texte, chemin) {
+export function decouper(texte, chemin, blocs = BLOCS) {
   const lignes = texte.split('\n');
   if (lignes[0] !== '---') throw new Error(`${chemin} : en-tête absent`);
   const finEntete = lignes.indexOf('---', 1);
   if (finEntete === -1) throw new Error(`${chemin} : en-tête ouvert sans fin`);
+  return { lignes, finEntete, blocs: marques(lignes, chemin, blocs) };
+}
+
+/** Lignes d'ouverture et de fermeture de chaque bloc. @param {string[]} lignes @param {string} chemin @param {string[]} blocs */
+function marques(lignes, chemin, blocs) {
   /** @type {Record<string, [number, number]>} */
-  const blocs = {};
-  for (const b of BLOCS) {
+  const out = {};
+  for (const b of blocs) {
     const ouvertes = lignes.flatMap((l, i) => (l.startsWith(`<!-- genere:${b} `) ? [i] : []));
     const fermees = lignes.flatMap((l, i) => (l === fermeture(b) ? [i] : []));
     if (!ouvertes.length) throw new Error(`${chemin} : marque genere:${b} absente`);
     if (ouvertes.length > 1 || fermees.length > 1) throw new Error(`${chemin} : marque genere:${b} en double`);
     if (!fermees.length || fermees[0] < ouvertes[0]) throw new Error(`${chemin} : marque genere:${b} ouverte sans fin`);
-    blocs[b] = [ouvertes[0], fermees[0]];
+    out[b] = [ouvertes[0], fermees[0]];
   }
-  return { lignes, finEntete, blocs };
+  return out;
 }
 
 /**
@@ -353,10 +592,10 @@ export function regenerer(texte, chemin, genere) {
 function sections(lignes) {
   /** @type {{ titre: string, debut: number }[]} */
   const out = [];
-  let code = false;
+  let dansCode = false;
   lignes.forEach((l, i) => {
-    if (l.startsWith('```')) code = !code;
-    else if (!code && l.startsWith('## ')) out.push({ titre: l, debut: i });
+    if (l.startsWith('```')) dansCode = !dansCode;
+    else if (!dansCode && l.startsWith('## ')) out.push({ titre: l, debut: i });
   });
   return out;
 }
@@ -376,8 +615,8 @@ function bornes(lignes, s, titre) {
 const lignesDe = (lignes, b, apres = -1) => (b ? lignes.slice(Math.max(b[0], apres + 1), b[1]) : []);
 
 /**
- * Phrase de rôle d'une fiche : la première ligne non vide après le bloc titre ; null si elle manque ou n'est pas
- * une phrase d'une ligne finie par un point.
+ * Phrase qui dit à quoi sert le composant : la première ligne non vide après le bloc titre ; null si elle manque ou
+ * n'est pas une phrase d'une ligne finie par un point.
  * @param {string} texte @param {string} chemin
  */
 export function phraseDeRole(texte, chemin) {
@@ -392,10 +631,69 @@ export function phraseDeRole(texte, chemin) {
 }
 
 /**
- * Écarts des parties écrites d'une fiche. Une variable ds- écrite et inconnue est une panne, comme un exemple hors
- * grammaire.
+ * Lignes de texte d'un document, avec leur numéro : hors en-tête, hors code (blocs et code en ligne retiré), hors
+ * marques et hors section Glossaire.
+ * @param {string} texte
+ * @returns {{ n: number, texte: string }[]}
+ */
+function lignesDeTexte(texte) {
+  const lignes = texte.split('\n');
+  let i = 0;
+  if (lignes[0] === '---') i = lignes.indexOf('---', 1) + 1;
+  /** @type {{ n: number, texte: string }[]} */
+  const out = [];
+  let dansCode = false;
+  let glossaire = false;
+  for (; i < lignes.length; i++) {
+    const l = lignes[i];
+    if (l.startsWith('```')) {
+      dansCode = !dansCode;
+      continue;
+    }
+    if (dansCode || l.startsWith('<!--')) continue;
+    if (l.startsWith('## ')) glossaire = l === '## Glossaire';
+    if (glossaire) continue;
+    out.push({ n: i + 1, texte: l.replace(/`[^`]*`/g, '') });
+  }
+  return out;
+}
+
+/** Mots refusés hors code et hors glossaire (DOC4). @param {string} texte @returns {string[]} */
+export function motsRefuses(texte) {
+  return lignesDeTexte(texte).flatMap(({ n, texte: l }) => {
+    const m = REFUSE.exec(l);
+    return m ? [`mot refusé : ${m[1].toLowerCase()} (ligne ${n})`] : [];
+  });
+}
+
+/**
+ * Mots écrits d'une fiche (DOC5) : hors en-tête, blocs générés, tableaux et code ; un mot est une suite de lettres, de
+ * chiffres, d'apostrophes ou de tirets qui contient une lettre ou un chiffre.
+ * @param {string} texte
+ */
+export function motsEcrits(texte) {
+  const sansBlocs = texte.replace(/<!-- genere:(\w+) [^\n]*-->\n[\s\S]*?\n<!-- \/genere:\1 -->/g, '');
+  const lignes = sansBlocs.split('\n');
+  let i = lignes[0] === '---' ? lignes.indexOf('---', 1) + 1 : 0;
+  let n = 0;
+  let dansCode = false;
+  for (; i < lignes.length; i++) {
+    const l = lignes[i];
+    if (l.startsWith('```')) {
+      dansCode = !dansCode;
+      continue;
+    }
+    if (dansCode || l.startsWith('|') || l.startsWith('<!--')) continue;
+    n += (l.match(/[\p{L}\p{N}'’-]+/gu) ?? []).filter((m) => /[\p{L}\p{N}]/u.test(m)).length;
+  }
+  return n;
+}
+
+/**
+ * Écarts des parties écrites d'une fiche. Une variable ds- ou un token posé par le parent inconnus sont une panne, comme
+ * un exemple hors grammaire.
  * @param {string} texte @param {string} chemin @param {any} e entrée de lireMenus
- * @param {{ table: any, stories: any, decisions: string, dette: string, menuDe: (f: string) => any }} ctx
+ * @param {{ table: any, stories: any, decisions: string, dette: string, descriptions: Map<string, string>, menuDe: (f: string) => any }} ctx
  * @returns {string[]}
  */
 export function ecartsEcrits(texte, chemin, e, ctx) {
@@ -414,23 +712,27 @@ export function ecartsEcrits(texte, chemin, e, ctx) {
   const role = phraseDeRole(texte, chemin);
   if (role.ecart) ecarts.push(role.ecart);
 
-  // Lignes d'option : dans la section Menu, après le bloc.
+  // Lignes de prop : dans la section Props, après le bloc.
   const options = Object.keys(e.menu.options);
-  const ecrites = lignesDe(lignes, bornes(lignes, s, 'Menu'), blocs.menu[1]).flatMap((l) => /^- `([^`]+)` : /.exec(l)?.[1] ?? []);
-  for (const o of options) if (!ecrites.includes(o)) ecarts.push(`option sans sa ligne : ${o}`);
-  for (const o of ecrites) if (!options.includes(o)) ecarts.push(`ligne d'une option hors du menu : ${o}`);
+  const ecrites = lignesDe(lignes, bornes(lignes, s, 'Props'), blocs.props[1]).flatMap((l) => /^- `([^`]+)` : /.exec(l)?.[1] ?? []);
+  for (const o of options) if (!ecrites.includes(o)) ecarts.push(`prop sans sa ligne : ${o}`);
+  for (const o of ecrites) if (!options.includes(o)) ecarts.push(`ligne d'une prop hors du composant : ${o}`);
   const communes = ecrites.filter((o) => options.includes(o));
-  if (communes.length === options.length && communes.some((o, j) => o !== options[j])) ecarts.push('lignes d\'option hors de l\'ordre du menu');
+  if (communes.length === options.length && communes.some((o, j) => o !== options[j])) ecarts.push('lignes de prop hors de l\'ordre des props');
 
   // Décisions et dette citées.
   for (const n of new Set([...texte.matchAll(/\bD(\d{2})\b/g)].map((m) => m[1]))) if (!new RegExp(`^### D${n}$`, 'm').test(ctx.decisions)) ecarts.push(`décision inconnue : D${n}`);
   for (const n of new Set([...texte.matchAll(/\bB(\d+)\b/g)].map((m) => m[1]))) if (!new RegExp(`^\\| B${n} \\|`, 'm').test(ctx.dette)) ecarts.push(`dette inconnue : B${n}`);
 
-  // Jetons écrits, hors du bloc.
-  for (const l of lignesDe(lignes, bornes(lignes, s, 'Jetons'), blocs.jetons[1]))
+  // Tokens posés par le parent, et variables ds- écrites, hors du bloc.
+  for (const l of lignesDe(lignes, bornes(lignes, s, 'Anatomie et tokens'), blocs.tokens[1])) {
     for (const m of l.matchAll(/`(ds-[a-z0-9-]+)`/g)) if (!(m[1] in ctx.table.variables)) throw new Error(`${chemin} : variable inconnue de la table : ${m[1]}`);
+    const pose = /^- Posé par le parent : `([^`]+)` \(`(ds-[a-z0-9-]+)`\)/.exec(l);
+    if (pose && !ctx.descriptions.has(pose[1])) throw new Error(`${chemin} : token sans description : ${pose[1]}`);
+    if (pose && ctx.table.variables[pose[2]].jeton !== pose[1]) throw new Error(`${chemin} : ${pose[2]} ne porte pas ${pose[1]}`);
+  }
 
-  // En situation : stories citées, un seul exemple, accepté par la fabrique.
+  // En situation : stories citées, un seul exemple, accepté par les props.
   const situation = lignesDe(lignes, bornes(lignes, s, 'En situation'));
   for (const m of situation.join('\n').matchAll(/story « ([^»]+) »/g)) if (!ctx.stories.noms.has(m[1])) ecarts.push(`story inconnue : « ${m[1]} »`);
   const exemples = [...situation.join('\n').matchAll(/^```vue\n([\s\S]*?)\n```$/gm)];
@@ -442,18 +744,36 @@ export function ecartsEcrits(texte, chemin, e, ctx) {
       if (err instanceof HorsGrammaire) throw new Error(`${chemin} : ${err.message}`);
       ecarts.push(`exemple refusé : ${/** @type {Error} */ (err).message}`);
     }
+
+  ecarts.push(...motsRefuses(texte));
+  const mots = motsEcrits(texte);
+  if (mots > PLAFOND) ecarts.push(`fiche trop longue : ${mots} mots écrits, ${PLAFOND} au plus`);
   return ecarts;
+}
+
+/** Écarts du glossaire de l'index : chaque mot refusé y paraît comme ancien mot. @param {string} texte */
+export function ecartsGlossaire(texte) {
+  const lignes = texte.split('\n');
+  const debut = lignes.indexOf('## Glossaire');
+  if (debut === -1) return ['glossaire absent'];
+  const anciens = lignes
+    .slice(debut + 1)
+    .filter((l) => l.startsWith('|'))
+    .map((l) => (l.split('|')[3] ?? '').toLowerCase());
+  return MOTS_REFUSES.filter((m) => !anciens.some((a) => new RegExp(`(?<![\\p{L}])${m}s?(?![\\p{L}])`, 'u').test(a))).map((m) => `glossaire : ancien mot absent : ${m}`);
 }
 
 // ─── Les fiches du dépôt ────────────────────────────────────────────────────
 
 /**
- * Chaque fiche présente, son texte régénéré et ses écarts, puis l'index.
- * @returns {Promise<{ fiches: { chemin: string, actuel: string, attendu: string, ecarts: string[] }[], index: { chemin: string, actuel: string | null, attendu: string }, horsTable: string[] }>}
+ * Chaque fiche présente, son texte régénéré et ses écarts, puis l'index et la table des noms.
+ * @returns {Promise<{ fiches: { chemin: string, actuel: string, attendu: string, ecarts: string[] }[], index: { chemin: string, actuel: string | null, attendu: string, ecarts: string[] }, horsTable: string[], noms: string[] }>}
  */
 export async function calculer() {
   const menus = await lireMenus();
   const table = lireTable();
+  const noms = lireNoms();
+  const descriptions = lireDescriptions();
   const paires = JSON.parse(lire('tokens/commun/paires.json'));
   const themes = mesurerThemes();
   const decisions = lire('docs/decisions.md');
@@ -462,9 +782,11 @@ export async function calculer() {
   /** @param {string} f */
   const menuDe = (f) => {
     const m = parFichier.get(f);
-    if (!m) throw new HorsGrammaire(`exemple hors grammaire : enveloppe sans menu : ./composants/${f}.vue`);
+    if (!m) throw new HorsGrammaire(`exemple hors grammaire : composant sans props : ./composants/${f}.vue`);
     return m;
   };
+  const composants = new Map(menus.map((m) => [m.nom, lireComposant(m.nom)]));
+  const ecartsDesNoms = ecartsNoms(menus, new Map([...composants].map(([n, c]) => [n, c.emplacements])), noms);
   const presentes = existsSync(join(RACINE, DOSSIER)) ? readdirSync(join(RACINE, DOSSIER)).filter((f) => f.endsWith('.md') && f !== 'README.md') : [];
   const horsTable = presentes.filter((f) => !FICHES.some(([, fiche]) => `${fiche}.md` === f)).map((f) => `${DOSSIER}/${f}`);
   const fiches = [];
@@ -474,14 +796,14 @@ export async function calculer() {
     const chemin = `${DOSSIER}/${e.fiche}.md`;
     if (!presentes.includes(`${e.fiche}.md`)) continue;
     const quoi = `${ICI}/composants/${e.nom}`;
-    const composant = lireComposant(e.nom);
+    const composant = /** @type {any} */ (composants.get(e.nom));
     const stories = lireStories(e.nom);
     const genere = {
-      entete: entete(e, composant, stories),
-      titre: `# ${stories.titre}`,
-      menu: blocMenu(e.menu, composant),
+      entete: entete(e, composant, stories, noms),
+      titre: `# ${titreDe(e.nom, noms)}`,
+      props: blocProps(e.menu, composant, noms),
       refus: blocRefus(e.menu, `${quoi}.menu.js`),
-      jetons: blocJetons(jetonsDe(composant, table, `${quoi}.vue`)),
+      tokens: blocTokens(anatomie(composant, e.menu, table, descriptions, `${quoi}.vue`, parFichier)),
       contrastes: blocContrastes(pairesDe(composant, table, paires, `${quoi}.vue`), themes, `${quoi}.vue`),
     };
     const actuel = lire(chemin);
@@ -493,31 +815,40 @@ export async function calculer() {
       const [o, f] = avant.blocs[b];
       if (avant.lignes[o] !== ouverture(b) || avant.lignes.slice(o + 1, f).join('\n') !== genere[/** @type {keyof typeof genere} */ (b)]) ecarts.push(`bloc ${b} à régénérer (${COMMANDE})`);
     }
-    ecarts.push(...ecartsEcrits(actuel, chemin, e, { table, stories, decisions, dette, menuDe }));
+    ecarts.push(...ecartsEcrits(actuel, chemin, e, { table, stories, decisions, dette, descriptions, menuDe }));
     fiches.push({ chemin, actuel, attendu, ecarts });
-    lignesIndex.push(`| ${code(e.nom)} | [${stories.titre}](${e.fiche}.md) | ${phraseDeRole(actuel, chemin).phrase ?? ''} |`);
+    lignesIndex.push(`| ${code(e.nom)} | [${titreDe(e.nom, noms)}](${e.fiche}.md) | ${phraseDeRole(actuel, chemin).phrase ?? ''} |`);
   }
-  const index = {
-    chemin: INDEX,
-    actuel: existsSync(join(RACINE, INDEX)) ? lire(INDEX) : null,
-    attendu: texteIndex(lignesIndex),
-  };
-  return { fiches, index, horsTable };
+  const actuel = existsSync(join(RACINE, INDEX)) ? lire(INDEX) : null;
+  const bloc = blocIndex(lignesIndex);
+  const attendu = regenererIndex(actuel, bloc);
+  const index = { chemin: INDEX, actuel, attendu, ecarts: actuel === null ? ['index absent'] : [...motsRefuses(actuel), ...ecartsGlossaire(actuel)] };
+  return { fiches, index, horsTable, noms: ecartsDesNoms };
 }
 
-/** Index des fiches, écrit en entier. @param {string[]} lignes */
-export function texteIndex(lignes) {
+/** Bloc généré de l'index, marques comprises. @param {string[]} lignes */
+export function blocIndex(lignes) {
   return [
     ouverture('index'),
     '# Fiches des composants',
     '',
-    `Une fiche par enveloppe de l'${ICI} : son rôle, son menu, ce qu'elle refuse, ses jetons, son accessibilité, un exemple à copier. Les blocs \`genere\` de chaque fiche, et cette liste, sont écrits par \`${COMMANDE}\` depuis les menus, les composants et les jetons ; \`${COMMANDE} -- --verifier\` refuse une fiche qui ne leur correspond plus.`,
+    `Une fiche par composant de l'${ICI} : à quoi il sert, ses props, ce qu'il refuse, ses tokens, son accessibilité, un exemple à copier. Les règles qu'ils suivent sont dans [docs/regles.md](../regles.md). Les blocs \`genere\` de chaque fiche, et cette liste, sont écrits par \`${COMMANDE}\` depuis les props, les composants et les tokens ; \`${COMMANDE} -- --verifier\` refuse une fiche qui ne leur correspond plus.`,
     '',
-    '| Composant | Fiche | Rôle |',
+    '| Composant | Fiche | À quoi il sert |',
     '|---|---|---|',
     ...lignes,
     fermeture('index'),
-    '',
   ].join('\n');
 }
 
+/**
+ * L'index régénéré : son bloc remplacé, le glossaire écrit sous le bloc gardé à l'octet ; un index absent ne reçoit que
+ * son bloc.
+ * @param {string | null} actuel @param {string} bloc
+ */
+export function regenererIndex(actuel, bloc) {
+  if (actuel === null) return `${bloc}\n`;
+  const lignes = actuel.split('\n');
+  const { index } = marques(lignes, INDEX, ['index']);
+  return [...lignes.slice(0, index[0]), bloc, ...lignes.slice(index[1] + 1)].join('\n');
+}

@@ -39,6 +39,8 @@
  *      caractères est accepté, aucune limite de longueur ;
  *   W8 chaque .vue de atelier/composants/ passe par la fabrique et son menu, sans déclarer lui-même props, inheritAttrs
  *      ni emits ; chaque menu est importé par un seul .vue.
+ *   W9 CP1 (docs/regles.md) : un composant sans événement refuse tout attribut on… (ecouteurs: false) ; un composant
+ *      qui émet un événement l'admet (attendu du 19/11/2026, docs/attendus/fiches.md).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -268,4 +270,11 @@ test('W8 chaque enveloppe passe par la fabrique et son menu', () => {
     for (const m of menus) if (script.includes(`from './${m}'`)) importeurs[m].push(v);
   }
   for (const m of menus) assert.equal(importeurs[m].length, 1, `${m} importé par un seul .vue (${importeurs[m].join(', ')})`);
+});
+
+test('W9 un composant sans événement refuse les attributs on…, un composant qui en émet les admet', () => {
+  for (const [fichier, menu] of Object.entries(MENUS)) {
+    if ((menu.evenements ?? []).length) assert.notEqual(menu.ecouteurs, false, `${fichier} émet ${menu.evenements.join(', ')}`);
+    else assert.equal(menu.ecouteurs, false, `${fichier} n'émet rien et doit refuser les attributs on…`);
+  }
 });
