@@ -1,27 +1,18 @@
 // Stories du bouton (D43) : la planche, que la preuve force état par état et enregistre ; la vitrine, toutes les marques
-// en clair et en sombre côte à côte ; le bac à sable, réglable. Les marques sont lues dans leurs fichiers de thèmes,
-// comme dans l'aperçu : aucun nom n'est écrit ici.
+// en clair et en sombre côte à côte ; le bac à sable, réglable. Thèmes et icône d'essai viennent de commun.js : aucun
+// nom de marque n'est écrit ici.
 import { h, reactive, ref } from 'vue';
 import { VThemeProvider } from 'vuetify/components';
 import Bouton from '../composants/Bouton.vue';
-
-const fichiers = import.meta.glob(['../../tokens/*/vuetify.json', '!../../tokens/commun/vuetify.json'], { eager: true, import: 'default' });
-/** Thèmes dans l'ordre du sélecteur : marques par dossier, puis clair et sombre. */
-const THEMES = Object.keys(fichiers)
-  .sort()
-  .flatMap((chemin) => Object.entries(fichiers[chemin].themes).map(([nom, t]) => ({ nom, titre: `${fichiers[chemin].nom}, ${t.dark ? 'sombre' : 'clair'}` })));
+import { ENTETE, Plus, THEMES } from './commun.js';
 
 const VARIANTES = ['principal', 'secondaire', 'discret', 'danger', 'danger-discret'];
 const TAILLES = ['normale', 'petite'];
 /** États de la planche ; survol et focus y sont au repos, la preuve les force. */
 const ETATS = ['repos', 'survol', 'focus', 'désactivé', 'chargement'];
 
-/** Icône d'essai, dessinée ici : une croix d'ajout. */
-const Plus = () => h('svg', { viewBox: '0 0 24 24', fill: 'currentColor', focusable: 'false' }, [h('path', { d: 'M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z' })]);
-
 /** Mise en page des planches de l'atelier, hors du design system. */
 const GRILLE = 'display:grid;grid-template-columns:repeat(6,max-content);gap:16px 24px;align-items:center;padding:24px';
-const ENTETE = 'font-size:12px;opacity:0.7';
 
 /**
  * Une rangée par variante et taille, une colonne par état.

@@ -14,6 +14,7 @@
     "preuve": "node preuve.js"
   },
   "devDependencies": {
+    "@mdi/js": "7.4.47",
     "@storybook/vue3-vite": "10.6.7",
     "@vitejs/plugin-vue": "6.0.10",
     "storybook": "10.6.7",
