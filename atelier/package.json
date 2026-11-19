@@ -11,7 +11,8 @@
   "scripts": {
     "dev": "storybook dev --port 6006 --host 127.0.0.1 --ci --no-open --no-version-updates --disable-telemetry",
     "build": "storybook build --output-dir storybook-static --disable-telemetry",
-    "preuve": "node preuve.js"
+    "preuve": "node preuve.js",
+    "fiches": "node fiches.js"
   },
   "devDependencies": {
     "@mdi/js": "7.4.47",

@@ -1,5 +1,6 @@
 # Rejoue, sur des machines neuves, ce que CLAUDE.md demande avant un commit, en trois jobs parallèles et un verdict :
-# - rapides : types, ce qui ne sert plus (knip), cycles et orphelins (dependency-cruiser), les trois contrôles de la cible ;
+# - rapides : types, ce qui ne sert plus (knip), cycles et orphelins (dependency-cruiser), les trois contrôles de la cible,
+#   les fiches des composants (D56) ;
 # - tests : npm test, en trois parts (un fichier de test dans une part et une seule) ;
 # - atelier : son installation, sa version construite, puis la preuve (D42), un job par composant ;
 # - controles : le verdict, seul check exigé par le ruleset de main (D35).
@@ -40,6 +41,8 @@ jobs:
       - run: npm run contraste
       - run: npm run espacements
       - run: npm run typo
+      # Fiches des composants (D56) : sans installation de l'atelier, celle de la racine suffit.
+      - run: npm --prefix atelier run fiches -- --verifier
 
   tests:
     name: tests (${{ matrix.part }}/3)

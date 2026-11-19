@@ -7,7 +7,9 @@
  * et un fichier renommé depuis y garde son ancien nom.
  *
  * Candidats chemins : le contenu de chaque code en ligne (`…`), la cible de chaque lien ](…)
- * (sans ancre), chaque import @… en début de ligne, et chaque mot d'un bloc de code ```.
+ * (sans ancre), chaque import @… en début de ligne, et chaque mot d'un bloc de code ```. La cible d'un lien se lit
+ * depuis le dossier du fichier qui la contient, comme sur GitHub (docs/composants/, D56) ; un code en ligne, un mot
+ * d'un bloc de code et un import se lisent depuis la racine. Un lien qui sort du dépôt garde ses « .. », et manque.
  * Un candidat est un chemin s'il s'écrit en segments [lettres, chiffres, . _ - @] séparés par « / »
  * (un « / » final désigne un dossier), et s'il contient un « / » ou si son premier segment existe
  * à la racine du dépôt. Ainsi `revue.html`, sortie de l'outil, n'est pas un chemin ; `scr/x.js`
@@ -22,7 +24,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
+import { join, posix, sep } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -52,8 +54,9 @@ export function commandesAtelier(text) {
  * Chemins cités dans un texte Markdown.
  * @param {string} text
  * @param {Set<string>} racine noms des entrées de la racine du dépôt
+ * @param {string} [dossier] dossier du fichier, relatif à la racine, en « / » : '' pour un fichier de la racine
  */
-export function chemins(text, racine) {
+export function chemins(text, racine, dossier = '') {
   /** @type {string[]} */
   const cands = [];
   const sansBlocs = text.replace(/^```[^\n]*\n([\s\S]*?)^```/gm, (_, bloc) => {
@@ -61,7 +64,10 @@ export function chemins(text, racine) {
     return '';
   });
   for (const m of sansBlocs.matchAll(/`([^`\n]+)`/g)) cands.push(m[1]);
-  for (const m of sansBlocs.matchAll(/\]\(([^)\s]+)\)/g)) cands.push(m[1].replace(/#.*$/, ''));
+  for (const m of sansBlocs.matchAll(/\]\(([^)\s]+)\)/g)) {
+    const cible = m[1].replace(/#.*$/, '');
+    cands.push(!cible || cible.includes('://') ? cible : posix.normalize(posix.join(dossier, cible)));
+  }
   for (const m of sansBlocs.matchAll(/^@(\S+)/gm)) cands.push(m[1]);
   const out = cands
     .map((c) => c.replace(/[.,;:]+$/, ''))
@@ -99,6 +105,16 @@ test('l\'extracteur trouve les commandes et les chemins cités (attendu écrit �
     'src/tokens/',
     'tokens/orbe-cafe/',
   ]);
+});
+
+test('une cible de lien se lit depuis le dossier du fichier, un code en ligne depuis la racine (attendu écrit à la main)', () => {
+  const texte = [
+    'Voir [le composant](../../atelier/composants/Etiquette.vue), [la fiche](etiquette.md#menu) et [dehors](../../../x).',
+    'Le fichier `atelier/composants/Etiquette.vue`, et la commande npm --prefix atelier run fiches.',
+  ].join('\n');
+  const racine = new Set(['atelier', 'docs']);
+  assert.deepEqual(chemins(texte, racine, 'docs/composants').sort(), ['../x', 'atelier/composants/Etiquette.vue', 'docs/composants/etiquette.md']);
+  assert.deepEqual(chemins('[a](ARCHITECTURE.md#x) et `src/a.js`', new Set(['ARCHITECTURE.md', 'src'])).sort(), ['ARCHITECTURE.md', 'src/a.js']);
 });
 
 test('les documents du dépôt existent', () => {
@@ -142,7 +158,7 @@ test('chaque chemin cité dans la documentation existe dans le dépôt', () => {
   /** @type {string[]} */
   const absents = [];
   for (const f of [...DOCS, ...markdowns('docs')].filter((f) => existsSync(join(ROOT, f))))
-    for (const c of chemins(readFileSync(join(ROOT, f), 'utf8'), racine)) {
+    for (const c of chemins(readFileSync(join(ROOT, f), 'utf8'), racine, posix.dirname(f.split(sep).join('/')).replace(/^\.$/, ''))) {
       const ok = c.endsWith('/') ? dossiers.has(c) : fichiers.has(c) || dossiers.has(`${c}/`);
       if (!ok) absents.push(`${f} : ${c}`);
     }
