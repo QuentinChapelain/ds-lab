@@ -56,7 +56,7 @@ jobs:
       fail-fast: false # une part rouge laisse finir les autres : tous les échecs se lisent dans la même exécution
       matrix:
         part: [1, 2, 3]
-    timeout-minutes: 12 # provisoire, à recalculer sur les durées mesurées
+    timeout-minutes: 7 # 125 à 232 s mesurés (D53)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -80,7 +80,7 @@ jobs:
         run: npm test
         env:
           NODE_OPTIONS: --test-shard=${{ matrix.part }}/3
-        timeout-minutes: 8 # provisoire, à recalculer sur les durées mesurées
+        timeout-minutes: 5 # 87 à 183 s mesurés selon la part et le runner (D53)
 
   # Un job par composant : la preuve de chacun passe seule (node preuve.js <composant>), avec les mêmes vérifications
   # que la preuve entière, qui reste la commande d'avant commit.
@@ -94,7 +94,7 @@ jobs:
       fail-fast: false
       matrix:
         composant: [bouton, champ, carte, bouton-icone]
-    timeout-minutes: 12 # provisoire, à recalculer sur les durées mesurées
+    timeout-minutes: 4 # 75 à 101 s mesurés (D53)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -120,7 +120,7 @@ jobs:
         timeout-minutes: 3
       - name: Atelier, preuve du composant ${{ matrix.composant }}
         run: npm --prefix atelier run preuve -- ${{ matrix.composant }}
-        timeout-minutes: 5 # provisoire, à recalculer sur les durées mesurées
+        timeout-minutes: 2 # 29 à 46 s mesurés (D53)
 
   # Seul check exigé par le ruleset de main (D35) : renommer ce job bloquerait tout push sur main. Il tourne toujours
   # et juge lui-même le résultat des autres : un job requis sauté compterait sinon comme réussi. Le résultat d'une

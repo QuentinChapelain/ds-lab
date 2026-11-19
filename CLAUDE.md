@@ -37,9 +37,9 @@ Les trois contrôles de la cible (contraste, espacements, typo) prennent `--marq
 
 Les trois contrôles de la cible, npm run types, npm run knip et npm run dependances restent à 0 échec, et npm test ne perd aucun vert, avant chaque commit et à la fin de chaque lot. La CI (`.github/workflows/ci.yml`) rejoue ces commandes à chaque push ; elle ne remplace pas le lancement local.
 
-Avant chaque commit qui touche `atelier/`, la table `tokens/commun/vuetify.json` ou la sortie thème Vuetify : `npm --prefix atelier run build`, puis `npm --prefix atelier run preuve` à 0 échec ; la CI la rejoue à chaque push.
+Avant chaque commit qui touche `atelier/`, la table `tokens/commun/vuetify.json` ou la sortie thème Vuetify : `npm --prefix atelier run build`, puis `npm --prefix atelier run preuve` à 0 échec ; la CI la rejoue à chaque push, un job par composant (`npm --prefix atelier run preuve -- <composant>`, D53).
 
-main n'accepte qu'un push en avance rapide d'un commit dont le check `controles` est vert (ruleset « main protégée », D35) : pousser la branche, attendre la CI, pousser le même commit sur main, supprimer la branche.
+main n'accepte qu'un push en avance rapide d'un commit dont le check `controles` est vert (ruleset « main protégée », D35) : pousser la branche, attendre sa CI, pousser le même commit sur main, supprimer la branche. La CI de main, rejouée sur ce même commit, n'est pas attendue pour clore le lot : elle reste une trace, et un rouge y est lu au contrôle de départ du lot suivant (D53).
 
 Node : la version de `.node-version` (Node 24 LTS), seule source pour le poste, la CI et la garde des commandes (D40). Une commande de l'outil lancée sous une autre version majeure sort en 2 avant de lire son entrée : vérifier `node -v` avant les commandes.
 
