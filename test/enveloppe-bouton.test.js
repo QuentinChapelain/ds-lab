@@ -36,6 +36,12 @@
  *      (balise, classe, sélecteur, v-avatar__underlay) ; elle ne prend ni un commentaire, ni ds-avatar, ni nav-avatar ;
  *   E10 dans le code de src/ et de l'atelier, une seule occurrence de fichier : atelier/composants/Avatar.vue, qui
  *      importe bien VAvatar.
+ *
+ * Ajouts pour l'étiquette (19/11/2026, D55, docs/attendus/avatar-etiquette.md) :
+ *   E11 la détection de la puce prend VChip et ses composés (VChipGroup), un import vuetify/components/VChip, et v-chip
+ *      et ses classes (v-chip__content…) ; elle ne prend ni un commentaire, ni ds-etiquette, ni nav-chip ;
+ *   E12 dans le code de src/ et de l'atelier, une seule occurrence de fichier : atelier/composants/Etiquette.vue, qui
+ *      importe bien VChip.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -60,6 +66,9 @@ const ENVELOPPE_CARTE = join('atelier', 'composants', 'Carte.vue');
 /** Avatar de Vuetify : le composant, la balise ou la classe. */
 const VUETIFY_AVATAR = /\bVAvatar(?![a-z])|(?<![\w-])v-avatar(?![a-z])/;
 const ENVELOPPE_AVATAR = join('atelier', 'composants', 'Avatar.vue');
+/** Puce de Vuetify : le composant et ses composés, la balise ou la classe. */
+const VUETIFY_PUCE = /\bVChip(?![a-z])|(?<![\w-])v-chip(?![a-z])/;
+const ENVELOPPE_ETIQUETTE = join('atelier', 'composants', 'Etiquette.vue');
 
 /** Code sans commentaires d'un fichier, .js ou .vue, relatif à la racine. @param {string} f */
 function code(f) {
@@ -157,4 +166,18 @@ test('E10 l\'avatar de Vuetify ne paraît que dans son enveloppe', () => {
   assert.ok(fichiers.includes(ENVELOPPE_AVATAR), 'l\'enveloppe est lue');
   assert.deepEqual(fichiers.filter((f) => VUETIFY_AVATAR.test(code(f))), [ENVELOPPE_AVATAR]);
   assert.match(code(ENVELOPPE_AVATAR), /import \{ VAvatar \} from 'vuetify\/components';/);
+});
+
+test('E11 détection de la puce de Vuetify', () => {
+  for (const s of ["import { VChip } from 'vuetify/components';", "import { VChipGroup } from 'vuetify/components';", "import x from 'vuetify/components/VChip';", '<v-chip>Lyon</v-chip>', "'.v-chip__content'", 'h(VChip)'])
+    assert.ok(VUETIFY_PUCE.test(s), s);
+  for (const s of ['// v-chip dans un commentaire', "'.ds-etiquette__texte'", "'nav-chip'", 'h(Etiquette)'])
+    assert.ok(!VUETIFY_PUCE.test(lex(s).code), s);
+});
+
+test('E12 la puce de Vuetify ne paraît que dans l\'enveloppe de l\'étiquette', () => {
+  const fichiers = fichiersDeCode();
+  assert.ok(fichiers.includes(ENVELOPPE_ETIQUETTE), 'l\'enveloppe est lue');
+  assert.deepEqual(fichiers.filter((f) => VUETIFY_PUCE.test(code(f))), [ENVELOPPE_ETIQUETTE]);
+  assert.match(code(ENVELOPPE_ETIQUETTE), /import \{ VChip \} from 'vuetify\/components';/);
 });

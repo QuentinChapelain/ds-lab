@@ -30,6 +30,10 @@
  *   Ajouts pour l'avatar (19/11/2026, D54, docs/attendus/avatar-etiquette.md) : W5 rejoue son menu ; ses messages mot
  *      pour mot : nom obligatoire (absent, null, vide, fait d'espaces), nom sans lettre ("123", "—"), taille inconnue,
  *      aria-label, aria-labelledby, aria-hidden, class et onClick refusés ; id, aria-describedby et data-* passent ;
+ *   Ajouts pour l'étiquette (19/11/2026, D55, docs/attendus/avatar-etiquette.md) : W5 rejoue son menu ; ses messages mot
+ *      pour mot : texte obligatoire (absent, null, vide), ton inconnu, closable, href, to, link, filter, tabindex,
+ *      aria-label, aria-labelledby et onClick refusés ; id, aria-describedby et data-* passent ; un texte de 80
+ *      caractères est accepté, aucune limite de longueur ;
  *   W8 chaque .vue de atelier/composants/ passe par la fabrique et son menu, sans déclarer lui-même props, inheritAttrs
  *      ni emits ; chaque menu est importé par un seul .vue.
  */
@@ -44,6 +48,7 @@ import CHAMP from '../atelier/composants/ChampTexte.menu.js';
 import CARTE from '../atelier/composants/Carte.menu.js';
 import BOUTON_ICONE from '../atelier/composants/BoutonIcone.menu.js';
 import AVATAR from '../atelier/composants/Avatar.menu.js';
+import ETIQUETTE from '../atelier/composants/Etiquette.menu.js';
 import { partiesVue } from './helpers/atelier.js';
 import { lex } from './helpers/commentaires.js';
 
@@ -51,7 +56,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const COMPOSANTS = join(ROOT, 'atelier', 'composants');
 
 /** Menus réels, par nom de fichier. */
-const MENUS = { 'Bouton.menu.js': BOUTON, 'ChampTexte.menu.js': CHAMP, 'Carte.menu.js': CARTE, 'BoutonIcone.menu.js': BOUTON_ICONE, 'Avatar.menu.js': AVATAR };
+const MENUS = { 'Bouton.menu.js': BOUTON, 'ChampTexte.menu.js': CHAMP, 'Carte.menu.js': CARTE, 'BoutonIcone.menu.js': BOUTON_ICONE, 'Avatar.menu.js': AVATAR, 'Etiquette.menu.js': ETIQUETTE };
 
 /** Props avec les défauts du menu, comme Vue les donne quand rien n'est passé. @param {any} menu */
 const defauts = (menu) => Object.fromEntries(Object.entries(menu.options).map(([k, o]) => [k, /** @type {any} */ (o).defaut]));
@@ -194,6 +199,16 @@ test('W5 refus rejoués sur chaque menu réel', () => {
   assert.equal(leve(AVATAR, { ...a, image: 'portrait.png', decoratif: true, taille: 'grande' }), null);
   assert.equal(AVATAR.options.taille.defaut, 'normale');
   assert.equal(AVATAR.options.decoratif.defaut, false);
+  const e = { ...defauts(ETIQUETTE), texte: 'Lyon' };
+  assert.equal(leve(ETIQUETTE, e), null);
+  for (const texte of [undefined, null, '']) assert.equal(leve(ETIQUETTE, { ...e, texte }), 'étiquette : texte obligatoire', String(texte));
+  assert.equal(leve(ETIQUETTE, { ...e, ton: 'accent' }), 'étiquette : ton inconnu : accent (neutre, marque)');
+  for (const k of ['closable', 'href', 'to', 'link', 'filter', 'tabindex', 'aria-label', 'aria-labelledby'])
+    assert.equal(leve(ETIQUETTE, e, { [k]: 'x' }), `étiquette : attribut refusé : ${k}`, k);
+  assert.equal(leve(ETIQUETTE, e, { onClick: () => {} }), 'étiquette : attribut refusé : onClick');
+  assert.equal(leve(ETIQUETTE, e, { id: 'e', 'aria-describedby': 'aide', 'data-cas': 'y' }), null);
+  assert.equal(leve(ETIQUETTE, { ...e, texte: 'x'.repeat(80), ton: 'marque' }), null, 'aucune limite de longueur');
+  assert.equal(ETIQUETTE.options.ton.defaut, 'neutre');
 });
 
 test('W6 props du bouton inchangées', () => {

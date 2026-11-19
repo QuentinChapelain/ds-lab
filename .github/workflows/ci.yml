@@ -93,7 +93,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        composant: [bouton, champ, carte, bouton-icone, avatar]
+        composant: [bouton, champ, carte, bouton-icone, avatar, etiquette]
     timeout-minutes: 4 # 75 à 101 s mesurés (D53)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
