@@ -1,5 +1,5 @@
 {
-  "$description": "Rôles de couleur (14/11/2026), d'espacement par relation et styles de texte (15/11/2026) communs à toutes les marques. Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json, statuts.tokens.json et marque.tokens.json pour les couleurs, vers espace.* de primitives.tokens.json pour les espacements, vers taille-texte.*, graisse.*, marque.police.* et police.produit (libellé, D44) pour les styles de texte (typo, composites DTCG typography, interligne sans unité) ; les couleurs de marque et tous les pleins, statuts compris, passent par marque.<emplacement>.* (Orbe Café : primaire = bleu, accent = terre). Arrondis, hauteurs, épaisseurs, décalages et tailles d'icône des contrôles (18/11/2026), vers rayon.*, taille.* et trait.* de primitives.tokens.json ; aucun groupe de rôles ne porte le nom d'un groupe de primitives. Paires de contraste déclarées dans paires.json.",
+  "$description": "Rôles de couleur (14/11/2026), d'espacement par relation et styles de texte (15/11/2026) communs à toutes les marques. Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json, statuts.tokens.json et marque.tokens.json pour les couleurs, vers espace.* de primitives.tokens.json pour les espacements, vers taille-texte.*, graisse.*, marque.police.* et police.produit (libellé, D44) pour les styles de texte (typo, composites DTCG typography, interligne sans unité) ; les couleurs de marque et tous les pleins, statuts compris, passent par marque.<emplacement>.* (Orbe Café : primaire = bleu, accent = terre). Arrondis, hauteurs, épaisseurs, décalages et tailles d'icône des contrôles (18/11/2026), arrondi des surfaces (19/11/2026), vers rayon.*, taille.* et trait.* de primitives.tokens.json ; aucun groupe de rôles ne porte le nom d'un groupe de primitives. Paires de contraste déclarées dans paires.json.",
   "fond": {
     "$type": "color",
     "$description": "Surfaces sur lesquelles se posent texte et bordures.",
@@ -22,7 +22,7 @@
     "composant": {
       "$root": {
         "$value": "{couleur.neutre.3}",
-        "$description": "Fond d'un composant au repos, comme un champ, une carte ou un bouton secondaire."
+        "$description": "Fond d'un composant au repos, plus soutenu que la surface ; un champ, une carte et le bouton secondaire se posent sur fond.surface."
       },
       "survol": {
         "$value": "{couleur.neutre.4}",
@@ -223,7 +223,7 @@
     },
     "defaut": {
       "$value": "{couleur.neutre.7}",
-      "$description": "Contour ordinaire d'une carte ou d'un champ, décoratif, jamais seule pour repérer un champ ou un état."
+      "$description": "Contour ordinaire d'une carte ou d'un séparateur, décoratif, jamais seule pour repérer un champ ou un état (sous 3:1 : un champ prend bordure.forte)."
     },
     "forte": {
       "$value": "{couleur.neutre.8}",
@@ -461,7 +461,11 @@
     "$description": "Arrondis des composants.",
     "controle": {
       "$value": "{rayon.8}",
-      "$description": "Arrondi d'un contrôle, comme un bouton, le même à toutes les tailles."
+      "$description": "Arrondi d'un contrôle, comme un bouton ou un champ, le même à toutes les tailles."
+    },
+    "surface": {
+      "$value": "{rayon.12}",
+      "$description": "Arrondi d'une surface posée sur la page, comme une carte."
     }
   },
   "hauteur": {

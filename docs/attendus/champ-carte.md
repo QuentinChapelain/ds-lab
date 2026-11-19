@@ -433,3 +433,7 @@ for (const d of readdirSync(T).filter((d) => existsSync(join(T, d, 'entree.json'
   }
 }
 ```
+
+## Correction du 19/11/2026, trouvée au commit des jetons, à valider à l'arrêt des planches
+
+La nouvelle description de `bordure.defaut` écrite plus haut (« … décoratif ; jamais seul pour repérer … ») fait échouer T1 de `test/roles-semantique.test.js`, qui exige mot pour mot la formule des deux bordures décoratives, « jamais seule pour repérer un champ ou un état » (accordée à « bordure ») [F]. T1 n'est pas touché ; la description garde la formule : « Contour ordinaire d'une carte ou d'un séparateur, décoratif, jamais seule pour repérer un champ ou un état (sous 3:1 : un champ prend bordure.forte). » H4 suit.

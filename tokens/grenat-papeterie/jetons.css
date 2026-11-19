@@ -1,11 +1,13 @@
 /* Jetons de Grenat Papeterie, écrits par npm run css depuis marque.resolver.json (Terrazzo). Ne pas modifier à la main. */
 
 :root {
-  /* Arrondi d'un contrôle, comme un bouton, le même à toutes les tailles. */
+  /* Arrondi d'un contrôle, comme un bouton ou un champ, le même à toutes les tailles. */
   --arrondi-controle: var(--rayon-8);
+  /* Arrondi d'une surface posée sur la page, comme une carte. */
+  --arrondi-surface: var(--rayon-12);
   /* Contour d'un champ ou d'un encadré d'avertissement (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app. */
   --bordure-avertissement: var(--couleur-avertissement-8);
-  /* Contour ordinaire d'une carte ou d'un champ, décoratif, jamais seule pour repérer un champ ou un état. */
+  /* Contour ordinaire d'une carte ou d'un séparateur, décoratif, jamais seule pour repérer un champ ou un état (sous 3:1 : un champ prend bordure.forte). */
   --bordure-defaut: var(--couleur-neutre-7);
   /* Séparateur léger entre deux zones, décoratif, jamais seule pour repérer un champ ou un état. */
   --bordure-discrete: var(--couleur-neutre-6);

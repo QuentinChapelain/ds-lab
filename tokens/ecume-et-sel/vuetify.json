@@ -61,7 +61,27 @@
         "ds-libelle-police": "system-ui, sans-serif",
         "ds-libelle-taille": "14px",
         "ds-libelle-graisse": "600",
-        "ds-libelle-interligne": "1.4286"
+        "ds-libelle-interligne": "1.4286",
+        "ds-texte-secondaire": "#6d675b",
+        "ds-texte-erreur": "#cb1d2a",
+        "ds-contour-erreur": "#e76862",
+        "ds-contour-carte": "#bfbbb5",
+        "ds-arrondi-surface": "12px",
+        "ds-ecart-dans-composant": "4px",
+        "ds-ecart-entre-composants": "16px",
+        "ds-corps-police": "Verdana, sans-serif",
+        "ds-corps-taille": "16px",
+        "ds-corps-graisse": "400",
+        "ds-corps-interligne": "1.5",
+        "ds-mention-police": "Verdana, sans-serif",
+        "ds-mention-taille": "12px",
+        "ds-mention-graisse": "400",
+        "ds-mention-interligne": "1.3333",
+        "ds-titre-carte-police": "\"Trebuchet MS\", sans-serif",
+        "ds-titre-carte-taille": "20px",
+        "ds-titre-carte-graisse": "600",
+        "ds-titre-carte-interligne": "1.4",
+        "ds-titre-carte-hauteur-capitale": "0.7"
       }
     },
     "ecume-et-sel-sombre": {
@@ -123,7 +143,27 @@
         "ds-libelle-police": "system-ui, sans-serif",
         "ds-libelle-taille": "14px",
         "ds-libelle-graisse": "600",
-        "ds-libelle-interligne": "1.4286"
+        "ds-libelle-interligne": "1.4286",
+        "ds-texte-secondaire": "#8f8b81",
+        "ds-texte-erreur": "#ff978f",
+        "ds-contour-erreur": "#c6232c",
+        "ds-contour-carte": "#45423b",
+        "ds-arrondi-surface": "12px",
+        "ds-ecart-dans-composant": "4px",
+        "ds-ecart-entre-composants": "16px",
+        "ds-corps-police": "Verdana, sans-serif",
+        "ds-corps-taille": "16px",
+        "ds-corps-graisse": "400",
+        "ds-corps-interligne": "1.5",
+        "ds-mention-police": "Verdana, sans-serif",
+        "ds-mention-taille": "12px",
+        "ds-mention-graisse": "400",
+        "ds-mention-interligne": "1.3333",
+        "ds-titre-carte-police": "\"Trebuchet MS\", sans-serif",
+        "ds-titre-carte-taille": "20px",
+        "ds-titre-carte-graisse": "600",
+        "ds-titre-carte-interligne": "1.4",
+        "ds-titre-carte-hauteur-capitale": "0.7"
       }
     }
   }

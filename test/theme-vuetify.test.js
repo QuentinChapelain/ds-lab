@@ -52,6 +52,9 @@
  *      police du texte de la marque ;
  *   V5 la feuille jetons.css écrit la police du texte du commun en renvoi (var(--police-produit)) : la comparaison
  *      suit le renvoi.
+ *
+ * Ajouts pour le champ de texte et la carte (19/11/2026, docs/attendus/champ-carte.md) :
+ *   V9 20 variables de plus, 37 en tout ; leurs valeurs sont jugées par H3 (test/champ-carte-jetons.test.js).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -199,11 +202,17 @@ test('V9 variables ds- du bouton : dimensions dans les dix thèmes, traits égau
     'ds-libelle-taille': '14px', 'ds-libelle-graisse': '600', 'ds-libelle-interligne': '1.4286', 'ds-libelle-police': 'system-ui, sans-serif',
   };
   const TRAITS = { 'ds-focus': 'bordure.focus', 'ds-contour': 'bordure.forte', 'ds-contour-desactive': 'bordure.discrete' };
+  const CHAMP_CARTE = [
+    'ds-texte-secondaire', 'ds-texte-erreur', 'ds-contour-erreur', 'ds-contour-carte', 'ds-arrondi-surface', 'ds-ecart-dans-composant', 'ds-ecart-entre-composants',
+    'ds-corps-police', 'ds-corps-taille', 'ds-corps-graisse', 'ds-corps-interligne', 'ds-mention-police', 'ds-mention-taille', 'ds-mention-graisse', 'ds-mention-interligne',
+    'ds-titre-carte-police', 'ds-titre-carte-taille', 'ds-titre-carte-graisse', 'ds-titre-carte-interligne', 'ds-titre-carte-hauteur-capitale',
+  ];
+  assert.equal(Object.keys(DIMENSIONS).length + Object.keys(TRAITS).length + CHAMP_CARTE.length, 37);
   for (const d of MARQUES) {
     const themes = Object.values(themesVuetify(d).themes);
     for (const [i, mode] of /** @type {const} */ (['clair', 'sombre']).entries()) {
       const x = themes[i].variables;
-      assert.deepEqual(Object.keys(x).filter((k) => k.startsWith('ds-')).sort(), [...Object.keys(DIMENSIONS), ...Object.keys(TRAITS)].sort(), `${d} ${mode}`);
+      assert.deepEqual(Object.keys(x).filter((k) => k.startsWith('ds-')).sort(), [...Object.keys(DIMENSIONS), ...Object.keys(TRAITS), ...CHAMP_CARTE].sort(), `${d} ${mode}`);
       for (const [k, v] of Object.entries(DIMENSIONS)) assert.equal(x[k], v, `${d} ${mode} ${k}`);
       const s = loadRoles(d, { mode });
       const roles = resolveRoles(s.semantique, s.primitives, s.marque);
