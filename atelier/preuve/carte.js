@@ -153,7 +153,7 @@ const REFUS = {
   'refus-niveau': 'carte : niveau inconnu : 5 (2, 3, 4)',
   'refus-image': 'carte : texte alternatif obligatoire avec une image',
   'refus-lien-et-actions': 'carte : lien et actions ensemble refusés',
-  'refus-actions': 'carte : actions : seul Bouton est admis',
+  'refus-actions': 'carte : actions : seuls Bouton et BoutonIcone sont admis',
   'refus-ecouteur': 'carte : attribut refusé : onClick',
 };
 

@@ -1,8 +1,9 @@
 // Preuve rejouable de l'atelier (D42) : chaque composant, sur chaque thème de chaque marque, a les couleurs, les traits,
 // les dimensions et les polices des jetons, le même rendu en développement et en version construite, et, sur le premier
 // thème, le clavier, l'arbre d'accessibilité et les refus que son attendu décrit. Une preuve par composant, rangée dans
-// preuve/ (bouton.js, D43 ; champ.js, D49 ; carte.js, D50), sur les outils communs de preuve/commun.js ; ce fichier les
-// enchaîne. Sortie 0 si tout passe, 1 si une vérification échoue, 2 sur une panne (D18).
+// preuve/ (bouton.js, D43 ; champ.js, D49 ; carte.js, D50 ; bouton-icone.js, D52), sur les outils communs de
+// preuve/commun.js ; ce fichier les enchaîne. Sortie 0 si tout passe, 1 si une vérification échoue, 2 sur une panne
+// (D18).
 // La version construite doit exister (npm run build) ; le serveur de développement est lancé ici, sur 127.0.0.1, puis
 // arrêté.
 //
@@ -14,6 +15,7 @@ import { CADRE, attendus, servirConstruite, servirDeveloppement } from './preuve
 import { preuveBouton } from './preuve/bouton.js';
 import { preuveChamp } from './preuve/champ.js';
 import { preuveCarte } from './preuve/carte.js';
+import { preuveBoutonIcone } from './preuve/bouton-icone.js';
 
 await lancer('preuve', async () => {
   const themes = attendus();
@@ -34,6 +36,7 @@ await lancer('preuve', async () => {
     captures.push(await preuveBouton(p));
     captures.push(await preuveChamp(p));
     captures.push(await preuveCarte(p));
+    captures.push(await preuveBoutonIcone(p));
   } finally {
     await navigateur.close();
     developpement.arreter();

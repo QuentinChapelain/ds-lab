@@ -2,6 +2,10 @@
 // (fabrique.js) ; tout usage hors de ce menu lève, et aucune carte n'est rendue. Pas d'écouteurs : une carte qui se clique
 // a un lien (option lien) ; un écouteur de clic ferait de la carte de Vuetify un bloc cliquable sans rôle ni focus.
 import BOUTON from './Bouton.menu.js';
+import BOUTON_ICONE from './BoutonIcone.menu.js';
+
+/** Enveloppes admises dans les actions : le bouton et le bouton à icône seule (D52). */
+const ADMIS = [BOUTON.nom, BOUTON_ICONE.nom];
 
 /** Types de nœud de Vue, partagés par Symbol.for (vue 3.5, runtime-core) : lus sans importer Vue. */
 const TEXTE = Symbol.for('v-txt');
@@ -9,7 +13,7 @@ const COMMENTAIRE = Symbol.for('v-cmt');
 const FRAGMENT = Symbol.for('v-fgt');
 
 /**
- * Nœuds rendus d'un emplacement qui ne sont pas des boutons de l'enveloppe ; commentaires, blancs et fragments sont
+ * Nœuds rendus d'un emplacement qui ne sont pas des boutons des enveloppes admises ; commentaires, blancs et fragments sont
  * traversés. Un nœud de Vue a pour type un composant (objet), une balise (chaîne) ou un symbole (texte, commentaire,
  * fragment, contenu figé).
  * @param {any[]} noeuds
@@ -23,7 +27,7 @@ function autresQueBouton(noeuds) {
     if (n.type === COMMENTAIRE) return [];
     if (n.type === FRAGMENT) return autresQueBouton(Array.isArray(n.children) ? n.children : []);
     if (n.type === TEXTE) return typeof n.children === 'string' && n.children.trim() ? [n] : [];
-    return n.type?.name === BOUTON.nom ? [] : [n];
+    return ADMIS.includes(n.type?.name) ? [] : [n];
   });
 }
 
@@ -42,5 +46,5 @@ export default {
     (/** @type {any} */ p) => (p.media && p.texteAlternatif === undefined ? 'texte alternatif obligatoire avec une image' : null),
     (/** @type {any} */ p, /** @type {any} */ _a, /** @type {any} */ s) => (p.lien && s.actions ? 'lien et actions ensemble refusés' : null),
   ],
-  reglesDuRendu: [(/** @type {any} */ _p, /** @type {any} */ _a, /** @type {any} */ s) => (s.actions && autresQueBouton(s.actions()).length ? 'actions : seul Bouton est admis' : null)],
+  reglesDuRendu: [(/** @type {any} */ _p, /** @type {any} */ _a, /** @type {any} */ s) => (s.actions && autresQueBouton(s.actions()).length ? 'actions : seuls Bouton et BoutonIcone sont admis' : null)],
 };

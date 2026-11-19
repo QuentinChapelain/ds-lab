@@ -26,6 +26,10 @@
  *      commentaire, ni ds-carte, ni nav-card, ni VCardinal ;
  *   E7 dans le code de src/ et de l'atelier, une seule occurrence de fichier : atelier/composants/Carte.vue, qui importe
  *      bien VCard.
+ *
+ * Ajout pour le bouton à icône seule (19/11/2026, D52, docs/attendus/bouton-icone.md) :
+ *   E8 atelier/composants/BoutonIcone.vue rend l'enveloppe du bouton (import de ./Bouton.vue) et n'importe rien de
+ *      Vuetify ; E2 reste vrai mot pour mot.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -123,4 +127,11 @@ test('E7 la carte de Vuetify ne paraît que dans son enveloppe', () => {
   assert.ok(fichiers.includes(ENVELOPPE_CARTE), 'l\'enveloppe est lue');
   assert.deepEqual(fichiers.filter((f) => VUETIFY_CARTE.test(code(f))), [ENVELOPPE_CARTE]);
   assert.match(code(ENVELOPPE_CARTE), /import \{ VCard \} from 'vuetify\/components';/);
+});
+
+test('E8 le bouton à icône passe par l\'enveloppe du bouton', () => {
+  const f = join('atelier', 'composants', 'BoutonIcone.vue');
+  assert.ok(fichiersDeCode().includes(f), 'le bouton à icône est lu');
+  assert.match(code(f), /import Bouton from '\.\/Bouton\.vue';/);
+  assert.doesNotMatch(code(f), /from 'vuetify/);
 });

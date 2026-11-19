@@ -17,6 +17,11 @@
  *      OKLCH du plein − 0,05 en clair, + 0,05 en sombre ; valeurs et rapports du tableau de cet attendu ;
  *   B4 aucun groupe de rôles ne porte le nom d'un groupe de primitives : le lecteur range un groupe entier dans la
  *      couche des rôles dès que son nom y paraît (partager, src/tokens/resolver.js ; correction de l'attendu).
+ *
+ * Ajout pour le bouton à icône seule (19/11/2026, D52, docs/attendus/bouton-icone.md) :
+ *   B5 l'icône, élément non textuel, contre ce qui l'entoure (la page ou une surface pour les discrets au repos, le fond
+ *      du bouton sinon), au repos et au survol, dans les dix thèmes : couleurs et rapports des deux tableaux de
+ *      l'attendu, recopiés ci-dessous ; chaque icône active tient 3:1 ; le désactivé reste dans son exception.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -165,4 +170,65 @@ test('B4 aucun groupe de rôles ne porte le nom d\'un groupe de primitives', () 
   const roles = groupes(charger('semantique.tokens.json'));
   const primitives = [...groupes(charger('primitives.tokens.json')), ...groupes(charger('statuts.tokens.json'))];
   assert.deepEqual(roles.filter((g) => primitives.includes(g)), []);
+});
+
+/** Icône du bouton à icône, par paire [icône, fond] : couleurs et rapport de l'attendu, par thème (rôles de la marque). */
+const ICONE_PAR_THEME = {
+  'atelier-lavandine-clair': [['#8247ce', '#fbfbfb', 5.42], ['#8247ce', '#ffffff', 5.61], ['#8247ce', '#f5f1fe', 5.05], ['#ffffff', '#8a4fd8', 5.01], ['#ffffff', '#7b3ec7', 6.26]],
+  'atelier-lavandine-sombre': [['#c4a4fe', '#121212', 9.0], ['#c4a4fe', '#181818', 8.53], ['#c4a4fe', '#1d1925', 8.28], ['#131019', '#c4a4fe', 9.04], ['#131019', '#d4b5ff', 10.62]],
+  'ecume-et-sel-clair': [['#21708b', '#fbfbfb', 5.4], ['#21708b', '#ffffff', 5.59], ['#21708b', '#e3f6fe', 5.03], ['#003647', '#7fdbff', 8.33], ['#003647', '#6fcbee', 7.08]],
+  'ecume-et-sel-sombre': [['#c9efff', '#121212', 15.41], ['#c9efff', '#181818', 14.61], ['#c9efff', '#1b1b1b', 14.17], ['#121212', '#c9efff', 15.41], ['#121212', '#ddffff', 17.68]],
+  'grenat-papeterie-clair': [['#4f0020', '#fbfbfb', 15.0], ['#4f0020', '#ffffff', 15.52], ['#4f0020', '#fcf0f2', 13.95], ['#ffffff', '#7a1f3d', 10.04], ['#ffffff', '#6a0d30', 12.26]],
+  'grenat-papeterie-sombre': [['#fc96ae', '#121212', 9.02], ['#fc96ae', '#181818', 8.55], ['#fc96ae', '#2f1119', 8.32], ['#1e0d11', '#fc96ae', 9.02], ['#1e0d11', '#ffa7be', 10.28]],
+  'maison-alberto-clair': [['#836304', '#fbfbfb', 5.41], ['#836304', '#ffffff', 5.6], ['#836304', '#fbf3e1', 5.07], ['#ffffff', '#836304', 5.6], ['#ffffff', '#745500', 6.9]],
+  'maison-alberto-sombre': [['#ffd060', '#121212', 12.88], ['#ffd060', '#181818', 12.21], ['#ffd060', '#1d1b17', 11.83], ['#121212', '#ffd060', 12.88], ['#121212', '#ffe17e', 14.56]],
+  'orbe-cafe-clair': [['#4c6994', '#fbfbfb', 5.4], ['#4c6994', '#ffffff', 5.59], ['#4c6994', '#f1f3f7', 5.03], ['#ffffff', '#2b4c7e', 8.61], ['#ffffff', '#1e3e6f', 10.64]],
+  'orbe-cafe-sombre': [['#86b6fe', '#121212', 9.04], ['#86b6fe', '#181818', 8.57], ['#86b6fe', '#111b2a', 8.35], ['#0e1218', '#86b6fe', 9.06], ['#0e1218', '#97c6ff', 10.58]],
+};
+/** Rôles des cinq paires de ICONE_PAR_THEME : discret sur la page, sur une surface, au survol ; principal au repos, au survol. */
+const ICONE_ROLES_THEME = [
+  ['texte.interactif', 'fond.app'],
+  ['texte.interactif', 'fond.surface'],
+  ['texte.interactif', 'fond.interactif.discret'],
+  ['texte.sur-interactif', 'fond.interactif.fort'],
+  ['texte.sur-interactif', 'fond.interactif.fort.survol'],
+];
+/** Paires communes aux cinq marques, par mode : [icône, fond, clair, sombre], chaque valeur [icône, fond, rapport]. */
+const ICONE_PAR_MODE = [
+  ['texte.erreur', 'fond.app', ['#cb1d2a', '#fbfbfb', 5.41], ['#ff978f', '#121212', 8.99]],
+  ['texte.erreur', 'fond.surface', ['#cb1d2a', '#ffffff', 5.6], ['#ff978f', '#181818', 8.52]],
+  ['texte.erreur', 'fond.erreur.discret', ['#cb1d2a', '#fff0ee', 5.06], ['#ff978f', '#231918', 8.23]],
+  ['texte.principal', 'fond.surface', ['#363026', '#ffffff', 13.06], ['#d8d5ce', '#181818', 12.12]],
+  ['texte.principal', 'fond.composant.survol', ['#363026', '#ecebe9', 10.96], ['#d8d5ce', '#212121', 10.99]],
+  ['bordure.forte', 'fond.app', ['#958f84', '#fbfbfb', 3.1], ['#6a665c', '#121212', 3.27]],
+  ['bordure.forte', 'fond.surface', ['#958f84', '#ffffff', 3.21], ['#6a665c', '#181818', 3.1]],
+];
+/** Désactivé, en exception écrite (WCAG 1.4.3 et 1.4.11) : [icône, fond, clair, sombre]. */
+const ICONE_DESACTIVE = [
+  ['texte.desactive', 'fond.desactive', ['#8a8478', '#f3f2f1', 3.32], ['#7d786c', '#1b1b1b', 3.92]],
+  ['texte.desactive', 'fond.app', ['#8a8478', '#fbfbfb', 3.59], ['#7d786c', '#121212', 4.26]],
+  ['texte.desactive', 'fond.surface', ['#8a8478', '#ffffff', 3.72], ['#7d786c', '#181818', 4.04]],
+];
+
+test('B5 icône du bouton à icône contre ce qui l\'entoure, dans les dix thèmes', () => {
+  for (const m of MARQUES) for (const mode of MODES) {
+    const nom = `${m}-${mode}`;
+    const { hex } = theme(m, mode);
+    const paire = (/** @type {string} */ a, /** @type {string} */ b) => [hex(a), hex(b), r2(hex(a), hex(b))];
+    ICONE_ROLES_THEME.forEach(([a, b], i) => {
+      const attendu = ICONE_PAR_THEME[/** @type {keyof typeof ICONE_PAR_THEME} */ (nom)][i];
+      assert.deepEqual(paire(a, b), attendu, `${nom} : ${a} / ${b}`);
+      assert.ok(/** @type {number} */ (attendu[2]) >= 3, `${nom} : ${a} / ${b} sous 3:1`);
+    });
+    for (const [a, b, clair, sombre] of ICONE_PAR_MODE) {
+      const attendu = /** @type {[string, string, number]} */ (mode === 'clair' ? clair : sombre);
+      assert.deepEqual(paire(/** @type {string} */ (a), /** @type {string} */ (b)), attendu, `${nom} : ${a} / ${b}`);
+      assert.ok(attendu[2] >= 3, `${nom} : ${a} / ${b} sous 3:1`);
+    }
+    for (const [a, b, clair, sombre] of ICONE_DESACTIVE) {
+      const attendu = /** @type {[string, string, number]} */ (mode === 'clair' ? clair : sombre);
+      assert.deepEqual(paire(/** @type {string} */ (a), /** @type {string} */ (b)), attendu, `${nom} : désactivé ${a} / ${b}`);
+      assert.ok(attendu[2] < 4.5, `${nom} : désactivé hors de son exception`);
+    }
+  }
 });

@@ -22,6 +22,11 @@
  *      aria-invalid posés à la main refusés ; ceux de la carte : titre obligatoire, niveau inconnu (5, et la chaîne "3"),
  *      texte alternatif obligatoire avec une image (vide admis), lien et actions ensemble, autre chose qu'un Bouton dans
  *      les actions (commentaires, blancs et fragments traversés), écouteur refusé ;
+ *   Ajouts pour le bouton à icône seule (19/11/2026, D52, docs/attendus/bouton-icone.md) : W5 rejoue son menu ; ses
+ *      messages mot pour mot : libellé et icône obligatoires, variante inconnue (le plein danger n'est pas au menu),
+ *      taille et type inconnus, aria-label, aria-labelledby et color refusés, désactivé refusé sur type=submit ; id,
+ *      aria-describedby, data-* et onClick passent ; la carte admet un BoutonIcone dans ses actions, et son message de
+ *      refus devient « carte : actions : seuls Bouton et BoutonIcone sont admis » ;
  *   W8 chaque .vue de atelier/composants/ passe par la fabrique et son menu, sans déclarer lui-même props, inheritAttrs
  *      ni emits ; chaque menu est importé par un seul .vue.
  */
@@ -34,6 +39,7 @@ import { definirEnveloppe, propsDuMenu, verifierUsage } from '../atelier/composa
 import BOUTON from '../atelier/composants/Bouton.menu.js';
 import CHAMP from '../atelier/composants/ChampTexte.menu.js';
 import CARTE from '../atelier/composants/Carte.menu.js';
+import BOUTON_ICONE from '../atelier/composants/BoutonIcone.menu.js';
 import { partiesVue } from './helpers/atelier.js';
 import { lex } from './helpers/commentaires.js';
 
@@ -41,7 +47,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const COMPOSANTS = join(ROOT, 'atelier', 'composants');
 
 /** Menus réels, par nom de fichier. */
-const MENUS = { 'Bouton.menu.js': BOUTON, 'ChampTexte.menu.js': CHAMP, 'Carte.menu.js': CARTE };
+const MENUS = { 'Bouton.menu.js': BOUTON, 'ChampTexte.menu.js': CHAMP, 'Carte.menu.js': CARTE, 'BoutonIcone.menu.js': BOUTON_ICONE };
 
 /** Props avec les défauts du menu, comme Vue les donne quand rien n'est passé. @param {any} menu */
 const defauts = (menu) => Object.fromEntries(Object.entries(menu.options).map(([k, o]) => [k, /** @type {any} */ (o).defaut]));
@@ -148,15 +154,30 @@ test('W5 refus rejoués sur chaque menu réel', () => {
   assert.equal(carte({ ...k, media: 'x.png' }), 'carte : texte alternatif obligatoire avec une image');
   assert.equal(carte({ ...k, media: 'x.png', texteAlternatif: '' }), null, 'image décorative');
   assert.equal(carte({ ...k, lien: '#x' }, {}, { actions: () => [bouton] }), 'carte : lien et actions ensemble refusés');
-  assert.equal(carte(k, {}, { actions: () => [{ type: 'a', children: 'Lire' }] }), 'carte : actions : seul Bouton est admis');
-  assert.equal(carte(k, {}, { actions: () => [{ type: { name: 'Lien' } }] }), 'carte : actions : seul Bouton est admis');
+  assert.equal(carte(k, {}, { actions: () => [{ type: 'a', children: 'Lire' }] }), 'carte : actions : seuls Bouton et BoutonIcone sont admis');
+  assert.equal(carte(k, {}, { actions: () => [{ type: { name: 'Lien' } }] }), 'carte : actions : seuls Bouton et BoutonIcone sont admis');
   // Types de nœud de Vue 3.5 (runtime-core : Text, Fragment, Comment, Static).
   const texte = Symbol.for('v-txt');
   const fragment = Symbol.for('v-fgt');
   assert.equal(carte(k, {}, { actions: () => [bouton, { type: texte, children: '  ' }, { type: fragment, children: [bouton, { type: Symbol.for('v-cmt'), children: 'v-if' }] }] }), null, 'blancs, fragments et commentaires traversés');
-  assert.equal(carte(k, {}, { actions: () => [{ type: Symbol.for('v-stc'), children: '<a>Lire</a>' }] }), 'carte : actions : seul Bouton est admis');
-  assert.equal(carte(k, {}, { actions: () => [{ type: texte, children: 'Lire' }] }), 'carte : actions : seul Bouton est admis');
+  assert.equal(carte(k, {}, { actions: () => [{ type: Symbol.for('v-stc'), children: '<a>Lire</a>' }] }), 'carte : actions : seuls Bouton et BoutonIcone sont admis');
+  assert.equal(carte(k, {}, { actions: () => [{ type: texte, children: 'Lire' }] }), 'carte : actions : seuls Bouton et BoutonIcone sont admis');
   assert.equal(carte(k, { onClick: () => {} }), 'carte : attribut refusé : onClick');
+  assert.equal(carte(k, {}, { actions: () => [bouton, { type: { name: 'BoutonIcone' }, children: null }] }), null, 'bouton à icône admis dans les actions');
+  const i = { ...defauts(BOUTON_ICONE), libelle: 'Fermer', icone: () => null };
+  assert.equal(leve(BOUTON_ICONE, i), null);
+  assert.equal(leve(BOUTON_ICONE, { ...i, libelle: undefined }), 'bouton à icône : libellé obligatoire');
+  assert.equal(leve(BOUTON_ICONE, { ...i, libelle: '' }), 'bouton à icône : libellé obligatoire');
+  assert.equal(leve(BOUTON_ICONE, { ...i, icone: undefined }), 'bouton à icône : icône obligatoire');
+  assert.equal(leve(BOUTON_ICONE, { ...i, variante: 'danger' }), 'bouton à icône : variante inconnue : danger (discret, secondaire, principal, danger-discret)');
+  assert.equal(leve(BOUTON_ICONE, { ...i, taille: 'grande' }), 'bouton à icône : taille inconnue : grande (normale, petite)');
+  assert.equal(leve(BOUTON_ICONE, { ...i, type: 'image' }), 'bouton à icône : type inconnu : image (button, submit, reset)');
+  assert.equal(leve(BOUTON_ICONE, i, { 'aria-label': 'Croix' }), 'bouton à icône : attribut refusé : aria-label');
+  assert.equal(leve(BOUTON_ICONE, i, { 'aria-labelledby': 'ailleurs' }), 'bouton à icône : attribut refusé : aria-labelledby');
+  assert.equal(leve(BOUTON_ICONE, i, { color: 'secondary' }), 'bouton à icône : attribut refusé : color');
+  assert.equal(leve(BOUTON_ICONE, { ...i, type: 'submit', desactive: true }), 'bouton à icône : désactivé refusé sur type=submit');
+  assert.equal(leve(BOUTON_ICONE, i, { id: 'b', 'aria-describedby': 'aide', 'data-cas': 'y', onClick: () => {} }), null);
+  assert.equal(BOUTON_ICONE.options.variante.defaut, 'discret');
   assert.equal(carte(k, { id: 'c', 'aria-label': 'x', 'data-cas': 'y' }), null);
 });
 
