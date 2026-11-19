@@ -2,7 +2,7 @@
 // état a la surface, le contour, l'arrondi, la marge, les écarts, le titre, le texte et l'image des jetons, sans ombre ;
 // la carte à lien, survolée ou au focus (forcés par le protocole DevTools), prend le contour fort et le titre souligné,
 // et au focus l'anneau autour de toute la carte ; le rendu est le même en développement et en version construite. La
-// planche de la version construite est enregistrée par thème dans local/champ-carte-captures/, hors dépôt. Sur le premier
+// planche de la version construite est enregistrée par thème dans local/text-input-card-captures/, hors dépôt. Sur le premier
 // thème, clavier et lecteur d'écran : une tabulation par carte à lien, une par bouton d'une carte à actions, un lien nommé
 // par le titre seul, l'anneau au focus clavier, un clic n'importe où sur la carte qui suit le lien, les niveaux de titre,
 // les refus d'un usage hors du menu.
@@ -10,11 +10,11 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { LOCAL, css, ecart, forcer, ouvrir, refus } from './commun.js';
 
-const STORY = 'composants-carte--planche';
+const STORY = 'composants-dscard--planche';
 /** Planches enregistrées, hors dépôt. */
-const CAPTURES = join(LOCAL, 'champ-carte-captures');
+const CAPTURES = join(LOCAL, 'text-input-card-captures');
 /** États que la preuve force, par sélecteur. */
-const FORCES = { '[data-etat="lien-focus"] .ds-carte__lien': ['focus', 'focus-visible'], '.ds-carte[data-etat="lien-survol"]': ['hover'] };
+const FORCES = { '[data-etat="lien-focus"] .ds-card__link': ['focus', 'focus-visible'], '.ds-card[data-etat="lien-survol"]': ['hover'] };
 /** États de la planche → [image, actions, lien, survol ou focus]. */
 const ETATS = {
   simple: ['', false, false, ''],
@@ -77,7 +77,7 @@ function attenduCartes(t) {
  */
 async function releve(contexte, base, theme) {
   const { page, erreurs } = await ouvrir(contexte, base, STORY, theme);
-  await page.locator('.ds-carte').first().waitFor({ timeout: 30_000 }).catch(() => {});
+  await page.locator('.ds-card').first().waitFor({ timeout: 30_000 }).catch(() => {});
   await page.evaluate(() => document.fonts.ready);
   await page.evaluate(() => Promise.all([...document.images].map((i) => i.decode().catch(() => {}))));
   await forcer(page, FORCES);
@@ -86,15 +86,15 @@ async function releve(contexte, base, theme) {
     const px = (/** @type {number} */ n) => `${Math.round(n * 1000) / 1000}px`;
     /** @type {Record<string, any>} */
     const out = {};
-    for (const e of /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.ds-carte[data-etat]'))) {
+    for (const e of /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.ds-card[data-etat]'))) {
       const s = getComputedStyle(e);
-      const contenu = /** @type {HTMLElement} */ (e.querySelector('.ds-carte__contenu'));
-      const titre = /** @type {HTMLElement} */ (e.querySelector('.ds-carte__titre'));
-      const texte = /** @type {HTMLElement} */ (e.querySelector('.ds-carte__texte'));
-      const corps = /** @type {HTMLElement} */ (e.querySelector('.ds-carte__corps'));
-      const actions = /** @type {HTMLElement | null} */ (e.querySelector('.ds-carte__actions'));
-      const img = /** @type {HTMLImageElement | null} */ (e.querySelector('.ds-carte__media'));
-      const lien = /** @type {HTMLElement | null} */ (e.querySelector('.ds-carte__lien'));
+      const contenu = /** @type {HTMLElement} */ (e.querySelector('.ds-card__content'));
+      const titre = /** @type {HTMLElement} */ (e.querySelector('.ds-card__title'));
+      const texte = /** @type {HTMLElement} */ (e.querySelector('.ds-card__text'));
+      const corps = /** @type {HTMLElement} */ (e.querySelector('.ds-card__body'));
+      const actions = /** @type {HTMLElement | null} */ (e.querySelector('.ds-card__actions'));
+      const img = /** @type {HTMLImageElement | null} */ (e.querySelector('.ds-card__media'));
+      const lien = /** @type {HTMLElement | null} */ (e.querySelector('.ds-card__link'));
       const ts = getComputedStyle(titre);
       const xs = getComputedStyle(texte);
       const cs = getComputedStyle(contenu);
@@ -149,12 +149,12 @@ async function releve(contexte, base, theme) {
 const ORDRE_CLAVIER = ['lien-a', 'actions', 'actions', 'lien-c'];
 /** Erreurs attendues des stories de refus. */
 const REFUS = {
-  'refus-sans-titre': 'carte : titre obligatoire',
-  'refus-niveau': 'carte : niveau inconnu : 5 (2, 3, 4)',
-  'refus-image': 'carte : texte alternatif obligatoire avec une image',
-  'refus-lien-et-actions': 'carte : lien et actions ensemble refusés',
-  'refus-actions': 'carte : actions : seuls Bouton et BoutonIcone sont admis',
-  'refus-ecouteur': 'carte : attribut refusé : onClick',
+  'refus-sans-titre': 'DsCard : title : obligatoire',
+  'refus-niveau': 'DsCard : headingLevel : valeur inconnue : 5 (2, 3, 4)',
+  'refus-image': 'DsCard : imageAlt : obligatoire avec image',
+  'refus-lien-et-actions': 'DsCard : href : refusé avec le slot actions',
+  'refus-actions': 'DsCard : slot actions : seuls DsButton et DsIconButton sont admis',
+  'refus-ecouteur': 'DsCard : attribut refusé : onClick',
 };
 
 /**
@@ -165,8 +165,8 @@ async function clavier(contexte, base, t) {
   /** @type {[boolean, string][]} */
   const out = [];
   const v = t.variables;
-  const { page, erreurs } = await ouvrir(contexte, base, 'composants-carte--clavier', t.nom);
-  await page.locator('.ds-carte').first().waitFor();
+  const { page, erreurs } = await ouvrir(contexte, base, 'composants-dscard--clavier', t.nom);
+  await page.locator('.ds-card').first().waitFor();
   const cas = () => page.evaluate(() => /** @type {HTMLElement | null} */ (document.activeElement?.closest('[data-cas]'))?.dataset.cas ?? document.activeElement?.tagName ?? null);
 
   // Liens nommés par le titre seul ; image nommée par son texte de remplacement.
@@ -186,7 +186,7 @@ async function clavier(contexte, base, t) {
   // Anneau au focus clavier, contour fort et titre souligné sur la carte à lien : retour à la première par Maj+Tab.
   for (let i = 0; i < ORDRE_CLAVIER.length - 1; i++) await page.keyboard.press('Shift+Tab');
   const focus = await page.locator('[data-cas="lien-a"]').evaluate((e) => {
-    const a = /** @type {HTMLElement} */ (e.querySelector('.ds-carte__lien'));
+    const a = /** @type {HTMLElement} */ (e.querySelector('.ds-card__link'));
     const p = getComputedStyle(a, '::after');
     return { visible: a.matches(':focus-visible'), anneau: `${p.outlineStyle} ${p.outlineWidth} ${p.outlineColor} ${p.outlineOffset}`, bord: getComputedStyle(e).borderTopColor, souligne: getComputedStyle(a).textDecorationLine };
   });
@@ -194,7 +194,7 @@ async function clavier(contexte, base, t) {
   out.push([focus.visible && focus.anneau === attendu && focus.bord === css(v['ds-contour']) && focus.souligne === 'underline', `${t.nom}, focus clavier de la carte à lien : ${focus.anneau} (jetons ${attendu}), contour ${focus.bord}, titre ${focus.souligne}`]);
 
   // Un clic dans le texte, loin du titre, suit le lien.
-  const boite = await page.locator('[data-cas="lien-a"] .ds-carte__texte').boundingBox();
+  const boite = await page.locator('[data-cas="lien-a"] .ds-card__text').boundingBox();
   if (boite) await page.mouse.click(boite.x + boite.width - 4, boite.y + boite.height - 4);
   const ancre = await page.evaluate(() => location.hash);
   out.push([ancre === '#lien-a', `${t.nom}, clic dans le texte de la carte à lien : ${ancre || 'aucun lien suivi'}`]);
@@ -202,11 +202,11 @@ async function clavier(contexte, base, t) {
   await page.close();
 
   // Niveaux de titre : la balise suit l'option, l'apparence ne change pas.
-  const n = await ouvrir(contexte, base, 'composants-carte--niveaux', t.nom);
-  await n.page.locator('.ds-carte').first().waitFor();
+  const n = await ouvrir(contexte, base, 'composants-dscard--niveaux', t.nom);
+  await n.page.locator('.ds-card').first().waitFor();
   const niveaux = await n.page.evaluate(() =>
     ['niveau-2', 'niveau-3', 'niveau-4'].map((k) => {
-      const x = /** @type {HTMLElement} */ (document.querySelector(`[data-cas="${k}"] .ds-carte__titre`));
+      const x = /** @type {HTMLElement} */ (document.querySelector(`[data-cas="${k}"] .ds-card__title`));
       const s = getComputedStyle(x);
       return `${x.tagName} ${s.fontSize} ${s.fontWeight} ${s.lineHeight}`;
     }),
@@ -215,7 +215,7 @@ async function clavier(contexte, base, t) {
   out.push([niveaux.map((x) => x.slice(0, 2)).join(' ') === 'H2 H3 H4' && memes && n.erreurs.length === 0, `${t.nom}, niveaux de titre : ${niveaux.join(' ; ')}`]);
   await n.page.close();
 
-  for (const [story, message] of Object.entries(REFUS)) out.push(await refus(contexte, base, `composants-carte--${story}`, t.nom, message, '.ds-carte', 'carte'));
+  for (const [story, message] of Object.entries(REFUS)) out.push(await refus(contexte, base, `composants-dscard--${story}`, t.nom, message, '.ds-card', 'carte'));
   return out;
 }
 

@@ -1,5 +1,5 @@
 <script>
-// Enveloppe du bouton (D43) : seul endroit du dépôt où paraît le bouton de Vuetify. Son menu (Bouton.menu.js) et la
+// Enveloppe du bouton (D43) : seul endroit du dépôt où paraît le bouton de Vuetify. Son menu (DsButton.menu.js) et la
 // liste blanche d'attributs sont vérifiés par la fabrique commune (fabrique.js, D51) : tout le reste lève, et aucun
 // bouton n'est rendu. Couleurs, dimensions et texte viennent des variables du thème de la marque
 // (tokens/<marque>/vuetify.json, D41) : aucune valeur n'est écrite ici.
@@ -13,7 +13,7 @@
 import { h } from 'vue';
 import { VBtn } from 'vuetify/components';
 import { definirEnveloppe } from './fabrique.js';
-import MENU from './Bouton.menu.js';
+import MENU from './DsButton.menu.js';
 
 /** Annonce de la zone de statut pendant le chargement. */
 const ANNONCE = 'Chargement en cours';
@@ -27,41 +27,41 @@ const roue = () =>
 export default definirEnveloppe(MENU, (props, { attrs, emit, slots }) => {
   /** @param {MouseEvent} e */
   const clic = (e) => {
-    if (props.desactive || props.chargement) {
+    if (props.disabled || props.loading) {
       e.preventDefault();
       return;
     }
     emit('click', e);
   };
   return () => {
-    const inactif = props.desactive || props.chargement;
+    const inactif = props.disabled || props.loading;
     const bouton = h(
       VBtn,
       {
         ...attrs,
         class: [
-          'ds-bouton',
-          `ds-bouton--${props.variante}`,
-          `ds-bouton--${props.taille}`,
-          { 'ds-bouton--pleine': props.pleineLargeur, 'ds-bouton--desactive': props.desactive, 'ds-bouton--chargement': props.chargement, 'ds-bouton--inactif': inactif },
+          'ds-button',
+          `ds-button--${props.variant}`,
+          `ds-button--${props.size}`,
+          { 'ds-button--block': props.block, 'ds-button--disabled': props.disabled, 'ds-button--loading': props.loading, 'ds-button--inactive': inactif },
         ],
         type: props.type,
         variant: 'flat',
         ripple: false,
-        block: props.pleineLargeur,
+        block: props.block,
         'aria-disabled': inactif ? 'true' : undefined,
-        'aria-busy': props.chargement ? 'true' : undefined,
+        'aria-busy': props.loading ? 'true' : undefined,
         onClick: clic,
       },
       {
-        ...(props.icone ? { prepend: () => h('span', { class: 'ds-bouton__icone', 'aria-hidden': 'true' }, [h(props.icone)]) } : {}),
+        ...(props.prependIcon ? { prepend: () => h('span', { class: 'ds-button__icon', 'aria-hidden': 'true' }, [h(props.prependIcon)]) } : {}),
         default: () => [
-          h('span', { class: 'ds-bouton__texte' }, slots.default?.()),
-          props.chargement ? h('span', { class: 'ds-bouton__roue', 'aria-hidden': 'true' }, [roue()]) : null,
+          h('span', { class: 'ds-button__text' }, slots.default?.()),
+          props.loading ? h('span', { class: 'ds-button__spinner', 'aria-hidden': 'true' }, [roue()]) : null,
         ],
       },
     );
-    const statut = h('span', { class: 'ds-bouton__statut', role: 'status' }, props.chargement ? ANNONCE : '');
+    const statut = h('span', { class: 'ds-button__status', role: 'status' }, props.loading ? ANNONCE : '');
     return [bouton, statut];
   };
 });
@@ -69,7 +69,7 @@ export default definirEnveloppe(MENU, (props, { attrs, emit, slots }) => {
 
 <style>
 /* Règles hors couche : elles passent devant celles de Vuetify, rangées dans ses couches, sans !important. */
-.ds-bouton.v-btn {
+.ds-button.v-btn {
   height: var(--v-ds-hauteur-controle-normale);
   min-width: 0;
   padding: 0 var(--v-ds-marge-interieure-composant);
@@ -84,133 +84,133 @@ export default definirEnveloppe(MENU, (props, { attrs, emit, slots }) => {
   box-shadow: none;
   transition: none;
 }
-.ds-bouton.v-btn.ds-bouton--petite {
+.ds-button.v-btn.ds-button--small {
   height: var(--v-ds-hauteur-controle-petite);
 }
 /* Pleine largeur : la largeur minimale nulle ci-dessus annulerait celle que Vuetify donne au bouton block. */
-.ds-bouton.v-btn.ds-bouton--pleine {
+.ds-button.v-btn.ds-button--block {
   min-width: 100%;
 }
 /* Ni voile ni trait de focus de Vuetify : le survol est un jeton (D04), l'anneau aussi (DS2). */
-.ds-bouton.v-btn > .v-btn__overlay,
-.ds-bouton.v-btn > .v-btn__underlay,
-.ds-bouton.v-btn::after {
+.ds-button.v-btn > .v-btn__overlay,
+.ds-button.v-btn > .v-btn__underlay,
+.ds-button.v-btn::after {
   display: none;
 }
-.ds-bouton.v-btn:focus-visible {
+.ds-button.v-btn:focus-visible {
   outline: var(--v-ds-epaisseur-focus) solid rgb(var(--v-ds-focus));
   outline-offset: var(--v-ds-decalage-focus);
 }
 
 /* Icône avant le texte. */
-.ds-bouton.v-btn .v-btn__prepend {
+.ds-button.v-btn .v-btn__prepend {
   margin-inline: 0 var(--v-ds-ecart-icone-texte);
 }
-.ds-bouton__icone,
-.ds-bouton__icone > svg {
+.ds-button__icon,
+.ds-button__icon > svg {
   display: block;
   width: var(--v-ds-taille-icone-normale);
   height: var(--v-ds-taille-icone-normale);
 }
-.ds-bouton--petite .ds-bouton__icone,
-.ds-bouton--petite .ds-bouton__icone > svg {
+.ds-button--small .ds-button__icon,
+.ds-button--small .ds-button__icon > svg {
   width: var(--v-ds-taille-icone-petite);
   height: var(--v-ds-taille-icone-petite);
 }
 
 /* Variantes, au repos et au survol ; un bouton inactif ne change pas au survol. */
-.ds-bouton--principal.v-btn {
+.ds-button--primary.v-btn {
   background: rgb(var(--v-theme-primary));
   color: rgb(var(--v-theme-on-primary));
 }
-.ds-bouton--principal.v-btn:not(.ds-bouton--inactif):hover {
+.ds-button--primary.v-btn:not(.ds-button--inactive):hover {
   background: rgb(var(--v-theme-primary-darken-1));
   color: rgb(var(--v-theme-on-primary-darken-1));
 }
-.ds-bouton--secondaire.v-btn {
+.ds-button--secondary.v-btn {
   background: rgb(var(--v-theme-surface));
   color: rgb(var(--v-theme-on-surface));
   border: var(--v-ds-epaisseur-contour) solid rgb(var(--v-ds-contour));
 }
-.ds-bouton--secondaire.v-btn:not(.ds-bouton--inactif):hover {
+.ds-button--secondary.v-btn:not(.ds-button--inactive):hover {
   background: rgb(var(--v-theme-composant-survol));
   color: rgb(var(--v-theme-on-composant-survol));
 }
-.ds-bouton--discret.v-btn {
+.ds-button--ghost.v-btn {
   background: transparent;
   color: rgb(var(--v-theme-on-interactif-discret));
 }
-.ds-bouton--discret.v-btn:not(.ds-bouton--inactif):hover {
+.ds-button--ghost.v-btn:not(.ds-button--inactive):hover {
   background: rgb(var(--v-theme-interactif-discret));
 }
-.ds-bouton--danger.v-btn {
+.ds-button--danger.v-btn {
   background: rgb(var(--v-theme-error));
   color: rgb(var(--v-theme-on-error));
 }
-.ds-bouton--danger.v-btn:not(.ds-bouton--inactif):hover {
+.ds-button--danger.v-btn:not(.ds-button--inactive):hover {
   background: rgb(var(--v-theme-erreur-fort-survol));
   color: rgb(var(--v-theme-on-erreur-fort-survol));
 }
-.ds-bouton--danger-discret.v-btn {
+.ds-button--danger-ghost.v-btn {
   background: transparent;
   color: rgb(var(--v-theme-on-erreur-discret));
 }
-.ds-bouton--danger-discret.v-btn:not(.ds-bouton--inactif):hover {
+.ds-button--danger-ghost.v-btn:not(.ds-button--inactive):hover {
   background: rgb(var(--v-theme-erreur-discret));
 }
 
 /* Désactivé : la même apparence pour toutes les variantes ; les discrets gardent la page pour fond. */
-.ds-bouton--desactive.v-btn {
+.ds-button--disabled.v-btn {
   background: rgb(var(--v-theme-desactive));
   color: rgb(var(--v-theme-on-desactive));
 }
-.ds-bouton--desactive.ds-bouton--secondaire.v-btn {
+.ds-button--disabled.ds-button--secondary.v-btn {
   border-color: rgb(var(--v-ds-contour-desactive));
 }
-.ds-bouton--desactive.ds-bouton--discret.v-btn,
-.ds-bouton--desactive.ds-bouton--danger-discret.v-btn {
+.ds-button--disabled.ds-button--ghost.v-btn,
+.ds-button--disabled.ds-button--danger-ghost.v-btn {
   background: transparent;
 }
-.ds-bouton--inactif.v-btn {
+.ds-button--inactive.v-btn {
   cursor: default;
 }
 
 /* Chargement : texte et icône invisibles mais lus (opacité), largeur gardée ; la roue prend leur place. */
-.ds-bouton--chargement .ds-bouton__texte,
-.ds-bouton--chargement .v-btn__prepend {
+.ds-button--loading .ds-button__text,
+.ds-button--loading .v-btn__prepend {
   opacity: 0;
 }
-.ds-bouton__roue {
+.ds-button__spinner {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.ds-bouton__roue > svg {
+.ds-button__spinner > svg {
   width: var(--v-ds-taille-icone-normale);
   height: var(--v-ds-taille-icone-normale);
   /* Durée sans jeton : le dépôt n'a pas encore de jeton de durée (KNOWN_ISSUES.md). */
-  animation: ds-bouton-roue 1s linear infinite;
+  animation: ds-button-roue 1s linear infinite;
 }
-.ds-bouton--petite .ds-bouton__roue > svg {
+.ds-button--small .ds-button__spinner > svg {
   width: var(--v-ds-taille-icone-petite);
   height: var(--v-ds-taille-icone-petite);
 }
-@keyframes ds-bouton-roue {
+@keyframes ds-button-roue {
   to {
     transform: rotate(360deg);
   }
 }
 /* Mouvement réduit : l'arc reste immobile ; la zone de statut dit le chargement. */
 @media (prefers-reduced-motion: reduce) {
-  .ds-bouton__roue > svg {
+  .ds-button__spinner > svg {
     animation: none;
   }
 }
 
 /* Zone de statut lue par les lecteurs d'écran, hors de la vue et du flux. */
-.ds-bouton__statut {
+.ds-button__status {
   position: absolute;
   width: 1px;
   height: 1px;

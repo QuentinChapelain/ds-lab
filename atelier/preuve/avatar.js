@@ -2,16 +2,16 @@
 // état, aux deux tailles, a le côté, le rond, le pastel et les initiales des jetons, centrées, sans ombre ni transition ;
 // la photo couvre le rond ; l'image en échec laisse les initiales et aucune image ; les cas de la règle des initiales
 // donnent leurs lettres ; le rendu est le même en développement et en version construite. La planche de la version
-// construite est enregistrée par thème dans local/avatar-etiquette-captures/, hors dépôt. Sur le premier thème : arbre
+// construite est enregistrée par thème dans local/avatar-tag-captures/, hors dépôt. Sur le premier thème : arbre
 // d'accessibilité (un seul nœud nommé, ou aucun si l'avatar est décoratif), tabulation qui ne s'arrête pas sur un avatar,
 // refus d'un usage hors du menu.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { LOCAL, css, ecart, ouvrir, refus } from './commun.js';
 
-const STORY = 'composants-avatar';
+const STORY = 'composants-dsavatar';
 /** Planches enregistrées, hors dépôt. */
-export const CAPTURES = join(LOCAL, 'avatar-etiquette-captures');
+export const CAPTURES = join(LOCAL, 'avatar-tag-captures');
 /** États de chaque taille → image attendue (couvre, ou aucune). */
 const ETATS = { photo: 'couvre', initiales: 'aucune', echec: 'aucune', decoratif: 'aucune' };
 /** Cas de la règle des initiales de la planche → lettres attendues (docs/attendus/avatar-etiquette.md). */
@@ -73,7 +73,7 @@ async function releve(contexte, base, theme) {
     const out = {};
     for (const e of /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.ds-avatar[data-etat]'))) {
       const s = getComputedStyle(e);
-      const i = /** @type {HTMLElement} */ (e.querySelector('.ds-avatar__initiales'));
+      const i = /** @type {HTMLElement} */ (e.querySelector('.ds-avatar__initials'));
       const is = getComputedStyle(i);
       const img = /** @type {HTMLImageElement | null} */ (e.querySelector('img'));
       const re = r(e);
@@ -103,7 +103,7 @@ async function releve(contexte, base, theme) {
         image,
       };
     }
-    for (const e of /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.ds-avatar[data-cas]'))) out[/** @type {string} */ (e.dataset.cas)] = { lettres: e.querySelector('.ds-avatar__initiales')?.textContent };
+    for (const e of /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.ds-avatar[data-cas]'))) out[/** @type {string} */ (e.dataset.cas)] = { lettres: e.querySelector('.ds-avatar__initials')?.textContent };
     return out;
   });
   const image = await page.screenshot({ fullPage: true, animations: 'disabled' });
@@ -115,11 +115,11 @@ async function releve(contexte, base, theme) {
 const ARBRE = { photo: '- img "Camille Ferrand"', initiales: '- img "Camille Ferrand"', echec: '- img "Camille Ferrand"', decoratif: '' };
 /** Erreurs attendues des stories de refus. */
 const REFUS = {
-  'refus-sans-nom': 'avatar : nom obligatoire',
-  'refus-nom-vide': 'avatar : nom obligatoire',
-  'refus-sans-lettre': 'avatar : nom sans lettre',
-  'refus-taille': 'avatar : taille inconnue : petite (normale, grande)',
-  'refus-nom-a-la-main': 'avatar : attribut refusé : aria-label',
+  'refus-sans-nom': 'DsAvatar : name : obligatoire',
+  'refus-nom-vide': 'DsAvatar : name : obligatoire',
+  'refus-sans-lettre': 'DsAvatar : name : sans lettre',
+  'refus-taille': 'DsAvatar : size : valeur inconnue : petite (medium, large)',
+  'refus-nom-a-la-main': 'DsAvatar : attribut refusé : aria-label',
 };
 
 /**

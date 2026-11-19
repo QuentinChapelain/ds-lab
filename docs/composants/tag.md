@@ -1,26 +1,26 @@
 ---
-nom: Etiquette
-titre: Étiquette
-fichier: atelier/composants/Etiquette.vue
-menu: atelier/composants/Etiquette.menu.js
+nom: DsTag
+titre: DsTag
+fichier: atelier/composants/DsTag.vue
+menu: atelier/composants/DsTag.menu.js
 enveloppe: VChip
 decisions: [D55, D51]
-stories: atelier/stories/Etiquette.stories.js
-preuve: npm --prefix atelier run preuve -- etiquette
+stories: atelier/stories/DsTag.stories.js
+preuve: npm --prefix atelier run preuve -- tag
 ---
 
 <!-- genere:titre : écrit par npm --prefix atelier run fiches -->
-# Étiquette
+# DsTag
 <!-- /genere:titre -->
 
 Un mot court sur un fond teinté, pour classer un membre (ville, secteur) ou mettre une qualité en avant (« Mentor ») ; il ne se clique pas.
 
 ## Quand l'utiliser
 
-- Pour une information courte qui classe : une ville, un secteur, une promo. Ton `neutre`.
-- Pour mettre en avant ce qui compte le plus, comme « Mentor » : ton `marque`.
+- Pour une information courte qui classe : une ville, un secteur, une promo. Ton `neutral`.
+- Pour mettre en avant ce qui compte le plus, comme « Mentor » : ton `brand`.
 - Plusieurs étiquettes forment une liste : un `<ul>`, une étiquette par `<li>`.
-- Pour lancer une action, prendre un `Bouton`. Pour aller vers une autre page, un lien : à venir (B9).
+- Pour lancer une action, prendre un `DsButton`. Pour aller vers une autre page, un lien : à venir (B9).
 - Pour filtrer une liste, une puce de filtre : à venir (B5). Pour retirer une valeur, une puce supprimable : à venir (B5).
 - Pour dire un statut (réussi, en erreur), rien encore : l'étiquette n'a que deux tons, sans couleur par catégorie (D55).
 
@@ -29,14 +29,14 @@ Un mot court sur un fond teinté, pour classer un membre (ville, secteur) ou met
 <!-- genere:menu : écrit par npm --prefix atelier run fiches -->
 | Option | Type | Obligatoire | Défaut | Valeurs admises |
 |---|---|---|---|---|
-| `texte` | texte | oui | aucun | libre |
-| `ton` | texte | non | `'neutre'` | `'neutre'`, `'marque'` |
+| `text` | texte | oui | aucun | libre |
+| `tone` | texte | non | `'neutral'` | `'neutral'`, `'brand'` |
 
 Événements émis : aucun. Emplacements : aucun.
 <!-- /genere:menu -->
 
-- `texte` : le mot affiché, lu tel quel par un lecteur d'écran. Aucune limite de longueur : trop long pour la place, il est coupé par « … ».
-- `ton` : `neutre` pour classer, `marque` pour mettre en avant.
+- `text` : le mot affiché, lu tel quel par un lecteur d'écran. Aucune limite de longueur : trop long pour la place, il est coupé par « … ».
+- `tone` : `neutral` pour classer, `brand` pour mettre en avant.
 
 ## Refusé
 
@@ -45,9 +45,9 @@ Attributs admis en plus des options : `id`, `aria-*`, `data-*`. Retirés : `aria
 
 Tout autre usage lève une erreur, et rien n'est rendu. Messages, dans l'ordre où ils sont vérifiés :
 
-- `étiquette : attribut refusé : <attributs>`
-- `étiquette : texte obligatoire`
-- `étiquette : ton inconnu : <valeur> (neutre, marque)`
+- `DsTag : attribut refusé : <attributs>`
+- `DsTag : text : obligatoire`
+- `DsTag : tone : valeur inconnue : <valeur> (neutral, brand)`
 <!-- /genere:refus -->
 
 Une étiquette ne se ferme pas, ne filtre pas et ne mène nulle part : `closable`, `filter`, `link`, `href`, `to` et `tabindex` sont refusés, comme tout attribut hors de la liste.
@@ -87,21 +87,21 @@ Une étiquette ne se ferme pas, ne filtre pas et ne mène nulle part : `closable
 
 ```vue
 <script setup>
-import Etiquette from './composants/Etiquette.vue';
+import DsTag from './composants/DsTag.vue';
 </script>
 
 <template>
   <ul class="etiquettes">
-    <li><Etiquette texte="Lyon" /></li>
-    <li><Etiquette texte="Finance" /></li>
-    <li><Etiquette texte="Mentor" ton="marque" /></li>
+    <li><DsTag text="Lyon" /></li>
+    <li><DsTag text="Finance" /></li>
+    <li><DsTag text="Mentor" tone="brand" /></li>
   </ul>
 </template>
 ```
 
 La liste se range en ligne, avec retour à la ligne : `display: flex`, `flex-wrap: wrap`, et l'écart `var(--v-ds-ecart-entre-etiquettes)` en `gap`, sans puces ni marges.
 
-Stories : [atelier/stories/Etiquette.stories.js](../../atelier/stories/Etiquette.stories.js), story « En situation » (grand avatar, nom, promo et étiquettes), et story « Planche » (les deux tons, une rangée, un texte long).
+Stories : [atelier/stories/DsTag.stories.js](../../atelier/stories/DsTag.stories.js), story « En situation » (grand avatar, nom, promo et étiquettes), et story « Planche » (les deux tons, une rangée, un texte long).
 
 ## Décisions et dette
 
@@ -113,7 +113,7 @@ Stories : [atelier/stories/Etiquette.stories.js](../../atelier/stories/Etiquette
 
 ## Preuve
 
-`npm --prefix atelier run preuve -- etiquette` vérifie, dans les dix thèmes, en développement et en version construite :
+`npm --prefix atelier run preuve -- tag` vérifie, dans les dix thèmes, en développement et en version construite :
 
 - la hauteur, les marges, la pilule, le fond, le texte et son style, pour les deux tons, et rien qui change au survol ;
 - l'écart de 8 px d'une rangée qui passe à la ligne, et le « … » d'un texte long, resté entier dans la page ;

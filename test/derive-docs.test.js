@@ -4,7 +4,8 @@
  * de fichier cités dans CLAUDE.md, README.md, ARCHITECTURE.md, KNOWN_ISSUES.md et docs/**.md
  * existent vraiment ; une commande de l'atelier, « npm --prefix atelier run … », existe dans
  * atelier/package.json (D42). Les attendus (docs/attendus/) ne sont pas lus : ils décrivent le dépôt à leur date,
- * et un fichier renommé depuis y garde son ancien nom.
+ * et un fichier renommé depuis y garde son ancien nom. Les décisions (docs/decisions.md) sont une histoire datée de même :
+ * leurs commandes sont vérifiées, leurs chemins non (D57).
  *
  * Candidats chemins : le contenu de chaque code en ligne (`…`), la cible de chaque lien ](…)
  * (sans ancre), chaque import @… en début de ligne, et chaque mot d'un bloc de code ```. La cible d'un lien se lit
@@ -109,11 +110,11 @@ test('l\'extracteur trouve les commandes et les chemins cités (attendu écrit �
 
 test('une cible de lien se lit depuis le dossier du fichier, un code en ligne depuis la racine (attendu écrit à la main)', () => {
   const texte = [
-    'Voir [le composant](../../atelier/composants/Etiquette.vue), [la fiche](etiquette.md#menu) et [dehors](../../../x).',
-    'Le fichier `atelier/composants/Etiquette.vue`, et la commande npm --prefix atelier run fiches.',
+    'Voir [le composant](../../atelier/composants/DsTag.vue), [la fiche](tag.md#props) et [dehors](../../../x).',
+    'Le fichier `atelier/composants/DsTag.vue`, et la commande npm --prefix atelier run fiches.',
   ].join('\n');
   const racine = new Set(['atelier', 'docs']);
-  assert.deepEqual(chemins(texte, racine, 'docs/composants').sort(), ['../x', 'atelier/composants/Etiquette.vue', 'docs/composants/etiquette.md']);
+  assert.deepEqual(chemins(texte, racine, 'docs/composants').sort(), ['../x', 'atelier/composants/DsTag.vue', 'docs/composants/tag.md']);
   assert.deepEqual(chemins('[a](ARCHITECTURE.md#x) et `src/a.js`', new Set(['ARCHITECTURE.md', 'src'])).sort(), ['ARCHITECTURE.md', 'src/a.js']);
 });
 
@@ -152,12 +153,12 @@ function depot() {
   return { fichiers: new Set(fichiers), dossiers };
 }
 
-test('chaque chemin cité dans la documentation existe dans le dépôt', () => {
+test('chaque chemin cité dans la documentation existe dans le dépôt, hors décisions', () => {
   const racine = new Set(readdirSync(ROOT).filter((e) => !NON_VERSIONNES.includes(e) && e !== 'node_modules' && e !== '.git'));
   const { fichiers, dossiers } = depot();
   /** @type {string[]} */
   const absents = [];
-  for (const f of [...DOCS, ...markdowns('docs')].filter((f) => existsSync(join(ROOT, f))))
+  for (const f of [...DOCS, ...markdowns('docs')].filter((f) => existsSync(join(ROOT, f)) && f !== join('docs', 'decisions.md')))
     for (const c of chemins(readFileSync(join(ROOT, f), 'utf8'), racine, posix.dirname(f.split(sep).join('/')).replace(/^\.$/, ''))) {
       const ok = c.endsWith('/') ? dossiers.has(c) : fichiers.has(c) || dossiers.has(`${c}/`);
       if (!ok) absents.push(`${f} : ${c}`);

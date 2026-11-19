@@ -5,6 +5,9 @@
  * enveloppe ne déclare que son menu (atelier/composants/<Enveloppe>.menu.js). La fabrique et les menus sont du
  * JavaScript sans Vue : ces tests les lisent sans navigateur.
  *
+ * Depuis D57, noms anglais et messages sous une seule forme, « <Composant> : <prop ou attribut> : <motif> » (« DsTag : tone :
+ * valeur inconnue : accent (neutral, brand) ») ; les attendus ci-dessous, datés, citent les noms et la forme d'avant.
+ *
  * Attendus écrits à la main avant le code (19/11/2026), recopiés du bouton tel qu'il était avant la fabrique (D43) :
  *   W1 liste blanche : id, aria-*, data-* et écouteurs passent ; class, style, color lèvent, nommés dans l'ordre des
  *      attributs ; un menu peut retirer les écouteurs et des attributs nommés ;
@@ -43,12 +46,12 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { definirEnveloppe, propsDuMenu, verifierUsage } from '../atelier/composants/fabrique.js';
-import BOUTON from '../atelier/composants/Bouton.menu.js';
-import CHAMP from '../atelier/composants/ChampTexte.menu.js';
-import CARTE from '../atelier/composants/Carte.menu.js';
-import BOUTON_ICONE from '../atelier/composants/BoutonIcone.menu.js';
-import AVATAR from '../atelier/composants/Avatar.menu.js';
-import ETIQUETTE from '../atelier/composants/Etiquette.menu.js';
+import BOUTON from '../atelier/composants/DsButton.menu.js';
+import CHAMP from '../atelier/composants/DsTextInput.menu.js';
+import CARTE from '../atelier/composants/DsCard.menu.js';
+import BOUTON_ICONE from '../atelier/composants/DsIconButton.menu.js';
+import AVATAR from '../atelier/composants/DsAvatar.menu.js';
+import ETIQUETTE from '../atelier/composants/DsTag.menu.js';
 import { partiesVue } from './helpers/atelier.js';
 import { lex } from './helpers/commentaires.js';
 
@@ -56,7 +59,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const COMPOSANTS = join(ROOT, 'atelier', 'composants');
 
 /** Menus réels, par nom de fichier. */
-const MENUS = { 'Bouton.menu.js': BOUTON, 'ChampTexte.menu.js': CHAMP, 'Carte.menu.js': CARTE, 'BoutonIcone.menu.js': BOUTON_ICONE, 'Avatar.menu.js': AVATAR, 'Etiquette.menu.js': ETIQUETTE };
+const MENUS = { 'DsButton.menu.js': BOUTON, 'DsTextInput.menu.js': CHAMP, 'DsCard.menu.js': CARTE, 'DsIconButton.menu.js': BOUTON_ICONE, 'DsAvatar.menu.js': AVATAR, 'DsTag.menu.js': ETIQUETTE };
 
 /** Props avec les défauts du menu, comme Vue les donne quand rien n'est passé. @param {any} menu */
 const defauts = (menu) => Object.fromEntries(Object.entries(menu.options).map(([k, o]) => [k, /** @type {any} */ (o).defaut]));
@@ -73,36 +76,35 @@ function leve(menu, props, attrs = {}, slots = {}) {
 /** Menu d'essai, hors de l'atelier. */
 const ESSAI = {
   nom: 'Essai',
-  prefixe: 'essai',
   options: {
-    forme: { type: String, defaut: 'ronde', valeurs: ['ronde', 'carree'], genre: 'f' },
-    niveau: { type: Number, defaut: 3, valeurs: [2, 3, 4], genre: 'm' },
-    titre: { type: String, obligatoire: true, nom: 'titre' },
+    forme: { type: String, defaut: 'ronde', valeurs: ['ronde', 'carree'] },
+    niveau: { type: Number, defaut: 3, valeurs: [2, 3, 4] },
+    titre: { type: String, obligatoire: true },
   },
 };
 
 test('W1 liste blanche d\'attributs', () => {
   const p = { ...defauts(ESSAI), titre: 'T' };
   assert.equal(leve(ESSAI, p, { id: 'x', 'aria-label': 'y', 'data-x': '1', onClick: () => {}, onFocusin: () => {} }), null);
-  assert.equal(leve(ESSAI, p, { style: 'a', class: 'b', color: 'c' }), 'essai : attribut refusé : style, class, color');
+  assert.equal(leve(ESSAI, p, { style: 'a', class: 'b', color: 'c' }), 'Essai : attribut refusé : style, class, color');
   const sansEcouteur = { ...ESSAI, ecouteurs: false, attributsRetires: ['aria-invalid'] };
-  assert.equal(leve(sansEcouteur, p, { onClick: () => {} }), 'essai : attribut refusé : onClick');
-  assert.equal(leve(sansEcouteur, p, { 'aria-invalid': 'true', 'aria-label': 'y' }), 'essai : attribut refusé : aria-invalid');
+  assert.equal(leve(sansEcouteur, p, { onClick: () => {} }), 'Essai : attribut refusé : onClick');
+  assert.equal(leve(sansEcouteur, p, { 'aria-invalid': 'true', 'aria-label': 'y' }), 'Essai : attribut refusé : aria-invalid');
 });
 
 test('W2 option hors de ses valeurs', () => {
   const p = { ...defauts(ESSAI), titre: 'T' };
-  assert.equal(leve(ESSAI, { ...p, forme: 'ovale' }), 'essai : forme inconnue : ovale (ronde, carree)');
-  assert.equal(leve(ESSAI, { ...p, niveau: 5 }), 'essai : niveau inconnu : 5 (2, 3, 4)');
-  assert.equal(leve(ESSAI, { ...p, niveau: '3' }), 'essai : niveau inconnu : 3 (2, 3, 4)');
-  assert.equal(leve(ESSAI, { ...p, forme: 'ovale', niveau: 5 }), 'essai : forme inconnue : ovale (ronde, carree)', 'ordre du menu');
-  assert.equal(leve(ESSAI, { ...p, forme: 'ovale' }, { color: 'c' }), 'essai : attribut refusé : color', 'attributs d\'abord');
+  assert.equal(leve(ESSAI, { ...p, forme: 'ovale' }), 'Essai : forme : valeur inconnue : ovale (ronde, carree)');
+  assert.equal(leve(ESSAI, { ...p, niveau: 5 }), 'Essai : niveau : valeur inconnue : 5 (2, 3, 4)');
+  assert.equal(leve(ESSAI, { ...p, niveau: '3' }), 'Essai : niveau : valeur inconnue : 3 (2, 3, 4)');
+  assert.equal(leve(ESSAI, { ...p, forme: 'ovale', niveau: 5 }), 'Essai : forme : valeur inconnue : ovale (ronde, carree)', 'ordre du menu');
+  assert.equal(leve(ESSAI, { ...p, forme: 'ovale' }, { color: 'c' }), 'Essai : attribut refusé : color', 'attributs d\'abord');
 });
 
 test('W3 option obligatoire', () => {
   const p = defauts(ESSAI);
-  assert.equal(leve(ESSAI, p), 'essai : titre obligatoire');
-  assert.equal(leve(ESSAI, { ...p, titre: '' }), 'essai : titre obligatoire');
+  assert.equal(leve(ESSAI, p), 'Essai : titre : obligatoire');
+  assert.equal(leve(ESSAI, { ...p, titre: '' }), 'Essai : titre : obligatoire');
   assert.equal(leve(ESSAI, { ...p, titre: 'T' }), null);
 });
 
@@ -113,10 +115,10 @@ test('W4 règle propre', () => {
   const p = { ...defauts(ESSAI), titre: 'T' };
   assert.equal(leve(menu, p, { id: 'x' }, { actions: () => [] }), null);
   assert.deepEqual(vus, [['T', ['id'], ['actions']]]);
-  assert.equal(leve(menu, { ...p, forme: 'carree' }), 'essai : carrée refusée ici');
+  assert.equal(leve(menu, { ...p, forme: 'carree' }), 'Essai : carrée refusée ici');
   const auRendu = { ...ESSAI, reglesDuRendu: [(/** @type {any} */ _p, /** @type {any} */ _a, /** @type {any} */ s) => (s.contenu?.() === 'faux' ? 'contenu refusé' : null)] };
   assert.equal(leve(auRendu, p, {}, { contenu: () => 'faux' }), null, 'hors du rendu, la règle du rendu ne court pas');
-  assert.throws(() => verifierUsage(auRendu, p, {}, { contenu: () => 'faux' }, { rendu: true }), /^Error: essai : contenu refusé$/);
+  assert.throws(() => verifierUsage(auRendu, p, {}, { contenu: () => 'faux' }, { rendu: true }), /^Error: Essai : contenu refusé$/);
 });
 
 test('W5 refus rejoués sur chaque menu réel', () => {
@@ -124,29 +126,29 @@ test('W5 refus rejoués sur chaque menu réel', () => {
     const obligatoires = Object.entries(menu.options).filter(([, o]) => /** @type {any} */ (o).obligatoire);
     const p = { ...defauts(menu), ...Object.fromEntries(obligatoires.map(([k]) => [k, 'x'])) };
     assert.equal(leve(menu, p), null, `${fichier} : défauts acceptés`);
-    assert.match(String(leve(menu, p, { inconnu: 1 })), new RegExp(`^${menu.prefixe} : attribut refusé : inconnu$`), fichier);
+    assert.match(String(leve(menu, p, { inconnu: 1 })), new RegExp(`^${menu.nom} : attribut refusé : inconnu$`), fichier);
     for (const [k, o] of Object.entries(menu.options)) {
       const opt = /** @type {any} */ (o);
-      if (opt.valeurs) assert.match(String(leve(menu, { ...p, [k]: 'hors-menu' })), new RegExp(`^${menu.prefixe} : ${opt.nom ?? k} inconnue? : hors-menu \\(`), `${fichier} ${k}`);
-      if (opt.obligatoire) assert.equal(leve(menu, { ...p, [k]: undefined }), `${menu.prefixe} : ${opt.nom ?? k} obligatoire`, `${fichier} ${k}`);
+      if (opt.valeurs) assert.match(String(leve(menu, { ...p, [k]: 'hors-menu' })), new RegExp(`^${menu.nom} : ${k} : valeur inconnue : hors-menu \\(`), `${fichier} ${k}`);
+      if (opt.obligatoire) assert.equal(leve(menu, { ...p, [k]: undefined }), `${menu.nom} : ${k} : obligatoire`, `${fichier} ${k}`);
     }
   }
   const p = defauts(BOUTON);
-  assert.equal(leve(BOUTON, p, { color: 'secondary' }), 'bouton : attribut refusé : color');
-  assert.equal(leve(BOUTON, { ...p, variante: 'rose' }), 'bouton : variante inconnue : rose (principal, secondaire, discret, danger, danger-discret)');
-  assert.equal(leve(BOUTON, { ...p, taille: 'grande' }), 'bouton : taille inconnue : grande (normale, petite)');
-  assert.equal(leve(BOUTON, { ...p, type: 'image' }), 'bouton : type inconnu : image (button, submit, reset)');
-  assert.equal(leve(BOUTON, { ...p, type: 'submit', desactive: true }), 'bouton : désactivé refusé sur type=submit');
-  assert.equal(leve(BOUTON, { ...p, type: 'submit', chargement: true }), null);
+  assert.equal(leve(BOUTON, p, { color: 'secondary' }), 'DsButton : attribut refusé : color');
+  assert.equal(leve(BOUTON, { ...p, variant: 'rose' }), 'DsButton : variant : valeur inconnue : rose (primary, secondary, ghost, danger, danger-ghost)');
+  assert.equal(leve(BOUTON, { ...p, size: 'large' }), 'DsButton : size : valeur inconnue : large (medium, small)');
+  assert.equal(leve(BOUTON, { ...p, type: 'image' }), 'DsButton : type : valeur inconnue : image (button, submit, reset)');
+  assert.equal(leve(BOUTON, { ...p, type: 'submit', disabled: true }), 'DsButton : disabled : refusé avec type=submit');
+  assert.equal(leve(BOUTON, { ...p, type: 'submit', loading: true }), null);
   assert.equal(leve(BOUTON, p, { onClick: () => {}, id: 'b', 'aria-label': 'x', 'data-cas': 'y' }), null);
-  const c = { ...defauts(CHAMP), libelle: 'Nom' };
-  assert.equal(leve(CHAMP, { ...c, libelle: undefined }), 'champ : libellé obligatoire');
-  assert.equal(leve(CHAMP, { ...c, type: 'tel' }), 'champ : type inconnu : tel (text, email, search, password)');
-  assert.equal(leve(CHAMP, c, { variant: 'filled' }), 'champ : attribut refusé : variant');
-  assert.equal(leve(CHAMP, c, { 'aria-describedby': 'ailleurs' }), 'champ : attribut refusé : aria-describedby');
-  assert.equal(leve(CHAMP, c, { 'aria-invalid': 'true' }), 'champ : attribut refusé : aria-invalid');
+  const c = { ...defauts(CHAMP), label: 'Nom' };
+  assert.equal(leve(CHAMP, { ...c, label: undefined }), 'DsTextInput : label : obligatoire');
+  assert.equal(leve(CHAMP, { ...c, type: 'tel' }), 'DsTextInput : type : valeur inconnue : tel (text, email, search, password)');
+  assert.equal(leve(CHAMP, c, { variant: 'filled' }), 'DsTextInput : attribut refusé : variant');
+  assert.equal(leve(CHAMP, c, { 'aria-describedby': 'ailleurs' }), 'DsTextInput : attribut refusé : aria-describedby');
+  assert.equal(leve(CHAMP, c, { 'aria-invalid': 'true' }), 'DsTextInput : attribut refusé : aria-invalid');
   assert.equal(leve(CHAMP, c, { id: 'x', 'aria-label': 'y', onFocus: () => {}, 'data-cas': 'z' }), null);
-  const k = { ...defauts(CARTE), titre: 'Club de lecture' };
+  const k = { ...defauts(CARTE), title: 'Club de lecture' };
   /** Règles de la carte, rendu compris. @param {Record<string, any>} props @param {Record<string, any>} [attrs] @param {Record<string, any>} [slots] */
   const carte = (props, attrs = {}, slots = {}) => {
     try {
@@ -156,73 +158,73 @@ test('W5 refus rejoués sur chaque menu réel', () => {
       return /** @type {Error} */ (e).message;
     }
   };
-  const bouton = { type: { name: 'Bouton' }, children: null };
-  assert.equal(carte({ ...k, titre: undefined }), 'carte : titre obligatoire');
-  assert.equal(carte({ ...k, niveau: 5 }), 'carte : niveau inconnu : 5 (2, 3, 4)');
-  assert.equal(carte({ ...k, niveau: '3' }), 'carte : niveau inconnu : 3 (2, 3, 4)');
-  assert.equal(carte({ ...k, media: 'x.png' }), 'carte : texte alternatif obligatoire avec une image');
-  assert.equal(carte({ ...k, media: 'x.png', texteAlternatif: '' }), null, 'image décorative');
-  assert.equal(carte({ ...k, lien: '#x' }, {}, { actions: () => [bouton] }), 'carte : lien et actions ensemble refusés');
-  assert.equal(carte(k, {}, { actions: () => [{ type: 'a', children: 'Lire' }] }), 'carte : actions : seuls Bouton et BoutonIcone sont admis');
-  assert.equal(carte(k, {}, { actions: () => [{ type: { name: 'Lien' } }] }), 'carte : actions : seuls Bouton et BoutonIcone sont admis');
+  const bouton = { type: { name: 'DsButton' }, children: null };
+  assert.equal(carte({ ...k, title: undefined }), 'DsCard : title : obligatoire');
+  assert.equal(carte({ ...k, headingLevel: 5 }), 'DsCard : headingLevel : valeur inconnue : 5 (2, 3, 4)');
+  assert.equal(carte({ ...k, headingLevel: '3' }), 'DsCard : headingLevel : valeur inconnue : 3 (2, 3, 4)');
+  assert.equal(carte({ ...k, image: 'x.png' }), 'DsCard : imageAlt : obligatoire avec image');
+  assert.equal(carte({ ...k, image: 'x.png', imageAlt: '' }), null, 'image décorative');
+  assert.equal(carte({ ...k, href: '#x' }, {}, { actions: () => [bouton] }), 'DsCard : href : refusé avec le slot actions');
+  assert.equal(carte(k, {}, { actions: () => [{ type: 'a', children: 'Lire' }] }), 'DsCard : slot actions : seuls DsButton et DsIconButton sont admis');
+  assert.equal(carte(k, {}, { actions: () => [{ type: { name: 'Lien' } }] }), 'DsCard : slot actions : seuls DsButton et DsIconButton sont admis');
   // Types de nœud de Vue 3.5 (runtime-core : Text, Fragment, Comment, Static).
   const texte = Symbol.for('v-txt');
   const fragment = Symbol.for('v-fgt');
   assert.equal(carte(k, {}, { actions: () => [bouton, { type: texte, children: '  ' }, { type: fragment, children: [bouton, { type: Symbol.for('v-cmt'), children: 'v-if' }] }] }), null, 'blancs, fragments et commentaires traversés');
-  assert.equal(carte(k, {}, { actions: () => [{ type: Symbol.for('v-stc'), children: '<a>Lire</a>' }] }), 'carte : actions : seuls Bouton et BoutonIcone sont admis');
-  assert.equal(carte(k, {}, { actions: () => [{ type: texte, children: 'Lire' }] }), 'carte : actions : seuls Bouton et BoutonIcone sont admis');
-  assert.equal(carte(k, { onClick: () => {} }), 'carte : attribut refusé : onClick');
-  assert.equal(carte(k, {}, { actions: () => [bouton, { type: { name: 'BoutonIcone' }, children: null }] }), null, 'bouton à icône admis dans les actions');
-  const i = { ...defauts(BOUTON_ICONE), libelle: 'Fermer', icone: () => null };
+  assert.equal(carte(k, {}, { actions: () => [{ type: Symbol.for('v-stc'), children: '<a>Lire</a>' }] }), 'DsCard : slot actions : seuls DsButton et DsIconButton sont admis');
+  assert.equal(carte(k, {}, { actions: () => [{ type: texte, children: 'Lire' }] }), 'DsCard : slot actions : seuls DsButton et DsIconButton sont admis');
+  assert.equal(carte(k, { onClick: () => {} }), 'DsCard : attribut refusé : onClick');
+  assert.equal(carte(k, {}, { actions: () => [bouton, { type: { name: 'DsIconButton' }, children: null }] }), null, 'bouton à icône admis dans les actions');
+  const i = { ...defauts(BOUTON_ICONE), label: 'Fermer', icon: () => null };
   assert.equal(leve(BOUTON_ICONE, i), null);
-  assert.equal(leve(BOUTON_ICONE, { ...i, libelle: undefined }), 'bouton à icône : libellé obligatoire');
-  assert.equal(leve(BOUTON_ICONE, { ...i, libelle: '' }), 'bouton à icône : libellé obligatoire');
-  assert.equal(leve(BOUTON_ICONE, { ...i, icone: undefined }), 'bouton à icône : icône obligatoire');
-  assert.equal(leve(BOUTON_ICONE, { ...i, variante: 'danger' }), 'bouton à icône : variante inconnue : danger (discret, secondaire, principal, danger-discret)');
-  assert.equal(leve(BOUTON_ICONE, { ...i, taille: 'grande' }), 'bouton à icône : taille inconnue : grande (normale, petite)');
-  assert.equal(leve(BOUTON_ICONE, { ...i, type: 'image' }), 'bouton à icône : type inconnu : image (button, submit, reset)');
-  assert.equal(leve(BOUTON_ICONE, i, { 'aria-label': 'Croix' }), 'bouton à icône : attribut refusé : aria-label');
-  assert.equal(leve(BOUTON_ICONE, i, { 'aria-labelledby': 'ailleurs' }), 'bouton à icône : attribut refusé : aria-labelledby');
-  assert.equal(leve(BOUTON_ICONE, i, { color: 'secondary' }), 'bouton à icône : attribut refusé : color');
-  assert.equal(leve(BOUTON_ICONE, { ...i, type: 'submit', desactive: true }), 'bouton à icône : désactivé refusé sur type=submit');
+  assert.equal(leve(BOUTON_ICONE, { ...i, label: undefined }), 'DsIconButton : label : obligatoire');
+  assert.equal(leve(BOUTON_ICONE, { ...i, label: '' }), 'DsIconButton : label : obligatoire');
+  assert.equal(leve(BOUTON_ICONE, { ...i, icon: undefined }), 'DsIconButton : icon : obligatoire');
+  assert.equal(leve(BOUTON_ICONE, { ...i, variant: 'danger' }), 'DsIconButton : variant : valeur inconnue : danger (ghost, secondary, primary, danger-ghost)');
+  assert.equal(leve(BOUTON_ICONE, { ...i, size: 'large' }), 'DsIconButton : size : valeur inconnue : large (medium, small)');
+  assert.equal(leve(BOUTON_ICONE, { ...i, type: 'image' }), 'DsIconButton : type : valeur inconnue : image (button, submit, reset)');
+  assert.equal(leve(BOUTON_ICONE, i, { 'aria-label': 'Croix' }), 'DsIconButton : attribut refusé : aria-label');
+  assert.equal(leve(BOUTON_ICONE, i, { 'aria-labelledby': 'ailleurs' }), 'DsIconButton : attribut refusé : aria-labelledby');
+  assert.equal(leve(BOUTON_ICONE, i, { color: 'secondary' }), 'DsIconButton : attribut refusé : color');
+  assert.equal(leve(BOUTON_ICONE, { ...i, type: 'submit', disabled: true }), 'DsIconButton : disabled : refusé avec type=submit');
   assert.equal(leve(BOUTON_ICONE, i, { id: 'b', 'aria-describedby': 'aide', 'data-cas': 'y', onClick: () => {} }), null);
-  assert.equal(BOUTON_ICONE.options.variante.defaut, 'discret');
+  assert.equal(BOUTON_ICONE.options.variant.defaut, 'ghost');
   assert.equal(carte(k, { id: 'c', 'aria-label': 'x', 'data-cas': 'y' }), null);
-  const a = { ...defauts(AVATAR), nom: 'Camille Ferrand' };
+  const a = { ...defauts(AVATAR), name: 'Camille Ferrand' };
   assert.equal(leve(AVATAR, a), null);
-  for (const nom of [undefined, null, '', '   ']) assert.equal(leve(AVATAR, { ...a, nom }), 'avatar : nom obligatoire', String(nom));
-  for (const nom of ['123', '—']) assert.equal(leve(AVATAR, { ...a, nom }), 'avatar : nom sans lettre', nom);
-  assert.equal(leve(AVATAR, { ...a, taille: 'petite' }), 'avatar : taille inconnue : petite (normale, grande)');
-  for (const k of ['aria-label', 'aria-labelledby', 'aria-hidden', 'class']) assert.equal(leve(AVATAR, a, { [k]: 'x' }), `avatar : attribut refusé : ${k}`, k);
-  assert.equal(leve(AVATAR, a, { onClick: () => {} }), 'avatar : attribut refusé : onClick');
+  for (const name of [undefined, null, '', '   ']) assert.equal(leve(AVATAR, { ...a, name }), 'DsAvatar : name : obligatoire', String(name));
+  for (const name of ['123', '—']) assert.equal(leve(AVATAR, { ...a, name }), 'DsAvatar : name : sans lettre', name);
+  assert.equal(leve(AVATAR, { ...a, size: 'small' }), 'DsAvatar : size : valeur inconnue : small (medium, large)');
+  for (const k of ['aria-label', 'aria-labelledby', 'aria-hidden', 'class']) assert.equal(leve(AVATAR, a, { [k]: 'x' }), `DsAvatar : attribut refusé : ${k}`, k);
+  assert.equal(leve(AVATAR, a, { onClick: () => {} }), 'DsAvatar : attribut refusé : onClick');
   assert.equal(leve(AVATAR, a, { id: 'a', 'aria-describedby': 'promo', 'data-cas': 'y' }), null);
-  assert.equal(leve(AVATAR, { ...a, image: 'portrait.png', decoratif: true, taille: 'grande' }), null);
-  assert.equal(AVATAR.options.taille.defaut, 'normale');
-  assert.equal(AVATAR.options.decoratif.defaut, false);
-  const e = { ...defauts(ETIQUETTE), texte: 'Lyon' };
+  assert.equal(leve(AVATAR, { ...a, image: 'portrait.png', decorative: true, size: 'large' }), null);
+  assert.equal(AVATAR.options.size.defaut, 'medium');
+  assert.equal(AVATAR.options.decorative.defaut, false);
+  const e = { ...defauts(ETIQUETTE), text: 'Lyon' };
   assert.equal(leve(ETIQUETTE, e), null);
-  for (const texte of [undefined, null, '']) assert.equal(leve(ETIQUETTE, { ...e, texte }), 'étiquette : texte obligatoire', String(texte));
-  assert.equal(leve(ETIQUETTE, { ...e, ton: 'accent' }), 'étiquette : ton inconnu : accent (neutre, marque)');
+  for (const text of [undefined, null, '']) assert.equal(leve(ETIQUETTE, { ...e, text }), 'DsTag : text : obligatoire', String(text));
+  assert.equal(leve(ETIQUETTE, { ...e, tone: 'accent' }), 'DsTag : tone : valeur inconnue : accent (neutral, brand)');
   for (const k of ['closable', 'href', 'to', 'link', 'filter', 'tabindex', 'aria-label', 'aria-labelledby'])
-    assert.equal(leve(ETIQUETTE, e, { [k]: 'x' }), `étiquette : attribut refusé : ${k}`, k);
-  assert.equal(leve(ETIQUETTE, e, { onClick: () => {} }), 'étiquette : attribut refusé : onClick');
+    assert.equal(leve(ETIQUETTE, e, { [k]: 'x' }), `DsTag : attribut refusé : ${k}`, k);
+  assert.equal(leve(ETIQUETTE, e, { onClick: () => {} }), 'DsTag : attribut refusé : onClick');
   assert.equal(leve(ETIQUETTE, e, { id: 'e', 'aria-describedby': 'aide', 'data-cas': 'y' }), null);
-  assert.equal(leve(ETIQUETTE, { ...e, texte: 'x'.repeat(80), ton: 'marque' }), null, 'aucune limite de longueur');
-  assert.equal(ETIQUETTE.options.ton.defaut, 'neutre');
+  assert.equal(leve(ETIQUETTE, { ...e, text: 'x'.repeat(80), tone: 'brand' }), null, 'aucune limite de longueur');
+  assert.equal(ETIQUETTE.options.tone.defaut, 'neutral');
 });
 
 test('W6 props du bouton inchangées', () => {
   assert.deepEqual(propsDuMenu(BOUTON), {
-    variante: { type: String, default: 'principal' },
-    taille: { type: String, default: 'normale' },
-    icone: { type: [Object, Function], default: null },
-    pleineLargeur: { type: Boolean, default: false },
-    desactive: { type: Boolean, default: false },
-    chargement: { type: Boolean, default: false },
+    variant: { type: String, default: 'primary' },
+    size: { type: String, default: 'medium' },
+    prependIcon: { type: [Object, Function], default: null },
+    block: { type: Boolean, default: false },
+    disabled: { type: Boolean, default: false },
+    loading: { type: Boolean, default: false },
     type: { type: String, default: 'button' },
   });
   const c = definirEnveloppe(BOUTON, () => () => null);
-  assert.equal(c.name, 'Bouton');
+  assert.equal(c.name, 'DsButton');
   assert.equal(c.inheritAttrs, false);
   assert.deepEqual(c.emits, ['click']);
 });
@@ -235,13 +237,13 @@ test('W7 definirEnveloppe vérifie au montage puis à chaque rendu', () => {
     return () => (journal.push('rendu'), 'ok');
   });
   const ctx = (/** @type {Record<string, any>} */ attrs) => ({ attrs, slots: {}, emit: () => {} });
-  assert.throws(() => c.setup({ ...defauts(ESSAI), titre: 'T' }, ctx({ color: 'c' })), /^Error: essai : attribut refusé : color$/);
+  assert.throws(() => c.setup({ ...defauts(ESSAI), titre: 'T' }, ctx({ color: 'c' })), /^Error: Essai : attribut refusé : color$/);
   assert.deepEqual(journal, [], 'rien avant la vérification');
   const props = { ...defauts(ESSAI), titre: 'T' };
   const rendre = c.setup(props, ctx({}));
   assert.equal(rendre(), 'ok');
   props.forme = 'ovale';
-  assert.throws(() => rendre(), /essai : forme inconnue : ovale/);
+  assert.throws(() => rendre(), /Essai : forme : valeur inconnue : ovale/);
   assert.deepEqual(journal, ['setup', 'rendu']);
   /** @type {string[]} */
   const lus = [];

@@ -1,5 +1,5 @@
 <script>
-// Enveloppe de la carte (D50) : seul endroit du dépôt où paraît la carte de Vuetify. Son menu (Carte.menu.js) et la liste
+// Enveloppe de la carte (D50) : seul endroit du dépôt où paraît la carte de Vuetify. Son menu (DsCard.menu.js) et la liste
 // blanche d'attributs sont vérifiés par la fabrique commune (fabrique.js, D51) : tout le reste lève, et aucune carte n'est
 // rendue. Couleurs, dimensions et texte viennent des variables du thème de la marque (tokens/<marque>/vuetify.json,
 // D41) : aucune valeur n'est écrite ici.
@@ -12,22 +12,22 @@
 import { h } from 'vue';
 import { VCard } from 'vuetify/components';
 import { definirEnveloppe } from './fabrique.js';
-import MENU from './Carte.menu.js';
+import MENU from './DsCard.menu.js';
 
 export default definirEnveloppe(MENU, (props, { attrs, slots }) => () => {
-  const titre = props.lien ? h('a', { class: 'ds-carte__lien', href: props.lien }, props.titre) : props.titre;
+  const titre = props.href ? h('a', { class: 'ds-card__link', href: props.href }, props.title) : props.title;
   return h(
     VCard,
-    { ...attrs, class: ['ds-carte', { 'ds-carte--lien': !!props.lien }], variant: 'flat', ripple: false },
+    { ...attrs, class: ['ds-card', { 'ds-card--link': !!props.href }], variant: 'flat', ripple: false },
     {
       default: () => [
-        props.media ? h('img', { class: 'ds-carte__media', src: props.media, alt: props.texteAlternatif }) : null,
-        h('div', { class: 'ds-carte__contenu' }, [
-          h('div', { class: 'ds-carte__corps' }, [
-            h(`h${props.niveau}`, { class: 'ds-carte__titre' }, [titre]),
-            slots.default ? h('div', { class: 'ds-carte__texte' }, slots.default()) : null,
+        props.image ? h('img', { class: 'ds-card__media', src: props.image, alt: props.imageAlt }) : null,
+        h('div', { class: 'ds-card__content' }, [
+          h('div', { class: 'ds-card__body' }, [
+            h(`h${props.headingLevel}`, { class: 'ds-card__title' }, [titre]),
+            slots.default ? h('div', { class: 'ds-card__text' }, slots.default()) : null,
           ]),
-          slots.actions ? h('div', { class: 'ds-carte__actions' }, slots.actions()) : null,
+          slots.actions ? h('div', { class: 'ds-card__actions' }, slots.actions()) : null,
         ]),
       ],
     },
@@ -37,7 +37,7 @@ export default definirEnveloppe(MENU, (props, { attrs, slots }) => () => {
 
 <style>
 /* Règles hors couche : elles passent devant celles de Vuetify, rangées dans ses couches, sans !important. */
-.ds-carte.v-card {
+.ds-card.v-card {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -51,13 +51,13 @@ export default definirEnveloppe(MENU, (props, { attrs, slots }) => () => {
   transition: none;
 }
 /* Ni voile ni sous-couche de Vuetify. */
-.ds-carte.v-card > .v-card__overlay,
-.ds-carte.v-card > .v-card__underlay {
+.ds-card.v-card > .v-card__overlay,
+.ds-card.v-card > .v-card__underlay {
   display: none;
 }
 
 /* Image en haut, pleine largeur, au format 16:9, recadrée au centre ; coins hauts arrondis à l'intérieur du contour. */
-.ds-carte__media {
+.ds-card__media {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -67,18 +67,18 @@ export default definirEnveloppe(MENU, (props, { attrs, slots }) => () => {
 }
 
 /* Le contenu porte la marge intérieure et l'écart entre le bloc titre et texte et les actions (DS3). */
-.ds-carte__contenu {
+.ds-card__content {
   display: flex;
   flex-direction: column;
   gap: var(--v-ds-ecart-entre-composants);
   padding: var(--v-ds-marge-interieure-composant);
 }
-.ds-carte__corps {
+.ds-card__body {
   display: flex;
   flex-direction: column;
   gap: var(--v-ds-ecart-dans-composant);
 }
-.ds-carte__titre {
+.ds-card__title {
   margin: 0;
   font-family: var(--v-ds-titre-carte-police);
   font-size: var(--v-ds-titre-carte-taille);
@@ -88,43 +88,43 @@ export default definirEnveloppe(MENU, (props, { attrs, slots }) => () => {
   letter-spacing: 0;
   color: rgb(var(--v-theme-on-surface));
 }
-.ds-carte__texte {
+.ds-card__text {
   font-family: var(--v-ds-corps-police);
   font-size: var(--v-ds-corps-taille);
   font-weight: var(--v-ds-corps-graisse);
   line-height: var(--v-ds-corps-interligne);
   color: rgb(var(--v-theme-on-surface));
 }
-.ds-carte__actions {
+.ds-card__actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--v-ds-ecart-entre-composants);
 }
 
 /* Carte à lien : le lien du titre couvre toute la carte, contour compris. */
-.ds-carte__lien {
+.ds-card__link {
   color: inherit;
   text-decoration: none;
 }
-.ds-carte__lien::after {
+.ds-card__link::after {
   content: '';
   position: absolute;
   inset: calc(-1 * var(--v-ds-epaisseur-contour));
   border-radius: var(--v-ds-arrondi-surface);
 }
 /* Survol et focus : le contour fonce et le titre se souligne ; au focus clavier, l'anneau entoure la carte (DS2). */
-.ds-carte--lien.v-card:hover,
-.ds-carte--lien.v-card:has(.ds-carte__lien:focus-visible) {
+.ds-card--link.v-card:hover,
+.ds-card--link.v-card:has(.ds-card__link:focus-visible) {
   border-color: rgb(var(--v-ds-contour));
 }
-.ds-carte--lien.v-card:hover .ds-carte__lien,
-.ds-carte__lien:focus-visible {
+.ds-card--link.v-card:hover .ds-card__link,
+.ds-card__link:focus-visible {
   text-decoration: underline;
 }
-.ds-carte__lien:focus-visible {
+.ds-card__link:focus-visible {
   outline: none;
 }
-.ds-carte__lien:focus-visible::after {
+.ds-card__link:focus-visible::after {
   outline: var(--v-ds-epaisseur-focus) solid rgb(var(--v-ds-focus));
   outline-offset: var(--v-ds-decalage-focus);
 }

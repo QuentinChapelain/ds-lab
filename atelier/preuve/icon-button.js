@@ -3,16 +3,16 @@
 // et centrée, l'arrondi, les couleurs, le contour et l'anneau des jetons (survol et focus forcés par le protocole
 // DevTools), ni ombre ni transition ; les deux lignes d'alignement (champ de recherche + bouton à icône, bouton + bouton
 // à icône) ont le même haut et le même bas ; le rendu est le même en développement et en version construite. La planche
-// et le survol des discrets vu de près sont enregistrés par thème dans local/bouton-icone-captures/, hors dépôt. Sur le
+// et le survol des discrets vu de près sont enregistrés par thème dans local/icon-button-captures/, hors dépôt. Sur le
 // premier thème : arbre d'accessibilité (nom = libellé, icône muette, désactivé lu), tabulation, inactif muet, envoi,
 // anneau au focus clavier, refus d'un usage hors du menu.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { LOCAL, TRANSPARENT, css, ecart, forcer, ouvrir, refus } from './commun.js';
 
-const STORY = 'composants-bouton-à-icône';
+const STORY = 'composants-dsiconbutton';
 /** Planches enregistrées, hors dépôt. */
-const CAPTURES = join(LOCAL, 'bouton-icone-captures');
+const CAPTURES = join(LOCAL, 'icon-button-captures');
 /** États que la preuve force sur les boutons de leur colonne. */
 const FORCES = { survol: ['hover'], focus: ['focus', 'focus-visible'] };
 
@@ -61,18 +61,18 @@ function attenduBoutons(c, v) {
  */
 async function releve(contexte, base, theme) {
   const { page, erreurs } = await ouvrir(contexte, base, `${STORY}--planche`, theme);
-  await page.locator('.ds-bouton[data-etat]').first().waitFor({ timeout: 30_000 });
+  await page.locator('.ds-button[data-etat]').first().waitFor({ timeout: 30_000 });
   await page.evaluate(() => document.fonts.ready);
-  await forcer(page, Object.fromEntries(Object.entries(FORCES).map(([etat, classes]) => [`.ds-bouton[data-etat="${etat}"]`, classes])));
+  await forcer(page, Object.fromEntries(Object.entries(FORCES).map(([etat, classes]) => [`.ds-button[data-etat="${etat}"]`, classes])));
   const m = await page.evaluate(() => {
     /** Nombre au centième, en px. @param {number} n */
     const px = (n) => `${Math.round(n * 100) / 100}px`;
     /** @type {Record<string, Record<string, string>>} */
     const boutons = {};
-    for (const e of /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.ds-bouton[data-etat]'))) {
+    for (const e of /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.ds-button[data-etat]'))) {
       const s = getComputedStyle(e);
       const b = e.getBoundingClientRect();
-      const svg = e.querySelector('.ds-bouton-icone__icone > svg');
+      const svg = e.querySelector('.ds-icon-button__icon > svg');
       const i = svg?.getBoundingClientRect();
       boutons[`${e.dataset.variante}|${e.dataset.taille}|${e.dataset.etat}`] = {
         fond: s.backgroundColor,
@@ -95,7 +95,7 @@ async function releve(contexte, base, theme) {
     };
     return {
       boutons,
-      recherche: { champ: boite('[data-cas="recherche-champ"] .ds-champ__champ > * > *'), bouton: boite('[data-cas="recherche-bouton"]') },
+      recherche: { champ: boite('[data-cas="recherche-champ"] .ds-text-input__field > * > *'), bouton: boite('[data-cas="recherche-bouton"]') },
       bouton: { texte: boite('[data-cas="bouton-texte"]'), icone: boite('[data-cas="bouton-icone"]') },
     };
   });
@@ -110,8 +110,8 @@ async function releve(contexte, base, theme) {
  */
 async function survolDePres(contexte, base, theme) {
   const { page } = await ouvrir(contexte, base, `${STORY}--survol-de-pres`, theme);
-  await page.locator('.ds-bouton[data-etat]').first().waitFor({ timeout: 30_000 });
-  await forcer(page, { '.ds-bouton[data-etat="survol"]': ['hover'] });
+  await page.locator('.ds-button[data-etat]').first().waitFor({ timeout: 30_000 });
+  await forcer(page, { '.ds-button[data-etat="survol"]': ['hover'] });
   const image = await page.screenshot({ fullPage: true, animations: 'disabled' });
   await page.close();
   return image;
@@ -123,12 +123,12 @@ const ORDRE_CLAVIER = ['champ', 'envoi', 'desactive', 'actif'];
 const ARBRE_CLAVIER = { envoi: '- button "Rechercher"', desactive: '- button "Supprimer" [disabled]', actif: '- button "Fermer"' };
 /** Erreurs attendues des stories de refus. */
 const REFUS = {
-  'refus-sans-libelle': 'bouton à icône : libellé obligatoire',
-  'refus-sans-icone': 'bouton à icône : icône obligatoire',
-  'refus-variante': 'bouton à icône : variante inconnue : danger (discret, secondaire, principal, danger-discret)',
-  'refus-nom': 'bouton à icône : attribut refusé : aria-label',
-  'refus-attribut': 'bouton à icône : attribut refusé : color',
-  'refus-envoi': 'bouton à icône : désactivé refusé sur type=submit',
+  'refus-sans-libelle': 'DsIconButton : label : obligatoire',
+  'refus-sans-icone': 'DsIconButton : icon : obligatoire',
+  'refus-variante': 'DsIconButton : variant : valeur inconnue : danger (ghost, secondary, primary, danger-ghost)',
+  'refus-nom': 'DsIconButton : attribut refusé : aria-label',
+  'refus-attribut': 'DsIconButton : attribut refusé : color',
+  'refus-envoi': 'DsIconButton : disabled : refusé avec type=submit',
 };
 
 /**
@@ -139,15 +139,15 @@ async function clavier(contexte, base, t) {
   /** @type {[boolean, string][]} */
   const out = [];
   const { page, erreurs } = await ouvrir(contexte, base, `${STORY}--clavier`, t.nom);
-  await page.locator('.ds-bouton').first().waitFor();
+  await page.locator('.ds-button').first().waitFor();
   const bouton = (/** @type {string} */ cas) => page.locator(`[data-cas="${cas}"]`);
   const actif = () => page.evaluate(() => /** @type {HTMLElement | null} */ (document.activeElement)?.dataset?.cas ?? document.activeElement?.tagName ?? null);
   const journal = async () => JSON.parse((await page.locator('[data-journal]').textContent()) ?? '{}');
 
   // Arbre d'accessibilité : un bouton nommé par son libellé, sans nœud d'icône ; la zone de statut du bouton, vide.
   const arbres = Object.fromEntries(await Promise.all(Object.keys(ARBRE_CLAVIER).map(async (cas) => [cas, await bouton(cas).ariaSnapshot()])));
-  const muettes = await page.locator('.ds-bouton-icone__icone[aria-hidden="true"]').count();
-  const statuts = await page.locator('.ds-bouton-icone [role="status"]').evaluateAll((z) => z.map((e) => e.textContent).join(''));
+  const muettes = await page.locator('.ds-icon-button__icon[aria-hidden="true"]').count();
+  const statuts = await page.locator('.ds-icon-button [role="status"]').evaluateAll((z) => z.map((e) => e.textContent).join(''));
   out.push([JSON.stringify(arbres) === JSON.stringify(ARBRE_CLAVIER) && muettes === 3 && statuts === '', `${t.nom}, arbre d'accessibilité : ${Object.values(arbres).join(' ; ')} ; ${muettes} icônes muettes sur 3 ; zones de statut ${statuts === '' ? 'vides' : `« ${statuts} »`}`]);
 
   // Tabulation, puis anneau au focus clavier.
@@ -181,7 +181,7 @@ async function clavier(contexte, base, t) {
   await page.close();
 
   // Refus : l'erreur qui nomme l'usage, et aucun bouton.
-  for (const [story, message] of Object.entries(REFUS)) out.push(await refus(contexte, base, `${STORY}--${story}`, t.nom, message, '.ds-bouton', 'bouton'));
+  for (const [story, message] of Object.entries(REFUS)) out.push(await refus(contexte, base, `${STORY}--${story}`, t.nom, message, '.ds-button', 'bouton'));
   return out;
 }
 

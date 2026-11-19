@@ -2,7 +2,7 @@
 // chaque état a le contour, le fond, la hauteur, l'arrondi, les marges, le texte, le texte d'exemple, le libellé,
 // l'aide et l'erreur des jetons, sans opacité de Vuetify (survol et focus forcés par le protocole DevTools) ; la ligne
 // champ + bouton aligne deux boîtes de 40 px ; le rendu est le même en développement et en version construite. La planche
-// de la version construite est enregistrée par thème dans local/champ-carte-captures/, hors dépôt. Sur le premier thème,
+// de la version construite est enregistrée par thème dans local/text-input-card-captures/, hors dépôt. Sur le premier thème,
 // clavier et lecteur d'écran : ordre de tabulation (le désactivé est sauté), anneau au focus clavier sur un champ en
 // erreur, nom, description, états invalide, requis et désactivé dans l'arbre d'accessibilité, aucune zone d'alerte,
 // valeur tapée émise, valeur du désactivé non envoyée, refus d'un usage hors du menu.
@@ -10,14 +10,14 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { LOCAL, css, ecart, forcer, ouvrir, refus } from './commun.js';
 
-const STORY = 'composants-champ-de-texte--planche';
+const STORY = 'composants-dstextinput--planche';
 /** Planches enregistrées, hors dépôt. */
-const CAPTURES = join(LOCAL, 'champ-carte-captures');
+const CAPTURES = join(LOCAL, 'text-input-card-captures');
 /**
  * Boîte dessinée du champ (contour, fond, anneau) : sous la racine du champ de l'enveloppe, l'enfant de son unique enfant
  * (vuetify 4.3.4, VInput puis VField) ; désignée par sa place, sans nommer de classe de Vuetify (garde E5).
  */
-const BOITE = '.ds-champ__champ > * > *';
+const BOITE = '.ds-text-input__field > * > *';
 /** États que la preuve force, par sélecteur. */
 const FORCES = { '[data-etat="focus"] input, [data-etat="erreur-focus"] input': ['focus', 'focus-visible'], [`[data-etat="survol"] ${BOITE}`]: ['hover'] };
 const ETATS = ['repos', 'survol', 'focus', 'rempli', 'exemple', 'aide', 'erreur', 'erreur-focus', 'obligatoire', 'désactivé', 'icône'];
@@ -75,7 +75,7 @@ async function exemples(page) {
   /** @type {Record<string, string>} */
   const out = {};
   for (const etat of ETATS) {
-    const { nodeId } = await cdp.send('DOM.querySelector', { nodeId: root.nodeId, selector: `.ds-champ[data-etat="${etat}"] input` });
+    const { nodeId } = await cdp.send('DOM.querySelector', { nodeId: root.nodeId, selector: `.ds-text-input[data-etat="${etat}"] input` });
     if (!nodeId) continue;
     const { node } = await cdp.send('DOM.describeNode', { nodeId, depth: -1, pierce: true });
     /** @type {number[]} */
@@ -100,7 +100,7 @@ async function exemples(page) {
  */
 async function releve(contexte, base, theme) {
   const { page, erreurs } = await ouvrir(contexte, base, STORY, theme);
-  await page.locator('.ds-champ').first().waitFor({ timeout: 30_000 }).catch(() => {});
+  await page.locator('.ds-text-input').first().waitFor({ timeout: 30_000 }).catch(() => {});
   await page.evaluate(() => document.fonts.ready);
   await forcer(page, FORCES);
   const champs = await page.evaluate((BOITE) => {
@@ -108,10 +108,10 @@ async function releve(contexte, base, theme) {
     const px = (/** @type {number} */ n) => `${Math.round(n * 100) / 100}px`;
     /** @type {Record<string, any>} */
     const out = {};
-    for (const e of /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.ds-champ[data-etat]'))) {
+    for (const e of /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.ds-text-input[data-etat]'))) {
       const f = /** @type {HTMLElement} */ (e.querySelector(BOITE));
       const i = /** @type {HTMLInputElement} */ (e.querySelector('input'));
-      const l = /** @type {HTMLElement} */ (e.querySelector('.ds-champ__libelle'));
+      const l = /** @type {HTMLElement} */ (e.querySelector('.ds-text-input__label'));
       const fs = getComputedStyle(f);
       const is = getComputedStyle(i);
       const ls = getComputedStyle(l);
@@ -120,7 +120,7 @@ async function releve(contexte, base, theme) {
       const bord = parseFloat(fs.borderLeftWidth);
       const debutTexte = ir.left + parseFloat(is.paddingLeft);
       const finTexte = ir.right - parseFloat(is.paddingRight);
-      const icone = /** @type {HTMLElement | null} */ (e.querySelector('.ds-champ__icone'));
+      const icone = /** @type {HTMLElement | null} */ (e.querySelector('.ds-text-input__icon'));
       const premier = icone ? icone.getBoundingClientRect().left : debutTexte;
       let opacite = 1;
       for (let x = /** @type {HTMLElement | null} */ (i); x && x !== e.parentElement; x = x.parentElement) opacite *= Number(getComputedStyle(x).opacity);
@@ -131,9 +131,9 @@ async function releve(contexte, base, theme) {
         const masquee = m.getBoundingClientRect().width <= 1 && s.clipPath === 'inset(50%)';
         return { couleur: s.color, taille: s.fontSize, graisse: s.fontWeight, police: noms(s.fontFamily), ...(masquee ? {} : avecEcart ? { ecart: px(m.getBoundingClientRect().top - fr.bottom) } : {}), masquee };
       };
-      const erreur = message('.ds-champ__erreur', true);
+      const erreur = message('.ds-text-input__error', true);
       if (erreur) delete erreur.masquee;
-      const obligatoire = /** @type {HTMLElement | null} */ (e.querySelector('.ds-champ__obligatoire'));
+      const obligatoire = /** @type {HTMLElement | null} */ (e.querySelector('.ds-text-input__required'));
       out[/** @type {string} */ (e.dataset.etat)] = {
         hauteur: px(fr.height),
         rayon: fs.borderTopLeftRadius,
@@ -151,7 +151,7 @@ async function releve(contexte, base, theme) {
         ecartLibelle: px(fr.top - l.getBoundingClientRect().bottom),
         obligatoire: obligatoire ? { texte: obligatoire.textContent, couleur: getComputedStyle(obligatoire).color } : null,
         erreur,
-        aide: message('.ds-champ__aide', !e.querySelector('.ds-champ__erreur')),
+        aide: message('.ds-text-input__hint', !e.querySelector('.ds-text-input__error')),
         icone: icone ? { taille: getComputedStyle(icone).width, ecart: px(debutTexte - icone.getBoundingClientRect().right), muette: icone.getAttribute('aria-hidden') === 'true' } : null,
       };
     }
@@ -177,10 +177,10 @@ const ARBRE_CLAVIER = {
 };
 /** Erreurs attendues des stories de refus. */
 const REFUS = {
-  'refus-sans-libelle': 'champ : libellé obligatoire',
-  'refus-type': 'champ : type inconnu : tel (text, email, search, password)',
-  'refus-attribut': 'champ : attribut refusé : variant',
-  'refus-description': 'champ : attribut refusé : aria-describedby',
+  'refus-sans-libelle': 'DsTextInput : label : obligatoire',
+  'refus-type': 'DsTextInput : type : valeur inconnue : tel (text, email, search, password)',
+  'refus-attribut': 'DsTextInput : attribut refusé : variant',
+  'refus-description': 'DsTextInput : attribut refusé : aria-describedby',
 };
 
 /**
@@ -207,15 +207,15 @@ async function arbre(page, cas) {
 async function clavier(contexte, base, t) {
   /** @type {[boolean, string][]} */
   const out = [];
-  const { page, erreurs } = await ouvrir(contexte, base, 'composants-champ-de-texte--clavier', t.nom);
-  await page.locator('.ds-champ').first().waitFor();
+  const { page, erreurs } = await ouvrir(contexte, base, 'composants-dstextinput--clavier', t.nom);
+  await page.locator('.ds-text-input').first().waitFor();
   const cas = () => page.evaluate(() => /** @type {HTMLElement | null} */ (document.activeElement?.closest('[data-cas]'))?.dataset.cas ?? document.activeElement?.tagName ?? null);
   const journal = async () => JSON.parse((await page.locator('[data-journal]').textContent()) ?? '{}');
 
   const arbres = Object.fromEntries(await Promise.all(Object.keys(ARBRE_CLAVIER).map(async (k) => [k, await arbre(page, k)])));
   out.push([JSON.stringify(arbres) === JSON.stringify(ARBRE_CLAVIER), `${t.nom}, arbre d'accessibilité des champs : ${Object.entries(arbres).map(([k, a]) => `${k} ${a.role} « ${a.nom} », « ${a.description} »${a.invalide ? ', invalide' : ''}${a.requis ? ', requis' : ''}${a.desactive ? ', désactivé' : ''}`).join(' ; ')}`]);
   const alertes = await page.locator('[role="alert"]').count();
-  const icone = await page.locator('[data-cas="recherche"] .ds-champ__icone[aria-hidden="true"]').count();
+  const icone = await page.locator('[data-cas="recherche"] .ds-text-input__icon[aria-hidden="true"]').count();
   const natif = await page.locator('[data-cas="identifiant"] input[disabled]').count();
   const auto = await page.locator('[data-cas="nom"] input').getAttribute('autocomplete');
   out.push([alertes === 0 && icone === 1 && natif === 1 && auto === 'name', `${t.nom}, ${alertes} zone d'alerte, icône muette ${icone === 1 ? 'oui' : 'non'}, désactivé natif ${natif === 1 ? 'oui' : 'non'}, autocomplete « ${auto} »`]);
@@ -249,7 +249,7 @@ async function clavier(contexte, base, t) {
   out.push([erreurs.length === 0, `${t.nom}, story Clavier du champ : ${erreurs.length} erreur(s)${erreurs.length ? ` (${erreurs.join(' ; ')})` : ''}`]);
   await page.close();
 
-  for (const [story, message] of Object.entries(REFUS)) out.push(await refus(contexte, base, `composants-champ-de-texte--${story}`, t.nom, message, '.ds-champ', 'champ'));
+  for (const [story, message] of Object.entries(REFUS)) out.push(await refus(contexte, base, `composants-dstextinput--${story}`, t.nom, message, '.ds-text-input', 'champ'));
   return out;
 }
 

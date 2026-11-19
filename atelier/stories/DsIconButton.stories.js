@@ -3,19 +3,23 @@
 // discrets vu de près ; le clavier ; le bac à sable ; les refus. Le libellé nomme l'action, jamais l'icône.
 import { h, reactive } from 'vue';
 import { VThemeProvider } from 'vuetify/components';
-import BoutonIcone from '../composants/BoutonIcone.vue';
-import Bouton from '../composants/Bouton.vue';
-import ChampTexte from '../composants/ChampTexte.vue';
+import DsIconButton from '../composants/DsIconButton.vue';
+import DsButton from '../composants/DsButton.vue';
+import DsTextInput from '../composants/DsTextInput.vue';
 import { Corbeille, Crayon, Croix, ENTETE, Loupe, Plus, THEMES } from './commun.js';
 
-/** Variante → libellé et icône d'essai. */
+/** Variante, intitulée en français dans la planche → label, icône d'essai et valeur de la prop variant. */
 const VARIANTES = {
-  discret: ['Fermer', Croix],
-  secondaire: ['Modifier', Crayon],
-  principal: ['Ajouter', Plus],
-  'danger-discret': ['Supprimer', Corbeille],
+  discret: ['Fermer', Croix, 'ghost'],
+  secondaire: ['Modifier', Crayon, 'secondary'],
+  principal: ['Ajouter', Plus, 'primary'],
+  'danger-discret': ['Supprimer', Corbeille, 'danger-ghost'],
 };
-const TAILLES = ['normale', 'petite'];
+/** Tailles : intitulé et repère des états en français, valeur de la prop size. */
+const TAILLES = /** @type {const} */ ([
+  ['normale', 'medium'],
+  ['petite', 'small'],
+]);
 /** États de la planche ; survol et focus y sont au repos, la preuve les force. */
 const ETATS = ['repos', 'survol', 'focus', 'désactivé'];
 
@@ -24,16 +28,16 @@ const ETATS = ['repos', 'survol', 'focus', 'désactivé'];
  * @param {string[]} etats @param {string[]} [variantes]
  */
 function grille(etats, variantes = Object.keys(VARIANTES)) {
-  const lignes = variantes.flatMap((variante) => TAILLES.map((taille) => ({ variante, taille })));
+  const lignes = variantes.flatMap((variante) => TAILLES.map(([taille, size]) => ({ variante, taille, size })));
   return h('div', { style: `display:grid;grid-template-columns:repeat(${etats.length + 1},max-content);gap:16px 24px;align-items:center;padding:24px` }, [
     h('span'),
     ...etats.map((e) => h('span', { style: ENTETE }, e)),
-    ...lignes.flatMap(({ variante, taille }) => {
-      const [libelle, icone] = VARIANTES[/** @type {keyof typeof VARIANTES} */ (variante)];
+    ...lignes.flatMap(({ variante, taille, size }) => {
+      const [label, icon, variant] = VARIANTES[/** @type {keyof typeof VARIANTES} */ (variante)];
       return [
         h('span', { style: ENTETE }, `${variante}, ${taille}`),
         ...etats.map((etat) =>
-          h(BoutonIcone, { libelle, icone, variante, taille, desactive: etat === 'désactivé', 'data-etat': etat, 'data-variante': variante, 'data-taille': taille }),
+          h(DsIconButton, { label, icon, variant, size, disabled: etat === 'désactivé', 'data-etat': etat, 'data-variante': variante, 'data-taille': taille }),
         ),
       ];
     }),
@@ -44,16 +48,16 @@ function grille(etats, variantes = Object.keys(VARIANTES)) {
 const alignements = () =>
   h('div', { style: 'display:flex;flex-direction:column;gap:24px;padding:0 24px 24px;width:560px' }, [
     h('div', { 'data-cas': 'alignement-recherche', style: 'display:flex;gap:16px;align-items:flex-end' }, [
-      h('div', { style: 'flex:1' }, [h(ChampTexte, { libelle: 'Rechercher un membre', type: 'search', 'data-cas': 'recherche-champ' })]),
-      h(BoutonIcone, { libelle: 'Rechercher', icone: Loupe, variante: 'secondaire', 'data-cas': 'recherche-bouton' }),
+      h('div', { style: 'flex:1' }, [h(DsTextInput, { label: 'Rechercher un membre', type: 'search', 'data-cas': 'recherche-champ' })]),
+      h(DsIconButton, { label: 'Rechercher', icon: Loupe, variant: 'secondary', 'data-cas': 'recherche-bouton' }),
     ]),
     h('div', { 'data-cas': 'alignement-bouton', style: 'display:flex;gap:16px;align-items:center' }, [
-      h(Bouton, { variante: 'secondaire', icone: Crayon, 'data-cas': 'bouton-texte' }, () => 'Modifier'),
-      h(BoutonIcone, { libelle: 'Supprimer', icone: Corbeille, variante: 'danger-discret', 'data-cas': 'bouton-icone' }),
+      h(DsButton, { variant: 'secondary', prependIcon: Crayon, 'data-cas': 'bouton-texte' }, () => 'Modifier'),
+      h(DsIconButton, { label: 'Supprimer', icon: Corbeille, variant: 'danger-ghost', 'data-cas': 'bouton-icone' }),
     ]),
   ]);
 
-export default { title: 'Composants/Bouton à icône' };
+export default { title: 'Composants/DsIconButton' };
 
 /** Planche d'un thème, celui de la barre : chaque variante et taille dans chaque état, puis les lignes d'alignement. */
 export const Planche = {
@@ -88,18 +92,18 @@ export const SurvolDePres = {
   render: () => ({ setup: () => () => h('div', { style: 'zoom:3;width:max-content' }, [grille(['repos', 'survol'], ['discret', 'danger-discret'])]) }),
 };
 
-/** Bac à sable : chaque option du menu, dans le thème de la barre. */
+/** Bac à sable : chaque prop, dans le thème de la barre. */
 export const BacASable = {
   name: 'Bac à sable',
-  args: { libelle: 'Fermer', variante: 'discret', taille: 'normale', desactive: false },
+  args: { label: 'Fermer', variant: 'ghost', size: 'medium', disabled: false },
   argTypes: {
-    variante: { control: 'select', options: Object.keys(VARIANTES) },
-    taille: { control: 'inline-radio', options: TAILLES },
+    variant: { control: 'select', options: Object.values(VARIANTES).map(([, , v]) => v) },
+    size: { control: 'inline-radio', options: TAILLES.map(([, v]) => v) },
   },
   render: (/** @type {Record<string, any>} */ args) => ({
     setup: () => () =>
       h('div', { style: 'padding:24px' }, [
-        h(BoutonIcone, { libelle: args.libelle, icone: VARIANTES[/** @type {keyof typeof VARIANTES} */ (args.variante)][1], variante: args.variante, taille: args.taille, desactive: args.desactive }),
+        h(DsIconButton, { label: args.label, icon: (Object.values(VARIANTES).find(([, , v]) => v === args.variant) ?? VARIANTES.discret)[1], variant: args.variant, size: args.size, disabled: args.disabled }),
       ]),
   }),
 };
@@ -121,11 +125,11 @@ export const Clavier = {
         h('div', { style: 'display:flex;flex-direction:column;gap:16px;padding:24px;align-items:flex-start' }, [
           h('form', { onSubmit: envoi, style: 'display:flex;gap:16px' }, [
             h('input', { 'aria-label': 'Recherche', 'data-cas': 'champ' }),
-            h(BoutonIcone, { libelle: 'Rechercher', icone: Loupe, variante: 'secondaire', type: 'submit', 'data-cas': 'envoi', onClick: clic('envoi') }),
+            h(DsIconButton, { label: 'Rechercher', icon: Loupe, variant: 'secondary', type: 'submit', 'data-cas': 'envoi', onClick: clic('envoi') }),
           ]),
           h('div', { style: 'display:flex;gap:16px' }, [
-            h(BoutonIcone, { libelle: 'Supprimer', icone: Corbeille, variante: 'danger-discret', desactive: true, 'data-cas': 'desactive', onClick: clic('desactive') }),
-            h(BoutonIcone, { libelle: 'Fermer', icone: Croix, 'data-cas': 'actif', onClick: clic('actif') }),
+            h(DsIconButton, { label: 'Supprimer', icon: Corbeille, variant: 'danger-ghost', disabled: true, 'data-cas': 'desactive', onClick: clic('desactive') }),
+            h(DsIconButton, { label: 'Fermer', icon: Croix, 'data-cas': 'actif', onClick: clic('actif') }),
           ]),
           h('output', { 'data-journal': '' }, JSON.stringify(journal)),
         ]);
@@ -133,17 +137,17 @@ export const Clavier = {
   }),
 };
 
-const seul = (/** @type {Record<string, any>} */ props) => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(BoutonIcone, props)]) });
+const seul = (/** @type {Record<string, any>} */ props) => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(DsIconButton, props)]) });
 
 /** Refus : sans libellé ; la story montre l'erreur, aucun bouton. */
-export const RefusSansLibelle = { render: () => seul({ icone: Croix }) };
+export const RefusSansLibelle = { render: () => seul({ icon: Croix }) };
 /** Refus : sans icône. */
-export const RefusSansIcone = { render: () => seul({ libelle: 'Fermer' }) };
+export const RefusSansIcone = { render: () => seul({ label: 'Fermer' }) };
 /** Refus : variante hors du menu (le plein danger n'y est pas). */
-export const RefusVariante = { render: () => seul({ libelle: 'Supprimer', icone: Corbeille, variante: 'danger' }) };
+export const RefusVariante = { render: () => seul({ label: 'Supprimer', icon: Corbeille, variant: 'danger' }) };
 /** Refus : aria-label posé à la main ; le nom vient du libellé. */
-export const RefusNom = { render: () => seul({ libelle: 'Fermer', icone: Croix, 'aria-label': 'Croix' }) };
+export const RefusNom = { render: () => seul({ label: 'Fermer', icon: Croix, 'aria-label': 'Croix' }) };
 /** Refus : attribut hors de la liste blanche. */
-export const RefusAttribut = { render: () => seul({ libelle: 'Fermer', icone: Croix, color: 'secondary' }) };
+export const RefusAttribut = { render: () => seul({ label: 'Fermer', icon: Croix, color: 'secondary' }) };
 /** Refus : désactivé sur un bouton d'envoi. */
-export const RefusEnvoi = { render: () => seul({ libelle: 'Rechercher', icone: Loupe, type: 'submit', desactive: true }) };
+export const RefusEnvoi = { render: () => seul({ label: 'Rechercher', icon: Loupe, type: 'submit', disabled: true }) };

@@ -3,7 +3,7 @@
 // de lien, tabindex ni rôle ; survolée (forcée par le protocole DevTools), elle ne change pas ; la rangée passe à la
 // ligne avec l'écart des étiquettes, en ligne comme entre deux lignes ; le texte long est coupé par « … » à la largeur du
 // parent, entier dans la page ; le rendu est le même en développement et en version construite. Les planches de la
-// version construite (planche et ligne en situation) sont enregistrées par thème dans local/avatar-etiquette-captures/,
+// version construite (planche et ligne en situation) sont enregistrées par thème dans local/avatar-tag-captures/,
 // hors dépôt. Sur le premier thème : arbre d'accessibilité de la ligne en situation, tabulation qui ne s'arrête sur
 // aucune étiquette, un clic sans ondulation ni effet, refus d'un usage hors du menu.
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import { css, ecart, forcer, ouvrir, refus } from './commun.js';
 import { CAPTURES } from './avatar.js';
 
-const STORY = 'composants-étiquette';
+const STORY = 'composants-dstag';
 const LONGUE = 'Ingénierie des systèmes embarqués et temps réel';
 /** États de la planche → ton. */
 const ETATS = { neutre: 'neutre', marque: 'marque', 'neutre-survol': 'neutre', 'marque-survol': 'marque' };
@@ -59,18 +59,18 @@ function attenduPlanche(t) {
  */
 async function releve(contexte, base, theme) {
   const { page, erreurs } = await ouvrir(contexte, base, `${STORY}--planche`, theme);
-  await page.locator('.ds-etiquette').first().waitFor({ timeout: 30_000 }).catch(() => {});
+  await page.locator('.ds-tag').first().waitFor({ timeout: 30_000 }).catch(() => {});
   await page.evaluate(() => document.fonts.ready);
-  await forcer(page, { '.ds-etiquette[data-etat$="-survol"]': ['hover'] });
+  await forcer(page, { '.ds-tag[data-etat$="-survol"]': ['hover'] });
   const mesures = await page.evaluate(() => {
     const noms = (/** @type {string} */ s) => s.split(',').map((x) => x.trim().replace(/^"(.*)"$/, '$1')).join('|');
     const px = (/** @type {number} */ n) => `${Math.round(n * 1000) / 1000}px`;
     /** @type {Record<string, any>} */
     const out = {};
-    for (const e of /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.ds-etiquette[data-etat]'))) {
+    for (const e of /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.ds-tag[data-etat]'))) {
       const s = getComputedStyle(e);
       // Sous-couche et voile de Vuetify, désignés par leur place : tout enfant de la racine qui ne porte pas le texte.
-      const autres = [...e.children].filter((x) => !x.querySelector('.ds-etiquette__texte') && getComputedStyle(x).display !== 'none');
+      const autres = [...e.children].filter((x) => !x.querySelector('.ds-tag__text') && getComputedStyle(x).display !== 'none');
       const statique = !e.hasAttribute('tabindex') && !e.hasAttribute('role') && autres.length === 0;
       out[/** @type {string} */ (e.dataset.etat)] = {
         hauteur: s.height,
@@ -89,7 +89,7 @@ async function releve(contexte, base, theme) {
       };
     }
     // Rangée : les étiquettes, rangées en lignes par leur bord haut ; écarts en ligne et entre deux lignes.
-    const boites = [...document.querySelectorAll('[data-cas="rangee"] .ds-etiquette')].map((x) => x.getBoundingClientRect());
+    const boites = [...document.querySelectorAll('[data-cas="rangee"] .ds-tag')].map((x) => x.getBoundingClientRect());
     /** @type {DOMRect[][]} */
     const lignes = [];
     for (const b of boites) {
@@ -101,8 +101,8 @@ async function releve(contexte, base, theme) {
     const entre = [...new Set(lignes.slice(1).map((l, i) => px(l[0].top - lignes[i][0].bottom)))];
     out.rangee = { ecartEnLigne: enLigne.join(' '), ecartEntreLignes: entre.join(' '), lignes: lignes.length >= 2 ? 'au moins 2' : `${lignes.length}` };
     const boite = /** @type {HTMLElement} */ (document.querySelector('[data-cas="longue"]'));
-    const longue = /** @type {HTMLElement} */ (boite.querySelector('.ds-etiquette'));
-    const texte = /** @type {HTMLElement} */ (longue.querySelector('.ds-etiquette__texte'));
+    const longue = /** @type {HTMLElement} */ (boite.querySelector('.ds-tag'));
+    const texte = /** @type {HTMLElement} */ (longue.querySelector('.ds-tag__text'));
     out.longue = {
       largeur: longue.getBoundingClientRect().width <= boite.getBoundingClientRect().width ? 'au plus celle du parent' : `${longue.getBoundingClientRect().width}px`,
       coupe: texte.scrollWidth > texte.clientWidth ? getComputedStyle(texte).textOverflow : 'non coupé',
@@ -118,7 +118,7 @@ async function releve(contexte, base, theme) {
 /** Capture de la ligne en situation, sur la page et sur une surface. @param {import('playwright-core').BrowserContext} contexte @param {string} base @param {string} theme */
 async function situation(contexte, base, theme) {
   const { page, erreurs } = await ouvrir(contexte, base, `${STORY}--en-situation`, theme);
-  await page.locator('.ds-etiquette').first().waitFor({ timeout: 30_000 }).catch(() => {});
+  await page.locator('.ds-tag').first().waitFor({ timeout: 30_000 }).catch(() => {});
   await page.evaluate(() => document.fonts.ready);
   await page.evaluate(() => Promise.all([...document.images].map((i) => i.decode().catch(() => {}))));
   const image = await page.screenshot({ fullPage: true, animations: 'disabled' });
@@ -136,10 +136,10 @@ const ARBRE = `- paragraph: Camille Ferrand
   - listitem: ${LONGUE}`;
 /** Erreurs attendues des stories de refus. */
 const REFUS = {
-  'refus-sans-texte': 'étiquette : texte obligatoire',
-  'refus-ton': 'étiquette : ton inconnu : accent (neutre, marque)',
-  'refus-fermeture': 'étiquette : attribut refusé : closable',
-  'refus-lien': 'étiquette : attribut refusé : href',
+  'refus-sans-texte': 'DsTag : text : obligatoire',
+  'refus-ton': 'DsTag : tone : valeur inconnue : accent (neutral, brand)',
+  'refus-fermeture': 'DsTag : attribut refusé : closable',
+  'refus-lien': 'DsTag : attribut refusé : href',
 };
 
 /**
@@ -150,7 +150,7 @@ async function accessibilite(contexte, base, t) {
   /** @type {[boolean, string][]} */
   const out = [];
   const { page, erreurs } = await ouvrir(contexte, base, `${STORY}--en-situation`, t.nom);
-  await page.locator('.ds-etiquette').first().waitFor();
+  await page.locator('.ds-tag').first().waitFor();
   const arbre = await page.locator('[data-cas="situation"]').first().ariaSnapshot();
   out.push([arbre === ARBRE, `${t.nom}, arbre d'accessibilité de la ligne en situation : ${arbre.replace(/\n/g, ' / ')}`]);
 
@@ -165,7 +165,7 @@ async function accessibilite(contexte, base, t) {
   out.push([JSON.stringify(ordre) === JSON.stringify(['avant', 'apres']) && focalisables === 0, `${t.nom}, tabulation autour de la ligne en situation : ${ordre.join(' → ')}, ${focalisables} élément(s) focalisable(s) dans la ligne`]);
 
   // Un clic sur une étiquette : aucun élément ajouté (ni ondulation ni voile), aucun lien suivi.
-  const etiquette = page.locator('[data-cas="situation"] .ds-etiquette').first();
+  const etiquette = page.locator('[data-cas="situation"] .ds-tag').first();
   const avant = await etiquette.evaluate((e) => e.querySelectorAll('*').length);
   await etiquette.hover();
   await page.mouse.down();
@@ -176,7 +176,7 @@ async function accessibilite(contexte, base, t) {
   out.push([erreurs.length === 0, `${t.nom}, story En situation : ${erreurs.length} erreur(s)${erreurs.length ? ` (${erreurs.join(' ; ')})` : ''}`]);
   await page.close();
 
-  for (const [story, message] of Object.entries(REFUS)) out.push(await refus(contexte, base, `${STORY}--${story}`, t.nom, message, '.ds-etiquette', 'étiquette'));
+  for (const [story, message] of Object.entries(REFUS)) out.push(await refus(contexte, base, `${STORY}--${story}`, t.nom, message, '.ds-tag', 'étiquette'));
   return out;
 }
 

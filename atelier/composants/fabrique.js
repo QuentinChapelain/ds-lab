@@ -2,10 +2,10 @@
 // fabrique en tire le composant Vue et refuse tout usage hors du menu, avec le même motif de message partout. Aucun
 // import de Vue ni de Vuetify : les tests de la racine la lisent sans navigateur (test/fabrique-enveloppes.test.js).
 //
-// Un menu : { nom, prefixe, options, evenements?, ecouteurs?, attributsRetires?, regles?, reglesDuRendu? }. Une option :
-// { type, defaut?, valeurs?, genre? ('f' ou 'm', pour « inconnue » ou « inconnu »), obligatoire?, nom? (dans les
-// messages, la clé à défaut) }. Une règle : (props, attrs, slots) → message, ou rien. Une règle du rendu lit le contenu
-// d'un emplacement : elle n'est vérifiée qu'au rendu, seul moment où Vue admet qu'on appelle un emplacement.
+// Un menu : { nom, options, evenements?, ecouteurs?, attributsRetires?, regles?, reglesDuRendu? }. Une option : { type,
+// defaut?, valeurs?, obligatoire? }. Une règle : (props, attrs, slots) → message, ou rien. Une règle du rendu lit le
+// contenu d'un slot : elle n'est vérifiée qu'au rendu, seul moment où Vue admet qu'on appelle un slot. Un message a
+// toujours la forme « <Composant> : <prop ou attribut> : <motif> », avec les noms du code (NM1, D57).
 
 /**
  * Attribut admis en plus des props : id, aria-*, data-*, et les écouteurs si le menu ne les retire pas ; jamais un
@@ -24,14 +24,13 @@ function admis(menu, cle) {
  * @param {{ rendu?: boolean }} [o]
  */
 export function verifierUsage(menu, props, attrs, slots = {}, o = {}) {
-  const p = menu.prefixe;
+  const p = menu.nom;
   const refuses = Object.keys(attrs).filter((k) => !admis(menu, k));
   if (refuses.length) throw new Error(`${p} : attribut refusé : ${refuses.join(', ')}`);
   for (const [cle, option] of Object.entries(menu.options)) {
     const v = props[cle];
-    const nom = option.nom ?? cle;
-    if (option.obligatoire && (v === undefined || v === null || v === '')) throw new Error(`${p} : ${nom} obligatoire`);
-    if (option.valeurs && !option.valeurs.includes(v)) throw new Error(`${p} : ${nom} ${option.genre === 'f' ? 'inconnue' : 'inconnu'} : ${v} (${option.valeurs.join(', ')})`);
+    if (option.obligatoire && (v === undefined || v === null || v === '')) throw new Error(`${p} : ${cle} : obligatoire`);
+    if (option.valeurs && !option.valeurs.includes(v)) throw new Error(`${p} : ${cle} : valeur inconnue : ${v} (${option.valeurs.join(', ')})`);
   }
   for (const regle of [...(menu.regles ?? []), ...(o.rendu ? (menu.reglesDuRendu ?? []) : [])]) {
     const message = regle(props, attrs, slots);

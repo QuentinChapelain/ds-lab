@@ -1,5 +1,5 @@
 <script>
-// Enveloppe de l'avatar (D54) : seul endroit du dépôt où paraît l'avatar de Vuetify. Son menu (Avatar.menu.js) et la
+// Enveloppe de l'avatar (D54) : seul endroit du dépôt où paraît l'avatar de Vuetify. Son menu (DsAvatar.menu.js) et la
 // liste blanche d'attributs sont vérifiés par la fabrique commune (fabrique.js, D51) : tout le reste lève, et aucun
 // avatar n'est rendu. Couleurs, dimensions et texte viennent des variables du thème de la marque
 // (tokens/<marque>/vuetify.json, D41) : aucune valeur n'est écrite ici.
@@ -13,7 +13,7 @@ import { h, ref, watch } from 'vue';
 import { VAvatar } from 'vuetify/components';
 import { definirEnveloppe } from './fabrique.js';
 import { initiales, nomLu } from './initiales.js';
-import MENU from './Avatar.menu.js';
+import MENU from './DsAvatar.menu.js';
 
 export default definirEnveloppe(MENU, (props, { attrs }) => {
   const echec = ref(false);
@@ -30,11 +30,11 @@ export default definirEnveloppe(MENU, (props, { attrs }) => {
         ...attrs,
         tag: 'span',
         variant: 'flat',
-        class: ['ds-avatar', `ds-avatar--${props.taille}`],
-        ...(props.decoratif ? { 'aria-hidden': 'true' } : { role: 'img', 'aria-label': nomLu(props.nom) }),
+        class: ['ds-avatar', `ds-avatar--${props.size}`],
+        ...(props.decorative ? { 'aria-hidden': 'true' } : { role: 'img', 'aria-label': nomLu(props.name) }),
       },
       () => [
-        h('span', { class: 'ds-avatar__initiales', 'aria-hidden': 'true' }, initiales(props.nom)),
+        h('span', { class: 'ds-avatar__initials', 'aria-hidden': 'true' }, initiales(props.name)),
         props.image && !echec.value
           ? h('img', {
               class: 'ds-avatar__image',
@@ -62,7 +62,7 @@ export default definirEnveloppe(MENU, (props, { attrs }) => {
   box-shadow: none;
   transition: none;
 }
-.ds-avatar.v-avatar.ds-avatar--grande {
+.ds-avatar.v-avatar.ds-avatar--large {
   width: var(--v-ds-taille-avatar-grande);
   height: var(--v-ds-taille-avatar-grande);
 }
@@ -70,7 +70,7 @@ export default definirEnveloppe(MENU, (props, { attrs }) => {
 .ds-avatar.v-avatar > .v-avatar__underlay {
   display: none;
 }
-.ds-avatar__initiales {
+.ds-avatar__initials {
   font-family: var(--v-ds-initiales-normale-police);
   font-size: var(--v-ds-initiales-normale-taille);
   font-weight: var(--v-ds-initiales-normale-graisse);
@@ -78,7 +78,7 @@ export default definirEnveloppe(MENU, (props, { attrs }) => {
   letter-spacing: 0;
   user-select: none;
 }
-.ds-avatar--grande .ds-avatar__initiales {
+.ds-avatar--large .ds-avatar__initials {
   font-family: var(--v-ds-initiales-grande-police);
   font-size: var(--v-ds-initiales-grande-taille);
   font-weight: var(--v-ds-initiales-grande-graisse);

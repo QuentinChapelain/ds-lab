@@ -3,11 +3,21 @@
 // nom de marque n'est écrit ici.
 import { h, reactive, ref } from 'vue';
 import { VThemeProvider } from 'vuetify/components';
-import Bouton from '../composants/Bouton.vue';
+import DsButton from '../composants/DsButton.vue';
 import { ENTETE, Plus, THEMES } from './commun.js';
 
-const VARIANTES = ['principal', 'secondaire', 'discret', 'danger', 'danger-discret'];
-const TAILLES = ['normale', 'petite'];
+/** Variantes et tailles de la planche : intitulé et repère des états en français, valeur de la prop. */
+const VARIANTES = /** @type {const} */ ([
+  ['principal', 'primary'],
+  ['secondaire', 'secondary'],
+  ['discret', 'ghost'],
+  ['danger', 'danger'],
+  ['danger-discret', 'danger-ghost'],
+]);
+const TAILLES = /** @type {const} */ ([
+  ['normale', 'medium'],
+  ['petite', 'small'],
+]);
 /** États de la planche ; survol et focus y sont au repos, la preuve les force. */
 const ETATS = ['repos', 'survol', 'focus', 'désactivé', 'chargement'];
 
@@ -19,21 +29,21 @@ const GRILLE = 'display:grid;grid-template-columns:repeat(6,max-content);gap:16p
  * @param {string[]} etats @param {{ icone?: boolean, sansIcone?: boolean }} [o]
  */
 function grille(etats, o = {}) {
-  const lignes = VARIANTES.flatMap((variante) => TAILLES.map((taille) => ({ variante, taille })));
+  const lignes = VARIANTES.flatMap(([variante, variant]) => TAILLES.map(([taille, size]) => ({ variante, variant, taille, size })));
   return h('div', { style: GRILLE.replace('repeat(6', `repeat(${etats.length + 1}`) }, [
     h('span'),
     ...etats.map((e) => h('span', { style: ENTETE }, e)),
-    ...lignes.flatMap(({ variante, taille }) => [
+    ...lignes.flatMap(({ variante, variant, taille, size }) => [
       h('span', { style: ENTETE }, `${variante}, ${taille}`),
       ...etats.map((etat) =>
         h(
-          Bouton,
+          DsButton,
           {
-            variante,
-            taille,
-            icone: o.sansIcone ? null : Plus,
-            desactive: etat === 'désactivé',
-            chargement: etat === 'chargement',
+            variant,
+            size,
+            prependIcon: o.sansIcone ? null : Plus,
+            disabled: etat === 'désactivé',
+            loading: etat === 'chargement',
             'data-etat': etat,
             'data-variante': variante,
             'data-taille': taille,
@@ -45,7 +55,7 @@ function grille(etats, o = {}) {
   ]);
 }
 
-export default { title: 'Composants/Bouton' };
+export default { title: 'Composants/DsButton' };
 
 /** Planche d'un thème, celui de la barre : chaque variante et taille dans chaque état, avec icône. */
 export const Planche = {
@@ -71,18 +81,18 @@ export const Vitrine = {
   }),
 };
 
-/** Bac à sable : chaque option du menu, dans le thème de la barre. */
+/** Bac à sable : chaque prop, dans le thème de la barre. */
 export const BacASable = {
   name: 'Bac à sable',
-  args: { texte: 'Commander', variante: 'principal', taille: 'normale', icone: false, pleineLargeur: false, desactive: false, chargement: false },
+  args: { texte: 'Commander', variant: 'primary', size: 'medium', prependIcon: false, block: false, disabled: false, loading: false },
   argTypes: {
-    variante: { control: 'select', options: VARIANTES },
-    taille: { control: 'inline-radio', options: TAILLES },
+    variant: { control: 'select', options: VARIANTES.map(([, v]) => v) },
+    size: { control: 'inline-radio', options: TAILLES.map(([, v]) => v) },
   },
   render: (/** @type {Record<string, any>} */ args) => ({
     setup: () => () =>
       h('div', { style: 'padding:24px' }, [
-        h(Bouton, { variante: args.variante, taille: args.taille, icone: args.icone ? Plus : null, pleineLargeur: args.pleineLargeur, desactive: args.desactive, chargement: args.chargement }, () => args.texte),
+        h(DsButton, { variant: args.variant, size: args.size, prependIcon: args.prependIcon ? Plus : null, block: args.block, disabled: args.disabled, loading: args.loading }, () => args.texte),
       ]),
   }),
 };
@@ -106,14 +116,14 @@ export const Clavier = {
         h('div', { style: 'display:flex;flex-direction:column;gap:16px;padding:24px;align-items:flex-start' }, [
           h('form', { 'data-formulaire': 'attente', onSubmit: envoi('attente'), style: 'display:flex;gap:16px' }, [
             h('input', { 'aria-label': 'Champ du formulaire en attente', 'data-cas': 'champ-attente' }),
-            h(Bouton, { type: 'submit', chargement: true, 'data-cas': 'chargement', onClick: clic('chargement') }, () => 'Envoyer'),
+            h(DsButton, { type: 'submit', loading: true, 'data-cas': 'chargement', onClick: clic('chargement') }, () => 'Envoyer'),
           ]),
           h('form', { 'data-formulaire': 'actif', onSubmit: envoi('actif'), style: 'display:flex;gap:16px' }, [
             h('input', { 'aria-label': 'Champ du formulaire actif', 'data-cas': 'champ-actif' }),
-            h(Bouton, { type: 'submit', icone: Plus, 'data-cas': 'envoi', onClick: clic('envoi') }, () => 'Ajouter'),
+            h(DsButton, { type: 'submit', prependIcon: Plus, 'data-cas': 'envoi', onClick: clic('envoi') }, () => 'Ajouter'),
           ]),
-          h(Bouton, { variante: 'secondaire', desactive: true, 'data-cas': 'desactive', onClick: clic('desactive') }, () => 'Supprimer'),
-          h(Bouton, { chargement: charge.value, 'data-cas': 'bascule', onClick: () => { journal.clics.push('bascule'); charge.value = true; } }, () => 'Commander'),
+          h(DsButton, { variant: 'secondary', disabled: true, 'data-cas': 'desactive', onClick: clic('desactive') }, () => 'Supprimer'),
+          h(DsButton, { loading: charge.value, 'data-cas': 'bascule', onClick: () => { journal.clics.push('bascule'); charge.value = true; } }, () => 'Commander'),
           h('output', { 'data-journal': '' }, JSON.stringify(journal)),
         ]);
     },
@@ -125,18 +135,18 @@ export const Largeur = {
   render: () => ({
     setup: () => () =>
       h('div', { 'data-parent': '', style: 'width:480px;display:flex;flex-direction:column;gap:16px;padding:24px' }, [
-        h('div', [h(Bouton, { pleineLargeur: true, 'data-cas': 'pleine' }, () => 'Commander')]),
-        h('div', [h(Bouton, { 'data-cas': 'propre' }, () => 'Commander')]),
+        h('div', [h(DsButton, { block: true, 'data-cas': 'pleine' }, () => 'Commander')]),
+        h('div', [h(DsButton, { 'data-cas': 'propre' }, () => 'Commander')]),
       ]),
   }),
 };
 
 /** Refus : désactivé sur un bouton d'envoi ; la story montre l'erreur, aucun bouton. */
 export const RefusEnvoi = {
-  render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(Bouton, { type: 'submit', desactive: true }, () => 'Envoyer')]) }),
+  render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(DsButton, { type: 'submit', disabled: true }, () => 'Envoyer')]) }),
 };
 
 /** Refus : attribut hors de la liste blanche ; la story montre l'erreur, aucun bouton. */
 export const RefusAttribut = {
-  render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(Bouton, { color: 'secondary' }, () => 'Envoyer')]) }),
+  render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(DsButton, { color: 'secondary' }, () => 'Envoyer')]) }),
 };

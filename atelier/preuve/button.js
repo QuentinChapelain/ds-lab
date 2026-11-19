@@ -2,7 +2,7 @@
 // principal a le fond, le texte et les polices des jetons, Vuetify n'a calculé aucun texte, les variables des enveloppes
 // (--v-ds-*) sont celles des jetons, chaque variante et taille a, dans chaque état, les couleurs, l'anneau et les
 // dimensions des jetons (survol et focus forcés par le protocole DevTools), et le rendu est le même en développement et
-// en version construite. La planche de la version construite est enregistrée par thème dans local/bouton-captures/, hors
+// en version construite. La planche de la version construite est enregistrée par thème dans local/button-captures/, hors
 // dépôt, pour être jugée sur image. Sur le premier thème, clavier et lecteur d'écran : ordre de tabulation, inactifs
 // muets au clavier, à la souris et par envoi implicite, chargement qui garde le focus et s'annonce, anneau au focus
 // clavier, arbre d'accessibilité, pleine largeur, refus d'un usage hors du menu. Le sélecteur de thème et le refus d'un
@@ -11,11 +11,11 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CADRE, LOCAL, TRANSPARENT, VARIABLES_VUETIFY, css, ecart, forcer, noms, ouvrir, refus } from './commun.js';
 
-const STORY = 'composants-bouton--planche';
+const STORY = 'composants-dsbutton--planche';
 /** Planches enregistrées, hors dépôt. */
-const CAPTURES = join(LOCAL, 'bouton-captures');
+const CAPTURES = join(LOCAL, 'button-captures');
 /** Le bouton principal de la planche, au repos, de taille normale. */
-const PRINCIPAL = '.ds-bouton[data-variante="principal"][data-taille="normale"][data-etat="repos"]';
+const PRINCIPAL = '.ds-button[data-variante="principal"][data-taille="normale"][data-etat="repos"]';
 /** États que la preuve force sur les boutons de leur colonne. */
 const FORCES = { survol: ['hover'], focus: ['focus', 'focus-visible'] };
 
@@ -65,7 +65,7 @@ function attenduBoutons(c, v, police) {
  * Force un état CSS (survol, focus) sur les boutons de sa colonne de la planche.
  * @param {import('playwright-core').Page} page
  */
-const forcerEtats = (page) => forcer(page, Object.fromEntries(Object.entries(FORCES).map(([etat, classes]) => [`.ds-bouton[data-etat="${etat}"]`, classes])));
+const forcerEtats = (page) => forcer(page, Object.fromEntries(Object.entries(FORCES).map(([etat, classes]) => [`.ds-button[data-etat="${etat}"]`, classes])));
 
 /**
  * Relevé de la planche du bouton dans l'aperçu, thème passé par son nom.
@@ -76,7 +76,7 @@ async function releve(contexte, base, theme) {
   const erreurs = [];
   page.on('pageerror', (e) => erreurs.push(e.message));
   await page.goto(`${base}/iframe.html?id=${STORY}&viewMode=story${theme === null ? '' : `&globals=theme:${theme}`}`, { waitUntil: 'networkidle' });
-  await page.waitForFunction(() => document.querySelector('.ds-bouton') || document.body.classList.contains('sb-show-errordisplay'), null, { timeout: 30_000 });
+  await page.waitForFunction(() => document.querySelector('.ds-button') || document.body.classList.contains('sb-show-errordisplay'), null, { timeout: 30_000 });
   await page.evaluate(() => document.fonts.ready);
   const m = await page.evaluate((PRINCIPAL) => {
     const hex = (/** @type {string} */ c) => '#' + (c.match(/\d+/g) ?? []).slice(0, 3).map((n) => Number(n).toString(16).padStart(2, '0')).join('');
@@ -119,10 +119,10 @@ async function releve(contexte, base, theme) {
     boutons = await page.evaluate(() => {
       /** @type {Record<string, Record<string, string>>} */
       const out = {};
-      for (const e of /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.ds-bouton[data-etat]'))) {
+      for (const e of /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.ds-button[data-etat]'))) {
         const s = getComputedStyle(e);
-        const icone = e.querySelector('.ds-bouton__icone');
-        const texte = e.querySelector('.ds-bouton__texte');
+        const icone = e.querySelector('.ds-button__icon');
+        const texte = e.querySelector('.ds-button__text');
         out[`${e.dataset.variante}|${e.dataset.taille}|${e.dataset.etat}`] = {
           fond: s.backgroundColor,
           texte: s.color,
@@ -159,7 +159,7 @@ async function selecteur(contexte, base, themes) {
   await page.setViewportSize({ width: 1000, height: 700 });
   await page.goto(`${base}/?path=/story/${STORY}`, { waitUntil: 'networkidle' });
   const apercu = page.frameLocator('#storybook-preview-iframe');
-  await apercu.locator('.ds-bouton').first().waitFor();
+  await apercu.locator('.ds-button').first().waitFor();
   await page.getByRole('button', { name: 'Thème Vuetify : marque et mode' }).click();
   const entrees = (await page.getByRole('option').allTextContents()).map((t) => t.trim());
   const cible = themes[themes.length - 1];
@@ -176,7 +176,7 @@ const ORDRE_CLAVIER = ['champ-attente', 'chargement', 'champ-actif', 'envoi', 'd
 const ARBRE_CLAVIER = { chargement: '- button "Envoyer" [disabled]', envoi: '- button "Ajouter"', desactive: '- button "Supprimer" [disabled]', bascule: '- button "Commander"' };
 const ANNONCE = 'Chargement en cours';
 /** Erreurs attendues des stories de refus. */
-const REFUS = { 'refus-envoi': 'bouton : désactivé refusé sur type=submit', 'refus-attribut': 'bouton : attribut refusé : color' };
+const REFUS = { 'refus-envoi': 'DsButton : disabled : refusé avec type=submit', 'refus-attribut': 'DsButton : attribut refusé : color' };
 
 /**
  * Clavier et lecteur d'écran, sur un thème : ordre de tabulation, activation au clavier et à la souris, envoi implicite
@@ -187,8 +187,8 @@ const REFUS = { 'refus-envoi': 'bouton : désactivé refusé sur type=submit', '
 async function clavier(contexte, base, t) {
   /** @type {[boolean, string][]} */
   const out = [];
-  const { page, erreurs } = await ouvrir(contexte, base, 'composants-bouton--clavier', t.nom);
-  await page.locator('.ds-bouton').first().waitFor();
+  const { page, erreurs } = await ouvrir(contexte, base, 'composants-dsbutton--clavier', t.nom);
+  await page.locator('.ds-button').first().waitFor();
   const bouton = (/** @type {string} */ cas) => page.locator(`[data-cas="${cas}"]`);
   const actif = () => page.evaluate(() => /** @type {HTMLElement | null} */ (document.activeElement)?.dataset?.cas ?? document.activeElement?.tagName ?? null);
   const journal = async () => JSON.parse((await page.locator('[data-journal]').textContent()) ?? '{}');
@@ -200,7 +200,7 @@ async function clavier(contexte, base, t) {
   out.push([JSON.stringify(arbres) === JSON.stringify(ARBRE_CLAVIER) && progres === 0, `${t.nom}, arbre d'accessibilité : ${Object.values(arbres).join(' ; ')} ; ${progres} progressbar`]);
   const statut = await bouton('chargement').evaluate((e) => [e.nextElementSibling?.getAttribute('role'), e.nextElementSibling?.textContent]);
   out.push([statut[0] === 'status' && statut[1] === ANNONCE, `${t.nom}, chargement annoncé : zone ${statut[0]}, « ${statut[1]} »`]);
-  const natifs = await page.locator('.ds-bouton[disabled]').count();
+  const natifs = await page.locator('.ds-button[disabled]').count();
   out.push([natifs === 0 && (await attr('desactive', 'aria-disabled')) === 'true' && (await attr('chargement', 'aria-disabled')) === 'true' && (await attr('chargement', 'aria-busy')) === 'true', `${t.nom}, désactivé et chargement : aria-disabled, aria-busy en chargement, ${natifs} attribut disabled natif`]);
 
   // Ordre de tabulation, puis anneau au focus clavier.
@@ -252,8 +252,8 @@ async function clavier(contexte, base, t) {
   await page.close();
 
   // Pleine largeur : le bouton prend la largeur de son parent ; sans l'option, la sienne.
-  const l = await ouvrir(contexte, base, 'composants-bouton--largeur', t.nom);
-  await l.page.locator('.ds-bouton').first().waitFor();
+  const l = await ouvrir(contexte, base, 'composants-dsbutton--largeur', t.nom);
+  await l.page.locator('.ds-button').first().waitFor();
   const largeurs = await l.page.evaluate(() => {
     const pleine = /** @type {HTMLElement} */ (document.querySelector('[data-cas="pleine"]'));
     const propre = /** @type {HTMLElement} */ (document.querySelector('[data-cas="propre"]'));
@@ -263,7 +263,7 @@ async function clavier(contexte, base, t) {
   await l.page.close();
 
   // Refus : l'erreur qui nomme l'usage, et aucun bouton.
-  for (const [story, message] of Object.entries(REFUS)) out.push(await refus(contexte, base, `composants-bouton--${story}`, t.nom, message, '.ds-bouton', 'bouton'));
+  for (const [story, message] of Object.entries(REFUS)) out.push(await refus(contexte, base, `composants-dsbutton--${story}`, t.nom, message, '.ds-button', 'bouton'));
   return out;
 }
 

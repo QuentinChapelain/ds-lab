@@ -3,18 +3,24 @@
 // à sable ; les refus. Le portrait d'essai et l'image en échec viennent de commun.js.
 import { h } from 'vue';
 import { VThemeProvider } from 'vuetify/components';
-import Avatar from '../composants/Avatar.vue';
-import Bouton from '../composants/Bouton.vue';
+import DsAvatar from '../composants/DsAvatar.vue';
+import DsButton from '../composants/DsButton.vue';
 import { ECHEC, ENTETE, PORTRAIT, THEMES } from './commun.js';
 
 const NOM = 'Camille Ferrand';
 
-/** États de la planche → options de l'avatar. */
+/** Tailles de la planche : intitulé et repère des états en français, valeur de la prop size. */
+const TAILLES = /** @type {const} */ ([
+  ['normale', 'medium'],
+  ['grande', 'large'],
+]);
+
+/** États de la planche → props de l'avatar. */
 const ETATS = /** @type {const} */ ([
   ['photo', { image: PORTRAIT }],
   ['initiales', {}],
   ['echec', { image: ECHEC }],
-  ['decoratif', { decoratif: true }],
+  ['decoratif', { decorative: true }],
 ]);
 /** Intitulés des états, dans la planche. */
 const LIBELLES = { photo: 'photo', initiales: 'initiales', echec: 'image en échec', decoratif: 'décoratif' };
@@ -36,24 +42,24 @@ const cellule = (titre, contenu) => h('div', { style: 'display:flex;flex-directi
 /** @param {boolean} [avecCas] */
 function planche(avecCas = true) {
   return h('div', { style: 'display:flex;flex-direction:column;gap:24px;padding:24px' }, [
-    ...['normale', 'grande'].map((taille) =>
+    ...TAILLES.map(([taille, size]) =>
       h(
         'div',
         { style: 'display:flex;gap:32px;align-items:flex-end' },
-        ETATS.map(([etat, o]) => cellule(`${taille}, ${LIBELLES[etat]}`, h(Avatar, { nom: NOM, taille, ...o, 'data-etat': `${taille}-${etat}` }))),
+        ETATS.map(([etat, o]) => cellule(`${taille}, ${LIBELLES[etat]}`, h(DsAvatar, { name: NOM, size, ...o, 'data-etat': `${taille}-${etat}` }))),
       ),
     ),
     avecCas
       ? h(
           'div',
           { style: 'display:flex;gap:32px;flex-wrap:wrap' },
-          CAS.map(([cas, nom]) => cellule(nom, h(Avatar, { nom, 'data-cas': cas }))),
+          CAS.map(([cas, nom]) => cellule(nom, h(DsAvatar, { name: nom, 'data-cas': cas }))),
         )
       : null,
   ]);
 }
 
-export default { title: 'Composants/Avatar' };
+export default { title: 'Composants/DsAvatar' };
 
 /** Planche d'un thème, celui de la barre : chaque état aux deux tailles, puis les cas de la règle des initiales. */
 export const Planche = {
@@ -85,36 +91,36 @@ export const Accessibilite = {
   render: () => ({
     setup: () => () =>
       h('div', { style: 'display:flex;gap:16px;align-items:center;padding:24px' }, [
-        h(Bouton, { variante: 'secondaire', 'data-cas': 'avant' }, () => 'Avant'),
-        ...ETATS.map(([etat, o]) => h('span', { 'data-cas': etat }, [h(Avatar, { nom: '  Camille   Ferrand ', ...o })])),
-        h(Bouton, { variante: 'secondaire', 'data-cas': 'apres' }, () => 'Après'),
+        h(DsButton, { variant: 'secondary', 'data-cas': 'avant' }, () => 'Avant'),
+        ...ETATS.map(([etat, o]) => h('span', { 'data-cas': etat }, [h(DsAvatar, { name: '  Camille   Ferrand ', ...o })])),
+        h(DsButton, { variant: 'secondary', 'data-cas': 'apres' }, () => 'Après'),
       ]),
   }),
 };
 
-/** Bac à sable : chaque option du menu, dans le thème de la barre. */
+/** Bac à sable : chaque prop, dans le thème de la barre. */
 export const BacASable = {
   name: 'Bac à sable',
-  args: { nom: NOM, photo: false, echec: false, decoratif: false, taille: 'normale' },
-  argTypes: { taille: { control: 'inline-radio', options: ['normale', 'grande'] } },
+  args: { name: NOM, photo: false, echec: false, decorative: false, size: 'medium' },
+  argTypes: { size: { control: 'inline-radio', options: ['medium', 'large'] } },
   render: (/** @type {Record<string, any>} */ args) => ({
     setup: () => () =>
       h('div', { style: 'padding:24px' }, [
-        h(Avatar, { nom: args.nom, taille: args.taille, decoratif: args.decoratif, ...(args.photo ? { image: args.echec ? ECHEC : PORTRAIT } : {}) }),
+        h(DsAvatar, { name: args.name, size: args.size, decorative: args.decorative, ...(args.photo ? { image: args.echec ? ECHEC : PORTRAIT } : {}) }),
       ]),
   }),
 };
 
 /** @param {Record<string, any>} o */
-const refus = (o) => ({ render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(Avatar, o)]) }) });
+const refus = (o) => ({ render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(DsAvatar, o)]) }) });
 
 /** Refus : sans nom ; la story montre l'erreur, aucun avatar. */
 export const RefusSansNom = refus({});
 /** Refus : un nom fait d'espaces. */
-export const RefusNomVide = refus({ nom: '   ' });
+export const RefusNomVide = refus({ name: '   ' });
 /** Refus : un nom sans lettre. */
-export const RefusSansLettre = refus({ nom: '123' });
+export const RefusSansLettre = refus({ name: '123' });
 /** Refus : taille hors du menu. */
-export const RefusTaille = refus({ nom: NOM, taille: 'petite' });
+export const RefusTaille = refus({ name: NOM, size: 'petite' });
 /** Refus : nom accessible posé à la main. */
-export const RefusNomALaMain = refus({ nom: NOM, 'aria-label': 'Photo' });
+export const RefusNomALaMain = refus({ name: NOM, 'aria-label': 'Photo' });

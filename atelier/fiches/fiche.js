@@ -24,12 +24,12 @@ const COMMANDE = `npm --prefix ${ICI} run fiches`;
 
 /** Fiche de chaque menu, par son nom : celui de sa preuve (atelier/preuve/<fiche>.js), dans l'ordre de l'index. */
 export const FICHES = /** @type {const} */ ([
-  ['Bouton', 'bouton'],
-  ['BoutonIcone', 'bouton-icone'],
-  ['ChampTexte', 'champ'],
-  ['Carte', 'carte'],
-  ['Avatar', 'avatar'],
-  ['Etiquette', 'etiquette'],
+  ['DsButton', 'button'],
+  ['DsIconButton', 'icon-button'],
+  ['DsTextInput', 'text-input'],
+  ['DsCard', 'card'],
+  ['DsAvatar', 'avatar'],
+  ['DsTag', 'tag'],
 ]);
 
 /** Blocs générés d'une fiche, en plus de l'en-tête. */
@@ -211,7 +211,7 @@ export function blocMenu(menu, composant) {
 
 /** @param {any} menu @param {string} quoi */
 export function blocRefus(menu, quoi) {
-  const p = menu.prefixe;
+  const p = menu.nom;
   const retires = menu.attributsRetires ?? [];
   const tete = `Attributs admis en plus des options : \`id\`, \`aria-*\`, \`data-*\`. Retirés : ${retires.length ? retires.map(code).join(', ') : 'aucun'}. ${menu.ecouteurs === false ? 'Écouteurs : refusés.' : 'Écouteurs (`on…`) : admis.'}`;
   /** @type {string[]} */
@@ -219,9 +219,8 @@ export function blocRefus(menu, quoi) {
   /** @type {Map<string, string>} */
   const suffixes = new Map();
   for (const [cle, o] of Object.entries(menu.options)) {
-    const nom = o.nom ?? cle;
-    if (o.obligatoire) messages.push(`${p} : ${nom} obligatoire`);
-    if (o.valeurs) messages.push(`${p} : ${nom} ${o.genre === 'f' ? 'inconnue' : 'inconnu'} : <valeur> (${o.valeurs.join(', ')})`);
+    if (o.obligatoire) messages.push(`${p} : ${cle} : obligatoire`);
+    if (o.valeurs) messages.push(`${p} : ${cle} : valeur inconnue : <valeur> (${o.valeurs.join(', ')})`);
   }
   for (const r of menu.regles ?? []) messages.push(`${p} : ${messageDeRegle(r, quoi)}`);
   for (const r of menu.reglesDuRendu ?? []) {

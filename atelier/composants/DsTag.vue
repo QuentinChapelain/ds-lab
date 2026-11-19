@@ -1,5 +1,5 @@
 <script>
-// Enveloppe de l'étiquette (D55) : seul endroit du dépôt où paraît la puce de Vuetify. Son menu (Etiquette.menu.js) et
+// Enveloppe de l'étiquette (D55) : seul endroit du dépôt où paraît la puce de Vuetify. Son menu (DsTag.menu.js) et
 // la liste blanche d'attributs sont vérifiés par la fabrique commune (fabrique.js, D51) : tout le reste lève, et aucune
 // étiquette n'est rendue. Couleurs, dimensions et texte viennent des variables du thème de la marque
 // (tokens/<marque>/vuetify.json, D41) : aucune valeur n'est écrite ici.
@@ -12,20 +12,20 @@
 import { h } from 'vue';
 import { VChip } from 'vuetify/components';
 import { definirEnveloppe } from './fabrique.js';
-import MENU from './Etiquette.menu.js';
+import MENU from './DsTag.menu.js';
 
 export default definirEnveloppe(MENU, (props, { attrs }) => () =>
   h(
     VChip,
-    { ...attrs, tag: 'span', link: false, ripple: false, variant: 'text', class: ['ds-etiquette', `ds-etiquette--${props.ton}`] },
-    () => h('span', { class: 'ds-etiquette__texte' }, props.texte),
+    { ...attrs, tag: 'span', link: false, ripple: false, variant: 'text', class: ['ds-tag', `ds-tag--${props.tone}`] },
+    () => h('span', { class: 'ds-tag__text' }, props.text),
   ),
 );
 </script>
 
 <style>
 /* Règles hors couche : elles passent devant celles de Vuetify, rangées dans ses couches, sans !important. */
-.ds-etiquette.v-chip {
+.ds-tag.v-chip {
   height: var(--v-ds-hauteur-etiquette);
   max-width: 100%;
   padding: 0 var(--v-ds-marge-interieure-etiquette);
@@ -38,25 +38,25 @@ export default definirEnveloppe(MENU, (props, { attrs }) => () =>
   box-shadow: none;
   transition: none;
 }
-.ds-etiquette--neutre.v-chip {
+.ds-tag--neutral.v-chip {
   background: rgb(var(--v-theme-composant));
   color: rgb(var(--v-theme-on-composant));
 }
-.ds-etiquette--marque.v-chip {
+.ds-tag--brand.v-chip {
   background: rgb(var(--v-theme-marque-discret));
   color: rgb(var(--v-theme-on-marque-discret));
 }
 /* Ni sous-couche ni voile de Vuetify : rien ne change au survol. */
-.ds-etiquette.v-chip > .v-chip__underlay,
-.ds-etiquette.v-chip > .v-chip__overlay {
+.ds-tag.v-chip > .v-chip__underlay,
+.ds-tag.v-chip > .v-chip__overlay {
   display: none;
 }
 /* Le texte reste sur une ligne, coupé par « … » à la largeur du parent. */
-.ds-etiquette.v-chip > .v-chip__content {
+.ds-tag.v-chip > .v-chip__content {
   min-width: 0;
   max-width: 100%;
 }
-.ds-etiquette__texte {
+.ds-tag__text {
   display: block;
   min-width: 0;
   overflow: hidden;

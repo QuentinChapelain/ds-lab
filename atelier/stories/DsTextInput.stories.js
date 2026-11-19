@@ -3,8 +3,8 @@
 // sable ; les refus.
 import { h, reactive } from 'vue';
 import { VThemeProvider } from 'vuetify/components';
-import ChampTexte from '../composants/ChampTexte.vue';
-import Bouton from '../composants/Bouton.vue';
+import DsTextInput from '../composants/DsTextInput.vue';
+import DsButton from '../composants/DsButton.vue';
 import { ENTETE, Loupe, THEMES } from './commun.js';
 
 /** États de la planche ; survol et focus y sont au repos, la preuve les force. */
@@ -13,13 +13,13 @@ const ETATS = [
   ['survol', {}],
   ['focus', {}],
   ['rempli', { modelValue: 'Texte saisi' }],
-  ['exemple', { type: 'email', exemple: 'nom@exemple.fr' }],
-  ['aide', { aide: 'Huit caractères au moins.' }],
-  ['erreur', { erreur: 'Ce champ est vide.', aide: 'Huit caractères au moins.' }],
-  ['erreur-focus', { erreur: 'Ce champ est vide.', aide: 'Huit caractères au moins.' }],
-  ['obligatoire', { obligatoire: true }],
-  ['désactivé', { desactive: true, modelValue: 'Texte saisi', aide: 'Champ fermé pendant la vérification.' }],
-  ['icône', { type: 'search', icone: Loupe, exemple: 'Rechercher' }],
+  ['exemple', { type: 'email', placeholder: 'nom@exemple.fr' }],
+  ['aide', { hint: 'Huit caractères au moins.' }],
+  ['erreur', { errorMessage: 'Ce champ est vide.', hint: 'Huit caractères au moins.' }],
+  ['erreur-focus', { errorMessage: 'Ce champ est vide.', hint: 'Huit caractères au moins.' }],
+  ['obligatoire', { required: true }],
+  ['désactivé', { disabled: true, modelValue: 'Texte saisi', hint: 'Champ fermé pendant la vérification.' }],
+  ['icône', { type: 'search', prependInnerIcon: Loupe, placeholder: 'Rechercher' }],
 ];
 
 /** @param {string[]} [garder] états montrés, tous par défaut */
@@ -30,7 +30,7 @@ function planche(garder) {
     ETATS.filter(([etat]) => !garder || garder.includes(etat)).map(([etat, o]) =>
       h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, [
         h('span', { style: ENTETE }, etat),
-        h(ChampTexte, { libelle: 'Libellé', ...o, 'data-etat': etat }),
+        h(DsTextInput, { label: 'Libellé', ...o, 'data-etat': etat }),
       ]),
     ),
   );
@@ -39,11 +39,11 @@ function planche(garder) {
 /** Ligne d'alignement : un champ et un bouton de taille normale, alignés en bas. */
 const alignement = () =>
   h('div', { 'data-cas': 'alignement', style: 'display:flex;gap:16px;align-items:flex-end;padding:0 24px 24px;width:560px' }, [
-    h('div', { style: 'flex:1' }, [h(ChampTexte, { libelle: 'Rechercher un membre', type: 'search', icone: Loupe, 'data-cas': 'alignement-champ' })]),
-    h(Bouton, { 'data-cas': 'alignement-bouton' }, () => 'Rechercher'),
+    h('div', { style: 'flex:1' }, [h(DsTextInput, { label: 'Rechercher un membre', type: 'search', prependInnerIcon: Loupe, 'data-cas': 'alignement-champ' })]),
+    h(DsButton, { 'data-cas': 'alignement-bouton' }, () => 'Rechercher'),
   ]);
 
-export default { title: 'Composants/Champ de texte' };
+export default { title: 'Composants/DsTextInput' };
 
 /** Planche d'un thème, celui de la barre : chaque état, puis la ligne d'alignement. */
 export const Planche = {
@@ -65,25 +65,25 @@ export const Vitrine = {
   }),
 };
 
-/** Bac à sable : chaque option du menu, dans le thème de la barre. */
+/** Bac à sable : chaque prop, dans le thème de la barre. */
 export const BacASable = {
   name: 'Bac à sable',
-  args: { libelle: 'Adresse électronique', aide: '', erreur: '', exemple: '', obligatoire: false, desactive: false, type: 'text', icone: false },
+  args: { label: 'Adresse électronique', hint: '', errorMessage: '', placeholder: '', required: false, disabled: false, type: 'text', prependInnerIcon: false },
   argTypes: { type: { control: 'select', options: ['text', 'email', 'search', 'password'] } },
   render: (/** @type {Record<string, any>} */ args) => ({
     setup() {
       const etat = reactive({ valeur: '' });
       return () =>
         h('div', { style: 'padding:24px;width:320px' }, [
-          h(ChampTexte, {
-            libelle: args.libelle,
-            aide: args.aide || undefined,
-            erreur: args.erreur || undefined,
-            exemple: args.exemple || undefined,
-            obligatoire: args.obligatoire,
-            desactive: args.desactive,
+          h(DsTextInput, {
+            label: args.label,
+            hint: args.hint || undefined,
+            errorMessage: args.errorMessage || undefined,
+            placeholder: args.placeholder || undefined,
+            required: args.required,
+            disabled: args.disabled,
             type: args.type,
-            icone: args.icone ? Loupe : null,
+            prependInnerIcon: args.prependInnerIcon ? Loupe : null,
             modelValue: etat.valeur,
             'onUpdate:modelValue': (/** @type {string} */ v) => (etat.valeur = v),
           }),
@@ -107,11 +107,11 @@ export const Clavier = {
       return () =>
         // novalidate : le message d'erreur est celui du champ ; la validation du navigateur bloquerait l'envoi.
         h('form', { novalidate: true, onSubmit: envoyer, style: 'display:flex;flex-direction:column;gap:16px;padding:24px;width:360px' }, [
-          h(ChampTexte, { libelle: 'Nom', nom: 'nom', obligatoire: true, aide: 'Tel qu\'il paraît sur la carte.', autocomplete: 'name', modelValue: journal.nom, 'onUpdate:modelValue': (/** @type {string} */ v) => (journal.nom = v), 'data-cas': 'nom' }),
-          h(ChampTexte, { libelle: 'Adresse électronique', nom: 'courriel', type: 'email', autocomplete: 'email', erreur: 'Adresse sans arobase.', aide: 'Par exemple nom@exemple.fr.', modelValue: 'nom.exemple.fr', 'data-cas': 'courriel' }),
-          h(ChampTexte, { libelle: 'Identifiant', nom: 'identifiant', desactive: true, aide: 'Attribué à l\'inscription.', modelValue: 'membre-0042', 'data-cas': 'identifiant' }),
-          h(ChampTexte, { libelle: 'Rechercher', nom: 'recherche', type: 'search', icone: Loupe, exemple: 'Un nom, une ville', 'data-cas': 'recherche' }),
-          h('div', [h(Bouton, { type: 'submit', 'data-cas': 'envoyer' }, () => 'Envoyer')]),
+          h(DsTextInput, { label: 'Nom', name: 'nom', required: true, hint: 'Tel qu\'il paraît sur la carte.', autocomplete: 'name', modelValue: journal.nom, 'onUpdate:modelValue': (/** @type {string} */ v) => (journal.nom = v), 'data-cas': 'nom' }),
+          h(DsTextInput, { label: 'Adresse électronique', name: 'courriel', type: 'email', autocomplete: 'email', errorMessage: 'Adresse sans arobase.', hint: 'Par exemple nom@exemple.fr.', modelValue: 'nom.exemple.fr', 'data-cas': 'courriel' }),
+          h(DsTextInput, { label: 'Identifiant', name: 'identifiant', disabled: true, hint: 'Attribué à l\'inscription.', modelValue: 'membre-0042', 'data-cas': 'identifiant' }),
+          h(DsTextInput, { label: 'Rechercher', name: 'recherche', type: 'search', prependInnerIcon: Loupe, placeholder: 'Un nom, une ville', 'data-cas': 'recherche' }),
+          h('div', [h(DsButton, { type: 'submit', 'data-cas': 'envoyer' }, () => 'Envoyer')]),
           h('output', { 'data-journal': '' }, JSON.stringify(journal)),
         ]);
     },
@@ -120,20 +120,20 @@ export const Clavier = {
 
 /** Refus : sans libellé ; la story montre l'erreur, aucun champ. */
 export const RefusSansLibelle = {
-  render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(ChampTexte, {})]) }),
+  render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(DsTextInput, {})]) }),
 };
 
 /** Refus : type hors du menu. */
 export const RefusType = {
-  render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(ChampTexte, { libelle: 'Téléphone', type: 'tel' })]) }),
+  render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(DsTextInput, { label: 'Téléphone', type: 'tel' })]) }),
 };
 
 /** Refus : attribut hors de la liste blanche. */
 export const RefusAttribut = {
-  render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(ChampTexte, { libelle: 'Nom', variant: 'filled' })]) }),
+  render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(DsTextInput, { label: 'Nom', variant: 'filled' })]) }),
 };
 
 /** Refus : aria-describedby posé à la main ; l'enveloppe le pose d'après l'aide et l'erreur. */
 export const RefusDescription = {
-  render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(ChampTexte, { libelle: 'Nom', 'aria-describedby': 'ailleurs' })]) }),
+  render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(DsTextInput, { label: 'Nom', 'aria-describedby': 'ailleurs' })]) }),
 };

@@ -5,5 +5,5 @@ Une fiche par enveloppe de l'atelier : son rôle, son menu, ce qu'elle refuse, s
 
 | Composant | Fiche | Rôle |
 |---|---|---|
-| `Etiquette` | [Étiquette](etiquette.md) | Un mot court sur un fond teinté, pour classer un membre (ville, secteur) ou mettre une qualité en avant (« Mentor ») ; il ne se clique pas. |
+| `DsTag` | [DsTag](tag.md) | Un mot court sur un fond teinté, pour classer un membre (ville, secteur) ou mettre une qualité en avant (« Mentor ») ; il ne se clique pas. |
 <!-- /genere:index -->
