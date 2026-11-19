@@ -18,6 +18,8 @@ Laboratoire de design system multi-marque, de l'audit à la génération par IA.
 - Aucun numéro de lot, d'étape ou de séance dans les commentaires, les titres de tests, les noms de fichiers de test ni les textes que l'outil écrit (`test/histoire.test.js`).
 - Aucun module de `src/` hors de `src/cli/` n'importe de `src/cli/` (`test/couches.test.js`).
 - Aucun bouton de Vuetify (`VBtn`, `v-btn`) hors de `atelier/composants/Bouton.vue` : passer par l'enveloppe (`test/enveloppe-bouton.test.js`, D43).
+- Aucun champ de Vuetify (`VTextField`, `VField`, `VInput`, `v-text-field`) hors de `atelier/composants/ChampTexte.vue`, ni carte (`VCard`, `v-card`) hors de `atelier/composants/Carte.vue` (`test/enveloppe-bouton.test.js`, D49, D50).
+- Chaque enveloppe déclare son menu dans son fichier `.menu.js` et passe par `atelier/composants/fabrique.js` (`test/fabrique-enveloppes.test.js`, D51).
 
 ## Commandes
 

@@ -83,8 +83,9 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 |---|---|---|
 | B1 à B4 | Jetons du bouton dans les dix thèmes | `test/bouton-jetons.test.js` |
 | C1 à C13 | Fenêtre des candidats, grisé des marges, bilan par usage | `test/candidats.test.js`, `test/e2e-candidats-revue.test.js`, `fixtures/marque-demo/expected-candidats.json` |
-| E1 à E3 | Garde de l'enveloppe du bouton, découpage d'un composant `.vue` | `test/enveloppe-bouton.test.js` |
+| E1 à E7 | Gardes des enveloppes (bouton, champ de texte, carte), découpage d'un composant `.vue` | `test/enveloppe-bouton.test.js` |
 | G0 à G8 | Générateur de valise | `src/valise/generate.js`, `test/valise-generate.test.js`, `test/gris-neutre.test.js` |
+| H1 à H4 | Jetons du champ de texte et de la carte dans les dix thèmes | `test/champ-carte-jetons.test.js` |
 | I1 à I7 | Rattacher les valeurs inchangées à leur jeton | `test/e2e-migration.test.js` |
 | J1 à J9 | Captures, contraste des candidats, texte sur plein et sur image, panneau de la revue | `test/candidats-contraste.test.js`, `test/captures-hors-page.test.js`, `test/texte-sur-plein-candidats.test.js`, `test/revue-apercu.test.js`, `test/fond-sous-image.test.js` |
 | K1 à K6 | Cartes « Texte sur plein » | `test/cartes-plein.test.js`, `test/cartes-plein-lignes-certaines.test.js` |
@@ -92,5 +93,6 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 | R-1 à R-9 | Identifiant et titre d'une ligne, captures par version | `test/e2e-identifiants.test.js`, `test/e2e-versions.test.js` |
 | S1 à S4 | Modifications et `npm run apply` | `test/e2e-apply.test.js` |
 | T0 à T5 | Rôles de couleur, paires, planche | `test/roles-statuts.test.js`, `test/roles-semantique.test.js`, `test/roles-paires.test.js`, `test/roles-planche.test.js` |
+| W1 à W8 | Fabrique commune des enveloppes et menus | `test/fabrique-enveloppes.test.js` |
 
 Ces identifiants de cas se répètent d'un fichier de test à l'autre avec un autre sens : G1 à G7 (`test/police-garde-fous.test.js` et `test/valise-generate.test.js`), C1 à C5 (`test/contraste-modes.test.js` et `test/candidats.test.js`), S1 à S7 (`test/saisie.test.js` et `test/e2e-apply.test.js`), J1 et J2 (`test/reduce-jetons.test.js` et la famille J), R1 à R5 (`test/resolver.test.js` et les règles R) ; E1, P1 et L1 désignent chacun des cas différents dans plusieurs fichiers. Un identifiant de cas n'a de sens que dans son fichier.
