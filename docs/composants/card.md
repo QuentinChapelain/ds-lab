@@ -4,7 +4,7 @@ title: DsCard (carte)
 file: atelier/composants/DsCard.vue
 props: atelier/composants/DsCard.menu.js
 wraps: VCard
-decisions: [D50, D51]
+decisions: [D50, D51, D56, D57]
 stories: atelier/stories/DsCard.stories.js
 test: npm --prefix atelier run preuve -- card
 ---

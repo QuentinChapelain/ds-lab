@@ -1,4 +1,4 @@
-// Props du bouton (D43, D51) : leurs valeurs admises, son événement, sa règle propre. Lu par la fabrique
+// Props du bouton (D43, D51, D56, D57) : leurs valeurs admises, son événement, sa règle propre. Lu par la fabrique
 // (fabrique.js) ; tout usage hors de ce menu lève, et aucun bouton n'est rendu.
 export default {
   nom: 'DsButton',

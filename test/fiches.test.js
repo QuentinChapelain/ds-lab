@@ -113,7 +113,7 @@ test('U1 en-tête du DsTag, et du bouton à icône par le bouton', () => {
       'file: atelier/composants/DsTag.vue',
       'props: atelier/composants/DsTag.menu.js',
       'wraps: VChip',
-      'decisions: [D55, D51]',
+      'decisions: [D55, D51, D56, D57]',
       'stories: atelier/stories/DsTag.stories.js',
       'test: npm --prefix atelier run preuve -- tag',
       '---',
@@ -121,7 +121,7 @@ test('U1 en-tête du DsTag, et du bouton à icône par le bouton', () => {
   );
   const bi = genere('DsIconButton').entete;
   assert.match(bi, /^wraps: VBtn \(par DsButton\)$/m);
-  assert.match(bi, /^decisions: \[D52, D51\]$/m);
+  assert.match(bi, /^decisions: \[D52, D51, D56, D57\]$/m);
   assert.match(bi, /^title: DsIconButton \(bouton à icône\)$/m);
 });
 

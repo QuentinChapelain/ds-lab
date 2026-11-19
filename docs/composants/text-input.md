@@ -4,7 +4,7 @@ title: DsTextInput (champ de texte)
 file: atelier/composants/DsTextInput.vue
 props: atelier/composants/DsTextInput.menu.js
 wraps: VTextField
-decisions: [D49, D51]
+decisions: [D49, D51, D56, D57]
 stories: atelier/stories/DsTextInput.stories.js
 test: npm --prefix atelier run preuve -- text-input
 ---

@@ -4,7 +4,7 @@ title: DsButton (bouton)
 file: atelier/composants/DsButton.vue
 props: atelier/composants/DsButton.menu.js
 wraps: VBtn
-decisions: [D43, D51]
+decisions: [D43, D51, D56, D57]
 stories: atelier/stories/DsButton.stories.js
 test: npm --prefix atelier run preuve -- button
 ---

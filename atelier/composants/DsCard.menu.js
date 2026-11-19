@@ -1,4 +1,4 @@
-// Props de la carte (D50, D51) : leurs valeurs admises, ses règles propres. Lu par la fabrique (fabrique.js) ; tout
+// Props de la carte (D50, D51, D56, D57) : leurs valeurs admises, ses règles propres. Lu par la fabrique (fabrique.js) ; tout
 // usage hors de ce menu lève, et aucune carte n'est rendue. Pas d'attribut on… : une carte qui se clique a un lien (prop
 // href) ; un écouteur de clic ferait de la carte de Vuetify un bloc cliquable sans rôle ni focus.
 import BOUTON from './DsButton.menu.js';

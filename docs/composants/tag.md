@@ -4,7 +4,7 @@ title: DsTag (étiquette)
 file: atelier/composants/DsTag.vue
 props: atelier/composants/DsTag.menu.js
 wraps: VChip
-decisions: [D55, D51]
+decisions: [D55, D51, D56, D57]
 stories: atelier/stories/DsTag.stories.js
 test: npm --prefix atelier run preuve -- tag
 ---

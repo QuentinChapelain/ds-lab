@@ -167,6 +167,8 @@ Chaque enveloppe déclare ses props dans un fichier à part (`atelier/composants
 
 `DsTag` a un `text` obligatoire et un `tone` (`neutral` par défaut, ou `brand` pour mettre en avant ; pas de couleur par catégorie). C'est une pilule à fond teinté de 24 px de haut, statique : ni survol, ni focus, ni clic, ni lien, ni fermeture. Son texte ne passe jamais à la ligne : quand la place manque, il est coupé par « … », et reste entier pour un lecteur d'écran. Une suite d'étiquettes est une liste, avec 8 px entre deux étiquettes, qui passe à la ligne.
 
+Chaque composant a sa fiche dans `docs/composants/` (D56) : à quoi il sert, quand le prendre ou en prendre un autre, ses props et la source de leur nom, ce qu'il refuse, ses tokens rangés par partie avec ce que chacun règle, son accessibilité et ses contrastes dans les dix thèmes, un exemple à copier, ses décisions et sa dette. L'en-tête et les tableaux sont écrits par `npm --prefix atelier run fiches` depuis les props, le composant, la table des noms et les tokens ; le reste est écrit à la main. `npm --prefix atelier run fiches -- --verifier` refuse une fiche qui ne correspond plus au code, un mot propre à ds-lab hors du glossaire, une fiche de plus de 500 mots écrits ou un nom absent de `atelier/composants/noms.json` ; la CI le joue dans le job `rapides`. La liste des fiches et le glossaire sont dans `docs/composants/README.md`.
+
 Les icônes sont celles de Material Design Icons, en chemins SVG (`@mdi/js`, dans l'atelier seulement, D52). L'aide `atelier/composants/icone.js` fait d'un chemin un composant d'icône à passer à la prop `prependIcon`, `prependInnerIcon` ou `icon` d'un composant : `icone(mdiClose)` ; tout autre chemin tracé sur 24 × 24 convient.
 
 ```
@@ -175,6 +177,8 @@ npm --prefix atelier run dev        serveur de développement, sur http://127.0.
 npm --prefix atelier run build      version construite, dans le dossier storybook-static de l'atelier (non versionnée)
 npm --prefix atelier run preuve     preuve, sur la version construite et un serveur de développement qu'elle lance et arrête
 npm --prefix atelier run preuve -- text-input   preuve d'un seul composant (button, text-input, card, icon-button, avatar, tag), comme la CI
+npm --prefix atelier run fiches                 réécrit l'en-tête et les blocs générés des fiches, et l'index
+npm --prefix atelier run fiches -- --verifier   contrôle des fiches et de la table des noms, sans rien écrire ; sortie 1 sur un écart
 ```
 
 L'atelier lit les thèmes de chaque marque dans `tokens/<marque>/vuetify.json` (D41) : les relancer, c'est relancer `npm run vuetify` à la racine. Un sélecteur dans la barre de Storybook propose chaque marque, en clair et en sombre. Le thème est toujours passé par son nom, jamais par le défaut « system » de Vuetify, et un nom absent de la liste des marques (même `light` ou `dark`, que Vuetify connaît) remplace la story par l'erreur « thème inconnu : <nom> ». La police du texte et celle des titres sont celles de la marque. Télémétrie coupée (`--disable-telemetry` et `core.disableTelemetry`), recherche de mise à jour coupée (`--no-version-updates`) ; en développement, Storybook demande encore ses nouveautés à `storybook.js.org` à chaque ouverture (`KNOWN_ISSUES.md`).

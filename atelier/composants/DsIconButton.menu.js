@@ -1,4 +1,4 @@
-// Props du bouton à icône seule (D52, D51) : leurs valeurs admises, son événement, sa règle propre. Lu par la
+// Props du bouton à icône seule (D52, D51, D56, D57) : leurs valeurs admises, son événement, sa règle propre. Lu par la
 // fabrique (fabrique.js) ; tout usage hors de ce menu lève, et aucun bouton n'est rendu. Le label devient le nom
 // accessible (aria-label) : aria-label et aria-labelledby donnés à la main lèvent.
 export default {

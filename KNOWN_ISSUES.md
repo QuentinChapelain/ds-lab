@@ -147,6 +147,16 @@
 - Atelier : le nom de la ligne « en situation » de l'étiquette prend le titre 4 par un style écrit dans la story (`atelier/stories/DsTag.stories.js`) : le titre 4 n'a pas de variable du thème ; à reprendre avec la carte membre.
 - Feuille CSS des jetons : Terrazzo écrit au-dessus de certains alias la description d'un autre jeton (`--fond-desactive` porte « fond de composant », `--fond-erreur-fort` « texte secondaire (4,5:1) ») [F, `tokens/orbe-cafe/jetons.css`] ; cause non cherchée [V]. Les valeurs sont justes (`test/css-jetons.test.js`).
 
+- Préfixe `Ds` écrit en dur (D57) : il est dans le nom des six composants et de leurs fichiers, leurs classes `ds-`, la table des noms (`atelier/composants/noms.json`), la garde de Vuetify (noms de fichiers, `test/enveloppe-bouton.test.js`), les tests de rendu, les stories et les fiches. Quentin veut qu'il devienne un paramètre du client, sans casser la logique de l'outil (19/11/2026). Exigence pour ce jour-là : les contrôles de NM2 vérifient la présence d'un préfixe, jamais sa valeur ; aujourd'hui, le contrôle des noms (`atelier/fiches/fiche.js`) vérifie la valeur `Ds`.
+- Garde des noms de marque (G5, `test/marque-en-dur.test.js`) : elle prend le mot « atelier », nom du dossier, pour le premier mot de la marque Atelier Lavandine ; elle devrait reconnaître le nom complet ou des mots entiers. Contournement : le générateur des fiches lit le nom de son dossier au lieu de l'écrire (D56).
+- Vocabulaire (D57) : « jeton », « rôle », « menu », « option », « enveloppe », « fabrique », « preuve » et « emplacement » restent dans `README.md`, `ARCHITECTURE.md`, les décisions, cette page et le code interne ; seuls les fiches et leur index sont tenus au vocabulaire du métier (DOC4). À reprendre dans un petit lot à part.
+- Noms des tokens et des variables du thème en français (NM1, D57) : `texte.principal`, `--v-ds-hauteur-etiquette` ; le glossaire des fiches fait le pont.
+- CP3, aucune valeur en dur : pas de garde de lecture du style des `.vue` avant l'étape 9 ; elle trouverait deux cas [F] : `1px` du texte caché aux yeux (bouton, champ), justifié, et `1s` de la roue de chargement (B2).
+- CP7, un composant refuse un usage, jamais une donnée : non contrôlable par lecture ; seul le test de rendu du `DsTag` vérifie un texte long.
+- CP8, règles de pose (un seul bouton principal par vue, texte d'exemple) : écrites dans les fiches, sans contrôle de page avant l'annuaire.
+- DS13 (le primaire se clique, l'accent ne porte aucun sens) et DS16 (les aplats ne se cliquent pas) : sans contrôle.
+- Fiches (D56) : les tableaux d'anatomie du bouton (32 lignes) et du champ (22) sont longs sur un téléphone, hors du plafond de mots [H] ; dans le champ, l'erreur et l'aide sont rangées sans précision, leur règle CSS portant sur une partie et non sur une classe de modificateur.
+
 ## Trous du design system (relevés le 19/11/2026)
 
 Relevés avec le champ et la carte (`docs/attendus/champ-carte.md`), avec le moment où chacun mordra et l'avis de Claude Code. Comblés dans ce lot : arrondi des surfaces (`arrondi.surface`), bord d'un champ (`bordure.forte` suffisait), texte d'exemple (`texte.secondaire`), survol d'une carte à lien sans ombre, deux descriptions fausses (D49, D50).
@@ -160,10 +170,10 @@ Relevés avec le champ et la carte (`docs/attendus/champ-carte.md`), avec le mom
 | B5 | Avatar et étiquette sans enveloppe (l'avatar, la plus grosse dette) | Carte membre | **Choisi, D54 et D55** : avatar rond au pastel de la marque, initiales en repli ; étiquette en pilule à fond teinté, deux tons, statique. Restent : le badge (navigation), le groupe d'avatars, les puces de filtre et supprimables |
 | B6 | Pas de grille ni de largeurs de conteneur ; seuil étroit 600 px [H] | Liste d'annuaire | D'accord, et j'y ajoute le thème Vuetify sans contexte de largeur : le titre de carte ne rétrécit pas en étroit |
 | B7 | Motifs de formulaire absents : groupe de champs, résumé d'erreurs, état vide, chargement d'une liste | Formulaires, listes | D'accord ; le résumé d'erreurs dira aussi si une erreur s'annonce et qui valide (le champ ne valide rien, sa story coupe la validation du navigateur) |
-| B8 | Aucune règle d'usage écrite (un seul bouton principal par vue, quand une carte est un lien) | Fiches d'usage | D'accord ; D50 en écrit deux : le texte d'une carte à lien ne contient ni lien ni bouton ; une carte se clique par un lien, jamais par un écouteur |
+| B8 | Aucune règle d'usage écrite (un seul bouton principal par vue, quand une carte est un lien) | Fiches d'usage | **Comblé, D56** : la section « Quand l'utiliser » de chaque fiche (`docs/composants/`) les écrit ; un seul bouton principal par vue (fiche du `DsButton`), une carte se clique par `href` (fiche du `DsCard`). Sans contrôle de page (CP8) |
 | B9 | Pas de jeton de soulignement (épaisseur, décalage) ni d'enveloppe de lien | Lien dans le texte, pied de page | Ajouté : le titre souligné de la carte prend le soulignement par défaut du navigateur |
 | B10 | Pas de rôle pour `rayon.pilule` | Étiquette, avatar | **Comblé, D54** : `arrondi.pilule` |
-| B11 | Pas de règle d'usage pour le texte d'exemple | Fiches d'usage, avec B8 | Ajouté ; D49 l'écrit pour le champ : jamais à la place du libellé ni de l'aide |
+| B11 | Pas de règle d'usage pour le texte d'exemple | Fiches d'usage, avec B8 | **Comblé, D56** : la fiche du `DsTextInput` l'écrit, le `placeholder` ne remplace jamais le libellé ni l'aide (D49) ; sans contrôle (CP8) |
 
 ## Revue de code du 15/11
 

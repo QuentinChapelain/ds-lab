@@ -4,7 +4,7 @@ title: DsAvatar (avatar)
 file: atelier/composants/DsAvatar.vue
 props: atelier/composants/DsAvatar.menu.js
 wraps: VAvatar
-decisions: [D54, D51]
+decisions: [D54, D51, D56, D57]
 stories: atelier/stories/DsAvatar.stories.js
 test: npm --prefix atelier run preuve -- avatar
 ---

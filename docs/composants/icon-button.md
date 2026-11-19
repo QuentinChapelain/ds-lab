@@ -4,7 +4,7 @@ title: DsIconButton (bouton à icône)
 file: atelier/composants/DsIconButton.vue
 props: atelier/composants/DsIconButton.menu.js
 wraps: VBtn (par DsButton)
-decisions: [D52, D51]
+decisions: [D52, D51, D56, D57]
 stories: atelier/stories/DsIconButton.stories.js
 test: npm --prefix atelier run preuve -- icon-button
 ---

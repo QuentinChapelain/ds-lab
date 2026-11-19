@@ -1,4 +1,4 @@
-// Props du champ de texte (D49, D51) : leurs valeurs admises, son événement. Lu par la fabrique (fabrique.js) ;
+// Props du champ de texte (D49, D51, D56, D57) : leurs valeurs admises, son événement. Lu par la fabrique (fabrique.js) ;
 // tout usage hors de ce menu lève, et aucun champ n'est rendu. aria-describedby et aria-invalid sont posés par le
 // composant d'après le hint et l'errorMessage : donnés à la main, ils lèvent.
 export default {

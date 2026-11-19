@@ -1,6 +1,6 @@
 # Identifiants de règles
 
-Les sorties de l'outil citent des règles par un identifiant court, entre parenthèses : « (R9) », « (M6) ». Cette page dit, pour chaque identifiant affiché, sa règle en une phrase, où elle est codée et où elle s'affiche. Les règles du design system (DS1 à DS11) sont dans `docs/regles.md`, les décisions (D01 à D39) dans `docs/decisions.md`.
+Les sorties de l'outil citent des règles par un identifiant court, entre parenthèses : « (R9) », « (M6) ». Cette page dit, pour chaque identifiant affiché, sa règle en une phrase, où elle est codée et où elle s'affiche. Les règles du langage produit sont dans `docs/regles.md` : design system (DS1 à DS17), nommage (NM1 à NM4), composants (CP1 à CP8), documentation (DOC1 à DOC5) ; les décisions (D01 à D57) dans `docs/decisions.md`.
 
 Renommer un identifiant affiché change une sortie : c'est une décision à part, pas un nettoyage.
 
@@ -94,6 +94,7 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 | R-1 à R-9 | Identifiant et titre d'une ligne, captures par version | `test/e2e-identifiants.test.js`, `test/e2e-versions.test.js` |
 | S1 à S4 | Modifications et `npm run apply` | `test/e2e-apply.test.js` |
 | T0 à T5 | Rôles de couleur, paires, planche | `test/roles-statuts.test.js`, `test/roles-semantique.test.js`, `test/roles-paires.test.js`, `test/roles-planche.test.js` |
-| W1 à W8 | Fabrique commune des enveloppes et menus | `test/fabrique-enveloppes.test.js` |
+| U1 à U13 | Fiches des composants : en-tête et blocs générés, refus, anatomie, contrastes, marques, parties écrites, exemple, index et glossaire, mots refusés et plafond, table des noms (D56, D57) | `test/fiches.test.js` |
+| W1 à W9 | Fabrique commune des enveloppes et menus ; W9, CP1 : un composant sans événement refuse les attributs `on…` | `test/fabrique-enveloppes.test.js` |
 
 Ces identifiants de cas se répètent d'un fichier de test à l'autre avec un autre sens : G1 à G7 (`test/police-garde-fous.test.js` et `test/valise-generate.test.js`), C1 à C5 (`test/contraste-modes.test.js` et `test/candidats.test.js`), S1 à S7 (`test/saisie.test.js` et `test/e2e-apply.test.js`), J1 et J2 (`test/reduce-jetons.test.js` et la famille J), R1 à R5 (`test/resolver.test.js` et les règles R) ; E1, P1 et L1 désignent chacun des cas différents dans plusieurs fichiers. Un identifiant de cas n'a de sens que dans son fichier.
