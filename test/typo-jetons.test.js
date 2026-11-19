@@ -8,7 +8,8 @@
  *     dimensions en px seulement), signalé avant tout changement ;
  *   couche marque : marque.police.titre = Georgia, serif ; marque.police.texte = "Orbe Sans", Arial, sans-serif
  *     ($type fontFamily) ; marqueTokens les produit (paramètre polices) ;
- *   couche sémantique : groupe typo, $type typography, onze jetons composites, une phrase d'usage chacun,
+ *   couche sémantique : groupe typo, $type typography, onze jetons composites (treize avec les deux styles des
+ *     initiales de l'avatar, docs/attendus/avatar-etiquette.md), une phrase d'usage chacun,
  *     sans couleur ; valeur DTCG 2025.10 à cinq propriétés (fontFamily, fontSize, fontWeight, letterSpacing,
  *     lineHeight ; letterSpacing est obligatoire dans la spécification, 0 px ici, valeur à décider [V]) ;
  *     fontSize → {taille-texte.N}, fontWeight → {graisse.W}, fontFamily → {marque.police.titre} pour
@@ -62,6 +63,9 @@ const STYLES = /** @type {Record<string, [number, number, number | null, number 
   'corps.petit': [14, 20, null, null, 400, 'texte', 1.4286, null, 'Texte de tableau'],
   libelle: [14, 20, null, null, 600, 'produit', 1.4286, null, 'Libellé de champ'],
   mention: [12, 16, null, null, 400, 'texte', 1.3333, null, 'Aide'],
+  // Initiales de l'avatar (docs/attendus/avatar-etiquette.md).
+  'initiales.normale': [16, 24, null, null, 600, 'texte', 1.5, null, "Initiales de l'avatar normal"],
+  'initiales.grande': [24, 32, null, null, 600, 'texte', 1.3333, null, 'Initiales du grand avatar'],
 });
 
 /** @param {any} node @param {string} path */
@@ -87,7 +91,7 @@ test('typo marque : police.titre et police.texte', () => {
   assert.ok(p.titre.$description && p.texte.$description);
 });
 
-test('typo sémantique : onze styles composites, DTCG 2025.10, alias et rapports attendus', () => {
+test('typo sémantique : treize styles composites, DTCG 2025.10, alias et rapports attendus', () => {
   assert.equal(sem.typo.$type, 'typography');
   const found = [];
   /** @param {any} n @param {string[]} path */

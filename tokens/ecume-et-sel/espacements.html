@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Espacements Écume et Sel</title>
     <style>
-      :root { --ecart-dans-composant: 4px; --ecart-entre-composants: 16px; --ecart-entre-groupes: 24px; --ecart-section: 48px; --ecart-icone-texte: 8px; --marge-interieure-composant: 16px; }
+      :root { --ecart-dans-composant: 4px; --ecart-entre-composants: 16px; --ecart-entre-groupes: 24px; --ecart-section: 48px; --ecart-icone-texte: 8px; --ecart-entre-etiquettes: 8px; --marge-interieure-composant: 16px; --marge-interieure-etiquette: 12px; }
       .sous-600 { display: none; }
       @media (max-width: 599.98px) { :root { --ecart-section: 32px; } }
       @media (max-width: 599.98px) { .sous-600 { display: inline; } .dessus-600 { display: none; } }
@@ -120,11 +120,27 @@
             </div>
           </li>
           <li>
+            <span class="barre-case"><span class="barre" style="--c:#5c940d;width:var(--ecart-entre-etiquettes)"></span></span>
+            <div class="legende-texte">
+              <code>ecart.entre-etiquettes</code>
+              <span class="valeur">8 px · {espace.8}</span>
+              <span class="usage">Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes ; hors du contrôle d'ordre des écarts (DS5), comme ecart.icone-texte.</span>
+            </div>
+          </li>
+          <li>
             <span class="barre-case"><span class="barre" style="--c:#7048e8;width:var(--marge-interieure-composant)"></span></span>
             <div class="legende-texte">
               <code>marge-interieure.composant</code>
               <span class="valeur">16 px · {espace.16}</span>
               <span class="usage">Marge intérieure d'un composant à bord visible, comme une carte, un encadré ou une zone de formulaire.</span>
+            </div>
+          </li>
+          <li>
+            <span class="barre-case"><span class="barre" style="--c:#ae3ec9;width:var(--marge-interieure-etiquette)"></span></span>
+            <div class="legende-texte">
+              <code>marge-interieure.etiquette</code>
+              <span class="valeur">12 px · {espace.12}</span>
+              <span class="usage">Marge intérieure gauche et droite d'une étiquette, de part et d'autre de son texte.</span>
             </div>
           </li>
         </ul>

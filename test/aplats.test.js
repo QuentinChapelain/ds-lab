@@ -29,7 +29,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { loadRoles, resolveRoles, contratRoles } from '../src/tokens/roles.js';
 import { serialiser } from '../src/tokens/saisie.js';
-import { AJOUTS, PAIRES_AJOUTEES, INTERDITES_AJOUTEES, PAIRES_BOUTON, N_ROLES, N_PAIRES } from './helpers/roles-ajoutes.js';
+import { AJOUTS, PAIRES_AJOUTEES, INTERDITES_AJOUTEES, PAIRES_BOUTON, PAIRES_AVATAR, N_ROLES, N_PAIRES } from './helpers/roles-ajoutes.js';
 import { charger, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -64,8 +64,9 @@ test('Orbe Café : sans l\'emplacement texte-grand, la couche marque redevient i
 test('paires.json : 48 paires d\'origine en tête, 18 ajoutées, 4 interdites ajoutées', () => {
   const p = charger('paires.json');
   assert.equal(p.seuils['grand-texte'], 3);
-  assert.equal(p.paires.length, N_PAIRES, '+ 4 bordures de statut sur fond.surface, + les paires du bouton');
-  assert.deepEqual(p.paires.slice(70).map((/** @type {any} */ x) => [x.devant, x.fond, x.type]), PAIRES_BOUTON);
+  assert.equal(p.paires.length, N_PAIRES, '+ 4 bordures de statut sur fond.surface, + les paires du bouton, de l\'avatar et de l\'étiquette');
+  assert.deepEqual(p.paires.slice(70, 73).map((/** @type {any} */ x) => [x.devant, x.fond, x.type]), PAIRES_BOUTON);
+  assert.deepEqual(p.paires.slice(73).map((/** @type {any} */ x) => [x.devant, x.fond, x.type]), PAIRES_AVATAR);
   assert.deepEqual(p.paires.slice(48, 66).map((/** @type {any} */ x) => [x.devant, x.fond, x.type]), PAIRES_AJOUTEES);
   assert.equal(p.interdites.length, 8);
   assert.deepEqual(p.interdites.slice(4).map((/** @type {any} */ x) => [x.devant, x.fond]), INTERDITES_AJOUTEES.map((d) => [d, 'fond.marque.fort']));

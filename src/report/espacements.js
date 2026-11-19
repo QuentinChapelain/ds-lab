@@ -26,7 +26,9 @@ const COTE = /** @type {Record<string, string>} */ ({
   'ecart.entre-groupes': '#2b8a3e',
   'ecart.section': '#d9480f',
   'ecart.icone-texte': '#0c8599',
+  'ecart.entre-etiquettes': '#5c940d',
   'marge-interieure.composant': '#7048e8',
+  'marge-interieure.etiquette': '#ae3ec9',
 });
 /** Couleur de cote d'un rôle ; un rôle sans couleur lève, au lieu d'écrire « undefined » dans la planche. @param {string} role */
 const couleurCote = (role) => {

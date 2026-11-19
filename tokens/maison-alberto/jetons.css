@@ -3,6 +3,8 @@
 :root {
   /* Arrondi d'un contrôle, comme un bouton ou un champ, le même à toutes les tailles. */
   --arrondi-controle: var(--rayon-8);
+  /* Arrondi complet d'une forme ronde ou en pilule, comme un avatar ou une étiquette. */
+  --arrondi-pilule: var(--rayon-pilule);
   /* Arrondi d'une surface posée sur la page, comme une carte. */
   --arrondi-surface: var(--rayon-12);
   /* Contour d'un champ ou d'un encadré d'avertissement (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app. */
@@ -216,6 +218,8 @@
   --ecart-dans-composant: var(--espace-4);
   /* Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée ; au moins le double de ecart.dans-composant, pour qu'on voie à quel champ appartient un libellé ou un message (régularité observée dans les systèmes lus, pas une norme). */
   --ecart-entre-composants: var(--espace-16);
+  /* Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes ; hors du contrôle d'ordre des écarts (DS5), comme ecart.icone-texte. */
+  --ecart-entre-etiquettes: var(--espace-8);
   /* Écart entre deux groupes d'une même section, comme un titre de section et son contenu ou les champs d'un formulaire et ses boutons. */
   --ecart-entre-groupes: var(--espace-24);
   /* Écart entre l'icône et le texte d'un contrôle, comme un bouton ; hors du contrôle d'ordre des écarts (DS5), comme marge-interieure.composant. */
@@ -294,7 +298,10 @@
   --hauteur-controle-normale: var(--taille-40);
   /* Hauteur d'un contrôle de petite taille, comme un bouton. */
   --hauteur-controle-petite: var(--taille-32);
+  /* Hauteur d'une étiquette, sur une ligne. */
+  --hauteur-etiquette: var(--taille-24);
   --marge-interieure-composant: var(--espace-16);
+  --marge-interieure-etiquette: var(--espace-12);
   /* fond d'application */
   --marque-accent-1: var(--couleur-accent-1);
   /* fond discret */
@@ -397,8 +404,14 @@
   --rayon-pilule: 9999px;
   --taille-16: 16px;
   --taille-20: 20px;
+  --taille-24: 24px;
   --taille-32: 32px;
   --taille-40: 40px;
+  --taille-56: 56px;
+  /* Côté d'un grand avatar, comme celui d'une carte membre. */
+  --taille-avatar-grande: var(--taille-56);
+  /* Côté d'un avatar de taille normale. */
+  --taille-avatar-normale: var(--taille-40);
   /* Icône d'un contrôle de taille normale. */
   --taille-icone-normale: var(--taille-20);
   /* Icône d'un contrôle de petite taille. */
@@ -425,6 +438,8 @@
   --texte-info: var(--couleur-info-11);
   /* texte secondaire (4,5:1) */
   --texte-interactif: var(--marque-primaire-11);
+  /* texte principal */
+  --texte-marque: var(--marque-primaire-12);
   /* texte secondaire (4,5:1) */
   --texte-marque-grand: var(--marque-primaire-texte-grand);
   /* texte principal */
@@ -499,6 +514,26 @@
   --typo-corps-petit-letter-spacing: 0px;
   /* Texte de tableau ; ligne visée 20 px. */
   --typo-corps-petit-line-height: 1.4286;
+  /* Initiales du grand avatar ; ligne visée 32 px. */
+  --typo-initiales-grande-font-family: var(--marque-police-texte);
+  /* Initiales du grand avatar ; ligne visée 32 px. */
+  --typo-initiales-grande-font-size: var(--taille-texte-24);
+  /* Initiales du grand avatar ; ligne visée 32 px. */
+  --typo-initiales-grande-font-weight: var(--graisse-600);
+  /* Initiales du grand avatar ; ligne visée 32 px. */
+  --typo-initiales-grande-letter-spacing: 0px;
+  /* Initiales du grand avatar ; ligne visée 32 px. */
+  --typo-initiales-grande-line-height: 1.3333;
+  /* Initiales de l'avatar normal ; ligne visée 24 px. */
+  --typo-initiales-normale-font-family: var(--marque-police-texte);
+  /* Initiales de l'avatar normal ; ligne visée 24 px. */
+  --typo-initiales-normale-font-size: var(--taille-texte-16);
+  /* Initiales de l'avatar normal ; ligne visée 24 px. */
+  --typo-initiales-normale-font-weight: var(--graisse-600);
+  /* Initiales de l'avatar normal ; ligne visée 24 px. */
+  --typo-initiales-normale-letter-spacing: 0px;
+  /* Initiales de l'avatar normal ; ligne visée 24 px. */
+  --typo-initiales-normale-line-height: 1.5;
   /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit (D44) ; ligne visée 20 px. */
   --typo-libelle-font-family: var(--police-produit);
   /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit (D44) ; ligne visée 20 px. */

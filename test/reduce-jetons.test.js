@@ -9,7 +9,9 @@
  *      du bouton (taille.16, 20, 32, 40, trait.1 et 2 ; docs/attendus/bouton.md), dont chaque chemin de la copie
  *      figée d'origine, avec sa valeur ; un fichier de jetons est lu tel quel (copie figée : 104 entrées) ;
  *      correction du 18/11/2026 (D45) : 144, les survols de l'accent et des quatre statuts devenant des valeurs
- *      calculées (couleurs en hex, comme celui du primaire), cinq entrées de plus ;
+ *      calculées (couleurs en hex, comme celui du primaire), cinq entrées de plus ; ajout du 19/11/2026 : 146, avec les
+ *      primitives taille.24 et taille.56 de l'avatar et de l'étiquette (docs/attendus/avatar-etiquette.md), deux valeurs
+ *      en px de plus, auxquelles une valeur relevée de 24 ou de 56 px se rattache désormais ;
  *   J2 un fichier qui ne donne aucun jeton ({}, ou les rôles seuls, tout en alias) : sortie 2, une ligne
  *      « reduce : --tokens <chemin> : aucun jeton lu (couleur en hex, dimension en px) ; un fichier .tokens.json ou un
  *      resolver DTCG 2025.10 attendu » ;
@@ -56,7 +58,7 @@ function feuilles(t) {
 
 test('J1 un resolver est résolu depuis son dossier ; un fichier de jetons est lu tel quel', () => {
   const r = jetonsDe(lire(RESOLVER), RESOLVER);
-  assert.equal(indexTokens(r).size, 144);
+  assert.equal(indexTokens(r).size, 146);
   const copie = lire(COPIE);
   assert.equal(jetonsDe(copie, COPIE), copie);
   assert.equal(indexTokens(copie).size, 104);

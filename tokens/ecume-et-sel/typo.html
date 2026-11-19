@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Typographie Écume et Sel</title>
     <style>
-      :root { --police-titre: "Trebuchet MS", sans-serif; --police-texte: Verdana, sans-serif; --police-produit: system-ui, sans-serif; --affichage-grand-taille: 60px; --affichage-grand-interligne: 1.2667; --affichage-moyen-taille: 48px; --affichage-moyen-interligne: 1.25; --titre-1-taille: 30px; --titre-1-interligne: 1.3333; --titre-2-taille: 24px; --titre-2-interligne: 1.3333; --titre-3-taille: 20px; --titre-3-interligne: 1.4; --titre-4-taille: 16px; --titre-4-interligne: 1.5; --corps-grand-taille: 18px; --corps-grand-interligne: 1.5556; --corps-moyen-taille: 16px; --corps-moyen-interligne: 1.5; --corps-petit-taille: 14px; --corps-petit-interligne: 1.4286; --libelle-taille: 14px; --libelle-interligne: 1.4286; --mention-taille: 12px; --mention-interligne: 1.3333; --ecart-dans-composant: 4px; --ecart-entre-composants: 16px; --ecart-entre-groupes: 24px; --ecart-section: 48px; --ecart-icone-texte: 8px; --marge-interieure-composant: 16px; }
+      :root { --police-titre: "Trebuchet MS", sans-serif; --police-texte: Verdana, sans-serif; --police-produit: system-ui, sans-serif; --affichage-grand-taille: 60px; --affichage-grand-interligne: 1.2667; --affichage-moyen-taille: 48px; --affichage-moyen-interligne: 1.25; --titre-1-taille: 30px; --titre-1-interligne: 1.3333; --titre-2-taille: 24px; --titre-2-interligne: 1.3333; --titre-3-taille: 20px; --titre-3-interligne: 1.4; --titre-4-taille: 16px; --titre-4-interligne: 1.5; --corps-grand-taille: 18px; --corps-grand-interligne: 1.5556; --corps-moyen-taille: 16px; --corps-moyen-interligne: 1.5; --corps-petit-taille: 14px; --corps-petit-interligne: 1.4286; --libelle-taille: 14px; --libelle-interligne: 1.4286; --mention-taille: 12px; --mention-interligne: 1.3333; --initiales-normale-taille: 16px; --initiales-normale-interligne: 1.5; --initiales-grande-taille: 24px; --initiales-grande-interligne: 1.3333; --ecart-dans-composant: 4px; --ecart-entre-composants: 16px; --ecart-entre-groupes: 24px; --ecart-section: 48px; --ecart-icone-texte: 8px; --ecart-entre-etiquettes: 8px; --marge-interieure-composant: 16px; --marge-interieure-etiquette: 12px; }
       @media (max-width: 599.98px) { :root { --affichage-grand-taille: 36px; --affichage-grand-interligne: 1.3333; --affichage-moyen-taille: 30px; --affichage-moyen-interligne: 1.3333; --titre-1-taille: 24px; --titre-1-interligne: 1.3333; --titre-2-taille: 20px; --titre-2-interligne: 1.4; --titre-3-taille: 18px; --titre-3-interligne: 1.3333; --ecart-section: 32px; } }
 
       /* Styles de texte : un par jeton composite du groupe typo. */
@@ -20,6 +20,8 @@
       .t-corps-petit { font-family: var(--police-texte); font-size: var(--corps-petit-taille); line-height: var(--corps-petit-interligne); font-weight: 400; letter-spacing: 0px; }
       .t-libelle { font-family: var(--police-produit); font-size: var(--libelle-taille); line-height: var(--libelle-interligne); font-weight: 600; letter-spacing: 0px; }
       .t-mention { font-family: var(--police-texte); font-size: var(--mention-taille); line-height: var(--mention-interligne); font-weight: 400; letter-spacing: 0px; }
+      .t-initiales-normale { font-family: var(--police-texte); font-size: var(--initiales-normale-taille); line-height: var(--initiales-normale-interligne); font-weight: 600; letter-spacing: 0px; }
+      .t-initiales-grande { font-family: var(--police-texte); font-size: var(--initiales-grande-taille); line-height: var(--initiales-grande-interligne); font-weight: 600; letter-spacing: 0px; }
 
       /* Le parent porte l'espace : gap et padding, avec les rôles d'espacement ; aucun enfant n'a de marge. */
       * { margin: 0; box-sizing: border-box; }
@@ -119,6 +121,14 @@
           <li data-specimen="mention">
             <p class="meta"><code>mention</code> · 12 / 16 px · rapport 1,3333 · 400 · police.texte</p>
             <p class="t-mention" data-style="mention">Écume et Sel ouvre le mardi</p>
+          </li>
+          <li data-specimen="initiales.normale">
+            <p class="meta"><code>initiales.normale</code> · 16 / 24 px · rapport 1,5 · 600 · police.texte</p>
+            <p class="t-initiales-normale" data-style="initiales.normale">Écume et Sel ouvre le mardi</p>
+          </li>
+          <li data-specimen="initiales.grande">
+            <p class="meta"><code>initiales.grande</code> · 24 / 32 px · rapport 1,3333 · 600 · police.texte</p>
+            <p class="t-initiales-grande" data-style="initiales.grande">Écume et Sel ouvre le mardi</p>
           </li>
         </ol>
       </section>

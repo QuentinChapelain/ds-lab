@@ -144,6 +144,10 @@
       "$description": "Texte mis en avant sans être une action."
     },
     "marque": {
+      "$root": {
+        "$value": "{marque.primaire.12}",
+        "$description": "Texte de marque posé sur fond.marque.discret, comme les initiales d'un avatar ou une étiquette mise en avant ; pas 12 du primaire, et non la couleur des liens (D05)."
+      },
       "grand": {
         "$value": "{marque.primaire.texte-grand}",
         "$description": "Texte de marque des grands titres, styles affichage et titres 1 et 2 seulement, choisi à la saisie pour tenir 3:1 sur les fonds clairs."
@@ -278,6 +282,10 @@
     "icone-texte": {
       "$value": "{espace.8}",
       "$description": "Écart entre l'icône et le texte d'un contrôle, comme un bouton ; hors du contrôle d'ordre des écarts (DS5), comme marge-interieure.composant."
+    },
+    "entre-etiquettes": {
+      "$value": "{espace.8}",
+      "$description": "Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes ; hors du contrôle d'ordre des écarts (DS5), comme ecart.icone-texte."
     }
   },
   "marge-interieure": {
@@ -286,6 +294,10 @@
     "composant": {
       "$value": "{espace.16}",
       "$description": "Marge intérieure d'un composant à bord visible, comme une carte, un encadré ou une zone de formulaire."
+    },
+    "etiquette": {
+      "$value": "{espace.12}",
+      "$description": "Marge intérieure gauche et droite d'une étiquette, de part et d'autre de son texte."
     }
   },
   "typo": {
@@ -454,6 +466,34 @@
         "lineHeight": 1.3333
       },
       "$description": "Aide, message d'erreur ou légende ; ligne visée 16 px."
+    },
+    "initiales": {
+      "normale": {
+        "$value": {
+          "fontFamily": "{marque.police.texte}",
+          "fontSize": "{taille-texte.16}",
+          "fontWeight": "{graisse.600}",
+          "letterSpacing": {
+            "value": 0,
+            "unit": "px"
+          },
+          "lineHeight": 1.5
+        },
+        "$description": "Initiales de l'avatar normal ; ligne visée 24 px."
+      },
+      "grande": {
+        "$value": {
+          "fontFamily": "{marque.police.texte}",
+          "fontSize": "{taille-texte.24}",
+          "fontWeight": "{graisse.600}",
+          "letterSpacing": {
+            "value": 0,
+            "unit": "px"
+          },
+          "lineHeight": 1.3333
+        },
+        "$description": "Initiales du grand avatar ; ligne visée 32 px."
+      }
     }
   },
   "arrondi": {
@@ -466,11 +506,15 @@
     "surface": {
       "$value": "{rayon.12}",
       "$description": "Arrondi d'une surface posée sur la page, comme une carte."
+    },
+    "pilule": {
+      "$value": "{rayon.pilule}",
+      "$description": "Arrondi complet d'une forme ronde ou en pilule, comme un avatar ou une étiquette."
     }
   },
   "hauteur": {
     "$type": "dimension",
-    "$description": "Hauteurs des contrôles.",
+    "$description": "Hauteurs des contrôles et des étiquettes.",
     "controle": {
       "normale": {
         "$value": "{taille.40}",
@@ -480,6 +524,10 @@
         "$value": "{taille.32}",
         "$description": "Hauteur d'un contrôle de petite taille, comme un bouton."
       }
+    },
+    "etiquette": {
+      "$value": "{taille.24}",
+      "$description": "Hauteur d'une étiquette, sur une ligne."
     }
   },
   "epaisseur": {
@@ -504,6 +552,18 @@
     "petite": {
       "$value": "{taille.16}",
       "$description": "Icône d'un contrôle de petite taille."
+    }
+  },
+  "taille-avatar": {
+    "$type": "dimension",
+    "$description": "Côtés d'un avatar.",
+    "normale": {
+      "$value": "{taille.40}",
+      "$description": "Côté d'un avatar de taille normale."
+    },
+    "grande": {
+      "$value": "{taille.56}",
+      "$description": "Côté d'un grand avatar, comme celui d'une carte membre."
     }
   },
   "decalage": {

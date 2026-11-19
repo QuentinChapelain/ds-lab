@@ -55,6 +55,12 @@
  *
  * Ajouts pour le champ de texte et la carte (19/11/2026, docs/attendus/champ-carte.md) :
  *   V9 20 variables de plus, 37 en tout ; leurs valeurs sont jugées par H3 (test/champ-carte-jetons.test.js).
+ *
+ * Ajouts pour l'avatar et l'étiquette (19/11/2026, docs/attendus/avatar-etiquette.md) :
+ *   V1 deux couleurs après celles du bouton, marque-discret (fond.marque.discret, texte.marque) et composant
+ *      (fond.composant, texte.principal), chacune en paire de paires.json ;
+ *   V2 40 couleurs par thème (20 fonds, 20 textes) ;
+ *   V9 18 variables de plus, 55 en tout ; leurs valeurs sont jugées par A4 (test/avatar-etiquette.test.js).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -73,7 +79,9 @@ const FONDS = ['background', 'surface', 'surface-bright', 'surface-light', 'surf
 const DEFAUTS = [...FONDS, 'on-surface-variant'];
 /** Couleurs de l'enveloppe du bouton, après les fonds de Vuetify. */
 const BOUTON = ['erreur-fort-survol', 'composant-survol', 'interactif-discret', 'erreur-discret', 'desactive'];
-const COULEURS = [...FONDS, ...BOUTON];
+/** Couleurs de l'avatar et de l'étiquette (docs/attendus/avatar-etiquette.md), après celles du bouton. */
+const AVATAR_ETIQUETTE = ['marque-discret', 'composant'];
+const COULEURS = [...FONDS, ...BOUTON, ...AVATAR_ETIQUETTE];
 /** @param {string} p */
 const lire = (p) => JSON.parse(readFileSync(p, 'utf8'));
 const brute = () => lire(join(COMMUN, 'vuetify.json'));
@@ -95,7 +103,7 @@ test('V1 table : les 13 fonds par défaut de Vuetify, puis ceux du bouton, un te
   assert.match(t.couleurs.secondary.$description, /Jamais une couleur de bouton \(D05\)/);
 });
 
-test('V2 deux thèmes nommés par marque, 36 couleurs qui couvrent les défauts de Vuetify', () => {
+test('V2 deux thèmes nommés par marque, 40 couleurs qui couvrent les défauts de Vuetify', () => {
   assert.equal(MARQUES.length, 5);
   for (const d of MARQUES) {
     const r = themesVuetify(d);
@@ -105,7 +113,7 @@ test('V2 deux thèmes nommés par marque, 36 couleurs qui couvrent les défauts 
     assert.equal(r.themes[`${slug}-clair`].dark, false);
     assert.equal(r.themes[`${slug}-sombre`].dark, true);
     for (const [nom, th] of Object.entries(r.themes)) {
-      assert.equal(Object.keys(th.colors).length, 36, nom);
+      assert.equal(Object.keys(th.colors).length, 40, nom);
       for (const k of DEFAUTS) assert.ok(k in th.colors, `${nom} : ${k}`);
       for (const k of FONDS) assert.ok(`on-${k}` in th.colors, `${nom} : on-${k}`);
     }
@@ -207,12 +215,18 @@ test('V9 variables ds- du bouton : dimensions dans les dix thèmes, traits égau
     'ds-corps-police', 'ds-corps-taille', 'ds-corps-graisse', 'ds-corps-interligne', 'ds-mention-police', 'ds-mention-taille', 'ds-mention-graisse', 'ds-mention-interligne',
     'ds-titre-carte-police', 'ds-titre-carte-taille', 'ds-titre-carte-graisse', 'ds-titre-carte-interligne', 'ds-titre-carte-hauteur-capitale',
   ];
-  assert.equal(Object.keys(DIMENSIONS).length + Object.keys(TRAITS).length + CHAMP_CARTE.length, 37);
+  const AVATAR_ETIQUETTE_VARIABLES = [
+    'ds-arrondi-pilule', 'ds-taille-avatar-normale', 'ds-taille-avatar-grande',
+    ...['normale', 'grande'].flatMap((t) => ['police', 'taille', 'graisse', 'interligne'].map((c) => `ds-initiales-${t}-${c}`)),
+    'ds-hauteur-etiquette', 'ds-marge-interieure-etiquette', 'ds-ecart-entre-etiquettes',
+    ...['police', 'taille', 'graisse', 'interligne'].map((c) => `ds-corps-petit-${c}`),
+  ];
+  assert.equal(Object.keys(DIMENSIONS).length + Object.keys(TRAITS).length + CHAMP_CARTE.length + AVATAR_ETIQUETTE_VARIABLES.length, 55);
   for (const d of MARQUES) {
     const themes = Object.values(themesVuetify(d).themes);
     for (const [i, mode] of /** @type {const} */ (['clair', 'sombre']).entries()) {
       const x = themes[i].variables;
-      assert.deepEqual(Object.keys(x).filter((k) => k.startsWith('ds-')).sort(), [...Object.keys(DIMENSIONS), ...Object.keys(TRAITS), ...CHAMP_CARTE].sort(), `${d} ${mode}`);
+      assert.deepEqual(Object.keys(x).filter((k) => k.startsWith('ds-')).sort(), [...Object.keys(DIMENSIONS), ...Object.keys(TRAITS), ...CHAMP_CARTE, ...AVATAR_ETIQUETTE_VARIABLES].sort(), `${d} ${mode}`);
       for (const [k, v] of Object.entries(DIMENSIONS)) assert.equal(x[k], v, `${d} ${mode} ${k}`);
       const s = loadRoles(d, { mode });
       const roles = resolveRoles(s.semantique, s.primitives, s.marque);

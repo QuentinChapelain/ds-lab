@@ -60,6 +60,17 @@ export const PAIRES_BOUTON = [
 /** Paires du bouton sous leur seuil, avec exception écrite (composant inactif, WCAG 1.4.3). */
 export const EXCEPTIONS_BOUTON = ['texte.desactive sur fond.desactive', 'texte.desactive sur fond.app'];
 
+/**
+ * Rôle de couleur de l'avatar et de l'étiquette → [cible de l'alias, hex chez Orbe Café en clair], écrit à la main dans
+ * docs/attendus/avatar-etiquette.md (culori, résolveur indépendant de src/). Ajouté après ceux du bouton.
+ */
+export const AJOUTS_AVATAR = {
+  'texte.marque': ['marque.primaire.12', '#103060'],
+};
+
+/** Paire de l'avatar et de l'étiquette, en fin de paires.json, après celles du bouton. */
+export const PAIRES_AVATAR = [['texte.marque', 'fond.marque.discret', 'texte']];
+
 /** Rôles de couleur et paires de chaque marque, ajouts compris. */
-export const N_ROLES = 42 + Object.keys(AJOUTS).length + Object.keys(AJOUTS_BOUTON).length;
-export const N_PAIRES = 70 + PAIRES_BOUTON.length;
+export const N_ROLES = 42 + Object.keys(AJOUTS).length + Object.keys(AJOUTS_BOUTON).length + Object.keys(AJOUTS_AVATAR).length;
+export const N_PAIRES = 70 + PAIRES_BOUTON.length + PAIRES_AVATAR.length;

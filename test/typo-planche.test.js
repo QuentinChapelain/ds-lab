@@ -3,7 +3,7 @@
  * Planche tokens/orbe-cafe/typo.html.
  *
  * Attendu écrit à la main avant le code de src/report/typo.js, d'après le plan typo du 15/11/2026 :
- *   spécimen des onze styles, une ligne [data-specimen] par style, avec taille, ligne et rapport écrits ;
+ *   spécimen des treize styles (onze, puis les deux des initiales de l'avatar), une ligne [data-specimen] par style, avec taille, ligne et rapport écrits ;
  *   trois situations [data-situation] : hero (un hero de page d'accueil sur deux lignes exactement),
  *   contenu (titres 1 à 3, chapô, texte courant, un titre long [data-titre-long] qui passe à la ligne),
  *   dense (tableau, titre.4, corps.petit) ;
@@ -48,6 +48,8 @@ const STYLES = /** @type {Record<string, [number, number, number | null, number 
   'corps.petit': [14, 20, null, null, 400, TEXTE],
   libelle: [14, 20, null, null, 600, PRODUIT],
   mention: [12, 16, null, null, 400, TEXTE],
+  'initiales.normale': [16, 24, null, null, 600, TEXTE],
+  'initiales.grande': [24, 32, null, null, 600, TEXTE],
 });
 /** @param {string} style @param {number} width @returns {[number, number]} */
 const attendu = (style, width) => {

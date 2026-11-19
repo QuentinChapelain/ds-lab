@@ -40,7 +40,11 @@
         "erreur-discret": "#fff0ee",
         "on-erreur-discret": "#cb1d2a",
         "desactive": "#f3f2f1",
-        "on-desactive": "#8a8478"
+        "on-desactive": "#8a8478",
+        "marque-discret": "#fbf3e1",
+        "on-marque-discret": "#402e00",
+        "composant": "#f3f2f1",
+        "on-composant": "#363026"
       },
       "variables": {
         "font-body": "system-ui, sans-serif",
@@ -81,7 +85,25 @@
         "ds-titre-carte-taille": "20px",
         "ds-titre-carte-graisse": "600",
         "ds-titre-carte-interligne": "1.4",
-        "ds-titre-carte-hauteur-capitale": "0.7"
+        "ds-titre-carte-hauteur-capitale": "0.7",
+        "ds-arrondi-pilule": "9999px",
+        "ds-taille-avatar-normale": "40px",
+        "ds-taille-avatar-grande": "56px",
+        "ds-initiales-normale-police": "system-ui, sans-serif",
+        "ds-initiales-normale-taille": "16px",
+        "ds-initiales-normale-graisse": "600",
+        "ds-initiales-normale-interligne": "1.5",
+        "ds-initiales-grande-police": "system-ui, sans-serif",
+        "ds-initiales-grande-taille": "24px",
+        "ds-initiales-grande-graisse": "600",
+        "ds-initiales-grande-interligne": "1.3333",
+        "ds-hauteur-etiquette": "24px",
+        "ds-marge-interieure-etiquette": "12px",
+        "ds-ecart-entre-etiquettes": "8px",
+        "ds-corps-petit-police": "system-ui, sans-serif",
+        "ds-corps-petit-taille": "14px",
+        "ds-corps-petit-graisse": "400",
+        "ds-corps-petit-interligne": "1.4286"
       }
     },
     "maison-alberto-sombre": {
@@ -122,7 +144,11 @@
         "erreur-discret": "#231918",
         "on-erreur-discret": "#ff978f",
         "desactive": "#1b1b1b",
-        "on-desactive": "#7d786c"
+        "on-desactive": "#7d786c",
+        "marque-discret": "#1d1b17",
+        "on-marque-discret": "#feeecb",
+        "composant": "#1b1b1b",
+        "on-composant": "#d8d5ce"
       },
       "variables": {
         "font-body": "system-ui, sans-serif",
@@ -163,7 +189,25 @@
         "ds-titre-carte-taille": "20px",
         "ds-titre-carte-graisse": "600",
         "ds-titre-carte-interligne": "1.4",
-        "ds-titre-carte-hauteur-capitale": "0.7"
+        "ds-titre-carte-hauteur-capitale": "0.7",
+        "ds-arrondi-pilule": "9999px",
+        "ds-taille-avatar-normale": "40px",
+        "ds-taille-avatar-grande": "56px",
+        "ds-initiales-normale-police": "system-ui, sans-serif",
+        "ds-initiales-normale-taille": "16px",
+        "ds-initiales-normale-graisse": "600",
+        "ds-initiales-normale-interligne": "1.5",
+        "ds-initiales-grande-police": "system-ui, sans-serif",
+        "ds-initiales-grande-taille": "24px",
+        "ds-initiales-grande-graisse": "600",
+        "ds-initiales-grande-interligne": "1.3333",
+        "ds-hauteur-etiquette": "24px",
+        "ds-marge-interieure-etiquette": "12px",
+        "ds-ecart-entre-etiquettes": "8px",
+        "ds-corps-petit-police": "system-ui, sans-serif",
+        "ds-corps-petit-taille": "14px",
+        "ds-corps-petit-graisse": "400",
+        "ds-corps-petit-interligne": "1.4286"
       }
     }
   }

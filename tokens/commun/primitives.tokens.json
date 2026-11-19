@@ -704,6 +704,12 @@
         "unit": "px"
       }
     },
+    "24": {
+      "$value": {
+        "value": 24,
+        "unit": "px"
+      }
+    },
     "32": {
       "$value": {
         "value": 32,
@@ -716,8 +722,14 @@
         "unit": "px"
       }
     },
+    "56": {
+      "$value": {
+        "value": 56,
+        "unit": "px"
+      }
+    },
     "$type": "dimension",
-    "$description": "Tailles de contrôle et d'icône (hauteur d'un bouton, côté d'une icône), en px."
+    "$description": "Tailles de contrôle, d'icône, d'avatar et d'étiquette (hauteur d'un bouton, côté d'une icône ou d'un avatar), en px."
   },
   "trait": {
     "1": {

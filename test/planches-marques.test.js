@@ -10,7 +10,7 @@
  *      15 fichiers ;
  *   P2 chaque planche nomme sa marque, lue dans le champ name du resolver, dans son <title> et dans son <h1>, et ne nomme
  *      aucune autre marque ;
- *   P3 le texte d'essai du spécimen de la typo est « <nom> ouvre le mardi », une fois par style (11 styles) ;
+ *   P3 le texte d'essai du spécimen de la typo est « <nom> ouvre le mardi », une fois par style (13 styles, dont les deux des initiales de l'avatar) ;
  *   P4 node src/cli/planche.js --marque <dossier> : seule cette marque ; une option ou une planche inconnue sort en 2
  *      (planche-commande.test.js).
  */
@@ -49,7 +49,7 @@ test('P2 chaque planche nomme sa marque, et elle seule', () => {
 test('P3 texte d\'essai du spécimen : « <nom> ouvre le mardi », une fois par style', () => {
   MARQUES.forEach((d, i) => {
     const html = readFileSync(join(d, 'typo.html'), 'utf8');
-    assert.equal(html.split(`${echap(NOMS[i])} ouvre le mardi`).length - 1, 11, d);
+    assert.equal(html.split(`${echap(NOMS[i])} ouvre le mardi`).length - 1, 13, d);
     assert.ok(!html.includes('torréfie le mardi'), d);
   });
 });

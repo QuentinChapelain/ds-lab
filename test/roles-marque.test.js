@@ -47,7 +47,7 @@ import { formatHex, rgb, oklch, toGamut } from 'culori';
 import { generateScale } from '../src/valise/generate.js';
 import { loadRoles, resolveRoles, contratRoles } from '../src/tokens/roles.js';
 import { fondsClairs } from '../src/tokens/saisie.js';
-import { AJOUTS, AJOUTS_BOUTON, N_PAIRES } from './helpers/roles-ajoutes.js';
+import { AJOUTS, AJOUTS_BOUTON, AJOUTS_AVATAR, N_PAIRES } from './helpers/roles-ajoutes.js';
 import { classePlein, survolPlein, marqueTokens, SOMBRE_BLANC, BLANC_MIN, TEXTE_FONCE, TEXTE_FONCE_SURVOL, STATUTS_FIGES, SURVOL_CLARTE } from '../src/tokens/pleins.js';
 import { charger, avecAplat, COMMUN, ORBE } from './helpers/jetons.js';
 
@@ -244,7 +244,7 @@ test('M0 rôles : les pleins et les couleurs de marque passent par marque.* ; au
 
 test('Pleins : les 42 rôles se résolvent vers les hex attendus, plus les ajouts (helpers/roles-ajoutes.js)', () => {
   const roles = resolveRoles(load('semantique.tokens.json'), load('primitives.tokens.json'), load('statuts.tokens.json'), avecAplat(marque));
-  const all = new Map([...HEX, ...Object.entries({ ...AJOUTS, ...AJOUTS_BOUTON }).map(([r, [, hex]]) => /** @type {[string, string]} */ ([r, hex]))]);
+  const all = new Map([...HEX, ...Object.entries({ ...AJOUTS, ...AJOUTS_BOUTON, ...AJOUTS_AVATAR }).map(([r, [, hex]]) => /** @type {[string, string]} */ ([r, hex]))]);
   assert.deepEqual([...roles.keys()].sort(), [...all.keys()].sort());
   for (const [role, hex] of all) assert.equal(roles.get(role)?.hex, hex, role);
 });

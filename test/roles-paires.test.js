@@ -51,7 +51,7 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { loadRoles, resolveRoles, contratRoles, contrat } from '../src/tokens/roles.js';
-import { PAIRES_AJOUTEES, INTERDITES_AJOUTEES, PAIRES_BOUTON, EXCEPTIONS_BOUTON, N_PAIRES } from './helpers/roles-ajoutes.js';
+import { PAIRES_AJOUTEES, INTERDITES_AJOUTEES, PAIRES_BOUTON, PAIRES_AVATAR, EXCEPTIONS_BOUTON, N_PAIRES } from './helpers/roles-ajoutes.js';
 import { charger, COMMUN, ORBE } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -129,7 +129,7 @@ const sem = load('semantique.tokens.json');
 
 test('T2 paires.json : seuils 4,5 texte, 3 bordure et focus (et grand texte) ; 48 paires en tête, sans doublon, dans l\'ordre', () => {
   assert.deepEqual(paires.seuils, { texte: 4.5, bordure: 3, focus: 3, 'grand-texte': 3 });
-  assert.equal(paires.paires.length, 48 + PAIRES_AJOUTEES.length + 4 + PAIRES_BOUTON.length, '+ 4 bordures de statut sur fond.surface, + les paires du bouton');
+  assert.equal(paires.paires.length, 48 + PAIRES_AJOUTEES.length + 4 + PAIRES_BOUTON.length + PAIRES_AVATAR.length, '+ 4 bordures de statut sur fond.surface, + les paires du bouton, de l\'avatar et de l\'étiquette');
   const keys = paires.paires.map((/** @type {any} */ p) => `${p.devant}|${p.fond}`);
   assert.equal(new Set(keys).size, keys.length);
   assert.deepEqual(paires.paires.slice(0, 48).map((/** @type {any} */ p) => [p.devant, p.fond]), TABLE.map((t) => [t.devant, t.fond]));
@@ -167,7 +167,7 @@ test('T2 couverture : chaque texte et chaque bordure non décorative a une paire
 
 test('T2 contratRoles : ratios égaux à culori (± 0,0001), seuil par type', () => {
   const c = contratRoles(loadRoles(DIR));
-  assert.equal(c.pairs.length, TABLE.length + PAIRES_AJOUTEES.length + 4 + PAIRES_BOUTON.length, '+ 4 bordures de statut sur fond.surface, + les paires du bouton');
+  assert.equal(c.pairs.length, TABLE.length + PAIRES_AJOUTEES.length + 4 + PAIRES_BOUTON.length + PAIRES_AVATAR.length, '+ 4 bordures de statut sur fond.surface, + les paires du bouton, de l\'avatar et de l\'étiquette');
   c.pairs.slice(0, TABLE.length).forEach((/** @type {any} */ p, /** @type {number} */ i) => {
     assert.equal(p.devant, TABLE[i].devant);
     assert.equal(p.fond, TABLE[i].fond);
