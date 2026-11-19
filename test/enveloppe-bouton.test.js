@@ -19,6 +19,13 @@
  *      prend ni un commentaire, ni ds-champ, ni -webkit-input-placeholder, ni nav-field, ni VFieldset ;
  *   E5 dans le code de src/ et de l'atelier, une seule occurrence de fichier : atelier/composants/ChampTexte.vue, qui
  *      importe bien VTextField.
+ *
+ * Ajouts pour la carte (19/11/2026, D50, docs/attendus/champ-carte.md) :
+ *   E6 la détection de la carte prend VCard et ses composés (VCardText, VCardActions…), un import
+ *      vuetify/components/VCard, et v-card et ses classes (v-card-text, v-card__overlay…) ; elle ne prend ni un
+ *      commentaire, ni ds-carte, ni nav-card, ni VCardinal ;
+ *   E7 dans le code de src/ et de l'atelier, une seule occurrence de fichier : atelier/composants/Carte.vue, qui importe
+ *      bien VCard.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -37,6 +44,9 @@ const VUETIFY_BOUTON = /\bVBtn|(?<![\w-])v-btn/;
 /** Champ de Vuetify : le composant et ses pièces (et leurs composés), la balise ou la classe. */
 const VUETIFY_CHAMP = /\bV(?:TextField|Field|Input)(?![a-z])|(?<![\w-])v-(?:text-field|field|input)(?![a-z])/;
 const ENVELOPPE_CHAMP = join('atelier', 'composants', 'ChampTexte.vue');
+/** Carte de Vuetify : le composant et ses composés, la balise ou la classe. */
+const VUETIFY_CARTE = /\bVCard(?![a-z])|(?<![\w-])v-card(?![a-z])/;
+const ENVELOPPE_CARTE = join('atelier', 'composants', 'Carte.vue');
 
 /** Code sans commentaires d'un fichier, .js ou .vue, relatif à la racine. @param {string} f */
 function code(f) {
@@ -99,4 +109,18 @@ test('E5 le champ de Vuetify ne paraît que dans son enveloppe', () => {
   assert.ok(fichiers.includes(ENVELOPPE_CHAMP), 'l\'enveloppe est lue');
   assert.deepEqual(fichiers.filter((f) => VUETIFY_CHAMP.test(code(f))), [ENVELOPPE_CHAMP]);
   assert.match(code(ENVELOPPE_CHAMP), /import \{ VTextField \} from 'vuetify\/components';/);
+});
+
+test('E6 détection de la carte de Vuetify', () => {
+  for (const s of ["import { VCard } from 'vuetify/components';", "import { VCardText, VCardActions } from 'vuetify/components';", "import x from 'vuetify/components/VCard';", '<v-card>x</v-card>', '<v-card-text>x</v-card-text>', "'.v-card__overlay'"])
+    assert.ok(VUETIFY_CARTE.test(s), s);
+  for (const s of ['// v-card dans un commentaire', "'.ds-carte__lien'", "'nav-card'", 'h(VCardinal)', 'h(Carte)'])
+    assert.ok(!VUETIFY_CARTE.test(lex(s).code), s);
+});
+
+test('E7 la carte de Vuetify ne paraît que dans son enveloppe', () => {
+  const fichiers = fichiersDeCode();
+  assert.ok(fichiers.includes(ENVELOPPE_CARTE), 'l\'enveloppe est lue');
+  assert.deepEqual(fichiers.filter((f) => VUETIFY_CARTE.test(code(f))), [ENVELOPPE_CARTE]);
+  assert.match(code(ENVELOPPE_CARTE), /import \{ VCard \} from 'vuetify\/components';/);
 });

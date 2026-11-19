@@ -11,14 +11,17 @@
  *   W2 option hors de ses valeurs : « <composant> : <option> inconnu(e) : <valeur> (<valeurs>) », accordé au genre du
  *      nom, à égalité stricte ("3" n'est pas 3) ; le premier échec seul, dans l'ordre du menu, après les attributs ;
  *   W3 option obligatoire absente ou vide : « <composant> : <option> obligatoire » ;
- *   W4 règle propre : son message préfixé du composant ; elle reçoit props, attributs et emplacements ;
+ *   W4 règle propre : son message préfixé du composant ; elle reçoit props, attributs et emplacements ; une règle du
+ *      rendu (lecture du contenu d'un emplacement) n'est vérifiée qu'au rendu ;
  *   W5 les refus rejoués sur chaque vrai menu : défauts acceptés, attribut inconnu, chaque valeur hors menu, chaque
  *      obligatoire absente, chaque règle ; les cinq messages du bouton à l'octet ;
  *   W6 props du menu du bouton = son ancien bloc props, recopié ici ;
  *   W7 definirEnveloppe : nom, inheritAttrs, emits tirés du menu ; un usage refusé lève au montage, avant le setup de
- *      l'enveloppe ; une prop devenue fausse lève au rendu suivant ;
+ *      l'enveloppe ; une prop devenue fausse lève au rendu suivant ; une règle du rendu ne court qu'au rendu ;
  *      les messages du champ, mot pour mot de l'attendu : libellé obligatoire, type inconnu, aria-describedby et
- *      aria-invalid posés à la main refusés ;
+ *      aria-invalid posés à la main refusés ; ceux de la carte : titre obligatoire, niveau inconnu (5, et la chaîne "3"),
+ *      texte alternatif obligatoire avec une image (vide admis), lien et actions ensemble, autre chose qu'un Bouton dans
+ *      les actions (commentaires, blancs et fragments traversés), écouteur refusé ;
  *   W8 chaque .vue de atelier/composants/ passe par la fabrique et son menu, sans déclarer lui-même props, inheritAttrs
  *      ni emits ; chaque menu est importé par un seul .vue.
  */
@@ -30,6 +33,7 @@ import { fileURLToPath } from 'node:url';
 import { definirEnveloppe, propsDuMenu, verifierUsage } from '../atelier/composants/fabrique.js';
 import BOUTON from '../atelier/composants/Bouton.menu.js';
 import CHAMP from '../atelier/composants/ChampTexte.menu.js';
+import CARTE from '../atelier/composants/Carte.menu.js';
 import { partiesVue } from './helpers/atelier.js';
 import { lex } from './helpers/commentaires.js';
 
@@ -37,7 +41,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const COMPOSANTS = join(ROOT, 'atelier', 'composants');
 
 /** Menus réels, par nom de fichier. */
-const MENUS = { 'Bouton.menu.js': BOUTON, 'ChampTexte.menu.js': CHAMP };
+const MENUS = { 'Bouton.menu.js': BOUTON, 'ChampTexte.menu.js': CHAMP, 'Carte.menu.js': CARTE };
 
 /** Props avec les défauts du menu, comme Vue les donne quand rien n'est passé. @param {any} menu */
 const defauts = (menu) => Object.fromEntries(Object.entries(menu.options).map(([k, o]) => [k, /** @type {any} */ (o).defaut]));
@@ -95,6 +99,9 @@ test('W4 règle propre', () => {
   assert.equal(leve(menu, p, { id: 'x' }, { actions: () => [] }), null);
   assert.deepEqual(vus, [['T', ['id'], ['actions']]]);
   assert.equal(leve(menu, { ...p, forme: 'carree' }), 'essai : carrée refusée ici');
+  const auRendu = { ...ESSAI, reglesDuRendu: [(/** @type {any} */ _p, /** @type {any} */ _a, /** @type {any} */ s) => (s.contenu?.() === 'faux' ? 'contenu refusé' : null)] };
+  assert.equal(leve(auRendu, p, {}, { contenu: () => 'faux' }), null, 'hors du rendu, la règle du rendu ne court pas');
+  assert.throws(() => verifierUsage(auRendu, p, {}, { contenu: () => 'faux' }, { rendu: true }), /^Error: essai : contenu refusé$/);
 });
 
 test('W5 refus rejoués sur chaque menu réel', () => {
@@ -124,6 +131,33 @@ test('W5 refus rejoués sur chaque menu réel', () => {
   assert.equal(leve(CHAMP, c, { 'aria-describedby': 'ailleurs' }), 'champ : attribut refusé : aria-describedby');
   assert.equal(leve(CHAMP, c, { 'aria-invalid': 'true' }), 'champ : attribut refusé : aria-invalid');
   assert.equal(leve(CHAMP, c, { id: 'x', 'aria-label': 'y', onFocus: () => {}, 'data-cas': 'z' }), null);
+  const k = { ...defauts(CARTE), titre: 'Club de lecture' };
+  /** Règles de la carte, rendu compris. @param {Record<string, any>} props @param {Record<string, any>} [attrs] @param {Record<string, any>} [slots] */
+  const carte = (props, attrs = {}, slots = {}) => {
+    try {
+      verifierUsage(CARTE, props, attrs, slots, { rendu: true });
+      return null;
+    } catch (e) {
+      return /** @type {Error} */ (e).message;
+    }
+  };
+  const bouton = { type: { name: 'Bouton' }, children: null };
+  assert.equal(carte({ ...k, titre: undefined }), 'carte : titre obligatoire');
+  assert.equal(carte({ ...k, niveau: 5 }), 'carte : niveau inconnu : 5 (2, 3, 4)');
+  assert.equal(carte({ ...k, niveau: '3' }), 'carte : niveau inconnu : 3 (2, 3, 4)');
+  assert.equal(carte({ ...k, media: 'x.png' }), 'carte : texte alternatif obligatoire avec une image');
+  assert.equal(carte({ ...k, media: 'x.png', texteAlternatif: '' }), null, 'image décorative');
+  assert.equal(carte({ ...k, lien: '#x' }, {}, { actions: () => [bouton] }), 'carte : lien et actions ensemble refusés');
+  assert.equal(carte(k, {}, { actions: () => [{ type: 'a', children: 'Lire' }] }), 'carte : actions : seul Bouton est admis');
+  assert.equal(carte(k, {}, { actions: () => [{ type: { name: 'Lien' } }] }), 'carte : actions : seul Bouton est admis');
+  // Types de nœud de Vue 3.5 (runtime-core : Text, Fragment, Comment, Static).
+  const texte = Symbol.for('v-txt');
+  const fragment = Symbol.for('v-fgt');
+  assert.equal(carte(k, {}, { actions: () => [bouton, { type: texte, children: '  ' }, { type: fragment, children: [bouton, { type: Symbol.for('v-cmt'), children: 'v-if' }] }] }), null, 'blancs, fragments et commentaires traversés');
+  assert.equal(carte(k, {}, { actions: () => [{ type: Symbol.for('v-stc'), children: '<a>Lire</a>' }] }), 'carte : actions : seul Bouton est admis');
+  assert.equal(carte(k, {}, { actions: () => [{ type: texte, children: 'Lire' }] }), 'carte : actions : seul Bouton est admis');
+  assert.equal(carte(k, { onClick: () => {} }), 'carte : attribut refusé : onClick');
+  assert.equal(carte(k, { id: 'c', 'aria-label': 'x', 'data-cas': 'y' }), null);
 });
 
 test('W6 props du bouton inchangées', () => {
@@ -158,6 +192,13 @@ test('W7 definirEnveloppe vérifie au montage puis à chaque rendu', () => {
   props.forme = 'ovale';
   assert.throws(() => rendre(), /essai : forme inconnue : ovale/);
   assert.deepEqual(journal, ['setup', 'rendu']);
+  /** @type {string[]} */
+  const lus = [];
+  const auRendu = definirEnveloppe({ ...ESSAI, reglesDuRendu: [() => (lus.push('lu'), null)] }, () => () => 'ok');
+  const r = auRendu.setup({ ...defauts(ESSAI), titre: 'T' }, ctx({}));
+  assert.deepEqual(lus, [], 'pas au montage');
+  r();
+  assert.deepEqual(lus, ['lu'], 'au rendu');
 });
 
 test('W8 chaque enveloppe passe par la fabrique et son menu', () => {
