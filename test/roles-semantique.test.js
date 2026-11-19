@@ -175,7 +175,12 @@ test('T1 bordures décoratives : discrete et defaut le disent', () => {
 });
 
 test('T1 bordure.<statut> : décorative sur un fond de statut, le texte porte le sens', () => {
-  for (const s of STATUTS) assert.ok(roles.get(`bordure.${s}`).$description.includes(STATUT_BORDER), `bordure.${s}`);
+  // Une description citée par une fiche ne nomme aucun token (DOC3, D57) : la fin de la formule passe dans la note.
+  for (const s of STATUTS) {
+    const t = roles.get(`bordure.${s}`);
+    assert.ok(`${t.$description} ${t.$extensions?.['ds-lab.note'] ?? ''}`.includes(STATUT_BORDER), `bordure.${s}`);
+    assert.ok(t.$description.includes(STATUT_BORDER.split(' ; un champ')[0]), `bordure.${s} : la description garde le sens`);
+  }
 });
 
 test('T1 un plein à texte blanc ne dit plus « texte foncé »', () => {

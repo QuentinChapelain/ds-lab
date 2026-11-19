@@ -81,7 +81,8 @@ test('ecart.section a sa valeur en étroit (32 px) dans le contexte étroit, lui
   assert.equal(etroit['marge-interieure'], undefined);
   assert.equal(sem.ecart.section.$value, '{espace.48}');
   assert.ok(prims.espace['32']?.$value, 'espace.32 existe');
-  for (const role of Object.keys(EXPECTED)) assert.equal(at(sem, role).$extensions, undefined, role);
+  // Seule la note de l'équipe (ds-lab.note, DOC3, D57) est admise : aucune valeur en extension.
+  for (const role of Object.keys(EXPECTED)) assert.deepEqual(Object.keys(at(sem, role).$extensions ?? {}).filter((k) => k !== 'ds-lab.note'), [], role);
 });
 
 test('description racine : espacements, DTCG 2025.10', () => {

@@ -13,7 +13,10 @@
     },
     "surface": {
       "$value": "{couleur.surface}",
-      "$description": "Fond blanc d'une carte ou d'un champ, posé sur le fond de page."
+      "$description": "Fond d'une carte ou d'un champ, posé sur le fond de la page.",
+      "$extensions": {
+        "ds-lab.note": "Fond blanc d'une carte ou d'un champ, posé sur le fond de page."
+      }
     },
     "inverse": {
       "$value": "{couleur.neutre.12}",
@@ -22,7 +25,10 @@
     "composant": {
       "$root": {
         "$value": "{couleur.neutre.3}",
-        "$description": "Fond d'un composant au repos, plus soutenu que la surface ; un champ, une carte et le bouton secondaire se posent sur fond.surface."
+        "$description": "Fond d'un composant au repos, plus soutenu que la surface, comme une étiquette neutre.",
+        "$extensions": {
+          "ds-lab.note": "Fond d'un composant au repos, plus soutenu que la surface ; un champ, une carte et le bouton secondaire se posent sur fond.surface."
+        }
       },
       "survol": {
         "$value": "{couleur.neutre.4}",
@@ -146,7 +152,10 @@
     "marque": {
       "$root": {
         "$value": "{marque.primaire.12}",
-        "$description": "Texte de marque posé sur fond.marque.discret, comme les initiales d'un avatar ou une étiquette mise en avant ; pas 12 du primaire, et non la couleur des liens (D05)."
+        "$description": "Texte de marque posé sur l'aplat clair de la marque, comme les initiales d'un avatar ou une étiquette mise en avant.",
+        "$extensions": {
+          "ds-lab.note": "Texte de marque posé sur fond.marque.discret, comme les initiales d'un avatar ou une étiquette mise en avant ; pas 12 du primaire, et non la couleur des liens (D05)."
+        }
       },
       "grand": {
         "$value": "{marque.primaire.texte-grand}",
@@ -215,7 +224,10 @@
     },
     "desactive": {
       "$value": "{couleur.neutre.9}",
-      "$description": "Texte d'un composant désactivé, sur fond.desactive ou sur la page ; exempté du seuil de contraste (WCAG 1.4.3, composant inactif)."
+      "$description": "Texte d'un composant désactivé, sur son fond ou sur la page.",
+      "$extensions": {
+        "ds-lab.note": "Texte d'un composant désactivé, sur fond.desactive ou sur la page ; exempté du seuil de contraste (WCAG 1.4.3, composant inactif)."
+      }
     }
   },
   "bordure": {
@@ -227,16 +239,25 @@
     },
     "defaut": {
       "$value": "{couleur.neutre.7}",
-      "$description": "Contour ordinaire d'une carte ou d'un séparateur, décoratif, jamais seule pour repérer un champ ou un état (sous 3:1 : un champ prend bordure.forte)."
+      "$description": "Contour ordinaire d'une carte ou d'un séparateur, décoratif, jamais seule pour repérer un champ ou un état.",
+      "$extensions": {
+        "ds-lab.note": "Contour ordinaire d'une carte ou d'un séparateur, décoratif, jamais seule pour repérer un champ ou un état (sous 3:1 : un champ prend bordure.forte)."
+      }
     },
     "forte": {
       "$value": "{couleur.neutre.8}",
-      "$description": "Contour qui suffit à repérer un champ ou une case à cocher (3:1)."
+      "$description": "Contour qui suffit à repérer un champ ou une case à cocher.",
+      "$extensions": {
+        "ds-lab.note": "Contour qui suffit à repérer un champ ou une case à cocher (3:1)."
+      }
     },
     "focus": {
       "$root": {
         "$value": "{marque.primaire.11}",
-        "$description": "Anneau de focus clavier (3:1)."
+        "$description": "Anneau de focus clavier, autour du composant qui a le focus.",
+        "$extensions": {
+          "ds-lab.note": "Anneau de focus clavier (3:1)."
+        }
       },
       "inverse": {
         "$value": "{marque.primaire.sur-aplat}",
@@ -245,7 +266,10 @@
     },
     "erreur": {
       "$value": "{couleur.erreur.8}",
-      "$description": "Contour d'un champ en erreur (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app."
+      "$description": "Contour d'un champ en erreur ; sur un fond de statut, décorative : le texte porte le sens.",
+      "$extensions": {
+        "ds-lab.note": "Contour d'un champ en erreur (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app."
+      }
     },
     "succes": {
       "$value": "{couleur.succes.8}",
@@ -269,7 +293,10 @@
     },
     "entre-composants": {
       "$value": "{espace.16}",
-      "$description": "Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée ; au moins le double de ecart.dans-composant, pour qu'on voie à quel champ appartient un libellé ou un message (régularité observée dans les systèmes lus, pas une norme)."
+      "$description": "Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée, pour qu'on voie à quel champ appartient un libellé ou un message.",
+      "$extensions": {
+        "ds-lab.note": "Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée ; au moins le double de ecart.dans-composant, pour qu'on voie à quel champ appartient un libellé ou un message (régularité observée dans les systèmes lus, pas une norme)."
+      }
     },
     "entre-groupes": {
       "$value": "{espace.24}",
@@ -281,11 +308,17 @@
     },
     "icone-texte": {
       "$value": "{espace.8}",
-      "$description": "Écart entre l'icône et le texte d'un contrôle, comme un bouton ; hors du contrôle d'ordre des écarts (DS5), comme marge-interieure.composant."
+      "$description": "Écart entre l'icône et le texte d'un contrôle, comme un bouton ou un champ.",
+      "$extensions": {
+        "ds-lab.note": "Écart entre l'icône et le texte d'un contrôle, comme un bouton ; hors du contrôle d'ordre des écarts (DS5), comme marge-interieure.composant."
+      }
     },
     "entre-etiquettes": {
       "$value": "{espace.8}",
-      "$description": "Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes ; hors du contrôle d'ordre des écarts (DS5), comme ecart.icone-texte."
+      "$description": "Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes.",
+      "$extensions": {
+        "ds-lab.note": "Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes ; hors du contrôle d'ordre des écarts (DS5), comme ecart.icone-texte."
+      }
     }
   },
   "marge-interieure": {
@@ -381,9 +414,10 @@
           },
           "lineHeight": 1.4
         },
-        "$description": "Titre de carte ; ligne visée 28 px en large, 24 px en étroit.",
+        "$description": "Titre de carte.",
         "$extensions": {
-          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
+          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}",
+          "ds-lab.note": "Titre de carte ; ligne visée 28 px en large, 24 px en étroit."
         }
       },
       "4": {
@@ -425,7 +459,10 @@
           },
           "lineHeight": 1.5
         },
-        "$description": "Texte courant ; ligne visée 24 px."
+        "$description": "Texte courant, comme le texte d'une carte ou la saisie d'un champ.",
+        "$extensions": {
+          "ds-lab.note": "Texte courant ; ligne visée 24 px."
+        }
       },
       "petit": {
         "$value": {
@@ -438,7 +475,10 @@
           },
           "lineHeight": 1.4286
         },
-        "$description": "Texte de tableau ; ligne visée 20 px."
+        "$description": "Texte de tableau ou d'étiquette, plus petit que le texte courant.",
+        "$extensions": {
+          "ds-lab.note": "Texte de tableau ; ligne visée 20 px."
+        }
       }
     },
     "libelle": {
@@ -452,7 +492,10 @@
         },
         "lineHeight": 1.4286
       },
-      "$description": "Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit (D44) ; ligne visée 20 px."
+      "$description": "Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit.",
+      "$extensions": {
+        "ds-lab.note": "Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit (D44) ; ligne visée 20 px."
+      }
     },
     "mention": {
       "$value": {
@@ -465,7 +508,10 @@
         },
         "lineHeight": 1.3333
       },
-      "$description": "Aide, message d'erreur ou légende ; ligne visée 16 px."
+      "$description": "Aide, message d'erreur ou légende, sous un champ.",
+      "$extensions": {
+        "ds-lab.note": "Aide, message d'erreur ou légende ; ligne visée 16 px."
+      }
     },
     "initiales": {
       "normale": {
@@ -479,7 +525,10 @@
           },
           "lineHeight": 1.5
         },
-        "$description": "Initiales de l'avatar normal ; ligne visée 24 px."
+        "$description": "Initiales de l'avatar normal.",
+        "$extensions": {
+          "ds-lab.note": "Initiales de l'avatar normal ; ligne visée 24 px."
+        }
       },
       "grande": {
         "$value": {
@@ -492,7 +541,10 @@
           },
           "lineHeight": 1.3333
         },
-        "$description": "Initiales du grand avatar ; ligne visée 32 px."
+        "$description": "Initiales du grand avatar.",
+        "$extensions": {
+          "ds-lab.note": "Initiales du grand avatar ; ligne visée 32 px."
+        }
       }
     }
   },
@@ -539,7 +591,10 @@
     },
     "focus": {
       "$value": "{trait.2}",
-      "$description": "Épaisseur de l'anneau de focus clavier (bordure.focus), décalé de 2 px sur le fond de la page (DS2)."
+      "$description": "Épaisseur de l'anneau de focus clavier.",
+      "$extensions": {
+        "ds-lab.note": "Épaisseur de l'anneau de focus clavier (bordure.focus), décalé de 2 px sur le fond de la page (DS2)."
+      }
     }
   },
   "taille-icone": {
@@ -571,7 +626,10 @@
     "$description": "Décalages entre un trait et le bord de son composant.",
     "focus": {
       "$value": "{trait.2}",
-      "$description": "Décalage de l'anneau de focus clavier hors du composant, pour qu'il se pose sur le fond de la page et jamais sur le plein (DS2)."
+      "$description": "Décalage de l'anneau de focus clavier hors du composant, pour qu'il se pose sur le fond de la page et jamais sur le plein.",
+      "$extensions": {
+        "ds-lab.note": "Décalage de l'anneau de focus clavier hors du composant, pour qu'il se pose sur le fond de la page et jamais sur le plein (DS2)."
+      }
     }
   }
 }

@@ -156,6 +156,9 @@ test('H3 variables ds- du champ et de la carte, dans les dix thèmes', () => {
 
 test('H4 descriptions corrigées', () => {
   const sem = charger('semantique.tokens.json');
-  assert.equal(sem.bordure.defaut.$description, 'Contour ordinaire d\'une carte ou d\'un séparateur, décoratif, jamais seule pour repérer un champ ou un état (sous 3:1 : un champ prend bordure.forte).');
-  assert.equal(sem.fond.composant.$root.$description, 'Fond d\'un composant au repos, plus soutenu que la surface ; un champ, une carte et le bouton secondaire se posent sur fond.surface.');
+  // Réécrites pour le lecteur des fiches (DOC3, D57) ; le texte d'avant reste dans la note de l'équipe, mot pour mot.
+  assert.equal(sem.bordure.defaut.$description, 'Contour ordinaire d\'une carte ou d\'un séparateur, décoratif, jamais seule pour repérer un champ ou un état.');
+  assert.equal(sem.bordure.defaut.$extensions['ds-lab.note'], 'Contour ordinaire d\'une carte ou d\'un séparateur, décoratif, jamais seule pour repérer un champ ou un état (sous 3:1 : un champ prend bordure.forte).');
+  assert.equal(sem.fond.composant.$root.$description, 'Fond d\'un composant au repos, plus soutenu que la surface, comme une étiquette neutre.');
+  assert.equal(sem.fond.composant.$root.$extensions['ds-lab.note'], 'Fond d\'un composant au repos, plus soutenu que la surface ; un champ, une carte et le bouton secondaire se posent sur fond.surface.');
 });

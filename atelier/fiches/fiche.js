@@ -443,6 +443,32 @@ export function anatomie(composant, menu, table, descriptions, quoi, menus = new
   });
 }
 
+/**
+ * Ce qui, lu dans la description d'un token cité, la rend à réécrire (DOC3) : elle dit en une phrase ce que le token
+ * règle et où il sert, sans numéro de règle ni de décision, sans nom d'un autre token, sans mesure, sans pas d'échelle.
+ * Ce qui sert à l'équipe va dans $extensions["ds-lab.note"].
+ * @param {string} d
+ * @returns {string[]}
+ */
+export function motifsDescription(d) {
+  /** @type {string[]} */
+  const motifs = [];
+  if (/\b(?:D|DS|NM|CP|DOC)\d+\b/.test(d)) motifs.push('numéro de règle ou de décision');
+  if (/(?<![\w.])[a-z][a-z0-9-]*\.[a-z][a-z0-9.-]*[a-z0-9](?![\w-])/.test(d)) motifs.push('nom de token');
+  if (/\d\s*px\b|\d+(?:,\d+)?:\d/.test(d)) motifs.push('mesure');
+  if (/\bpas \d/.test(d)) motifs.push('pas d\'échelle');
+  if (!/^[A-ZÀ-Ý«][^]*[.]$/u.test(d) || /[.!?] /.test(d.slice(0, -1))) motifs.push('pas une seule phrase');
+  return motifs;
+}
+
+/** Écarts des descriptions des tokens cités par une fiche. @param {string[]} tokens @param {Map<string, string>} descriptions */
+export function ecartsDescriptions(tokens, descriptions) {
+  return [...new Set(tokens)].flatMap((tk) => {
+    const m = motifsDescription(descriptions.get(tk) ?? '');
+    return m.length ? [`description à réécrire : ${tk} (${m.join(', ')})`] : [];
+  });
+}
+
 /** @param {{ partie: string, token: string, regle: string }[]} lignes */
 export function blocTokens(lignes) {
   return [PHRASE_TOKENS, '', '| Partie | Token | Ce qu\'il règle |', '|---|---|---|', ...lignes.map((l) => `| ${l.partie} | ${code(l.token)} | ${l.regle.replace(/\|/g, '\\|')} |`)].join('\n');
@@ -798,12 +824,13 @@ export async function calculer() {
     const quoi = `${ICI}/composants/${e.nom}`;
     const composant = /** @type {any} */ (composants.get(e.nom));
     const stories = lireStories(e.nom);
+    const lignesTokens = anatomie(composant, e.menu, table, descriptions, `${quoi}.vue`, parFichier);
     const genere = {
       entete: entete(e, composant, stories, noms),
       titre: `# ${titreDe(e.nom, noms)}`,
       props: blocProps(e.menu, composant, noms),
       refus: blocRefus(e.menu, `${quoi}.menu.js`),
-      tokens: blocTokens(anatomie(composant, e.menu, table, descriptions, `${quoi}.vue`, parFichier)),
+      tokens: blocTokens(lignesTokens),
       contrastes: blocContrastes(pairesDe(composant, table, paires, `${quoi}.vue`), themes, `${quoi}.vue`),
     };
     const actuel = lire(chemin);
@@ -816,6 +843,8 @@ export async function calculer() {
       if (avant.lignes[o] !== ouverture(b) || avant.lignes.slice(o + 1, f).join('\n') !== genere[/** @type {keyof typeof genere} */ (b)]) ecarts.push(`bloc ${b} à régénérer (${COMMANDE})`);
     }
     ecarts.push(...ecartsEcrits(actuel, chemin, e, { table, stories, decisions, dette, descriptions, menuDe }));
+    const poses = [...actuel.matchAll(/^- Posé par le parent : `([^`]+)`/gm)].map((m) => m[1]);
+    ecarts.push(...ecartsDescriptions([...lignesTokens.map((l) => l.token), ...poses], descriptions));
     fiches.push({ chemin, actuel, attendu, ecarts });
     lignesIndex.push(`| ${code(e.nom)} | [${titreDe(e.nom, noms)}](${e.fiche}.md) | ${phraseDeRole(actuel, chemin).phrase ?? ''} |`);
   }

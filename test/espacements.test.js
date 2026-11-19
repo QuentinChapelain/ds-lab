@@ -167,8 +167,9 @@ test('règle de proximité vert : 4 et 16, au moins le double, code 0', () => {
     r.regles.map((g) => ({ de: g.de, vers: g.vers, a: g.a, b: g.b, min: g.min, rapport: g.rapport, ok: g.ok, raison: g.raison, statut: g.statut })),
     [{ de: 'ecart.dans-composant', vers: 'ecart.entre-composants', a: 4, b: 16, min: 2, rapport: 4, ok: true, raison: RAISON, statut: STATUT }],
   );
-  const d = sem.ecart['entre-composants'].$description;
-  assert.ok(d.includes(RAISON) && d.includes(STATUT), `description : ${d}`);
+  // La raison reste dans la description ; le statut de la règle, utile à l'équipe, est dans la note (DOC3, D57).
+  const t = sem.ecart['entre-composants'];
+  assert.ok(t.$description.includes(RAISON) && t.$extensions['ds-lab.note'].includes(STATUT), `description : ${t.$description}`);
   const p = run();
   assert.equal(p.status, 0, p.stdout + p.stderr);
   assert.ok(p.stdout.includes(`  ✓ ecart.entre-composants ≥ 2 × ecart.dans-composant : 16 px pour 4 px, rapport 4 ; ${RAISON} (${STATUT})\n`), p.stdout);

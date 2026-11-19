@@ -59,14 +59,14 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 
 | Partie | Token | Ce qu'il règle |
 |---|---|---|
-| Couleur, tone neutral | `fond.composant` | Fond d'un composant au repos, plus soutenu que la surface ; un champ, une carte et le bouton secondaire se posent sur fond.surface. |
+| Couleur, tone neutral | `fond.composant` | Fond d'un composant au repos, plus soutenu que la surface, comme une étiquette neutre. |
 | Couleur, tone neutral | `texte.principal` | Texte courant et titres. |
 | Couleur, tone brand | `fond.marque.discret` | Aplat clair de la marque, non cliquable, comme un bandeau, une section ou un encadré. |
-| Couleur, tone brand | `texte.marque` | Texte de marque posé sur fond.marque.discret, comme les initiales d'un avatar ou une étiquette mise en avant ; pas 12 du primaire, et non la couleur des liens (D05). |
+| Couleur, tone brand | `texte.marque` | Texte de marque posé sur l'aplat clair de la marque, comme les initiales d'un avatar ou une étiquette mise en avant. |
 | Forme | `arrondi.pilule` | Arrondi complet d'une forme ronde ou en pilule, comme un avatar ou une étiquette. |
 | Forme | `hauteur.etiquette` | Hauteur d'une étiquette, sur une ligne. |
 | Forme | `marge-interieure.etiquette` | Marge intérieure gauche et droite d'une étiquette, de part et d'autre de son texte. |
-| Texte | `typo.corps.petit` | Texte de tableau ; ligne visée 20 px. |
+| Texte | `typo.corps.petit` | Texte de tableau ou d'étiquette, plus petit que le texte courant. |
 <!-- /genere:tokens -->
 
 - Posé par le parent : `ecart.entre-etiquettes` (`ds-ecart-entre-etiquettes`) : l'écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes. L'étiquette n'a pas de marge.

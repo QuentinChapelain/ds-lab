@@ -19,7 +19,10 @@
       "hauteur-capitale": {
         "$type": "number",
         "$value": 0.7,
-        "$description": "Consigne commune des styles de titre (affichage, titres 1 à 3), D17 : hauteur de capitale = 0,7 × la taille du style, quelle que soit la police (CSS font-size-adjust: cap-height 0.7). Une règle pour toutes les marques, aucun réglage par marque. Valeur [H], à juger sur image."
+        "$description": "Hauteur des capitales des titres (affichage, titres 1 à 3), la même quelle que soit la police.",
+        "$extensions": {
+          "ds-lab.note": "Consigne commune des styles de titre (affichage, titres 1 à 3), D17 : hauteur de capitale = 0,7 × la taille du style, quelle que soit la police (CSS font-size-adjust: cap-height 0.7). Une règle pour toutes les marques, aucun réglage par marque. Valeur [H], à juger sur image."
+        }
       }
     }
   }

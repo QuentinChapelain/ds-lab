@@ -26,7 +26,8 @@
  *   U9 bloc de l'index du DsTag seul à l'octet ; le glossaire, écrit sous le bloc, est gardé ;
  *   U10 le contrôle sort en 0 sur le dépôt ;
  *   U11 bloc tokens (anatomie) du DsTag à l'octet ; le bouton à icône n'a aucune ligne « variant danger » ; un token cité
- *      sans description, ou un token posé par le parent inconnu, est une panne ;
+ *      sans description, ou un token posé par le parent inconnu, est une panne ; une description citée qui porte un
+ *      numéro de règle ou de décision, un nom de token, une mesure, un pas d'échelle ou plus d'une phrase est à réécrire ;
  *   U12 un mot refusé hors code donne son écart, en code rien ; une fiche de 501 mots écrits dépasse le plafond ; le
  *      glossaire contient chaque mot refusé ;
  *   U13 chaque écart de la table des noms, sur une table d'essai ; la table du dépôt n'en donne aucun.
@@ -48,6 +49,7 @@ import {
   blocRefus,
   blocTokens,
   decouper,
+  ecartsDescriptions,
   ecartsEcrits,
   ecartsGlossaire,
   ecartsNoms,
@@ -61,6 +63,7 @@ import {
   messageDeRegle,
   mesurerThemes,
   motsEcrits,
+  motifsDescription,
   motsRefuses,
   pairesDe,
   regenerer,
@@ -339,7 +342,7 @@ test('U10 le contrôle des fiches sort en 0 sur le dépôt', () => {
   assert.doesNotMatch(sortie, /✗/);
 });
 
-test('U11 anatomie du DsTag ; le bouton à icône sans danger plein ; tokens sans description en panne', () => {
+test('U11 anatomie du DsTag ; le bouton à icône sans danger plein ; tokens sans description en panne ; descriptions lisibles', () => {
   assert.equal(
     genere('DsTag').tokens,
     [
@@ -347,14 +350,14 @@ test('U11 anatomie du DsTag ; le bouton à icône sans danger plein ; tokens san
       '',
       '| Partie | Token | Ce qu\'il règle |',
       '|---|---|---|',
-      '| Couleur, tone neutral | `fond.composant` | Fond d\'un composant au repos, plus soutenu que la surface ; un champ, une carte et le bouton secondaire se posent sur fond.surface. |',
+      '| Couleur, tone neutral | `fond.composant` | Fond d\'un composant au repos, plus soutenu que la surface, comme une étiquette neutre. |',
       '| Couleur, tone neutral | `texte.principal` | Texte courant et titres. |',
       '| Couleur, tone brand | `fond.marque.discret` | Aplat clair de la marque, non cliquable, comme un bandeau, une section ou un encadré. |',
-      '| Couleur, tone brand | `texte.marque` | Texte de marque posé sur fond.marque.discret, comme les initiales d\'un avatar ou une étiquette mise en avant ; pas 12 du primaire, et non la couleur des liens (D05). |',
+      '| Couleur, tone brand | `texte.marque` | Texte de marque posé sur l\'aplat clair de la marque, comme les initiales d\'un avatar ou une étiquette mise en avant. |',
       '| Forme | `arrondi.pilule` | Arrondi complet d\'une forme ronde ou en pilule, comme un avatar ou une étiquette. |',
       '| Forme | `hauteur.etiquette` | Hauteur d\'une étiquette, sur une ligne. |',
       '| Forme | `marge-interieure.etiquette` | Marge intérieure gauche et droite d\'une étiquette, de part et d\'autre de son texte. |',
-      '| Texte | `typo.corps.petit` | Texte de tableau ; ligne visée 20 px. |',
+      '| Texte | `typo.corps.petit` | Texte de tableau ou d\'étiquette, plus petit que le texte courant. |',
     ].join('\n'),
   );
   const bi = genere('DsIconButton').tokens;
@@ -366,6 +369,13 @@ test('U11 anatomie du DsTag ; le bouton à icône sans danger plein ; tokens san
   const c = lireComposant('DsTag');
   const sans = new Map([...DESCRIPTIONS].filter(([k]) => k !== 'hauteur.etiquette'));
   assert.throws(() => anatomie(c, PAR_NOM.get('DsTag'), TABLE, sans, 'essai.vue', PAR_NOM), { message: 'essai.vue : token sans description : hauteur.etiquette' });
+  // DOC3 par lecture : une phrase, sans numéro de règle ni de décision, sans nom de token, sans mesure, sans pas.
+  assert.deepEqual(motifsDescription('Texte de marque posé sur fond.marque.discret ; pas 12 du primaire (D05).'), ['numéro de règle ou de décision', 'nom de token', 'pas d\'échelle']);
+  assert.deepEqual(motifsDescription('Anneau de focus clavier (3:1).'), ['mesure']);
+  assert.deepEqual(motifsDescription('Texte de tableau ; ligne visée 20 px.'), ['mesure']);
+  assert.deepEqual(motifsDescription('Deux phrases. Une de trop.'), ['pas une seule phrase']);
+  assert.deepEqual(motifsDescription('Texte courant et titres.'), []);
+  assert.deepEqual(ecartsDescriptions(['texte.principal', 'hauteur.etiquette'], new Map([['texte.principal', 'Texte courant et titres.'], ['hauteur.etiquette', 'Hauteur de 24 px.']])), ['description à réécrire : hauteur.etiquette (mesure)']);
   const pose = lire(FICHE).replace('`ecart.entre-etiquettes` (`ds-ecart-entre-etiquettes`)', '`ecart.inconnu` (`ds-ecart-entre-etiquettes`)');
   assert.throws(() => ecartsEcrits(pose, FICHE, parNom('DsTag'), ctx()), { message: `${FICHE} : token sans description : ecart.inconnu` });
 });

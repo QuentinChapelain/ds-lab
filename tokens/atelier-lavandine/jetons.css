@@ -9,17 +9,17 @@
   --arrondi-surface: var(--rayon-12);
   /* Contour d'un champ ou d'un encadré d'avertissement (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app. */
   --bordure-avertissement: var(--couleur-avertissement-8);
-  /* Contour ordinaire d'une carte ou d'un séparateur, décoratif, jamais seule pour repérer un champ ou un état (sous 3:1 : un champ prend bordure.forte). */
+  /* Contour ordinaire d'une carte ou d'un séparateur, décoratif, jamais seule pour repérer un champ ou un état. */
   --bordure-defaut: var(--couleur-neutre-7);
   /* Séparateur léger entre deux zones, décoratif, jamais seule pour repérer un champ ou un état. */
   --bordure-discrete: var(--couleur-neutre-6);
-  /* Contour d'un champ en erreur (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app. */
+  /* Contour d'un champ en erreur ; sur un fond de statut, décorative : le texte porte le sens. */
   --bordure-erreur: var(--couleur-erreur-8);
-  /* Anneau de focus clavier (3:1). */
+  /* Anneau de focus clavier, autour du composant qui a le focus. */
   --bordure-focus: var(--marque-primaire-11);
   /* Anneau de focus clavier sur fond.marque.fort (3:1). */
   --bordure-focus-inverse: var(--marque-primaire-sur-aplat);
-  /* Contour qui suffit à repérer un champ ou une case à cocher (3:1). */
+  /* Contour qui suffit à repérer un champ ou une case à cocher. */
   --bordure-forte: var(--couleur-neutre-8);
   /* Contour d'un encadré d'information (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app. */
   --bordure-info: var(--couleur-info-8);
@@ -212,23 +212,23 @@
   --couleur-sur-inverse: #ffffff;
   /* Surface posée sur le fond de page (fond.surface) : blanc en clair ; en sombre, la référence du miroir (tokens/commun/mode.sombre.tokens.json). */
   --couleur-surface: #ffffff;
-  /* Décalage de l'anneau de focus clavier hors du composant, pour qu'il se pose sur le fond de la page et jamais sur le plein (DS2). */
+  /* Décalage de l'anneau de focus clavier hors du composant, pour qu'il se pose sur le fond de la page et jamais sur le plein. */
   --decalage-focus: var(--trait-2);
   /* Écart entre les parties d'un même composant, comme une étiquette et son champ ou un champ et son message d'erreur. */
   --ecart-dans-composant: var(--espace-4);
-  /* Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée ; au moins le double de ecart.dans-composant, pour qu'on voie à quel champ appartient un libellé ou un message (régularité observée dans les systèmes lus, pas une norme). */
+  /* Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée, pour qu'on voie à quel champ appartient un libellé ou un message. */
   --ecart-entre-composants: var(--espace-16);
-  /* Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes ; hors du contrôle d'ordre des écarts (DS5), comme ecart.icone-texte. */
+  /* Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes. */
   --ecart-entre-etiquettes: var(--espace-8);
   /* Écart entre deux groupes d'une même section, comme un titre de section et son contenu ou les champs d'un formulaire et ses boutons. */
   --ecart-entre-groupes: var(--espace-24);
-  /* Écart entre l'icône et le texte d'un contrôle, comme un bouton ; hors du contrôle d'ordre des écarts (DS5), comme marge-interieure.composant. */
+  /* Écart entre l'icône et le texte d'un contrôle, comme un bouton ou un champ. */
   --ecart-icone-texte: var(--espace-8);
   /* Écart entre deux sections de la page, la plus grande respiration verticale ; plus petit en étroit (largeur.etroit.tokens.json). */
   --ecart-section: var(--espace-48);
   /* Épaisseur du contour d'un contrôle, comme le bouton secondaire. */
   --epaisseur-contour: var(--trait-1);
-  /* Épaisseur de l'anneau de focus clavier (bordure.focus), décalé de 2 px sur le fond de la page (DS2). */
+  /* Épaisseur de l'anneau de focus clavier. */
   --epaisseur-focus: var(--trait-2);
   --espace-0: 0px;
   --espace-4: 4px;
@@ -395,7 +395,7 @@
   --marque-succes-sur-plein: var(--couleur-blanc);
   /* Police du produit, commune à toutes les marques : texte par défaut (marque.police.texte) et, toujours, libellés (D44). Valeur à choisir avec une vraie police [H]. */
   --police-produit: system-ui, sans-serif;
-  /* Consigne commune des styles de titre (affichage, titres 1 à 3), D17 : hauteur de capitale = 0,7 × la taille du style, quelle que soit la police (CSS font-size-adjust: cap-height 0.7). Une règle pour toutes les marques, aucun réglage par marque. Valeur [H], à juger sur image. */
+  /* Hauteur des capitales des titres (affichage, titres 1 à 3), la même quelle que soit la police. */
   --police-titre-hauteur-capitale: 0.7;
   --rayon-0: 0px;
   --rayon-2: 2px;
@@ -496,65 +496,65 @@
   --typo-corps-grand-letter-spacing: 0px;
   /* Chapô, sous un titre de page ; ligne visée 28 px. */
   --typo-corps-grand-line-height: 1.5556;
-  /* Texte courant ; ligne visée 24 px. */
+  /* Texte courant, comme le texte d'une carte ou la saisie d'un champ. */
   --typo-corps-moyen-font-family: var(--marque-police-texte);
-  /* Texte courant ; ligne visée 24 px. */
+  /* Texte courant, comme le texte d'une carte ou la saisie d'un champ. */
   --typo-corps-moyen-font-size: var(--taille-texte-16);
-  /* Texte courant ; ligne visée 24 px. */
+  /* Texte courant, comme le texte d'une carte ou la saisie d'un champ. */
   --typo-corps-moyen-font-weight: var(--graisse-400);
-  /* Texte courant ; ligne visée 24 px. */
+  /* Texte courant, comme le texte d'une carte ou la saisie d'un champ. */
   --typo-corps-moyen-letter-spacing: 0px;
-  /* Texte courant ; ligne visée 24 px. */
+  /* Texte courant, comme le texte d'une carte ou la saisie d'un champ. */
   --typo-corps-moyen-line-height: 1.5;
-  /* Texte de tableau ; ligne visée 20 px. */
+  /* Texte de tableau ou d'étiquette, plus petit que le texte courant. */
   --typo-corps-petit-font-family: var(--marque-police-texte);
-  /* Texte de tableau ; ligne visée 20 px. */
+  /* Texte de tableau ou d'étiquette, plus petit que le texte courant. */
   --typo-corps-petit-font-size: var(--taille-texte-14);
-  /* Texte de tableau ; ligne visée 20 px. */
+  /* Texte de tableau ou d'étiquette, plus petit que le texte courant. */
   --typo-corps-petit-font-weight: var(--graisse-400);
-  /* Texte de tableau ; ligne visée 20 px. */
+  /* Texte de tableau ou d'étiquette, plus petit que le texte courant. */
   --typo-corps-petit-letter-spacing: 0px;
-  /* Texte de tableau ; ligne visée 20 px. */
+  /* Texte de tableau ou d'étiquette, plus petit que le texte courant. */
   --typo-corps-petit-line-height: 1.4286;
-  /* Initiales du grand avatar ; ligne visée 32 px. */
+  /* Initiales du grand avatar. */
   --typo-initiales-grande-font-family: var(--marque-police-texte);
-  /* Initiales du grand avatar ; ligne visée 32 px. */
+  /* Initiales du grand avatar. */
   --typo-initiales-grande-font-size: var(--taille-texte-24);
-  /* Initiales du grand avatar ; ligne visée 32 px. */
+  /* Initiales du grand avatar. */
   --typo-initiales-grande-font-weight: var(--graisse-600);
-  /* Initiales du grand avatar ; ligne visée 32 px. */
+  /* Initiales du grand avatar. */
   --typo-initiales-grande-letter-spacing: 0px;
-  /* Initiales du grand avatar ; ligne visée 32 px. */
+  /* Initiales du grand avatar. */
   --typo-initiales-grande-line-height: 1.3333;
-  /* Initiales de l'avatar normal ; ligne visée 24 px. */
+  /* Initiales de l'avatar normal. */
   --typo-initiales-normale-font-family: var(--marque-police-texte);
-  /* Initiales de l'avatar normal ; ligne visée 24 px. */
+  /* Initiales de l'avatar normal. */
   --typo-initiales-normale-font-size: var(--taille-texte-16);
-  /* Initiales de l'avatar normal ; ligne visée 24 px. */
+  /* Initiales de l'avatar normal. */
   --typo-initiales-normale-font-weight: var(--graisse-600);
-  /* Initiales de l'avatar normal ; ligne visée 24 px. */
+  /* Initiales de l'avatar normal. */
   --typo-initiales-normale-letter-spacing: 0px;
-  /* Initiales de l'avatar normal ; ligne visée 24 px. */
+  /* Initiales de l'avatar normal. */
   --typo-initiales-normale-line-height: 1.5;
-  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit (D44) ; ligne visée 20 px. */
+  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. */
   --typo-libelle-font-family: var(--police-produit);
-  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit (D44) ; ligne visée 20 px. */
+  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. */
   --typo-libelle-font-size: var(--taille-texte-14);
-  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit (D44) ; ligne visée 20 px. */
+  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. */
   --typo-libelle-font-weight: var(--graisse-600);
-  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit (D44) ; ligne visée 20 px. */
+  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. */
   --typo-libelle-letter-spacing: 0px;
-  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit (D44) ; ligne visée 20 px. */
+  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. */
   --typo-libelle-line-height: 1.4286;
-  /* Aide, message d'erreur ou légende ; ligne visée 16 px. */
+  /* Aide, message d'erreur ou légende, sous un champ. */
   --typo-mention-font-family: var(--marque-police-texte);
-  /* Aide, message d'erreur ou légende ; ligne visée 16 px. */
+  /* Aide, message d'erreur ou légende, sous un champ. */
   --typo-mention-font-size: var(--taille-texte-12);
-  /* Aide, message d'erreur ou légende ; ligne visée 16 px. */
+  /* Aide, message d'erreur ou légende, sous un champ. */
   --typo-mention-font-weight: var(--graisse-400);
-  /* Aide, message d'erreur ou légende ; ligne visée 16 px. */
+  /* Aide, message d'erreur ou légende, sous un champ. */
   --typo-mention-letter-spacing: 0px;
-  /* Aide, message d'erreur ou légende ; ligne visée 16 px. */
+  /* Aide, message d'erreur ou légende, sous un champ. */
   --typo-mention-line-height: 1.3333;
   /* Titre de page ; ligne visée 40 px en large, 32 px en étroit. */
   --typo-titre-1-font-family: var(--marque-police-titre);
@@ -576,15 +576,15 @@
   --typo-titre-2-letter-spacing: 0px;
   /* Titre de section ; ligne visée 32 px en large, 28 px en étroit. */
   --typo-titre-2-line-height: 1.3333;
-  /* Titre de carte ; ligne visée 28 px en large, 24 px en étroit. */
+  /* Titre de carte. */
   --typo-titre-3-font-family: var(--marque-police-titre);
-  /* Titre de carte ; ligne visée 28 px en large, 24 px en étroit. */
+  /* Titre de carte. */
   --typo-titre-3-font-size: var(--taille-texte-20);
-  /* Titre de carte ; ligne visée 28 px en large, 24 px en étroit. */
+  /* Titre de carte. */
   --typo-titre-3-font-weight: var(--graisse-600);
-  /* Titre de carte ; ligne visée 28 px en large, 24 px en étroit. */
+  /* Titre de carte. */
   --typo-titre-3-letter-spacing: 0px;
-  /* Titre de carte ; ligne visée 28 px en large, 24 px en étroit. */
+  /* Titre de carte. */
   --typo-titre-3-line-height: 1.4;
   /* Titre de sous-groupe, sur les écrans denses ; ligne visée 24 px. */
   --typo-titre-4-font-family: var(--marque-police-texte);

@@ -134,11 +134,14 @@ test('typo sémantique : valeur en étroit dans le contexte étroit pour afficha
 test('typo sémantique : une phrase d\'usage, hauteur visée en px, sans couleur', () => {
   for (const [style, [, l, , le, , , , , usage]] of Object.entries(STYLES)) {
     const d = at(sem.typo, style).$description;
+    // La hauteur visée, mesure utile à l'équipe, est dans la description ou, pour un style cité par une fiche, dans la
+    // note de l'équipe (DOC3, D57).
+    const texte = `${d} ${at(sem.typo, style).$extensions?.['ds-lab.note'] ?? ''}`;
     assert.ok(d.startsWith(usage), `${style} : « ${d} »`);
     assert.match(d, /^[A-ZÀ-Ý«][^]*[.]$/u, `${style} : majuscule et point final`);
     assert.doesNotMatch(d.slice(0, -1), /[.!?] /, `${style} : une seule phrase`);
-    assert.ok(d.includes(`ligne visée ${l} px`), `${style} : hauteur visée`);
-    if (le !== null) assert.ok(d.includes(`${le} px en étroit`), `${style} : hauteur visée en étroit`);
+    assert.ok(texte.includes(`ligne visée ${l} px`), `${style} : hauteur visée`);
+    if (le !== null) assert.ok(texte.includes(`${le} px en étroit`), `${style} : hauteur visée en étroit`);
   }
   // Sans couleur : ni propriété de couleur ni alias vers une couleur dans les valeurs (la prose peut dire « sans couleur »).
   for (const style of Object.keys(STYLES)) {

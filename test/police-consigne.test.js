@@ -38,7 +38,9 @@ test('C2 les cinq styles de titre portent la consigne, en large et en étroit', 
     for (const [chemin, tok] of flattenTokens(lire(f).typo)) {
       const style = chemin.replace(/\.\$root$/, '');
       assert.deepEqual(Object.keys(tok.$value).sort(), ['fontFamily', 'fontSize', 'fontWeight', 'letterSpacing', 'lineHeight'], `${f} ${style}`);
-      if (SUR_POLICE_TITRE.includes(style)) assert.deepEqual(tok.$extensions, { 'ds-lab.hauteur-capitale': ALIAS }, `${f} ${style}`);
+      // La note de l'équipe (ds-lab.note, DOC3, D57) n'est pas une consigne : elle est mise de côté.
+      const { 'ds-lab.note': _note, ...extensions } = tok.$extensions ?? {};
+      if (SUR_POLICE_TITRE.includes(style)) assert.deepEqual(extensions, { 'ds-lab.hauteur-capitale': ALIAS }, `${f} ${style}`);
       else assert.equal(tok.$extensions?.['ds-lab.hauteur-capitale'], undefined, `${f} ${style}`);
     }
 });
