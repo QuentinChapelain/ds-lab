@@ -1,7 +1,7 @@
 # Rejoue, sur des machines neuves, ce que CLAUDE.md demande avant un commit, en trois jobs parallèles et un verdict :
 # - rapides : types, ce qui ne sert plus (knip), cycles et orphelins (dependency-cruiser), les trois contrôles de la cible ;
 # - tests : npm test, en trois parts (un fichier de test dans une part et une seule) ;
-# - atelier : son installation, sa version construite, puis la preuve (D42) ;
+# - atelier : son installation, sa version construite, puis la preuve (D42), un job par composant ;
 # - controles : le verdict, seul check exigé par le ruleset de main (D35).
 # Une étape par commande : la ligne rouge dit laquelle échoue.
 name: CI
@@ -82,11 +82,18 @@ jobs:
           NODE_OPTIONS: --test-shard=${{ matrix.part }}/3
         timeout-minutes: 8 # provisoire, à recalculer sur les durées mesurées
 
+  # Un job par composant : la preuve de chacun passe seule (node preuve.js <composant>), avec les mêmes vérifications
+  # que la preuve entière, qui reste la commande d'avant commit.
   atelier:
+    name: atelier (${{ matrix.composant }})
     runs-on: ubuntu-24.04
     container:
       image: mcr.microsoft.com/playwright:v1.59.1-noble@sha256:b0ab6f3cb99aa7803adbc14d9027ec1785fc6e433b97e134e0f8fe61683b6b53
       options: --user 1001 --ipc=host
+    strategy:
+      fail-fast: false
+      matrix:
+        composant: [bouton, champ, carte, bouton-icone]
     timeout-minutes: 12 # provisoire, à recalculer sur les durées mesurées
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -111,12 +118,13 @@ jobs:
       - name: Atelier, version construite
         run: npm --prefix atelier run build
         timeout-minutes: 3
-      - name: Atelier, preuve
-        run: npm --prefix atelier run preuve
+      - name: Atelier, preuve du composant ${{ matrix.composant }}
+        run: npm --prefix atelier run preuve -- ${{ matrix.composant }}
         timeout-minutes: 5 # provisoire, à recalculer sur les durées mesurées
 
   # Seul check exigé par le ruleset de main (D35) : renommer ce job bloquerait tout push sur main. Il tourne toujours
-  # et juge lui-même le résultat des autres : un job requis sauté compterait sinon comme réussi.
+  # et juge lui-même le résultat des autres : un job requis sauté compterait sinon comme réussi. Le résultat d'une
+  # matrice (tests, atelier) n'est success que si chacun de ses jobs l'est.
   controles:
     if: always()
     needs: [rapides, tests, atelier]

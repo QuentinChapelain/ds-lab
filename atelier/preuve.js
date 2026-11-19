@@ -4,6 +4,8 @@
 // preuve/ (bouton.js, D43 ; champ.js, D49 ; carte.js, D50 ; bouton-icone.js, D52), sur les outils communs de
 // preuve/commun.js ; ce fichier les enchaîne. Sortie 0 si tout passe, 1 si une vérification échoue, 2 sur une panne
 // (D18).
+// Sans argument, les quatre composants, dans l'ordre du tableau COMPOSANTS ; avec des noms (node preuve.js champ carte),
+// ceux-là seuls, chacun avec les mêmes vérifications : la CI lance un composant par job. Un nom inconnu est une panne.
 // La version construite doit exister (npm run build) ; le serveur de développement est lancé ici, sur 127.0.0.1, puis
 // arrêté.
 //
@@ -17,7 +19,19 @@ import { preuveChamp } from './preuve/champ.js';
 import { preuveCarte } from './preuve/carte.js';
 import { preuveBoutonIcone } from './preuve/bouton-icone.js';
 
+/** Les preuves, dans l'ordre où elles passent sans argument. */
+const COMPOSANTS = /** @type {const} */ ([
+  ['bouton', preuveBouton],
+  ['champ', preuveChamp],
+  ['carte', preuveCarte],
+  ['bouton-icone', preuveBoutonIcone],
+]);
+
 await lancer('preuve', async () => {
+  const noms = process.argv.slice(2);
+  const inconnu = noms.find((n) => !COMPOSANTS.some(([c]) => c === n));
+  if (inconnu !== undefined) throw new Error(`composant inconnu : ${inconnu} (${COMPOSANTS.map(([c]) => c).join(', ')})`);
+  const choisis = noms.length ? COMPOSANTS.filter(([c]) => noms.includes(c)) : COMPOSANTS;
   const themes = attendus();
   /** @type {string[]} */
   const echecs = [];
@@ -33,16 +47,14 @@ await lancer('preuve', async () => {
   try {
     const contexte = await navigateur.newContext({ viewport: CADRE, deviceScaleFactor: 1, reducedMotion: 'reduce', colorScheme: 'light' });
     const p = { themes, navigateur, contexte, developpement, construite, verifier };
-    captures.push(await preuveBouton(p));
-    captures.push(await preuveChamp(p));
-    captures.push(await preuveCarte(p));
-    captures.push(await preuveBoutonIcone(p));
+    for (const [, preuve] of choisis) captures.push(await preuve(p));
   } finally {
     await navigateur.close();
     developpement.arreter();
     await construite.arreter();
   }
   for (const c of new Set(captures)) console.log(`Planches enregistrées dans ${c}.`);
+  console.log(`Composants : ${choisis.map(([c]) => c).join(', ')}.`);
   console.log(echecs.length ? `${echecs.length} vérification(s) en échec.` : `Toutes les vérifications passent : ${themes.length} thèmes.`);
   return echecs.length ? 1 : 0;
 });
