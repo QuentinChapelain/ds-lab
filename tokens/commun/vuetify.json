@@ -221,6 +221,10 @@
       "jeton": "ecart.entre-blocs",
       "$description": "Écart entre l'en-tête d'une carte à sous-titre (titre et sous-titre) et son contenu."
     },
+    "ds-largeur-colonne": {
+      "jeton": "largeur.colonne",
+      "$description": "Largeur maximale de MemberList ; plus étroite, la liste prend la largeur de son parent."
+    },
     "ds-corps-police": {
       "jeton": "typo.corps.moyen",
       "champ": "fontFamily",

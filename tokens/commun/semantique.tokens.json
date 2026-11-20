@@ -1,5 +1,5 @@
 {
-  "$description": "Rôles de couleur (14/11/2026), d'espacement par relation et styles de texte (15/11/2026) communs à toutes les marques. Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json, statuts.tokens.json et marque.tokens.json pour les couleurs, vers espace.* de primitives.tokens.json pour les espacements, vers taille-texte.*, graisse.*, marque.police.* et police.produit (libellé, D44) pour les styles de texte (typo, composites DTCG typography, interligne sans unité) ; les couleurs de marque et tous les pleins, statuts compris, passent par marque.<emplacement>.* (Orbe Café : primaire = bleu, accent = terre). Arrondis, hauteurs, épaisseurs, décalages et tailles d'icône des contrôles (18/11/2026), arrondi des surfaces (19/11/2026), vers rayon.*, taille.* et trait.* de primitives.tokens.json ; aucun groupe de rôles ne porte le nom d'un groupe de primitives. Paires de contraste déclarées dans paires.json.",
+  "$description": "Rôles de couleur (14/11/2026), d'espacement par relation et styles de texte (15/11/2026) communs à toutes les marques. Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json, statuts.tokens.json et marque.tokens.json pour les couleurs, vers espace.* de primitives.tokens.json pour les espacements, vers taille-texte.*, graisse.*, marque.police.* et police.produit (libellé, D44) pour les styles de texte (typo, composites DTCG typography, interligne sans unité) ; les couleurs de marque et tous les pleins, statuts compris, passent par marque.<emplacement>.* (Orbe Café : primaire = bleu, accent = terre). Arrondis, hauteurs, épaisseurs, décalages et tailles d'icône des contrôles (18/11/2026), arrondi des surfaces (19/11/2026), largeur de colonne (20/11/2026), vers rayon.*, taille.* et trait.* de primitives.tokens.json ; aucun groupe de rôles ne porte le nom d'un groupe de primitives. Paires de contraste déclarées dans paires.json.",
   "fond": {
     "$type": "color",
     "$description": "Surfaces sur lesquelles se posent texte et bordures.",
@@ -339,6 +339,17 @@
       "$description": "Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes.",
       "$extensions": {
         "ds-lab.note": "Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes ; hors du contrôle d'ordre des écarts (DS5), comme ecart.icone-texte."
+      }
+    }
+  },
+  "largeur": {
+    "$type": "dimension",
+    "$description": "Largeurs de conteneur : la largeur maximale d'un bloc de contenu dans la page ; en dessous, il prend la largeur de son parent.",
+    "colonne": {
+      "$value": "{taille.640}",
+      "$description": "Largeur maximale d'une colonne de contenu, comme une liste d'annuaire ; sur un écran plus étroit, la colonne prend toute la largeur de son parent.",
+      "$extensions": {
+        "ds-lab.note": "640 px [H], à juger sur les planches de MemberList ; la grille reste à faire (KNOWN_ISSUES.md, B6)."
       }
     }
   },

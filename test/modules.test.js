@@ -10,7 +10,11 @@
  *   L3 chaque .vue de atelier/modules/ passe par la fabrique et son menu ; les refus de MemberCard, mot pour mot : nom
  *      absent, vide ou fait d'espaces, nom sans lettre, lien absent, DsTag refusé avec son rang (ton inconnu, texte
  *      absent, élément qui n'est pas un objet, tags qui n'est pas une liste), aria-label et aria-labelledby, attribut
- *      on…, slot ; un membre complet, sans promo, sans photo et sans DsTag passe.
+ *      on…, slot ; un membre complet, sans promo, sans photo et sans DsTag passe ;
+ *   L4 les refus de MemberList, mot pour mot : members absent ou qui n'est pas une liste, un membre refusé par le menu de
+ *      MemberCard avec son rang (nom absent, DsTag refusé, aria-label), un membre qui porte son headingLevel (la liste le
+ *      donne), headingLevel hors de 2, 3 et 4, aria-label, attribut on…, slot ; une liste vide, une liste nommée par
+ *      aria-labelledby, des membres avec id et data-* passent.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -19,6 +23,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { verifierUsage } from '../atelier/composants/fabrique.js';
 import MEMBRE from '../atelier/modules/MemberCard.menu.js';
+import LISTE from '../atelier/modules/MemberList.menu.js';
 import { partiesVue } from './helpers/atelier.js';
 import { lex } from './helpers/commentaires.js';
 
@@ -27,7 +32,7 @@ const MODULES = join(ROOT, 'atelier', 'modules');
 const fichiers = readdirSync(MODULES).sort();
 
 test('L1 aucun module n\'emploie une pièce de Vuetify', () => {
-  assert.ok(fichiers.includes('MemberCard.vue'), 'MemberCard.vue présent');
+  assert.ok(fichiers.includes('MemberCard.vue') && fichiers.includes('MemberList.vue'), 'MemberCard.vue et MemberList.vue présents');
   for (const f of fichiers) {
     const src = readFileSync(join(MODULES, f), 'utf8');
     const code = f.endsWith('.vue') ? `${lex(partiesVue(src).script).code}\n${partiesVue(src).reste}` : lex(src).code;
@@ -108,4 +113,36 @@ test('L3 refus de MemberCard, mot pour mot', () => {
   assert.equal(leve(m, { id: 'membre', 'data-cas': 'x', 'aria-describedby': 'aide' }), null, 'id, data-* et aria-describedby passent');
   assert.equal(leve(m, {}, { default: () => 'Texte' }), 'MemberCard : slot refusé : default');
   assert.equal(MEMBRE.ecouteurs, false);
+});
+
+test('L4 refus de MemberList, mot pour mot', () => {
+  /** @param {Record<string, any>} props @param {Record<string, unknown>} [attrs] @param {Record<string, any>} [slots] */
+  const leve = (props, attrs = {}, slots = {}) => {
+    try {
+      verifierUsage(LISTE, { headingLevel: 3, ...props }, attrs, slots, { rendu: true });
+      return null;
+    } catch (e) {
+      return /** @type {Error} */ (e).message;
+    }
+  };
+  const a = { name: 'Camille Ferrand', href: '#membre-camille-ferrand', cohort: 'Promo 2015', tags: [{ text: 'Lyon' }] };
+  const b = { name: 'Noé', href: '#membre-noe' };
+  const c = { name: "Inès d'Aubrac", href: '#membre-ines-d-aubrac', tags: [{ text: 'Mentor', tone: 'brand' }] };
+  assert.equal(leve({ members: [a, b, c] }), null);
+  assert.equal(leve({ members: [] }), null, 'liste vide : rien de rendu, aucun refus');
+  assert.equal(leve({ members: [a, b], headingLevel: 2 }), null);
+  assert.equal(leve({ members: [a, b] }, { 'aria-labelledby': 'titre-annuaire', id: 'annuaire', 'data-cas': 'liste' }), null, 'aria-labelledby, id et data-* passent');
+  assert.equal(leve({ members: [{ ...a, id: 'camille', 'data-cas': 'photo' }] }), null, 'un membre avec id et data-*');
+  assert.equal(leve({}), 'MemberList : members : obligatoire');
+  assert.equal(leve({ members: 'Camille' }), 'MemberList : members : liste attendue');
+  assert.equal(leve({ members: [a, b, { ...c, name: undefined }] }), 'MemberList : members : 3 : name : obligatoire');
+  assert.equal(leve({ members: [a, { ...b, tags: [{ text: 'Lyon', tone: 'accent' }] }] }), 'MemberList : members : 2 : tags : 1 : tone : valeur inconnue : accent (neutral, brand)');
+  assert.equal(leve({ members: [a, { ...b, 'aria-label': 'Profil' }] }), 'MemberList : members : 2 : attribut refusé : aria-label');
+  assert.equal(leve({ members: ['Noé'] }), 'MemberList : members : 1 : name : obligatoire');
+  assert.equal(leve({ members: [a, { ...b, headingLevel: 2 }] }), 'MemberList : members : 2 : headingLevel : donné par la liste');
+  assert.equal(leve({ members: [a], headingLevel: 5 }), 'MemberList : headingLevel : valeur inconnue : 5 (2, 3, 4)');
+  assert.equal(leve({ members: [a] }, { 'aria-label': 'Annuaire' }), 'MemberList : attribut refusé : aria-label');
+  assert.equal(leve({ members: [a] }, { onClick: () => {} }), 'MemberList : attribut refusé : onClick');
+  assert.equal(leve({ members: [a] }, {}, { default: () => 'Texte' }), 'MemberList : slot refusé : default');
+  assert.equal(LISTE.ecouteurs, false);
 });

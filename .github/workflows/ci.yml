@@ -101,7 +101,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        composant: [button, text-input, card, icon-button, avatar, tag, member-card]
+        composant: [button, text-input, card, icon-button, avatar, tag, member-card, member-list]
     timeout-minutes: 4 # 75 à 101 s mesurés (D53)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

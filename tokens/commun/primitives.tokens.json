@@ -732,8 +732,14 @@
         "unit": "px"
       }
     },
+    "640": {
+      "$value": {
+        "value": 640,
+        "unit": "px"
+      }
+    },
     "$type": "dimension",
-    "$description": "Tailles de contrôle, d'icône, d'avatar et d'étiquette (hauteur d'un bouton, côté d'une icône ou d'un avatar), en px."
+    "$description": "Tailles de contrôle, d'icône, d'avatar et d'étiquette (hauteur d'un bouton, côté d'une icône ou d'un avatar), et largeur d'une colonne de contenu, en px."
   },
   "trait": {
     "1": {

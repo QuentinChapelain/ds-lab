@@ -117,6 +117,13 @@ Demande : 8 px, comme la ligne « en situation » de `DsTag`, par un rôle, jama
 - **Place** : dans `DsCard`, entre `subtitle` et le slot `default` : le titre et le sous-titre forment l'en-tête, le contenu est un autre bloc. Sans sous-titre, l'écart entre le titre et le contenu reste `ecart.dans-composant`.
 - **Ce qui change** : l'écart entre le sous-titre et le contenu, 4 → 8 px, dans `MemberCard` et dans les cas à sous-titre de la story « Variantes » de `DsCard` ; rien d'autre. La ligne « en situation » de `DsTag` lit le même rôle et reste identique au pixel.
 
+## Largeur de colonne de `MemberList`
+
+- **Primitive** : `taille.640` (147 entrées à l'index de la réduction).
+- **Rôle** : `largeur.colonne` → `{taille.640}`, « Largeur maximale d'une colonne de contenu, comme une liste d'annuaire ; sur un écran plus étroit, la colonne prend toute la largeur de son parent. » La mesure est dans la note de l'équipe (DOC3).
+- **Variable** : `ds-largeur-colonne`, 640px dans les dix thèmes (61 variables).
+- **`MemberList`** : `width: 100%`, `max-width` à cette variable. Page de 1 280 px : la liste fait 640 px. Page de 360 px : toute la largeur de son parent, sans défilement en largeur.
+
 ## Script et commande
 
 Lancé sous Node 24.22.3 depuis la racine du dépôt, lu sur l'entrée standard pour que `culori` se résolve depuis la racine, sans fichier ajouté au dépôt : `fnm exec --using=24.22.3 node --input-type=module - < attendu-teinte.mjs`. Il écrit une ligne par thème.

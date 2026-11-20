@@ -308,6 +308,8 @@
   --hauteur-controle-petite: var(--taille-32);
   /* Hauteur d'une étiquette, sur une ligne. */
   --hauteur-etiquette: var(--taille-24);
+  /* Largeur maximale d'une colonne de contenu, comme une liste d'annuaire ; sur un écran plus étroit, la colonne prend toute la largeur de son parent. */
+  --largeur-colonne: var(--taille-640);
   --marge-interieure-composant: var(--espace-16);
   --marge-interieure-etiquette: var(--espace-12);
   /* fond d'application */
@@ -418,6 +420,7 @@
   --taille-32: 32px;
   --taille-40: 40px;
   --taille-56: 56px;
+  --taille-640: 640px;
   /* Côté d'un grand avatar, comme celui d'une carte membre. */
   --taille-avatar-grande: var(--taille-56);
   /* Côté d'un avatar de taille normale. */
