@@ -140,7 +140,11 @@ export default definirEnveloppe(MENU, (props, { attrs, slots }) => () => {
   gap: var(--v-ds-ecart-entre-composants);
 }
 
-/* Carte à lien : le lien du titre couvre toute la carte, contour compris. */
+/* Carte à lien : le lien du titre couvre toute la carte, contour compris. Son texte ne prend pas les clics : il ne
+   contient ni lien ni bouton (D50), et une pièce positionnée qu'il porte, comme DsTag, passerait au-dessus du lien. */
+.ds-card--link .ds-card__text {
+  pointer-events: none;
+}
 .ds-card__link {
   color: inherit;
   text-decoration: none;

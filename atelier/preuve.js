@@ -2,8 +2,8 @@
 // les dimensions et les polices des jetons, le même rendu en développement et en version construite, et, sur le premier
 // thème, le clavier, l'arbre d'accessibilité et les refus que son attendu décrit. Une preuve par composant, rangée dans
 // preuve/ (button.js, D43 ; text-input.js, D49 ; card.js, D50 ; icon-button.js, D52 ; avatar.js, D54 ; tag.js,
-// D55), sur les outils communs de preuve/commun.js ; ce fichier les enchaîne. Sortie 0 si tout passe, 1 si une
-// vérification échoue, 2 sur une panne (D18).
+// D55), puis une par module (member-card.js), sur les outils communs de preuve/commun.js ; ce fichier les enchaîne.
+// Sortie 0 si tout passe, 1 si une vérification échoue, 2 sur une panne (D18).
 // Sans argument, tous les composants, dans l'ordre du tableau COMPOSANTS ; avec des noms (node preuve.js text-input card),
 // ceux-là seuls, chacun avec les mêmes vérifications : la CI lance un composant par job. Un nom inconnu est une panne.
 // La version construite doit exister (npm run build) ; le serveur de développement est lancé ici, sur 127.0.0.1, puis
@@ -20,6 +20,7 @@ import { preuveCarte } from './preuve/card.js';
 import { preuveBoutonIcone } from './preuve/icon-button.js';
 import { preuveAvatar } from './preuve/avatar.js';
 import { preuveEtiquette } from './preuve/tag.js';
+import { preuveMemberCard } from './preuve/member-card.js';
 
 /** Les preuves, dans l'ordre où elles passent sans argument. */
 const COMPOSANTS = /** @type {const} */ ([
@@ -29,6 +30,7 @@ const COMPOSANTS = /** @type {const} */ ([
   ['icon-button', preuveBoutonIcone],
   ['avatar', preuveAvatar],
   ['tag', preuveEtiquette],
+  ['member-card', preuveMemberCard],
 ]);
 
 await lancer('preuve', async () => {

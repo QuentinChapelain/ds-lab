@@ -44,6 +44,7 @@
       "test/marque-en-dur.test.js",
       "test/marques-fictives.test.js",
       "test/migration-unit.test.js",
+      "test/modules.test.js",
       "test/pannes.test.js",
       "test/parts-de-la-ci.test.js",
       "test/planches-marques.test.js",
