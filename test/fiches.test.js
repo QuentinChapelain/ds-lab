@@ -139,7 +139,8 @@ test('U2 bloc props du DsTag ; carte et bouton', () => {
   );
   const carte = genere('DsCard').props;
   assert.match(carte, /^\| `headingLevel` \| nombre \| non \| `3` \| `2`, `3`, `4` \| usage courant \|$/m);
-  assert.match(carte, /^Événements émis : aucun\. Slots : `default`, `actions`\.$/m);
+  // Slot prepend de DsCard (docs/attendus/carte-membre-liste.md).
+  assert.match(carte, /^Événements émis : aucun\. Slots : `default`, `actions`, `prepend`\.$/m);
   const bouton = genere('DsButton').props;
   assert.match(bouton, /^\| `prependIcon` \| objet ou fonction \| non \| `null` \| libre \| Vuetify \|$/m);
   assert.match(bouton, /^Événements émis : `click`\. Slots : `default`\.$/m);
@@ -185,7 +186,8 @@ test('U3 bloc refus du DsTag ; attributs admis confrontés à verifierUsage ; me
     assert.match(refus, menu.ecouteurs === false ? /Attributs `on…` d'événement : refusés\.$/m : /Attributs `on…` d'événement : admis\.$/m, nom);
     assert.match(refus, (menu.attributsRetires ?? []).length ? new RegExp(`Retirés : ${menu.attributsRetires.map((/** @type {string} */ r) => `\`${r}\``).join(', ')}\\.`) : /Retirés : aucun\./, nom);
   }
-  // Sept règles, chacune avec un cas qui la déclenche et son message, écrits à la main.
+  // Neuf règles, chacune avec un cas qui la déclenche et son message, écrits à la main ; les deux du slot prepend de
+  // DsCard d'après docs/attendus/carte-membre-liste.md.
   const bouton = { type: 'submit', disabled: true };
   const CAS = [
     ['DsButton', 'regles', 0, bouton, {}, 'disabled : refusé avec type=submit'],
@@ -194,7 +196,9 @@ test('U3 bloc refus du DsTag ; attributs admis confrontés à verifierUsage ; me
     ['DsAvatar', 'regles', 1, { name: '123' }, {}, 'name : sans lettre'],
     ['DsCard', 'regles', 0, { title: 'T', image: 'a.jpg' }, {}, 'imageAlt : obligatoire avec image'],
     ['DsCard', 'regles', 1, { title: 'T', href: '/x' }, { actions: () => [] }, 'href : refusé avec le slot actions'],
+    ['DsCard', 'regles', 2, { title: 'T', image: 'a.jpg', imageAlt: '' }, { prepend: () => [] }, 'slot prepend : refusé avec image'],
     ['DsCard', 'reglesDuRendu', 0, { title: 'T' }, { actions: () => [{ type: 'a' }] }, 'slot actions : seuls DsButton et DsIconButton sont admis'],
+    ['DsCard', 'reglesDuRendu', 1, { title: 'T' }, { prepend: () => [{ type: 'a' }] }, 'slot prepend : seul DsAvatar est admis'],
   ];
   let regles = 0;
   for (const { menu } of MENUS) regles += (menu.regles ?? []).length + (menu.reglesDuRendu ?? []).length;

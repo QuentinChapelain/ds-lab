@@ -190,7 +190,7 @@
     },
     "ds-texte-secondaire": {
       "jeton": "texte.secondaire",
-      "$description": "Texte d'exemple et aide du champ, mention « (obligatoire) » du libellé (4,5:1 sur la page et sur la surface)."
+      "$description": "Texte d'exemple et aide du champ, mention « (obligatoire) » du libellé, sous-titre de DsCard (4,5:1 sur la page et sur la surface)."
     },
     "ds-texte-erreur": {
       "jeton": "texte.erreur",
@@ -215,7 +215,7 @@
     },
     "ds-ecart-entre-composants": {
       "jeton": "ecart.entre-composants",
-      "$description": "Écart entre l'image, le bloc titre et texte, et les actions d'une carte."
+      "$description": "Écart entre l'image, le bloc titre et texte, et les actions d'une carte ; dans DsCard horizontale, entre la pièce de gauche et la colonne."
     },
     "ds-corps-police": {
       "jeton": "typo.corps.moyen",
@@ -280,6 +280,26 @@
     "ds-titre-carte-hauteur-capitale": {
       "jeton": "police.titre.hauteur-capitale",
       "$description": "Consigne commune de hauteur de capitale des titres (DS11, D17), posée sur le titre de la carte par font-size-adjust: cap-height."
+    },
+    "ds-titre-4-police": {
+      "jeton": "typo.titre.4",
+      "champ": "fontFamily",
+      "$description": "Police du titre de DsCard en taille small (style titre 4), celle du texte de la marque."
+    },
+    "ds-titre-4-taille": {
+      "jeton": "typo.titre.4",
+      "champ": "fontSize",
+      "$description": "Taille du titre de DsCard en taille small (style titre 4)."
+    },
+    "ds-titre-4-graisse": {
+      "jeton": "typo.titre.4",
+      "champ": "fontWeight",
+      "$description": "Graisse du titre de DsCard en taille small (style titre 4)."
+    },
+    "ds-titre-4-interligne": {
+      "jeton": "typo.titre.4",
+      "champ": "lineHeight",
+      "$description": "Interligne du titre de DsCard en taille small (style titre 4), sans unité."
     },
     "ds-arrondi-pilule": {
       "jeton": "arrondi.pilule",
@@ -348,22 +368,22 @@
     "ds-corps-petit-police": {
       "jeton": "typo.corps.petit",
       "champ": "fontFamily",
-      "$description": "Police du texte de l'étiquette (style corps petit)."
+      "$description": "Police du texte de l'étiquette et du sous-titre de DsCard (style corps petit)."
     },
     "ds-corps-petit-taille": {
       "jeton": "typo.corps.petit",
       "champ": "fontSize",
-      "$description": "Taille du texte de l'étiquette (style corps petit)."
+      "$description": "Taille du texte de l'étiquette et du sous-titre de DsCard (style corps petit)."
     },
     "ds-corps-petit-graisse": {
       "jeton": "typo.corps.petit",
       "champ": "fontWeight",
-      "$description": "Graisse du texte de l'étiquette (style corps petit)."
+      "$description": "Graisse du texte de l'étiquette et du sous-titre de DsCard (style corps petit)."
     },
     "ds-corps-petit-interligne": {
       "jeton": "typo.corps.petit",
       "champ": "lineHeight",
-      "$description": "Interligne du texte de l'étiquette (style corps petit), sans unité."
+      "$description": "Interligne du texte de l'étiquette et du sous-titre de DsCard (style corps petit), sans unité."
     }
   }
 }

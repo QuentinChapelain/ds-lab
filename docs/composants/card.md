@@ -20,7 +20,7 @@ Une surface qui groupe un titre, un texte, une image et des actions, ou qui mèn
 - Pour présenter un objet parmi d'autres, dans une rangée ou une grille : un événement, un club, une offre.
 - Pour une carte qui mène vers une page : `href`, et le titre devient le lien.
 - Pour une carte qui propose des actions : le slot `actions`, avec des `DsButton` et des `DsIconButton` ; jamais `href` et `actions` ensemble.
-- Pour une ligne d'annuaire avec photo : carte membre, à venir, sur `DsCard`, `DsAvatar` et `DsTag`.
+- Pour une ligne d'annuaire : `DsAvatar` en `prepend` (module `MemberCard`).
 - Pour une grille et ses largeurs : à venir (B6).
 
 ## Props
@@ -29,19 +29,24 @@ Une surface qui groupe un titre, un texte, une image et des actions, ou qui mèn
 | Prop | Type | Obligatoire | Défaut | Valeurs admises | Nom repris de |
 |---|---|---|---|---|---|
 | `title` | texte | oui | aucun | libre | Vuetify |
+| `subtitle` | texte | non | aucun | libre | Vuetify |
+| `size` | texte | non | `'medium'` | `'medium'`, `'small'` | Vuetify |
 | `headingLevel` | nombre | non | `3` | `2`, `3`, `4` | usage courant |
 | `image` | texte | non | aucun | libre | Vuetify |
 | `imageAlt` | texte | non | aucun | libre | HTML |
 | `href` | texte | non | aucun | libre | HTML |
 
-Événements émis : aucun. Slots : `default`, `actions`.
+Événements émis : aucun. Slots : `default`, `actions`, `prepend`.
 <!-- /genere:props -->
 
 - `title` : le titre, un vrai titre de la page.
-- `headingLevel` : son niveau, 2, 3 (par défaut) ou 4, selon la place de la carte dans la page ; l'apparence ne change pas.
+- `subtitle` : une ligne sous le titre, hors du nom du lien.
+- `size` : `small`, titre de sous-groupe, pour une liste dense.
+- `headingLevel` : son niveau, 2, 3 (par défaut) ou 4, selon la place de la carte dans la page ; l'apparence suit `size`.
 - `image` : une image en tête, recadrée au format 16:9.
 - `imageAlt` : le texte de remplacement de l'image, obligatoire avec `image` ; vide pour une image décorative.
 - `href` : l'adresse vers laquelle mène toute la carte.
+- Slot `prepend` : un `DsAvatar` à gauche ; la carte devient horizontale.
 
 ## Refusé
 
@@ -52,13 +57,16 @@ Tout autre usage lève une erreur, et rien n'est rendu. Messages, dans l'ordre o
 
 - `DsCard : attribut refusé : <attributs>`
 - `DsCard : title : obligatoire`
+- `DsCard : size : valeur inconnue : <valeur> (medium, small)`
 - `DsCard : headingLevel : valeur inconnue : <valeur> (2, 3, 4)`
 - `DsCard : imageAlt : obligatoire avec image`
 - `DsCard : href : refusé avec le slot actions`
+- `DsCard : slot prepend : refusé avec image`
 - `DsCard : slot actions : seuls DsButton et DsIconButton sont admis`, au rendu
+- `DsCard : slot prepend : seul DsAvatar est admis`, au rendu
 <!-- /genere:refus -->
 
-Un attribut `on…` de clic est refusé : une carte qui se clique a un `href` (D50). Dans le slot `actions`, tout autre contenu qu'un `DsButton` ou un `DsIconButton` est refusé.
+Un attribut `on…` de clic est refusé : une carte qui se clique a un `href` (D50). Dans le slot `actions`, tout autre contenu qu'un `DsButton` ou un `DsIconButton` est refusé ; dans le slot `prepend`, tout sauf `DsAvatar`.
 
 ## Anatomie et tokens
 
@@ -69,6 +77,7 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 |---|---|---|
 | Couleur | `fond.surface` | Fond d'une carte ou d'un champ, posé sur le fond de la page. |
 | Couleur | `texte.principal` | Texte courant et titres. |
+| Couleur | `texte.secondaire` | Texte d'appoint, comme une aide, une légende ou une date. |
 | Couleur | `bordure.defaut` | Contour ordinaire d'une carte ou d'un séparateur, décoratif, jamais seule pour repérer un champ ou un état. |
 | Couleur, au focus | `bordure.focus` | Anneau de focus clavier, autour du composant qui a le focus. |
 | Couleur, href, au survol | `bordure.forte` | Contour qui suffit à repérer un champ ou une case à cocher. |
@@ -83,6 +92,8 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 | Texte | `typo.corps.moyen` | Texte courant, comme le texte d'une carte ou la saisie d'un champ. |
 | Texte | `typo.titre.3` | Titre de carte. |
 | Texte | `police.titre.hauteur-capitale` | Hauteur des capitales des titres (affichage, titres 1 à 3), la même quelle que soit la police. |
+| Texte | `typo.corps.petit` | Texte de tableau ou d'étiquette, plus petit que le texte courant. |
+| Texte, size | `typo.titre.4` | Titre de sous-groupe, sur les écrans denses, comme le titre d'une DsCard en taille small. |
 <!-- /genere:tokens -->
 
 ## Accessibilité
@@ -101,6 +112,8 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 | `bordure.focus` | `fond.surface` | 5,59:1 (Orbe Café, clair) | 3,00:1 |
 | `bordure.forte` | `fond.app` | 3,10:1 (Atelier Lavandine, clair) | 3,00:1 |
 | `bordure.forte` | `fond.surface` | 3,10:1 (Atelier Lavandine, sombre) | 3,00:1 |
+| `texte.secondaire` | `fond.app` | 5,42:1 (Atelier Lavandine, clair) | 4,50:1 |
+| `texte.secondaire` | `fond.surface` | 5,22:1 (Atelier Lavandine, sombre) | 4,50:1 |
 <!-- /genere:contrastes -->
 
 ## En situation
@@ -117,7 +130,7 @@ import DsCard from './composants/DsCard.vue';
 </template>
 ```
 
-Stories : [atelier/stories/DsCard.stories.js](../../atelier/stories/DsCard.stories.js), story « Planche » (chaque état), story « Niveaux » et story « Clavier ».
+Stories : [atelier/stories/DsCard.stories.js](../../atelier/stories/DsCard.stories.js), story « Planche » (chaque état), story « Variantes », story « Niveaux » et story « Clavier ».
 
 ## Décisions et dette
 
@@ -132,4 +145,5 @@ Stories : [atelier/stories/DsCard.stories.js](../../atelier/stories/DsCard.stori
 
 - le contour, le fond, les dimensions, les textes et l'image de chaque état de la planche ;
 - deux rendus identiques au pixel ;
-- sur le premier thème : la touche Tab des cartes, l'anneau au focus, un clic dans une carte à lien, les niveaux de titre et les refus.
+- le sous-titre, la taille `small` et la carte horizontale ;
+- sur le premier thème : la touche Tab des cartes, l'anneau au focus, un clic dans une carte à lien ou sur son `DsAvatar`, les niveaux de titre et les refus.

@@ -1,11 +1,13 @@
 // Stories de la carte (D50) : la planche, que la preuve force état par état et enregistre ; la vitrine, toutes les marques
-// en clair et en sombre côte à côte ; les niveaux de titre ; le clavier ; le bac à sable ; les refus. L'image d'essai est
+// en clair et en sombre côte à côte ; les variantes (sous-titre, taille small, carte horizontale) ; les niveaux de
+// titre ; le clavier ; le bac à sable ; les refus. L'image d'essai est
 // dessinée ici, au format 4:3, pour que le recadrage en 16:9 se voie.
 import { h } from 'vue';
 import { VThemeProvider } from 'vuetify/components';
 import DsCard from '../composants/DsCard.vue';
 import DsButton from '../composants/DsButton.vue';
-import { ENTETE, THEMES } from './commun.js';
+import DsAvatar from '../composants/DsAvatar.vue';
+import { ENTETE, PORTRAIT, THEMES } from './commun.js';
 
 /** Image d'essai, 4:3 : un ciel, deux collines, un soleil et un repère au centre. */
 const IMAGE = `data:image/svg+xml,${encodeURIComponent(
@@ -63,6 +65,34 @@ export const Vitrine = {
   }),
 };
 
+/** DsAvatar décoratif du slot prepend : le titre de la carte écrit le nom (D54). */
+const devant = () => [h(DsAvatar, { name: 'Camille Ferrand', image: PORTRAIT, size: 'large', decorative: true })];
+/** Variantes, cas que la preuve mesure ; état → [props, slot prepend]. */
+const VARIANTES = [
+  ['sous-titre', { subtitle: 'Promo 2015' }, false],
+  ['small', { size: 'small' }, false],
+  ['horizontale', { size: 'small', subtitle: 'Promo 2015' }, true],
+  ['horizontale-lien', { size: 'small', subtitle: 'Promo 2015', href: '#carte-horizontale' }, true],
+  ['horizontale-moyenne', { subtitle: 'Promo 2015' }, true],
+];
+
+/** Variantes : sous-titre, taille small, carte horizontale avec DsAvatar à gauche, avec et sans lien. */
+export const Variantes = {
+  render: () => ({
+    setup: () => () =>
+      h(
+        'div',
+        { style: 'display:grid;grid-template-columns:repeat(3,320px);gap:24px;padding:24px;align-items:start' },
+        VARIANTES.map(([etat, o, avecDevant]) =>
+          h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, [
+            h('span', { style: ENTETE }, /** @type {string} */ (etat)),
+            h(DsCard, { title: 'Camille Ferrand', ...(/** @type {object} */ (o)), 'data-etat': etat }, { default: () => TEXTE, ...(avecDevant ? { prepend: devant } : {}) }),
+          ]),
+        ),
+      ),
+  }),
+};
+
 /** Niveaux de titre : 2, 3 (par défaut) et 4, la même apparence. */
 export const Niveaux = {
   render: () => ({
@@ -90,8 +120,8 @@ export const Clavier = {
 /** Bac à sable : chaque prop, dans le thème de la barre. */
 export const BacASable = {
   name: 'Bac à sable',
-  args: { title: 'Club de lecture', texte: TEXTE, headingLevel: 3, image: false, decorative: false, href: false, actions: false },
-  argTypes: { headingLevel: { control: 'inline-radio', options: [2, 3, 4] } },
+  args: { title: 'Club de lecture', subtitle: '', size: 'medium', texte: TEXTE, headingLevel: 3, avatar: false, image: false, decorative: false, href: false, actions: false },
+  argTypes: { headingLevel: { control: 'inline-radio', options: [2, 3, 4] }, size: { control: 'inline-radio', options: ['medium', 'small'] } },
   render: (/** @type {Record<string, any>} */ args) => ({
     setup: () => () =>
       h('div', { style: 'padding:24px;width:320px' }, [
@@ -99,11 +129,13 @@ export const BacASable = {
           DsCard,
           {
             title: args.title,
+            size: args.size,
             headingLevel: args.headingLevel,
-            ...(args.image ? { image: IMAGE, imageAlt: args.decorative ? '' : 'Deux collines sous un soleil' } : {}),
+            ...(args.subtitle ? { subtitle: args.subtitle } : {}),
+            ...(args.image && !args.avatar ? { image: IMAGE, imageAlt: args.decorative ? '' : 'Deux collines sous un soleil' } : {}),
             ...(args.href && !args.actions ? { href: '#bac-a-sable' } : {}),
           },
-          { default: () => args.texte, ...(args.actions ? { actions } : {}) },
+          { default: () => args.texte, ...(args.actions ? { actions } : {}), ...(args.avatar ? { prepend: devant } : {}) },
         ),
       ]),
   }),
@@ -132,6 +164,24 @@ export const RefusLienEtActions = {
 /** Refus : autre chose qu'un bouton de l'enveloppe dans les actions. */
 export const RefusActions = {
   render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(DsCard, { title: 'Club de lecture' }, { default: () => TEXTE, actions: () => [h('a', { href: '#x' }, 'Lire')] })]) }),
+};
+
+/** Refus : taille hors du menu. */
+export const RefusTaille = {
+  render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(DsCard, { title: 'Club de lecture', size: 'large' }, () => TEXTE)]) }),
+};
+
+/** Refus : autre chose que DsAvatar dans le slot prepend. */
+export const RefusDevant = {
+  render: () => ({ setup: () => () => h('div', { style: 'padding:24px' }, [h(DsCard, { title: 'Club de lecture' }, { default: () => TEXTE, prepend: () => [h('img', { src: PORTRAIT, alt: '' })] })]) }),
+};
+
+/** Refus : slot prepend avec une image. */
+export const RefusDevantEtImage = {
+  render: () => ({
+    setup: () => () =>
+      h('div', { style: 'padding:24px' }, [h(DsCard, { title: 'Club de lecture', image: IMAGE, imageAlt: 'Deux collines sous un soleil' }, { default: () => TEXTE, prepend: devant })]),
+  }),
 };
 
 /** Refus : écouteur de clic ; une carte qui se clique a un lien. */

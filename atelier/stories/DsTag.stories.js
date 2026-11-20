@@ -55,14 +55,14 @@ function planche(mesures = true) {
 
 /**
  * Ligne « en situation » : grand avatar décoratif, puisque le nom est écrit à côté (D54), nom, promo, puis la suite
- * d'étiquettes, dont une longue coupée. Le nom prend le titre 4, qui n'a pas encore de variable du thème : sa mise en
- * forme est écrite ici, comme la mise en page.
+ * d'étiquettes, dont une longue coupée. Le nom prend le titre 4, par les variables du thème (celles de DsCard en taille
+ * small) ; seule la mise en page est écrite ici.
  */
 const situation = () =>
   h('div', { style: 'display:flex;gap:16px;align-items:flex-start;width:420px', 'data-cas': 'situation' }, [
     h(DsAvatar, { name: 'Camille Ferrand', image: PORTRAIT, size: 'large', decorative: true }),
     h('div', { style: 'display:flex;flex-direction:column;gap:var(--v-ds-ecart-dans-composant);min-width:0;flex:1' }, [
-      h('p', { style: 'margin:0;font:700 16px/24px var(--v-font-body);color:rgb(var(--v-theme-on-surface))' }, 'Camille Ferrand'),
+      h('p', { style: 'margin:0;font-family:var(--v-ds-titre-4-police);font-size:var(--v-ds-titre-4-taille);font-weight:var(--v-ds-titre-4-graisse);line-height:var(--v-ds-titre-4-interligne);color:rgb(var(--v-theme-on-surface))' }, 'Camille Ferrand'),
       h('p', { style: 'margin:0;font-family:var(--v-ds-corps-petit-police);font-size:var(--v-ds-corps-petit-taille);line-height:var(--v-ds-corps-petit-interligne);color:rgb(var(--v-ds-texte-secondaire))' }, 'Promo 2015'),
       suite(
         [

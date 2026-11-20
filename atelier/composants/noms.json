@@ -487,6 +487,20 @@
           "ancien": "titre",
           "source": "vuetify"
         },
+        "subtitle": {
+          "source": "vuetify"
+        },
+        "size": {
+          "source": "vuetify",
+          "valeurs": {
+            "medium": {
+              "source": "courant"
+            },
+            "small": {
+              "source": "vuetify"
+            }
+          }
+        },
         "headingLevel": {
           "ancien": "niveau",
           "source": "courant"
@@ -512,6 +526,9 @@
         },
         "actions": {
           "ancien": "actions",
+          "source": "vuetify"
+        },
+        "prepend": {
           "source": "vuetify"
         }
       }

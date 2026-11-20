@@ -37,6 +37,9 @@
  *      pour mot : texte obligatoire (absent, null, vide), ton inconnu, closable, href, to, link, filter, tabindex,
  *      aria-label, aria-labelledby et onClick refusés ; id, aria-describedby et data-* passent ; un texte de 80
  *      caractères est accepté, aucune limite de longueur ;
+ *   Ajouts pour DsCard (20/11/2026, docs/attendus/carte-membre-liste.md) : W5 rejoue ses messages mot pour mot : taille
+ *      inconnue, slot prepend refusé avec image, slot prepend qui n'est pas un DsAvatar ; subtitle, size small et un
+ *      DsAvatar en prepend passent ;
  *   W8 chaque .vue de atelier/composants/ passe par la fabrique et son menu, sans déclarer lui-même props, inheritAttrs
  *      ni emits ; chaque menu est importé par un seul .vue.
  *   W9 CP1 (docs/regles.md) : un composant sans événement refuse tout attribut on… (ecouteurs: false) ; un composant
@@ -177,6 +180,12 @@ test('W5 refus rejoués sur chaque menu réel', () => {
   assert.equal(carte(k, {}, { actions: () => [{ type: texte, children: 'Lire' }] }), 'DsCard : slot actions : seuls DsButton et DsIconButton sont admis');
   assert.equal(carte(k, { onClick: () => {} }), 'DsCard : attribut refusé : onClick');
   assert.equal(carte(k, {}, { actions: () => [bouton, { type: { name: 'DsIconButton' }, children: null }] }), null, 'bouton à icône admis dans les actions');
+  const avatar = { type: { name: 'DsAvatar' }, children: null };
+  assert.equal(carte({ ...k, subtitle: 'Promo 2015', size: 'small' }, {}, { prepend: () => [avatar] }), null, 'sous-titre, taille small, DsAvatar en prepend');
+  assert.equal(carte({ ...k, size: 'large' }), 'DsCard : size : valeur inconnue : large (medium, small)');
+  assert.equal(carte({ ...k, image: 'x.png', imageAlt: '' }, {}, { prepend: () => [avatar] }), 'DsCard : slot prepend : refusé avec image');
+  assert.equal(carte(k, {}, { prepend: () => [{ type: 'img', children: null }] }), 'DsCard : slot prepend : seul DsAvatar est admis');
+  assert.equal(carte(k, {}, { prepend: () => [bouton] }), 'DsCard : slot prepend : seul DsAvatar est admis');
   const i = { ...defauts(BOUTON_ICONE), label: 'Fermer', icon: () => null };
   assert.equal(leve(BOUTON_ICONE, i), null);
   assert.equal(leve(BOUTON_ICONE, { ...i, label: undefined }), 'DsIconButton : label : obligatoire');

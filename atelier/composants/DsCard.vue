@@ -9,6 +9,8 @@
 // imposent leur variante aux boutons ; sa variante par défaut porte une ombre. L'enveloppe la prend donc en variante
 // flat, sans lien ni écouteur, rend elle-même un vrai titre (h2, h3 ou h4), ses actions et son image ; la carte à lien
 // porte le lien dans son titre, étendu à toute la carte par un pseudo-élément, avec l'anneau de focus autour de la carte.
+// Avec le slot prepend (DsAvatar seul), la carte est horizontale : la pièce à gauche, le titre, le sous-titre, le texte et
+// les actions dans une colonne à droite. La taille small donne au titre le style titre 4, pour les écrans denses.
 import { h } from 'vue';
 import { VCard } from 'vuetify/components';
 import { definirEnveloppe } from './fabrique.js';
@@ -16,19 +18,23 @@ import MENU from './DsCard.menu.js';
 
 export default definirEnveloppe(MENU, (props, { attrs, slots }) => () => {
   const titre = props.href ? h('a', { class: 'ds-card__link', href: props.href }, props.title) : props.title;
+  const colonne = [
+    h('div', { class: 'ds-card__body' }, [
+      h(`h${props.headingLevel}`, { class: 'ds-card__title' }, [titre]),
+      props.subtitle ? h('p', { class: 'ds-card__subtitle' }, props.subtitle) : null,
+      slots.default ? h('div', { class: 'ds-card__text' }, slots.default()) : null,
+    ]),
+    slots.actions ? h('div', { class: 'ds-card__actions' }, slots.actions()) : null,
+  ];
   return h(
     VCard,
-    { ...attrs, class: ['ds-card', { 'ds-card--link': !!props.href }], variant: 'flat', ripple: false },
+    { ...attrs, class: ['ds-card', { 'ds-card--link': !!props.href, 'ds-card--small': props.size === 'small', 'ds-card--prepend': !!slots.prepend }], variant: 'flat', ripple: false },
     {
       default: () => [
         props.image ? h('img', { class: 'ds-card__media', src: props.image, alt: props.imageAlt }) : null,
-        h('div', { class: 'ds-card__content' }, [
-          h('div', { class: 'ds-card__body' }, [
-            h(`h${props.headingLevel}`, { class: 'ds-card__title' }, [titre]),
-            slots.default ? h('div', { class: 'ds-card__text' }, slots.default()) : null,
-          ]),
-          slots.actions ? h('div', { class: 'ds-card__actions' }, slots.actions()) : null,
-        ]),
+        slots.prepend
+          ? h('div', { class: 'ds-card__content' }, [h('div', { class: 'ds-card__prepend' }, slots.prepend()), h('div', { class: 'ds-card__column' }, colonne)])
+          : h('div', { class: 'ds-card__content' }, colonne),
       ],
     },
   );
@@ -87,6 +93,39 @@ export default definirEnveloppe(MENU, (props, { attrs, slots }) => () => {
   font-size-adjust: cap-height var(--v-ds-titre-carte-hauteur-capitale);
   letter-spacing: 0;
   color: rgb(var(--v-theme-on-surface));
+}
+/* Taille small : le titre prend le style titre 4, dans la police du texte, sans consigne de hauteur de capitale. */
+.ds-card--small .ds-card__title {
+  font-family: var(--v-ds-titre-4-police);
+  font-size: var(--v-ds-titre-4-taille);
+  font-weight: var(--v-ds-titre-4-graisse);
+  line-height: var(--v-ds-titre-4-interligne);
+  font-size-adjust: none;
+}
+.ds-card__subtitle {
+  margin: 0;
+  font-family: var(--v-ds-corps-petit-police);
+  font-size: var(--v-ds-corps-petit-taille);
+  font-weight: var(--v-ds-corps-petit-graisse);
+  line-height: var(--v-ds-corps-petit-interligne);
+  letter-spacing: 0;
+  color: rgb(var(--v-ds-texte-secondaire));
+}
+/* Carte horizontale : la pièce du slot prepend à gauche, alignée en haut, la colonne à droite, qui peut rétrécir. */
+.ds-card--prepend .ds-card__content {
+  flex-direction: row;
+  align-items: flex-start;
+}
+.ds-card__prepend {
+  display: flex;
+  flex: none;
+}
+.ds-card__column {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--v-ds-ecart-entre-composants);
+  min-width: 0;
 }
 .ds-card__text {
   font-family: var(--v-ds-corps-police);

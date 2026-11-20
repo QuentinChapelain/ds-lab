@@ -5,7 +5,10 @@
 // planche de la version construite est enregistrée par thème dans local/text-input-card-captures/, hors dépôt. Sur le premier
 // thème, clavier et lecteur d'écran : une tabulation par carte à lien, une par bouton d'une carte à actions, un lien nommé
 // par le titre seul, l'anneau au focus clavier, un clic n'importe où sur la carte qui suit le lien, les niveaux de titre,
-// les refus d'un usage hors du menu.
+// les refus d'un usage hors du menu. Sur chaque thème aussi, la story des variantes : sous-titre en corps petit et texte
+// secondaire, titre 4 en taille small, carte horizontale (DsAvatar à gauche, aligné en haut, à l'écart entre composants
+// de la colonne) ; sur le premier, le lien de la carte horizontale nommé par le titre seul et un clic sur DsAvatar qui
+// le suit.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { LOCAL, css, ecart, forcer, ouvrir, refus } from './commun.js';
@@ -145,6 +148,105 @@ async function releve(contexte, base, theme) {
   return { cartes, image, erreurs };
 }
 
+/** Variantes → [sous-titre, taille small, slot prepend, lien]. */
+const VARIANTES = {
+  'sous-titre': [true, false, false, false],
+  small: [false, true, false, false],
+  horizontale: [true, true, true, false],
+  'horizontale-lien': [true, true, true, true],
+  'horizontale-moyenne': [true, false, true, false],
+};
+
+/**
+ * Mesures attendues de chaque variante, au format de getComputedStyle.
+ * @param {{ couleurs: Record<string, string>, variables: Record<string, string>, policeTexte: string[], policeTitre: string[] }} t
+ */
+function attenduVariantes(t) {
+  const v = t.variables;
+  /** @type {Map<string, Record<string, any>>} */
+  const out = new Map();
+  for (const [etat, [sousTitre, small, devant, lien]] of Object.entries(VARIANTES)) {
+    const k = small ? 'ds-titre-4' : 'ds-titre-carte';
+    out.set(etat, {
+      titre: {
+        balise: 'H3',
+        police: (small ? t.policeTexte : t.policeTitre).join('|'),
+        taille: v[`${k}-taille`],
+        graisse: v[`${k}-graisse`],
+        interligne: px(parseFloat(v[`${k}-taille`]) * Number(v[`${k}-interligne`])),
+        ajustement: small ? 'none' : `cap-height ${v['ds-titre-carte-hauteur-capitale']}`,
+      },
+      sousTitre: sousTitre
+        ? {
+            police: t.policeTexte.join('|'),
+            taille: v['ds-corps-petit-taille'],
+            graisse: v['ds-corps-petit-graisse'],
+            // Au dix-millième, comme le navigateur le calcule (14 × 1,4286 = 20,0004 px), et comme la preuve de DsTag.
+            interligne: `${Math.round(parseFloat(v['ds-corps-petit-taille']) * Number(v['ds-corps-petit-interligne']) * 10000) / 10000}px`,
+            couleur: css(v['ds-texte-secondaire']),
+            ecartTitre: v['ds-ecart-dans-composant'],
+            ecartTexte: v['ds-ecart-dans-composant'],
+          }
+        : null,
+      devant: devant
+        ? { cote: `${v['ds-taille-avatar-grande']} ${v['ds-taille-avatar-grande']}`, gauche: v['ds-marge-interieure-composant'], haut: v['ds-marge-interieure-composant'], ecartColonne: v['ds-ecart-entre-composants'], titreAligne: '0px' }
+        : null,
+      largeur: '320px',
+      focalisables: lien ? 1 : 0,
+    });
+  }
+  return out;
+}
+
+/**
+ * Relevé de la story des variantes dans l'aperçu, thème passé par son nom.
+ * @param {import('playwright-core').BrowserContext} contexte @param {string} base @param {string} theme
+ */
+async function releveVariantes(contexte, base, theme) {
+  const { page, erreurs } = await ouvrir(contexte, base, 'composants-dscard--variantes', theme);
+  await page.locator('.ds-card').first().waitFor({ timeout: 30_000 }).catch(() => {});
+  await page.evaluate(() => document.fonts.ready);
+  await page.evaluate(() => Promise.all([...document.images].map((i) => i.decode().catch(() => {}))));
+  const cartes = await page.evaluate(() => {
+    const noms = (/** @type {string} */ s) => s.split(',').map((x) => x.trim().replace(/^"(.*)"$/, '$1')).join('|');
+    const px = (/** @type {number} */ n) => `${Math.round(n * 1000) / 1000}px`;
+    const r = (/** @type {Element} */ x) => x.getBoundingClientRect();
+    /** @type {Record<string, any>} */
+    const out = {};
+    for (const e of /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.ds-card[data-etat]'))) {
+      const s = getComputedStyle(e);
+      const bord = parseFloat(s.borderLeftWidth);
+      const titre = /** @type {HTMLElement} */ (e.querySelector('.ds-card__title'));
+      const st = /** @type {HTMLElement | null} */ (e.querySelector('.ds-card__subtitle'));
+      const texte = /** @type {HTMLElement} */ (e.querySelector('.ds-card__text'));
+      const av = /** @type {HTMLElement | null} */ (e.querySelector('.ds-card__prepend .ds-avatar'));
+      const col = /** @type {HTMLElement | null} */ (e.querySelector('.ds-card__column'));
+      const ts = getComputedStyle(titre);
+      let sousTitre = null;
+      if (st) {
+        const ss = getComputedStyle(st);
+        sousTitre = { police: noms(ss.fontFamily), taille: ss.fontSize, graisse: ss.fontWeight, interligne: ss.lineHeight, couleur: ss.color, ecartTitre: px(r(st).top - r(titre).bottom), ecartTexte: px(r(texte).top - r(st).bottom) };
+      }
+      let devant = null;
+      if (av && col) {
+        const a = r(av);
+        devant = { cote: `${px(a.width)} ${px(a.height)}`, gauche: px(a.left - r(e).left - bord), haut: px(a.top - r(e).top - bord), ecartColonne: px(r(col).left - a.right), titreAligne: px(r(titre).top - a.top) };
+      }
+      out[/** @type {string} */ (e.dataset.etat)] = {
+        titre: { balise: titre.tagName, police: noms(ts.fontFamily), taille: ts.fontSize, graisse: ts.fontWeight, interligne: ts.lineHeight, ajustement: ts.fontSizeAdjust },
+        sousTitre,
+        devant,
+        largeur: px(r(e).width),
+        focalisables: e.querySelectorAll('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])').length,
+      };
+    }
+    return out;
+  });
+  const image = await page.screenshot({ fullPage: true, animations: 'disabled' });
+  await page.close();
+  return { cartes, image, erreurs };
+}
+
 /** Ordre de tabulation attendu dans la story Clavier : une fois la carte à lien, une fois par bouton. */
 const ORDRE_CLAVIER = ['lien-a', 'actions', 'actions', 'lien-c'];
 /** Erreurs attendues des stories de refus. */
@@ -155,6 +257,9 @@ const REFUS = {
   'refus-lien-et-actions': 'DsCard : href : refusé avec le slot actions',
   'refus-actions': 'DsCard : slot actions : seuls DsButton et DsIconButton sont admis',
   'refus-ecouteur': 'DsCard : attribut refusé : onClick',
+  'refus-taille': 'DsCard : size : valeur inconnue : large (medium, small)',
+  'refus-devant': 'DsCard : slot prepend : seul DsAvatar est admis',
+  'refus-devant-et-image': 'DsCard : slot prepend : refusé avec image',
 };
 
 /**
@@ -215,6 +320,18 @@ async function clavier(contexte, base, t) {
   out.push([niveaux.map((x) => x.slice(0, 2)).join(' ') === 'H2 H3 H4' && memes && n.erreurs.length === 0, `${t.nom}, niveaux de titre : ${niveaux.join(' ; ')}`]);
   await n.page.close();
 
+  // Carte horizontale à lien : un seul lien, nommé par le titre seul, sans le sous-titre ; un clic sur DsAvatar le suit.
+  const w = await ouvrir(contexte, base, 'composants-dscard--variantes', t.nom);
+  await w.page.locator('.ds-card').first().waitFor();
+  const carte = w.page.locator('[data-etat="horizontale-lien"]');
+  const noms = await carte.getByRole('link').evaluateAll((ls) => ls.map((l) => l.textContent));
+  const nomme = await carte.getByRole('link', { name: 'Camille Ferrand', exact: true }).count();
+  const av = await carte.locator('.ds-avatar').boundingBox();
+  if (av) await w.page.mouse.click(av.x + av.width / 2, av.y + av.height / 2);
+  const suivi = await w.page.evaluate(() => location.hash);
+  out.push([noms.length === 1 && nomme === 1 && suivi === '#carte-horizontale' && w.erreurs.length === 0, `${t.nom}, carte horizontale à lien : ${noms.length} lien(s), nommé par le titre seul : ${nomme} (${noms.join(' ; ')}), clic sur DsAvatar : ${suivi || 'aucun lien suivi'}`]);
+  await w.page.close();
+
   for (const [story, message] of Object.entries(REFUS)) out.push(await refus(contexte, base, `composants-dscard--${story}`, t.nom, message, '.ds-card', 'carte'));
   return out;
 }
@@ -250,6 +367,17 @@ export async function preuveCarte({ themes, contexte, developpement, construite,
     writeFileSync(join(CAPTURES, `carte-${t.nom}.png`), bld.image);
     const d = ecart(dev.image, bld.image);
     verifier(d === 0, `${t.nom}, carte : développement et construite, ${d} pixel(s) différent(s)`);
+    const av = attenduVariantes(t);
+    const vd = await releveVariantes(contexte, developpement.base, t.nom);
+    const vb = await releveVariantes(contexte, construite.base, t.nom);
+    for (const [mode, r] of /** @type {const} */ ([['développement', vd], ['construite', vb]])) {
+      const e = ecarts(av, r.cartes);
+      const n = Object.keys(r.cartes).length;
+      verifier(e.length === 0 && n === av.size && r.erreurs.length === 0, `${t.nom}, ${mode}, variantes de la carte : ${n} cartes sur ${av.size}${e.length ? `, ${e.length} écart(s) : ${e.slice(0, 4).join(' ; ')}` : ', sous-titre, titre 4 et carte horizontale égaux aux jetons'}${r.erreurs.length ? `, ${r.erreurs.join(' ; ')}` : ''}`);
+    }
+    writeFileSync(join(CAPTURES, `carte-variantes-${t.nom}.png`), vb.image);
+    const dv = ecart(vd.image, vb.image);
+    verifier(dv === 0, `${t.nom}, variantes de la carte : développement et construite, ${dv} pixel(s) différent(s)`);
   }
   for (const [mode, base] of [['développement', developpement.base], ['construite', construite.base]])
     for (const [ok, ligne] of await clavier(contexte, base, themes[0])) verifier(ok, `${mode}, ${ligne}`);

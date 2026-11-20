@@ -445,7 +445,10 @@
           },
           "lineHeight": 1.5
         },
-        "$description": "Titre de sous-groupe, sur les écrans denses ; ligne visée 24 px."
+        "$description": "Titre de sous-groupe, sur les écrans denses, comme le titre d'une DsCard en taille small.",
+        "$extensions": {
+          "ds-lab.note": "Titre de sous-groupe, sur les écrans denses ; ligne visée 24 px."
+        }
       }
     },
     "corps": {

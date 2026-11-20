@@ -61,6 +61,8 @@
  *      (fond.composant, texte.principal), chacune en paire de paires.json ;
  *   V2 40 couleurs par thème (20 fonds, 20 textes) ;
  *   V9 18 variables de plus, 55 en tout ; leurs valeurs sont jugées par A4 (test/avatar-etiquette.test.js).
+ * Titre 4 de DsCard (20/11/2026, docs/attendus/carte-membre-liste.md) : V9 quatre variables ds-titre-4-*, 59 en tout,
+ *   16px, 700 et 1.5, dans la police du texte de la marque.
  * Fonds teintés (20/11/2026, docs/attendus/carte-membre-liste.md) : les deux couleurs deviennent marque-teinte
  *   (fond.marque.teinte, texte.marque) et teinte (fond.teinte, texte.principal), à la même place ; toujours 40.
  */
@@ -223,12 +225,16 @@ test('V9 variables ds- du bouton : dimensions dans les dix thèmes, traits égau
     'ds-hauteur-etiquette', 'ds-marge-interieure-etiquette', 'ds-ecart-entre-etiquettes',
     ...['police', 'taille', 'graisse', 'interligne'].map((c) => `ds-corps-petit-${c}`),
   ];
-  assert.equal(Object.keys(DIMENSIONS).length + Object.keys(TRAITS).length + CHAMP_CARTE.length + AVATAR_ETIQUETTE_VARIABLES.length, 55);
+  // Titre 4 de DsCard en taille small (docs/attendus/carte-membre-liste.md) : quatre variables, valeurs jugées ici.
+  const TITRE_4 = ['police', 'taille', 'graisse', 'interligne'].map((c) => `ds-titre-4-${c}`);
+  assert.equal(Object.keys(DIMENSIONS).length + Object.keys(TRAITS).length + CHAMP_CARTE.length + AVATAR_ETIQUETTE_VARIABLES.length + TITRE_4.length, 59);
   for (const d of MARQUES) {
     const themes = Object.values(themesVuetify(d).themes);
     for (const [i, mode] of /** @type {const} */ (['clair', 'sombre']).entries()) {
       const x = themes[i].variables;
-      assert.deepEqual(Object.keys(x).filter((k) => k.startsWith('ds-')).sort(), [...Object.keys(DIMENSIONS), ...Object.keys(TRAITS), ...CHAMP_CARTE, ...AVATAR_ETIQUETTE_VARIABLES].sort(), `${d} ${mode}`);
+      assert.deepEqual(Object.keys(x).filter((k) => k.startsWith('ds-')).sort(), [...Object.keys(DIMENSIONS), ...Object.keys(TRAITS), ...CHAMP_CARTE, ...AVATAR_ETIQUETTE_VARIABLES, ...TITRE_4].sort(), `${d} ${mode}`);
+      assert.deepEqual(TITRE_4.slice(1).map((k) => x[k]), ['16px', '700', '1.5'], `${d} ${mode} titre 4`);
+      assert.equal(x['ds-titre-4-police'], x['ds-corps-petit-police'], `${d} ${mode} titre 4, police du texte`);
       for (const [k, v] of Object.entries(DIMENSIONS)) assert.equal(x[k], v, `${d} ${mode} ${k}`);
       const s = loadRoles(d, { mode });
       const roles = resolveRoles(s.semantique, s.primitives, s.marque);
