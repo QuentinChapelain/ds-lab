@@ -130,6 +130,11 @@ export const CIBLES_SOMBRES = {
   /** Contraste du pas 9 neutre contre le noir. */
   neutre9: Math.sqrt(NEUTRE_8 * NEUTRE_11),
 };
+/**
+ * Pas des fonds teintés en sombre (fond.teinte, fond.marque.teinte) [H] : au pas 3, comme en clair, ils ne se
+ * détachaient pas d'une surface (1,03:1) ; au pas 5, 1,20:1, et le texte posé dessus reste au-dessus de 10:1 (D59).
+ */
+const PAS_TEINTE_SOMBRE = 5;
 /** Options de generateScale pour une échelle de couleur sombre (marques et statuts). */
 export const OPTIONS_COULEUR_SOMBRE = /** @type {const} */ ({ fond: 'sombre', cibles: CIBLES_SOMBRES.couleur, chromaTextes: 'max' });
 
@@ -160,6 +165,7 @@ export function sombreTokens(primitives, statuts) {
       $description: 'Surface en sombre : plus claire que fond.discret, plus foncée que les fonds de composant, jamais plus foncée que la page [H].',
     },
     'sur-inverse': { $value: '{couleur.neutre.1}', $description: 'Texte sur fond.inverse en sombre : la page, pas 1 du neutre.' },
+    teinte: { $value: `{couleur.neutre.${PAS_TEINTE_SOMBRE}}`, $description: `Fond teinté d'une pièce statique (fond.teinte) en sombre : pas ${PAS_TEINTE_SOMBRE} du neutre, pour se détacher d'une surface.` },
   };
   for (const e of ECHELLES_SOMBRES) {
     const g =
@@ -171,5 +177,14 @@ export function sombreTokens(primitives, statuts) {
   return {
     $description: "Contexte sombre du modificateur mode (marque.resolver.json), commun à toutes les marques. Écrit par src/cli/sombre.js si checkValise passe. Format DTCG 2025.10. Chaque jeton remplace en entier celui du mode clair.",
     couleur,
+    marque: {
+      $type: 'color',
+      primaire: {
+        teinte: {
+          $value: `{marque.primaire.${PAS_TEINTE_SOMBRE}}`,
+          $description: `Fond teinté de la marque (fond.marque.teinte) en sombre : pas ${PAS_TEINTE_SOMBRE} de l'échelle sombre du primaire, pour se détacher d'une surface.`,
+        },
+      },
+    },
   };
 }

@@ -159,6 +159,7 @@ test('H4 descriptions corrigées', () => {
   // Réécrites pour le lecteur des fiches (DOC3, D57) ; le texte d'avant reste dans la note de l'équipe, mot pour mot.
   assert.equal(sem.bordure.defaut.$description, 'Contour ordinaire d\'une carte ou d\'un séparateur, décoratif, jamais seule pour repérer un champ ou un état.');
   assert.equal(sem.bordure.defaut.$extensions['ds-lab.note'], 'Contour ordinaire d\'une carte ou d\'un séparateur, décoratif, jamais seule pour repérer un champ ou un état (sous 3:1 : un champ prend bordure.forte).');
-  assert.equal(sem.fond.composant.$root.$description, 'Fond d\'un composant au repos, plus soutenu que la surface, comme une étiquette neutre.');
+  // DsTag ne lit plus fond.composant (fond.teinte, docs/attendus/carte-membre-liste.md) : l'exemple d'usage est retiré.
+  assert.equal(sem.fond.composant.$root.$description, 'Fond d\'un composant au repos, plus soutenu que la surface.');
   assert.equal(sem.fond.composant.$root.$extensions['ds-lab.note'], 'Fond d\'un composant au repos, plus soutenu que la surface ; un champ, une carte et le bouton secondaire se posent sur fond.surface.');
 });

@@ -38,6 +38,10 @@
       },
       "$description": "Texte posé sur fond.inverse (texte.sur-inverse) : blanc en clair ; en sombre, la référence du miroir."
     },
+    "teinte": {
+      "$value": "{couleur.neutre.3}",
+      "$description": "Fond teinté d'une pièce statique (fond.teinte) : pas 3 du neutre en clair ; en sombre, pas 5 (tokens/commun/mode.sombre.tokens.json)."
+    },
     "neutre": {
       "1": {
         "$value": {

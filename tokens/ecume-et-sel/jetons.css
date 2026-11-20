@@ -212,6 +212,8 @@
   --couleur-sur-inverse: #ffffff;
   /* Surface posée sur le fond de page (fond.surface) : blanc en clair ; en sombre, la référence du miroir (tokens/commun/mode.sombre.tokens.json). */
   --couleur-surface: #ffffff;
+  /* fond de composant */
+  --couleur-teinte: var(--couleur-neutre-3);
   /* Décalage de l'anneau de focus clavier hors du composant, pour qu'il se pose sur le fond de la page et jamais sur le plein. */
   --decalage-focus: var(--trait-2);
   /* Écart entre les parties d'un même composant, comme une étiquette et son champ ou un champ et son message d'erreur. */
@@ -284,11 +286,15 @@
   /* plein, couleur source */
   --fond-marque-fort: var(--marque-primaire-aplat);
   /* fond de composant */
+  --fond-marque-teinte: var(--marque-primaire-teinte);
+  /* fond de composant */
   --fond-succes-discret: var(--couleur-succes-3);
   /* texte secondaire (4,5:1) */
   --fond-succes-fort: var(--marque-succes-plein);
   /* Surface posée sur le fond de page (fond.surface) : blanc en clair ; en sombre, la référence du miroir (tokens/commun/mode.sombre.tokens.json). */
   --fond-surface: var(--couleur-surface);
+  /* fond de composant */
+  --fond-teinte: var(--couleur-teinte);
   /* normale, corps et mentions */
   --graisse-400: 400;
   /* demi-grasse, libellés et titre de carte */
@@ -388,6 +394,8 @@
   --marque-primaire-sur-aplat: var(--marque-primaire-sur-plein);
   /* texte principal */
   --marque-primaire-sur-plein: var(--couleur-primaire-12);
+  /* fond de composant */
+  --marque-primaire-teinte: var(--marque-primaire-3);
   /* texte secondaire (4,5:1) */
   --marque-primaire-texte-grand: var(--couleur-primaire-11);
   /* texte secondaire (4,5:1) */
@@ -777,6 +785,8 @@
     --couleur-sur-inverse: var(--couleur-neutre-1);
     /* Surface en sombre : plus claire que fond.discret, plus foncée que les fonds de composant, jamais plus foncée que la page [H]. */
     --couleur-surface: #181818;
+    /* fond de composant */
+    --couleur-teinte: var(--couleur-neutre-5);
     /* texte secondaire (4,5:1) */
     --marque-accent-plein: #bf3704;
     /* plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur */
@@ -805,6 +815,8 @@
     --marque-primaire-sur-aplat: #003647;
     /* texte principal */
     --marque-primaire-sur-plein: var(--couleur-primaire-1);
+    /* fond de composant */
+    --marque-primaire-teinte: var(--marque-primaire-5);
     /* texte secondaire (4,5:1) */
     --marque-primaire-texte-grand: var(--couleur-primaire-9);
     /* plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45) */

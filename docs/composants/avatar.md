@@ -62,7 +62,7 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 
 | Partie | Token | Ce qu'il règle |
 |---|---|---|
-| Couleur | `fond.marque.discret` | Aplat clair de la marque, non cliquable, comme un bandeau, une section ou un encadré. |
+| Couleur | `fond.marque.teinte` | Fond teinté de la marque d'une pièce statique qui porte un texte court ou des initiales pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable. |
 | Couleur | `texte.marque` | Texte de marque posé sur l'aplat clair de la marque, comme les initiales d'un avatar ou une étiquette mise en avant. |
 | Forme | `arrondi.pilule` | Arrondi complet d'une forme ronde ou en pilule, comme un avatar ou une étiquette. |
 | Forme | `taille-avatar.normale` | Côté d'un avatar de taille normale. |
@@ -81,7 +81,7 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 <!-- genere:contrastes : écrit par npm --prefix atelier run fiches -->
 | Devant | Fond | Plus bas des 10 thèmes | Seuil |
 |---|---|---|---|
-| `texte.marque` | `fond.marque.discret` | 11,65:1 (Atelier Lavandine, clair) | 4,50:1 |
+| `texte.marque` | `fond.marque.teinte` | 10,07:1 (Atelier Lavandine, sombre) | 4,50:1 |
 <!-- /genere:contrastes -->
 
 ## En situation

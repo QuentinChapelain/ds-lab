@@ -179,13 +179,17 @@ export function marqueTokens({ primaire, accent, statuts, polices, fonds, descri
 /** Emplacements de l'aplat plein du primaire, alias du plein en clair (tokens/commun/aplat.tokens.json). */
 const APLAT = /** @type {const} */ ({ aplat: 'plein', 'sur-aplat': 'sur-plein', 'aplat-survol': 'plein-survol' });
 
-/** Fichier tokens/commun/aplat.tokens.json : les trois emplacements de l'aplat plein, alias du plein du primaire. */
+/**
+ * Fichier tokens/commun/aplat.tokens.json : les trois emplacements de l'aplat plein, alias du plein du primaire, et
+ * l'emplacement du fond teinté de la marque, alias du pas 3 du primaire en clair.
+ */
 export function aplatTokens() {
   /** @type {Record<string, any>} */
   const primaire = {};
   for (const [k, v] of Object.entries(APLAT)) primaire[k] = { $value: `{marque.primaire.${v}}`, $description: `aplat plein (fond.marque.fort et bouton inversé) : ${v} du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json)` };
+  primaire.teinte = { $value: '{marque.primaire.3}', $description: 'fond teinté de la marque (fond.marque.teinte) : pas 3 du primaire en clair ; en sombre, pas 5 (mode.sombre.tokens.json)' };
   return {
-    $description: "Emplacements de l'aplat plein, communs à toutes les marques. Format DTCG 2025.10. En clair, alias du plein du primaire ; en sombre, la couche marque sombre les fige aux valeurs claires, pendant que le bouton prend la version lumineuse de la couleur du client (D04).",
+    $description: "Emplacements de l'aplat plein et du fond teinté de la marque, communs à toutes les marques. Format DTCG 2025.10. En clair, alias du plein et du pas 3 du primaire ; en sombre, la couche marque sombre fige l'aplat aux valeurs claires, pendant que le bouton prend la version lumineuse de la couleur du client (D04), et le fond teinté passe au pas 5 (mode.sombre.tokens.json).",
     marque: { $type: 'color', primaire },
   };
 }

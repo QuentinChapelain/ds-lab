@@ -212,6 +212,8 @@
   --couleur-sur-inverse: #ffffff;
   /* Surface posée sur le fond de page (fond.surface) : blanc en clair ; en sombre, la référence du miroir (tokens/commun/mode.sombre.tokens.json). */
   --couleur-surface: #ffffff;
+  /* fond de composant */
+  --couleur-teinte: var(--couleur-neutre-3);
   /* fond d'application */
   --couleur-terre-1: #fefcfb;
   /* fond discret */
@@ -309,11 +311,15 @@
   /* plein, couleur source */
   --fond-marque-fort: var(--marque-primaire-aplat);
   /* fond de composant */
+  --fond-marque-teinte: var(--marque-primaire-teinte);
+  /* fond de composant */
   --fond-succes-discret: var(--couleur-succes-3);
   /* texte secondaire (4,5:1) */
   --fond-succes-fort: var(--marque-succes-plein);
   /* Surface posée sur le fond de page (fond.surface) : blanc en clair ; en sombre, la référence du miroir (tokens/commun/mode.sombre.tokens.json). */
   --fond-surface: var(--couleur-surface);
+  /* fond de composant */
+  --fond-teinte: var(--couleur-teinte);
   /* normale, corps et mentions */
   --graisse-400: 400;
   /* demi-grasse, libellés et titre de carte */
@@ -411,6 +417,8 @@
   --marque-primaire-plein-survol: #1e3e6f;
   --marque-primaire-sur-aplat: var(--marque-primaire-sur-plein);
   --marque-primaire-sur-plein: var(--couleur-blanc);
+  /* fond de composant */
+  --marque-primaire-teinte: var(--marque-primaire-3);
   /* plein, couleur source */
   --marque-primaire-texte-grand: var(--couleur-bleu-9);
   /* texte secondaire (4,5:1) */
@@ -774,6 +782,8 @@
     --couleur-sur-inverse: var(--couleur-neutre-1);
     /* Surface en sombre : plus claire que fond.discret, plus foncée que les fonds de composant, jamais plus foncée que la page [H]. */
     --couleur-surface: #181818;
+    /* fond de composant */
+    --couleur-teinte: var(--couleur-neutre-5);
     /* fond d'application */
     --couleur-terre-1: #151110;
     /* fond discret */
@@ -826,6 +836,8 @@
     --marque-primaire-sur-aplat: var(--couleur-blanc);
     /* texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1) */
     --marque-primaire-sur-plein: var(--couleur-bleu-1);
+    /* fond de composant */
+    --marque-primaire-teinte: var(--marque-primaire-5);
     /* texte de marque des grands titres en sombre : pas 11 de l'échelle sombre, premier des pas 9, 10, 11 à tenir 3:1 sur fond.app, fond.surface, fond.discret et fond.marque.discret sombres */
     --marque-primaire-texte-grand: var(--couleur-bleu-11);
     /* plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45) */

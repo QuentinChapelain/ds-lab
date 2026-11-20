@@ -61,6 +61,8 @@
  *      (fond.composant, texte.principal), chacune en paire de paires.json ;
  *   V2 40 couleurs par thème (20 fonds, 20 textes) ;
  *   V9 18 variables de plus, 55 en tout ; leurs valeurs sont jugées par A4 (test/avatar-etiquette.test.js).
+ * Fonds teintés (20/11/2026, docs/attendus/carte-membre-liste.md) : les deux couleurs deviennent marque-teinte
+ *   (fond.marque.teinte, texte.marque) et teinte (fond.teinte, texte.principal), à la même place ; toujours 40.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -80,7 +82,7 @@ const DEFAUTS = [...FONDS, 'on-surface-variant'];
 /** Couleurs de l'enveloppe du bouton, après les fonds de Vuetify. */
 const BOUTON = ['erreur-fort-survol', 'composant-survol', 'interactif-discret', 'erreur-discret', 'desactive'];
 /** Couleurs de l'avatar et de l'étiquette (docs/attendus/avatar-etiquette.md), après celles du bouton. */
-const AVATAR_ETIQUETTE = ['marque-discret', 'composant'];
+const AVATAR_ETIQUETTE = ['marque-teinte', 'teinte'];
 const COULEURS = [...FONDS, ...BOUTON, ...AVATAR_ETIQUETTE];
 /** @param {string} p */
 const lire = (p) => JSON.parse(readFileSync(p, 'utf8'));

@@ -19,6 +19,10 @@
       "$value": "{couleur.neutre.1}",
       "$description": "Texte sur fond.inverse en sombre : la page, pas 1 du neutre."
     },
+    "teinte": {
+      "$value": "{couleur.neutre.5}",
+      "$description": "Fond teinté d'une pièce statique (fond.teinte) en sombre : pas 5 du neutre, pour se détacher d'une surface."
+    },
     "neutre": {
       "1": {
         "$value": {
@@ -859,6 +863,15 @@
           "hex": "#000000"
         },
         "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
+      }
+    }
+  },
+  "marque": {
+    "$type": "color",
+    "primaire": {
+      "teinte": {
+        "$value": "{marque.primaire.5}",
+        "$description": "Fond teinté de la marque (fond.marque.teinte) en sombre : pas 5 de l'échelle sombre du primaire, pour se détacher d'une surface."
       }
     }
   }

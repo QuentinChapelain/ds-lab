@@ -224,13 +224,14 @@ test('U5 bloc contrastes du DsTag ; exception écrite ; paire absente en panne',
     [
       '| Devant | Fond | Plus bas des 10 thèmes | Seuil |',
       '|---|---|---|---|',
-      '| `texte.marque` | `fond.marque.discret` | 11,65:1 (Atelier Lavandine, clair) | 4,50:1 |',
-      '| `texte.principal` | `fond.composant` | 11,68:1 (Atelier Lavandine, clair) | 4,50:1 |',
+      // Fonds teintés (docs/attendus/carte-membre-liste.md) : le plus bas passe en sombre, au pas 5.
+      '| `texte.marque` | `fond.marque.teinte` | 10,07:1 (Atelier Lavandine, sombre) | 4,50:1 |',
+      '| `texte.principal` | `fond.teinte` | 10,06:1 (Atelier Lavandine, sombre) | 4,50:1 |',
     ].join('\n'),
   );
   assert.match(genere('DsButton').contrastes, /^\| `texte\.desactive` \| `fond\.desactive` \| [\d,]+:1 \([^)]+\) \| 4,50:1, exception écrite \|$/m);
-  const c = { theme: new Set(['composant']), ds: new Set(), emplacements: [] };
-  assert.throws(() => pairesDe(c, TABLE, { paires: [] }, 'essai.vue'), { message: 'essai.vue : paire absente de tokens/commun/paires.json : texte.principal sur fond.composant' });
+  const c = { theme: new Set(['teinte']), ds: new Set(), emplacements: [] };
+  assert.throws(() => pairesDe(c, TABLE, { paires: [] }, 'essai.vue'), { message: 'essai.vue : paire absente de tokens/commun/paires.json : texte.principal sur fond.teinte' });
 });
 
 test('U6 marques en panne ; régénérer garde les parties écrites, deux fois de suite', () => {
@@ -358,9 +359,9 @@ test('U11 anatomie du DsTag ; le bouton à icône sans danger plein ; tokens san
       '',
       '| Partie | Token | Ce qu\'il règle |',
       '|---|---|---|',
-      '| Couleur, tone neutral | `fond.composant` | Fond d\'un composant au repos, plus soutenu que la surface, comme une étiquette neutre. |',
+      '| Couleur, tone neutral | `fond.teinte` | Fond teinté d\'une pièce statique qui porte un texte court pour classer, posée sur la page ou sur une surface ; jamais un fond cliquable. |',
       '| Couleur, tone neutral | `texte.principal` | Texte courant et titres. |',
-      '| Couleur, tone brand | `fond.marque.discret` | Aplat clair de la marque, non cliquable, comme un bandeau, une section ou un encadré. |',
+      '| Couleur, tone brand | `fond.marque.teinte` | Fond teinté de la marque d\'une pièce statique qui porte un texte court ou des initiales pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable. |',
       '| Couleur, tone brand | `texte.marque` | Texte de marque posé sur l\'aplat clair de la marque, comme les initiales d\'un avatar ou une étiquette mise en avant. |',
       '| Forme | `arrondi.pilule` | Arrondi complet d\'une forme ronde ou en pilule, comme un avatar ou une étiquette. |',
       '| Forme | `hauteur.etiquette` | Hauteur d\'une étiquette, sur une ligne. |',

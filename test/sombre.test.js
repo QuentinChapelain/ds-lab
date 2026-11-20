@@ -80,7 +80,11 @@ test('M3 commun sombre : fichier = sombreTokens, checkValise passe, sur-inverse 
   assert.equal(ecrit, JSON.stringify(attendu, null, 2) + '\n');
   assert.deepEqual(checkValise(valiseFromTokens(attendu)), []);
   assert.equal(attendu.couleur['sur-inverse'].$value, '{couleur.neutre.1}');
-  assert.deepEqual(Object.keys(attendu.couleur).filter((k) => !k.startsWith('$')), ['surface', 'sur-inverse', 'neutre', 'erreur', 'succes', 'avertissement', 'info']);
+  // Emplacements des fonds teintés en sombre (docs/attendus/carte-membre-liste.md) : pas 5 du neutre et du primaire.
+  assert.deepEqual(Object.keys(attendu.couleur).filter((k) => !k.startsWith('$')), ['surface', 'sur-inverse', 'teinte', 'neutre', 'erreur', 'succes', 'avertissement', 'info']);
+  assert.equal(attendu.couleur.teinte.$value, '{couleur.neutre.5}');
+  assert.deepEqual(Object.keys(attendu).filter((k) => !k.startsWith('$')), ['couleur', 'marque']);
+  assert.equal(attendu.marque.primaire.teinte.$value, '{marque.primaire.5}');
 });
 
 test('M4 rôles identiques dans les deux modes ; surface et texte sur inverse blancs en clair', () => {

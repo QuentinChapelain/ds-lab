@@ -39,12 +39,12 @@ export default definirEnveloppe(MENU, (props, { attrs }) => () =>
   transition: none;
 }
 .ds-tag--neutral.v-chip {
-  background: rgb(var(--v-theme-composant));
-  color: rgb(var(--v-theme-on-composant));
+  background: rgb(var(--v-theme-teinte));
+  color: rgb(var(--v-theme-on-teinte));
 }
 .ds-tag--brand.v-chip {
-  background: rgb(var(--v-theme-marque-discret));
-  color: rgb(var(--v-theme-on-marque-discret));
+  background: rgb(var(--v-theme-marque-teinte));
+  color: rgb(var(--v-theme-on-marque-teinte));
 }
 /* Ni sous-couche ni voile de Vuetify : rien ne change au survol. */
 .ds-tag.v-chip > .v-chip__underlay,

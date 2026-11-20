@@ -16,7 +16,7 @@ const LONGUE = 'Ingénierie des systèmes embarqués et temps réel';
 /** États de la planche → ton. */
 const ETATS = { neutre: 'neutre', marque: 'marque', 'neutre-survol': 'neutre', 'marque-survol': 'marque' };
 /** Couleur du thème de chaque ton. */
-const COULEUR = { neutre: 'composant', marque: 'marque-discret' };
+const COULEUR = { neutre: 'teinte', marque: 'marque-teinte' };
 
 /** @param {number} n */
 const px = (n) => `${Math.round(n * 10000) / 10000}px`;

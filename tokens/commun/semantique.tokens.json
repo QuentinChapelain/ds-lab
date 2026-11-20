@@ -25,7 +25,7 @@
     "composant": {
       "$root": {
         "$value": "{couleur.neutre.3}",
-        "$description": "Fond d'un composant au repos, plus soutenu que la surface, comme une étiquette neutre.",
+        "$description": "Fond d'un composant au repos, plus soutenu que la surface.",
         "$extensions": {
           "ds-lab.note": "Fond d'un composant au repos, plus soutenu que la surface ; un champ, une carte et le bouton secondaire se posent sur fond.surface."
         }
@@ -37,6 +37,13 @@
       "appui": {
         "$value": "{couleur.neutre.5}",
         "$description": "Fond d'un composant pendant l'appui, ou sélectionné."
+      }
+    },
+    "teinte": {
+      "$value": "{couleur.teinte}",
+      "$description": "Fond teinté d'une pièce statique qui porte un texte court pour classer, posée sur la page ou sur une surface ; jamais un fond cliquable.",
+      "$extensions": {
+        "ds-lab.note": "Pas 3 du neutre en clair, pas 5 en sombre, par l'emplacement couleur.teinte (D59) : en sombre, le pas 3 ne se détachait pas d'une surface (1,03:1). Lu par DsTag neutre."
       }
     },
     "interactif": {
@@ -73,6 +80,13 @@
       "discret": {
         "$value": "{marque.primaire.3}",
         "$description": "Aplat clair de la marque, non cliquable, comme un bandeau, une section ou un encadré."
+      },
+      "teinte": {
+        "$value": "{marque.primaire.teinte}",
+        "$description": "Fond teinté de la marque d'une pièce statique qui porte un texte court ou des initiales pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable.",
+        "$extensions": {
+          "ds-lab.note": "Pas 3 du primaire en clair, pas 5 en sombre, par l'emplacement marque.primaire.teinte (D59) : en sombre, le pas 3 ne se détachait pas d'une surface (1,03:1). Lu par DsTag marque et DsAvatar."
+        }
       },
       "fort": {
         "$value": "{marque.primaire.aplat}",

@@ -57,8 +57,8 @@ export default definirEnveloppe(MENU, (props, { attrs }) => {
   width: var(--v-ds-taille-avatar-normale);
   height: var(--v-ds-taille-avatar-normale);
   border-radius: var(--v-ds-arrondi-pilule);
-  background: rgb(var(--v-theme-marque-discret));
-  color: rgb(var(--v-theme-on-marque-discret));
+  background: rgb(var(--v-theme-marque-teinte));
+  color: rgb(var(--v-theme-on-marque-teinte));
   box-shadow: none;
   transition: none;
 }

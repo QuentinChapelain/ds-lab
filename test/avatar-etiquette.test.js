@@ -14,11 +14,20 @@
  *      fond.composant) et pastel neutre contre la carte et la page, les mêmes dans les cinq marques par mode ;
  *      initiales et étiquette « marque » (texte.marque sur fond.marque.discret) et pastel de marque, par thème ; chaque
  *      texte tient 4,5:1 ;
- *   A4 table Vuetify : les couleurs marque-discret et composant égales à leurs rôles, et les 18 variables ds- de l'avatar
+ *   A4 table Vuetify : les couleurs marque-teinte et teinte égales à leurs rôles, et les 18 variables ds- de l'avatar
  *      et de l'étiquette, dans les dix thèmes.
+ *
+ * Fonds teintés de DsTag et DsAvatar (20/11/2026, docs/attendus/carte-membre-liste.md), attendus écrits à la main avant
+ * le code, valeurs lues dans les jetons d'avant par un résolveur écrit à part, rapports par culori 4.0.2 :
+ *   A5 emplacements couleur.teinte (pas 3 du neutre en clair, pas 5 en sombre) et marque.primaire.teinte (pas 3 du
+ *      primaire en clair, pas 5 en sombre) ; rôles fond.teinte et fond.marque.teinte, alias de ces emplacements ;
+ *      fond.composant et fond.marque.discret inchangés ; les deux paires en fin de paires.json ;
+ *   A6 valeurs et rapports de l'attendu, à deux décimales, dans les dix thèmes : chaque texte au-dessus de 10:1, et,
+ *      en sombre, chaque fond teinté à 1,19:1 au moins contre la surface.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { wcagContrast } from 'culori';
@@ -148,7 +157,8 @@ test('A2 primitives, rôles, styles et paire de l\'avatar et de l\'étiquette', 
     }
   }
   const paires = charger('paires.json').paires;
-  assert.deepEqual(paires.at(-1), { devant: 'texte.marque', fond: 'fond.marque.discret', type: 'texte' });
+  // Suivie des deux paires des fonds teintés (A5).
+  assert.deepEqual(paires.at(-3), { devant: 'texte.marque', fond: 'fond.marque.discret', type: 'texte' });
 });
 
 test('A3 rapports de l\'avatar et de l\'étiquette, dans les dix thèmes', () => {
@@ -176,10 +186,61 @@ test('A4 couleurs et variables ds- de l\'avatar et de l\'étiquette, dans les di
     for (const [i, mode] of MODES.entries()) {
       const { colors, variables: x } = themes[i];
       const { hex } = theme(m, mode);
-      assert.deepEqual([colors['marque-discret'], colors['on-marque-discret']], [hex('fond.marque.discret'), hex('texte.marque')], `${m}-${mode} marque-discret`);
-      assert.deepEqual([colors.composant, colors['on-composant']], [hex('fond.composant'), hex('texte.principal')], `${m}-${mode} composant`);
+      // DsTag et DsAvatar lisent les fonds teintés (A5) : les deux couleurs prennent leur nom.
+      assert.deepEqual([colors['marque-teinte'], colors['on-marque-teinte']], [hex('fond.marque.teinte'), hex('texte.marque')], `${m}-${mode} marque-teinte`);
+      assert.deepEqual([colors.teinte, colors['on-teinte']], [hex('fond.teinte'), hex('texte.principal')], `${m}-${mode} teinte`);
+      for (const k of ['marque-discret', 'composant']) assert.equal(colors[k], undefined, `${m}-${mode} ${k}`);
       for (const [k, v] of Object.entries(VALEURS)) assert.equal(x[k], v, `${m}-${mode} ${k}`);
       for (const k of POLICES) assert.deepEqual(noms(x[k]), noms(x['font-body']), `${m}-${mode} ${k}`);
     }
+  }
+});
+
+/** Fonds teintés, par thème : [fond.teinte, rapport de texte.principal dessus, contre fond.surface, contre fond.app,
+ * fond.marque.teinte, rapport de texte.marque dessus, contre fond.surface, contre fond.app]. */
+const TEINTES = {
+  'atelier-lavandine-clair': ['#f3f2f1', 11.68, 1.12, 1.08, '#f5f1fe', 11.65, 1.11, 1.07],
+  'atelier-lavandine-sombre': ['#282828', 10.06, 1.2, 1.27, '#2c243b', 10.07, 1.2, 1.27],
+  'ecume-et-sel-clair': ['#f3f2f1', 11.68, 1.12, 1.08, '#e3f6fe', 11.66, 1.11, 1.07],
+  'ecume-et-sel-sombre': ['#282828', 10.06, 1.2, 1.27, '#22292c', 13.74, 1.2, 1.27],
+  'grenat-papeterie-clair': ['#f3f2f1', 11.68, 1.12, 1.08, '#fcf0f2', 16.88, 1.11, 1.07],
+  'grenat-papeterie-sombre': ['#282828', 10.06, 1.2, 1.27, '#461825', 10.1, 1.2, 1.26],
+  'maison-alberto-clair': ['#f3f2f1', 11.68, 1.12, 1.08, '#fbf3e1', 11.82, 1.1, 1.07],
+  'maison-alberto-sombre': ['#282828', 10.06, 1.2, 1.27, '#2b271e', 12.97, 1.19, 1.26],
+  'orbe-cafe-clair': ['#f3f2f1', 11.68, 1.12, 1.08, '#f1f3f7', 11.71, 1.11, 1.07],
+  'orbe-cafe-sombre': ['#282828', 10.06, 1.2, 1.27, '#19283f', 10.11, 1.2, 1.26],
+};
+
+test('A5 emplacements et rôles des fonds teintés ; fond.composant et fond.marque.discret inchangés', () => {
+  assert.equal(charger('primitives.tokens.json').couleur.teinte.$value, '{couleur.neutre.3}');
+  assert.equal(charger('aplat.tokens.json').marque.primaire.teinte.$value, '{marque.primaire.3}');
+  const sombre = JSON.parse(readFileSync(join(ROOT, 'tokens', 'commun', 'mode.sombre.tokens.json'), 'utf8'));
+  assert.equal(sombre.couleur.teinte.$value, '{couleur.neutre.5}');
+  assert.equal(sombre.marque.primaire.teinte.$value, '{marque.primaire.5}');
+  const sem = charger('semantique.tokens.json');
+  assert.equal(sem.fond.teinte.$value, '{couleur.teinte}');
+  assert.equal(sem.fond.marque.teinte.$value, '{marque.primaire.teinte}');
+  assert.equal(sem.fond.composant.$root.$value, '{couleur.neutre.3}');
+  assert.equal(sem.fond.marque.discret.$value, '{marque.primaire.3}');
+  assert.deepEqual(charger('paires.json').paires.slice(-2), [
+    { devant: 'texte.principal', fond: 'fond.teinte', type: 'texte' },
+    { devant: 'texte.marque', fond: 'fond.marque.teinte', type: 'texte' },
+  ]);
+});
+
+test('A6 valeurs et rapports des fonds teintés, dans les dix thèmes', () => {
+  for (const m of MARQUES) for (const mode of MODES) {
+    const nom = `${m}-${mode}`;
+    const { hex } = theme(m, mode);
+    const [n, nt, ns, na, b, bt, bs, ba] = TEINTES[/** @type {keyof typeof TEINTES} */ (nom)];
+    const t = hex('fond.teinte');
+    const mt = hex('fond.marque.teinte');
+    assert.deepEqual(
+      [t, r2(hex('texte.principal'), t), r2(t, hex('fond.surface')), r2(t, hex('fond.app')), mt, r2(hex('texte.marque'), mt), r2(mt, hex('fond.surface')), r2(mt, hex('fond.app'))],
+      [n, nt, ns, na, b, bt, bs, ba],
+      nom,
+    );
+    assert.ok(nt >= 10 && bt >= 10, `${nom} : texte au-dessus de 10:1`);
+    if (mode === 'sombre') assert.ok(ns >= 1.19 && bs >= 1.19, `${nom} : détaché de la surface`);
   }
 });

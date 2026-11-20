@@ -126,6 +126,9 @@ test('primitives communes et échelles d\'Orbe Café réunies = primitives d\'av
   assert.equal(apres.couleur['sur-inverse'].$value.hex, '#ffffff');
   delete apres.couleur.surface;
   delete apres.couleur['sur-inverse'];
+  // Emplacement du fond teinté, alias du pas 3 du neutre en clair (docs/attendus/carte-membre-liste.md).
+  assert.equal(apres.couleur.teinte.$value, '{couleur.neutre.3}');
+  delete apres.couleur.teinte;
   // Groupes ajoutés pour le bouton (docs/attendus/bouton.md) : tailles de contrôle et d'icône, trait ; puis, dans le
   // même groupe taille, 24 et 56 pour la hauteur de l'étiquette et le côté du grand avatar
   // (docs/attendus/avatar-etiquette.md).

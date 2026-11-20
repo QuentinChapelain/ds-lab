@@ -41,10 +41,10 @@
         "on-erreur-discret": "#cb1d2a",
         "desactive": "#f3f2f1",
         "on-desactive": "#8a8478",
-        "marque-discret": "#f1f3f7",
-        "on-marque-discret": "#103060",
-        "composant": "#f3f2f1",
-        "on-composant": "#363026"
+        "marque-teinte": "#f1f3f7",
+        "on-marque-teinte": "#103060",
+        "teinte": "#f3f2f1",
+        "on-teinte": "#363026"
       },
       "variables": {
         "font-body": "\"Orbe Sans\", Arial, sans-serif",
@@ -145,10 +145,10 @@
         "on-erreur-discret": "#ff978f",
         "desactive": "#1b1b1b",
         "on-desactive": "#7d786c",
-        "marque-discret": "#111b2a",
-        "on-marque-discret": "#bdd7fe",
-        "composant": "#1b1b1b",
-        "on-composant": "#d8d5ce"
+        "marque-teinte": "#19283f",
+        "on-marque-teinte": "#bdd7fe",
+        "teinte": "#282828",
+        "on-teinte": "#d8d5ce"
       },
       "variables": {
         "font-body": "\"Orbe Sans\", Arial, sans-serif",

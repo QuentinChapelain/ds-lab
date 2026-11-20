@@ -35,12 +35,12 @@ function attenduAvatars(t) {
       out.set(`${taille}-${etat}`, {
         boite: `${cote} × ${cote}`,
         rayon: v['ds-arrondi-pilule'],
-        fond: css(t.couleurs['marque-discret']),
+        fond: css(t.couleurs['marque-teinte']),
         ombre: 'none',
         transition: '0s',
         initiales: {
           texte: 'CF',
-          couleur: css(t.couleurs['on-marque-discret']),
+          couleur: css(t.couleurs['on-marque-teinte']),
           police: t.policeTexte.join('|'),
           taille: v[`${s}-taille`],
           graisse: v[`${s}-graisse`],

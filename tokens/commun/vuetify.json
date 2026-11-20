@@ -92,15 +92,15 @@
       "texte": "texte.desactive",
       "$description": "Bouton désactivé, quelle que soit sa variante ; un discret désactivé garde la page pour fond. Sa paire porte une exception écrite (WCAG 1.4.3, composant inactif) : seule couleur de la table sous 4,5:1."
     },
-    "marque-discret": {
-      "fond": "fond.marque.discret",
+    "marque-teinte": {
+      "fond": "fond.marque.teinte",
       "texte": "texte.marque",
-      "$description": "Pastel de la marque, non cliquable : fond de l'avatar et de l'étiquette « marque », initiales et texte de l'étiquette en texte.marque (on-marque-discret)."
+      "$description": "Fond teinté de la marque, non cliquable : fond de DsAvatar et de DsTag marque, initiales et texte en texte.marque (on-marque-teinte)."
     },
-    "composant": {
-      "fond": "fond.composant",
+    "teinte": {
+      "fond": "fond.teinte",
       "texte": "texte.principal",
-      "$description": "Fond d'un composant au repos : l'étiquette neutre, son texte en texte.principal (on-composant)."
+      "$description": "Fond teinté, non cliquable : fond de DsTag neutre, son texte en texte.principal (on-teinte)."
     }
   },
   "polices": {

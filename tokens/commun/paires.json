@@ -80,7 +80,9 @@
     { "devant": "texte.sur-erreur", "fond": "fond.erreur.fort.survol", "type": "texte" },
     { "devant": "texte.desactive", "fond": "fond.desactive", "type": "texte", "exception": "composant désactivé, exempté du seuil de contraste (WCAG 1.4.3) ; valeur à juger sur la planche du bouton" },
     { "devant": "texte.desactive", "fond": "fond.app", "type": "texte", "exception": "composant désactivé sans fond (bouton discret), exempté du seuil de contraste (WCAG 1.4.3) ; valeur à juger sur la planche du bouton" },
-    { "devant": "texte.marque", "fond": "fond.marque.discret", "type": "texte" }
+    { "devant": "texte.marque", "fond": "fond.marque.discret", "type": "texte" },
+    { "devant": "texte.principal", "fond": "fond.teinte", "type": "texte" },
+    { "devant": "texte.marque", "fond": "fond.marque.teinte", "type": "texte" }
   ],
   "interdites": [
     { "devant": "texte.secondaire", "fond": "fond.composant.appui", "regle": "sur fond.composant.appui, le texte passe en texte.principal" },

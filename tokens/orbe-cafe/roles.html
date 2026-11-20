@@ -45,9 +45,9 @@
     <main>
     <h1>Rôles de couleur, Orbe Café</h1>
     <p>Marque fictive. Paires déclarées dans paires.json, rôles dans semantique.tokens.json ; contraste WCAG 2.1, ratio tronqué à 2 décimales.</p>
-    <p class="bilan">74 paires, 0 en échec, 2 exceptions écrites, 8 paires interdites.</p>
+    <p class="bilan">76 paires, 0 en échec, 2 exceptions écrites, 8 paires interdites.</p>
     <section data-propriete="texte">
-      <h2>Texte <span class="compte">56 paires, 4 interdites</span></h2>
+      <h2>Texte <span class="compte">58 paires, 4 interdites</span></h2>
       <p>Texte posé sur un fond de rôle, seuil 4,5:1 (WCAG 2.1, 1.4.3) ; 3:1 pour le texte de marque des grands titres.</p>
       <div class="table-wrap"><table>
         <thead><tr><th>Fond</th><th>Mot écrit</th><th>Ratio</th><th>Seuil</th><th>Verdict</th></tr></thead>
@@ -440,6 +440,20 @@
         <tr data-devant="texte.marque" data-fond="fond.marque.discret" class="conforme">
           <td data-label="Fond"><span class="pastille" style="background:#f1f3f7"></span><code>fond.marque.discret</code> <span class="hex">#f1f3f7</span></td>
           <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f1f3f7;color:#103060">Réserver une table</span><span class="paire"><code>texte.marque</code> <span class="hex">#103060</span> <span class="sur">sur <code>fond.marque.discret</code></span></span></td>
+          <td data-label="Ratio" class="num">11,71:1</td>
+          <td data-label="Seuil" class="num">4,5:1</td>
+          <td data-label="Verdict"><span class="verdict">conforme</span></td>
+        </tr>
+        <tr data-devant="texte.principal" data-fond="fond.teinte" class="conforme">
+          <td data-label="Fond"><span class="pastille" style="background:#f3f2f1"></span><code>fond.teinte</code> <span class="hex">#f3f2f1</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#363026">Réserver une table</span><span class="paire"><code>texte.principal</code> <span class="hex">#363026</span> <span class="sur">sur <code>fond.teinte</code></span></span></td>
+          <td data-label="Ratio" class="num">11,68:1</td>
+          <td data-label="Seuil" class="num">4,5:1</td>
+          <td data-label="Verdict"><span class="verdict">conforme</span></td>
+        </tr>
+        <tr data-devant="texte.marque" data-fond="fond.marque.teinte" class="conforme">
+          <td data-label="Fond"><span class="pastille" style="background:#f1f3f7"></span><code>fond.marque.teinte</code> <span class="hex">#f1f3f7</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f1f3f7;color:#103060">Réserver une table</span><span class="paire"><code>texte.marque</code> <span class="hex">#103060</span> <span class="sur">sur <code>fond.marque.teinte</code></span></span></td>
           <td data-label="Ratio" class="num">11,71:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>

@@ -61,15 +61,22 @@ export const PAIRES_BOUTON = [
 export const EXCEPTIONS_BOUTON = ['texte.desactive sur fond.desactive', 'texte.desactive sur fond.app'];
 
 /**
- * Rôle de couleur de l'avatar et de l'étiquette → [cible de l'alias, hex chez Orbe Café en clair], écrit à la main dans
- * docs/attendus/avatar-etiquette.md (culori, résolveur indépendant de src/). Ajouté après ceux du bouton.
+ * Rôles de couleur de DsAvatar et DsTag → [cible de l'alias, hex chez Orbe Café en clair], écrits à la main dans
+ * docs/attendus/avatar-etiquette.md, puis les deux fonds teintés dans docs/attendus/carte-membre-liste.md (culori,
+ * résolveur indépendant de src/). Ajoutés après ceux du bouton.
  */
 export const AJOUTS_AVATAR = {
   'texte.marque': ['marque.primaire.12', '#103060'],
+  'fond.teinte': ['couleur.teinte', '#f3f2f1'],
+  'fond.marque.teinte': ['marque.primaire.teinte', '#f1f3f7'],
 };
 
-/** Paire de l'avatar et de l'étiquette, en fin de paires.json, après celles du bouton. */
-export const PAIRES_AVATAR = [['texte.marque', 'fond.marque.discret', 'texte']];
+/** Paires de DsAvatar et DsTag, en fin de paires.json, après celles du bouton : texte.marque sur fond.marque.discret, puis les fonds teintés. */
+export const PAIRES_AVATAR = [
+  ['texte.marque', 'fond.marque.discret', 'texte'],
+  ['texte.principal', 'fond.teinte', 'texte'],
+  ['texte.marque', 'fond.marque.teinte', 'texte'],
+];
 
 /** Rôles de couleur et paires de chaque marque, ajouts compris. */
 export const N_ROLES = 42 + Object.keys(AJOUTS).length + Object.keys(AJOUTS_BOUTON).length + Object.keys(AJOUTS_AVATAR).length;
