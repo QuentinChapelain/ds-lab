@@ -20,6 +20,7 @@ Laboratoire de design system multi-marque, de l'audit à la génération par IA.
 - Aucun bouton de Vuetify (`VBtn`, `v-btn`) hors de `atelier/composants/DsButton.vue` : passer par l'enveloppe (`test/enveloppe-bouton.test.js`, D43).
 - Aucun champ de Vuetify (`VTextField`, `VField`, `VInput`, `v-text-field`) hors de `atelier/composants/DsTextInput.vue`, ni carte (`VCard`, `v-card`) hors de `atelier/composants/DsCard.vue`, ni avatar (`VAvatar`, `v-avatar`) hors de `atelier/composants/DsAvatar.vue`, ni puce (`VChip`, `v-chip`) hors de `atelier/composants/DsTag.vue` (`test/enveloppe-bouton.test.js`, D49, D50, D54, D55).
 - Chaque enveloppe déclare son menu dans son fichier `.menu.js` et passe par `atelier/composants/fabrique.js` (`test/fabrique-enveloppes.test.js`, D51).
+- Aucune pièce de Vuetify ni valeur visuelle dans `atelier/modules/` : un module assemble des composants `Ds…` par la fabrique et ne porte que la mise en page, par les variables du thème, des mots-clés, 0 et 100 % (`test/modules.test.js`, D61).
 - Chaque fichier de test entre dans une part de `test/parts-de-la-ci.json`, la plus légère, et une seule (`test/parts-de-la-ci.test.js`, D58).
 
 ## Commandes
@@ -32,7 +33,7 @@ npm run typo             styles de texte ; sortie 1 si une règle échoue
 npm run types            types JSDoc de src/ (TypeScript, non strict, sans émission) ; sortie 1 s'il reste une erreur
 npm run knip             fichiers, exports et dépendances qui ne servent plus ; sortie 1 s'il en reste
 npm run dependances      cycles d'import, modules orphelins de src/ ; sortie 1 si une règle échoue
-npm --prefix atelier run fiches -- --verifier   fiches des composants et table des noms ; sortie 1 si une fiche ne correspond plus
+npm --prefix atelier run fiches -- --verifier   fiches des composants et des modules, table des noms ; sortie 1 si une fiche ne correspond plus
 ```
 
 Les trois contrôles de la cible (contraste, espacements, typo) prennent `--marque <dossier>` ; sans l'option, ils jugent chaque marque de `tokens/` et sortent en 1 si une seule échoue (D26). Aucune commande n'a de marque par défaut.
@@ -59,4 +60,4 @@ Node : la version de `.node-version` (Node 24 LTS), seule source pour le poste, 
 - `docs/attendus/` : l'attendu nommé dans le message, avant le plan.
 - `README.md` : avant de changer ce que l'outil fait ou ses commandes.
 - `docs/regles.md` : avant de nommer un composant, une prop ou un token, ou d'écrire une fiche (NM, CP, DOC).
-- `docs/composants/` : avant d'employer ou de changer un composant ; après un changement de props, de rendu ou de tokens, `npm --prefix atelier run fiches` régénère les fiches (D56).
+- `docs/composants/` et `docs/modules/` : avant d'employer ou de changer un composant ou un module ; après un changement de props, de rendu ou de tokens, `npm --prefix atelier run fiches` régénère les fiches (D56, D61).

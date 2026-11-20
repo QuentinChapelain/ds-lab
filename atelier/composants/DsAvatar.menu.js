@@ -1,7 +1,7 @@
-// Props de l'avatar (D54, D51, D56, D57) : leurs valeurs admises, ses règles propres. Lu par la fabrique (fabrique.js) ;
-// tout usage hors de ce menu lève, et aucun avatar n'est rendu. Le name est seul maître du nom accessible et decorative,
-// seul maître du silence : aria-label, aria-labelledby et aria-hidden donnés à la main lèvent. Pas d'attribut on… : un
-// avatar ne se clique pas ; le lien vers un profil appartient à la pièce qui l'entoure.
+// Props de l'avatar (D54, D59, D51, D56, D57) : leurs valeurs admises, ses règles propres. Lu par la fabrique
+// (fabrique.js) ; tout usage hors de ce menu lève, et aucun avatar n'est rendu. Le name est seul maître du nom
+// accessible et decorative, seul maître du silence : aria-label, aria-labelledby et aria-hidden donnés à la main
+// lèvent. Pas d'attribut on… : un avatar ne se clique pas ; le lien vers un profil appartient à la pièce qui l'entoure.
 import { initiales } from './initiales.js';
 
 export default {

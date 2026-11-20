@@ -4,7 +4,7 @@ title: DsAvatar
 file: atelier/composants/DsAvatar.vue
 props: atelier/composants/DsAvatar.menu.js
 wraps: VAvatar
-decisions: [D54, D51, D56, D57]
+decisions: [D54, D59, D51, D56, D57]
 stories: atelier/stories/DsAvatar.stories.js
 test: npm --prefix atelier run preuve -- avatar
 ---
@@ -63,7 +63,7 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 | Partie | Token | Ce qu'il règle |
 |---|---|---|
 | Couleur | `fond.marque.teinte` | Fond teinté de la marque d'une pièce statique qui porte un texte court ou des initiales pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable. |
-| Couleur | `texte.marque` | Texte de marque posé sur l'aplat clair de la marque, comme les initiales d'un avatar ou une étiquette mise en avant. |
+| Couleur | `texte.marque` | Texte de marque posé sur le fond teinté de la marque, comme les initiales de DsAvatar ou un DsTag mis en avant. |
 | Forme | `arrondi.pilule` | Arrondi complet d'une forme ronde ou en pilule, comme un avatar ou une étiquette. |
 | Forme | `taille-avatar.normale` | Côté d'un avatar de taille normale. |
 | Forme, size large | `taille-avatar.grande` | Côté d'un grand avatar, comme celui d'une carte membre. |
@@ -105,7 +105,7 @@ Stories : [atelier/stories/DsAvatar.stories.js](../../atelier/stories/DsAvatar.s
 - B5 : l'avatar est fait ; restent le badge d'état, le groupe d'avatars.
 - Une photo à fond transparent laisse voir les initiales dessous.
 - Limites des initiales : un double nom espagnol donne la lettre du dernier mot ; un titre comme « Dr » compte comme un mot.
-- En sombre, le rond se voit à peine sur une surface ; à reprendre sur la carte membre (D55).
+- D59 : le fond teinté de la marque, au pas 5 en sombre, se détache d'une surface ; en clair, le rond à initiales reste très pâle sur une surface.
 
 ## Test de rendu
 

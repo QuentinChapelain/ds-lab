@@ -81,7 +81,7 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 
 | Famille | Sujet | Défini dans |
 |---|---|---|
-| A1 à A4 | Règle des initiales de l'avatar, jetons, contrastes et variables `ds-` de l'avatar et de l'étiquette dans les dix thèmes | `test/avatar-etiquette.test.js` |
+| A1 à A6 | Règle des initiales de `DsAvatar`, jetons, contrastes et variables `ds-` de `DsAvatar` et `DsTag` dans les dix thèmes ; A5 et A6, fonds teintés, emplacements, valeurs et rapports (D59) | `test/avatar-etiquette.test.js` |
 | B1 à B5 | Jetons du bouton dans les dix thèmes, contrastes de l'icône du bouton à icône | `test/bouton-jetons.test.js` |
 | C1 à C13 | Fenêtre des candidats, grisé des marges, bilan par usage | `test/candidats.test.js`, `test/e2e-candidats-revue.test.js`, `fixtures/marque-demo/expected-candidats.json` |
 | E1 à E12 | Gardes des enveloppes (bouton, champ de texte, carte, bouton à icône, avatar, étiquette), découpage d'un composant `.vue` | `test/enveloppe-bouton.test.js` |
@@ -90,11 +90,12 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 | I1 à I7 | Rattacher les valeurs inchangées à leur jeton | `test/e2e-migration.test.js`, `test/e2e-migration-decisions.test.js` (I3) |
 | J1 à J9 | Captures, contraste des candidats, texte sur plein et sur image, panneau de la revue | `test/candidats-contraste.test.js`, `test/captures-hors-page.test.js`, `test/texte-sur-plein-candidats.test.js`, `test/revue-apercu.test.js`, `test/fond-sous-image.test.js` |
 | K1 à K6 | Cartes « Texte sur plein » | `test/cartes-plein.test.js`, `test/cartes-plein-lignes-certaines.test.js` |
+| L1 à L4 | Modules : aucune pièce de Vuetify (CP9), style de mise en page seulement (CP10), passage par la fabrique, refus de `MemberCard` et de `MemberList` mot pour mot (D61) | `test/modules.test.js` |
 | P1 à P4 | Proximité des marges | `fixtures/marque-demo/expected-proximite.json` |
 | R-1 à R-9 | Identifiant et titre d'une ligne, captures par version | `test/e2e-identifiants.test.js`, `test/e2e-versions.test.js` |
 | S1 à S4 | Modifications et `npm run apply` | `test/e2e-apply.test.js` |
 | T0 à T5 | Rôles de couleur, paires, planche | `test/roles-statuts.test.js`, `test/roles-semantique.test.js`, `test/roles-paires.test.js`, `test/roles-planche.test.js` |
-| U1 à U13 | Fiches des composants : en-tête et blocs générés, refus, anatomie, contrastes, marques, parties écrites, exemple, index et glossaire, mots refusés et plafond, table des noms (D56, D57) | `test/fiches.test.js` |
+| U1 à U14 | Fiches des composants et des modules : en-tête et blocs générés, refus, anatomie, contrastes, marques, parties écrites, exemple, index et glossaire, mots refusés et plafond, table des noms ; U14, fiches des modules (D56, D57, D61) | `test/fiches.test.js` |
 | W1 à W9 | Fabrique commune des enveloppes et menus ; W9, CP1 : un composant sans événement refuse les attributs `on…` | `test/fabrique-enveloppes.test.js` |
 | Y1 à Y3 | Parts de la CI : chaque fichier de test dans une part et une seule, aucun fichier absent, matrice de la CI et liste d'accord (D58) | `test/parts-de-la-ci.test.js` |
 

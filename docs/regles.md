@@ -32,6 +32,7 @@ Les règles du langage que ds-lab produit, pour tout utilisateur de l'outil : le
 | NM2 | Un composant prend le nom le plus courant parmi ceux qui désignent sa fonction dans les design systems de référence (Component Gallery) ; d'après la fonction, pas la forme ; singulier, PascalCase, sans abréviation, préfixé `Ds` ; une famille partage son dernier mot (`DsIconButton` est un `DsButton`) | Un nom courant se devine ; un nom en deux mots ne heurte aucun élément HTML (guide de style de Vue, règle « multi-word component names ») ; « parmi ceux qui désignent sa fonction » écarte un nom courant qui désigne aussi une autre pièce | `atelier/composants/noms.json`, lu par `npm --prefix atelier run fiches -- --verifier` |
 | NM3 | Une prop prend le nom du même concept dans le HTML (`disabled`, `required`, `href`), sinon dans Vuetify (`variant`, `size`, `loading`), sinon le nom courant ; ses valeurs disent l'usage, jamais une mesure (`small`, pas `32`). Exception : une valeur de Vuetify qui ne dit rien (`default`) cède au nom courant (`medium`) | Un utilisateur du HTML ou de Vuetify ne réapprend rien ; une valeur vague ne s'explique pas | Source de chaque prop et de chaque valeur dans `atelier/composants/noms.json` |
 | NM4 | Un token est nommé d'après son usage, `propriété.sens.emphase.état`, jamais d'après une teinte ni un pas | Changer de couleur ne doit pas renommer un token (D01) | `test/roles-semantique.test.js` (T1) |
+| NM5 | Un module prend un nom de domaine suivi de sa pièce de base, sans préfixe (`MemberCard` est une `DsCard`, `MemberList` une liste) ; ses props reprennent le nom de la prop du composant assemblé quand le concept est le même (`href`, `image`, `headingLevel`) | `Ds` dit « pièce du design system » ; un module appartient au produit, et son nom dit ce qu'il assemble (D61) | Table des noms (`atelier/composants/noms.json`), `npm --prefix atelier run fiches -- --verifier` |
 
 ## Composants
 
@@ -45,12 +46,14 @@ Les règles du langage que ds-lab produit, pour tout utilisateur de l'outil : le
 | CP6 | Ce qui mène ailleurs est un lien (`href`) ; ce qui agit est un bouton ; jamais un bloc rendu cliquable par un attribut `on…` | Le clavier et le lecteur d'écran savent ce que sont un lien et un bouton (D50) | CP1 |
 | CP7 | Un composant refuse un usage, jamais une donnée : pas de limite de longueur sur un texte venu des données ; trop long, il est coupé par « … » et reste entier dans la page | Un refus ferait disparaître une donnée (D55) | En dette ; le test de rendu du `DsTag` le vérifie pour lui |
 | CP8 | Les règles de pose sont écrites dans la fiche, section « Quand l'utiliser » : un seul bouton principal par vue ; un texte d'exemple ne remplace jamais le libellé ni l'aide (D49) | Ce sont des règles de page, pas de composant | En dette |
+| CP9 | Un module n'emploie aucune pièce de Vuetify : seulement des composants `Ds…` et d'autres modules | Le composant reste le seul endroit à changer (CP4, D61) | `test/modules.test.js` (L1) |
+| CP10 | Le style d'un module ne porte que la mise en page : variables du thème, mots-clés, 0 et 100 %, sans calcul ni valeur nue | Ses pièces portent les valeurs visuelles ; un module qui en écrit une la sort des tokens (D61) | `test/modules.test.js` (L2) |
 
 ## Documentation
 
 | | Règle | Raison | Contrôle |
 |---|---|---|---|
-| DOC1 | Chaque composant a sa fiche (`docs/composants/`), aux mêmes sections | Un humain et un agent savent où chercher | `npm --prefix atelier run fiches -- --verifier` |
+| DOC1 | Chaque composant a sa fiche (`docs/composants/`), et chaque module la sienne (`docs/modules/`), aux mêmes sections | Un humain et un agent savent où chercher | `npm --prefix atelier run fiches -- --verifier` |
 | DOC2 | Ce qui se déduit du code est généré, jamais recopié | Une copie vieillit sans le dire | `npm --prefix atelier run fiches -- --verifier` |
 | DOC3 | Chaque token cité par une fiche dit en une phrase ce qu'il règle et où il sert (`$description`) : ni pas d'échelle, ni numéro de règle ou de décision, ni nom d'un autre token, ni mesure. Ce qui sert à l'équipe (raison, décision, mesure) va dans `$extensions["ds-lab.note"]` | Le lecteur sait à quoi sert un token sans ouvrir la source ; l'équipe ne perd rien | `test/roles-semantique.test.js` (T1) ; `npm --prefix atelier run fiches -- --verifier` : un token cité sans description est une panne, une description qui porte un numéro, un nom de token, une mesure, un pas ou plus d'une phrase est un écart |
 | DOC4 | Vocabulaire du métier (token, prop, slot, événement) ; chaque mot propre à ds-lab est au glossaire (`docs/composants/README.md`) | Le lecteur externe parle la langue des design systems | `npm --prefix atelier run fiches -- --verifier` : mots refusés hors code et hors glossaire |

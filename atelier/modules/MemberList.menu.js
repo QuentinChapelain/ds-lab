@@ -1,9 +1,9 @@
-// Props de MemberList (D51, D56, D57) : leurs valeurs admises, ses règles propres. Lu par la fabrique des enveloppes
-// (../composants/fabrique.js) ; tout usage hors de ce menu lève, et rien n'est rendu. Un module assemble des composants
-// du design system et d'autres modules, ici MemberCard, et ne possède que la mise en page. Chaque élément de members
-// porte les props de MemberCard et est vérifié par son menu, avec son rang ; headingLevel est celui de la liste, donné
-// à chaque MemberCard, et un élément qui porte le sien lève. La liste se nomme par aria-labelledby, vers le titre de la
-// page ; aria-label donné à la main lève. Pas d'attribut on…, aucun slot. Sans membre, rien n'est rendu.
+// Props de MemberList (D61, D51, D56, D57) : leurs valeurs admises, ses règles propres. Lu par la fabrique des
+// enveloppes (../composants/fabrique.js) ; tout usage hors de ce menu lève, et rien n'est rendu. Un module assemble des
+// composants du design system et d'autres modules, ici MemberCard, et ne possède que la mise en page. Chaque élément de
+// members porte les props de MemberCard et est vérifié par son menu, avec son rang ; headingLevel est celui de la
+// liste, donné à chaque MemberCard, et un élément qui porte le sien lève. La liste se nomme par aria-labelledby, vers
+// le titre de la page ; aria-label donné à la main lève. Pas d'attribut on…, aucun slot. Sans membre, rien n'est rendu.
 import { verifierUsage } from '../composants/fabrique.js';
 import CARTE from './MemberCard.menu.js';
 

@@ -4,7 +4,7 @@ title: DsTag
 file: atelier/composants/DsTag.vue
 props: atelier/composants/DsTag.menu.js
 wraps: VChip
-decisions: [D55, D51, D56, D57]
+decisions: [D55, D59, D51, D56, D57]
 stories: atelier/stories/DsTag.stories.js
 test: npm --prefix atelier run preuve -- tag
 ---
@@ -62,7 +62,7 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 | Couleur, tone neutral | `fond.teinte` | Fond teinté d'une pièce statique qui porte un texte court pour classer, posée sur la page ou sur une surface ; jamais un fond cliquable. |
 | Couleur, tone neutral | `texte.principal` | Texte courant et titres. |
 | Couleur, tone brand | `fond.marque.teinte` | Fond teinté de la marque d'une pièce statique qui porte un texte court ou des initiales pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable. |
-| Couleur, tone brand | `texte.marque` | Texte de marque posé sur l'aplat clair de la marque, comme les initiales d'un avatar ou une étiquette mise en avant. |
+| Couleur, tone brand | `texte.marque` | Texte de marque posé sur le fond teinté de la marque, comme les initiales de DsAvatar ou un DsTag mis en avant. |
 | Forme | `arrondi.pilule` | Arrondi complet d'une forme ronde ou en pilule, comme un avatar ou une étiquette. |
 | Forme | `hauteur.etiquette` | Hauteur d'une étiquette, sur une ligne. |
 | Forme | `marge-interieure.etiquette` | Marge intérieure gauche et droite d'une étiquette, de part et d'autre de son texte. |
@@ -109,7 +109,7 @@ Stories : [atelier/stories/DsTag.stories.js](../../atelier/stories/DsTag.stories
 
 - D55 : l'étiquette, ses props, son rendu, la suite en liste. D51 : tout usage hors des props est refusé.
 - B5 : l'étiquette est faite ; restent les puces de filtre et les puces supprimables.
-- À reprendre sur la carte membre (D55) : en sombre, l'étiquette disparaît presque sur une surface (1,03 entre les deux fonds) ; chez Écume et Sel en sombre, les deux tons ont le même fond.
+- D59 : le fond teinté, au pas 5 en sombre, se détache d'une surface ; chez Écume et Sel en sombre, les deux tons ont chacun le leur.
 - Un texte coupé reste entier pour un lecteur d'écran, mais l'œil n'en lit que le début ; pas encore d'info-bulle (B1).
 
 ## Test de rendu

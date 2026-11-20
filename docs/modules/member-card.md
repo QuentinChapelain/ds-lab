@@ -4,7 +4,7 @@ title: MemberCard
 file: atelier/modules/MemberCard.vue
 props: atelier/modules/MemberCard.menu.js
 assembles: [DsCard, DsAvatar, DsTag]
-decisions: [D51, D56, D57]
+decisions: [D61, D51, D56, D57]
 stories: atelier/stories/MemberCard.stories.js
 test: npm --prefix atelier run preuve -- member-card
 ---
@@ -103,7 +103,7 @@ Stories : [atelier/stories/MemberCard.stories.js](../../atelier/stories/MemberCa
 
 ## Décisions et dette
 
-- D51 : tout usage hors des props est refusé. D56 : cette fiche.
+- D61 : les modules, leurs règles, leur fiche. D51 : tout usage hors des props est refusé.
 - Sans promo, la suite de `DsTag` est plus près du nom.
 - La suite de `DsTag` est écrite aussi dans les stories de `DsTag`, faute de composant de groupe.
 - On ne copie pas une promo ou un `DsTag` à la souris : le texte d'une carte à lien ne se sélectionne pas.

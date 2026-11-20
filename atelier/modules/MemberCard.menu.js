@@ -1,9 +1,9 @@
-// Props de MemberCard (D51, D56, D57) : leurs valeurs admises, ses règles propres. Lu par la fabrique des enveloppes
-// (../composants/fabrique.js) ; tout usage hors de ce menu lève, et rien n'est rendu. Un module assemble des composants
-// du design system (DsCard, DsAvatar, DsTag) et ne possède que la mise en page : aucune pièce de Vuetify, aucune valeur
-// visuelle propre. Le name nomme le lien du profil et le DsAvatar, décoratif à côté du nom écrit : aria-label et
-// aria-labelledby donnés à la main lèvent. Pas d'attribut on… : le membre se suit par son lien. Aucun slot : le contenu
-// vient des props. Chaque élément de tags est vérifié par le menu de DsTag, avec son rang.
+// Props de MemberCard (D61, D51, D56, D57) : leurs valeurs admises, ses règles propres. Lu par la fabrique des
+// enveloppes (../composants/fabrique.js) ; tout usage hors de ce menu lève, et rien n'est rendu. Un module assemble des
+// composants du design system (DsCard, DsAvatar, DsTag) et ne possède que la mise en page : aucune pièce de Vuetify,
+// aucune valeur visuelle propre. Le name nomme le lien du profil et le DsAvatar, décoratif à côté du nom écrit :
+// aria-label et aria-labelledby donnés à la main lèvent. Pas d'attribut on… : le membre se suit par son lien. Aucun
+// slot : le contenu vient des props. Chaque élément de tags est vérifié par le menu de DsTag, avec son rang.
 import { initiales } from '../composants/initiales.js';
 import { verifierUsage } from '../composants/fabrique.js';
 import TAG from '../composants/DsTag.menu.js';

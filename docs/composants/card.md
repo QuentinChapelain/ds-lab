@@ -4,7 +4,7 @@ title: DsCard
 file: atelier/composants/DsCard.vue
 props: atelier/composants/DsCard.menu.js
 wraps: VCard
-decisions: [D50, D51, D56, D57]
+decisions: [D50, D60, D51, D56, D57]
 stories: atelier/stories/DsCard.stories.js
 test: npm --prefix atelier run preuve -- card
 ---
@@ -135,7 +135,7 @@ Stories : [atelier/stories/DsCard.stories.js](../../atelier/stories/DsCard.stori
 
 ## Décisions et dette
 
-- D50 : la carte, ses props, son lien étendu, ses actions. D52 : le bouton à icône admis dans les actions. D51 : tout usage hors des props est refusé.
+- D50 : la carte, son lien étendu, ses actions. D60 : forme horizontale, sous-titre, taille. D52 : le bouton à icône. D51 : tout usage hors des props est refusé.
 - En étroit, le titre garde sa taille du large : le thème de Vuetify n'a qu'une valeur par marque (B6).
 - Le texte d'une carte à lien ne prend ni clic ni sélection : prix du lien étendu.
 - Pas d'ombre : aucun token d'élévation encore (B1).

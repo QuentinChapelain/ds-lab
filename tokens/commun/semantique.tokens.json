@@ -166,9 +166,9 @@
     "marque": {
       "$root": {
         "$value": "{marque.primaire.12}",
-        "$description": "Texte de marque posé sur l'aplat clair de la marque, comme les initiales d'un avatar ou une étiquette mise en avant.",
+        "$description": "Texte de marque posé sur le fond teinté de la marque, comme les initiales de DsAvatar ou un DsTag mis en avant.",
         "$extensions": {
-          "ds-lab.note": "Texte de marque posé sur fond.marque.discret, comme les initiales d'un avatar ou une étiquette mise en avant ; pas 12 du primaire, et non la couleur des liens (D05)."
+          "ds-lab.note": "Posé sur fond.marque.teinte (D59) et sur fond.marque.discret ; pas 12 du primaire, et non la couleur des liens (D05)."
         }
       },
       "grand": {

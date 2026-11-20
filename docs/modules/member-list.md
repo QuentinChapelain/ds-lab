@@ -4,7 +4,7 @@ title: MemberList
 file: atelier/modules/MemberList.vue
 props: atelier/modules/MemberList.menu.js
 assembles: [MemberCard]
-decisions: [D51, D56, D57]
+decisions: [D61, D51, D56, D57]
 stories: atelier/stories/MemberList.stories.js
 test: npm --prefix atelier run preuve -- member-list
 ---
@@ -102,7 +102,7 @@ Stories : [atelier/stories/MemberList.stories.js](../../atelier/stories/MemberLi
 
 ## Décisions et dette
 
-- D51 : tout usage hors des props est refusé. D56 : cette fiche.
+- D61 : les modules, leurs règles, leur fiche. D51 : tout usage hors des props est refusé.
 - Ni grille ni largeur de conteneur au-delà de la colonne (B6).
 - Ni état vide ni chargement (B7).
 
