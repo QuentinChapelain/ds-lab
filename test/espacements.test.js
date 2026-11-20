@@ -29,7 +29,8 @@
  *     Orbe Café : espace.0, espace.8, espace.12, espace.64 (espace.32 sert à ecart.section en étroit) ; espace.8 sert à
  *     ecart.icone-texte depuis le 18/11/2026 (docs/attendus/bouton.md), affiché hors du contrôle d'ordre avec
  *     marge-interieure.composant ; espace.12 sert à marge-interieure.etiquette depuis le 19/11/2026
- *     (docs/attendus/avatar-etiquette.md), affichée hors du contrôle d'ordre avec ecart.entre-etiquettes (espace.8).
+ *     (docs/attendus/avatar-etiquette.md), affichée hors du contrôle d'ordre avec ecart.entre-etiquettes (espace.8) ;
+ *     ecart.entre-blocs (espace.8, docs/attendus/carte-membre-liste.md) est affiché hors du contrôle d'ordre, lui aussi.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -88,7 +89,7 @@ test('vert : Orbe Café, 4 < 16 < 24 < 48, rapports affichés, code 0', () => {
   assert.deepEqual(r.ecarts.map((e) => e.role), ['ecart.dans-composant', 'ecart.entre-composants', 'ecart.entre-groupes', 'ecart.section']);
   assert.deepEqual(r.voisins.map((v) => v.rapport), [4, 1.5, 2]);
   assert.deepEqual(r.fails, []);
-  assert.deepEqual(r.horsControle.map((e) => [e.role, e.px]), [['ecart.icone-texte', 8], ['ecart.entre-etiquettes', 8], ['marge-interieure.composant', 16], ['marge-interieure.etiquette', 12]]);
+  assert.deepEqual(r.horsControle.map((e) => [e.role, e.px]), [['ecart.icone-texte', 8], ['ecart.entre-etiquettes', 8], ['ecart.entre-blocs', 8], ['marge-interieure.composant', 16], ['marge-interieure.etiquette', 12]]);
   const p = run();
   assert.equal(p.status, 0, p.stdout + p.stderr);
   assert.match(p.stdout, /✓ ecart\.dans-composant < ecart\.entre-composants : 4 → 16 px, rapport 4\n/);
@@ -97,6 +98,7 @@ test('vert : Orbe Café, 4 < 16 < 24 < 48, rapports affichés, code 0', () => {
   assert.match(p.stdout, /ecart\.icone-texte +8 px/);
   assert.match(p.stdout, /marge-interieure\.composant +16 px/);
   assert.match(p.stdout, /ecart\.entre-etiquettes +8 px/);
+  assert.match(p.stdout, /ecart\.entre-blocs +8 px/);
   assert.match(p.stdout, /marge-interieure\.etiquette +12 px/);
   assert.match(p.stdout, /3 paires de voisins, aucune en échec\./);
   assert.doesNotMatch(p.stdout, /✗/);

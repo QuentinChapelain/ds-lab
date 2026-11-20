@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Espacements Maison Alberto</title>
     <style>
-      :root { --ecart-dans-composant: 4px; --ecart-entre-composants: 16px; --ecart-entre-groupes: 24px; --ecart-section: 48px; --ecart-icone-texte: 8px; --ecart-entre-etiquettes: 8px; --marge-interieure-composant: 16px; --marge-interieure-etiquette: 12px; }
+      :root { --ecart-dans-composant: 4px; --ecart-entre-composants: 16px; --ecart-entre-groupes: 24px; --ecart-section: 48px; --ecart-icone-texte: 8px; --ecart-entre-etiquettes: 8px; --ecart-entre-blocs: 8px; --marge-interieure-composant: 16px; --marge-interieure-etiquette: 12px; }
       .sous-600 { display: none; }
       @media (max-width: 599.98px) { :root { --ecart-section: 32px; } }
       @media (max-width: 599.98px) { .sous-600 { display: inline; } .dessus-600 { display: none; } }
@@ -125,6 +125,14 @@
               <code>ecart.entre-etiquettes</code>
               <span class="valeur">8 px · {espace.8}</span>
               <span class="usage">Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes.</span>
+            </div>
+          </li>
+          <li>
+            <span class="barre-case"><span class="barre" style="--c:#7048e8;width:var(--ecart-entre-blocs)"></span></span>
+            <div class="legende-texte">
+              <code>ecart.entre-blocs</code>
+              <span class="valeur">8 px · {espace.8}</span>
+              <span class="usage">Écart entre deux blocs d'information d'un même composant, comme l'en-tête d'une carte, titre et sous-titre, et son contenu.</span>
             </div>
           </li>
           <li>

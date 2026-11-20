@@ -87,6 +87,7 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 | Forme | `arrondi.surface` | Arrondi d'une surface posée sur la page, comme une carte. |
 | Forme | `ecart.dans-composant` | Écart entre les parties d'un même composant, comme une étiquette et son champ ou un champ et son message d'erreur. |
 | Forme | `ecart.entre-composants` | Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée, pour qu'on voie à quel champ appartient un libellé ou un message. |
+| Forme | `ecart.entre-blocs` | Écart entre deux blocs d'information d'un même composant, comme l'en-tête d'une carte, titre et sous-titre, et son contenu. |
 | Forme, au focus | `epaisseur.focus` | Épaisseur de l'anneau de focus clavier. |
 | Forme, au focus | `decalage.focus` | Décalage de l'anneau de focus clavier hors du composant, pour qu'il se pose sur le fond de la page et jamais sur le plein. |
 | Texte | `typo.corps.moyen` | Texte courant, comme le texte d'une carte ou la saisie d'un champ. |

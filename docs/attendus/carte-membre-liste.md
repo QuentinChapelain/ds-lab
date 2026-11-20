@@ -108,6 +108,15 @@ Le plan (point 3 à 6) fait foi, avec les réponses ci-dessus. En résumé :
 - **Contrôles** : test de rendu par module (deux jobs de CI), arbre d'accessibilité (liste de dix, un titre de niveau 3 par membre avec un lien nommé par le nom seul, `DsAvatar` absent), dix haltes de Tab ; L1 (aucun import de `vuetify` dans `atelier/modules/`), L2 (aucune valeur nue dans le style d'un module), L3 (menus et refus mot pour mot).
 - **Arrêts** : arrêt 2 après `MemberCard` (à l'œil : le détachement de `DsCard` en sombre) ; arrêt 3 après `MemberList` (à l'œil : la largeur de colonne).
 
+## Écart entre la promo et la suite de `DsTag` (réponse à l'arrêt 2)
+
+Demande : 8 px, comme la ligne « en situation » de `DsTag`, par un rôle, jamais une valeur en dur ; à 4 px, la promo et les `DsTag` font un seul bloc.
+
+- **Rôle** : `ecart.entre-blocs` → `{espace.8}`, « Écart entre deux blocs d'information d'un même composant, comme l'en-tête d'une carte, titre et sous-titre, et son contenu. » Hors du contrôle d'ordre des écarts, comme `ecart.entre-etiquettes`. `ecart.entre-etiquettes` et `ecart.icone-texte` valent aussi 8 px, mais leur description ne dit pas cet usage.
+- **Variable** : `ds-ecart-entre-blocs`, 8px dans les dix thèmes (60 variables).
+- **Place** : dans `DsCard`, entre `subtitle` et le slot `default` : le titre et le sous-titre forment l'en-tête, le contenu est un autre bloc. Sans sous-titre, l'écart entre le titre et le contenu reste `ecart.dans-composant`.
+- **Ce qui change** : l'écart entre le sous-titre et le contenu, 4 → 8 px, dans `MemberCard` et dans les cas à sous-titre de la story « Variantes » de `DsCard` ; rien d'autre. La ligne « en situation » de `DsTag` lit le même rôle et reste identique au pixel.
+
 ## Script et commande
 
 Lancé sous Node 24.22.3 depuis la racine du dépôt, lu sur l'entrée standard pour que `culori` se résolve depuis la racine, sans fichier ajouté au dépôt : `fnm exec --using=24.22.3 node --input-type=module - < attendu-teinte.mjs`. Il écrit une ligne par thème.

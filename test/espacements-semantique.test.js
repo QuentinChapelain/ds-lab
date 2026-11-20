@@ -11,6 +11,8 @@
  *   puis un sixième, du bouton (18/11/2026, docs/attendus/bouton.md) : ecart.icone-texte → {espace.8} ;
  *   puis deux de l'étiquette (19/11/2026, docs/attendus/avatar-etiquette.md) : ecart.entre-etiquettes → {espace.8},
  *     marge-interieure.etiquette → {espace.12}, hors contrôle d'ordre ;
+ *   puis un de DsCard (20/11/2026, docs/attendus/carte-membre-liste.md) : ecart.entre-blocs → {espace.8}, hors contrôle
+ *     d'ordre ;
  *   chaque cible existe dans primitives.tokens.json et y est de type dimension ;
  *   une phrase d'usage chacun (majuscule, point final, une seule phrase) ;
  *   la description racine du fichier parle des espacements et garde « DTCG 2025.10 » ;
@@ -44,6 +46,8 @@ const EXPECTED = /** @type {Record<string, string>} */ ({
   // Écart et marge de l'étiquette (docs/attendus/avatar-etiquette.md), hors contrôle d'ordre.
   'ecart.entre-etiquettes': '{espace.8}',
   'marge-interieure.etiquette': '{espace.12}',
+  // Écart entre l'en-tête d'une DsCard à sous-titre et son contenu (docs/attendus/carte-membre-liste.md), hors contrôle d'ordre.
+  'ecart.entre-blocs': '{espace.8}',
 });
 
 const sem = load('semantique.tokens.json');
@@ -51,8 +55,8 @@ const prims = load('primitives.tokens.json');
 /** @param {any} node @param {string} path */
 const at = (node, path) => path.split('.').reduce((n, k) => n?.[k], node);
 
-test('huit rôles d\'espacement, alias vers espace.*, type dimension', () => {
-  assert.deepEqual(Object.keys(sem.ecart).filter((k) => !k.startsWith('$')).sort(), ['dans-composant', 'entre-composants', 'entre-etiquettes', 'entre-groupes', 'icone-texte', 'section']);
+test('neuf rôles d\'espacement, alias vers espace.*, type dimension', () => {
+  assert.deepEqual(Object.keys(sem.ecart).filter((k) => !k.startsWith('$')).sort(), ['dans-composant', 'entre-blocs', 'entre-composants', 'entre-etiquettes', 'entre-groupes', 'icone-texte', 'section']);
   assert.deepEqual(Object.keys(sem['marge-interieure']).filter((k) => !k.startsWith('$')), ['composant', 'etiquette']);
   for (const [role, alias] of Object.entries(EXPECTED)) {
     const t = at(sem, role);

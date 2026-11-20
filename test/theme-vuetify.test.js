@@ -65,6 +65,7 @@
  *   16px, 700 et 1.5, dans la police du texte de la marque.
  * Fonds teintés (20/11/2026, docs/attendus/carte-membre-liste.md) : les deux couleurs deviennent marque-teinte
  *   (fond.marque.teinte, texte.marque) et teinte (fond.teinte, texte.principal), à la même place ; toujours 40.
+ * Écart entre blocs de DsCard (20/11/2026, docs/attendus/carte-membre-liste.md) : V9 ds-ecart-entre-blocs, 8px, 60 en tout.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -210,7 +211,7 @@ test('V7 table fausse : panne qui la nomme', () => {
 test('V9 variables ds- du bouton : dimensions dans les dix thèmes, traits égaux à leurs rôles', () => {
   const DIMENSIONS = {
     'ds-arrondi-controle': '8px', 'ds-hauteur-controle-normale': '40px', 'ds-hauteur-controle-petite': '32px', 'ds-epaisseur-contour': '1px', 'ds-epaisseur-focus': '2px', 'ds-decalage-focus': '2px',
-    'ds-taille-icone-normale': '20px', 'ds-taille-icone-petite': '16px', 'ds-ecart-icone-texte': '8px', 'ds-marge-interieure-composant': '16px',
+    'ds-taille-icone-normale': '20px', 'ds-taille-icone-petite': '16px', 'ds-ecart-icone-texte': '8px', 'ds-marge-interieure-composant': '16px', 'ds-ecart-entre-blocs': '8px',
     'ds-libelle-taille': '14px', 'ds-libelle-graisse': '600', 'ds-libelle-interligne': '1.4286', 'ds-libelle-police': 'system-ui, sans-serif',
   };
   const TRAITS = { 'ds-focus': 'bordure.focus', 'ds-contour': 'bordure.forte', 'ds-contour-desactive': 'bordure.discrete' };
@@ -227,7 +228,7 @@ test('V9 variables ds- du bouton : dimensions dans les dix thèmes, traits égau
   ];
   // Titre 4 de DsCard en taille small (docs/attendus/carte-membre-liste.md) : quatre variables, valeurs jugées ici.
   const TITRE_4 = ['police', 'taille', 'graisse', 'interligne'].map((c) => `ds-titre-4-${c}`);
-  assert.equal(Object.keys(DIMENSIONS).length + Object.keys(TRAITS).length + CHAMP_CARTE.length + AVATAR_ETIQUETTE_VARIABLES.length + TITRE_4.length, 59);
+  assert.equal(Object.keys(DIMENSIONS).length + Object.keys(TRAITS).length + CHAMP_CARTE.length + AVATAR_ETIQUETTE_VARIABLES.length + TITRE_4.length, 60);
   for (const d of MARQUES) {
     const themes = Object.values(themesVuetify(d).themes);
     for (const [i, mode] of /** @type {const} */ (['clair', 'sombre']).entries()) {

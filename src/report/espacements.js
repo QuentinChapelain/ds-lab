@@ -22,6 +22,7 @@ const cssVar = (role) => `--${role.replace(/\./g, '-')}`;
 /** Palette d'annotation des cotes (hors design system). */
 const COTE = /** @type {Record<string, string>} */ ({
   'ecart.dans-composant': '#c2255c',
+  'ecart.entre-blocs': '#7048e8',
   'ecart.entre-composants': '#1971c2',
   'ecart.entre-groupes': '#2b8a3e',
   'ecart.section': '#d9480f',

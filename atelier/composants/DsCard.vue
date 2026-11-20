@@ -11,6 +11,7 @@
 // porte le lien dans son titre, étendu à toute la carte par un pseudo-élément, avec l'anneau de focus autour de la carte.
 // Avec le slot prepend (DsAvatar seul), la carte est horizontale : la pièce à gauche, le titre, le sous-titre, le texte et
 // les actions dans une colonne à droite. La taille small donne au titre le style titre 4, pour les écrans denses.
+// Avec un sous-titre, le titre et lui forment l'en-tête, et le contenu suit à l'écart entre blocs.
 import { h } from 'vue';
 import { VCard } from 'vuetify/components';
 import { definirEnveloppe } from './fabrique.js';
@@ -110,6 +111,11 @@ export default definirEnveloppe(MENU, (props, { attrs, slots }) => () => {
   line-height: var(--v-ds-corps-petit-interligne);
   letter-spacing: 0;
   color: rgb(var(--v-ds-texte-secondaire));
+}
+/* Le titre et le sous-titre forment l'en-tête ; le contenu qui le suit est un autre bloc d'information, à l'écart entre
+   blocs (le corps porte déjà l'écart dans le composant). */
+.ds-card__subtitle + .ds-card__text {
+  margin-top: calc(var(--v-ds-ecart-entre-blocs) - var(--v-ds-ecart-dans-composant));
 }
 /* Carte horizontale : la pièce du slot prepend à gauche, alignée en haut, la colonne à droite, qui peut rétrécir. */
 .ds-card--prepend .ds-card__content {

@@ -3,9 +3,9 @@
  * Espacements par relation de la couche sémantique (semantique.tokens.json, type dimension),
  * résolus vers espace.* (primitives.tokens.json).
  * Les quatre ecart, du plus proche au plus lointain, doivent être strictement croissants ; le rapport
- * entre voisins est calculé pour information, jamais contrôlé. marge-interieure.*, ecart.icone-texte et
- * ecart.entre-etiquettes (écarts internes d'un contrôle ou d'une suite d'étiquettes, hors de l'échelle des
- * relations) sont hors contrôle.
+ * entre voisins est calculé pour information, jamais contrôlé. marge-interieure.*, ecart.icone-texte,
+ * ecart.entre-etiquettes et ecart.entre-blocs (écarts internes d'un contrôle, d'une suite d'étiquettes ou d'un
+ * composant, hors de l'échelle des relations) sont hors contrôle.
  * Un ecart peut avoir une valeur en étroit (le rôle du contexte étroit, largeur.etroit.tokens.json,
  * quand il diffère du large ; seuil sur le modificateur largeur) ; elle doit rester strictement supérieure à l'ecart
  * précédent (sa valeur en étroit s'il en a une) et inférieure ou égale à sa propre valeur large.
@@ -18,7 +18,7 @@ import { flattenTokens, primitivesSansRole, resoudreAlias } from './roles.js';
 /** Ordre des relations, du plus proche au plus lointain. */
 const ORDRE = ['ecart.dans-composant', 'ecart.entre-composants', 'ecart.entre-groupes', 'ecart.section'];
 /** Rôles affichés sans contrôle d'ordre. */
-const HORS_CONTROLE = ['ecart.icone-texte', 'ecart.entre-etiquettes', 'marge-interieure.composant', 'marge-interieure.etiquette'];
+const HORS_CONTROLE = ['ecart.icone-texte', 'ecart.entre-etiquettes', 'ecart.entre-blocs', 'marge-interieure.composant', 'marge-interieure.etiquette'];
 
 /**
  * @typedef {{ role: string, alias: string, cible: string, px: number, description: string }} Espace

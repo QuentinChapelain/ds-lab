@@ -71,7 +71,7 @@ const situation = () =>
           ['Mentor', 'brand'],
           [LONGUE, 'neutral'],
         ],
-        { style: 'margin-top:var(--v-ds-ecart-dans-composant)' },
+        { style: 'margin-top:calc(var(--v-ds-ecart-entre-blocs) - var(--v-ds-ecart-dans-composant))' },
       ),
     ]),
   ]);

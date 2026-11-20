@@ -6,7 +6,7 @@
 // thème, clavier et lecteur d'écran : une tabulation par carte à lien, une par bouton d'une carte à actions, un lien nommé
 // par le titre seul, l'anneau au focus clavier, un clic n'importe où sur la carte qui suit le lien, les niveaux de titre,
 // les refus d'un usage hors du menu. Sur chaque thème aussi, la story des variantes : sous-titre en corps petit et texte
-// secondaire, titre 4 en taille small, carte horizontale (DsAvatar à gauche, aligné en haut, à l'écart entre composants
+// secondaire, le texte à l'écart entre blocs du sous-titre, titre 4 en taille small, carte horizontale (DsAvatar à gauche, aligné en haut, à l'écart entre composants
 // de la colonne) ; sur le premier, le lien de la carte horizontale nommé par le titre seul et un clic sur DsAvatar qui
 // le suit.
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -185,7 +185,7 @@ function attenduVariantes(t) {
             interligne: `${Math.round(parseFloat(v['ds-corps-petit-taille']) * Number(v['ds-corps-petit-interligne']) * 10000) / 10000}px`,
             couleur: css(v['ds-texte-secondaire']),
             ecartTitre: v['ds-ecart-dans-composant'],
-            ecartTexte: v['ds-ecart-dans-composant'],
+            ecartTexte: v['ds-ecart-entre-blocs'],
           }
         : null,
       devant: devant

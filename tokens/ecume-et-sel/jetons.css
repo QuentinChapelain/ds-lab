@@ -218,6 +218,8 @@
   --decalage-focus: var(--trait-2);
   /* Écart entre les parties d'un même composant, comme une étiquette et son champ ou un champ et son message d'erreur. */
   --ecart-dans-composant: var(--espace-4);
+  /* Écart entre deux blocs d'information d'un même composant, comme l'en-tête d'une carte, titre et sous-titre, et son contenu. */
+  --ecart-entre-blocs: var(--espace-8);
   /* Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée, pour qu'on voie à quel champ appartient un libellé ou un message. */
   --ecart-entre-composants: var(--espace-16);
   /* Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes. */

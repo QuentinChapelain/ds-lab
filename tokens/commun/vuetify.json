@@ -217,6 +217,10 @@
       "jeton": "ecart.entre-composants",
       "$description": "Écart entre l'image, le bloc titre et texte, et les actions d'une carte ; dans DsCard horizontale, entre la pièce de gauche et la colonne."
     },
+    "ds-ecart-entre-blocs": {
+      "jeton": "ecart.entre-blocs",
+      "$description": "Écart entre l'en-tête d'une carte à sous-titre (titre et sous-titre) et son contenu."
+    },
     "ds-corps-police": {
       "jeton": "typo.corps.moyen",
       "champ": "fontFamily",

@@ -1,6 +1,7 @@
 // Preuve de MemberCard, module de l'annuaire. Sur chaque thème de chaque marque, sur la planche des dix membres fictifs
 // rendue par Storybook : DsAvatar à gauche, aligné en haut, au côté du grand DsAvatar ; le nom en titre 4, la promo en
-// sous-titre ou rien ; la suite de DsTag en liste, à l'écart des DsTag, sans marge, chaque DsTag au fond teinté de son
+// sous-titre ou rien ; la suite de DsTag en liste, à l'écart entre blocs de la promo (sans promo, à l'écart dans le
+// composant du nom), à l'écart des DsTag, sans marge propre, chaque DsTag au fond teinté de son
 // ton ; aucune valeur en dur (écarts, marges et listes égaux aux variables du thème) ; un nom long passé à la ligne, un
 // DsTag long coupé par « … », huit DsTag sur plusieurs lignes, rien qui déborde de sa colonne de 400 px ; le rendu est
 // le même en développement et en version construite. La planche de la version construite est enregistrée par thème
@@ -65,7 +66,7 @@ function attenduMembres(t) {
       titre: { balise: 'H3', taille: v['ds-titre-4-taille'], graisse: v['ds-titre-4-graisse'], police: t.policeTexte.join('|') },
       promo,
       suite: tons.length
-        ? { role: 'list', puces: 'none', marge: '0px', retrait: '0px', ecart: `${v['ds-ecart-entre-etiquettes']} ${v['ds-ecart-entre-etiquettes']}`, fonds: tons.map((x) => fond[/** @type {'neutral' | 'brand'} */ (x)]) }
+        ? { role: 'list', puces: 'none', marge: '0px', retrait: '0px', avant: promo ? v['ds-ecart-entre-blocs'] : v['ds-ecart-dans-composant'], ecart: `${v['ds-ecart-entre-etiquettes']} ${v['ds-ecart-entre-etiquettes']}`, fonds: tons.map((x) => fond[/** @type {'neutral' | 'brand'} */ (x)]) }
         : null,
       deborde: false,
     });
@@ -103,7 +104,7 @@ async function releve(contexte, base, theme) {
       let suite = null;
       if (ul) {
         const us = getComputedStyle(ul);
-        suite = { role: ul.getAttribute('role'), puces: us.listStyleType, marge: us.marginTop, retrait: us.paddingLeft, ecart: `${us.rowGap} ${us.columnGap}`, fonds: [...ul.querySelectorAll('.ds-tag')].map((x) => getComputedStyle(x).backgroundColor) };
+        suite = { role: ul.getAttribute('role'), puces: us.listStyleType, marge: us.marginTop, retrait: us.paddingLeft, avant: px(r(ul).top - r(st ?? titre).bottom), ecart: `${us.rowGap} ${us.columnGap}`, fonds: [...ul.querySelectorAll('.ds-tag')].map((x) => getComputedStyle(x).backgroundColor) };
       }
       const a = r(av);
       // Rien ne déborde : chaque élément visible de la carte reste dans sa boîte, au demi-pixel près. La barre de
