@@ -1,7 +1,8 @@
 # Rejoue, sur des machines neuves, ce que CLAUDE.md demande avant un commit, en trois jobs parallèles et un verdict :
 # - rapides : types, ce qui ne sert plus (knip), cycles et orphelins (dependency-cruiser), les trois contrôles de la cible,
 #   les fiches des composants (D56) ;
-# - tests : npm test, en trois parts (un fichier de test dans une part et une seule) ;
+# - tests : les fichiers de npm test, en trois parts tirées de test/parts-de-la-ci.json, réparties par durée (D58 ;
+#   un fichier de test dans une part et une seule, test/parts-de-la-ci.test.js) ;
 # - atelier : son installation, sa version construite, puis la preuve (D42), un job par composant ;
 # - controles : le verdict, seul check exigé par le ruleset de main (D35).
 # Une étape par commande : la ligne rouge dit laquelle échoue.
@@ -78,11 +79,15 @@ jobs:
       - name: Chromium de l'image
         run: node --input-type=module -e "import { lancerChromium } from './src/browser/lancement.js'; const b = await lancerChromium(); console.log('Chromium', b.version()); await b.close();"
         timeout-minutes: 1
-      # L'option de la part passe par NODE_OPTIONS : écrite après le motif de npm test, node --test l'ignorerait.
-      - name: npm test, part ${{ matrix.part }}/3
-        run: npm test
+      # Les fichiers de la part, lus dans la liste (D58) : node --test les lance dans l'ordre alphabétique, trois à la
+      # fois. Une liste illisible ou une part absente fait échouer l'affectation (sh -e) ; node --test sans fichier
+      # jouerait tous les tests.
+      - name: tests, part ${{ matrix.part }}/3
+        run: |
+          fichiers=$(node -p "require('./test/parts-de-la-ci.json').parts[process.env.PART - 1].join(' ')")
+          node --test $fichiers
         env:
-          NODE_OPTIONS: --test-shard=${{ matrix.part }}/3
+          PART: ${{ matrix.part }}
         timeout-minutes: 5 # 87 à 183 s mesurés selon la part et le runner (D53)
 
   # Un job par composant : la preuve de chacun passe seule (node preuve.js <composant>), avec les mêmes vérifications
