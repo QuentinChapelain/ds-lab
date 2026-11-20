@@ -1,6 +1,6 @@
 ---
 name: DsCard
-title: DsCard (carte)
+title: DsCard
 file: atelier/composants/DsCard.vue
 props: atelier/composants/DsCard.menu.js
 wraps: VCard
@@ -10,7 +10,7 @@ test: npm --prefix atelier run preuve -- card
 ---
 
 <!-- genere:titre : écrit par npm --prefix atelier run fiches -->
-# DsCard (carte)
+# DsCard
 <!-- /genere:titre -->
 
 Une surface qui groupe un titre, un texte, une image et des actions, ou qui mène tout entière vers une page.

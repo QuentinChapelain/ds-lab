@@ -24,13 +24,19 @@
  *   U8 exemples acceptés (l'étiquette en liste, un bouton à icône et son événement, une carte et son slot actions, un
  *      champ et v-model) et refusés avec le message des props ; syntaxes hors grammaire en panne ;
  *   U9 bloc de l'index du DsTag seul à l'octet ; le glossaire, écrit sous le bloc, est gardé ;
- *   U10 le contrôle sort en 0 sur le dépôt, les six fiches présentes ; une fiche qui manque est un écart (DOC1) ;
+ *   U10 le contrôle sort en 0 sur le dépôt, les six fiches des composants et les deux des modules présentes, avec les
+ *      deux index ; une fiche qui manque est un écart (DOC1) ;
  *   U11 bloc tokens (anatomie) du DsTag à l'octet ; le bouton à icône n'a aucune ligne « variant danger » ; un token cité
  *      sans description, ou un token posé par le parent inconnu, est une panne ; une description citée qui porte un
  *      numéro de règle ou de décision, un nom de token, une mesure, un pas d'échelle ou plus d'une phrase est à réécrire ;
  *   U12 un mot refusé hors code donne son écart, en code rien ; une fiche de 501 mots écrits dépasse le plafond ; le
  *      glossaire contient chaque mot refusé ;
- *   U13 chaque écart de la table des noms, sur une table d'essai ; la table du dépôt n'en donne aucun.
+ *   U13 chaque écart de la table des noms, sur une table d'essai ; la table du dépôt n'en donne aucun ;
+ *   U14 modules (20/11/2026) : en-tête de MemberCard à l'octet (assembles à la place de wraps, titre sans parenthèse) ;
+ *      blocs tokens et contrastes de MemberList à l'octet, chaque pièce vers sa fiche ; les messages déclarés par une
+ *      règle qui délègue sont ceux que lève verifierUsage, au rang et au refus près ; la table des noms des modules sans
+ *      écart, un nom préfixé Ds mal formé, un module absent nommé ; un exemple de module, littéraux compris, accepté ou
+ *      refusé par les props, un littéral illisible hors grammaire ; index des modules sans glossaire.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -44,6 +50,7 @@ import {
   MOTS_REFUSES,
   anatomie,
   blocContrastes,
+  blocContrastesModule,
   blocIndex,
   blocProps,
   blocRefus,
@@ -57,6 +64,7 @@ import {
   entete,
   lireComposant,
   lireDescriptions,
+  lireModule,
   lireMenus,
   lireNoms,
   lireStories,
@@ -93,7 +101,7 @@ function genere(nom) {
   const s = lireStories(nom);
   return {
     entete: entete(e, c, s, NOMS),
-    titre: `# ${nom} (${NOMS.composants[nom].fr})`,
+    titre: `# ${nom}`,
     props: blocProps(e.menu, c, NOMS),
     refus: blocRefus(e.menu, nom),
     tokens: blocTokens(anatomie(c, e.menu, TABLE, DESCRIPTIONS, nom, PAR_NOM)),
@@ -109,7 +117,7 @@ test('U1 en-tête du DsTag, et du bouton à icône par le bouton', () => {
     [
       '---',
       'name: DsTag',
-      'title: DsTag (étiquette)',
+      'title: DsTag',
       'file: atelier/composants/DsTag.vue',
       'props: atelier/composants/DsTag.menu.js',
       'wraps: VChip',
@@ -122,7 +130,7 @@ test('U1 en-tête du DsTag, et du bouton à icône par le bouton', () => {
   const bi = genere('DsIconButton').entete;
   assert.match(bi, /^wraps: VBtn \(par DsButton\)$/m);
   assert.match(bi, /^decisions: \[D52, D51, D56, D57\]$/m);
-  assert.match(bi, /^title: DsIconButton \(bouton à icône\)$/m);
+  assert.match(bi, /^title: DsIconButton$/m);
 });
 
 test('U2 bloc props du DsTag ; carte et bouton', () => {
@@ -317,7 +325,7 @@ test('U8 exemples acceptés, refusés par les props, ou hors grammaire', () => {
 
 test('U9 bloc de l\'index du DsTag seul ; le glossaire sous le bloc est gardé', () => {
   const phrase = 'Un mot court sur un fond teinté, pour classer un membre (ville, secteur) ou mettre une qualité en avant (« Mentor ») ; il ne se clique pas.';
-  const ligne = `| \`DsTag\` | [DsTag (étiquette)](tag.md) | ${phrase} |`;
+  const ligne = `| \`DsTag\` | [DsTag](tag.md) | ${phrase} |`;
   const bloc = blocIndex([ligne]);
   assert.equal(
     bloc,
@@ -349,6 +357,7 @@ test('U10 le contrôle des fiches sort en 0 sur le dépôt', () => {
   assert.match(sortie, /^✓ docs\/composants\/README\.md$/m);
   assert.match(sortie, /^✓ atelier\/composants\/noms\.json$/m);
   for (const f of ['button', 'icon-button', 'text-input', 'card', 'avatar', 'tag']) assert.match(sortie, new RegExp(`^✓ docs/composants/${f}\\.md$`, 'm'), f);
+  for (const f of ['member-card', 'member-list', 'README']) assert.match(sortie, new RegExp(`^✓ docs/modules/${f}\\.md$`, 'm'), f);
   // Une fiche par composant (DOC1) : la fiche d'un composant qui manque est un écart.
   assert.deepEqual(fichesAbsentes(MENUS, ['button.md', 'card.md']), ['icon-button', 'text-input', 'avatar', 'tag'].map((f) => `docs/composants/${f}.md`));
   assert.deepEqual(fichesAbsentes(MENUS, MENUS.map((m) => `${m.fiche}.md`)), []);
@@ -427,4 +436,90 @@ test('U13 table des noms : écarts sur une table d\'essai, aucun sur le dépôt'
   assert.deepEqual(ecartsNoms(mal, new Map([['DsTag', []]]), table({ text: { source: 'vuetify' }, tone, Tone: { source: 'courant' } })), ['nom mal formé : DsTag.Tone']);
   assert.deepEqual(ecartsNoms(tag, new Map([['DsTag', ['default']]]), table({ text: { source: 'vuetify' }, tone })), ['slot absent de la table : DsTag.default']);
   assert.deepEqual(ecartsNoms(tag, new Map([['DsTag', []]]), { composants: {} }), ['composant absent de la table : DsTag']);
+});
+
+test('U14 modules : en-tête, tokens et contrastes, messages déclarés, table des noms, exemple, index', async () => {
+  const modules = await lireMenus('modules');
+  const carte = /** @type {any} */ (modules.find((m) => m.nom === 'MemberCard'));
+  const liste = /** @type {any} */ (modules.find((m) => m.nom === 'MemberList'));
+  assert.equal(
+    entete(carte, lireModule('MemberCard'), lireStories('MemberCard')),
+    [
+      '---',
+      'name: MemberCard',
+      'title: MemberCard',
+      'file: atelier/modules/MemberCard.vue',
+      'props: atelier/modules/MemberCard.menu.js',
+      'assembles: [DsCard, DsAvatar, DsTag]',
+      'decisions: [D51, D56, D57]',
+      'stories: atelier/stories/MemberCard.stories.js',
+      'test: npm --prefix atelier run preuve -- member-card',
+      '---',
+    ].join('\n'),
+  );
+  const ml = lireModule('MemberList');
+  assert.deepEqual(ml.assemble, ['MemberCard']);
+  assert.equal(
+    blocTokens(anatomie(ml, liste.menu, TABLE, DESCRIPTIONS, 'MemberList', PAR_NOM), ml.assemble),
+    [
+      'Un token est le nom d\'une valeur de design. Le module n\'a aucune valeur visuelle propre : ce qu\'il assemble porte les siennes, et il ne règle que la mise en page, par les tokens ci-dessous.',
+      '',
+      'Assemble : [`MemberCard`](member-card.md).',
+      '',
+      '| Partie | Token | Ce qu\'il règle |',
+      '|---|---|---|',
+      `| Forme | \`ecart.entre-composants\` | ${DESCRIPTIONS.get('ecart.entre-composants')} |`,
+      `| Forme | \`largeur.colonne\` | ${DESCRIPTIONS.get('largeur.colonne')} |`,
+    ].join('\n'),
+  );
+  assert.equal(
+    blocContrastesModule(['DsCard', 'DsAvatar', 'DsTag']),
+    'Le module n\'a aucune couleur propre : chaque texte se lit comme dans la fiche de sa pièce, [`DsCard`](../composants/card.md), [`DsAvatar`](../composants/avatar.md), [`DsTag`](../composants/tag.md).',
+  );
+
+  // Messages déclarés : chaque erreur levée suit l'un d'eux, <…> valant n'importe quel texte.
+  const suit = (/** @type {any} */ menu, /** @type {string} */ message) =>
+    blocRefus(menu, menu.nom)
+      .split('\n')
+      .flatMap((l) => /^- `([^`]+)`/.exec(l)?.[1] ?? [])
+      .some((m) => new RegExp(`^${m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/<[^>]+>/g, '.+')}$`).test(message));
+  const M = { name: 'Camille Ferrand', href: '/membres/camille-ferrand' };
+  /** @param {any} menu @param {Record<string, unknown>} props @param {Record<string, unknown>} [slots] */
+  const leve = (menu, props, slots) => {
+    try {
+      verifierUsage(menu, { headingLevel: 3, ...props }, {}, slots);
+    } catch (e) {
+      return /** @type {Error} */ (e).message;
+    }
+    return '';
+  };
+  for (const [menu, props, slots, attendu] of /** @type {[any, any, any, string][]} */ ([
+    [carte.menu, { ...M, tags: [{ text: 'Lyon' }, { text: 'Mentor', tone: 'accent' }] }, undefined, 'MemberCard : tags : 2 : tone : valeur inconnue : accent (neutral, brand)'],
+    [carte.menu, { ...M, tags: 'Lyon' }, undefined, 'MemberCard : tags : liste attendue'],
+    [carte.menu, M, { default: () => 'x' }, 'MemberCard : slot refusé : default'],
+    [liste.menu, { members: [M, { ...M, name: undefined }] }, undefined, 'MemberList : members : 2 : name : obligatoire'],
+    [liste.menu, { members: [{ ...M, headingLevel: 2 }] }, undefined, 'MemberList : members : 1 : headingLevel : donné par la liste'],
+    [liste.menu, { members: { ...M } }, undefined, 'MemberList : members : liste attendue'],
+  ])) {
+    assert.equal(leve(menu, props, slots), attendu);
+    assert.ok(suit(menu, attendu), attendu);
+  }
+
+  const slots = new Map([...modules].map((m) => [m.nom, lireModule(m.nom).emplacements]));
+  assert.deepEqual(ecartsNoms(modules, slots, NOMS, 'modules'), []);
+  assert.deepEqual(ecartsNoms([{ nom: 'DsMember', menu: { options: {} } }], new Map(), { modules: { DsMember: { source: 'courant' } } }, 'modules'), ['nom mal formé : DsMember']);
+  assert.deepEqual(ecartsNoms([carte], new Map([['MemberCard', []]]), { modules: {} }, 'modules'), ['module absent de la table : MemberCard']);
+
+  const tous = new Map([...MENUS, ...modules].map((m) => [m.nom, m.menu]));
+  const deMenu = (/** @type {string} */ f) => tous.get(f);
+  const script = (/** @type {string} */ l) => vue(`import MemberList from './modules/MemberList.vue';\n${l}`, '  <MemberList :members="members" aria-labelledby="titre" />');
+  assert.deepEqual(verifierExemple(script("const camille = { name: 'Camille', href: '/c', tags: [{ text: 'Lyon' }, { text: 'Mentor', tone: 'brand' }] };\nconst members = [camille, { name: 'Noé', href: '/n' }];"), deMenu), ['MemberList']);
+  assert.throws(() => verifierExemple(script("const members = [{ name: 'Noé', href: '/n', headingLevel: 2 }];"), deMenu), { message: 'MemberList : members : 1 : headingLevel : donné par la liste' });
+  assert.throws(() => verifierExemple(script("const members = [{ name: 'Noé' href: '/n' }];"), deMenu), (/** @type {any} */ e) => e instanceof HorsGrammaire && /^exemple hors grammaire : littéral : attendu « , »/.test(e.message));
+  assert.throws(() => verifierExemple(script('const members = [inconnu];'), deMenu), (/** @type {any} */ e) => e instanceof HorsGrammaire && e.message === 'exemple hors grammaire : nom non défini : inconnu');
+
+  const index = lire('docs/modules/README.md');
+  assert.match(index, /^\| `MemberCard` \| \[MemberCard\]\(member-card\.md\) \| /m);
+  assert.doesNotMatch(index, /## Glossaire/);
+  assert.match(lire('docs/composants/README.md'), /^\| module \| Assemblage de composants pour un usage du produit/m);
 });

@@ -4,8 +4,10 @@
 // la grammaire est une panne qui la nomme (HorsGrammaire), jamais une réussite ; un usage que la fabrique refuse lève
 // son message.
 //
-// Script : import <Nom> from './composants/<Fichier>.vue' ; import { a, b } from '<module>' ; const x = icone(y) ;
-// const x = '<texte>'. Gabarit : balises des enveloppes importées, balises HTML en minuscules (contenu seul lu),
+// Script : import <Nom> from './composants/<Fichier>.vue' (ou './modules/<Fichier>.vue') ; import { a, b } from
+// '<module>' ; const x = icone(y) ; const x = '<texte>' ; const x = <littéral>, sur une ligne : tableau [a, b] ou objet
+// { cle: valeur }, fait de textes entre apostrophes, de nombres, de true, false, null, de noms définis et d'autres
+// littéraux. Gabarit : balises des enveloppes importées, balises HTML en minuscules (contenu seul lu),
 // <template #emplacement> dans une enveloppe, texte sans {{. Attributs : nom="texte", nom seul, :nom="littéral ou nom
 // défini", @evenement="nom", v-model="nom". Comme Vue : un nom en tirets devient camelCase face aux options, @x donne
 // l'écouteur onX, retiré des attributs si x est un événement du menu, les défauts du menu sont appliqués.
@@ -45,12 +47,13 @@ function lireScript(script) {
     const l = brute.trim();
     if (!l) continue;
     let m;
-    if ((m = /^import (\w+) from '\.\/composants\/(\w+)\.vue';$/.exec(l))) enveloppes.set(m[1], m[2]);
+    if ((m = /^import (\w+) from '\.\/(?:composants|modules)\/(\w+)\.vue';$/.exec(l))) enveloppes.set(m[1], m[2]);
     else if ((m = /^import \{ ([\w$]+(?:, [\w$]+)*) \} from '[^']+';$/.exec(l))) for (const n of m[1].split(', ')) noms.set(n, () => null);
     else if ((m = /^const (\w+) = icone\((\w+)\);$/.exec(l))) {
       if (!noms.has(m[2])) throw hors(`nom non défini : ${m[2]}`);
       noms.set(m[1], () => null);
     } else if ((m = /^const (\w+) = '([^']*)';$/.exec(l))) noms.set(m[1], m[2]);
+    else if ((m = /^const (\w+) = ([[{].*);$/.exec(l))) noms.set(m[1], litteral(m[2], noms));
     else throw hors(`ligne de script : ${l}`);
   }
   return { enveloppes, noms };
@@ -114,6 +117,66 @@ function valeur(expr, noms) {
     return noms.get(e);
   }
   throw hors(`expression : ${e}`);
+}
+
+/**
+ * Littéral d'une ligne du script, lu en entier : tableau, objet aux clés nues, texte entre apostrophes, nombre, true,
+ * false, null ou nom défini. Toute autre forme est hors grammaire.
+ * @param {string} texte @param {Map<string, unknown>} noms
+ */
+function litteral(texte, noms) {
+  let i = 0;
+  const blancs = () => {
+    while (texte[i] === ' ') i++;
+  };
+  /** @param {string} c */
+  const attendre = (c) => {
+    blancs();
+    if (texte[i] !== c) throw hors(`littéral : attendu « ${c} » en ${i + 1} : ${texte}`);
+    i++;
+  };
+  /** @returns {unknown} */
+  const lireValeur = () => {
+    blancs();
+    if (texte[i] === '[') {
+      i++;
+      const out = [];
+      blancs();
+      if (texte[i] === ']') return i++, out;
+      for (;;) {
+        out.push(lireValeur());
+        blancs();
+        if (texte[i] === ']') return i++, out;
+        attendre(',');
+      }
+    }
+    if (texte[i] === '{') {
+      i++;
+      /** @type {Record<string, unknown>} */
+      const out = {};
+      blancs();
+      if (texte[i] === '}') return i++, out;
+      for (;;) {
+        blancs();
+        const cle = /^[A-Za-z_$][\w$]*/.exec(texte.slice(i))?.[0];
+        if (!cle) throw hors(`littéral : clé illisible en ${i + 1} : ${texte}`);
+        i += cle.length;
+        attendre(':');
+        out[cle] = lireValeur();
+        blancs();
+        if (texte[i] === '}') return i++, out;
+        attendre(',');
+      }
+    }
+    const m = /^(?:'[^']*'|-?\d+(?:\.\d+)?|[A-Za-z_$][\w$]*)/.exec(texte.slice(i));
+    if (!m) throw hors(`littéral : valeur illisible en ${i + 1} : ${texte}`);
+    i += m[0].length;
+    return valeur(m[0], noms);
+  };
+  const v = lireValeur();
+  blancs();
+  if (i !== texte.length) throw hors(`littéral : reste « ${texte.slice(i)} »`);
+  return v;
 }
 
 /** @param {any} option */

@@ -1,6 +1,6 @@
 ---
 name: DsTextInput
-title: DsTextInput (champ de texte)
+title: DsTextInput
 file: atelier/composants/DsTextInput.vue
 props: atelier/composants/DsTextInput.menu.js
 wraps: VTextField
@@ -10,7 +10,7 @@ test: npm --prefix atelier run preuve -- text-input
 ---
 
 <!-- genere:titre : écrit par npm --prefix atelier run fiches -->
-# DsTextInput (champ de texte)
+# DsTextInput
 <!-- /genere:titre -->
 
 Un champ pour une saisie d'une ligne, avec son libellé au-dessus, une aide et un message d'erreur.

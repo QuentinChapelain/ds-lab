@@ -1,4 +1,4 @@
-// Props de MemberList : leurs valeurs admises, ses règles propres. Lu par la fabrique des enveloppes
+// Props de MemberList (D51, D56, D57) : leurs valeurs admises, ses règles propres. Lu par la fabrique des enveloppes
 // (../composants/fabrique.js) ; tout usage hors de ce menu lève, et rien n'est rendu. Un module assemble des composants
 // du design system et d'autres modules, ici MemberCard, et ne possède que la mise en page. Chaque élément de members
 // porte les props de MemberCard et est vérifié par son menu, avec son rang ; headingLevel est celui de la liste, donné
@@ -29,6 +29,16 @@ function refusDesMembres(members, headingLevel) {
   return null;
 }
 
+/** Règle des membres : elle délègue à refusDesMembres, et déclare ses messages pour la fiche. */
+const regleDesMembres = Object.assign((/** @type {any} */ p) => refusDesMembres(p.members, p.headingLevel), {
+  messages: ['members : liste attendue', 'members : <rang> : headingLevel : donné par la liste', 'members : <rang> : <refus de MemberCard>'],
+});
+
+/** Aucun slot : le contenu vient des props. Le message porte les slots donnés, et se déclare pour la fiche. */
+const regleDesSlots = Object.assign((/** @type {any} */ _p, /** @type {any} */ _a, /** @type {any} */ s) => (Object.keys(s ?? {}).length ? `slot refusé : ${Object.keys(s).join(', ')}` : null), {
+  messages: ['slot refusé : <slots>'],
+});
+
 export default {
   nom: 'MemberList',
   options: {
@@ -38,7 +48,7 @@ export default {
   ecouteurs: false,
   attributsRetires: ['aria-label'],
   regles: [
-    (/** @type {any} */ p) => refusDesMembres(p.members, p.headingLevel),
-    (/** @type {any} */ _p, /** @type {any} */ _a, /** @type {any} */ s) => (Object.keys(s ?? {}).length ? `slot refusé : ${Object.keys(s).join(', ')}` : null),
+    regleDesMembres,
+    regleDesSlots,
   ],
 };

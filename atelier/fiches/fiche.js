@@ -1,8 +1,10 @@
-// Fiches des composants (D56) : une fiche Markdown par composant, dans docs/composants/, dont l'en-tête et cinq blocs
-// sont écrits depuis les props, le composant, sa story, la table des noms et les tokens ; le reste est écrit à la main, et
-// en partie contrôlé. L'index docs/composants/README.md a son bloc écrit ici ; le glossaire, sous le bloc, est écrit à
-// la main. Les contrastes viennent de la fonction même de npm run contraste (loadRoles, contratRoles), écrits comme elle
-// les écrit. Les règles contrôlées ici sont dans docs/regles.md : NM1 à NM3 (table des noms), DOC1 à DOC5.
+// Fiches des composants (D56) et des modules : une fiche Markdown par composant, dans docs/composants/, et par module,
+// dans docs/modules/, dont l'en-tête et cinq blocs sont écrits depuis les props, le .vue, sa story, la table des noms et
+// les tokens ; le reste est écrit à la main, et en partie contrôlé. Chaque index (README.md) a son bloc écrit ici ; le
+// glossaire, sous le bloc de l'index des composants, est écrit à la main. Les contrastes d'un composant viennent de la
+// fonction même de npm run contraste (loadRoles, contratRoles), écrits comme elle les écrit ; un module n'a pas de
+// couleur propre, ses blocs renvoient aux fiches de ce qu'il assemble. Les règles contrôlées ici sont dans
+// docs/regles.md : NM1 à NM3 et NM5 (table des noms), DOC1 à DOC5.
 //
 // Un bloc : une ligne « <!-- genere:<bloc> : écrit par … --> », son contenu, une ligne « <!-- /genere:<bloc> --> ».
 // Une marque absente, en double ou ouverte sans fin est une panne, comme une variable du thème inconnue de la table, un
@@ -22,6 +24,8 @@ export const RACINE = fileURLToPath(new URL('../../', import.meta.url));
 export const ICI = basename(fileURLToPath(new URL('../', import.meta.url)));
 export const DOSSIER = 'docs/composants';
 export const INDEX = `${DOSSIER}/README.md`;
+export const DOSSIER_MODULES = 'docs/modules';
+export const INDEX_MODULES = `${DOSSIER_MODULES}/README.md`;
 export const NOMS = `${ICI}/composants/noms.json`;
 const COMMANDE = `npm --prefix ${ICI} run fiches`;
 
@@ -34,6 +38,30 @@ export const FICHES = /** @type {const} */ ([
   ['DsAvatar', 'avatar'],
   ['DsTag', 'tag'],
 ]);
+
+/** Fiche de chaque module, par son nom : celui de son test de rendu, dans l'ordre de l'index. */
+export const MODULES = /** @type {const} */ ([
+  ['MemberCard', 'member-card'],
+  ['MemberList', 'member-list'],
+]);
+
+/**
+ * Les deux sortes de fiches : dossier des sources dans l'atelier, dossier des fiches, table des fiches, forme du nom
+ * (NM2 : préfixe Ds ; NM5 : un domaine, puis la pièce de base, sans préfixe) et mot qui les nomme.
+ */
+export const SORTES = /** @type {const} */ ({
+  composants: { source: 'composants', docs: DOSSIER, index: INDEX, table: FICHES, forme: /^Ds[A-Z][A-Za-z0-9]*$/, mot: 'composant' },
+  modules: { source: 'modules', docs: DOSSIER_MODULES, index: INDEX_MODULES, table: MODULES, forme: /^(?!Ds[A-Z])[A-Z][a-z0-9]+[A-Z][A-Za-z0-9]*$/, mot: 'module' },
+});
+/** @typedef {keyof typeof SORTES} Sorte */
+
+/** Lien d'une fiche vers celle d'une pièce, composant ou module. @param {string} nom @param {Sorte} depuis */
+function lienVers(nom, depuis) {
+  const sorte = /** @type {Sorte} */ (MODULES.some(([m]) => m === nom) ? 'modules' : 'composants');
+  const fiche = /** @type {readonly (readonly [string, string])[]} */ (SORTES[sorte].table).find(([m]) => m === nom)?.[1];
+  if (!fiche) throw new Error(`${ICI}/fiches/fiche.js : pièce sans fiche : ${nom}`);
+  return `[\`${nom}\`](${sorte === depuis ? '' : `../${SORTES[sorte].source}/`}${fiche}.md)`;
+}
 
 /** Blocs générés d'une fiche, en plus de l'en-tête. */
 export const BLOCS = ['titre', 'props', 'refus', 'tokens', 'contrastes'];
@@ -58,6 +86,9 @@ const SOURCES = new Map([
 
 /** Phrase de tête de la section « Anatomie et tokens ». */
 export const PHRASE_TOKENS = 'Un token est le nom d\'une valeur de design. Le composant n\'a aucune valeur en dur : chaque marque donne la sienne, et changer un token change toutes ses instances.';
+
+/** Phrase de tête de la section « Anatomie et tokens » d'un module. */
+export const PHRASE_TOKENS_MODULE = 'Un token est le nom d\'une valeur de design. Le module n\'a aucune valeur visuelle propre : ce qu\'il assemble porte les siennes, et il ne règle que la mise en page, par les tokens ci-dessous.';
 
 const MODES = ['clair', 'sombre'];
 const D2 = { decimales: 2, zeros: true };
@@ -97,23 +128,25 @@ const tirets = (nom) => nom.replace(/^Ds/, '').replace(/(?<=[a-z0-9])([A-Z])/g, 
 // ─── Sources ────────────────────────────────────────────────────────────────
 
 /**
- * Menus de atelier/composants/, dans l'ordre de FICHES. Un menu absent de la table, ou une fiche sans test de rendu,
- * est une panne.
- * @returns {Promise<{ nom: string, fiche: string, menu: any, texteMenu: string }[]>}
+ * Menus de atelier/composants/ (ou de atelier/modules/), dans l'ordre de leur table. Un menu absent de la table, ou une
+ * fiche sans test de rendu, est une panne.
+ * @param {Sorte} [sorte]
+ * @returns {Promise<{ nom: string, fiche: string, menu: any, texteMenu: string, sorte: Sorte }[]>}
  */
-export async function lireMenus() {
-  const fichiers = readdirSync(join(RACINE, ICI, 'composants')).filter((f) => f.endsWith('.menu.js')).sort();
+export async function lireMenus(sorte = 'composants') {
+  const { source, table, mot } = SORTES[sorte];
+  const fichiers = readdirSync(join(RACINE, ICI, source)).filter((f) => f.endsWith('.menu.js')).sort();
   const noms = fichiers.map((f) => f.replace(/\.menu\.js$/, ''));
-  const horsTable = noms.filter((n) => !FICHES.some(([m]) => m === n));
-  if (horsTable.length) throw new Error(`${ICI}/fiches/fiche.js : composant sans fiche dans la table : ${horsTable.join(', ')}`);
+  const horsTable = noms.filter((n) => !table.some(([m]) => m === n));
+  if (horsTable.length) throw new Error(`${ICI}/fiches/fiche.js : ${mot} sans fiche dans la table : ${horsTable.join(', ')}`);
   const out = [];
-  for (const [nom, fiche] of FICHES) {
-    if (!noms.includes(nom)) throw new Error(`${ICI}/fiches/fiche.js : fiche sans composant : ${fiche} (${nom}.menu.js)`);
+  for (const [nom, fiche] of table) {
+    if (!noms.includes(nom)) throw new Error(`${ICI}/fiches/fiche.js : fiche sans ${mot} : ${fiche} (${nom}.menu.js)`);
     if (!existsSync(join(RACINE, ICI, 'preuve', `${fiche}.js`))) throw new Error(`${ICI}/fiches/fiche.js : fiche sans test de rendu : ${ICI}/preuve/${fiche}.js`);
-    const chemin = `${ICI}/composants/${nom}.menu.js`;
+    const chemin = `${ICI}/${source}/${nom}.menu.js`;
     const menu = (await import(pathToFileURL(join(RACINE, chemin)).href)).default;
     if (menu.nom !== nom) throw new Error(`${chemin} : nom ${menu.nom}, attendu ${nom}`);
-    out.push({ nom, fiche, menu, texteMenu: lire(chemin) });
+    out.push({ nom, fiche, menu, texteMenu: lire(chemin), sorte });
   }
   return out;
 }
@@ -221,6 +254,31 @@ export function lireComposant(nom) {
 }
 
 /**
+ * Ce que dit le .vue d'un module : les pièces qu'il assemble (composants et modules importés, dans l'ordre), les
+ * variables du thème de son propre style, ses slots et ses règles CSS. Une pièce de Vuetify importée est une panne
+ * (CP9).
+ * @param {string} nom
+ * @returns {{ assemble: string[], theme: Set<string>, ds: Set<string>, emplacements: string[], regles: { source: string, selecteur: string, variables: string[] }[], modificateurs: Map<string, { base: string, valeurs: string[], presence: Map<string, string> }> }}
+ */
+export function lireModule(nom) {
+  const chemin = `${ICI}/modules/${nom}.vue`;
+  const brut = lire(chemin);
+  const t = sansCommentaires(brut);
+  if (/from\s+'vuetify/.test(t)) throw new Error(`${chemin} : pièce de Vuetify dans un module`);
+  const assemble = [...t.matchAll(/import\s+\w+\s+from\s+'\.{1,2}\/(?:composants\/)?(\w+)\.vue'/g)].map((m) => m[1]);
+  if (!assemble.length) throw new Error(`${chemin} : aucun composant assemblé`);
+  const style = /<style>([\s\S]*?)<\/style>/.exec(brut)?.[1] ?? '';
+  return {
+    assemble,
+    theme: new Set([...style.matchAll(/--v-theme-([a-z0-9-]+)/g)].map((m) => m[1])),
+    ds: new Set([...style.matchAll(/--v-(ds-[a-z0-9-]+)/g)].map((m) => m[1])),
+    emplacements: [...new Set([...t.matchAll(/\bslots\.(\w+)/g)].map((m) => m[1]))],
+    regles: reglesCss(style).map((r) => ({ source: nom, ...r })),
+    modificateurs: new Map([[nom, { base: tirets(nom), valeurs: [], presence: new Map() }]]),
+  };
+}
+
+/**
  * Stories d'un composant : ses noms de stories (exports et name).
  * @param {string} nom
  */
@@ -242,15 +300,20 @@ export function messageDeRegle(regle, quoi) {
   return m[0][2];
 }
 
+/**
+ * Messages d'une règle : ceux qu'elle déclare (messages), quand elle délègue à une fonction dont le message n'est pas
+ * lisible dans son texte ; sinon celui de sa fonction.
+ * @param {Function & { messages?: string[] }} regle @param {string} quoi
+ * @returns {string[]}
+ */
+export const messagesDeRegle = (regle, quoi) => (Array.isArray(regle.messages) ? regle.messages : [messageDeRegle(regle, quoi)]);
+
 /** Décisions citées en tête du menu : la première parenthèse de numéros. @param {string} texteMenu @param {string} quoi */
 function decisionsDuMenu(texteMenu, quoi) {
   const m = /\((D\d+(?:, D\d+)*)\)/.exec(texteMenu.split('\n')[0]);
   if (!m) throw new Error(`${quoi} : décisions absentes de la première ligne`);
   return m[1].split(', ');
 }
-
-/** Titre lisible d'une fiche : le nom de code, puis le nom en français de la table des noms. @param {string} nom @param {any} noms */
-const titreDe = (nom, noms) => (noms.composants?.[nom]?.fr ? `${nom} (${noms.composants[nom].fr})` : nom);
 
 // ─── Contrastes ─────────────────────────────────────────────────────────────
 
@@ -279,16 +342,20 @@ export function mesurerThemes() {
 
 // ─── Blocs ──────────────────────────────────────────────────────────────────
 
-/** @param {any} e entrée de lireMenus @param {any} composant @param {any} stories @param {any} noms */
-export function entete(e, composant, stories, noms) {
-  const quoi = `${ICI}/composants/${e.nom}.menu.js`;
+/**
+ * En-tête : un composant nomme la pièce de Vuetify qu'il enveloppe (wraps), un module les pièces qu'il assemble.
+ * @param {any} e entrée de lireMenus @param {any} composant @param {any} stories
+ */
+export function entete(e, composant, stories) {
+  const source = SORTES[/** @type {Sorte} */ (e.sorte ?? 'composants')].source;
+  const quoi = `${ICI}/${source}/${e.nom}.menu.js`;
   return [
     '---',
     `name: ${e.menu.nom}`,
-    `title: ${titreDe(e.nom, noms)}`,
-    `file: ${ICI}/composants/${e.nom}.vue`,
+    `title: ${e.nom}`,
+    `file: ${ICI}/${source}/${e.nom}.vue`,
     `props: ${quoi}`,
-    `wraps: ${composant.enveloppe}`,
+    composant.assemble ? `assembles: [${composant.assemble.join(', ')}]` : `wraps: ${composant.enveloppe}`,
     `decisions: [${decisionsDuMenu(e.texteMenu, quoi).join(', ')}]`,
     `stories: ${stories.chemin}`,
     `test: npm --prefix ${ICI} run preuve -- ${e.fiche}`,
@@ -303,7 +370,7 @@ export function blocProps(menu, composant, noms) {
     const type = [o.type].flat().map((t) => TYPES.get(t) ?? t.name).join(' ou ');
     const defaut = 'defaut' in o ? code(litteral(o.defaut)) : 'aucun';
     const valeurs = o.valeurs ? o.valeurs.map((/** @type {unknown} */ v) => code(litteral(v))).join(', ') : 'libre';
-    const source = SOURCES.get(noms.composants?.[menu.nom]?.props?.[cle]?.source) ?? 'inconnu';
+    const source = SOURCES.get((noms.composants?.[menu.nom] ?? noms.modules?.[menu.nom])?.props?.[cle]?.source) ?? 'inconnu';
     lignes.push(`| ${code(cle)} | ${type} | ${o.obligatoire ? 'oui' : 'non'} | ${defaut} | ${valeurs} | ${source} |`);
   }
   const liste = (/** @type {string[]} */ l) => (l.length ? l.map(code).join(', ') : 'aucun');
@@ -324,12 +391,12 @@ export function blocRefus(menu, quoi) {
     if (o.obligatoire) messages.push(`${p} : ${cle} : obligatoire`);
     if (o.valeurs) messages.push(`${p} : ${cle} : valeur inconnue : <valeur> (${o.valeurs.join(', ')})`);
   }
-  for (const r of menu.regles ?? []) messages.push(`${p} : ${messageDeRegle(r, quoi)}`);
-  for (const r of menu.reglesDuRendu ?? []) {
-    const m = `${p} : ${messageDeRegle(r, quoi)}`;
-    messages.push(m);
-    suffixes.set(m, ', au rendu');
-  }
+  for (const r of menu.regles ?? []) for (const m of messagesDeRegle(r, quoi)) messages.push(`${p} : ${m}`);
+  for (const r of menu.reglesDuRendu ?? [])
+    for (const m of messagesDeRegle(r, quoi)) {
+      messages.push(`${p} : ${m}`);
+      suffixes.set(`${p} : ${m}`, ', au rendu');
+    }
   const uniques = [...new Set(messages)];
   return [tete, '', 'Tout autre usage lève une erreur, et rien n\'est rendu. Messages, dans l\'ordre où ils sont vérifiés :', '', ...uniques.map((m) => `- ${code(m)}${suffixes.get(m) ?? ''}`)].join('\n');
 }
@@ -469,10 +536,18 @@ export function ecartsDescriptions(tokens, descriptions) {
   });
 }
 
-/** @param {{ partie: string, token: string, regle: string }[]} lignes */
-export function blocTokens(lignes) {
-  return [PHRASE_TOKENS, '', '| Partie | Token | Ce qu\'il règle |', '|---|---|---|', ...lignes.map((l) => `| ${l.partie} | ${code(l.token)} | ${l.regle.replace(/\|/g, '\\|')} |`)].join('\n');
+/**
+ * Tokens d'une fiche ; un module dit d'abord ce qu'il assemble, chaque pièce vers sa fiche.
+ * @param {{ partie: string, token: string, regle: string }[]} lignes @param {string[]} [assemble]
+ */
+export function blocTokens(lignes, assemble) {
+  const tete = assemble ? [PHRASE_TOKENS_MODULE, '', `Assemble : ${assemble.map((n) => lienVers(n, 'modules')).join(', ')}.`] : [PHRASE_TOKENS];
+  return [...tete, '', '| Partie | Token | Ce qu\'il règle |', '|---|---|---|', ...lignes.map((l) => `| ${l.partie} | ${code(l.token)} | ${l.regle.replace(/\|/g, '\\|')} |`)].join('\n');
 }
+
+/** Contrastes d'un module : aucune couleur propre, ceux des pièces assemblées. @param {string[]} assemble */
+export const blocContrastesModule = (assemble) =>
+  `Le module n'a aucune couleur propre : chaque texte se lit comme dans la fiche de sa pièce, ${assemble.map((n) => lienVers(n, 'modules')).join(', ')}.`;
 
 /**
  * Paires de la pièce : celle de chaque couleur employée (fond ou texte), puis, pour chaque variable de texte ou de
@@ -521,14 +596,17 @@ export function blocContrastes(paires, themes, quoi) {
 // ─── Table des noms (NM1 à NM3) ─────────────────────────────────────────────
 
 /**
- * Écarts entre la table des noms et les composants : nom absent, sans emploi, mal formé, source inconnue.
+ * Écarts entre la table des noms et les composants (ou les modules) : nom absent, sans emploi, mal formé, source
+ * inconnue.
  * @param {{ nom: string, menu: any }[]} menus @param {Map<string, string[]>} slots slots de chaque composant @param {any} noms
+ * @param {Sorte} [sorte]
  * @returns {string[]}
  */
-export function ecartsNoms(menus, slots, noms) {
+export function ecartsNoms(menus, slots, noms, sorte = 'composants') {
   /** @type {string[]} */
   const ecarts = [];
-  const table = noms.composants ?? {};
+  const table = noms[sorte] ?? {};
+  const { forme: formeDuNom, mot } = SORTES[sorte];
   /** @param {string} quoi @param {any} entree */
   const source = (quoi, entree) => {
     if (!SOURCES.has(entree?.source)) ecarts.push(`source inconnue : ${quoi} (${entree?.source ?? 'aucune'})`);
@@ -547,10 +625,10 @@ export function ecartsNoms(menus, slots, noms) {
     for (const n of Object.keys(entrees)) if (!emplois.includes(n)) ecarts.push(`entrée sans emploi : ${quoi}.${n}`);
   };
   for (const { nom, menu } of menus) {
-    forme(nom, nom, /^Ds[A-Z][A-Za-z0-9]*$/);
+    forme(nom, nom, formeDuNom);
     const t = table[nom];
     if (!t) {
-      ecarts.push(`composant absent de la table : ${nom}`);
+      ecarts.push(`${mot} absent de la table : ${nom}`);
       continue;
     }
     source(nom, t);
@@ -792,11 +870,12 @@ export function ecartsGlossaire(texte) {
 // ─── Les fiches du dépôt ────────────────────────────────────────────────────
 
 /**
- * Chaque fiche présente, son texte régénéré et ses écarts, puis l'index et la table des noms.
- * @returns {Promise<{ fiches: { chemin: string, actuel: string, attendu: string, ecarts: string[] }[], index: { chemin: string, actuel: string | null, attendu: string, ecarts: string[] }, horsTable: string[], absentes: string[], noms: string[] }>}
+ * Chaque fiche présente des composants puis des modules, son texte régénéré et ses écarts, puis les deux index et la
+ * table des noms.
+ * @returns {Promise<{ fiches: { chemin: string, actuel: string, attendu: string, ecarts: string[] }[], index: { chemin: string, actuel: string | null, attendu: string, ecarts: string[] }[], horsTable: string[], absentes: string[], noms: string[] }>}
  */
 export async function calculer() {
-  const menus = await lireMenus();
+  const parSorte = { composants: await lireMenus('composants'), modules: await lireMenus('modules') };
   const table = lireTable();
   const noms = lireNoms();
   const descriptions = lireDescriptions();
@@ -804,87 +883,109 @@ export async function calculer() {
   const themes = mesurerThemes();
   const decisions = lire('docs/decisions.md');
   const dette = lire('KNOWN_ISSUES.md');
-  const parFichier = new Map(menus.map((m) => [m.nom, m.menu]));
+  const parFichier = new Map([...parSorte.composants, ...parSorte.modules].map((m) => [m.nom, m.menu]));
   /** @param {string} f */
   const menuDe = (f) => {
     const m = parFichier.get(f);
-    if (!m) throw new HorsGrammaire(`exemple hors grammaire : composant sans props : ./composants/${f}.vue`);
+    if (!m) throw new HorsGrammaire(`exemple hors grammaire : pièce sans props : ${f}.vue`);
     return m;
   };
-  const composants = new Map(menus.map((m) => [m.nom, lireComposant(m.nom)]));
-  const ecartsDesNoms = ecartsNoms(menus, new Map([...composants].map(([n, c]) => [n, c.emplacements])), noms);
-  const presentes = existsSync(join(RACINE, DOSSIER)) ? readdirSync(join(RACINE, DOSSIER)).filter((f) => f.endsWith('.md') && f !== 'README.md') : [];
-  const horsTable = presentes.filter((f) => !FICHES.some(([, fiche]) => `${fiche}.md` === f)).map((f) => `${DOSSIER}/${f}`);
-  const absentes = fichesAbsentes(menus, presentes);
   const fiches = [];
+  const index = [];
   /** @type {string[]} */
-  const lignesIndex = [];
-  for (const e of menus) {
-    const chemin = `${DOSSIER}/${e.fiche}.md`;
-    if (!presentes.includes(`${e.fiche}.md`)) continue;
-    const quoi = `${ICI}/composants/${e.nom}`;
-    const composant = /** @type {any} */ (composants.get(e.nom));
-    const stories = lireStories(e.nom);
-    const lignesTokens = anatomie(composant, e.menu, table, descriptions, `${quoi}.vue`, parFichier);
-    const genere = {
-      entete: entete(e, composant, stories, noms),
-      titre: `# ${titreDe(e.nom, noms)}`,
-      props: blocProps(e.menu, composant, noms),
-      refus: blocRefus(e.menu, `${quoi}.menu.js`),
-      tokens: blocTokens(lignesTokens),
-      contrastes: blocContrastes(pairesDe(composant, table, paires, `${quoi}.vue`), themes, `${quoi}.vue`),
-    };
-    const actuel = lire(chemin);
-    const attendu = regenerer(actuel, chemin, genere);
-    const ecarts = [];
-    const avant = decouper(actuel, chemin);
-    if (avant.lignes.slice(0, avant.finEntete + 1).join('\n') !== genere.entete) ecarts.push(`en-tête à régénérer (${COMMANDE})`);
-    for (const b of BLOCS) {
-      const [o, f] = avant.blocs[b];
-      if (avant.lignes[o] !== ouverture(b) || avant.lignes.slice(o + 1, f).join('\n') !== genere[/** @type {keyof typeof genere} */ (b)]) ecarts.push(`bloc ${b} à régénérer (${COMMANDE})`);
+  const horsTable = [];
+  /** @type {string[]} */
+  const absentes = [];
+  /** @type {string[]} */
+  const ecartsDesNoms = [];
+  for (const sorte of /** @type {Sorte[]} */ (['composants', 'modules'])) {
+    const { docs, index: cheminIndex, table: liste } = SORTES[sorte];
+    const menus = parSorte[sorte];
+    const pieces = new Map(menus.map((m) => [m.nom, sorte === 'modules' ? lireModule(m.nom) : lireComposant(m.nom)]));
+    ecartsDesNoms.push(...ecartsNoms(menus, new Map([...pieces].map(([n, c]) => [n, c.emplacements])), noms, sorte));
+    const presentes = existsSync(join(RACINE, docs)) ? readdirSync(join(RACINE, docs)).filter((f) => f.endsWith('.md') && f !== 'README.md') : [];
+    horsTable.push(...presentes.filter((f) => !liste.some(([, fiche]) => `${fiche}.md` === f)).map((f) => `${docs}/${f}`));
+    absentes.push(...fichesAbsentes(menus, presentes));
+    /** @type {string[]} */
+    const lignesIndex = [];
+    for (const e of menus) {
+      const chemin = `${docs}/${e.fiche}.md`;
+      if (!presentes.includes(`${e.fiche}.md`)) continue;
+      const quoi = `${ICI}/${SORTES[sorte].source}/${e.nom}`;
+      const piece = /** @type {any} */ (pieces.get(e.nom));
+      const stories = lireStories(e.nom);
+      const lignesTokens = anatomie(piece, e.menu, table, descriptions, `${quoi}.vue`, parFichier);
+      const genere = {
+        entete: entete(e, piece, stories),
+        titre: `# ${e.nom}`,
+        props: blocProps(e.menu, piece, noms),
+        refus: blocRefus(e.menu, `${quoi}.menu.js`),
+        tokens: blocTokens(lignesTokens, piece.assemble),
+        contrastes: piece.assemble ? blocContrastesModule(piece.assemble) : blocContrastes(pairesDe(piece, table, paires, `${quoi}.vue`), themes, `${quoi}.vue`),
+      };
+      const actuel = lire(chemin);
+      const attendu = regenerer(actuel, chemin, genere);
+      const ecarts = [];
+      const avant = decouper(actuel, chemin);
+      if (avant.lignes.slice(0, avant.finEntete + 1).join('\n') !== genere.entete) ecarts.push(`en-tête à régénérer (${COMMANDE})`);
+      for (const b of BLOCS) {
+        const [o, f] = avant.blocs[b];
+        if (avant.lignes[o] !== ouverture(b) || avant.lignes.slice(o + 1, f).join('\n') !== genere[/** @type {keyof typeof genere} */ (b)]) ecarts.push(`bloc ${b} à régénérer (${COMMANDE})`);
+      }
+      ecarts.push(...ecartsEcrits(actuel, chemin, e, { table, stories, decisions, dette, descriptions, menuDe }));
+      const poses = [...actuel.matchAll(/^- Posé par le parent : `([^`]+)`/gm)].map((m) => m[1]);
+      ecarts.push(...ecartsDescriptions([...lignesTokens.map((l) => l.token), ...poses], descriptions));
+      fiches.push({ chemin, actuel, attendu, ecarts });
+      lignesIndex.push(`| ${code(e.nom)} | [${e.nom}](${e.fiche}.md) | ${phraseDeRole(actuel, chemin).phrase ?? ''} |`);
     }
-    ecarts.push(...ecartsEcrits(actuel, chemin, e, { table, stories, decisions, dette, descriptions, menuDe }));
-    const poses = [...actuel.matchAll(/^- Posé par le parent : `([^`]+)`/gm)].map((m) => m[1]);
-    ecarts.push(...ecartsDescriptions([...lignesTokens.map((l) => l.token), ...poses], descriptions));
-    fiches.push({ chemin, actuel, attendu, ecarts });
-    lignesIndex.push(`| ${code(e.nom)} | [${titreDe(e.nom, noms)}](${e.fiche}.md) | ${phraseDeRole(actuel, chemin).phrase ?? ''} |`);
+    const actuel = existsSync(join(RACINE, cheminIndex)) ? lire(cheminIndex) : null;
+    const attendu = regenererIndex(actuel, blocIndex(lignesIndex, sorte), cheminIndex);
+    // Le glossaire est celui de l'index des composants ; l'index des modules y renvoie.
+    const ecarts = actuel === null ? ['index absent'] : [...motsRefuses(actuel), ...(sorte === 'composants' ? ecartsGlossaire(actuel) : [])];
+    index.push({ chemin: cheminIndex, actuel, attendu, ecarts });
   }
-  const actuel = existsSync(join(RACINE, INDEX)) ? lire(INDEX) : null;
-  const bloc = blocIndex(lignesIndex);
-  const attendu = regenererIndex(actuel, bloc);
-  const index = { chemin: INDEX, actuel, attendu, ecarts: actuel === null ? ['index absent'] : [...motsRefuses(actuel), ...ecartsGlossaire(actuel)] };
   return { fiches, index, horsTable, absentes, noms: ecartsDesNoms };
 }
 
 /**
- * Fiches qui manquent : chaque composant a la sienne (DOC1).
- * @param {{ fiche: string }[]} menus @param {string[]} presentes noms des fichiers de docs/composants/
+ * Fiches qui manquent : chaque composant et chaque module a la sienne (DOC1).
+ * @param {{ fiche: string, sorte?: Sorte }[]} menus @param {string[]} presentes noms des fichiers du dossier des fiches
  */
-export const fichesAbsentes = (menus, presentes) => menus.filter((m) => !presentes.includes(`${m.fiche}.md`)).map((m) => `${DOSSIER}/${m.fiche}.md`);
+export const fichesAbsentes = (menus, presentes) => menus.filter((m) => !presentes.includes(`${m.fiche}.md`)).map((m) => `${SORTES[m.sorte ?? 'composants'].docs}/${m.fiche}.md`);
 
-/** Bloc généré de l'index, marques comprises. @param {string[]} lignes */
-export function blocIndex(lignes) {
-  return [
-    ouverture('index'),
-    '# Fiches des composants',
-    '',
-    `Une fiche par composant de l'${ICI} : à quoi il sert, ses props, ce qu'il refuse, ses tokens, son accessibilité, un exemple à copier. Les règles qu'ils suivent sont dans [docs/regles.md](../regles.md). Les blocs \`genere\` de chaque fiche, et cette liste, sont écrits par \`${COMMANDE}\` depuis les props, les composants et les tokens ; \`${COMMANDE} -- --verifier\` refuse une fiche qui ne leur correspond plus.`,
-    '',
-    '| Composant | Fiche | À quoi il sert |',
-    '|---|---|---|',
-    ...lignes,
-    fermeture('index'),
-  ].join('\n');
+/**
+ * Bloc généré d'un index, marques comprises.
+ * @param {string[]} lignes @param {Sorte} [sorte]
+ */
+export function blocIndex(lignes, sorte = 'composants') {
+  const commande = `Les blocs \`genere\` de chaque fiche, et cette liste, sont écrits par \`${COMMANDE}\` depuis les props, les composants et les tokens ; \`${COMMANDE} -- --verifier\` refuse une fiche qui ne leur correspond plus.`;
+  const tete =
+    sorte === 'modules'
+      ? [
+          '# Fiches des modules',
+          '',
+          `Une fiche par module de l'${ICI} : un assemblage de composants pour un usage du produit, sans pièce de Vuetify ni valeur visuelle propre. Chaque fiche dit à quoi il sert, ses props, ce qu'il refuse, sa mise en page, son accessibilité, et donne un exemple à copier. Les fiches des composants et le glossaire sont dans [docs/composants/](../composants/README.md), les règles dans [docs/regles.md](../regles.md). ${commande}`,
+          '',
+          '| Module | Fiche | À quoi il sert |',
+        ]
+      : [
+          '# Fiches des composants',
+          '',
+          `Une fiche par composant de l'${ICI} : à quoi il sert, ses props, ce qu'il refuse, ses tokens, son accessibilité, un exemple à copier. Les règles qu'ils suivent sont dans [docs/regles.md](../regles.md). ${commande}`,
+          '',
+          '| Composant | Fiche | À quoi il sert |',
+        ];
+  return [ouverture('index'), ...tete, '|---|---|---|', ...lignes, fermeture('index')].join('\n');
 }
 
 /**
- * L'index régénéré : son bloc remplacé, le glossaire écrit sous le bloc gardé à l'octet ; un index absent ne reçoit que
- * son bloc.
- * @param {string | null} actuel @param {string} bloc
+ * Un index régénéré : son bloc remplacé, ce qui est écrit sous le bloc (le glossaire) gardé à l'octet ; un index absent
+ * ne reçoit que son bloc.
+ * @param {string | null} actuel @param {string} bloc @param {string} [chemin]
  */
-export function regenererIndex(actuel, bloc) {
+export function regenererIndex(actuel, bloc, chemin = INDEX) {
   if (actuel === null) return `${bloc}\n`;
   const lignes = actuel.split('\n');
-  const { index } = marques(lignes, INDEX, ['index']);
+  const { index } = marques(lignes, chemin, ['index']);
   return [...lignes.slice(0, index[0]), bloc, ...lignes.slice(index[1] + 1)].join('\n');
 }

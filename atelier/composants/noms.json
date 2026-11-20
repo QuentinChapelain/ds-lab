@@ -1,9 +1,8 @@
 {
-  "$description": "Table des noms de l'interface publique des composants (NM1 à NM3, docs/regles.md) : pour chaque composant, son ancien nom, son nom en français et la source de son nom ; pour chaque prop, chaque valeur texte, chaque événement et chaque slot, son ancien nom et sa source (html, vuetify, vue ou courant). Les noms de composant sont relevés dans Component Gallery le 19/11/2026, en HTML brut, un nom compté une fois par système, sans casse ni espace ni tiret (docs/attendus/fiches.md) ; les sources « courant » des props et des valeurs ne sont pas relevées. Lue par npm --prefix atelier run fiches -- --verifier, qui refuse un nom absent, mal formé ou sans emploi.",
+  "$description": "Table des noms de l'interface publique des composants (NM1 à NM3, docs/regles.md) : pour chaque composant et chaque module, son ancien nom et la source de son nom ; pour chaque prop, chaque valeur texte, chaque événement et chaque slot, son ancien nom et sa source (html, vuetify, vue ou courant). Un module prend un nom de domaine suivi de sa pièce de base, sans préfixe (NM5), et les noms de ses props sont ceux du composant assemblé quand le concept est le même. Les noms de composant sont relevés dans Component Gallery le 19/11/2026, en HTML brut, un nom compté une fois par système, sans casse ni espace ni tiret (docs/attendus/fiches.md) ; les sources « courant » des props et des valeurs ne sont pas relevées. Lue par npm --prefix atelier run fiches -- --verifier, qui refuse un nom absent, mal formé ou sans emploi.",
   "composants": {
     "DsButton": {
       "ancien": "Bouton",
-      "fr": "bouton",
       "source": "courant",
       "galerie": {
         "page": "component.gallery/components/button/",
@@ -188,7 +187,6 @@
     },
     "DsIconButton": {
       "ancien": "BoutonIcone",
-      "fr": "bouton à icône",
       "source": "courant",
       "galerie": {
         "page": "component.gallery/components/button/",
@@ -285,7 +283,6 @@
     },
     "DsTextInput": {
       "ancien": "ChampTexte",
-      "fr": "champ de texte",
       "source": "courant",
       "galerie": {
         "page": "component.gallery/components/text-input/",
@@ -419,7 +416,6 @@
     },
     "DsCard": {
       "ancien": "Carte",
-      "fr": "carte",
       "source": "courant",
       "galerie": {
         "page": "component.gallery/components/card/",
@@ -535,7 +531,6 @@
     },
     "DsAvatar": {
       "ancien": "Avatar",
-      "fr": "avatar",
       "source": "courant",
       "galerie": {
         "page": "component.gallery/components/avatar/",
@@ -613,7 +608,6 @@
     },
     "DsTag": {
       "ancien": "Etiquette",
-      "fr": "étiquette",
       "source": "courant",
       "galerie": {
         "page": "component.gallery/components/badge/",
@@ -679,6 +673,46 @@
               "source": "courant"
             }
           }
+        }
+      },
+      "evenements": {},
+      "slots": {}
+    }
+  },
+  "modules": {
+    "MemberCard": {
+      "source": "courant",
+      "props": {
+        "name": {
+          "source": "courant"
+        },
+        "href": {
+          "source": "html"
+        },
+        "image": {
+          "source": "vuetify"
+        },
+        "cohort": {
+          "source": "courant"
+        },
+        "tags": {
+          "source": "courant"
+        },
+        "headingLevel": {
+          "source": "courant"
+        }
+      },
+      "evenements": {},
+      "slots": {}
+    },
+    "MemberList": {
+      "source": "courant",
+      "props": {
+        "members": {
+          "source": "courant"
+        },
+        "headingLevel": {
+          "source": "courant"
         }
       },
       "evenements": {},

@@ -1,6 +1,6 @@
 ---
 name: DsTag
-title: DsTag (étiquette)
+title: DsTag
 file: atelier/composants/DsTag.vue
 props: atelier/composants/DsTag.menu.js
 wraps: VChip
@@ -10,7 +10,7 @@ test: npm --prefix atelier run preuve -- tag
 ---
 
 <!-- genere:titre : écrit par npm --prefix atelier run fiches -->
-# DsTag (étiquette)
+# DsTag
 <!-- /genere:titre -->
 
 Un mot court sur un fond teinté, pour classer un membre (ville, secteur) ou mettre une qualité en avant (« Mentor ») ; il ne se clique pas.

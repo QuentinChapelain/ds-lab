@@ -1,6 +1,6 @@
 ---
 name: DsButton
-title: DsButton (bouton)
+title: DsButton
 file: atelier/composants/DsButton.vue
 props: atelier/composants/DsButton.menu.js
 wraps: VBtn
@@ -10,7 +10,7 @@ test: npm --prefix atelier run preuve -- button
 ---
 
 <!-- genere:titre : écrit par npm --prefix atelier run fiches -->
-# DsButton (bouton)
+# DsButton
 <!-- /genere:titre -->
 
 Un bouton qui lance une action sur la page : enregistrer, ajouter, supprimer ; il ne mène pas vers une autre page.

@@ -1,4 +1,4 @@
-// Props de MemberCard : leurs valeurs admises, ses règles propres. Lu par la fabrique des enveloppes
+// Props de MemberCard (D51, D56, D57) : leurs valeurs admises, ses règles propres. Lu par la fabrique des enveloppes
 // (../composants/fabrique.js) ; tout usage hors de ce menu lève, et rien n'est rendu. Un module assemble des composants
 // du design system (DsCard, DsAvatar, DsTag) et ne possède que la mise en page : aucune pièce de Vuetify, aucune valeur
 // visuelle propre. Le name nomme le lien du profil et le DsAvatar, décoratif à côté du nom écrit : aria-label et
@@ -30,6 +30,14 @@ function refusDesTags(tags) {
   return null;
 }
 
+/** Règle des tags : elle délègue à refusDesTags, et déclare ses messages pour la fiche. */
+const regleDesTags = Object.assign((/** @type {any} */ p) => refusDesTags(p.tags), { messages: ['tags : liste attendue', 'tags : <rang> : <refus de DsTag>'] });
+
+/** Aucun slot : le contenu vient des props. Le message porte les slots donnés, et se déclare pour la fiche. */
+const regleDesSlots = Object.assign((/** @type {any} */ _p, /** @type {any} */ _a, /** @type {any} */ s) => (Object.keys(s ?? {}).length ? `slot refusé : ${Object.keys(s).join(', ')}` : null), {
+  messages: ['slot refusé : <slots>'],
+});
+
 export default {
   nom: 'MemberCard',
   options: {
@@ -45,7 +53,7 @@ export default {
   regles: [
     (/** @type {any} */ p) => (String(p.name).trim() === '' ? 'name : obligatoire' : null),
     (/** @type {any} */ p) => (initiales(String(p.name)) === '' ? 'name : sans lettre' : null),
-    (/** @type {any} */ p) => refusDesTags(p.tags),
-    (/** @type {any} */ _p, /** @type {any} */ _a, /** @type {any} */ s) => (Object.keys(s ?? {}).length ? `slot refusé : ${Object.keys(s).join(', ')}` : null),
+    regleDesTags,
+    regleDesSlots,
   ],
 };

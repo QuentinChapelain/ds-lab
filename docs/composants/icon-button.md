@@ -1,6 +1,6 @@
 ---
 name: DsIconButton
-title: DsIconButton (bouton à icône)
+title: DsIconButton
 file: atelier/composants/DsIconButton.vue
 props: atelier/composants/DsIconButton.menu.js
 wraps: VBtn (par DsButton)
@@ -10,7 +10,7 @@ test: npm --prefix atelier run preuve -- icon-button
 ---
 
 <!-- genere:titre : écrit par npm --prefix atelier run fiches -->
-# DsIconButton (bouton à icône)
+# DsIconButton
 <!-- /genere:titre -->
 
 Un bouton carré, une icône sans texte, pour une action connue de tous : fermer, rechercher, modifier, supprimer.

@@ -1,6 +1,6 @@
 ---
 name: DsAvatar
-title: DsAvatar (avatar)
+title: DsAvatar
 file: atelier/composants/DsAvatar.vue
 props: atelier/composants/DsAvatar.menu.js
 wraps: VAvatar
@@ -10,7 +10,7 @@ test: npm --prefix atelier run preuve -- avatar
 ---
 
 <!-- genere:titre : écrit par npm --prefix atelier run fiches -->
-# DsAvatar (avatar)
+# DsAvatar
 <!-- /genere:titre -->
 
 Un rond qui montre la photo d'une personne, ou ses initiales quand la photo manque.

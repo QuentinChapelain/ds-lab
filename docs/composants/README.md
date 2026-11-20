@@ -5,12 +5,12 @@ Une fiche par composant de l'atelier : à quoi il sert, ses props, ce qu'il refu
 
 | Composant | Fiche | À quoi il sert |
 |---|---|---|
-| `DsButton` | [DsButton (bouton)](button.md) | Un bouton qui lance une action sur la page : enregistrer, ajouter, supprimer ; il ne mène pas vers une autre page. |
-| `DsIconButton` | [DsIconButton (bouton à icône)](icon-button.md) | Un bouton carré, une icône sans texte, pour une action connue de tous : fermer, rechercher, modifier, supprimer. |
-| `DsTextInput` | [DsTextInput (champ de texte)](text-input.md) | Un champ pour une saisie d'une ligne, avec son libellé au-dessus, une aide et un message d'erreur. |
-| `DsCard` | [DsCard (carte)](card.md) | Une surface qui groupe un titre, un texte, une image et des actions, ou qui mène tout entière vers une page. |
-| `DsAvatar` | [DsAvatar (avatar)](avatar.md) | Un rond qui montre la photo d'une personne, ou ses initiales quand la photo manque. |
-| `DsTag` | [DsTag (étiquette)](tag.md) | Un mot court sur un fond teinté, pour classer un membre (ville, secteur) ou mettre une qualité en avant (« Mentor ») ; il ne se clique pas. |
+| `DsButton` | [DsButton](button.md) | Un bouton qui lance une action sur la page : enregistrer, ajouter, supprimer ; il ne mène pas vers une autre page. |
+| `DsIconButton` | [DsIconButton](icon-button.md) | Un bouton carré, une icône sans texte, pour une action connue de tous : fermer, rechercher, modifier, supprimer. |
+| `DsTextInput` | [DsTextInput](text-input.md) | Un champ pour une saisie d'une ligne, avec son libellé au-dessus, une aide et un message d'erreur. |
+| `DsCard` | [DsCard](card.md) | Une surface qui groupe un titre, un texte, une image et des actions, ou qui mène tout entière vers une page. |
+| `DsAvatar` | [DsAvatar](avatar.md) | Un rond qui montre la photo d'une personne, ou ses initiales quand la photo manque. |
+| `DsTag` | [DsTag](tag.md) | Un mot court sur un fond teinté, pour classer un membre (ville, secteur) ou mettre une qualité en avant (« Mentor ») ; il ne se clique pas. |
 <!-- /genere:index -->
 
 ## Glossaire
@@ -23,6 +23,7 @@ Les mots du métier, tels que les fiches les emploient, et le mot que ds-lab emp
 | token sémantique | Token nommé d'après son usage (`texte.principal`, `fond.surface`), qui pointe vers une primitive | rôle |
 | primitive | Valeur brute d'une échelle (`couleur.neutre.3`, `taille.24`), jamais employée seule par un composant (DS9) | primitive |
 | composant | Pièce d'interface de ds-lab, posée sur une pièce de Vuetify qu'elle seule emploie (CP4) | enveloppe (wrapper) |
+| module | Assemblage de composants pour un usage du produit (`MemberCard`), sans pièce de Vuetify ni valeur visuelle propre ; ailleurs, *pattern* | module |
 | prop | Réglage d'un composant (`tone`, `size`) | option |
 | props | Liste de tous les réglages d'un composant, avec leurs valeurs admises | menu |
 | slot | Contenu passé à un composant entre ses balises (`default`, `actions`) | emplacement |
