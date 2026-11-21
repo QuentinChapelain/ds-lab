@@ -95,6 +95,7 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 | J1 à J9 | Captures, contraste des candidats, texte sur plein et sur image, panneau de la revue | `test/candidats-contraste.test.js`, `test/captures-hors-page.test.js`, `test/texte-sur-plein-candidats.test.js`, `test/revue-apercu.test.js`, `test/fond-sous-image.test.js` |
 | K1 à K6 | Cartes « Texte sur plein » | `test/cartes-plein.test.js`, `test/cartes-plein-lignes-certaines.test.js` |
 | L1 à L4 | Modules : aucune pièce de Vuetify (CP9), style de mise en page seulement (CP10), passage par la fabrique, refus de `MemberCard` et de `MemberList` mot pour mot (D61) | `test/modules.test.js` |
+| MQ1 à MQ3 | Dossier des marques des trois contrôles (`--marques`) : un bloc par marque, les deux options ensemble, dossier vide ou absent (D66) | `test/dossier-des-marques.test.js` |
 | P1 à P4 | Proximité des marges | `fixtures/marque-demo/expected-proximite.json` |
 | R-1 à R-9 | Identifiant et titre d'une ligne, captures par version | `test/e2e-identifiants.test.js`, `test/e2e-versions.test.js` |
 | S1 à S4 | Modifications et `npm run apply` | `test/e2e-apply.test.js` |

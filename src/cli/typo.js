@@ -4,9 +4,9 @@
  * Contrôle des styles de texte d'une marque.
  * Sort en 1 si l'une des neuf règles n'est pas tenue, sinon en 0. Le rapport de chaque style et les primitives
  * sans rôle sont affichés pour information ; ils ne changent pas le code de sortie.
- * Usage : npm run typo [-- --marque <dossier>] [--semantique <fichier>] [--primitives <fichier>] [--couche-marque <fichier>]
+ * Usage : npm run typo [-- --marque <dossier> | --marques <dossier>] [--semantique <fichier>] [--primitives <fichier>] [--couche-marque <fichier>]
  *   [--etroit <fichier>]
- * D26 : --marque <dossier> contrôle cette marque ; sans l'option, chaque marque de tokens/. La couche
+ * D26 : --marque <dossier> contrôle cette marque ; sans l'option, chaque marque de tokens/ ; D66 : --marques <dossier>, chaque marque de ce dossier. La couche
  * marque donnée à part passe par --couche-marque <fichier> (l'ancien --marque <fichier>).
  * D18 : toute panne (option inconnue, fichier absent ou illisible) sort en 2, par la garde
  * commune (src/cli/garde.js).
@@ -19,7 +19,7 @@ import { lancer, parMarque } from './garde.js';
 import { lireJson } from '../lib/fichiers.js';
 
 await lancer('typo', () => {
-  const { values } = parseArgs({ options: { marque: { type: 'string' }, semantique: { type: 'string' }, primitives: { type: 'string' }, 'couche-marque': { type: 'string' }, etroit: { type: 'string' } } });
+  const { values } = parseArgs({ options: { marque: { type: 'string' }, marques: { type: 'string' }, semantique: { type: 'string' }, primitives: { type: 'string' }, 'couche-marque': { type: 'string' }, etroit: { type: 'string' } } });
   return parMarque(values.marque, (dossier) => {
     const l = largeurs(dossier);
     const sem = values.semantique ? lireJson(values.semantique) : l.large.semantique;
@@ -62,5 +62,5 @@ await lancer('typo', () => {
     const n = r.regles.length;
     console.log(`\n${n} règles, ${r.fails.length ? `${r.fails.length} en échec` : 'aucune en échec'}.`);
     return r.fails.length ? 1 : 0;
-  });
+  }, values.marques);
 });

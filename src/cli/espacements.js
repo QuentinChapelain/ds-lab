@@ -6,8 +6,8 @@
  * (contexte étroit du resolver de la marque) n'est pas strictement supérieure à l'ecart précédent et au plus égale à sa valeur large ;
  * ou si une règle de proximité (REGLES : entre-composants ≥ 2 × dans-composant) n'est pas tenue ; sinon en 0.
  * Les autres rapports entre voisins sont affichés pour information ; ils ne changent pas le code de sortie.
- * Usage : npm run espacements [-- --marque <dossier>] [--semantique <fichier>] [--etroit <fichier>]
- *   D26 : --marque <dossier> contrôle cette marque ; sans l'option, chaque marque de tokens/.
+ * Usage : npm run espacements [-- --marque <dossier> | --marques <dossier>] [--semantique <fichier>] [--etroit <fichier>]
+ *   D26 : --marque <dossier> contrôle cette marque ; sans l'option, chaque marque de tokens/ ; D66 : --marques <dossier>, chaque marque de ce dossier.
  *   --semantique remplace semantique.tokens.json, --etroit le contexte étroit (largeur.etroit.tokens.json).
  * D18 : toute panne (option inconnue, fichier absent ou illisible) sort en 2, par la garde
  * commune (src/cli/garde.js).
@@ -20,7 +20,7 @@ import { lireJson } from '../lib/fichiers.js';
 import { fr } from '../lib/format.js';
 
 await lancer('espacements', () => {
-  const { values } = parseArgs({ options: { marque: { type: 'string' }, semantique: { type: 'string' }, etroit: { type: 'string' } } });
+  const { values } = parseArgs({ options: { marque: { type: 'string' }, marques: { type: 'string' }, semantique: { type: 'string' }, etroit: { type: 'string' } } });
   return parMarque(values.marque, (dossier) => {
     const l = largeurs(dossier);
     const sem = values.semantique ? lireJson(values.semantique) : l.large.semantique;
@@ -59,5 +59,5 @@ await lancer('espacements', () => {
     const q = r.regles.length;
     if (q) console.log(`${q} ${q > 1 ? 'règles' : 'règle'} de proximité, ${r.reglesFails.length ? `${r.reglesFails.length} en échec` : 'aucune en échec'}.`);
     return r.fails.length || r.etroitsFails.length || r.reglesFails.length ? 1 : 0;
-  });
+  }, values.marques);
 });

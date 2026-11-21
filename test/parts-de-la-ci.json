@@ -103,6 +103,7 @@
       "test/candidats-contraste.test.js",
       "test/captures-hors-page.test.js",
       "test/cartes-plein.test.js",
+      "test/dossier-des-marques.test.js",
       "test/e2e-ajout-passage.test.js",
       "test/e2e-ajout-valise.test.js",
       "test/e2e-audit.test.js",

@@ -186,7 +186,7 @@ Changer de marque, c'est changer la couche marque ; les rôles restent les même
 | `npm run style` | Garde du style des `.vue` de `atelier/composants/` et de `atelier/modules/` (CP3, D65) : chaque valeur visuelle vient de `var(--v-ds-…)` ou de `rgb(var(--v-theme-…))`, 0, 100 % et les mots-clés passent ; une exception nomme sa règle et dit sa raison, sur place ; sort en 1 sur une valeur en dur (`stylelint`, `stylelint.config.mjs`) |
 | `npm test` | Tous les tests |
 
-Les trois contrôles de la cible, `npm run css` et `npm run vuetify` prennent `--marque <dossier>` ; sans l'option, ils traitent chaque marque de `tokens/` qui a un resolver, un bloc par marque sous son en-tête, et sortent en 1 si une marque échoue (D26). Aucune commande ne prend de marque par défaut.
+Les trois contrôles de la cible, `npm run css` et `npm run vuetify` prennent `--marque <dossier>` ; sans l'option, ils traitent chaque marque de `tokens/` qui a un resolver, un bloc par marque sous son en-tête, et sortent en 1 si une marque échoue (D26). Les trois contrôles prennent aussi `--marques <dossier>` : chaque marque de ce dossier, de la même façon (`marquesDe`, `src/cli/garde.js`, D66). Aucune commande ne prend de marque par défaut.
 
 Générateurs sans commande npm, lancés avec `node` : `src/cli/statuts.js`, `src/cli/sombre.js`, `src/cli/calibrage.js`, et `src/cli/planche.js [--marque <dossier>] [roles|espacements|typo]`, qui écrit les planches d'une marque dans son dossier, ou de chaque marque sans `--marque` (les trois sans planche nommée ; D27).
 
