@@ -62,6 +62,7 @@
       "test/roles-semantique.test.js",
       "test/roles-statuts.test.js",
       "test/simulation-couplages.test.js",
+      "test/skill.test.js",
       "test/sources.test.js",
       "test/theme-vuetify.test.js",
       "test/typo-jetons.test.js",

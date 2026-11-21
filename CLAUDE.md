@@ -30,7 +30,8 @@ npm test                 tous les tests
 npm run contraste        paires de rôles de couleur ; sortie 1 si une paire échoue
 npm run espacements      espacements par relation ; sortie 1 si une règle échoue
 npm run typo             styles de texte ; sortie 1 si une règle échoue
-npm run verifier         tokens et style d'un autre dépôt (--marques, --style) ; sortie 1 sur un échec
+npm run verifier         tokens, style et copie du skill d'un autre dépôt (--marques, --style, --skill) ; sortie 1 sur un échec
+npm run skill            réécrit les textes de skill/ds-lab/ après un changement de docs/regles.md ou de docs/techniques/
 npm run types            types JSDoc de src/ (TypeScript, non strict, sans émission) ; sortie 1 s'il reste une erreur
 npm run knip             fichiers, exports et dépendances qui ne servent plus ; sortie 1 s'il en reste
 npm run dependances      cycles d'import, modules orphelins de src/ ; sortie 1 si une règle échoue
@@ -67,4 +68,5 @@ Node : la version de `.node-version` (Node 24 LTS), seule source pour le poste, 
 - `README.md` : avant de changer ce que l'outil fait ou ses commandes.
 - `docs/regles.md` : avant de nommer un composant, une prop ou un token, d'écrire une fiche (NM, CP, DOC), ou d'écrire ou de changer une règle (ses huit règles d'écriture, D65).
 - `docs/techniques/` : le comment d'une règle dans un framework, une ligne par règle ; avant de toucher à une enveloppe ou d'ajouter un framework.
+- `skill/ds-lab/` : ce que reçoit une autre équipe (D66) ; après un changement de `docs/regles.md` ou de `docs/techniques/`, `npm run skill`.
 - `docs/composants/` et `docs/modules/` : avant d'employer ou de changer un composant ou un module ; après un changement de props, de rendu ou de tokens, `npm --prefix atelier run fiches` régénère les fiches (D56, D61).

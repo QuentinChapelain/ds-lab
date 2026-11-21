@@ -5,10 +5,11 @@
  * « À faire : … » (règle d'écriture 6) ; pour le style, le message de stylelint.config.mjs, qui le dit déjà (CP3).
  * Les calculs sont ceux des trois contrôles de la cible (loadRoles, contrat, espacements, typo), sans les relancer
  * en sous-processus. Une règle de typo qui n'a pas ici son numéro et son « À faire » est une panne : un échec ne
- * s'écrit jamais sans dire quoi faire.
+ * s'écrit jamais sans dire quoi faire. Avec --skill, la copie du skill est comparée à skill/ds-lab/ du clone.
  */
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { SKILL } from './skill.js';
 import { fr } from '../lib/format.js';
 import { loadRoles, contrat } from '../tokens/roles.js';
 import { echellesPropres, echellesCommunesRedefinies, motifRedefinies } from '../tokens/saisie.js';
@@ -27,7 +28,7 @@ const CONTEXTES = /** @type {const} */ ([
 ]);
 
 /** Contrôles, dans l'ordre du bilan. */
-const FAMILLES = /** @type {const} */ (['contraste', 'espacements', 'typo', 'style']);
+const FAMILLES = /** @type {const} */ (['contraste', 'espacements', 'typo', 'style', 'skill']);
 
 const COMMUN = "les styles et les écarts viennent des couches communes de ds-lab : retirer du dossier de la marque ce qui les redéfinit, puis relancer la saisie";
 const POLICE = "corriger fonts dans l'entrée de la marque, puis relancer la saisie ; ne pas redéfinir les styles de texte dans le dossier de la marque";
@@ -100,6 +101,28 @@ export function echecsDeStyle(resultats, cwd = process.cwd()) {
   );
 }
 
+/**
+ * D66 : la copie du skill dans le dépôt de l'équipe, comparée à skill/ds-lab/ du clone qui juge. Un fichier absent ou
+ * différent est un échec : l'agent lirait des règles que la CI ne juge plus.
+ * @param {string} copie dossier de la copie @param {string} [cwd]
+ * @returns {Echec[]}
+ */
+export function echecsDeSkill(copie, cwd = process.cwd()) {
+  if (!existsSync(copie) || !statSync(copie).isDirectory()) throw new Error(`--skill ${copie} : dossier introuvable ; nommer le dossier où le skill est copié, par exemple .claude/skills/ds-lab`);
+  const rel = relative(cwd, copie).replace(/\/$/, '') || '.';
+  const aFaire = `À faire : recopier skill/ds-lab/ du clone dans ${rel}/.`;
+  return /** @type {string[]} */ (readdirSync(SKILL, { recursive: true }))
+    .filter((f) => statSync(join(SKILL, f)).isFile())
+    .sort()
+    .flatMap((f) => {
+      const ici = join(copie, f);
+      if (!existsSync(ici)) return [{ famille: /** @type {const} */ ('skill'), texte: `✗ skill · ${rel}/${f} : absent de la copie. ${aFaire}` }];
+      if (readFileSync(ici, 'utf8') !== readFileSync(join(SKILL, f), 'utf8'))
+        return [{ famille: /** @type {const} */ ('skill'), texte: `✗ skill · ${rel}/${f} : diffère de skill/ds-lab/ du clone. ${aFaire}` }];
+      return [];
+    });
+}
+
 /** @param {number} n @param {string} un @param {string} plusieurs */
 const compte = (n, un, plusieurs) => `${n} ${n > 1 ? plusieurs : un}`;
 
@@ -111,11 +134,11 @@ export const entete = (dossierMarques, noms, fichiers) =>
   `verifier : ${compte(noms.length, 'marque', 'marques')} dans ${dossierMarques.replace(/\/?$/, '/')} (${noms.join(', ')}) ; ${compte(fichiers, 'fichier', 'fichiers')} de style`;
 
 /**
- * Bilan, dernière ligne.
- * @param {Echec[]} echecs
+ * Bilan, dernière ligne ; le skill n'y paraît que s'il a été jugé (--skill).
+ * @param {Echec[]} echecs @param {{ skill?: boolean }} [opts]
  */
-export function bilan(echecs) {
-  if (!echecs.length) return 'verifier : 0 échec (contraste en clair et en sombre, en large et en étroit ; espacements ; typo ; style)';
-  const par = FAMILLES.map((f) => `${f} ${echecs.filter((x) => x.famille === f).length}`).join(', ');
+export function bilan(echecs, { skill = false } = {}) {
+  if (!echecs.length) return `verifier : 0 échec (contraste en clair et en sombre, en large et en étroit ; espacements ; typo ; style${skill ? ' ; skill' : ''})`;
+  const par = FAMILLES.filter((f) => skill || f !== 'skill').map((f) => `${f} ${echecs.filter((x) => x.famille === f).length}`).join(', ');
   return `verifier : ${compte(echecs.length, 'échec', 'échecs')} (${par})`;
 }

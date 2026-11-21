@@ -9,12 +9,14 @@
  *   VR5 --marques ou --style absent, motif sans fichier : sortie 2, message qui dit quoi passer ;
  *   VR6 chaque ligne d'échec, de chaque contrôle, finit par « À faire : … » ou par le message de CP3 ; chaque règle de
  *       npm run typo a son numéro et son « À faire » ;
- *   VR7 la sortie ne dépend pas du dossier d'où l'on lance : même texte depuis le dépôt fictif et depuis un sous-dossier.
+ *   VR7 la sortie ne dépend pas du dossier d'où l'on lance : même texte depuis le dépôt fictif et depuis un sous-dossier ;
+ *   VR8 --skill : une copie fidèle de skill/ds-lab/ passe et le bilan nomme le skill ; un fichier changé et un fichier
+ *       absent donnent une ligne chacun, « À faire : recopier », sortie 1 ; une copie introuvable, sortie 2.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, readdirSync, copyFileSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readdirSync, copyFileSync, readFileSync, writeFileSync, rmSync, cpSync, appendFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,6 +24,7 @@ import { dossiersDeMarque, nomDeMarque, largeurs, enEtroit, RESOLVER } from '../
 import { typo } from '../src/tokens/typo.js';
 import { motifRedefinies } from '../src/tokens/saisie.js';
 import { TYPO_A_FAIRE } from '../src/report/verifier.js';
+import { SKILL } from '../src/report/skill.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const CLI = join(ROOT, 'src', 'cli', 'verifier.js');
@@ -104,7 +107,7 @@ test('VR4 une valeur en dur : une ligne de style, fichier et ligne, sortie 1', (
 
 test('VR5 option absente, motif sans fichier : sortie 2 qui dit quoi passer', () => {
   const racine = depot();
-  const usage = 'usage : node <clone>/src/cli/verifier.js --marques <dossier> --style <motif> [--style <motif>…]';
+  const usage = 'usage : node <clone>/src/cli/verifier.js --marques <dossier> --style <motif> [--style <motif>…] [--skill <dossier>]';
   const cas = [
     [['--style', 'src/**/*.vue'], `verifier : --marques <dossier> attendu, le dossier qui contient un sous-dossier par marque ; ${usage}\n`],
     [['--marques', 'tokens'], `verifier : --style <motif> attendu, les fichiers des composants (par exemple --style "src/**/*.vue") ; ${usage}\n`],
@@ -148,5 +151,30 @@ test('VR7 même sortie depuis le dépôt et depuis un sous-dossier', () => {
   assert.equal(bas.status, haut.status);
   const sansChemins = (/** @type {string} */ s) => s.replaceAll('../tokens/', 'tokens/').replaceAll('src/components/', 'components/');
   assert.equal(sansChemins(bas.stdout), sansChemins(haut.stdout));
+  rmSync(racine, { recursive: true, force: true });
+});
+
+test('VR8 --skill : copie fidèle, copie qui vieillit, copie introuvable', () => {
+  const racine = depot();
+  const copie = join(racine, '.claude', 'skills', 'ds-lab');
+  cpSync(SKILL, copie, { recursive: true });
+  const args = ['--marques', 'tokens', '--style', 'src/**/*.vue', '--skill', '.claude/skills/ds-lab'];
+  const bon = verifier(racine, args);
+  assert.equal(bon.status, 0, bon.stdout + bon.stderr);
+  assert.equal(lignes(bon.stdout).at(-1), 'verifier : 0 échec (contraste en clair et en sombre, en large et en étroit ; espacements ; typo ; style ; skill)');
+  appendFileSync(join(copie, 'regles.md'), 'ajout\n');
+  rmSync(join(copie, 'consignes.md'));
+  const vieux = verifier(racine, args);
+  assert.equal(vieux.status, 1, vieux.stderr);
+  const aFaire = 'À faire : recopier skill/ds-lab/ du clone dans .claude/skills/ds-lab/.';
+  assert.deepEqual(echecs(vieux.stdout), [
+    `✗ skill · .claude/skills/ds-lab/consignes.md : absent de la copie. ${aFaire}`,
+    `✗ skill · .claude/skills/ds-lab/regles.md : diffère de skill/ds-lab/ du clone. ${aFaire}`,
+  ]);
+  assert.equal(lignes(vieux.stdout).at(-1), 'verifier : 2 échecs (contraste 0, espacements 0, typo 0, style 0, skill 2)');
+  const absent = verifier(racine, [...args.slice(0, -1), 'ailleurs']);
+  assert.equal(absent.status, 2);
+  assert.equal(absent.stderr, 'verifier : --skill ailleurs : dossier introuvable ; nommer le dossier où le skill est copié, par exemple .claude/skills/ds-lab\n');
+  assert.equal(absent.stdout, '');
   rmSync(racine, { recursive: true, force: true });
 });
