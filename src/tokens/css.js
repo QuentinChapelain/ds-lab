@@ -22,7 +22,7 @@ import { parse, build, defineConfig } from '@terrazzo/parser';
 import css, { FILE_PREFIX } from '@terrazzo/plugin-css';
 import { lireJson } from '../lib/fichiers.js';
 import { cssVar } from '../lib/nom-css.js';
-import { RESOLVER, lireResolver, seuilEtroit } from './resolver.js';
+import { RESOLVER, lireResolver, seuilEtroit, communEnUrl } from './resolver.js';
 import { flattenTokens, tokenTypes, resoudreAlias } from './roles.js';
 
 /** Nom de la feuille dans le dossier de la marque. */
@@ -94,7 +94,8 @@ function ecarts(tz, chemin, c) {
 export async function feuilleCss(dossier) {
   const chemin = join(dossier, RESOLVER);
   const nom = String(lireJson(chemin).name ?? '');
-  const source = readFileSync(chemin, 'utf8');
+  // D66 : Terrazzo ne connaît pas l'adresse stable des couches communes ; il reçoit leur URL file:// dans le clone.
+  const source = JSON.stringify(communEnUrl(JSON.parse(readFileSync(chemin, 'utf8'))), null, 2);
   const seuil = seuilEtroit(lireResolver(chemin)).sous;
   const entree = [{ src: source, filename: pathToFileURL(chemin) }];
   const cwd = pathToFileURL(dossier);

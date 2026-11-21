@@ -3,6 +3,7 @@
   "parts": [
     [
       "test/addresses.test.js",
+      "test/adresse-commune.test.js",
       "test/alias.test.js",
       "test/anciens-noms.test.js",
       "test/aplats.test.js",

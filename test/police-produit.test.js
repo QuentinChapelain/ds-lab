@@ -79,7 +79,7 @@ test('P4 les marques fictives gardent leur police de texte ; le commun est lu av
     const d = join(ROOT, 'tokens', m);
     const r = lire(join(d, 'marque.resolver.json'));
     const sources = r.sets.marque.sources.map((/** @type {any} */ s) => s.$ref);
-    assert.ok(sources.indexOf('../commun/police.tokens.json') < sources.indexOf('marque.tokens.json'), m);
+    assert.ok(sources.indexOf('ds-lab:commun/police.tokens.json') < sources.indexOf('marque.tokens.json'), m);
     assert.deepEqual(policeResolue(d, 'brand.font.body'), lire(join(d, 'entree.json')).fonts.body ?? PRODUIT, m);
   }
   const police = lire(join(ROOT, 'tokens', 'maison-alberto', 'marque.tokens.json')).brand.font;

@@ -61,7 +61,7 @@ export function fondsClairs(commun) {
  * @param {{ mode?: string }} [opts] @returns {import('./roles.js').RoleSet}
  */
 export function chargerCommun({ mode } = {}) {
-  const r = resoudre(modeleResolver({ nom: 'commun', marque: [], dossier: COMMUN }), COMMUN, mode ? { mode } : {});
+  const r = resoudre(modeleResolver({ nom: 'commun', marque: [] }), COMMUN, mode ? { mode } : {});
   const { semantique, primitives, marque } = partager(r);
   return { primitives, semantique, paires: JSON.parse(readFileSync(join(COMMUN, 'paires.json'), 'utf8')), marque, echelles: [] };
 }
@@ -115,7 +115,7 @@ export function controlerEcrits(dossier, lus) {
  * @param {import('./roles.js').RoleSet} commun
  */
 function etroitCommun(commun) {
-  const r = resoudre(modeleResolver({ nom: 'commun', marque: [], dossier: COMMUN }), COMMUN, { width: 'narrow' });
+  const r = resoudre(modeleResolver({ nom: 'commun', marque: [] }), COMMUN, { width: 'narrow' });
   const contexte = r.sources.filter((x) => x.ensemble === 'width:narrow').map((x) => x.doc);
   return { semantique: enEtroit(commun.semantique, contexte), ...seuilEtroit(r) };
 }
@@ -351,7 +351,6 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   });
   const resolver = modeleResolver({
     nom: entree.name,
-    dossier,
     marque: [...(propres ? [PROPRES] : []), ...(echelles ? ['echelles.tokens.json'] : []), 'marque.tokens.json'],
     sombre: ['echelles.sombre.tokens.json', 'marque.sombre.tokens.json'],
   });

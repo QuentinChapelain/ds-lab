@@ -7,10 +7,10 @@
       "description": "Primitives communes à toutes les marques : neutres, statuts, espaces, tailles de texte, graisses, rayons.",
       "sources": [
         {
-          "$ref": "../commun/primitives.tokens.json"
+          "$ref": "ds-lab:commun/primitives.tokens.json"
         },
         {
-          "$ref": "../commun/statuts.tokens.json"
+          "$ref": "ds-lab:commun/statuts.tokens.json"
         }
       ]
     },
@@ -18,10 +18,10 @@
       "description": "Emplacements communs de l'aplat plein et du fond teinté de la marque (brand.primary.tint), police du produit, échelles et couche marque de Grenat Papeterie.",
       "sources": [
         {
-          "$ref": "../commun/aplat.tokens.json"
+          "$ref": "ds-lab:commun/aplat.tokens.json"
         },
         {
-          "$ref": "../commun/police.tokens.json"
+          "$ref": "ds-lab:commun/police.tokens.json"
         },
         {
           "$ref": "echelles.tokens.json"
@@ -35,7 +35,7 @@
       "description": "Rôles communs à toutes les marques.",
       "sources": [
         {
-          "$ref": "../commun/semantique.tokens.json"
+          "$ref": "ds-lab:commun/semantique.tokens.json"
         }
       ]
     }
@@ -47,7 +47,7 @@
         "light": [],
         "dark": [
           {
-            "$ref": "../commun/mode.sombre.tokens.json"
+            "$ref": "ds-lab:commun/mode.sombre.tokens.json"
           },
           {
             "$ref": "echelles.sombre.tokens.json"
@@ -65,7 +65,7 @@
         "wide": [],
         "narrow": [
           {
-            "$ref": "../commun/largeur.etroit.tokens.json"
+            "$ref": "ds-lab:commun/largeur.etroit.tokens.json"
           }
         ]
       },

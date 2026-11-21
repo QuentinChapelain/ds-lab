@@ -31,12 +31,12 @@ test('R1 resolver de chaque marque fictive : version, jeux, modificateurs, seuil
     const r = lire(join(ROOT, 'tokens', m, RESOLVER));
     assert.equal(r.version, '2025.10', m);
     assert.deepEqual(Object.keys(r.sets), ['primitives', 'marque', 'roles'], m);
-    assert.deepEqual(r.sets.primitives.sources, [ref('../commun/primitives.tokens.json'), ref('../commun/statuts.tokens.json')], m);
-    assert.deepEqual(r.sets.roles.sources, [ref('../commun/semantique.tokens.json')], m);
-    assert.deepEqual(r.sets.marque.sources, [ref('../commun/aplat.tokens.json'), ref('../commun/police.tokens.json'), ref(m === 'orbe-cafe' ? 'primitives.tokens.json' : 'echelles.tokens.json'), ref('marque.tokens.json')], m);
-    assert.deepEqual(r.modifiers.mode.contexts, { light: [], dark: [ref('../commun/mode.sombre.tokens.json'), ref('echelles.sombre.tokens.json'), ref('marque.sombre.tokens.json')] }, m);
+    assert.deepEqual(r.sets.primitives.sources, [ref('ds-lab:commun/primitives.tokens.json'), ref('ds-lab:commun/statuts.tokens.json')], m);
+    assert.deepEqual(r.sets.roles.sources, [ref('ds-lab:commun/semantique.tokens.json')], m);
+    assert.deepEqual(r.sets.marque.sources, [ref('ds-lab:commun/aplat.tokens.json'), ref('ds-lab:commun/police.tokens.json'), ref(m === 'orbe-cafe' ? 'primitives.tokens.json' : 'echelles.tokens.json'), ref('marque.tokens.json')], m);
+    assert.deepEqual(r.modifiers.mode.contexts, { light: [], dark: [ref('ds-lab:commun/mode.sombre.tokens.json'), ref('echelles.sombre.tokens.json'), ref('marque.sombre.tokens.json')] }, m);
     assert.equal(r.modifiers.mode.default, 'light', m);
-    assert.deepEqual(r.modifiers.width.contexts, { wide: [], narrow: [ref('../commun/largeur.etroit.tokens.json')] }, m);
+    assert.deepEqual(r.modifiers.width.contexts, { wide: [], narrow: [ref('ds-lab:commun/largeur.etroit.tokens.json')] }, m);
     assert.equal(r.modifiers.width.default, 'wide', m);
     assert.deepEqual(r.modifiers.width.$extensions, { 'ds-lab.largeur': { narrow: { sous: { value: 600, unit: 'px' }, seuil: '[H]' } } }, m);
     assert.deepEqual(r.resolutionOrder, ['#/sets/primitives', '#/sets/marque', '#/sets/roles', '#/modifiers/mode', '#/modifiers/width'].map(ref), m);

@@ -15,13 +15,15 @@
  *
  * Chaque marque a son tokens/<marque>/marque.resolver.json, écrit par la saisie (modeleResolver) :
  *   jeux        primitives (tokens/commun/), marque (échelles et couche marque du dossier), roles (tokens/commun/) ;
+ *   adresses    une couche commune s'écrit « ds-lab:commun/<fichier> » et se lit dans le tokens/commun/ du clone qui
+ *               lit, où que soient la marque et le clone (D66) ; un $ref relatif se lit depuis le dossier du resolver ;
  *   mode        light | dark, défaut light ;
  *   width       wide | narrow, défaut wide ; le seuil de l'étroit est dans $extensions["ds-lab.largeur"].
  * Noms des modificateurs et des contextes en anglais (D62) ; les jeux gardent les leurs.
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { dirname, join, relative, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { dirname, join, isAbsolute, sep } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const VERSION = '2025.10';
 /** Nom du resolver dans le dossier d'une marque. */
@@ -30,6 +32,8 @@ export const RESOLVER = 'marque.resolver.json';
 export const COMMUN = fileURLToPath(new URL('../../tokens/commun/', import.meta.url));
 /** Dossier des jetons : tokens/commun/ et un dossier par marque. */
 export const TOKENS = fileURLToPath(new URL('../../tokens/', import.meta.url));
+/** D66 : préfixe d'adresse d'une couche commune, traduit vers COMMUN à la lecture. */
+export const PREFIXE_COMMUN = 'ds-lab:commun/';
 /** Clé d'extension du seuil de largeur, sur le modificateur width. */
 const LARGEUR = 'ds-lab.largeur';
 
@@ -48,6 +52,35 @@ export function fusionner(cible, doc) {
     else cible[k] = structuredClone(v);
   }
   return cible;
+}
+
+/**
+ * D66 : chemin d'un $ref de fichier. « ds-lab:commun/<fichier> » se lit dans COMMUN ; un autre $ref, depuis `base`.
+ * Une adresse commune qui sort de tokens/commun/ ou nomme un fichier absent est une panne qui dit quoi faire.
+ * @param {string} ref @param {string} base
+ */
+function cheminDeRef(ref, base) {
+  if (!ref.startsWith(PREFIXE_COMMUN)) return join(base, ref);
+  const fichier = ref.slice(PREFIXE_COMMUN.length);
+  if (!fichier || isAbsolute(fichier) || fichier.split(/[\\/]/).includes('..'))
+    throw new Error(`resolver : ${ref} sort de tokens/commun/ : écrire ${PREFIXE_COMMUN}<fichier>, un fichier de tokens/commun/ du clone`);
+  const chemin = join(COMMUN, fichier);
+  if (!existsSync(chemin)) throw new Error(`resolver : ${ref} n'existe pas dans ${COMMUN} : mettre le clone de ds-lab à jour, ou relancer la saisie`);
+  return chemin;
+}
+
+/**
+ * D66 : le resolver dont chaque adresse commune est remplacée par l'URL file:// de son fichier dans COMMUN, pour un
+ * lecteur qui ne connaît pas le préfixe (Terrazzo, npm run css). Les autres $ref ne changent pas.
+ * @param {any} resolver
+ */
+export function communEnUrl(resolver) {
+  const url = (/** @type {any[]} */ liste) =>
+    liste.map((s) => (estObjet(s) && typeof s.$ref === 'string' && s.$ref.startsWith(PREFIXE_COMMUN) ? { ...s, $ref: pathToFileURL(cheminDeRef(s.$ref, COMMUN)).href } : s));
+  const r = structuredClone(resolver);
+  for (const set of Object.values(r.sets ?? {})) if (Array.isArray(set?.sources)) set.sources = url(set.sources);
+  for (const m of Object.values(r.modifiers ?? {})) for (const [c, l] of Object.entries(m?.contexts ?? {})) if (Array.isArray(l)) m.contexts[c] = url(l);
+  return r;
 }
 
 /**
@@ -85,7 +118,7 @@ export function resoudre(resolver, base, entrees = {}) {
     for (const s of liste) {
       if (estObjet(s) && typeof s.$ref === 'string') {
         if (s.$ref.startsWith('#')) throw new Error(`resolver : ${ensemble}, référence interne non lue dans une source (${s.$ref})`);
-        const chemin = join(base, s.$ref);
+        const chemin = cheminDeRef(s.$ref, base);
         sources.push({ ensemble, chemin, doc: JSON.parse(readFileSync(chemin, 'utf8')) });
       } else if (estObjet(s)) sources.push({ ensemble, chemin: null, doc: s });
       else throw new Error(`resolver : ${ensemble}, source illisible`);
@@ -143,15 +176,13 @@ export function lireResolver(chemin, entrees = {}) {
 }
 
 /**
- * Resolver d'une marque. Les chemins se lisent depuis le dossier de la marque : les couches communes par leur chemin
- * relatif vers tokens/commun/ (« ../commun/ » pour tokens/<marque>/).
- * @param {{ nom: string, marque: string[], sombre?: string[], dossier?: string }} opts nom de la marque ; fichiers du jeu
- *   marque, dans l'ordre ; fichiers de la marque en sombre, après le commun sombre ; dossier de la marque
- *   (tokens/<marque>/ par défaut)
+ * Resolver d'une marque. Les couches communes s'écrivent par leur adresse stable (D66), les fichiers de la marque par
+ * leur nom, lu depuis le dossier de la marque.
+ * @param {{ nom: string, marque: string[], sombre?: string[] }} opts nom de la marque ; fichiers du jeu
+ *   marque, dans l'ordre ; fichiers de la marque en sombre, après le commun sombre
  */
-export function modeleResolver({ nom, marque, sombre = [], dossier }) {
-  const vers = dossier ? relative(dossier, COMMUN).split(sep).join('/') : '../commun';
-  const commun = (/** @type {string} */ f) => ({ $ref: `${vers ? `${vers}/` : ''}${f}` });
+export function modeleResolver({ nom, marque, sombre = [] }) {
+  const commun = (/** @type {string} */ f) => ({ $ref: `${PREFIXE_COMMUN}${f}` });
   const ref = (/** @type {string} */ f) => ({ $ref: f });
   return {
     name: nom,

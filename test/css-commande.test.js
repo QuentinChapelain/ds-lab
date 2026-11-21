@@ -24,14 +24,15 @@ import { join, relative } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { feuilleCss } from '../src/tokens/css.js';
-import { dossiersDeMarque, RESOLVER } from '../src/tokens/resolver.js';
+import { dossiersDeMarque, RESOLVER, PREFIXE_COMMUN } from '../src/tokens/resolver.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 /** @param {string[]} args */
 const lancer = (args) => spawnSync(process.execPath, ['src/cli/css.js', ...args], { cwd: ROOT, encoding: 'utf8' });
 
 /**
- * Marque d'essai : resolver de la première marque, $ref vers les fichiers d'origine.
+ * Marque d'essai : resolver de la première marque, $ref vers les fichiers d'origine ; l'adresse stable des couches
+ * communes (D66) reste telle quelle.
  * @param {{ seuil?: number, sombreEnPlus?: any }} [opts] @returns {string} dossier, terminé par « / »
  */
 function marqueEssai({ seuil, sombreEnPlus } = {}) {
@@ -39,7 +40,7 @@ function marqueEssai({ seuil, sombreEnPlus } = {}) {
   const r = JSON.parse(readFileSync(join(base, RESOLVER), 'utf8'));
   const dir = mkdtempSync(join(tmpdir(), 'ds-lab-css-'));
   /** @param {any[]} l */
-  const reloc = (l) => l.map((s) => (typeof s?.$ref === 'string' && !s.$ref.startsWith('#') ? { $ref: relative(dir, join(base, s.$ref)) } : s));
+  const reloc = (l) => l.map((s) => (typeof s?.$ref === 'string' && !s.$ref.startsWith('#') && !s.$ref.startsWith(PREFIXE_COMMUN) ? { $ref: relative(dir, join(base, s.$ref)) } : s));
   for (const s of Object.values(r.sets)) /** @type {any} */ (s).sources = reloc(/** @type {any} */ (s).sources);
   for (const m of Object.values(r.modifiers)) for (const c of Object.keys(/** @type {any} */ (m).contexts)) /** @type {any} */ (m).contexts[c] = reloc(/** @type {any} */ (m).contexts[c]);
   if (sombreEnPlus) {
