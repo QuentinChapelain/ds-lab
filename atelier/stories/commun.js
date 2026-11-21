@@ -9,7 +9,7 @@ const fichiers = import.meta.glob(['../../tokens/*/vuetify.json', '!../../tokens
 /** Thèmes dans l'ordre du sélecteur : marques par dossier, puis clair et sombre. */
 export const THEMES = Object.keys(fichiers)
   .sort()
-  .flatMap((chemin) => Object.entries(fichiers[chemin].themes).map(([nom, t]) => ({ nom, titre: `${fichiers[chemin].nom}, ${t.dark ? 'sombre' : 'clair'}` })));
+  .flatMap((chemin) => Object.entries(fichiers[chemin].themes).map(([nom, t]) => ({ nom, titre: `${fichiers[chemin].name}, ${t.dark ? 'sombre' : 'clair'}` })));
 
 /** Icônes d'essai, nommées par leur dessin ; le libellé d'un bouton nomme l'action, jamais l'icône (D52). */
 export const Loupe = icone(mdiMagnify);

@@ -48,14 +48,14 @@ import { N_PAIRES } from './helpers/roles-ajoutes.js';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const ORBE = join(ROOT, 'tokens', 'orbe-cafe');
 const ORBE_SHA = 'fe878df65c88545d1c193e8a520071ee4ddbed409cdb8a80ea407a01cec7f8c9';
-const POLICES = { titre: ['Georgia', 'serif'], texte: ['Arial', 'sans-serif'] };
+const POLICES = { heading: ['Georgia', 'serif'], body: ['Arial', 'sans-serif'] };
 const AILLEURS = join(tmpdir(), 'ds-lab-ailleurs');
 const sha = (/** @type {string} */ s) => createHash('sha256').update(s).digest('hex');
 
 test('S1 Orbe Café : échelles existantes, marque.tokens.json identique octet par octet', () => {
   const entree = JSON.parse(readFileSync(join(ORBE, 'entree.json'), 'utf8'));
-  assert.deepEqual(entree.primaire, { echelle: 'blue' });
-  assert.deepEqual(entree.accent, { echelle: 'earth' });
+  assert.deepEqual(entree.primary, { scale: 'blue' });
+  assert.deepEqual(entree.accent, { scale: 'earth' });
   const r = saisir(entree, { dossier: ORBE });
   assert.deepEqual(r.motifs, []);
   assert.equal(r.echelles, null, 'aucune échelle générée');
@@ -70,42 +70,42 @@ test('S1 Orbe Café : échelles existantes, marque.tokens.json identique octet p
 
 test('S2 entrée invalide : motifs', () => {
   const motifs = (/** @type {any} */ e, dossier = AILLEURS) => saisir(e, { dossier }).motifs;
-  assert.deepEqual(motifs({}), ['entrée invalide : nom manquant', 'entrée invalide : primaire manquante', 'entrée invalide : polices manquantes']);
+  assert.deepEqual(motifs({}), ['entrée invalide : clé name absente', 'entrée invalide : clé primary absente', 'entrée invalide : clé fonts absente']);
   assert.deepEqual(motifs([]), ['entrée invalide : objet JSON attendu']);
-  const ok = { nom: 'Essai', primaire: '#2b4c7e', polices: POLICES };
+  const ok = { name: 'Essai', primary: '#2b4c7e', fonts: POLICES };
   assert.deepEqual(motifs(ok), []);
-  assert.deepEqual(motifs({ ...ok, primaire: '#12345' }), ['entrée invalide : primaire, couleur #rrggbb ou { "echelle": nom } attendue']);
-  assert.deepEqual(motifs({ ...ok, accent: 'bleu' }), ['entrée invalide : accent, couleur #rrggbb ou { "echelle": nom } attendue']);
+  assert.deepEqual(motifs({ ...ok, primary: '#12345' }), ['entrée invalide : primary, couleur #rrggbb ou { "scale": nom } attendue']);
+  assert.deepEqual(motifs({ ...ok, accent: 'bleu' }), ['entrée invalide : accent, couleur #rrggbb ou { "scale": nom } attendue']);
   assert.deepEqual(motifs({ ...ok, accnet: '#2b4c7e' }), ['entrée invalide : clé inconnue accnet']);
-  assert.deepEqual(motifs({ ...ok, primaire: { echelle: 'bleu' } }), ['entrée invalide : primaire, échelle existante : aucune échelle écrite à la main dans le dossier de la marque (primitives.tokens.json)']);
-  assert.deepEqual(motifs({ ...ok, accent: { echelle: 'violet' } }, ORBE), ['entrée invalide : accent, échelle inconnue violet']);
-  // D16 : polices.texte est facultative, la police du produit la remplace.
-  assert.deepEqual(motifs({ ...ok, polices: { titre: ['Georgia'] } }), []);
-  assert.deepEqual(motifs({ ...ok, polices: { titre: ['Georgia'], texte: [] } }), ['entrée invalide : polices.texte, liste de noms de familles attendue']);
-  assert.deepEqual(motifs({ ...ok, polices: { titre: [], texte: ['Arial'] } }), ['entrée invalide : polices.titre, liste de noms de familles attendue']);
+  assert.deepEqual(motifs({ ...ok, primary: { scale: 'bleu' } }), ['entrée invalide : primary, échelle existante : aucune échelle écrite à la main dans le dossier de la marque (primitives.tokens.json)']);
+  assert.deepEqual(motifs({ ...ok, accent: { scale: 'violet' } }, ORBE), ['entrée invalide : accent, échelle inconnue violet']);
+  // D16 : fonts.body est facultative, la police du produit la remplace.
+  assert.deepEqual(motifs({ ...ok, fonts: { heading: ['Georgia'] } }), []);
+  assert.deepEqual(motifs({ ...ok, fonts: { heading: ['Georgia'], body: [] } }), ['entrée invalide : fonts.body, liste de noms de familles attendue']);
+  assert.deepEqual(motifs({ ...ok, fonts: { heading: [], body: ['Arial'] } }), ['entrée invalide : fonts.heading, liste de noms de familles attendue']);
 });
 
 test('S3 checkValise en échec sur l\'échelle générée : refus', () => {
-  const r = saisir({ nom: 'Essai', primaire: '#00ccff', polices: POLICES }, { dossier: AILLEURS });
+  const r = saisir({ name: 'Essai', primary: '#00ccff', fonts: POLICES }, { dossier: AILLEURS });
   assert.deepEqual(r.motifs, ['checkValise (clair) : primary : doublon, pas 7 = pas 9 (#00ccff)']);
 });
 
 test('S4 paire de rôles en échec : refus', () => {
   assert.equal(Math.round(wcagContrast('#ffffff', '#8a4fd8') * 100) / 100, 5.01);
   assert.equal(Math.round(wcagContrast('#ffffff', '#864bd3') * 100) / 100, 5.3);
-  assert.deepEqual(saisir({ nom: 'Essai', primaire: '#cc9900', polices: POLICES }, { dossier: AILLEURS }).motifs, []);
+  assert.deepEqual(saisir({ name: 'Essai', primary: '#cc9900', fonts: POLICES }, { dossier: AILLEURS }).motifs, []);
   const commun = chargerCommun();
   const paires = structuredClone(commun.paires);
   paires.thresholds.essai = 5.2;
   for (const p of paires.pairs) if (p.foreground === 'text.on-interactive') p.type = 'essai';
-  const r = saisir({ nom: 'Essai', primaire: '#8a4fd8', polices: POLICES }, { dossier: AILLEURS, commun: { ...commun, paires } });
+  const r = saisir({ name: 'Essai', primary: '#8a4fd8', fonts: POLICES }, { dossier: AILLEURS, commun: { ...commun, paires } });
   assert.deepEqual(r.motifs, ['contraste (clair) : text.on-interactive sur background.interactive.strong, 5,01:1 < 5,2:1']);
   const pas = r.echelles?.color.primary;
   assert.deepEqual([pas['9'].$value.hex, pas['10'].$value.hex], ['#8a4fd8', '#864bd3']);
 });
 
 test('S5 sans accent : repli sur le neutre (D05)', () => {
-  const r = saisir({ nom: 'Essai', primaire: '#2b4c7e', polices: POLICES }, { dossier: AILLEURS });
+  const r = saisir({ name: 'Essai', primary: '#2b4c7e', fonts: POLICES }, { dossier: AILLEURS });
   assert.deepEqual(r.motifs, []);
   assert.equal(r.marque.brand.accent['9'].$value, '{color.neutral.9}');
   assert.deepEqual(Object.keys(r.echelles?.color ?? {}).filter((k) => !k.startsWith('$')), ['primary']);
@@ -120,14 +120,14 @@ const run = (...args) => spawnSync(process.execPath, args, { cwd: ROOT, encoding
 test('S6 commande saisie : codes de sortie, motif, fichiers', () => {
   assert.equal(run('src/cli/saisie.js').status, 2);
   const refus = mkdtempSync(join(tmpdir(), 'ds-lab-saisie-'));
-  writeFileSync(join(refus, 'entree.json'), JSON.stringify({ nom: 'Essai', primaire: '#00ccff', polices: POLICES }));
+  writeFileSync(join(refus, 'entree.json'), JSON.stringify({ name: 'Essai', primary: '#00ccff', fonts: POLICES }));
   const r1 = run('src/cli/saisie.js', join(refus, 'entree.json'));
   assert.equal(r1.status, 1);
   assert.match(r1.stderr, /marque refusée : Essai/);
   assert.match(r1.stderr, /checkValise \(clair\) : primary : doublon, pas 7 = pas 9 \(#00ccff\)/);
   assert.deepEqual(readdirSync(refus), ['entree.json'], 'rien d\'écrit');
   const ok = mkdtempSync(join(tmpdir(), 'ds-lab-saisie-'));
-  writeFileSync(join(ok, 'entree.json'), JSON.stringify({ nom: 'Essai', primaire: '#2b4c7e', accent: '#c8553d', polices: POLICES }));
+  writeFileSync(join(ok, 'entree.json'), JSON.stringify({ name: 'Essai', primary: '#2b4c7e', accent: '#c8553d', fonts: POLICES }));
   const r2 = run('src/cli/saisie.js', join(ok, 'entree.json'));
   assert.equal(r2.status, 0, r2.stderr);
   assert.match(r2.stdout, /marque acceptée : Essai/);

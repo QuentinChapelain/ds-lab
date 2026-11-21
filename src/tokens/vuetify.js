@@ -135,7 +135,7 @@ export function texteThemes(dossier, table = lireTable()) {
   const { nom, themes } = themesVuetify(dossier, table);
   return serialiser({
     $description: `Thèmes Vuetify de ${nom}, clair et sombre, écrits par npm run vuetify depuis marque.resolver.json et tokens/commun/vuetify.json. Ne pas modifier à la main.`,
-    nom,
+    name: nom,
     themes,
   });
 }

@@ -33,7 +33,7 @@ await lancer('saisie', async () => {
   const dossier = dirname(fichier);
   const entree = lireJson(fichier);
   const r = saisir(entree, { dossier });
-  const nom = typeof entree?.nom === 'string' && entree.nom.trim() ? entree.nom : fichier;
+  const nom = typeof entree?.name === 'string' && entree.name.trim() ? entree.name : fichier;
   /** @type {import('../polices/encre.js').LigneEncre[]} */
   let encre = [];
   if (!r.motifs.length && r.policeTitre?.controlee) {

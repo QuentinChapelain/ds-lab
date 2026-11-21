@@ -123,6 +123,7 @@ Exemples : `fond.marque.teinte` → `background.brand.tint` ; `texte.sur-interac
 3. Chaque chemin est la traduction mot à mot de l'ancien par `mots`, sauf les exceptions.
 4. Aucun ancien nom complet ne reste dans `tokens/`, `src/`, les sources de l'atelier, `test/` (hors ce test), `README.md`, `ARCHITECTURE.md`, `CLAUDE.md` et `docs/` (hors `attendus/`, `decisions.md` et la table). Sont exclues les entrées de `fixtures/` et la copie figée.
 5. `tokens/orbe-cafe/marque.tokens.json`, traduit à rebours, retrouve l'empreinte `c6717998…`.
+6. Chaque `entree.json` n'a que des clés nouvelles, à tous les niveaux, et chaque `vuetify.json` de marque a `name` ; aucune clé ancienne de l'entrée citée en JSON (`"echelle":`), ni `polices.titre` ou `polices.texte`, ne reste dans les descriptions des tokens ni dans les docs (périmètre de 4). Ajouté le 21/11/2026 avec les clés de l'entrée.
 
 ## Commits
 

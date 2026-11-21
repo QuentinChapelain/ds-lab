@@ -123,7 +123,7 @@
   --brand-error-solid: var(--color-error-11);
   /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
   --brand-error-solid-hover: #b9001a;
-  /* Police du texte (titres 4, corps, mentions) : la police du produit, sauf si l'entrée de la marque déclare polices.texte. */
+  /* Police du texte (titres 4, corps, mentions) : la police du produit, sauf si l'entrée de la marque déclare fonts.body. */
   --brand-font-body: var(--font-product);
   /* Police des styles affichage et titre 1 à 3. */
   --brand-font-heading: "National Park", sans-serif;

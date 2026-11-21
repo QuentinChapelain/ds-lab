@@ -45,7 +45,7 @@ const POLICES = join(ROOT, 'fixtures', 'polices');
 const OSWALD = join(POLICES, 'oswald', 'oswald-latin-wght-normal.woff2');
 const BEBAS = join(POLICES, 'bebas-neue', 'bebas-neue-latin-400-normal.woff2');
 const SANS_CHROMIUM = { ...process.env, PLAYWRIGHT_BROWSERS_PATH: '/nulle/part' };
-const POLICES_NOMS = { titre: ['Georgia', 'serif'] };
+const POLICES_NOMS = { heading: ['Georgia', 'serif'] };
 
 /** @param {string} racine @param {string} cli @param {string[]} args @param {NodeJS.ProcessEnv} [env] */
 const lancer = (racine, cli, args, env = process.env) => spawnSync(process.execPath, [join(racine, 'src', 'cli', `${cli}.js`), ...args], { cwd: racine, encoding: 'utf8', env });
@@ -115,7 +115,7 @@ test('N4 saisie : fichier absent, JSON illisible, dossier → 2, pas « marque r
 });
 
 test('N5 saisie : Chromium qui ne se lance pas pendant le contrôle d\'encre → 2, rien d\'écrit', () => {
-  const e = entree({ nom: 'Essai', primaire: '#2b4c7e', polices: { titre: { familles: ['Oswald'], fichiers: [OSWALD] } } });
+  const e = entree({ name: 'Essai', primary: '#2b4c7e', fonts: { heading: { families: ['Oswald'], files: [OSWALD] } } });
   const p = run('saisie', [e.fichier], SANS_CHROMIUM);
   panne(p, 'saisie', /Chromium|navigateur|Executable/i);
   assert.doesNotMatch(p.stderr, /marque refusée/);
@@ -125,13 +125,13 @@ test('N5 saisie : Chromium qui ne se lance pas pendant le contrôle d\'encre →
 test('N6 couche commune cassée : saisir() lève ; la commande, sur une copie cassée, sort en 2 sans rien écrire', () => {
   const commun = chargerCommun();
   const cassee = { ...commun, paires: { ...commun.paires, pairs: [...commun.paires.pairs, { foreground: 'text.inexistant', background: 'background.app', type: 'text' }] } };
-  assert.throws(() => saisir({ nom: 'Essai', primaire: '#2b4c7e', polices: POLICES_NOMS }, { dossier: tmp('saisie'), commun: cassee }), /rôle inconnu text\.inexistant/);
+  assert.throws(() => saisir({ name: 'Essai', primary: '#2b4c7e', fonts: POLICES_NOMS }, { dossier: tmp('saisie'), commun: cassee }), /rôle inconnu text\.inexistant/);
   const d = copie();
   const paires = join(d, 'tokens', 'commun', 'paires.json');
   const p0 = JSON.parse(readFileSync(paires, 'utf8'));
   p0.pairs.push({ foreground: 'text.inexistant', background: 'background.app', type: 'text' });
   writeFileSync(paires, JSON.stringify(p0));
-  const e = entree({ nom: 'Essai', primaire: '#2b4c7e', polices: POLICES_NOMS });
+  const e = entree({ name: 'Essai', primary: '#2b4c7e', fonts: POLICES_NOMS });
   const p = lancer(d, 'saisie', [e.fichier]);
   panne(p, 'saisie', /rôle inconnu text\.inexistant/);
   assert.doesNotMatch(p.stderr, /marque refusée/);
@@ -140,9 +140,9 @@ test('N6 couche commune cassée : saisir() lève ; la commande, sur une copie ca
 
 test('N7 vrais refus : sortie 1 avec le motif, rien d\'écrit', () => {
   const cas = [
-    [{ nom: 'Essai', primaire: 'rouge', polices: POLICES_NOMS }, /entrée invalide : primaire, couleur #rrggbb/],
-    [{ nom: 'Essai', primaire: '#00ccff', polices: POLICES_NOMS }, /checkValise \(clair\) : primary : doublon/],
-    [{ nom: 'Essai', primaire: '#8a4fd8', polices: { titre: { familles: ['Bebas Neue'], fichiers: [BEBAS] } } }, /police des titres : graisses absentes : 600, 700/],
+    [{ name: 'Essai', primary: 'rouge', fonts: POLICES_NOMS }, /entrée invalide : primary, couleur #rrggbb/],
+    [{ name: 'Essai', primary: '#00ccff', fonts: POLICES_NOMS }, /checkValise \(clair\) : primary : doublon/],
+    [{ name: 'Essai', primary: '#8a4fd8', fonts: { heading: { families: ['Bebas Neue'], files: [BEBAS] } } }, /police des titres : graisses absentes : 600, 700/],
   ];
   for (const [x, motif] of cas) {
     const e = entree(x);
@@ -160,7 +160,7 @@ test('N7 vrais refus : sortie 1 avec le motif, rien d\'écrit', () => {
     for (const q of paires.pairs) if (q.foreground === 'border.strong' && q.background === 'background.surface') q.type = 'essai';
     return { ...c, paires };
   };
-  const r = saisir({ nom: 'Essai', primaire: '#2b4c7e', polices: POLICES_NOMS }, { dossier: tmp('saisie'), commun: durci(chargerCommun()), communSombre: durci(chargerCommun({ mode: 'sombre' })) });
+  const r = saisir({ name: 'Essai', primary: '#2b4c7e', fonts: POLICES_NOMS }, { dossier: tmp('saisie'), commun: durci(chargerCommun()), communSombre: durci(chargerCommun({ mode: 'sombre' })) });
   assert.deepEqual(r.motifs, ['contraste (sombre) : border.strong sur background.surface, 3,10:1 < 3,15:1']);
 });
 
@@ -189,7 +189,7 @@ test('N10 contrôle final avant remplacement : panne ou incohérence ; sortie 2,
     const texte = readFileSync(f, 'utf8');
     assert.ok(texte.includes(avant), avant);
     writeFileSync(f, texte.replace(avant, apres));
-    const e = entree({ nom: 'Essai', primaire: '#2b4c7e', polices: POLICES_NOMS });
+    const e = entree({ name: 'Essai', primary: '#2b4c7e', fonts: POLICES_NOMS });
     const p = lancer(d, 'saisie', [e.fichier]);
     assert.equal(p.status, 2, `${apres} : sortie ${p.status}\n${p.stdout}\n${p.stderr}`);
     assert.match(p.stderr, motif);

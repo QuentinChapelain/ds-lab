@@ -71,10 +71,10 @@ export function colonne({ dossier, entree }, commun = chargerCommun()) {
   /** @param {any} v @returns {string[] | null} */
   const steps = (v) => {
     if (typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v)) return generateScale('x', v.toLowerCase()).steps;
-    if (typeof v?.echelle === 'string' && !v.echelle.startsWith('$') && propres[v.echelle]?.['12']) return pasDe(propres, v.echelle);
+    if (typeof v?.scale === 'string' && !v.scale.startsWith('$') && propres[v.scale]?.['12']) return pasDe(propres, v.scale);
     return null;
   };
-  const sp = steps(entree?.primaire);
+  const sp = steps(entree?.primary);
   const sa = steps(entree?.accent);
   const primaire = sp ? lecture(sp) : null;
   const accent = sa ? lecture(sa) : null;
@@ -82,7 +82,7 @@ export function colonne({ dossier, entree }, commun = chargerCommun()) {
     ? STATUTS.map((s) => ({ nom: s, dE: dE(primaire.hex, pasDe(commun.primitives.color, s)[8]) })).sort((a, b) => a.dE - b.dE)[0]
     : null;
   return {
-    nom: typeof entree?.nom === 'string' ? entree.nom : dossier,
+    nom: typeof entree?.name === 'string' ? entree.name : dossier,
     motifs: r.motifs,
     primaire,
     accent,
@@ -103,7 +103,7 @@ const TEINTES = Array.from({ length: 23 }, (_, i) => 30 + i * 5);
  */
 export function balayage() {
   const commun = chargerCommun();
-  const polices = { titre: ['serif'], texte: ['sans-serif'] };
+  const fonts = { heading: ['serif'], body: ['sans-serif'] };
   return [
     { titre: 'Chroma la plus forte dans le gamut sRGB', c: 0.4 },
     { titre: 'Chroma 0,10 (ramenée au gamut sRGB si besoin)', c: 0.1 },
@@ -121,7 +121,7 @@ export function balayage() {
         const autre = a && autreClasse
           ? { classe: autreClasse, ...a, ratioPlein: contrastRatio(a.texte, a.plein), ratioSurvol: contrastRatio(a.texte, a.survol) }
           : null;
-        const motifs = saisir({ nom: 'balayage', primaire: hex, polices }, { dossier: '/balayage', commun }).motifs;
+        const motifs = saisir({ name: 'balayage', primary: hex, fonts }, { dossier: '/balayage', commun }).motifs;
         return { l, h, hex, classe, exacte: regle.plein === hex, regle, autre, motifs };
       }),
     ),

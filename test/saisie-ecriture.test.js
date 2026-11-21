@@ -31,7 +31,7 @@ import { remplacer } from '../src/tokens/ecriture.js';
 import { COMMUN } from '../src/tokens/resolver.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const POLICES = { titre: ['Georgia', 'serif'] };
+const POLICES = { heading: ['Georgia', 'serif'] };
 const tmp = () => mkdtempSync(join(tmpdir(), 'ds-lab-ecriture-'));
 /** @param {string} cli @param {string[]} args */
 const run = (cli, ...args) => spawnSync(process.execPath, [join(ROOT, 'src', 'cli', `${cli}.js`), ...args], { cwd: ROOT, encoding: 'utf8' });
@@ -57,10 +57,10 @@ const REDEFINIE = /primitives\.tokens\.json : échelle commune redéfinie, neutr
 
 test('W1 saisie : échelle commune redéfinie par la marque, refus nommé, rien d\'écrit', () => {
   const d = avecNeutre();
-  const r = saisir({ nom: 'Essai', primaire: { echelle: 'blue' }, polices: POLICES }, { dossier: d });
+  const r = saisir({ name: 'Essai', primary: { scale: 'blue' }, fonts: POLICES }, { dossier: d });
   assert.equal(r.motifs.length, 1, r.motifs.join('\n'));
   assert.match(r.motifs[0], REDEFINIE);
-  ecrireEntree(d, { nom: 'Essai', primaire: { echelle: 'blue' }, polices: POLICES });
+  ecrireEntree(d, { name: 'Essai', primary: { scale: 'blue' }, fonts: POLICES });
   const p = run('saisie', join(d, 'entree.json'));
   assert.equal(p.status, 1, p.stderr);
   assert.match(p.stderr, /marque refusée : Essai/);
@@ -72,7 +72,7 @@ test('W2 contraste --marque : échelle commune redéfinie, sortie 1, ligne qui n
   const d = tmp();
   const orbe = JSON.parse(readFileSync(join(ROOT, 'tokens', 'orbe-cafe', 'primitives.tokens.json'), 'utf8'));
   writeFileSync(join(d, 'primitives.tokens.json'), serialiser({ color: { $type: 'color', blue: orbe.color.blue } }));
-  ecrireEntree(d, { nom: 'Essai', primaire: { echelle: 'blue' }, polices: POLICES });
+  ecrireEntree(d, { name: 'Essai', primary: { scale: 'blue' }, fonts: POLICES });
   assert.equal(run('saisie', join(d, 'entree.json')).status, 0);
   assert.equal(run('contraste', '--marque', d).status, 0);
   const commun = JSON.parse(readFileSync(join(COMMUN, 'primitives.tokens.json'), 'utf8'));
@@ -86,9 +86,9 @@ test('W2 contraste --marque : échelle commune redéfinie, sortie 1, ligne qui n
 
 test('W3 panne pendant l\'écriture : sortie 2, dossier inchangé, aucun temporaire', () => {
   const d = tmp();
-  ecrireEntree(d, { nom: 'Essai', primaire: '#2b4c7e', accent: '#c8553d', polices: POLICES });
+  ecrireEntree(d, { name: 'Essai', primary: '#2b4c7e', accent: '#c8553d', fonts: POLICES });
   assert.equal(run('saisie', join(d, 'entree.json')).status, 0);
-  const autre = { nom: 'Essai', primaire: '#c8553d', accent: '#2b4c7e', polices: POLICES };
+  const autre = { name: 'Essai', primary: '#c8553d', accent: '#2b4c7e', fonts: POLICES };
   assert.deepEqual(saisir(autre, { dossier: d }).motifs, [], 'entrée acceptée : la panne vient de l\'écriture');
   ecrireEntree(d, autre);
   enDossier(d, 'marque.resolver.json');
@@ -104,10 +104,10 @@ test('W4 échelle générée devenue nommée : echelles.tokens.json supprimé au
   const d = tmp();
   const orbe = JSON.parse(readFileSync(join(ROOT, 'tokens', 'orbe-cafe', 'primitives.tokens.json'), 'utf8'));
   writeFileSync(join(d, 'primitives.tokens.json'), serialiser({ color: { $type: 'color', blue: orbe.color.blue } }));
-  ecrireEntree(d, { nom: 'Essai', primaire: '#2b4c7e', polices: POLICES });
+  ecrireEntree(d, { name: 'Essai', primary: '#2b4c7e', fonts: POLICES });
   assert.equal(run('saisie', join(d, 'entree.json')).status, 0);
   assert.ok(readdirSync(d).includes('echelles.tokens.json'));
-  ecrireEntree(d, { nom: 'Essai', primaire: { echelle: 'blue' }, polices: POLICES });
+  ecrireEntree(d, { name: 'Essai', primary: { scale: 'blue' }, fonts: POLICES });
   const sombre = readFileSync(join(d, 'echelles.sombre.tokens.json'));
   enDossier(d, 'echelles.sombre.tokens.json');
   const avant = instantane(d);

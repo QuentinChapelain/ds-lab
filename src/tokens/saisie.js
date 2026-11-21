@@ -3,14 +3,15 @@
  * Saisie d'une marque (docs/attendus/etape-4-contrat-de-marque.md).
  *
  * Entrée (tokens/<marque>/entree.json) :
- *   nom          texte, obligatoire ;
- *   primaire     couleur #rrggbb (échelle générée par generateScale) ou { "echelle": nom } (échelle existante, écrite à la
+ *   name         texte, obligatoire ;
+ *   primary      couleur #rrggbb (échelle générée par generateScale) ou { "scale": nom } (échelle existante, écrite à la
  *                main dans primitives.tokens.json du dossier de la marque, D25) ;
  *   accent       facultatif, même forme ; absent : repli sur le neutre (D05) ;
- *   polices      { titre, texte?: [familles] } ; titre : [familles], noms seulement, police « non contrôlée », ou
- *                { familles: [...], fichiers: [chemins] }, fichiers relatifs à l'entrée, lus par src/polices/ ;
- *                texte facultatif : absent, la police du produit (tokens/commun/police.tokens.json) ;
+ *   fonts        { heading, body?: [familles] } ; heading : [familles], noms seulement, police « non contrôlée », ou
+ *                { families: [...], files: [chemins] }, fichiers relatifs à l'entrée, lus par src/polices/ ;
+ *                body facultatif : absent, la police du produit (tokens/commun/police.tokens.json) ;
  *   description  facultative, $description de marque.tokens.json.
+ * Clés en anglais (D62) ; les messages restent en français et citent la clé.
  *
  * Motifs de refus : entrée invalide ; checkValise en échec sur les échelles générées ; paire de rôles en échec ;
  * police des titres donnée par ses fichiers qui échoue à un garde-fou (src/polices/garde-fous.js), ou dont
@@ -33,12 +34,10 @@ import { COMMUN, RESOLVER, modeleResolver, resoudre, partager, enLigne, enEtroit
 import { fr } from '../lib/format.js';
 
 export { COMMUN };
-const CLES = ['nom', 'description', 'primaire', 'accent', 'polices'];
+const CLES = ['name', 'description', 'primary', 'accent', 'fonts'];
 const STATUTS = ['error', 'success', 'warning', 'info'];
 const HEX = /^#[0-9a-f]{6}$/i;
 const LABELS = { primary: 'Primaire', accent: 'Accent' };
-/** Clé d'un emplacement dans l'entrée → nom de l'emplacement et de son échelle générée. */
-const EMPLACEMENTS = /** @type {const} */ ({ primaire: 'primary', accent: 'accent' });
 
 /** Échelles écrites à la main d'une marque, dans son dossier (D25). */
 const PROPRES = 'primitives.tokens.json';
@@ -66,7 +65,7 @@ export function chargerCommun({ mode } = {}) {
 
 /**
  * D25 : échelles écrites à la main dans le dossier d'une marque (primitives.tokens.json), ou null.
- * Seules ces échelles se nomment dans une entrée ({ "echelle": nom }) ; la règle vaut pour toutes les marques.
+ * Seules ces échelles se nomment dans une entrée ({ "scale": nom }) ; la règle vaut pour toutes les marques.
  * @param {string} dossier @returns {any}
  */
 export const echellesPropres = (dossier) => (existsSync(join(dossier, PROPRES)) ? JSON.parse(readFileSync(join(dossier, PROPRES), 'utf8')) : null);
@@ -208,9 +207,9 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
     return vide;
   }
   for (const k of Object.keys(entree)) if (!CLES.includes(k)) invalide(`clé inconnue ${k}`);
-  if (!(typeof entree.nom === 'string' && entree.nom.trim())) invalide('nom manquant');
-  if (entree.primaire === undefined) invalide('primaire manquante');
-  if (entree.polices === undefined) invalide('polices manquantes');
+  if (!(typeof entree.name === 'string' && entree.name.trim())) invalide('clé name absente');
+  if (entree.primary === undefined) invalide('clé primary absente');
+  if (entree.fonts === undefined) invalide('clé fonts absente');
   if ('description' in entree && typeof entree.description !== 'string') invalide('description, texte attendu');
 
   const propres = echellesPropres(dossier);
@@ -224,64 +223,63 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   const nommables = propres?.color ?? {};
   /** @type {Record<string, ReturnType<typeof generateScale>>} */
   const generees = {};
-  /** @param {'primaire' | 'accent'} slot @returns {Source | undefined} */
+  /** @param {'primary' | 'accent'} slot @returns {Source | undefined} */
   const source = (slot) => {
     const v = entree[slot];
     if (v === undefined) return undefined;
     if (typeof v === 'string' && HEX.test(v)) {
-      const nom = EMPLACEMENTS[slot];
-      generees[nom] = generateScale(nom, v.toLowerCase());
-      return { scale: nom, steps: generees[nom].steps };
+      generees[slot] = generateScale(slot, v.toLowerCase());
+      return { scale: slot, steps: generees[slot].steps };
     }
-    if (v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 1 && typeof v.echelle === 'string') {
+    if (v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 1 && typeof v.scale === 'string') {
       if (!propres) return void invalide(`${slot}, échelle existante : aucune échelle écrite à la main dans le dossier de la marque (${PROPRES})`);
-      const g = v.echelle.startsWith('$') ? null : nommables[v.echelle];
-      if (!g?.['1'] || !g?.['12']) return void invalide(`${slot}, échelle inconnue ${v.echelle}`);
-      return { scale: v.echelle, steps: Array.from({ length: 12 }, (_, i) => g[String(i + 1)].$value.hex) };
+      const g = v.scale.startsWith('$') ? null : nommables[v.scale];
+      if (!g?.['1'] || !g?.['12']) return void invalide(`${slot}, échelle inconnue ${v.scale}`);
+      return { scale: v.scale, steps: Array.from({ length: 12 }, (_, i) => g[String(i + 1)].$value.hex) };
     }
-    return void invalide(`${slot}, couleur #rrggbb ou { "echelle": nom } attendue`);
+    return void invalide(`${slot}, couleur #rrggbb ou { "scale": nom } attendue`);
   };
-  const primaire = source('primaire');
+  const primaire = source('primary');
   const accent = source('accent');
   /** @type {{ titre: string[], texte?: string[], fichiersTitre?: string[] } | undefined} */
   let polices;
   /** @type {PoliceTitre | null} */
   let policeTitre = null;
-  if (entree.polices !== undefined) {
-    const p = entree.polices;
+  if (entree.fonts !== undefined) {
+    const p = entree.fonts;
     const familles = (/** @type {any} */ l) => Array.isArray(l) && l.length > 0 && l.every((x) => typeof x === 'string' && x.trim());
-    if (!p || typeof p !== 'object' || Array.isArray(p)) invalide('polices, { "titre": [...] } attendu, "texte" facultatif');
+    if (!p || typeof p !== 'object' || Array.isArray(p)) invalide('fonts, { "heading": [...] } attendu, "body" facultatif');
     else {
-      for (const k of Object.keys(p)) if (k !== 'titre' && k !== 'texte') invalide(`clé inconnue polices.${k}`);
+      for (const k of Object.keys(p)) if (k !== 'heading' && k !== 'body') invalide(`clé inconnue fonts.${k}`);
       // La police des titres s'entre par ses noms (non contrôlée) ou par ses noms et ses fichiers.
-      const t = p.titre;
+      const t = p.heading;
       if (t && typeof t === 'object' && !Array.isArray(t)) {
         const avant = motifs.length;
-        for (const k of Object.keys(t)) if (k !== 'familles' && k !== 'fichiers') invalide(`clé inconnue polices.titre.${k}`);
-        if (!familles(t.familles)) invalide('polices.titre.familles, liste de noms de familles attendue');
-        if (!familles(t.fichiers)) invalide('polices.titre.fichiers, liste de chemins attendue');
+        for (const k of Object.keys(t)) if (k !== 'families' && k !== 'files') invalide(`clé inconnue fonts.heading.${k}`);
+        if (!familles(t.families)) invalide('fonts.heading.families, liste de noms de familles attendue');
+        if (!familles(t.files)) invalide('fonts.heading.files, liste de chemins attendue');
         else
-          for (const chemin of t.fichiers)
-            if (!existsSync(resolve(dossier, chemin))) invalide(`polices.titre, fichier introuvable : ${chemin}`);
+          for (const chemin of t.files)
+            if (!existsSync(resolve(dossier, chemin))) invalide(`fonts.heading, fichier introuvable : ${chemin}`);
         if (motifs.length === avant) {
           /** @type {FichierPolice[]} */
           const fichiers = [];
-          for (const chemin of t.fichiers)
+          for (const chemin of t.files)
             try {
               fichiers.push({ chemin, police: lirePolice(readFileSync(resolve(dossier, chemin))) });
             } catch (e) {
               motifs.push(`police des titres illisible : ${chemin} (${/** @type {Error} */ (e).message})`);
             }
-          policeTitre = { familles: t.familles, controlee: true, fichiers };
+          policeTitre = { familles: t.families, controlee: true, fichiers };
           for (const m of gardeFous(fichiers, graissesTitres(commun))) motifs.push(`police des titres : ${m}`);
         }
-      } else if (!familles(t)) invalide('polices.titre, liste de noms de familles attendue');
+      } else if (!familles(t)) invalide('fonts.heading, liste de noms de familles attendue');
       else policeTitre = { familles: t, controlee: false, fichiers: [] };
-      if ('texte' in p && !familles(p.texte)) invalide('polices.texte, liste de noms de familles attendue');
-      if (policeTitre && (!('texte' in p) || familles(p.texte)))
+      if ('body' in p && !familles(p.body)) invalide('fonts.body, liste de noms de familles attendue');
+      if (policeTitre && (!('body' in p) || familles(p.body)))
         polices = {
           titre: policeTitre.familles,
-          ...('texte' in p ? { texte: p.texte } : {}),
+          ...('body' in p ? { texte: p.body } : {}),
           ...(policeTitre.controlee ? { fichiersTitre: policeTitre.fichiers.map((f) => f.chemin) } : {}),
         };
     }
@@ -297,10 +295,10 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   let echelles = null;
   if (noms.length) {
     /** @type {Record<string, any>} */
-    const couleur = { $type: 'color', $description: `Échelles générées de ${entree.nom} (generateScale, src/valise/generate.js), pas 9 = couleur saisie.` };
-    for (const n of noms) couleur[n] = scaleToDtcg(generees[n], `${LABELS[/** @type {'primary' | 'accent'} */ (n)]} de ${entree.nom}`);
+    const couleur = { $type: 'color', $description: `Échelles générées de ${entree.name} (generateScale, src/valise/generate.js), pas 9 = couleur saisie.` };
+    for (const n of noms) couleur[n] = scaleToDtcg(generees[n], `${LABELS[/** @type {'primary' | 'accent'} */ (n)]} de ${entree.name}`);
     echelles = {
-      $description: `Échelles de ${entree.nom}, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues avec les couches communes de tokens/commun/.`,
+      $description: `Échelles de ${entree.name}, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues avec les couches communes de tokens/commun/.`,
       color: couleur,
     };
     for (const f of checkValise(valiseFromTokens(echelles))) motifs.push(`checkValise (clair) : ${f}`);
@@ -313,13 +311,13 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
     fonds: fondsClairs(commun),
     description:
       entree.description ??
-      `Emplacements de marque de ${entree.nom}, écrits par la saisie depuis entree.json. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers brand.<emplacement>.* ; chaque emplacement pointe vers une échelle (${noms.length ? 'générées dans echelles.tokens.json, ' : ''}communes dans tokens/commun/), et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9.${accent ? '' : ' Sans accent saisi : repli sur le neutre (D05).'}`,
+      `Emplacements de marque de ${entree.name}, écrits par la saisie depuis entree.json. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers brand.<emplacement>.* ; chaque emplacement pointe vers une échelle (${noms.length ? 'générées dans echelles.tokens.json, ' : ''}communes dans tokens/commun/), et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9.${accent ? '' : ' Sans accent saisi : repli sur le neutre (D05).'}`,
   });
   // Mode sombre : échelles en miroir du primaire et de l'accent, depuis leur pas 9, sous le même nom.
   /** @type {Record<string, any>} */
   const couleurSombre = {
     $type: 'color',
-    $description: `Échelles de ${entree.nom} en mode sombre (generateScale, fond sombre [H]), pas 9 = pas 9 clair ; même nom que l'échelle claire, qu'elles remplacent dans le contexte sombre.`,
+    $description: `Échelles de ${entree.name} en mode sombre (generateScale, fond sombre [H]), pas 9 = pas 9 clair ; même nom que l'échelle claire, qu'elles remplacent dans le contexte sombre.`,
   };
   /** @type {Record<string, string[]>} */
   const sombres = {};
@@ -327,10 +325,10 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
     if (!src) continue;
     const g = generateScale(src.scale, src.steps[8], OPTIONS_COULEUR_SOMBRE);
     sombres[slot] = g.steps;
-    couleurSombre[src.scale] = scaleToDtcg(g, `${LABELS[slot]} de ${entree.nom}`);
+    couleurSombre[src.scale] = scaleToDtcg(g, `${LABELS[slot]} de ${entree.name}`);
   }
   const echellesSombres = {
-    $description: `Échelles de ${entree.nom} en mode sombre, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues dans le contexte sombre de marque.resolver.json, après tokens/commun/mode.sombre.tokens.json.`,
+    $description: `Échelles de ${entree.name} en mode sombre, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues dans le contexte sombre de marque.resolver.json, après tokens/commun/mode.sombre.tokens.json.`,
     color: couleurSombre,
   };
   for (const f of checkValise(valiseFromTokens(echellesSombres))) motifs.push(`checkValise (sombre) : ${f}`);
@@ -346,10 +344,10 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
     sombres: { primary: sombres.primary, ...Object.fromEntries(STATUTS.map((s) => [s, communeSombre(s)])) },
     primaireSombre: { scale: primaire.scale, steps: sombres.primary },
     fonds: fondsClairs(communSombre),
-    description: `Couche marque de ${entree.nom} en mode sombre, écrite par la saisie. Format DTCG 2025.10. Posée sur marque.tokens.json dans le contexte sombre : les boutons prennent la version lumineuse de la couleur (pas 11 de l'échelle sombre, survol calculé, D04 et D45), l'aplat plein garde ses valeurs claires, le texte de marque des grands titres est choisi sur l'échelle sombre.`,
+    description: `Couche marque de ${entree.name} en mode sombre, écrite par la saisie. Format DTCG 2025.10. Posée sur marque.tokens.json dans le contexte sombre : les boutons prennent la version lumineuse de la couleur (pas 11 de l'échelle sombre, survol calculé, D04 et D45), l'aplat plein garde ses valeurs claires, le texte de marque des grands titres est choisi sur l'échelle sombre.`,
   });
   const resolver = modeleResolver({
-    nom: entree.nom,
+    nom: entree.name,
     dossier,
     marque: [...(propres ? [PROPRES] : []), ...(echelles ? ['echelles.tokens.json'] : []), 'marque.tokens.json'],
     sombre: ['echelles.sombre.tokens.json', 'marque.sombre.tokens.json'],

@@ -1,11 +1,11 @@
 {
-  "$description": "Police du produit, commune à toutes les marques (décision du 15/11/2026, D16). Format DTCG 2025.10. En marque blanche, la police des titres est celle du client (polices.titre de l'entrée) ; celle du texte est celle du produit, déclarée ici une fois (font.product). Une entrée qui déclare polices.texte remplace brand.font.body : le système garde la capacité de la changer. D44 : le libellé (boutons, champs, onglets) prend toujours font.product, que la couche marque ne remplace pas. D17 : font.heading.cap-height, consigne commune des styles de titre, quelle que soit la police du client.",
+  "$description": "Police du produit, commune à toutes les marques (décision du 15/11/2026, D16). Format DTCG 2025.10. En marque blanche, la police des titres est celle du client (fonts.heading de l'entrée) ; celle du texte est celle du produit, déclarée ici une fois (font.product). Une entrée qui déclare fonts.body remplace brand.font.body : le système garde la capacité de la changer. D44 : le libellé (boutons, champs, onglets) prend toujours font.product, que la couche marque ne remplace pas. D17 : font.heading.cap-height, consigne commune des styles de titre, quelle que soit la police du client.",
   "brand": {
     "font": {
       "$type": "fontFamily",
       "body": {
         "$value": "{font.product}",
-        "$description": "Police du texte (titres 4, corps, mentions) : la police du produit, sauf si l'entrée de la marque déclare polices.texte."
+        "$description": "Police du texte (titres 4, corps, mentions) : la police du produit, sauf si l'entrée de la marque déclare fonts.body."
       }
     }
   },

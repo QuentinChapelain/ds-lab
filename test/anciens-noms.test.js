@@ -11,7 +11,11 @@
  *      KNOWN_ISSUES.md et docs/ (hors attendus/, decisions.md et la table) ; les entrées de fixtures/ et la copie
  *      figée gardent les leurs ;
  *   N5 tokens/orbe-cafe/marque.tokens.json, traduit à rebours par la table (le nom d'échelle des descriptions
- *      compris), retrouve l'empreinte d'avant le renommage, c6717998… (test/saisie.test.js, S1).
+ *      compris), retrouve l'empreinte d'avant le renommage, c6717998… (test/saisie.test.js, S1) ;
+ *   N6 clés de l'entrée et de la sortie Vuetify : chaque entree.json n'a que des clés nouvelles, à tous les niveaux,
+ *      et chaque vuetify.json de marque les clés nouvelles de sa tête (name) ; aucune forme ancienne citée (clés
+ *      de l'entrée en JSON, polices.titre, polices.texte) ne reste dans les descriptions des tokens ni dans les docs
+ *      (même périmètre que N4).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -19,7 +23,7 @@ import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { dossiersDeMarque } from '../src/tokens/resolver.js';
 import { loadRoles, flattenTokens } from '../src/tokens/roles.js';
 import { serialiser } from '../src/tokens/saisie.js';
@@ -105,4 +109,49 @@ test('N5 Orbe Café, traduit à rebours, retrouve l\'empreinte d\'avant le renom
   const echelles = Object.fromEntries(Object.entries(TABLE.mots).filter(([a]) => ['bleu', 'terre', 'erreur', 'succes', 'avertissement'].includes(a)).map(([a, b]) => [b, a]));
   const texte = serialiser(traducteur('avant').jetons(m)).replace(/échelle (blue|earth|error|success|warning)\b/g, (_, e) => `échelle ${echelles[e]}`);
   assert.equal(createHash('sha256').update(texte).digest('hex'), 'c6717998900ac0add8cc9114c2cd7eca7e1a091f50984d81b0ff250ad9a8b537');
+});
+
+test('N6 clés de l\'entrée et de la sortie Vuetify : nouvelles seulement, aucune forme ancienne citée', () => {
+  /** Anciennes clés qui ont changé de nom. @param {Record<string, string>} t */
+  const changees = (t) => Object.keys(t).filter((k) => t[k] !== k);
+  const anciennes = changees(TABLE.clesDeLEntree);
+  const nouvelles = new Set(Object.values(TABLE.clesDeLEntree));
+  /** @type {string[]} */
+  const restes = [];
+  /** @param {any} o @param {string} ou */
+  const cles = (o, ou) => {
+    if (!o || typeof o !== 'object' || Array.isArray(o)) return;
+    for (const [k, v] of Object.entries(o)) {
+      if (!nouvelles.has(k)) restes.push(`${ou} : clé ${k}`);
+      cles(v, `${ou}.${k}`);
+    }
+  };
+  /** @param {any} o @param {(s: string) => void} f */
+  const descriptions = (o, f) => {
+    if (!o || typeof o !== 'object') return;
+    for (const [k, v] of Object.entries(o)) if (k === '$description' && typeof v === 'string') f(v);
+    else descriptions(v, f);
+  };
+  const tete = new Set(['$description', ...Object.values(TABLE.clesDeLaSortieVuetify)]);
+  for (const d of MARQUES) {
+    const ici = (/** @type {string} */ f) => relative(ROOT, join(d, f));
+    cles(JSON.parse(readFileSync(join(d, 'entree.json'), 'utf8')), ici('entree.json'));
+    const v = JSON.parse(readFileSync(join(d, 'vuetify.json'), 'utf8'));
+    assert.equal(typeof v.name, 'string', `${ici('vuetify.json')} : name`);
+    for (const k of Object.keys(v)) if (!tete.has(k)) restes.push(`${ici('vuetify.json')} : clé ${k}`);
+  }
+  // Formes citées : une clé ancienne en JSON (« { "echelle": nom } »), un chemin ancien de l'entrée (polices.titre).
+  const formes = new RegExp(`"(${anciennes.map(esc).join('|')})"\\s*:|(?<![\\w.$-])polices\\.(titre|texte)(?![\\w-])`, 'g');
+  const suivis = execFileSync('git', ['ls-files', 'tokens', 'README.md', 'ARCHITECTURE.md', 'CLAUDE.md', 'KNOWN_ISSUES.md', 'docs'], { cwd: ROOT, encoding: 'utf8' })
+    .trim()
+    .split('\n')
+    .filter((f) => !/^docs\/attendus\/|^docs\/decisions\.md$|^docs\/anciens-noms\.json$/.test(f));
+  for (const f of suivis) {
+    if (f.endsWith('.md')) for (const m of lire(f).matchAll(formes)) restes.push(`${f} : ${m[0]}`);
+    else if (f.endsWith('.json') && !f.endsWith('/entree.json'))
+      descriptions(JSON.parse(lire(f)), (t) => {
+        for (const m of t.matchAll(formes)) restes.push(`${f} : ${m[0]}`);
+      });
+  }
+  assert.deepEqual(restes, []);
 });

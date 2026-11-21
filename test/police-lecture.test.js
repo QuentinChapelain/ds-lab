@@ -62,7 +62,7 @@ test('L5 un WOFF est reconnu et n\'est pas lu plus loin', () => {
   assert.equal(lirePolice(Buffer.from('pas une police')).format, 'inconnu');
 });
 
-const entree = (/** @type {any} */ titre) => ({ nom: 'Essai', primaire: '#8a4fd8', polices: { titre } });
+const entree = (/** @type {any} */ heading) => ({ name: 'Essai', primary: '#8a4fd8', fonts: { heading } });
 
 test('L6 sans fichier : acceptée par ses noms, non contrôlée, couche marque inchangée', () => {
   const r = saisir(entree(['Georgia', 'serif']), { dossier: '/ailleurs' });
@@ -72,7 +72,7 @@ test('L6 sans fichier : acceptée par ses noms, non contrôlée, couche marque i
 });
 
 test('L7 avec fichiers : lus, familles en $value, chemins en $extensions', () => {
-  const r = saisir(entree({ familles: ['Oswald', 'sans-serif'], fichiers: ['oswald/oswald-latin-wght-normal.woff2'] }), { dossier: POLICES });
+  const r = saisir(entree({ families: ['Oswald', 'sans-serif'], files: ['oswald/oswald-latin-wght-normal.woff2'] }), { dossier: POLICES });
   assert.deepEqual(r.motifs, []);
   assert.equal(r.policeTitre.controlee, true);
   assert.equal(r.policeTitre.fichiers.length, 1);
@@ -85,10 +85,10 @@ test('L7 avec fichiers : lus, familles en $value, chemins en $extensions', () =>
 
 test('L8 fichier introuvable, forme inconnue : entrée invalide', () => {
   const m = (/** @type {any} */ titre) => saisir(entree(titre), { dossier: POLICES }).motifs;
-  assert.deepEqual(m({ familles: ['Oswald'], fichiers: ['absent.woff2'] }), ['entrée invalide : polices.titre, fichier introuvable : absent.woff2']);
-  assert.deepEqual(m({ familles: ['Oswald'], fichiers: [] }), ['entrée invalide : polices.titre.fichiers, liste de chemins attendue']);
-  assert.deepEqual(m({ familles: ['Oswald'], fichier: 'x' }), ['entrée invalide : clé inconnue polices.titre.fichier', 'entrée invalide : polices.titre.fichiers, liste de chemins attendue']);
-  assert.deepEqual(m({ fichiers: ['oswald/oswald-latin-wght-normal.woff2'] }), ['entrée invalide : polices.titre.familles, liste de noms de familles attendue']);
+  assert.deepEqual(m({ families: ['Oswald'], files: ['absent.woff2'] }), ['entrée invalide : fonts.heading, fichier introuvable : absent.woff2']);
+  assert.deepEqual(m({ families: ['Oswald'], files: [] }), ['entrée invalide : fonts.heading.files, liste de chemins attendue']);
+  assert.deepEqual(m({ families: ['Oswald'], file: 'x' }), ['entrée invalide : clé inconnue fonts.heading.file', 'entrée invalide : fonts.heading.files, liste de chemins attendue']);
+  assert.deepEqual(m({ files: ['oswald/oswald-latin-wght-normal.woff2'] }), ['entrée invalide : fonts.heading.families, liste de noms de familles attendue']);
 });
 
 test('L9 la commande dit « non contrôlée » pour une police sans fichier', () => {

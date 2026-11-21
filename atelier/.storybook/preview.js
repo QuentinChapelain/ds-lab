@@ -31,7 +31,7 @@ export const globalTypes = {
       title: 'Thème',
       icon: 'paintbrush',
       dynamicTitle: true,
-      items: marques.flatMap((m) => Object.entries(m.themes).map(([nom, t]) => ({ value: nom, title: `${m.nom}, ${t.dark ? 'sombre' : 'clair'}` }))),
+      items: marques.flatMap((m) => Object.entries(m.themes).map(([nom, t]) => ({ value: nom, title: `${m.name}, ${t.dark ? 'sombre' : 'clair'}` }))),
     },
   },
 };

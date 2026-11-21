@@ -1,6 +1,6 @@
 {
-  "nom": "Écume et Sel",
-  "primaire": "#7fdbff",
+  "name": "Écume et Sel",
+  "primary": "#7fdbff",
   "accent": "#e4572e",
-  "polices": { "titre": ["Trebuchet MS", "sans-serif"], "texte": ["Verdana", "sans-serif"] }
+  "fonts": { "heading": ["Trebuchet MS", "sans-serif"], "body": ["Verdana", "sans-serif"] }
 }

@@ -75,7 +75,7 @@ for (const [slug, [ecole, classe, exacte, pas, c, statut, dStatut, dAccent]] of 
 }
 
 test('colonne d\'une marque refusée : motif, pas de classe', () => {
-  const col = colonne({ dossier: join(ROOT, 'tokens', 'essai'), entree: { nom: 'Essai', primaire: '#00ccff', polices: { titre: ['a'], texte: ['b'] } } });
+  const col = colonne({ dossier: join(ROOT, 'tokens', 'essai'), entree: { name: 'Essai', primary: '#00ccff', fonts: { heading: ['a'], body: ['b'] } } });
   assert.deepEqual(col.motifs, ['checkValise (clair) : primary : doublon, pas 7 = pas 9 (#00ccff)']);
   assert.equal(col.primaire.classe, 'moyen', 'la classe reste montrée');
 });

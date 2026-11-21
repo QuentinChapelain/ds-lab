@@ -68,12 +68,12 @@ test('G6 fichiers statiques : les graisses s\'additionnent', () => {
 
 test('G7 la commande refuse Bebas Neue et n\'écrit rien', () => {
   const dossier = mkdtempSync(join(tmpdir(), 'ds-lab-police-'));
-  writeFileSync(join(dossier, 'entree.json'), JSON.stringify({ nom: 'Essai', primaire: '#8a4fd8', polices: { titre: { familles: ['Bebas Neue'], fichiers: [join(POLICES, BEBAS)] } } }));
+  writeFileSync(join(dossier, 'entree.json'), JSON.stringify({ name: 'Essai', primary: '#8a4fd8', fonts: { heading: { families: ['Bebas Neue'], files: [join(POLICES, BEBAS)] } } }));
   const r = spawnSync(process.execPath, [join(ROOT, 'src', 'cli', 'saisie.js'), join(dossier, 'entree.json')], { encoding: 'utf8' });
   assert.equal(r.status, 1, r.stderr + r.stdout);
   assert.match(r.stderr, /police des titres : graisses absentes : 600, 700 \(présentes : 400\)/);
   assert.deepEqual(readdirSync(dossier), ['entree.json']);
-  assert.deepEqual(saisir({ nom: 'Essai', primaire: '#8a4fd8', polices: { titre: { familles: ['Bebas Neue'], fichiers: [BEBAS] } } }, { dossier: POLICES }).motifs, [
+  assert.deepEqual(saisir({ name: 'Essai', primary: '#8a4fd8', fonts: { heading: { families: ['Bebas Neue'], files: [BEBAS] } } }, { dossier: POLICES }).motifs, [
     'police des titres : graisses absentes : 600, 700 (présentes : 400)',
   ]);
 });

@@ -127,7 +127,7 @@ test('E4 lignes de D17 : les trois passent ; lignes d\'avant D17 : refus', async
 
 test('E5 la commande accepte Oswald et affiche l\'encre de deux lignes', () => {
   const dossier = mkdtempSync(join(tmpdir(), 'ds-lab-encre-'));
-  writeFileSync(join(dossier, 'entree.json'), JSON.stringify({ nom: 'Essai', primaire: '#8a4fd8', polices: { titre: { familles: ['Oswald'], fichiers: [join(POLICES, FICHIERS.Oswald)] } } }));
+  writeFileSync(join(dossier, 'entree.json'), JSON.stringify({ name: 'Essai', primary: '#8a4fd8', fonts: { heading: { families: ['Oswald'], files: [join(POLICES, FICHIERS.Oswald)] } } }));
   const r = spawnSync(process.execPath, [join(ROOT, 'src', 'cli', 'saisie.js'), join(dossier, 'entree.json')], { encoding: 'utf8' });
   assert.equal(r.status, 0, r.stderr + r.stdout);
   assert.match(r.stdout, /police des titres : Oswald, contrôlée\n/);

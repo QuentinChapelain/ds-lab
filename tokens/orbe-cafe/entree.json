@@ -1,17 +1,17 @@
 {
-  "nom": "Orbe Café",
-  "primaire": {
-    "echelle": "blue"
+  "name": "Orbe Café",
+  "primary": {
+    "scale": "blue"
   },
   "accent": {
-    "echelle": "earth"
+    "scale": "earth"
   },
-  "polices": {
-    "titre": [
+  "fonts": {
+    "heading": [
       "Georgia",
       "serif"
     ],
-    "texte": [
+    "body": [
       "Orbe Sans",
       "Arial",
       "sans-serif"

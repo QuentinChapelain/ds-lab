@@ -1,13 +1,13 @@
 // @ts-check
 /**
  * Une règle des échelles existantes pour toutes les marques
- * (docs/attendus/revue-lot-5-marque.md, Q3). Une entrée nomme une échelle ({ "echelle": nom }) seulement si elle est
+ * (docs/attendus/revue-lot-5-marque.md, Q3). Une entrée nomme une échelle ({ "scale": nom }) seulement si elle est
  * écrite à la main dans le dossier de sa marque, primitives.tokens.json ; la différence entre marques vit dans ce fichier.
  *
  * Attendus écrits à la main avant le code (16/11/2026) :
  *   E1 echellesPropres(dossier) : le contenu de primitives.tokens.json du dossier, ou null ; Orbe Café donne blue, earth,
  *      sand ; les quatre autres marques n'en ont pas ;
- *   E2 sans ce fichier, nommer une échelle est refusé : « entrée invalide : primaire, échelle existante : aucune échelle
+ *   E2 sans ce fichier, nommer une échelle est refusé : « entrée invalide : primary, échelle existante : aucune échelle
  *      écrite à la main dans le dossier de la marque (primitives.tokens.json) » ;
  *   E3 une marque quelconque qui a son fichier (dossier temporaire, échelle « olive » de 12 pas) nomme son échelle :
  *      acceptée, resolver du jeu marque = aplat, police, primitives.tokens.json, marque.tokens.json ;
@@ -32,7 +32,7 @@ import { scaleToDtcg } from '../src/tokens/primitives.js';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const dossier = (/** @type {string} */ m) => join(ROOT, 'tokens', m);
 const ORBE = dossier('orbe-cafe');
-const POLICES = { titre: ['Georgia', 'serif'] };
+const POLICES = { heading: ['Georgia', 'serif'] };
 const SANS_FICHIER = 'échelle existante : aucune échelle écrite à la main dans le dossier de la marque (primitives.tokens.json)';
 const lire = (/** @type {string} */ d, /** @type {string} */ f) => readFileSync(join(d, f), 'utf8');
 
@@ -52,14 +52,14 @@ test('E1 echellesPropres : le fichier du dossier, ou null', () => {
 
 test('E2 sans fichier d\'échelles écrites à la main, nommer une échelle est refusé', () => {
   for (const m of ['atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto']) {
-    const r = saisir({ nom: 'Essai', primaire: { echelle: 'blue' }, polices: POLICES }, { dossier: dossier(m) });
-    assert.deepEqual(r.motifs, [`entrée invalide : primaire, ${SANS_FICHIER}`], m);
+    const r = saisir({ name: 'Essai', primary: { scale: 'blue' }, fonts: POLICES }, { dossier: dossier(m) });
+    assert.deepEqual(r.motifs, [`entrée invalide : primary, ${SANS_FICHIER}`], m);
   }
 });
 
 test('E3 une marque qui a son fichier nomme son échelle', () => {
   const d = avecOlive();
-  const r = saisir({ nom: 'Essai', primaire: { echelle: 'olive' }, polices: POLICES }, { dossier: d });
+  const r = saisir({ name: 'Essai', primary: { scale: 'olive' }, fonts: POLICES }, { dossier: d });
   assert.deepEqual(r.motifs, []);
   assert.equal(r.echelles, null);
   assert.deepEqual(r.resolver.sets.marque.sources.map((/** @type {any} */ s) => s.$ref.split('/').pop()), ['aplat.tokens.json', 'police.tokens.json', 'primitives.tokens.json', 'marque.tokens.json']);
@@ -68,13 +68,13 @@ test('E3 une marque qui a son fichier nomme son échelle', () => {
 
 test('E4 une échelle commune ne se nomme plus', () => {
   for (const d of [ORBE, avecOlive()]) {
-    const r = saisir({ nom: 'Essai', primaire: { echelle: 'blue' }, accent: { echelle: 'neutral' }, polices: POLICES }, { dossier: d });
+    const r = saisir({ name: 'Essai', primary: { scale: 'blue' }, accent: { scale: 'neutral' }, fonts: POLICES }, { dossier: d });
     assert.ok(r.motifs.includes('entrée invalide : accent, échelle inconnue neutral'), r.motifs.join('\n'));
   }
 });
 
 test('E5 une couleur et une échelle nommée, mêlées : ni panne, ni fichier oublié', () => {
-  const r = saisir({ nom: 'Essai', primaire: '#8a4fd8', accent: { echelle: 'earth' }, polices: POLICES }, { dossier: ORBE });
+  const r = saisir({ name: 'Essai', primary: '#8a4fd8', accent: { scale: 'earth' }, fonts: POLICES }, { dossier: ORBE });
   assert.deepEqual(r.motifs, []);
   assert.deepEqual(r.resolver.sets.marque.sources.map((/** @type {any} */ s) => s.$ref.split('/').pop()), ['aplat.tokens.json', 'police.tokens.json', 'primitives.tokens.json', 'echelles.tokens.json', 'marque.tokens.json']);
 });
@@ -88,7 +88,7 @@ test('E6 Orbe Café : couche marque et resolver identiques, octet par octet', ()
 
 test('E7 calibrage : l\'échelle nommée se lit dans le dossier de sa marque', () => {
   const d = dossier('atelier-lavandine');
-  const c = colonne({ dossier: d, entree: { ...JSON.parse(lire(d, 'entree.json')), accent: { echelle: 'earth' } } });
+  const c = colonne({ dossier: d, entree: { ...JSON.parse(lire(d, 'entree.json')), accent: { scale: 'earth' } } });
   assert.equal(c.accent, null);
   assert.deepEqual(c.motifs, [`entrée invalide : accent, ${SANS_FICHIER}`]);
   const o = colonne({ dossier: ORBE, entree: JSON.parse(lire(ORBE, 'entree.json')) });

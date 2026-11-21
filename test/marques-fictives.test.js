@@ -20,7 +20,7 @@
  *   node --input-type=module -e (wcagContrast(blanc, source), oklch(source), puis D04 sur les pas 9, 10 et 12) :
  *   primaire #bf9b45 (blanc 2,63 ; L 0,706 ; h 86,3) école plein clair, plein moyen (blanc 2,63 ; pas 12 : 4,97 sur
  *     le pas 9, 4,22 sur le pas 10) ; accent #ba4c99 (blanc 4,58 ; L 0,585 ; h 340,9) école normale, plein soutenu ;
- *   sans polices.texte : la police du produit (D16).
+ *   sans fonts.body : la police du produit (D16).
  * Les quatre sont acceptées (aucun motif) ; leurs fichiers versionnés sont ceux que produit la saisie ;
  * npm run contraste -- --marque <dossier> sort 0.
  * Survol de la classe soutenu (décision du 15/11/2026, 13 h 58) : couleur exacte sous un voile noir de 15 %, valeur
@@ -58,8 +58,8 @@ for (const [slug, [nom, primaire, accent, ecoles, pleins]] of Object.entries(MAR
 
   test(`${nom} : entrée, acceptée, fichiers produits par la saisie`, () => {
     const entree = JSON.parse(read('entree.json'));
-    assert.equal(entree.nom, nom);
-    assert.equal(entree.primaire, primaire);
+    assert.equal(entree.name, nom);
+    assert.equal(entree.primary, primaire);
     assert.equal(entree.accent, accent ?? undefined);
     const r = saisir(entree, { dossier: dir });
     assert.deepEqual(r.motifs, []);

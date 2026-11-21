@@ -99,7 +99,7 @@ const parties = (mot) => mot.split(/[-_]|(?<=\p{Ll})(?=\p{Lu})/u).filter(Boolean
 function marques() {
   return readdirSync(TOKENS)
     .filter((d) => existsSync(join(TOKENS, d, 'entree.json')))
-    .map((d) => ({ dossier: d, nom: JSON.parse(readFileSync(join(TOKENS, d, 'entree.json'), 'utf8')).nom, mot: d.split('-')[0] }));
+    .map((d) => ({ dossier: d, nom: JSON.parse(readFileSync(join(TOKENS, d, 'entree.json'), 'utf8')).name, mot: d.split('-')[0] }));
 }
 
 /** @param {string} dir @returns {string[]} */

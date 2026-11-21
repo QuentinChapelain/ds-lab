@@ -27,7 +27,7 @@ import { N_PAIRES } from './helpers/roles-ajoutes.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const MARQUES = ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto'];
-const POLICES = { titre: ['Georgia', 'serif'], texte: ['Arial', 'sans-serif'] };
+const POLICES = { heading: ['Georgia', 'serif'], body: ['Arial', 'sans-serif'] };
 /** @param {string[]} args */
 const run = (...args) => spawnSync(process.execPath, [join(ROOT, 'src', 'cli', 'contraste.js'), ...args], { cwd: ROOT, encoding: 'utf8' });
 
@@ -73,7 +73,7 @@ test('C4 la saisie dit le mode du refus', () => {
     for (const p of paires.pairs) if (p.foreground === 'border.strong' && p.background === 'background.surface') p.type = 'essai';
     return { ...c, paires };
   };
-  const r = saisir({ nom: 'Essai', primaire: '#2b4c7e', polices: POLICES }, { dossier: '/ailleurs', commun: durci(commun), communSombre: durci(communSombre) });
+  const r = saisir({ name: 'Essai', primary: '#2b4c7e', fonts: POLICES }, { dossier: '/ailleurs', commun: durci(commun), communSombre: durci(communSombre) });
   assert.deepEqual(r.motifs, ['contraste (sombre) : border.strong sur background.surface, 3,10:1 < 3,15:1']);
 });
 
