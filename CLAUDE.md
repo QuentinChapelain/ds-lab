@@ -30,6 +30,7 @@ npm test                 tous les tests
 npm run contraste        paires de rôles de couleur ; sortie 1 si une paire échoue
 npm run espacements      espacements par relation ; sortie 1 si une règle échoue
 npm run typo             styles de texte ; sortie 1 si une règle échoue
+npm run verifier         tokens et style d'un autre dépôt (--marques, --style) ; sortie 1 sur un échec
 npm run types            types JSDoc de src/ (TypeScript, non strict, sans émission) ; sortie 1 s'il reste une erreur
 npm run knip             fichiers, exports et dépendances qui ne servent plus ; sortie 1 s'il en reste
 npm run dependances      cycles d'import, modules orphelins de src/ ; sortie 1 si une règle échoue

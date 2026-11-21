@@ -129,7 +129,8 @@
       "test/sans-marque.test.js",
       "test/sombre.test.js",
       "test/texte-sur-plein-candidats.test.js",
-      "test/typo.test.js"
+      "test/typo.test.js",
+      "test/verifier.test.js"
     ]
   ]
 }

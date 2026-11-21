@@ -101,6 +101,7 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 | S1 à S4 | Modifications et `npm run apply` | `test/e2e-apply.test.js` |
 | T0 à T5 | Rôles de couleur, paires, planche | `test/roles-statuts.test.js`, `test/roles-semantique.test.js`, `test/roles-paires.test.js`, `test/roles-planche.test.js` |
 | U1 à U14 | Fiches des composants et des modules : en-tête et blocs générés, refus, anatomie, contrastes, marques, parties écrites, exemple, index et glossaire, mots refusés et plafond, table des noms ; U14, fiches des modules (D56, D57, D61) | `test/fiches.test.js` |
+| VR1 à VR7 | `verifier` dans un dépôt fictif : tout passe, paire cassée en sombre, échelle redéfinie, valeur en dur, pannes, « À faire » de chaque ligne, dossier de lancement (D66) | `test/verifier.test.js` |
 | W1 à W9 | Fabrique commune des enveloppes et menus ; W9, CP1 : un composant sans événement refuse les attributs `on…` | `test/fabrique-enveloppes.test.js` |
 | Y1 à Y3 | Parts de la CI : chaque fichier de test dans une part et une seule, aucun fichier absent, matrice de la CI et liste d'accord (D58) | `test/parts-de-la-ci.test.js` |
 

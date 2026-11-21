@@ -31,9 +31,10 @@ npm run apply  -- --modifications <fichier> --racine <dossier> [--essai]   appli
 npm run ajout  -- --modifications <fichier> --sortie <dossier> [--origine <adresse>]   poser la part tranchée à côté de l'ancien code : une feuille ajoutée par feuille modifiée
 npm run demo   -- [--racine <dossier>]                       servir la marque fictive en local
 npm run saisie     -- <entree.json>                          saisir une marque : échelles, couche marque, mode sombre, resolver, contraste dans les deux modes ; refus avec motif
-npm run contraste   -- [--marque <dossier>] [--paires <fichier>] [--mode light|dark] [--largeur wide|narrow]   contrôler les paires de rôles de couleur
-npm run espacements -- [--marque <dossier>] [--semantique <fichier>] [--etroit <fichier>]   contrôler les espacements par relation
-npm run typo        -- [--marque <dossier>] [--semantique <fichier>] [--primitives <fichier>] [--couche-marque <fichier>] [--etroit <fichier>]   contrôler les styles de texte
+npm run contraste   -- [--marque <dossier> | --marques <dossier>] [--paires <fichier>] [--mode light|dark] [--largeur wide|narrow]   contrôler les paires de rôles de couleur
+npm run espacements -- [--marque <dossier> | --marques <dossier>] [--semantique <fichier>] [--etroit <fichier>]   contrôler les espacements par relation
+npm run typo        -- [--marque <dossier> | --marques <dossier>] [--semantique <fichier>] [--primitives <fichier>] [--couche-marque <fichier>] [--etroit <fichier>]   contrôler les styles de texte
+npm run verifier    -- --marques <dossier> --style <motif>…  contrôler les tokens et le style d'un autre dépôt : contraste dans les quatre contextes, espacements, typo, style ; une ligne par échec, qui dit quoi faire
 npm run css         -- [--marque <dossier>]                  écrire la feuille CSS complète de chaque marque (tokens/<marque>/jetons.css), par Terrazzo
 npm run vuetify     -- [--marque <dossier>]                  écrire les thèmes Vuetify clair et sombre de chaque marque (tokens/<marque>/vuetify.json)
 npm run types                                                vérifier les types JSDoc de src/ (non strict, sans rien émettre)
