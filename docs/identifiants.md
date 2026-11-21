@@ -20,6 +20,8 @@ Un même identifiant désigne plusieurs choses. À lire avant de citer l'un d'eu
 | **C5** | Cas C5 de `test/candidats.test.js` : le défaut est le pas le plus proche de toute l'échelle | tests, commentaire de `dimensionRow` (`src/reduce/propose.js`), D20 de `docs/decisions.md` |
 | | Cas C5 de `test/contraste-modes.test.js` (contrat de la saisie) | tests, `ARCHITECTURE.md`, D31 de `docs/decisions.md` |
 | | Ancien renvoi du motif d'égalité, devenu D20 (les sorties ne citent plus C5) | attendus seulement |
+| **B1 à B5** | Tests B1 à B5 de `test/bouton-jetons.test.js` : jetons du bouton, contrastes de l'icône | tests, `ARCHITECTURE.md`, D52 |
+| | Trous B1 à B13 de la feuille de route (`docs/feuille-de-route.md`) | fiches, feuille de route, `KNOWN_ISSUES.md` |
 | **R-1 à R-9** | Identifiant et titre d'une ligne, captures (revue) | commentaires et titres de tests, jamais affichés |
 
 Dans le code, `D2` et `D4` sont aussi des noms de constantes de mise en forme (`{ decimales: 2 }`, `{ decimales: 4 }`), sans lien avec ces règles.
