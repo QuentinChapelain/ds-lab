@@ -42,6 +42,8 @@ jobs:
       - run: npm run contraste
       - run: npm run espacements
       - run: npm run typo
+      # Garde du style des composants et des modules (CP3, D65) : Stylelint, sans installation de l'atelier.
+      - run: npm run style
       # Fiches des composants (D56) : sans installation de l'atelier, celle de la racine suffit.
       - run: npm --prefix atelier run fiches -- --verifier
 

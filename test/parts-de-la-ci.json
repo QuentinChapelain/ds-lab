@@ -114,6 +114,7 @@
       "test/e2e-versions.test.js",
       "test/enveloppe-bouton.test.js",
       "test/format.test.js",
+      "test/garde-style.test.js",
       "test/login.test.js",
       "test/noms-interdits.test.js",
       "test/pages-temoins.test.js",

@@ -186,9 +186,11 @@ export default definirEnveloppe(MENU, (props, { attrs, emit }) => {
 /* Aide sous une erreur : hors de la vue et du flux, toujours lue. */
 .ds-text-input__hidden {
   position: absolute;
+  /* stylelint-disable declaration-property-value-allowed-list -- texte caché aux yeux et lu par les lecteurs d'écran : motif standard, sans valeur de marque. */
   width: 1px;
   height: 1px;
   margin: -1px;
+  /* stylelint-enable declaration-property-value-allowed-list */
   padding: 0;
   overflow: hidden;
   clip-path: inset(50%);

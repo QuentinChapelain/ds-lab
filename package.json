@@ -27,7 +27,8 @@
     "verify": "node src/cli/verify.js",
     "types": "tsc -p tsconfig.json",
     "knip": "knip",
-    "dependances": "depcruise src test --config .dependency-cruiser.json"
+    "dependances": "depcruise src test --config .dependency-cruiser.json",
+    "style": "stylelint \"atelier/composants/*.vue\" \"atelier/modules/*.vue\""
   },
   "dependencies": {
     "@projectwallace/css-analyzer": "9.9.7",
@@ -43,6 +44,8 @@
     "@types/node": "24.19.2",
     "dependency-cruiser": "18.7.2",
     "knip": "6.45.1",
+    "postcss-html": "2.0.0",
+    "stylelint": "18.0.0",
     "typescript": "7.0.2"
   }
 }

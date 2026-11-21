@@ -4,7 +4,6 @@
 
 ## À payer à l'étape 9
 
-- CP3, aucune valeur en dur : pas de garde de lecture du style des `.vue` des composants avant l'étape 9 (les modules ont la leur, L2) ; elle trouverait deux cas [F] : `1px` du texte caché aux yeux (bouton, champ), justifié, et `1s` de la roue de chargement (B2, `docs/feuille-de-route.md`).
 - Écarts aux règles d'écriture (D65, `docs/regles.md`), un contrôle à écrire ou à élargir chacun :
   - DS1 : rien ne relit la règle sur les jetons écrits ; dans `npm run contraste`, un texte foncé sur un plein doit atteindre 7:1 sur le plein et 4,5:1 sur le survol (environ 30 min [H]).
   - DS9 : la liste « sans rôle » s'affiche sans bloquer ; chaque entrée de `tokens/commun/vuetify.json` doit nommer un rôle, non une primitive (environ 20 min [H]).

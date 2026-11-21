@@ -190,7 +190,7 @@ export default definirEnveloppe(MENU, (props, { attrs, emit, slots }) => {
 .ds-button__spinner > svg {
   width: var(--v-ds-icon-size-medium);
   height: var(--v-ds-icon-size-medium);
-  /* Durée sans jeton : le dépôt n'a pas encore de jeton de durée (B2, docs/feuille-de-route.md). */
+  /* stylelint-disable-next-line declaration-property-value-allowed-list -- durée sans jeton : le dépôt n'a pas encore de jeton de durée (B2, docs/feuille-de-route.md). */
   animation: ds-button-spinner 1s linear infinite;
 }
 .ds-button--small .ds-button__spinner > svg {
@@ -212,9 +212,11 @@ export default definirEnveloppe(MENU, (props, { attrs, emit, slots }) => {
 /* Zone de statut lue par les lecteurs d'écran, hors de la vue et du flux. */
 .ds-button__status {
   position: absolute;
+  /* stylelint-disable declaration-property-value-allowed-list -- texte caché aux yeux et lu par les lecteurs d'écran : motif standard, sans valeur de marque. */
   width: 1px;
   height: 1px;
   margin: -1px;
+  /* stylelint-enable declaration-property-value-allowed-list */
   padding: 0;
   overflow: hidden;
   clip-path: inset(50%);
