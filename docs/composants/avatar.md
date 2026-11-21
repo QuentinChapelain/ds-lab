@@ -4,7 +4,7 @@ title: DsAvatar
 file: atelier/composants/DsAvatar.vue
 props: atelier/composants/DsAvatar.menu.js
 wraps: VAvatar
-decisions: [D54, D59, D51, D56, D57]
+decisions: [D54, D59, D63, D51, D56, D57]
 stories: atelier/stories/DsAvatar.stories.js
 test: npm --prefix atelier run preuve -- avatar
 ---
@@ -62,8 +62,8 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 
 | Partie | Token | Ce qu'il règle |
 |---|---|---|
-| Couleur | `background.brand.tint` | Fond teinté de la marque d'une pièce statique qui porte un texte court ou des initiales pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable. |
-| Couleur | `text.brand` | Texte de marque posé sur le fond teinté de la marque, comme les initiales de DsAvatar ou un DsTag mis en avant. |
+| Couleur | `background.avatar` | Fond d'un avatar qui montre des initiales, posé sur la page ou sur une surface ; jamais un fond cliquable. |
+| Couleur | `text.brand` | Texte de marque posé sur un fond teinté de la marque, comme les initiales de DsAvatar ou un DsTag mis en avant. |
 | Forme | `border-radius.full` | Arrondi complet d'une forme ronde ou en pilule, comme un avatar ou une étiquette. |
 | Forme | `avatar-size.medium` | Côté d'un avatar de taille normale. |
 | Forme, size large | `avatar-size.large` | Côté d'un grand avatar, comme celui d'une carte membre. |
@@ -81,7 +81,7 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 <!-- genere:contrastes : écrit par npm --prefix atelier run fiches -->
 | Devant | Fond | Plus bas des 10 thèmes | Seuil |
 |---|---|---|---|
-| `text.brand` | `background.brand.tint` | 10,07:1 (Atelier Lavandine, sombre) | 4,50:1 |
+| `text.brand` | `background.avatar` | 9,99:1 (Orbe Café, clair) | 4,50:1 |
 <!-- /genere:contrastes -->
 
 ## En situation
@@ -105,7 +105,7 @@ Stories : [atelier/stories/DsAvatar.stories.js](../../atelier/stories/DsAvatar.s
 - B5 : l'avatar est fait ; restent le badge d'état, le groupe d'avatars.
 - Une photo à fond transparent laisse voir les initiales dessous.
 - Limites des initiales : un double nom espagnol donne la lettre du dernier mot ; un titre comme « Dr » compte comme un mot.
-- D59 : le fond teinté de la marque, au pas 5 en sombre, se détache d'une surface ; en clair, le rond à initiales reste très pâle sur une surface.
+- D63 : le rond à initiales a son fond, plus marqué que celui de `DsTag`, pour se détacher d'une surface en clair comme en sombre.
 
 ## Test de rendu
 

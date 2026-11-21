@@ -38,12 +38,12 @@ function attenduAvatars(t) {
       out.set(`${taille}-${etat}`, {
         boite: `${cote} × ${cote}`,
         rayon: v['ds-border-radius-full'],
-        fond: css(t.couleurs['brand-tint']),
+        fond: css(t.couleurs.avatar),
         ombre: 'none',
         transition: '0s',
         initiales: {
           texte: 'CF',
-          couleur: css(t.couleurs['on-brand-tint']),
+          couleur: css(t.couleurs['on-avatar']),
           police: t.policeTexte.join('|'),
           taille: v[`${s}-font-size`],
           graisse: v[`${s}-font-weight`],

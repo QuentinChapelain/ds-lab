@@ -61,8 +61,8 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 |---|---|---|
 | Couleur, tone neutral | `background.tint` | Fond teinté d'une pièce statique qui porte un texte court pour classer, posée sur la page ou sur une surface ; jamais un fond cliquable. |
 | Couleur, tone neutral | `text.default` | Texte courant et titres. |
-| Couleur, tone brand | `background.brand.tint` | Fond teinté de la marque d'une pièce statique qui porte un texte court ou des initiales pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable. |
-| Couleur, tone brand | `text.brand` | Texte de marque posé sur le fond teinté de la marque, comme les initiales de DsAvatar ou un DsTag mis en avant. |
+| Couleur, tone brand | `background.brand.tint` | Fond teinté de la marque d'une pièce statique qui porte un texte court pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable. |
+| Couleur, tone brand | `text.brand` | Texte de marque posé sur un fond teinté de la marque, comme les initiales de DsAvatar ou un DsTag mis en avant. |
 | Forme | `border-radius.full` | Arrondi complet d'une forme ronde ou en pilule, comme un avatar ou une étiquette. |
 | Forme | `height.tag` | Hauteur d'une étiquette, sur une ligne. |
 | Forme | `padding.tag` | Marge intérieure gauche et droite d'une étiquette, de part et d'autre de son texte. |

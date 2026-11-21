@@ -46,6 +46,13 @@
         "ds-lab.note": "Pas 3 du neutre en clair, pas 5 en sombre, par l'emplacement color.tint (D59) : en sombre, le pas 3 ne se détachait pas d'une surface (1,03:1). Lu par DsTag neutre."
       }
     },
+    "avatar": {
+      "$value": "{brand.primary.5}",
+      "$description": "Fond d'un avatar qui montre des initiales, posé sur la page ou sur une surface ; jamais un fond cliquable.",
+      "$extensions": {
+        "ds-lab.note": "Pas 5 du primaire dans les deux modes, sur l'échelle sombre en sombre (D63) : au pas 3 du fond teinté de la marque, l'avatar ne se détachait pas d'une surface en clair (1,11:1) ; au pas 5, 1,29 à 1,30:1. Un token qui règle une seule pièce porte son nom de code (NM4). Lu par DsAvatar."
+      }
+    },
     "interactive": {
       "subtle": {
         "$value": "{brand.primary.3}",
@@ -83,9 +90,9 @@
       },
       "tint": {
         "$value": "{brand.primary.tint}",
-        "$description": "Fond teinté de la marque d'une pièce statique qui porte un texte court ou des initiales pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable.",
+        "$description": "Fond teinté de la marque d'une pièce statique qui porte un texte court pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable.",
         "$extensions": {
-          "ds-lab.note": "Pas 3 du primaire en clair, pas 5 en sombre, par l'emplacement brand.primary.tint (D59) : en sombre, le pas 3 ne se détachait pas d'une surface (1,03:1). Lu par DsTag marque et DsAvatar."
+          "ds-lab.note": "Pas 3 du primaire en clair, pas 5 en sombre, par l'emplacement brand.primary.tint (D59) : en sombre, le pas 3 ne se détachait pas d'une surface (1,03:1). Lu par DsTag marque ; DsAvatar a son fond (background.avatar, D63)."
         }
       },
       "strong": {
@@ -166,9 +173,9 @@
     "brand": {
       "$root": {
         "$value": "{brand.primary.12}",
-        "$description": "Texte de marque posé sur le fond teinté de la marque, comme les initiales de DsAvatar ou un DsTag mis en avant.",
+        "$description": "Texte de marque posé sur un fond teinté de la marque, comme les initiales de DsAvatar ou un DsTag mis en avant.",
         "$extensions": {
-          "ds-lab.note": "Posé sur background.brand.tint (D59) et sur background.brand.subtle ; pas 12 du primaire, et non la couleur des liens (D05)."
+          "ds-lab.note": "Posé sur background.brand.tint (D59), sur background.avatar (D63) et sur background.brand.subtle ; pas 12 du primaire, et non la couleur des liens (D05)."
         }
       },
       "large": {

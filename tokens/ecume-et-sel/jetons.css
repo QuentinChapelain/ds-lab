@@ -11,11 +11,13 @@
   --background-accent-subtle: var(--brand-accent-3);
   /* Fond de la page entière, sous tout le reste. */
   --background-app: var(--color-neutral-1);
+  /* Fond d'un avatar qui montre des initiales, posé sur la page ou sur une surface ; jamais un fond cliquable. */
+  --background-avatar: var(--brand-primary-5);
   /* Aplat plein de la marque, non cliquable, de la valeur du plein du primaire, comme un bandeau qui donne du relief. */
   --background-brand-strong: var(--brand-primary-feature);
   /* Aplat clair de la marque, non cliquable, comme un bandeau, une section ou un encadré. */
   --background-brand-subtle: var(--brand-primary-3);
-  /* Fond teinté de la marque d'une pièce statique qui porte un texte court ou des initiales pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable. */
+  /* Fond teinté de la marque d'une pièce statique qui porte un texte court pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable. */
   --background-brand-tint: var(--brand-primary-tint);
   /* Fond d'un composant au repos, plus soutenu que la surface. */
   --background-component: var(--color-neutral-3);

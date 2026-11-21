@@ -44,7 +44,9 @@
         "brand-tint": "#fcf0f2",
         "on-brand-tint": "#2d000f",
         "tint": "#f3f2f1",
-        "on-tint": "#363026"
+        "on-tint": "#363026",
+        "avatar": "#f7dce1",
+        "on-avatar": "#2d000f"
       },
       "variables": {
         "font-body": "Helvetica, Arial, sans-serif",
@@ -154,7 +156,9 @@
         "brand-tint": "#461825",
         "on-brand-tint": "#fec7d2",
         "tint": "#282828",
-        "on-tint": "#d8d5ce"
+        "on-tint": "#d8d5ce",
+        "avatar": "#461825",
+        "on-avatar": "#fec7d2"
       },
       "variables": {
         "font-body": "Helvetica, Arial, sans-serif",

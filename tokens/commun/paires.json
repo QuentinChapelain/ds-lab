@@ -82,7 +82,8 @@
     { "foreground": "text.disabled", "background": "background.app", "type": "text", "exception": "composant désactivé sans fond (bouton discret), exempté du seuil de contraste (WCAG 1.4.3) ; valeur à juger sur la planche du bouton" },
     { "foreground": "text.brand", "background": "background.brand.subtle", "type": "text" },
     { "foreground": "text.default", "background": "background.tint", "type": "text" },
-    { "foreground": "text.brand", "background": "background.brand.tint", "type": "text" }
+    { "foreground": "text.brand", "background": "background.brand.tint", "type": "text" },
+    { "foreground": "text.brand", "background": "background.avatar", "type": "text" }
   ],
   "forbidden": [
     { "foreground": "text.secondary", "background": "background.component.pressed", "rule": "sur background.component.pressed, le texte passe en text.default" },

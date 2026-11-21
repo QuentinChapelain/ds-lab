@@ -81,7 +81,7 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 
 | Famille | Sujet | Défini dans |
 |---|---|---|
-| A1 à A6 | Règle des initiales de `DsAvatar`, jetons, contrastes et variables `ds-` de `DsAvatar` et `DsTag` dans les dix thèmes ; A5 et A6, fonds teintés, emplacements, valeurs et rapports (D59) | `test/avatar-etiquette.test.js` |
+| A1 à A7 | Règle des initiales de `DsAvatar`, jetons, contrastes et variables `ds-` de `DsAvatar` et `DsTag` dans les dix thèmes ; A5 et A6, fonds teintés, emplacements, valeurs et rapports (D59) ; A7, fond de `DsAvatar` (D63) | `test/avatar-etiquette.test.js` |
 | B1 à B5 | Jetons du bouton dans les dix thèmes, contrastes de l'icône du bouton à icône | `test/bouton-jetons.test.js` |
 | C1 à C13 | Fenêtre des candidats, grisé des marges, bilan par usage | `test/candidats.test.js`, `test/e2e-candidats-revue.test.js`, `fixtures/marque-demo/expected-candidats.json` |
 | E1 à E12 | Gardes des enveloppes (bouton, champ de texte, carte, bouton à icône, avatar, étiquette), découpage d'un composant `.vue` | `test/enveloppe-bouton.test.js` |

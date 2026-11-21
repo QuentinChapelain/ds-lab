@@ -24,6 +24,15 @@
  *      background.component et background.brand.subtle inchangés ; les deux paires en fin de paires.json ;
  *   A6 valeurs et rapports de l'attendu, à deux décimales, dans les dix thèmes : chaque texte au-dessus de 10:1, et,
  *      en sombre, chaque fond teinté à 1,19:1 au moins contre la surface.
+ *
+ * Fond de DsAvatar (D63), attendus écrits à la main avant le code, pas 5 du primaire lu dans les jetons d'avant par
+ * un résolveur écrit à part, rapports par culori 4.0.2 :
+ *   node -e 'const {wcagContrast:w}=require("culori");const r=(x)=>Math.round(x*100)/100;
+ *            console.log(r(w("#103060","#dce2eb")),r(w("#dce2eb","#ffffff")),r(w("#dce2eb","#fbfbfb")))'
+ *   A7 rôle background.avatar, alias de brand.primary.5, sans emplacement de mode ; la paire text.brand sur
+ *      background.avatar en fin de paires.json ; couleurs avatar et on-avatar de la table Vuetify ; valeurs et
+ *      rapports dans les dix thèmes : en clair, le pas 5, à 1,29:1 au moins contre la surface ; en sombre, la valeur de
+ *      background.brand.tint, inchangée.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -157,8 +166,8 @@ test('A2 primitives, rôles, styles et paire de l\'avatar et de l\'étiquette', 
     }
   }
   const paires = charger('paires.json').pairs;
-  // Suivie des deux paires des fonds teintés (A5).
-  assert.deepEqual(paires.at(-3), { foreground: 'text.brand', background: 'background.brand.subtle', type: 'text' });
+  // Suivie des deux paires des fonds teintés (A5) et de celle du fond de DsAvatar (A7).
+  assert.deepEqual(paires.at(-4), { foreground: 'text.brand', background: 'background.brand.subtle', type: 'text' });
 });
 
 test('A3 rapports de l\'avatar et de l\'étiquette, dans les dix thèmes', () => {
@@ -186,10 +195,11 @@ test('A4 couleurs et variables ds- de l\'avatar et de l\'étiquette, dans les di
     for (const [i, mode] of MODES.entries()) {
       const { colors, variables: x } = themes[i];
       const { hex } = theme(m, mode);
-      // DsTag et DsAvatar lisent les fonds teintés (A5) : les deux couleurs prennent leur nom.
+      // DsTag lit les fonds teintés (A5) ; DsAvatar lit son fond, avatar (A7).
       assert.deepEqual([colors['brand-tint'], colors['on-brand-tint']], [hex('background.brand.tint'), hex('text.brand')], `${m}-${mode} brand-tint`);
       assert.deepEqual([colors.tint, colors['on-tint']], [hex('background.tint'), hex('text.default')], `${m}-${mode} tint`);
       for (const k of ['marque-discret', 'composant']) assert.equal(colors[k], undefined, `${m}-${mode} ${k}`);
+      assert.deepEqual([colors.avatar, colors['on-avatar']], [hex('background.avatar'), hex('text.brand')], `${m}-${mode} avatar`);
       for (const [k, v] of Object.entries(VALEURS)) assert.equal(x[k], v, `${m}-${mode} ${k}`);
       for (const k of POLICES) assert.deepEqual(noms(x[k]), noms(x['font-body']), `${m}-${mode} ${k}`);
     }
@@ -222,7 +232,7 @@ test('A5 emplacements et rôles des fonds teintés ; background.component et bac
   assert.equal(sem.background.brand.tint.$value, '{brand.primary.tint}');
   assert.equal(sem.background.component.$root.$value, '{color.neutral.3}');
   assert.equal(sem.background.brand.subtle.$value, '{brand.primary.3}');
-  assert.deepEqual(charger('paires.json').pairs.slice(-2), [
+  assert.deepEqual(charger('paires.json').pairs.slice(-3, -1), [
     { foreground: 'text.default', background: 'background.tint', type: 'text' },
     { foreground: 'text.brand', background: 'background.brand.tint', type: 'text' },
   ]);
@@ -242,5 +252,35 @@ test('A6 valeurs et rapports des fonds teintés, dans les dix thèmes', () => {
     );
     assert.ok(nt >= 10 && bt >= 10, `${nom} : texte au-dessus de 10:1`);
     if (mode === 'dark') assert.ok(ns >= 1.19 && bs >= 1.19, `${nom} : détaché de la surface`);
+  }
+});
+
+/** Fond de DsAvatar, par thème : [background.avatar, rapport de text.brand dessus, contre background.surface, contre background.app]. */
+const AVATAR = {
+  'atelier-lavandine-light': ['#e8defe', 10.06, 1.29, 1.24],
+  'atelier-lavandine-dark': ['#2c243b', 10.07, 1.2, 1.27],
+  'ecume-et-sel-light': ['#baeafe', 10.06, 1.29, 1.25],
+  'ecume-et-sel-dark': ['#22292c', 13.74, 1.2, 1.27],
+  'grenat-papeterie-light': ['#f7dce1', 14.55, 1.29, 1.25],
+  'grenat-papeterie-dark': ['#461825', 10.1, 1.2, 1.26],
+  'maison-alberto-light': ['#f3e1b9', 10.12, 1.29, 1.25],
+  'maison-alberto-dark': ['#2b271e', 12.97, 1.19, 1.26],
+  'orbe-cafe-light': ['#dce2eb', 9.99, 1.3, 1.26],
+  'orbe-cafe-dark': ['#19283f', 10.11, 1.2, 1.26],
+};
+
+test('A7 fond de DsAvatar : rôle, paire, valeurs et rapports dans les dix thèmes, sombre inchangé', () => {
+  const sem = charger('semantique.tokens.json');
+  assert.equal(sem.background.avatar.$value, '{brand.primary.5}');
+  const sombre = JSON.parse(readFileSync(join(ROOT, 'tokens', 'commun', 'mode.sombre.tokens.json'), 'utf8'));
+  assert.equal(sombre.background?.avatar, undefined);
+  assert.deepEqual(charger('paires.json').pairs.at(-1), { foreground: 'text.brand', background: 'background.avatar', type: 'text' });
+  for (const m of MARQUES) for (const mode of MODES) {
+    const nom = `${m}-${mode}`;
+    const { hex } = theme(m, mode);
+    const a = hex('background.avatar');
+    assert.deepEqual([a, r2(hex('text.brand'), a), r2(a, hex('background.surface')), r2(a, hex('background.app'))], AVATAR[/** @type {keyof typeof AVATAR} */ (nom)], nom);
+    if (mode === 'light') assert.ok(r2(a, hex('background.surface')) >= 1.29, `${nom} : détaché de la surface`);
+    else assert.equal(a, hex('background.brand.tint'), `${nom} : sombre inchangé`);
   }
 });

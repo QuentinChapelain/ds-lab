@@ -95,12 +95,17 @@
     "brand-tint": {
       "background": "background.brand.tint",
       "text": "text.brand",
-      "$description": "Fond teinté de la marque, non cliquable : fond de DsAvatar et de DsTag marque, initiales et texte en text.brand (on-marque-teinte)."
+      "$description": "Fond teinté de la marque, non cliquable : fond de DsTag marque, texte en text.brand (on-brand-tint)."
     },
     "tint": {
       "background": "background.tint",
       "text": "text.default",
       "$description": "Fond teinté, non cliquable : fond de DsTag neutre, son texte en text.default (on-teinte)."
+    },
+    "avatar": {
+      "background": "background.avatar",
+      "text": "text.brand",
+      "$description": "Fond de DsAvatar à initiales, non cliquable, plus marqué que celui de DsTag pour se détacher d'une surface (D63) ; initiales en text.brand (on-avatar)."
     }
   },
   "fonts": {

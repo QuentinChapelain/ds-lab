@@ -142,7 +142,6 @@
 - Étiquette (D55) : les puces de filtre (sélection dans un groupe) et les puces supprimables (bouton de fermeture) sont d'autres pièces, à venir ; `closable`, `filter`, `link`, `href` et `to` sont refusés.
 - `DsCard` (D60) : sans `subtitle`, le contenu suit le titre à 4 px (`gap.within-component`), contre 8 px après un sous-titre (`gap.between-blocks`) ; visible sur un membre sans promo de `MemberCard`. Le corriger déplacerait toutes les `DsCard` validées (décision de Quentin du 20/11/2026).
 - `gap.between-blocks` (D60) : hors du contrôle d'ordre des écarts (DS5, `src/tokens/espacements.js`), comme `gap.between-tags`. Placé dans l'ordre, entre `gap.within-component` et `gap.between-components`, il fait rougir le test de proximité écrit le 15/11 : son cas rouge (`gap.within-component` à 12 px) n'a plus de pas libre entre 12 et 16 [F].
-- `DsAvatar` à initiales (D54, D59) : très pâle sur une surface en clair, son fond à 1,10 contre la surface [F] ; `MemberCard` le montre plus qu'avant.
 - `MemberList` (D61) : ni état vide, la page écrit son message et rien n'est rendu sans membre, ni chargement (B7) ; ni grille, une colonne seulement (B6).
 - Suite de `DsTag` (D61) : écrite deux fois, dans `MemberCard` et dans les stories de `DsTag` (liste en flex à `gap.between-tags`), en attendant un composant de groupe, sans `VChipGroup`, qui rendrait les `DsTag` cliquables.
 - Resolvers (D59) : la description du jeu `marque` des cinq `marque.resolver.json`, écrite par la saisie, ne nomme pas le nouvel emplacement `brand.primary.tint` de l'aplat.

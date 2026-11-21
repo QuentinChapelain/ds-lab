@@ -62,20 +62,23 @@ export const EXCEPTIONS_BOUTON = ['text.disabled sur background.disabled', 'text
 
 /**
  * Rôles de couleur de DsAvatar et DsTag → [cible de l'alias, hex chez Orbe Café en clair], écrits à la main dans
- * docs/attendus/avatar-etiquette.md, puis les deux fonds teintés dans docs/attendus/carte-membre-liste.md (culori,
- * résolveur indépendant de src/). Ajoutés après ceux du bouton.
+ * docs/attendus/avatar-etiquette.md, puis les deux fonds teintés dans docs/attendus/carte-membre-liste.md, puis le fond
+ * de DsAvatar (D63 : pas 5 du primaire, bleu 5 d'Orbe Café, #dce2eb) (culori, résolveur indépendant de src/). Ajoutés
+ * après ceux du bouton.
  */
 export const AJOUTS_AVATAR = {
   'text.brand': ['brand.primary.12', '#103060'],
   'background.tint': ['color.tint', '#f3f2f1'],
   'background.brand.tint': ['brand.primary.tint', '#f1f3f7'],
+  'background.avatar': ['brand.primary.5', '#dce2eb'],
 };
 
-/** Paires de DsAvatar et DsTag, en fin de paires.json, après celles du bouton : text.brand sur background.brand.subtle, puis les fonds teintés. */
+/** Paires de DsAvatar et DsTag, en fin de paires.json, après celles du bouton : text.brand sur background.brand.subtle, puis les fonds teintés, puis le fond de DsAvatar. */
 export const PAIRES_AVATAR = [
   ['text.brand', 'background.brand.subtle', 'text'],
   ['text.default', 'background.tint', 'text'],
   ['text.brand', 'background.brand.tint', 'text'],
+  ['text.brand', 'background.avatar', 'text'],
 ];
 
 /** Rôles de couleur et paires de chaque marque, ajouts compris. */

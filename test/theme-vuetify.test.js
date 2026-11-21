@@ -67,6 +67,8 @@
  *   (background.brand.tint, text.brand) et tint (background.tint, text.default), à la même place ; toujours 40.
  * Écart entre blocs de DsCard (20/11/2026, docs/attendus/carte-membre-liste.md) : V9 ds-gap-between-blocks, 8px, 60 en tout ;
  *   puis ds-width-column, 640px, la largeur maximale de MemberList, 61 en tout.
+ * Fond de DsAvatar (D63) : V1 une couleur après les fonds teintés, avatar (background.avatar, text.brand), en paire
+ *   de paires.json ; V2 42 couleurs par thème.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -86,7 +88,7 @@ const DEFAUTS = [...FONDS, 'on-surface-variant'];
 /** Couleurs de l'enveloppe du bouton, après les fonds de Vuetify. */
 const BOUTON = ['error-strong-hover', 'component-hover', 'interactive-subtle', 'error-subtle', 'disabled'];
 /** Couleurs de l'avatar et de l'étiquette (docs/attendus/avatar-etiquette.md), après celles du bouton. */
-const AVATAR_ETIQUETTE = ['brand-tint', 'tint'];
+const AVATAR_ETIQUETTE = ['brand-tint', 'tint', 'avatar'];
 const COULEURS = [...FONDS, ...BOUTON, ...AVATAR_ETIQUETTE];
 /** @param {string} p */
 const lire = (p) => JSON.parse(readFileSync(p, 'utf8'));
@@ -109,7 +111,7 @@ test('V1 table : les 13 fonds par défaut de Vuetify, puis ceux du bouton, un te
   assert.match(t.colors.secondary.$description, /Jamais une couleur de bouton \(D05\)/);
 });
 
-test('V2 deux thèmes nommés par marque, 40 couleurs qui couvrent les défauts de Vuetify', () => {
+test('V2 deux thèmes nommés par marque, 42 couleurs qui couvrent les défauts de Vuetify', () => {
   assert.equal(MARQUES.length, 5);
   for (const d of MARQUES) {
     const r = themesVuetify(d);
@@ -119,7 +121,7 @@ test('V2 deux thèmes nommés par marque, 40 couleurs qui couvrent les défauts 
     assert.equal(r.themes[`${slug}-light`].dark, false);
     assert.equal(r.themes[`${slug}-dark`].dark, true);
     for (const [nom, th] of Object.entries(r.themes)) {
-      assert.equal(Object.keys(th.colors).length, 40, nom);
+      assert.equal(Object.keys(th.colors).length, 42, nom);
       for (const k of DEFAUTS) assert.ok(k in th.colors, `${nom} : ${k}`);
       for (const k of FONDS) assert.ok(`on-${k}` in th.colors, `${nom} : on-${k}`);
     }
