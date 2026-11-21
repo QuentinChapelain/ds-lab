@@ -15,29 +15,29 @@ const RESOLVER = new URL('../tokens/orbe-cafe/marque.resolver.json', import.meta
 const tokens = jetonsDe(JSON.parse(await readFile(RESOLVER, 'utf8')), RESOLVER.pathname);
 const idx = indexTokens(tokens);
 
-test('jetons : le nom de la valise d’abord (#ffffff → couleur.blanc, jamais un sur-plein)', () => {
-  assert.equal(idx.find('colors', '#ffffff', { name: 'blanc' }), 'couleur.blanc');
-  assert.equal(idx.find('colors', '#ffffff', { name: 'blanc', pleinScales: new Set(['bleu']) }), 'couleur.blanc', 'le nom de la valise l’emporte');
-  assert.equal(idx.find('colors', '#ffffff'), 'couleur.blanc', 'sans nom : le premier jeton qui n’est pas sur-plein');
-  assert.equal(idx.find('colors', '#4a2900', { name: 'sable-12' }), 'couleur.sable.12');
-  assert.equal(idx.find('colors', '#6a0000', { name: 'erreur-12' }), 'couleur.erreur.12');
-  assert.equal(idx.find('colors', '#6d675b', { name: 'neutre-11' }), 'couleur.neutre.11');
+test('jetons : le nom de la valise d’abord (#ffffff → color.white, jamais un sur-plein)', () => {
+  assert.equal(idx.find('colors', '#ffffff', { name: 'blanc' }), 'color.white');
+  assert.equal(idx.find('colors', '#ffffff', { name: 'white', pleinScales: new Set(['blue']) }), 'color.white', 'le nom de la valise l’emporte');
+  assert.equal(idx.find('colors', '#ffffff'), 'color.white', 'sans nom : le premier jeton qui n’est pas sur-plein');
+  assert.equal(idx.find('colors', '#4a2900', { name: 'sand-12' }), 'color.sand.12');
+  assert.equal(idx.find('colors', '#6a0000', { name: 'error-12' }), 'color.error.12');
+  assert.equal(idx.find('colors', '#6d675b', { name: 'neutral-11' }), 'color.neutral.11');
 });
 
 test('jetons : sur-plein seulement pour un texte posé sur le plein de son échelle', () => {
-  const surPlein = ['couleur.neutre.sur-plein'];
+  const surPlein = ['color.neutral.on-solid'];
   assert.equal(pickColorToken(surPlein), null, 'ni texte sur plein, ni nom : pas de jeton');
-  assert.equal(pickColorToken(surPlein, { pleinScales: new Set(['bleu']) }), null, 'texte sur un plein d’une autre échelle');
-  assert.equal(pickColorToken(surPlein, { pleinScales: new Set(['neutre']) }), 'couleur.neutre.sur-plein');
-  assert.equal(pickColorToken(['couleur.sable.12', 'couleur.sable.sur-plein'], { pleinScales: new Set(['sable']) }), 'couleur.sable.sur-plein', 'sans nom, texte sur plein sable : sur-plein permis');
-  assert.equal(pickColorToken(['couleur.sable.12', 'couleur.sable.sur-plein'], { name: 'sable-12', pleinScales: new Set(['sable']) }), 'couleur.sable.12', 'le nom de la valise l’emporte');
-  assert.equal(pickColorToken(['couleur.sable.12', 'couleur.sable.sur-plein']), 'couleur.sable.12', 'ni nom ni plein : jamais sur-plein');
+  assert.equal(pickColorToken(surPlein, { pleinScales: new Set(['blue']) }), null, 'texte sur un plein d’une autre échelle');
+  assert.equal(pickColorToken(surPlein, { pleinScales: new Set(['neutral']) }), 'color.neutral.on-solid');
+  assert.equal(pickColorToken(['color.sand.12', 'color.sand.on-solid'], { pleinScales: new Set(['sand']) }), 'color.sand.on-solid', 'sans nom, texte sur plein sable : sur-plein permis');
+  assert.equal(pickColorToken(['color.sand.12', 'color.sand.on-solid'], { name: 'sand-12', pleinScales: new Set(['sand']) }), 'color.sand.12', 'le nom de la valise l’emporte');
+  assert.equal(pickColorToken(['color.sand.12', 'color.sand.on-solid']), 'color.sand.12', 'ni nom ni plein : jamais sur-plein');
 });
 
 test('jetons : dimensions par groupe (espace, taille-texte, rayon)', () => {
-  assert.equal(idx.find('spacing', '16px'), 'espace.16');
-  assert.equal(idx.find('fontSizes', '16px'), 'taille-texte.16');
-  assert.equal(idx.find('radii', '12px'), 'rayon.12');
-  assert.equal(idx.find('radii', '9999px'), 'rayon.pilule');
+  assert.equal(idx.find('spacing', '16px'), 'space.16');
+  assert.equal(idx.find('fontSizes', '16px'), 'font-size.16');
+  assert.equal(idx.find('radii', '12px'), 'radius.12');
+  assert.equal(idx.find('radii', '9999px'), 'radius.full');
   assert.equal(idx.find('spacing', '20px'), null);
 });

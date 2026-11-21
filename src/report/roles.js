@@ -16,11 +16,11 @@ import { nomDeMarque } from '../tokens/resolver.js';
 const plural = (n, one, many) => `${n} ${n > 1 ? many : one}`;
 
 const GROUPS = [
-  { key: 'texte', title: 'Texte', intro: 'Texte posé sur un fond de rôle, seuil 4,5:1 (WCAG 2.1, 1.4.3) ; 3:1 pour le texte de marque des grands titres.', word: 'Réserver une table' },
+  { key: 'text', title: 'Texte', intro: 'Texte posé sur un fond de rôle, seuil 4,5:1 (WCAG 2.1, 1.4.3) ; 3:1 pour le texte de marque des grands titres.', word: 'Réserver une table' },
   {
-    key: 'bordure',
+    key: 'border',
     title: 'Bordure',
-    intro: "Bordure qui repère un composant ou un état, et anneau de focus, seuil 3:1 (WCAG 2.1, 1.4.11). bordure.discrete et bordure.defaut sont décoratives et n'ont pas de paire.",
+    intro: "Bordure qui repère un composant ou un état, et anneau de focus, seuil 3:1 (WCAG 2.1, 1.4.11). border.subtle et border.default sont décoratives et n'ont pas de paire.",
     word: 'Champ',
   },
 ];
@@ -30,12 +30,12 @@ const GROUPS = [
  * @param {string} word @param {number} min
  */
 function row(p, word, min) {
-  const isText = p.devant.startsWith('texte.');
+  const isText = p.devant.startsWith('text.');
   const [verdict, cls] = p.regle ? ['interdite', 'interdite'] : p.ok ? ['conforme', 'conforme'] : p.exception ? ['exception', 'exception'] : ['échec', 'echec'];
   const note = p.regle ?? p.exception;
   const style = isText ? `background:${p.hexFond};color:${p.hexDevant}` : `background:${p.hexFond};border-color:${p.hexDevant}`;
   return `        <tr data-devant="${esc(p.devant)}" data-fond="${esc(p.fond)}" class="${cls}">
-          <td data-label="Fond"><span class="pastille" style="background:${p.hexFond}"></span><code>${esc(p.fond)}</code> <span class="hex">${p.hexFond}</span></td>
+          <td data-label="Fond"><span class="echantillon-fond" style="background:${p.hexFond}"></span><code>${esc(p.fond)}</code> <span class="hex">${p.hexFond}</span></td>
           <td data-label="Mot écrit"><span class="echantillon ${isText ? 'texte' : 'bordure'}" style="${style}">${esc(word)}</span><span class="paire"><code>${esc(p.devant)}</code> <span class="hex">${p.hexDevant}</span> <span class="sur">sur <code>${esc(p.fond)}</code></span></span></td>
           <td data-label="Ratio" class="num">${fr(p.ratio, { decimales: 2, zeros: true, tronque: true })}:1</td>
           <td data-label="Seuil" class="num">${fr(p.min ?? min)}:1</td>
@@ -54,7 +54,7 @@ export function rolesHtml(c, nom) {
     const inGroup = (/** @type {any} */ p) => p.devant.split('.')[0] === g.key;
     const pairs = c.pairs.filter(inGroup);
     const banned = interdites.filter(inGroup);
-    const min = g.key === 'texte' ? 4.5 : 3;
+    const min = g.key === 'text' ? 4.5 : 3;
     const count = `${plural(pairs.length, 'paire', 'paires')}${banned.length ? `, ${plural(banned.length, 'interdite', 'interdites')}` : ''}`;
     return `    <section data-propriete="${g.key}">
       <h2>${g.title} <span class="compte">${count}</span></h2>
@@ -88,7 +88,7 @@ ${[...pairs, ...banned].map((p) => row(p, g.word, min)).join('\n')}
       td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
       code { font: 13px ui-monospace, Menlo, monospace; overflow-wrap: anywhere; }
       .hex { font: 12px ui-monospace, Menlo, monospace; color: var(--gris); }
-      .pastille { display: inline-block; width: 18px; height: 18px; border: 1px solid var(--trait); border-radius: 4px; vertical-align: middle; margin-right: 8px; }
+      .echantillon-fond { display: inline-block; width: 18px; height: 18px; border: 1px solid var(--trait); border-radius: 4px; vertical-align: middle; margin-right: 8px; }
       .echantillon { display: inline-block; min-width: 132px; padding: 6px 10px; margin: 2px 8px 2px 0; border-radius: 6px; font-weight: 500; vertical-align: middle; }
       .echantillon.bordure { min-width: 96px; border: 2px solid; color: #363026; }
       .paire { display: inline-block; vertical-align: middle; }

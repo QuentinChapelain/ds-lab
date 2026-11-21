@@ -1,9 +1,9 @@
 {
   "$description": "Échelles de Grenat Papeterie en mode sombre, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues dans le contexte sombre de marque.resolver.json, après tokens/commun/mode.sombre.tokens.json.",
-  "couleur": {
+  "color": {
     "$type": "color",
     "$description": "Échelles de Grenat Papeterie en mode sombre (generateScale, fond sombre [H]), pas 9 = pas 9 clair ; même nom que l'échelle claire, qu'elles remplacent dans le contexte sombre.",
-    "primaire": {
+    "primary": {
       "1": {
         "$value": {
           "colorSpace": "srgb",
@@ -160,7 +160,7 @@
           "fond": "sombre"
         }
       },
-      "sur-plein": {
+      "on-solid": {
         "$value": {
           "colorSpace": "srgb",
           "components": [

@@ -1,6 +1,6 @@
 {
   "$description": "Contexte sombre du modificateur mode (marque.resolver.json), commun à toutes les marques. Écrit par src/cli/sombre.js si checkValise passe. Format DTCG 2025.10. Chaque jeton remplace en entier celui du mode clair.",
-  "couleur": {
+  "color": {
     "$type": "color",
     "$description": "Mode sombre, commun à toutes les marques [H] : page #121212, chaque surface posée au-dessus plus claire. Neutre dessiné (teinte du neutre clair, cibles calées sur la page) ; statuts générés depuis le pas 9 de leur échelle claire, pas 11 à 9:1 sur la page, pas 12 au-dessus, chroma la plus forte possible. Même nom que l'échelle claire, que le contexte sombre remplace.",
     "surface": {
@@ -13,17 +13,17 @@
         ],
         "hex": "#181818"
       },
-      "$description": "Surface en sombre : plus claire que fond.discret, plus foncée que les fonds de composant, jamais plus foncée que la page [H]."
+      "$description": "Surface en sombre : plus claire que background.subtle, plus foncée que les fonds de composant, jamais plus foncée que la page [H]."
     },
-    "sur-inverse": {
-      "$value": "{couleur.neutre.1}",
-      "$description": "Texte sur fond.inverse en sombre : la page, pas 1 du neutre."
+    "on-inverse": {
+      "$value": "{color.neutral.1}",
+      "$description": "Texte sur background.inverse en sombre : la page, pas 1 du neutre."
     },
-    "teinte": {
-      "$value": "{couleur.neutre.5}",
-      "$description": "Fond teinté d'une pièce statique (fond.teinte) en sombre : pas 5 du neutre, pour se détacher d'une surface."
+    "tint": {
+      "$value": "{color.neutral.5}",
+      "$description": "Fond teinté d'une pièce statique (background.tint) en sombre : pas 5 du neutre, pour se détacher d'une surface."
     },
-    "neutre": {
+    "neutral": {
       "1": {
         "$value": {
           "colorSpace": "srgb",
@@ -178,7 +178,7 @@
           "fond": "sombre"
         }
       },
-      "sur-plein": {
+      "on-solid": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -191,7 +191,7 @@
         "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
       }
     },
-    "erreur": {
+    "error": {
       "1": {
         "$value": {
           "colorSpace": "srgb",
@@ -348,7 +348,7 @@
           "fond": "sombre"
         }
       },
-      "sur-plein": {
+      "on-solid": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -361,7 +361,7 @@
         "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
       }
     },
-    "succes": {
+    "success": {
       "1": {
         "$value": {
           "colorSpace": "srgb",
@@ -516,7 +516,7 @@
           "fond": "sombre"
         }
       },
-      "sur-plein": {
+      "on-solid": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -529,7 +529,7 @@
         "$description": "texte posé sur les pas 9 et 10 (4,5:1)"
       }
     },
-    "avertissement": {
+    "warning": {
       "1": {
         "$value": {
           "colorSpace": "srgb",
@@ -684,7 +684,7 @@
           "fond": "sombre"
         }
       },
-      "sur-plein": {
+      "on-solid": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -852,7 +852,7 @@
           "fond": "sombre"
         }
       },
-      "sur-plein": {
+      "on-solid": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -866,12 +866,12 @@
       }
     }
   },
-  "marque": {
+  "brand": {
     "$type": "color",
-    "primaire": {
-      "teinte": {
-        "$value": "{marque.primaire.5}",
-        "$description": "Fond teinté de la marque (fond.marque.teinte) en sombre : pas 5 de l'échelle sombre du primaire, pour se détacher d'une surface."
+    "primary": {
+      "tint": {
+        "$value": "{brand.primary.5}",
+        "$description": "Fond teinté de la marque (background.brand.tint) en sombre : pas 5 de l'échelle sombre du primaire, pour se détacher d'une surface."
       }
     }
   }

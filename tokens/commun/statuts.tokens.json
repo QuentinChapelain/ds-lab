@@ -1,9 +1,9 @@
 {
   "$description": "Statuts complémentaires communs à toutes les marques (avertissement, info), du 14/11/2026. Format DTCG 2025.10. Complète primitives.tokens.json sans le modifier.",
-  "couleur": {
+  "color": {
     "$type": "color",
     "$description": "Statuts complémentaires (avertissement, info), générés par contraste visé contre le blanc ; checkValise passe.",
-    "avertissement": {
+    "warning": {
       "1": {
         "$value": {
           "colorSpace": "srgb",
@@ -159,7 +159,7 @@
           ]
         }
       },
-      "sur-plein": {
+      "on-solid": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -326,7 +326,7 @@
           "signaux": []
         }
       },
-      "sur-plein": {
+      "on-solid": {
         "$value": {
           "colorSpace": "srgb",
           "components": [

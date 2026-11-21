@@ -16,6 +16,9 @@ const CAPTURES = join(LOCAL, 'icon-button-captures');
 /** États que la preuve force sur les boutons de leur colonne. */
 const FORCES = { survol: ['hover'], focus: ['focus', 'focus-visible'] };
 
+/** Taille de la planche → valeur de la prop size, qui nomme aussi les variables du thème. */
+const TAILLES = /** @type {Record<string, string>} */ ({ normale: 'medium', petite: 'small' });
+
 /**
  * Mesures attendues de chaque bouton de la planche, par « variante|taille|état », au format de getComputedStyle.
  * @param {(k: string) => { fond: string, texte: string }} c couleur de la table, en r,g,b
@@ -24,10 +27,10 @@ const FORCES = { survol: ['hover'], focus: ['focus', 'focus-visible'] };
 function attenduBoutons(c, v) {
   /** Variante → [couleur au repos, couleur au survol, fond transparent hors survol] : celles du bouton (D43). */
   const VARIANTES = {
-    discret: ['interactif-discret', 'interactif-discret', true],
-    secondaire: ['surface', 'composant-survol', false],
+    discret: ['interactive-subtle', 'interactive-subtle', true],
+    secondaire: ['surface', 'component-hover', false],
     principal: ['primary', 'primary-darken-1', false],
-    'danger-discret': ['erreur-discret', 'erreur-discret', true],
+    'danger-discret': ['error-subtle', 'error-subtle', true],
   };
   /** @type {Map<string, Record<string, string>>} */
   const out = new Map();
@@ -35,17 +38,17 @@ function attenduBoutons(c, v) {
     for (const taille of ['normale', 'petite'])
       for (const etat of ['repos', 'survol', 'focus', 'désactivé']) {
         const desactive = etat === 'désactivé';
-        const couleur = desactive ? 'desactive' : etat === 'survol' ? survol : repos;
-        const cote = v[`ds-hauteur-controle-${taille}`];
-        const icone = v[`ds-taille-icone-${taille}`];
+        const couleur = desactive ? 'disabled' : etat === 'survol' ? survol : repos;
+        const cote = v[`ds-height-control-${TAILLES[taille]}`];
+        const icone = v[`ds-icon-size-${TAILLES[taille]}`];
         const marge = `${(parseFloat(cote) - parseFloat(icone)) / 2}px`;
         out.set(`${variante}|${taille}|${etat}`, {
           fond: discret && etat !== 'survol' ? TRANSPARENT : css(c(couleur).fond),
           icone: css(c(couleur).texte),
-          ...(variante === 'secondaire' ? { contour: `${v['ds-epaisseur-contour']} ${css(v[desactive ? 'ds-contour-desactive' : 'ds-contour'])}` } : {}),
-          anneau: etat === 'focus' ? `solid ${v['ds-epaisseur-focus']} ${css(v['ds-focus'])} ${v['ds-decalage-focus']}` : 'none',
+          ...(variante === 'secondaire' ? { contour: `${v['ds-border-width-default']} ${css(v[desactive ? 'ds-border-disabled' : 'ds-border'])}` } : {}),
+          anneau: etat === 'focus' ? `solid ${v['ds-border-width-focus']} ${css(v['ds-focus'])} ${v['ds-offset-focus']}` : 'none',
           boite: `${cote}×${cote}`,
-          rayon: v['ds-arrondi-controle'],
+          rayon: v['ds-border-radius-control'],
           dessin: `${icone}×${icone}`,
           centre: `${marge} ${marge}`,
           ombre: 'none',
@@ -162,7 +165,7 @@ async function clavier(contexte, base, t) {
     const s = getComputedStyle(e);
     return { visible: e.matches(':focus-visible'), anneau: `${s.outlineStyle} ${s.outlineWidth} ${s.outlineColor} ${s.outlineOffset}` };
   });
-  const attendu = `solid ${t.variables['ds-epaisseur-focus']} ${css(t.variables['ds-focus'])} ${t.variables['ds-decalage-focus']}`;
+  const attendu = `solid ${t.variables['ds-border-width-focus']} ${css(t.variables['ds-focus'])} ${t.variables['ds-offset-focus']}`;
   out.push([anneau.visible && anneau.anneau === attendu, `${t.nom}, focus au clavier : ${anneau.anneau} (jetons ${attendu})`]);
 
   // Le désactivé ne réagit ni au clavier ni à la souris ; l'actif émet son clic ; le bouton d'envoi envoie le formulaire.
@@ -213,7 +216,7 @@ export async function preuveBoutonIcone({ themes, contexte, developpement, const
       const n = Object.keys(r.boutons).length;
       verifier(ecarts.length === 0 && n === attendu.size && r.erreurs.length === 0, `${t.nom}, ${mode}, planche du bouton à icône : ${n} boutons sur ${attendu.size}${ecarts.length ? `, ${ecarts.length} écart(s) : ${ecarts.slice(0, 4).join(' ; ')}` : ', boîte, icône, centrage, couleurs, contour et anneau égaux aux jetons dans chaque état'}${r.erreurs.length ? `, ${r.erreurs.join(' ; ')}` : ''}`);
     }
-    const h = t.variables['ds-hauteur-controle-normale'];
+    const h = t.variables['ds-height-control-medium'];
     const recherche = [bld.recherche.champ, bld.recherche.bouton];
     const voisins = [bld.bouton.texte, bld.bouton.icone];
     verifier(aligne(recherche, h) && aligne(voisins, h), `${t.nom}, alignement : champ de recherche + bouton à icône ${decrire(recherche)} ; bouton + bouton à icône ${decrire(voisins)}`);

@@ -104,7 +104,7 @@ test('C1 modifications.json : fenêtre, schéma, colonne, pages et important de 
   for (const e of decidees) assert.deepEqual(e.pages, [PAGE], `${e.rows} ${e.selector}`);
   const pied = decidees.find((/** @type {any} */ e) => e.selector === '.pied');
   assert.equal(pied.written, '#eeeeee');
-  assert.equal(pied.value, 'var(--couleur-neutre-4, #eeeeee)');
+  assert.equal(pied.value, 'var(--color-neutral-4, #eeeeee)');
   for (const e of mods.entries) assert.ok(!/important/i.test(`${e.written} ${e.value}`), `${e.rows} ${e.selector} ${e.property} : ${e.written} → ${e.value}`);
 });
 
@@ -112,38 +112,38 @@ const ATTENDU_C = `/* ds-lab : feuille ajoutée de ${C}, à charger juste après
 
 /* coul-03 ; ${C}:1:29 */
 .carte {
-  color: var(--couleur-neutre-12, #333333); /* coul-03 */
+  color: var(--color-neutral-12, #333333); /* coul-03 */
 }
 
 /* esp-03 ; ${C}:1:56 */
 .carte-titre {
-  margin-bottom: var(--espace-32, 30px); /* esp-03 */
+  margin-bottom: var(--space-32, 30px); /* esp-03 */
 }
 
 /* coul-07 ; ${C}:1:82 */
 .carte {
-  background-color: var(--couleur-neutre-3, #f2f2f2); /* coul-07 */
+  background-color: var(--color-neutral-3, #f2f2f2); /* coul-07 */
 }
 
 /* coul-04 ; ${C}:1:113 */
 .pied {
-  background-color: var(--couleur-neutre-4, #eeeeee) !important; /* coul-04 ; provisoire : !important d'origine */
+  background-color: var(--color-neutral-4, #eeeeee) !important; /* coul-04 ; provisoire : !important d'origine */
 }
 
 /* coul-01 ; ${C}:1:194 */
 .liste>li {
-  color: var(--couleur-neutre-11, #808080); /* coul-01 */
+  color: var(--color-neutral-11, #808080); /* coul-01 */
 }
 
 /* coul-04 ; ${C}:1:227 */
 li:nth-child(even) {
-  background-color: var(--couleur-neutre-4, #eeeeee); /* coul-04 */
+  background-color: var(--color-neutral-4, #eeeeee); /* coul-04 */
 }
 
 /* esp-04 ; ${C}:1:285 */
 @media (max-width:500px) {
   .etroit {
-    padding-left: var(--espace-32, 36px); /* esp-04 */
+    padding-left: var(--space-32, 36px); /* esp-04 */
   }
 }
 `;
@@ -154,8 +154,8 @@ test('C2 feuilles ajoutées : aucune règle ambiguë ni introuvable, !important 
     ['/compressee/styles/compressee.ajout.css', '/compressee/styles/imprimable.ajout.css', '/compressee/styles/injectee.ajout.css'],
   );
   assert.equal(ajout.feuilles[0].texte, ATTENDU_C);
-  assert.ok(ajout.feuilles[1].texte.includes('.note {\n  color: var(--couleur-neutre-12, #2d2d2d); /* coul-05 */\n}'), ajout.feuilles[1].texte);
-  assert.ok(ajout.feuilles[2].texte.includes('.bandeau {\n  color: var(--couleur-neutre-12, #333333); /* coul-03 */\n}'), ajout.feuilles[2].texte);
+  assert.ok(ajout.feuilles[1].texte.includes('.note {\n  color: var(--color-neutral-12, #2d2d2d); /* coul-05 */\n}'), ajout.feuilles[1].texte);
+  assert.ok(ajout.feuilles[2].texte.includes('.bandeau {\n  color: var(--color-neutral-12, #333333); /* coul-03 */\n}'), ajout.feuilles[2].texte);
   assert.deepEqual(
     ajout.nonEcrites.map((x) => [x.entry.selector, x.entry.property, x.categorie]),
     [
@@ -181,7 +181,7 @@ test('C3 pertes.md : cinq causes distinctes, chargement avec le media et la feui
   has('NON ÉCRITES (4)');
   for (const t of ['GARDE (0)', 'RACCOURCI (4)', 'RÈGLE INTROUVABLE (0)', "BATTUE PAR L'ORDRE (0)", 'CONTEXTE (0)', 'FEUILLE INTROUVABLE (0)']) has(`NON ÉCRITES, ${t}`);
   has(
-    `- coul-06 : ${C}:1:154 .bord { border-top-color } : border-top-color introuvable dans border: 1px solid var(--trait). À faire : écrire border-top-color à part dans la source, avec le jeton --couleur-neutre-6 ; le raccourci tient sa valeur d'un var(), sa valeur de repli n'est pas connue.`,
+    `- coul-06 : ${C}:1:154 .bord { border-top-color } : border-top-color introuvable dans border: 1px solid var(--trait). À faire : écrire border-top-color à part dans la source, avec le jeton --color-neutral-6 ; le raccourci tient sa valeur d'un var(), sa valeur de repli n'est pas connue.`,
   );
   assert.ok(!ajout.pertes.includes('ambiguë'), ajout.pertes);
 });

@@ -55,4 +55,4 @@ export const sectionOf = (lines, head) => {
 /** Ligne numérotée d'une section pour un identifiant. @param {string[]} sec @param {string} id */
 export const stepOf = (sec, id) => sec.find((l) => new RegExp(`^\\d+\\. ${id} `).test(l));
 /** Valeurs inchangées qui ont un jeton. @param {any} d */
-export const withToken = (d) => d.rows.filter((/** @type {any} */ r) => r.status === 'inchangé' && /^(couleur|espace|taille-texte|rayon)\./.test(r.token));
+export const withToken = (d) => d.rows.filter((/** @type {any} */ r) => r.status === 'inchangé' && /^(color|space|font-size|radius)\./.test(r.token));

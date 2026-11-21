@@ -3,7 +3,7 @@
  * npm run apply, sur les pages en désordre d'Orbe Café (marque fictive). Attendus écrits avant le code :
  * S1. reduce (avec --tokens) écrit modifications.json à côté de migration.md : chaque déclaration
  *     que la consigne liste à remplacer ou à rattacher (unité absolue) a son entrée, et aucune autre ;
- *     ex. recente.css:59 .produit, 12px → var(--rayon-12, 12px) (RATTACHE, lu dans la
+ *     ex. recente.css:59 .produit, 12px → var(--radius-12, 12px) (RATTACHE, lu dans la
  *     consigne). Commentaires : chaque déclaration en conflit ; chaque unité relative de RATTACHE.
  *     tokens.css dans /desordre/styles/ ; pages qui chargent une feuille modifiée, témoin compris.
  * S3. Deux copies fraîches : fichiers identiques octet pour octet ; relancé sur une copie migrée :
@@ -87,7 +87,7 @@ test('S1 : modifications.json à côté de migration.md ; entrée lue dans la co
   for (const e of produit) {
     assert.match(e.property, /^border-.*-radius$/);
     assert.equal(e.written, '12px');
-    assert.equal(e.value, 'var(--rayon-12, 12px)');
+    assert.equal(e.value, 'var(--radius-12, 12px)');
     assert.equal(e.section, 'RATTACHE');
   }
   assert.equal(mods.tokensCss.path, '/desordre/styles/tokens.css');

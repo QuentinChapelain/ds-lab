@@ -182,7 +182,7 @@ export function modeleResolver({ nom, marque, sombre = [], dossier }) {
 }
 
 /**
- * Arbre résolu partagé en trois : rôles (groupes des sources du jeu roles), couche marque (groupe marque),
+ * Arbre résolu partagé en trois : rôles (groupes des sources du jeu roles), couche marque (groupe brand),
  * primitives (le reste).
  * @param {Resolu} r
  */
@@ -193,10 +193,10 @@ export function partager(r) {
   /** @type {Record<string, any>} */
   const primitives = {};
   for (const [k, v] of Object.entries(r.jetons)) {
-    if (k.startsWith('$') || k === 'marque') continue;
+    if (k.startsWith('$') || k === 'brand') continue;
     (groupesRoles.has(k) ? semantique : primitives)[k] = v;
   }
-  return { semantique, primitives, marque: r.jetons.marque ? { marque: r.jetons.marque } : {} };
+  return { semantique, primitives, marque: r.jetons.brand ? { brand: r.jetons.brand } : {} };
 }
 
 /**

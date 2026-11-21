@@ -4,12 +4,12 @@
  *
  * Attendus écrits à la main avant le code (18/11/2026, docs/attendus/bouton.md) ; couleurs lues dans les jetons par un
  * résolveur écrit à part, rapports par culori 4.0.2 (wcagContrast) ; script et commande dans l'attendu :
- *   B1 rôles de couleur ajoutés : fond.erreur.fort.survol → {marque.erreur.plein-survol}, fond.desactive →
- *      {couleur.neutre.3}, texte.desactive → {couleur.neutre.9} ;
- *   B2 dimensions : arrondi.controle 8 px ({rayon.8}), hauteur.controle.normale 40 px et .petite 32 px ({taille.40},
- *      {taille.32}), epaisseur.focus 2 px ({trait.2}), taille-icone.normale 20 px et .petite 16 px ({taille.20},
- *      {taille.16}), ecart.icone-texte 8 px ({espace.8}), decalage.focus 2 px ({trait.2}, DS2) et epaisseur.contour
- *      1 px ({trait.1}), ajoutés par correction de l'attendu ; les mêmes dans les dix thèmes ;
+ *   B1 rôles de couleur ajoutés : background.error.strong.hover → {brand.error.solid-hover}, background.disabled →
+ *      {color.neutral.3}, text.disabled → {color.neutral.9} ;
+ *   B2 dimensions : border-radius.control 8 px ({radius.8}), height.control.medium 40 px et .petite 32 px ({size.40},
+ *      {size.32}), border-width.focus 2 px ({stroke.2}), icon-size.medium 20 px et .petite 16 px ({size.20},
+ *      {size.16}), gap.icon-text 8 px ({space.8}), offset.focus 2 px ({stroke.2}, DS2) et border-width.default
+ *      1 px ({stroke.1}), ajoutés par correction de l'attendu ; les mêmes dans les dix thèmes ;
  *   B3 couleurs de chaque variante, au repos et au survol, dans chaque thème, et leurs rapports (2 décimales) :
  *      tableaux de l'attendu, recopiés ci-dessous ; chaque texte actif tient 4,5:1, le contour et l'anneau 3:1 sur la
  *      page ; le désactivé reste entre 3,32 et 4,26, sous 4,5, avec son exception écrite ;
@@ -37,11 +37,11 @@ const MODES = /** @type {const} */ (['clair', 'sombre']);
 
 /** Variante → [fond au repos, texte, fond au survol]. Le discret et le danger discret sont posés sur la page. */
 const VARIANTES = {
-  principal: ['fond.interactif.fort', 'texte.sur-interactif', 'fond.interactif.fort.survol'],
-  secondaire: ['fond.surface', 'texte.principal', 'fond.composant.survol'],
-  discret: ['fond.app', 'texte.interactif', 'fond.interactif.discret'],
-  danger: ['fond.erreur.fort', 'texte.sur-erreur', 'fond.erreur.fort.survol'],
-  'danger-discret': ['fond.app', 'texte.erreur', 'fond.erreur.discret'],
+  principal: ['background.interactive.strong', 'text.on-interactive', 'background.interactive.strong.hover'],
+  secondaire: ['background.surface', 'text.default', 'background.component.hover'],
+  discret: ['background.app', 'text.interactive', 'background.interactive.subtle'],
+  danger: ['background.error.strong', 'text.on-error', 'background.error.strong.hover'],
+  'danger-discret': ['background.app', 'text.error', 'background.error.subtle'],
 };
 
 /** Ce qui varie avec la marque : principal [fond, texte, repos, survol, rapport survol], discret [texte, rapport, survol, rapport], focus [couleur, rapport]. */
@@ -79,15 +79,15 @@ const PAR_MODE = {
 };
 
 const DIMENSIONS = {
-  'arrondi.controle': ['{rayon.8}', 8],
-  'hauteur.controle.normale': ['{taille.40}', 40],
-  'hauteur.controle.petite': ['{taille.32}', 32],
-  'epaisseur.contour': ['{trait.1}', 1],
-  'epaisseur.focus': ['{trait.2}', 2],
-  'decalage.focus': ['{trait.2}', 2],
-  'taille-icone.normale': ['{taille.20}', 20],
-  'taille-icone.petite': ['{taille.16}', 16],
-  'ecart.icone-texte': ['{espace.8}', 8],
+  'border-radius.control': ['{radius.8}', 8],
+  'height.control.medium': ['{size.40}', 40],
+  'height.control.small': ['{size.32}', 32],
+  'border-width.default': ['{stroke.1}', 1],
+  'border-width.focus': ['{stroke.2}', 2],
+  'offset.focus': ['{stroke.2}', 2],
+  'icon-size.medium': ['{size.20}', 20],
+  'icon-size.small': ['{size.16}', 16],
+  'gap.icon-text': ['{space.8}', 8],
 };
 
 /** Rapport culori à deux décimales. @param {string} a @param {string} b */
@@ -108,12 +108,12 @@ function theme(marque, mode) {
 
 test('B1 rôles de couleur du bouton, en alias, dans les dix thèmes', () => {
   const sem = charger('semantique.tokens.json');
-  assert.equal(sem.fond.erreur.fort.survol.$value, '{marque.erreur.plein-survol}');
-  assert.equal(sem.fond.desactive.$value, '{couleur.neutre.3}');
-  assert.equal(sem.texte.desactive.$value, '{couleur.neutre.9}');
+  assert.equal(sem.background.error.strong.hover.$value, '{brand.error.solid-hover}');
+  assert.equal(sem.background.disabled.$value, '{color.neutral.3}');
+  assert.equal(sem.text.disabled.$value, '{color.neutral.9}');
   for (const m of MARQUES) for (const mode of MODES) {
     const { roles } = theme(m, mode);
-    for (const r of ['fond.erreur.fort.survol', 'fond.desactive', 'texte.desactive']) assert.ok(roles.has(r), `${m}-${mode} : ${r}`);
+    for (const r of ['background.error.strong.hover', 'background.disabled', 'text.disabled']) assert.ok(roles.has(r), `${m}-${mode} : ${r}`);
   }
 });
 
@@ -134,7 +134,7 @@ test('B3 couleurs et rapports de chaque variante, dans les dix thèmes', () => {
     const { hex } = theme(m, mode);
     const t = PAR_THEME[/** @type {keyof typeof PAR_THEME} */ (nom)];
     const c = PAR_MODE[mode];
-    assert.equal(hex('fond.app'), c.page, `${nom} : page`);
+    assert.equal(hex('background.app'), c.page, `${nom} : page`);
     /** @param {keyof typeof VARIANTES} v @param {string} fond @param {string} texte @param {number} repos @param {string} survol @param {number} rSurvol */
     const variante = (v, fond, texte, repos, survol, rSurvol) => {
       const [f, x, s] = VARIANTES[v];
@@ -146,11 +146,11 @@ test('B3 couleurs et rapports de chaque variante, dans les dix thèmes', () => {
     variante('discret', c.page, t.discret[0], t.discret[1], t.discret[2], t.discret[3]);
     variante('danger', ...c.danger);
     variante('danger-discret', c.page, c['danger-discret'][0], c['danger-discret'][1], c['danger-discret'][2], c['danger-discret'][3]);
-    assert.deepEqual([hex('bordure.forte'), r2(hex('bordure.forte'), c.page)], c.contour, `${nom} : contour`);
-    assert.deepEqual([hex('bordure.focus'), r2(hex('bordure.focus'), c.page)], t.focus, `${nom} : anneau`);
+    assert.deepEqual([hex('border.strong'), r2(hex('border.strong'), c.page)], c.contour, `${nom} : contour`);
+    assert.deepEqual([hex('border.focus'), r2(hex('border.focus'), c.page)], t.focus, `${nom} : anneau`);
     assert.ok(c.contour[1] >= 3 && t.focus[1] >= 3, `${nom} : trait sous 3:1`);
     const [fd, td, rd, rp, bd] = c.desactive;
-    assert.deepEqual([hex('fond.desactive'), hex('texte.desactive'), r2(td, fd), r2(td, c.page), hex('bordure.discrete')], [fd, td, rd, rp, bd], `${nom} : désactivé`);
+    assert.deepEqual([hex('background.disabled'), hex('text.disabled'), r2(td, fd), r2(td, c.page), hex('border.subtle')], [fd, td, rd, rp, bd], `${nom} : désactivé`);
     assert.ok(rd >= 3.32 && rd < 4.5 && rp <= 4.26 && rp < 4.5, `${nom} : désactivé hors de la plage de l'attendu`);
   }
 });
@@ -159,8 +159,8 @@ test('B3 paires du bouton : le survol d\'erreur passe, le désactivé est listé
   for (const m of MARQUES) for (const mode of MODES) {
     const c = contratRoles(loadRoles(join(ROOT, 'tokens', m), { mode }));
     const cle = (/** @type {any} */ p) => `${p.devant} sur ${p.fond}`;
-    assert.ok(c.pairs.some((p) => cle(p) === 'texte.sur-erreur sur fond.erreur.fort.survol' && p.ok), `${m}-${mode}`);
-    assert.deepEqual(c.exceptions.map(cle), ['texte.desactive sur fond.desactive', 'texte.desactive sur fond.app'], `${m}-${mode}`);
+    assert.ok(c.pairs.some((p) => cle(p) === 'text.on-error sur background.error.strong.hover' && p.ok), `${m}-${mode}`);
+    assert.deepEqual(c.exceptions.map(cle), ['text.disabled sur background.disabled', 'text.disabled sur background.app'], `${m}-${mode}`);
     assert.deepEqual(c.fails, [], `${m}-${mode}`);
   }
 });
@@ -187,27 +187,27 @@ const ICONE_PAR_THEME = {
 };
 /** Rôles des cinq paires de ICONE_PAR_THEME : discret sur la page, sur une surface, au survol ; principal au repos, au survol. */
 const ICONE_ROLES_THEME = [
-  ['texte.interactif', 'fond.app'],
-  ['texte.interactif', 'fond.surface'],
-  ['texte.interactif', 'fond.interactif.discret'],
-  ['texte.sur-interactif', 'fond.interactif.fort'],
-  ['texte.sur-interactif', 'fond.interactif.fort.survol'],
+  ['text.interactive', 'background.app'],
+  ['text.interactive', 'background.surface'],
+  ['text.interactive', 'background.interactive.subtle'],
+  ['text.on-interactive', 'background.interactive.strong'],
+  ['text.on-interactive', 'background.interactive.strong.hover'],
 ];
 /** Paires communes aux cinq marques, par mode : [icône, fond, clair, sombre], chaque valeur [icône, fond, rapport]. */
 const ICONE_PAR_MODE = [
-  ['texte.erreur', 'fond.app', ['#cb1d2a', '#fbfbfb', 5.41], ['#ff978f', '#121212', 8.99]],
-  ['texte.erreur', 'fond.surface', ['#cb1d2a', '#ffffff', 5.6], ['#ff978f', '#181818', 8.52]],
-  ['texte.erreur', 'fond.erreur.discret', ['#cb1d2a', '#fff0ee', 5.06], ['#ff978f', '#231918', 8.23]],
-  ['texte.principal', 'fond.surface', ['#363026', '#ffffff', 13.06], ['#d8d5ce', '#181818', 12.12]],
-  ['texte.principal', 'fond.composant.survol', ['#363026', '#ecebe9', 10.96], ['#d8d5ce', '#212121', 10.99]],
-  ['bordure.forte', 'fond.app', ['#958f84', '#fbfbfb', 3.1], ['#6a665c', '#121212', 3.27]],
-  ['bordure.forte', 'fond.surface', ['#958f84', '#ffffff', 3.21], ['#6a665c', '#181818', 3.1]],
+  ['text.error', 'background.app', ['#cb1d2a', '#fbfbfb', 5.41], ['#ff978f', '#121212', 8.99]],
+  ['text.error', 'background.surface', ['#cb1d2a', '#ffffff', 5.6], ['#ff978f', '#181818', 8.52]],
+  ['text.error', 'background.error.subtle', ['#cb1d2a', '#fff0ee', 5.06], ['#ff978f', '#231918', 8.23]],
+  ['text.default', 'background.surface', ['#363026', '#ffffff', 13.06], ['#d8d5ce', '#181818', 12.12]],
+  ['text.default', 'background.component.hover', ['#363026', '#ecebe9', 10.96], ['#d8d5ce', '#212121', 10.99]],
+  ['border.strong', 'background.app', ['#958f84', '#fbfbfb', 3.1], ['#6a665c', '#121212', 3.27]],
+  ['border.strong', 'background.surface', ['#958f84', '#ffffff', 3.21], ['#6a665c', '#181818', 3.1]],
 ];
 /** Désactivé, en exception écrite (WCAG 1.4.3 et 1.4.11) : [icône, fond, clair, sombre]. */
 const ICONE_DESACTIVE = [
-  ['texte.desactive', 'fond.desactive', ['#8a8478', '#f3f2f1', 3.32], ['#7d786c', '#1b1b1b', 3.92]],
-  ['texte.desactive', 'fond.app', ['#8a8478', '#fbfbfb', 3.59], ['#7d786c', '#121212', 4.26]],
-  ['texte.desactive', 'fond.surface', ['#8a8478', '#ffffff', 3.72], ['#7d786c', '#181818', 4.04]],
+  ['text.disabled', 'background.disabled', ['#8a8478', '#f3f2f1', 3.32], ['#7d786c', '#1b1b1b', 3.92]],
+  ['text.disabled', 'background.app', ['#8a8478', '#fbfbfb', 3.59], ['#7d786c', '#121212', 4.26]],
+  ['text.disabled', 'background.surface', ['#8a8478', '#ffffff', 3.72], ['#7d786c', '#181818', 4.04]],
 ];
 
 test('B5 icône du bouton à icône contre ce qui l\'entoure, dans les dix thèmes', () => {

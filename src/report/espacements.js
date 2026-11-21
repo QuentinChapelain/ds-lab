@@ -5,7 +5,7 @@
  * Une page complète (formulaire avec un message d'erreur sur deux lignes, rangée de trois cartes,
  * plusieurs sections) bâtie sur les cinq rôles d'espacement, chacun coté et nommé une fois.
  * Le parent porte l'espace : gap et padding uniquement, la seule déclaration margin est la remise à zéro.
- * Toutes les valeurs viennent des jetons, valeur en étroit comprise (ecart.section, 48 px, et 32 px
+ * Toutes les valeurs viennent des jetons, valeur en étroit comprise (gap.section, 48 px, et 32 px
  * sous 600 px dans le contexte étroit, seuil [H]). Couleurs : rôles de semantique.tokens.json ; les cotes ont leur propre
  * palette d'annotation, hors du design system. Page autonome, sans ressource externe ni script.
  */
@@ -13,23 +13,22 @@ import { largeurs, nomDeMarque } from '../tokens/resolver.js';
 import { espacements } from '../tokens/espacements.js';
 import { resolveRoles } from '../tokens/roles.js';
 import { fr, esc } from '../lib/format.js';
+import { cssVar } from '../lib/nom-css.js';
 
 /** Nombre absent : un tiret. */
 const TIRET = { vide: '—' };
-/** Nom de variable CSS d'un rôle. @param {string} role */
-const cssVar = (role) => `--${role.replace(/\./g, '-')}`;
 
 /** Palette d'annotation des cotes (hors design system). */
 const COTE = /** @type {Record<string, string>} */ ({
-  'ecart.dans-composant': '#c2255c',
-  'ecart.entre-blocs': '#7048e8',
-  'ecart.entre-composants': '#1971c2',
-  'ecart.entre-groupes': '#2b8a3e',
-  'ecart.section': '#d9480f',
-  'ecart.icone-texte': '#0c8599',
-  'ecart.entre-etiquettes': '#5c940d',
-  'marge-interieure.composant': '#7048e8',
-  'marge-interieure.etiquette': '#ae3ec9',
+  'gap.within-component': '#c2255c',
+  'gap.between-blocks': '#7048e8',
+  'gap.between-components': '#1971c2',
+  'gap.between-groups': '#2b8a3e',
+  'gap.section': '#d9480f',
+  'gap.icon-text': '#0c8599',
+  'gap.between-tags': '#5c940d',
+  'padding.component': '#7048e8',
+  'padding.tag': '#ae3ec9',
 });
 /** Couleur de cote d'un rôle ; un rôle sans couleur lève, au lieu d'écrire « undefined » dans la planche. @param {string} role */
 const couleurCote = (role) => {
@@ -106,53 +105,53 @@ ${seuils
       body {
         display: grid; grid-template-columns: minmax(0, 1040px); justify-content: center;
         padding: 32px 16px 64px; /* gouttière de page, hors des cinq rôles */
-        background: ${hex('fond.app')}; color: ${hex('texte.principal')};
+        background: ${hex('background.app')}; color: ${hex('text.default')};
         font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
       }
-      main { display: flex; flex-direction: column; gap: var(${cssVar('ecart.section')}); }
-      main > header, main > section { position: relative; display: flex; flex-direction: column; gap: var(${cssVar('ecart.entre-groupes')}); }
-      .entete { position: relative; display: flex; flex-direction: column; gap: var(${cssVar('ecart.dans-composant')}); }
+      main { display: flex; flex-direction: column; gap: var(${cssVar('gap.section')}); }
+      main > header, main > section { position: relative; display: flex; flex-direction: column; gap: var(${cssVar('gap.between-groups')}); }
+      .entete { position: relative; display: flex; flex-direction: column; gap: var(${cssVar('gap.within-component')}); }
       h1 { font-size: 26px; line-height: 1.2; }
       h2 { font-size: 19px; line-height: 1.3; }
       h3 { font-size: 16px; line-height: 1.3; }
-      .entete p, .usage, .carte p { color: ${hex('texte.secondaire')}; }
+      .entete p, .usage, .carte p { color: ${hex('text.secondary')}; }
       code { font: 13px ui-monospace, Menlo, monospace; overflow-wrap: anywhere; }
 
-      .legende { list-style: none; padding: 0; display: grid; gap: var(${cssVar('ecart.entre-composants')}); }
+      .legende { list-style: none; padding: 0; display: grid; gap: var(${cssVar('gap.between-components')}); }
       .legende li { display: flex; align-items: flex-start; gap: 12px; }
       .barre-case { flex: none; display: flex; width: 48px; }
       .barre { flex: none; height: 24px; min-width: 2px; background: color-mix(in srgb, var(--c) 30%, transparent); box-shadow: inset 0 0 0 1px var(--c); }
-      .legende-texte { display: flex; flex-direction: column; gap: var(${cssVar('ecart.dans-composant')}); min-width: 0; }
+      .legende-texte { display: flex; flex-direction: column; gap: var(${cssVar('gap.within-component')}); min-width: 0; }
       .valeur { font-variant-numeric: tabular-nums; }
       .usage { font-size: 14px; }
       .rapports { font-variant-numeric: tabular-nums; }
 
 
-      .formulaire { max-width: 560px; display: flex; flex-direction: column; gap: var(${cssVar('ecart.entre-groupes')}); padding: var(${cssVar('marge-interieure.composant')}); background: ${hex('fond.surface')}; border: 1px solid ${hex('bordure.discrete')}; border-radius: 8px; }
-      .champs { display: flex; flex-direction: column; gap: var(${cssVar('ecart.entre-composants')}); }
-      .champ { position: relative; display: flex; flex-direction: column; gap: var(${cssVar('ecart.dans-composant')}); }
+      .formulaire { max-width: 560px; display: flex; flex-direction: column; gap: var(${cssVar('gap.between-groups')}); padding: var(${cssVar('padding.component')}); background: ${hex('background.surface')}; border: 1px solid ${hex('border.subtle')}; border-radius: 8px; }
+      .champs { display: flex; flex-direction: column; gap: var(${cssVar('gap.between-components')}); }
+      .champ { position: relative; display: flex; flex-direction: column; gap: var(${cssVar('gap.within-component')}); }
       .champ label { position: relative; font-weight: 600; font-size: 14px; }
-      .champ input { font: inherit; width: 100%; min-height: 40px; padding: 8px 12px; color: ${hex('texte.principal')}; background: ${hex('fond.surface')}; border: 1px solid ${hex('bordure.forte')}; border-radius: 6px; }
-      .champ.erreur input { border: 2px solid ${hex('bordure.erreur')}; }
-      .champ input:focus-visible, .actions button:focus-visible { outline: 2px solid ${hex('bordure.focus')}; outline-offset: 2px; }
-      .message-erreur { color: ${hex('texte.erreur')}; font-size: 14px; line-height: 20px; }
-      .actions { display: flex; flex-wrap: wrap; gap: var(${cssVar('ecart.entre-composants')}); }
+      .champ input { font: inherit; width: 100%; min-height: 40px; padding: 8px 12px; color: ${hex('text.default')}; background: ${hex('background.surface')}; border: 1px solid ${hex('border.strong')}; border-radius: 6px; }
+      .champ.erreur input { border: 2px solid ${hex('border.error')}; }
+      .champ input:focus-visible, .actions button:focus-visible { outline: 2px solid ${hex('border.focus')}; outline-offset: 2px; }
+      .message-erreur { color: ${hex('text.error')}; font-size: 14px; line-height: 20px; }
+      .actions { display: flex; flex-wrap: wrap; gap: var(${cssVar('gap.between-components')}); }
       .actions button { font: inherit; font-weight: 600; padding: 10px 16px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; }
-      .actions .principal { background: ${hex('fond.interactif.fort')}; color: ${hex('texte.sur-interactif')}; }
-      .actions .secondaire { background: ${hex('fond.surface')}; color: ${hex('texte.interactif')}; border-color: ${hex('bordure.forte')}; }
+      .actions .principal { background: ${hex('background.interactive.strong')}; color: ${hex('text.on-interactive')}; }
+      .actions .secondaire { background: ${hex('background.surface')}; color: ${hex('text.interactive')}; border-color: ${hex('border.strong')}; }
 
-      .cartes { display: flex; flex-wrap: wrap; gap: var(${cssVar('ecart.entre-composants')}); }
-      .carte { flex: 1 1 260px; position: relative; display: flex; flex-direction: column; gap: var(${cssVar('ecart.dans-composant')}); padding: var(${cssVar('marge-interieure.composant')}); background: ${hex('fond.surface')}; border: 1px solid ${hex('bordure.discrete')}; border-radius: 8px; }
-      .carte .meta { color: ${hex('texte.interactif')}; font-weight: 600; font-size: 14px; }
+      .cartes { display: flex; flex-wrap: wrap; gap: var(${cssVar('gap.between-components')}); }
+      .carte { flex: 1 1 260px; position: relative; display: flex; flex-direction: column; gap: var(${cssVar('gap.within-component')}); padding: var(${cssVar('padding.component')}); background: ${hex('background.surface')}; border: 1px solid ${hex('border.subtle')}; border-radius: 8px; }
+      .carte .meta { color: ${hex('text.interactive')}; font-weight: 600; font-size: 14px; }
 
-      .horaires { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(${cssVar('ecart.entre-composants')}); max-width: 560px; }
-      .horaires li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(${cssVar('ecart.dans-composant')}); padding-bottom: 8px; border-bottom: 1px solid ${hex('bordure.discrete')}; }
+      .horaires { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(${cssVar('gap.between-components')}); max-width: 560px; }
+      .horaires li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(${cssVar('gap.within-component')}); padding-bottom: 8px; border-bottom: 1px solid ${hex('border.subtle')}; }
 
       /* Cotes : bande posée sous son hôte, sur l'écart qu'elle nomme ; cadre pour la marge intérieure. */
       .cote { position: absolute; left: 0; right: 0; top: 100%; z-index: 1; pointer-events: none; display: flex; align-items: center; justify-content: flex-end; background: color-mix(in srgb, var(--c) 22%, transparent); box-shadow: inset 0 1px 0 var(--c), inset 0 -1px 0 var(--c); }
-      .cote-cadre { position: absolute; inset: 0; z-index: 1; pointer-events: none; border: var(${cssVar('marge-interieure.composant')}) solid color-mix(in srgb, var(--c) 22%, transparent); outline: 1px dashed var(--c); outline-offset: -1px; border-radius: 7px; }
+      .cote-cadre { position: absolute; inset: 0; z-index: 1; pointer-events: none; border: var(${cssVar('padding.component')}) solid color-mix(in srgb, var(--c) 22%, transparent); outline: 1px dashed var(--c); outline-offset: -1px; border-radius: 7px; }
       .etiquette { position: relative; flex: none; font: 600 11px/14px ui-monospace, Menlo, monospace; padding: 1px 6px; color: #1f1c17; background: #ffffff; border: 1px solid var(--c); border-radius: 3px; white-space: nowrap; }
-      .cote-cadre .etiquette { position: absolute; left: 0; top: calc(var(${cssVar('marge-interieure.composant')}) / -2); transform: translateY(-50%); }
+      .cote-cadre .etiquette { position: absolute; left: 0; top: calc(var(${cssVar('padding.component')}) / -2); transform: translateY(-50%); }
     </style>
   </head>
   <body>
@@ -160,7 +159,7 @@ ${seuils
       <header>
         <div class="entete">
           <h1>Espacements par relation, ${esc(nom)}</h1>
-          <p>Marque fictive. Cinq rôles dans semantique.tokens.json, alias vers espace.* ; le parent porte l'espace (gap et padding), aucun enfant n'a de marge. Chaque rôle est coté une fois sur la page, d'une bande à sa couleur.</p>
+          <p>Marque fictive. Cinq rôles dans semantique.tokens.json, alias vers space.* ; le parent porte l'espace (gap et padding), aucun enfant n'a de marge. Chaque rôle est coté une fois sur la page, d'une bande à sa couleur.</p>
         </div>
       </header>
 
@@ -184,10 +183,10 @@ ${legende}
             <div class="champ">
               <label for="nom">Nom</label>
               <input id="nom" name="nom" type="text" value="Camille Arnaud" autocomplete="off">
-              ${cote('ecart.entre-composants', `${px['ecart.entre-composants']} px`)}
+              ${cote('gap.between-components', `${px['gap.between-components']} px`)}
             </div>
             <div class="champ erreur">
-              <label for="courriel">Adresse e-mail${cote('ecart.dans-composant', valeur('ecart.dans-composant'))}</label>
+              <label for="courriel">Adresse e-mail${cote('gap.within-component', valeur('gap.within-component'))}</label>
               <input id="courriel" name="courriel" type="email" value="camille.arnaud" autocomplete="off" aria-invalid="true" aria-describedby="courriel-erreur">
               <p class="message-erreur" id="courriel-erreur">Il manque la partie après @.<br>Exemple : prenom@domaine.fr</p>
             </div>
@@ -201,21 +200,21 @@ ${legende}
             <button type="button" class="secondaire">Annuler</button>
           </div>
         </form>
-        ${cote('ecart.section', valeur('ecart.section'))}
+        ${cote('gap.section', valeur('gap.section'))}
       </section>
 
       <section aria-labelledby="titre-salles">
         <div class="entete">
           <h2 id="titre-salles">Trois salles</h2>
           <p>Chacune a son rythme ; la carte et les horaires sont les mêmes partout.</p>
-          ${cote('ecart.entre-groupes', `${px['ecart.entre-groupes']} px`)}
+          ${cote('gap.between-groups', `${px['gap.between-groups']} px`)}
         </div>
         <div class="cartes">
           <article class="carte">
             <h3>Le comptoir</h3>
             <p>Huit tabourets face aux machines, pour un café serré ou un déjeuner rapide.</p>
             <p class="meta">8 places</p>
-            <span class="cote-cadre" data-cote="marge-interieure.composant" aria-hidden="true" style="--c:${couleurCote('marge-interieure.composant')}"><span class="etiquette">marge-interieure.composant · ${px['marge-interieure.composant']} px</span></span>
+            <span class="cote-cadre" data-cote="padding.component" aria-hidden="true" style="--c:${couleurCote('padding.component')}"><span class="etiquette">padding.component · ${px['padding.component']} px</span></span>
           </article>
           <article class="carte">
             <h3>La verrière</h3>

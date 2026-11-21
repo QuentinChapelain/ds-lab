@@ -26,12 +26,10 @@
  * Aucune date hors de celles des commentaires : un même fichier donne le même résultat.
  */
 
-import { cssVarFallback as withFallback, hasToken, m6Move, relationShort } from './consigne.js';
+import { hasToken, m6Move, relationShort } from './consigne.js';
+import { cssVar, cssVarFallback as withFallback } from '../lib/nom-css.js';
 import { cleRepere } from '../reduce/declarations.js';
 import { ligneDeCle } from '../lib/cles.js';
-
-/** Variable CSS d'un jeton DTCG. @param {string} token */
-export const cssVar = (token) => `--${token.replace(/\./g, '-')}`;
 
 /**
  * Valeur CSS d'un jeton DTCG (couleur : hex ; dimension : valeur et unité), ou null.

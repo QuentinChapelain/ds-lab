@@ -1,9 +1,9 @@
 {
   "$description": "Échelles de Maison Alberto, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues avec les couches communes de tokens/commun/.",
-  "couleur": {
+  "color": {
     "$type": "color",
     "$description": "Échelles générées de Maison Alberto (generateScale, src/valise/generate.js), pas 9 = couleur saisie.",
-    "primaire": {
+    "primary": {
       "1": {
         "$value": {
           "colorSpace": "srgb",
@@ -159,7 +159,7 @@
           ]
         }
       },
-      "sur-plein": {
+      "on-solid": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -326,7 +326,7 @@
           "signaux": []
         }
       },
-      "sur-plein": {
+      "on-solid": {
         "$value": {
           "colorSpace": "srgb",
           "components": [

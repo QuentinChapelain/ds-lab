@@ -6,39 +6,39 @@
 
 /** Rôle ajouté → [emplacement de la couche marque, hex chez Orbe Café]. */
 export const AJOUTS = {
-  'fond.marque.discret': ['marque.primaire.3', '#f1f3f7'],
-  'fond.accent.discret': ['marque.accent.3', '#fcf1ef'],
+  'background.brand.subtle': ['brand.primary.3', '#f1f3f7'],
+  'background.accent.subtle': ['brand.accent.3', '#fcf1ef'],
   // L'aplat plein passe par trois emplacements communs (tokens/commun/aplat.tokens.json), alias du plein.
-  'fond.marque.fort': ['marque.primaire.aplat', '#2b4c7e'],
-  'texte.sur-marque': ['marque.primaire.sur-aplat', '#ffffff'],
-  'texte.marque.grand': ['marque.primaire.texte-grand', '#2b4c7e'],
-  'fond.interactif.inverse': ['marque.primaire.sur-aplat', '#ffffff'],
-  'texte.sur-interactif.inverse': ['marque.primaire.aplat', '#2b4c7e'],
+  'background.brand.strong': ['brand.primary.feature', '#2b4c7e'],
+  'text.on-brand': ['brand.primary.on-feature', '#ffffff'],
+  'text.brand.large': ['brand.primary.text-large', '#2b4c7e'],
+  'background.interactive.inverse': ['brand.primary.on-feature', '#ffffff'],
+  'text.on-interactive.inverse': ['brand.primary.feature', '#2b4c7e'],
   // Survol du plein en clair (D45) : clarté OKLCH du bleu 9 − 0,05.
-  'texte.sur-interactif.inverse.survol': ['marque.primaire.aplat-survol', '#1e3e6f'],
-  'bordure.focus.inverse': ['marque.primaire.sur-aplat', '#ffffff'],
+  'text.on-interactive.inverse.hover': ['brand.primary.feature-hover', '#1e3e6f'],
+  'border.focus.inverse': ['brand.primary.on-feature', '#ffffff'],
 };
 
 /** Paires ajoutées, dans l'ordre de paires.json. */
-const AP = ['fond.marque.discret', 'fond.accent.discret'];
+const AP = ['background.brand.subtle', 'background.accent.subtle'];
 export const PAIRES_AJOUTEES = [
   ...AP.flatMap((f) => [
-    ['texte.principal', f, 'texte'],
-    ['texte.secondaire', f, 'texte'],
-    ['texte.interactif', f, 'texte'],
-    ['texte.marque.grand', f, 'grand-texte'],
-    ['bordure.focus', f, 'focus'],
+    ['text.default', f, 'text'],
+    ['text.secondary', f, 'text'],
+    ['text.interactive', f, 'text'],
+    ['text.brand.large', f, 'large-text'],
+    ['border.focus', f, 'focus'],
   ]),
-  ['texte.accent', 'fond.accent.discret', 'texte'],
-  ['texte.marque.grand', 'fond.app', 'grand-texte'],
-  ['texte.marque.grand', 'fond.surface', 'grand-texte'],
-  ['texte.marque.grand', 'fond.discret', 'grand-texte'],
-  ['texte.sur-marque', 'fond.marque.fort', 'texte'],
-  ['texte.sur-interactif.inverse', 'fond.interactif.inverse', 'texte'],
-  ['texte.sur-interactif.inverse.survol', 'fond.interactif.inverse', 'texte'],
-  ['bordure.focus.inverse', 'fond.marque.fort', 'focus'],
+  ['text.accent', 'background.accent.subtle', 'text'],
+  ['text.brand.large', 'background.app', 'large-text'],
+  ['text.brand.large', 'background.surface', 'large-text'],
+  ['text.brand.large', 'background.subtle', 'large-text'],
+  ['text.on-brand', 'background.brand.strong', 'text'],
+  ['text.on-interactive.inverse', 'background.interactive.inverse', 'text'],
+  ['text.on-interactive.inverse.hover', 'background.interactive.inverse', 'text'],
+  ['border.focus.inverse', 'background.brand.strong', 'focus'],
 ];
-export const INTERDITES_AJOUTEES = ['texte.marque.grand', 'texte.interactif', 'fond.interactif.fort', 'bordure.focus'];
+export const INTERDITES_AJOUTEES = ['text.brand.large', 'text.interactive', 'background.interactive.strong', 'border.focus'];
 
 /**
  * Rôles de couleur du bouton → [cible de l'alias, hex chez Orbe Café en clair], écrits à la main dans
@@ -46,19 +46,19 @@ export const INTERDITES_AJOUTEES = ['texte.marque.grand', 'texte.interactif', 'f
  */
 export const AJOUTS_BOUTON = {
   // Survol du plein d'erreur (D45, docs/attendus/finitions-bouton.md) : clarté OKLCH de l'erreur 11 − 0,05.
-  'fond.erreur.fort.survol': ['marque.erreur.plein-survol', '#b9001a'],
-  'fond.desactive': ['couleur.neutre.3', '#f3f2f1'],
-  'texte.desactive': ['couleur.neutre.9', '#8a8478'],
+  'background.error.strong.hover': ['brand.error.solid-hover', '#b9001a'],
+  'background.disabled': ['color.neutral.3', '#f3f2f1'],
+  'text.disabled': ['color.neutral.9', '#8a8478'],
 };
 
 /** Paires du bouton, en fin de paires.json, après les 70 d'avant ; les deux du désactivé portent une exception écrite. */
 export const PAIRES_BOUTON = [
-  ['texte.sur-erreur', 'fond.erreur.fort.survol', 'texte'],
-  ['texte.desactive', 'fond.desactive', 'texte'],
-  ['texte.desactive', 'fond.app', 'texte'],
+  ['text.on-error', 'background.error.strong.hover', 'text'],
+  ['text.disabled', 'background.disabled', 'text'],
+  ['text.disabled', 'background.app', 'text'],
 ];
 /** Paires du bouton sous leur seuil, avec exception écrite (composant inactif, WCAG 1.4.3). */
-export const EXCEPTIONS_BOUTON = ['texte.desactive sur fond.desactive', 'texte.desactive sur fond.app'];
+export const EXCEPTIONS_BOUTON = ['text.disabled sur background.disabled', 'text.disabled sur background.app'];
 
 /**
  * Rôles de couleur de DsAvatar et DsTag → [cible de l'alias, hex chez Orbe Café en clair], écrits à la main dans
@@ -66,16 +66,16 @@ export const EXCEPTIONS_BOUTON = ['texte.desactive sur fond.desactive', 'texte.d
  * résolveur indépendant de src/). Ajoutés après ceux du bouton.
  */
 export const AJOUTS_AVATAR = {
-  'texte.marque': ['marque.primaire.12', '#103060'],
-  'fond.teinte': ['couleur.teinte', '#f3f2f1'],
-  'fond.marque.teinte': ['marque.primaire.teinte', '#f1f3f7'],
+  'text.brand': ['brand.primary.12', '#103060'],
+  'background.tint': ['color.tint', '#f3f2f1'],
+  'background.brand.tint': ['brand.primary.tint', '#f1f3f7'],
 };
 
-/** Paires de DsAvatar et DsTag, en fin de paires.json, après celles du bouton : texte.marque sur fond.marque.discret, puis les fonds teintés. */
+/** Paires de DsAvatar et DsTag, en fin de paires.json, après celles du bouton : text.brand sur background.brand.subtle, puis les fonds teintés. */
 export const PAIRES_AVATAR = [
-  ['texte.marque', 'fond.marque.discret', 'texte'],
-  ['texte.principal', 'fond.teinte', 'texte'],
-  ['texte.marque', 'fond.marque.teinte', 'texte'],
+  ['text.brand', 'background.brand.subtle', 'text'],
+  ['text.default', 'background.tint', 'text'],
+  ['text.brand', 'background.brand.tint', 'text'],
 ];
 
 /** Rôles de couleur et paires de chaque marque, ajouts compris. */

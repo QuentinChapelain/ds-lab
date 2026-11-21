@@ -1,9 +1,9 @@
 {
   "$description": "Primitives communes à toutes les marques : blanc, neutre, erreur, succès, espaces, tailles de texte, graisses, rayons, tailles de contrôle et d'icône, traits. Reprises telles quelles des primitives d'Orbe Café (11/11/2026). Format DTCG 2025.10.",
-  "couleur": {
+  "color": {
     "$type": "color",
     "$description": "Échelles de 12 pas. Pas 9 = couleur source exacte ; autres pas générés par contraste visé contre le blanc (Leonardo, hors dépôt) ; paires d'usage vérifiées en WCAG 2.1 AA.",
-    "blanc": {
+    "white": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
@@ -24,9 +24,9 @@
         ],
         "hex": "#ffffff"
       },
-      "$description": "Surface posée sur le fond de page (fond.surface) : blanc en clair ; en sombre, la référence du miroir (tokens/commun/mode.sombre.tokens.json)."
+      "$description": "Surface posée sur le fond de page (background.surface) : blanc en clair ; en sombre, la référence du miroir (tokens/commun/mode.sombre.tokens.json)."
     },
-    "sur-inverse": {
+    "on-inverse": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
@@ -36,13 +36,13 @@
         ],
         "hex": "#ffffff"
       },
-      "$description": "Texte posé sur fond.inverse (texte.sur-inverse) : blanc en clair ; en sombre, la référence du miroir."
+      "$description": "Texte posé sur background.inverse (text.on-inverse) : blanc en clair ; en sombre, la référence du miroir."
     },
-    "teinte": {
-      "$value": "{couleur.neutre.3}",
-      "$description": "Fond teinté d'une pièce statique (fond.teinte) : pas 3 du neutre en clair ; en sombre, pas 5 (tokens/commun/mode.sombre.tokens.json)."
+    "tint": {
+      "$value": "{color.neutral.3}",
+      "$description": "Fond teinté d'une pièce statique (background.tint) : pas 3 du neutre en clair ; en sombre, pas 5 (tokens/commun/mode.sombre.tokens.json)."
     },
-    "neutre": {
+    "neutral": {
       "1": {
         "$value": {
           "colorSpace": "srgb",
@@ -187,7 +187,7 @@
         },
         "$description": "texte principal"
       },
-      "sur-plein": {
+      "on-solid": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -200,7 +200,7 @@
         "$description": "texte posé sur le pas 9 (4,5:1)"
       }
     },
-    "erreur": {
+    "error": {
       "1": {
         "$value": {
           "colorSpace": "srgb",
@@ -345,7 +345,7 @@
         },
         "$description": "texte principal"
       },
-      "sur-plein": {
+      "on-solid": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -358,7 +358,7 @@
         "$description": "texte posé sur le pas 9 (4,5:1)"
       }
     },
-    "succes": {
+    "success": {
       "1": {
         "$value": {
           "colorSpace": "srgb",
@@ -503,7 +503,7 @@
         },
         "$description": "texte principal"
       },
-      "sur-plein": {
+      "on-solid": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -517,7 +517,7 @@
       }
     }
   },
-  "espace": {
+  "space": {
     "0": {
       "$value": {
         "value": 0,
@@ -575,7 +575,7 @@
     "$type": "dimension",
     "$description": "Grille de 4 px"
   },
-  "taille-texte": {
+  "font-size": {
     "12": {
       "$value": {
         "value": 12,
@@ -639,7 +639,7 @@
     "$type": "dimension",
     "$description": "Échelle générique [H]"
   },
-  "graisse": {
+  "font-weight": {
     "400": {
       "$value": 400,
       "$description": "normale, corps et mentions"
@@ -655,7 +655,7 @@
     "$type": "fontWeight",
     "$description": "Graisses de texte"
   },
-  "rayon": {
+  "radius": {
     "0": {
       "$value": {
         "value": 0,
@@ -688,14 +688,14 @@
     },
     "$type": "dimension",
     "$description": "9999 = pilule",
-    "pilule": {
+    "full": {
       "$value": {
         "value": 9999,
         "unit": "px"
       }
     }
   },
-  "taille": {
+  "size": {
     "16": {
       "$value": {
         "value": 16,
@@ -741,7 +741,7 @@
     "$type": "dimension",
     "$description": "Tailles de contrôle, d'icône, d'avatar et d'étiquette (hauteur d'un bouton, côté d'une icône ou d'un avatar), et largeur d'une colonne de contenu, en px."
   },
-  "trait": {
+  "stroke": {
     "1": {
       "$value": {
         "value": 1,

@@ -105,7 +105,7 @@ function site(css, ecrit) {
     version: 1,
     host: '127.0.0.1:1',
     stamp: '2026-11-16T1000',
-    entries: [{ sheet: '/s/a.css', line: 1, selector: '.carte', property: 'color', written: ecrit, value: 'var(--couleur-neutre-11, #595959)', rows: ['coul-1'], section: 'REMPLACEMENTS' }],
+    entries: [{ sheet: '/s/a.css', line: 1, selector: '.carte', property: 'color', written: ecrit, value: 'var(--color-neutral-11, #595959)', rows: ['coul-1'], section: 'REMPLACEMENTS' }],
     comments: [],
     brief: { pages: ['/p.html'], sheets: ['/s/a.css'], reste: [], changeAussi: [], neTouchePas: [], signale: [], verification: [] },
   };

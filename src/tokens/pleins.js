@@ -47,9 +47,9 @@ export function classePlein(steps) {
  * Avertissement : texte foncé à 5,77 sur le plein, sous le seuil des couleurs du client (KNOWN_ISSUES.md).
  */
 export const STATUTS_FIGES = /** @type {Record<string, { classe: Classe, regle: string }>} */ ({
-  erreur: { classe: 'moyen', regle: 'moyen : plein = pas 11, texte blanc' },
-  succes: { classe: 'moyen', regle: 'moyen : plein = pas 11, texte blanc' },
-  avertissement: { classe: 'clair', regle: 'clair, jaune ou orangé : plein = pas 9, texte = pas 12' },
+  error: { classe: 'moyen', regle: 'moyen : plein = pas 11, texte blanc' },
+  success: { classe: 'moyen', regle: 'moyen : plein = pas 11, texte blanc' },
+  warning: { classe: 'clair', regle: 'clair, jaune ou orangé : plein = pas 9, texte = pas 12' },
   info: { classe: 'moyen', regle: 'moyen : plein = pas 11, texte blanc' },
 });
 
@@ -88,11 +88,11 @@ const REGLES = {
   clair: `clair (pas 12 ≥ 7 sur le pas 9 et ≥ 4,5 sur le pas 10) : plein = pas 9, texte = pas 12 ; ${SURVOL}`,
 };
 const LABELS = /** @type {Record<string, string>} */ ({
-  primaire: 'Primaire (actions)',
+  primary: 'Primaire (actions)',
   accent: 'Accent (mise en avant)',
-  erreur: 'Statut erreur',
-  succes: 'Statut succès',
-  avertissement: 'Statut avertissement',
+  error: 'Statut erreur',
+  success: 'Statut succès',
+  warning: 'Statut avertissement',
   info: 'Statut information',
 });
 const STEP_WORD = 'pas';
@@ -106,7 +106,7 @@ function emplacement(name, { scale, steps }, withSteps) {
   const fige = withSteps ? undefined : STATUTS_FIGES[name];
   if (!withSteps && !fige) throw new Error(`statut sans bouton figé : ${name}`);
   const classe = fige?.classe ?? classePlein(steps);
-  const ref = (/** @type {string|number} */ k) => `{couleur.${scale}.${k}}`;
+  const ref = (/** @type {string|number} */ k) => `{color.${scale}.${k}}`;
   /** @type {Record<string, any>} */
   const g = {
     $description: `${LABELS[name] ?? name} : échelle ${scale}, plein ${classe}.`,
@@ -114,9 +114,9 @@ function emplacement(name, { scale, steps }, withSteps) {
   };
   if (withSteps) for (let i = 1; i <= 12; i++) g[String(i)] = { $value: ref(i), $description: `${STEP_WORD} ${i} de l'échelle ${scale}` };
   const pas = classe === 'moyen' ? 11 : 9;
-  g.plein = { $value: ref(pas), $description: `plein : pas ${pas}${pas === 9 && classe !== 'sombre' ? ', couleur exacte' : ''}` };
-  g['plein-survol'] = jetonSurvol(ref(pas), steps[pas - 1], 'clair');
-  g['sur-plein'] = classe === 'clair' ? { $value: ref(12), $description: 'texte sur le plein : pas 12' } : { $value: '{couleur.blanc}', $description: 'texte sur le plein : blanc' };
+  g.solid = { $value: ref(pas), $description: `plein : pas ${pas}${pas === 9 && classe !== 'sombre' ? ', couleur exacte' : ''}` };
+  g['solid-hover'] = jetonSurvol(ref(pas), steps[pas - 1], 'clair');
+  g['on-solid'] = classe === 'clair' ? { $value: ref(12), $description: 'texte sur le plein : pas 12' } : { $value: '{color.white}', $description: 'texte sur le plein : blanc' };
   return g;
 }
 
@@ -125,8 +125,8 @@ const GRAND_TEXTE = 3;
 
 /**
  * Pas du texte de marque des grands titres (affichage, titres 1 et 2). Pas 9 du primaire s'il atteint
- * 3:1 sur chacun des fonds donnés et sur son propre pas 3 (fond.marque.discret) ; sinon pas 10 ; sinon pas 11.
- * @param {string[]} steps échelle du primaire @param {string[]} fonds hex de fond.app, fond.surface, fond.discret
+ * 3:1 sur chacun des fonds donnés et sur son propre pas 3 (background.brand.subtle) ; sinon pas 10 ; sinon pas 11.
+ * @param {string[]} steps échelle du primaire @param {string[]} fonds hex de background.app, background.surface, background.subtle
  * @returns {9 | 10 | 11}
  */
 function pasTexteGrand(steps, fonds) {
@@ -137,7 +137,7 @@ function pasTexteGrand(steps, fonds) {
 
 /**
  * Fichier marque.tokens.json : primaire et accent (12 pas + cases de plein), statuts (cases de plein),
- * et, si elles sont données, les polices de la marque (police.titre, police.texte, $type fontFamily).
+ * et, si elles sont données, les polices de la marque (font.heading, police.texte, $type fontFamily).
  * Le primaire porte en plus texte-grand (pasTexteGrand), écrit en dernier pour qu'Orbe Café redevienne
  * identique une fois cet ajout retiré.
  * @param {{ primaire: { scale: string, steps: string[] }, accent: { scale: string, steps: string[] }, statuts: Record<string, { scale: string, steps: string[] }>, polices?: { titre: string[], texte?: string[], fichiersTitre?: string[] }, fonds: string[], description: string }} spec
@@ -147,23 +147,23 @@ export function marqueTokens({ primaire, accent, statuts, polices, fonds, descri
   const m = {
     $type: 'color',
     $description: "Emplacements de marque : primaire et accent (12 pas, plein, plein survolé, texte sur plein), statuts (plein, plein survolé, texte sur plein). Règle des pleins en trois cas, lue sur le pas 9 : sombre, moyen, clair. Survol de tous les pleins : clarté OKLCH du plein − 0,05 (D45).",
-    primaire: emplacement('primaire', primaire, true),
+    primary: emplacement('primary', primaire, true),
     accent: emplacement('accent', accent, true),
   };
   // Phrase complétée seulement si un emplacement est soutenu.
-  if ([m.primaire, m.accent].some((g) => g.$extensions['ds-lab.plein'].classe === 'soutenu'))
+  if ([m.primary, m.accent].some((g) => g.$extensions['ds-lab.plein'].classe === 'soutenu'))
     m.$description += ' Variante soutenue du cas sombre : blanc entre 4,5 et 5,5 sur le pas 9.';
   const grand = pasTexteGrand(primaire.steps, fonds);
-  m.primaire['texte-grand'] = {
-    $value: `{couleur.${primaire.scale}.${grand}}`,
-    $description: `texte de marque des grands titres (affichage, titres 1 et 2) : pas ${grand}, premier des pas 9, 10, 11 à tenir 3:1 sur fond.app, fond.surface, fond.discret et fond.marque.discret`,
+  m.primary['text-large'] = {
+    $value: `{color.${primaire.scale}.${grand}}`,
+    $description: `texte de marque des grands titres (affichage, titres 1 et 2) : pas ${grand}, premier des pas 9, 10, 11 à tenir 3:1 sur background.app, background.surface, background.subtle et background.brand.subtle`,
   };
   for (const [name, s] of Object.entries(statuts)) m[name] = emplacement(name, s, false);
   if (polices) {
-    m.police = {
+    m.font = {
       $type: 'fontFamily',
       $description: 'Polices de la marque : titre pour les styles affichage et titre 1 à 3, texte pour les autres, sauf le libellé, dans la police du produit (D44).',
-      titre: {
+      heading: {
         $value: polices.titre,
         $description: 'Police des styles affichage et titre 1 à 3.',
         // Fichiers de la police, relatifs à l'entrée, seulement s'ils sont donnés (les marques sans fichier ne changent pas).
@@ -171,13 +171,14 @@ export function marqueTokens({ primaire, accent, statuts, polices, fonds, descri
       },
     };
     // Sans police de texte saisie, la police du produit vient du commun (tokens/commun/police.tokens.json).
-    if (polices.texte) m.police.texte = { $value: polices.texte, $description: 'Police des titres 4, du corps et des mentions ; le libellé garde la police du produit (D44).' };
+    if (polices.texte) m.font.body = { $value: polices.texte, $description: 'Police des titres 4, du corps et des mentions ; le libellé garde la police du produit (D44).' };
   }
-  return { $description: description, marque: m };
+  return { $description: description, brand: m };
 }
 
 /** Emplacements de l'aplat plein du primaire, alias du plein en clair (tokens/commun/aplat.tokens.json). */
-const APLAT = /** @type {const} */ ({ aplat: 'plein', 'sur-aplat': 'sur-plein', 'aplat-survol': 'plein-survol' });
+/** Emplacement de l'aplat → [emplacement du plein qu'il reprend, son nom dans les descriptions]. */
+const APLAT = /** @type {const} */ ({ feature: ['solid', 'plein'], 'on-feature': ['on-solid', 'sur-plein'], 'feature-hover': ['solid-hover', 'plein-survol'] });
 
 /**
  * Fichier tokens/commun/aplat.tokens.json : les trois emplacements de l'aplat plein, alias du plein du primaire, et
@@ -186,11 +187,11 @@ const APLAT = /** @type {const} */ ({ aplat: 'plein', 'sur-aplat': 'sur-plein', 
 export function aplatTokens() {
   /** @type {Record<string, any>} */
   const primaire = {};
-  for (const [k, v] of Object.entries(APLAT)) primaire[k] = { $value: `{marque.primaire.${v}}`, $description: `aplat plein (fond.marque.fort et bouton inversé) : ${v} du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json)` };
-  primaire.teinte = { $value: '{marque.primaire.3}', $description: 'fond teinté de la marque (fond.marque.teinte) : pas 3 du primaire en clair ; en sombre, pas 5 (mode.sombre.tokens.json)' };
+  for (const [k, [v, mot]] of Object.entries(APLAT)) primaire[k] = { $value: `{brand.primary.${v}}`, $description: `aplat plein (background.brand.strong et bouton inversé) : ${mot} du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json)` };
+  primaire.tint = { $value: '{brand.primary.3}', $description: 'fond teinté de la marque (background.brand.tint) : pas 3 du primaire en clair ; en sombre, pas 5 (mode.sombre.tokens.json)' };
   return {
     $description: "Emplacements de l'aplat plein et du fond teinté de la marque, communs à toutes les marques. Format DTCG 2025.10. En clair, alias du plein et du pas 3 du primaire ; en sombre, la couche marque sombre fige l'aplat aux valeurs claires, pendant que le bouton prend la version lumineuse de la couleur du client (D04), et le fond teinté passe au pas 5 (mode.sombre.tokens.json).",
-    marque: { $type: 'color', primaire },
+    brand: { $type: 'color', primary: primaire },
   };
 }
 
@@ -206,12 +207,12 @@ export function aplatTokens() {
  *   pas sombres par emplacement à bouton ; échelle sombre du primaire ; fonds sombres
  */
 export function marqueSombreTokens({ marque, clairs, echelles, sombres, primaireSombre, fonds, description }) {
-  const m0 = marque.marque;
+  const m0 = marque.brand;
   /** Valeur claire d'un emplacement, à figer. @param {string} name @param {string} k */
   const figee = (name, k) => {
     const t = m0[name][k];
     const v = t.$value;
-    const mm = typeof v === 'string' ? /^\{couleur\.[^.]+\.(\d+)\}$/.exec(v) : null;
+    const mm = typeof v === 'string' ? /^\{color\.[^.]+\.(\d+)\}$/.exec(v) : null;
     const $value = mm ? colorValue(clairs[name][Number(mm[1]) - 1]) : structuredClone(v);
     return { $value, $description: `${t.$description}, valeur du mode clair, figée en sombre`, ...(mm ? { $extensions: { 'ds-lab.mode': { clair: v } } } : {}) };
   };
@@ -220,17 +221,17 @@ export function marqueSombreTokens({ marque, clairs, echelles, sombres, primaire
   for (const [name, scale] of Object.entries(echelles)) {
     if (!sombres[name]) throw new Error(`échelle sombre absente : ${name}`);
     m[name] = {
-      plein: { $value: `{couleur.${scale}.11}`, $description: "plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur" },
-      'plein-survol': jetonSurvol(`{couleur.${scale}.11}`, sombres[name][10], 'sombre'),
-      'sur-plein': { $value: `{couleur.${scale}.1}`, $description: "texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1)" },
+      solid: { $value: `{color.${scale}.11}`, $description: "plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur" },
+      'solid-hover': jetonSurvol(`{color.${scale}.11}`, sombres[name][10], 'sombre'),
+      'on-solid': { $value: `{color.${scale}.1}`, $description: "texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1)" },
     };
   }
-  for (const [k, v] of Object.entries(APLAT)) m.primaire[k] = { ...figee('primaire', v), $description: `aplat plein en sombre : ${v} du primaire en clair, figé (couleur exacte du client)` };
-  m.accent = Object.fromEntries(['plein', 'plein-survol', 'sur-plein'].map((k) => [k, figee('accent', k)]));
+  for (const [k, [v, mot]] of Object.entries(APLAT)) m.primary[k] = { ...figee('primary', v), $description: `aplat plein en sombre : ${mot} du primaire en clair, figé (couleur exacte du client)` };
+  m.accent = Object.fromEntries(['solid', 'solid-hover', 'on-solid'].map((k) => [k, figee('accent', k)]));
   const grand = pasTexteGrand(primaireSombre.steps, fonds);
-  m.primaire['texte-grand'] = {
-    $value: `{couleur.${primaireSombre.scale}.${grand}}`,
-    $description: `texte de marque des grands titres en sombre : pas ${grand} de l'échelle sombre, premier des pas 9, 10, 11 à tenir 3:1 sur fond.app, fond.surface, fond.discret et fond.marque.discret sombres`,
+  m.primary['text-large'] = {
+    $value: `{color.${primaireSombre.scale}.${grand}}`,
+    $description: `texte de marque des grands titres en sombre : pas ${grand} de l'échelle sombre, premier des pas 9, 10, 11 à tenir 3:1 sur background.app, background.surface, background.subtle et background.brand.subtle sombres`,
   };
-  return { $description: description, marque: m };
+  return { $description: description, brand: m };
 }

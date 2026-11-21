@@ -19,7 +19,7 @@
  *      défauts, mentions, différences, quatre (i) ;
  *   C9 chaque vignette est à la taille réelle de l'élément (largeur de l'image divisée par la densité 2), réduite seulement
  *      si elle dépasse sa colonne ; hors de « Voir le code », aucun nom long ;
- *   C10 clair et sombre à 390 px : aucun défilement ; fond et texte de la page égaux aux rôles fond.app et texte.principal
+ *   C10 clair et sombre à 390 px : aucun défilement ; fond et texte de la page égaux aux rôles background.app et text.default
  *      des jetons communs, lus ici par une résolution indépendante des fichiers.
  * Graphiques du constat (D48), contre fixtures/marque-demo/expected-graphiques-constat.json, écrit à la main avant le code :
  *   C11 lancements A, B et sans table : anneau (total, parts, lignes), barres des scores, segments de chaque type dans
@@ -347,10 +347,10 @@ test('C10 clair et sombre à 390 px : sans défilement, fond et texte des jetons
   for (const [mode, fichiers] of /** @type {const} */ ([['light', clair], ['dark', sombre]])) {
     const p = await lirePage(join(A.dir, 'constat.html'), { colorScheme: mode });
     assert.ok(p.largeur <= 390, `${mode} : ${p.largeur}`);
-    assert.equal(p.fond, couleurDuRole(fichiers, 'fond.app').rgb, mode);
-    assert.equal(p.couleur, couleurDuRole(fichiers, 'texte.principal').rgb, mode);
+    assert.equal(p.fond, couleurDuRole(fichiers, 'background.app').rgb, mode);
+    assert.equal(p.couleur, couleurDuRole(fichiers, 'text.default').rgb, mode);
   }
-  assert.notEqual(couleurDuRole(clair, 'fond.app').hex, couleurDuRole(sombre, 'fond.app').hex);
+  assert.notEqual(couleurDuRole(clair, 'background.app').hex, couleurDuRole(sombre, 'background.app').hex);
 });
 
 const GR = JSON.parse(await readFile(join(ROOT, 'fixtures/marque-demo/expected-graphiques-constat.json'), 'utf8'));

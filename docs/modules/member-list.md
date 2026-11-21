@@ -64,8 +64,8 @@ Assemble : [`MemberCard`](member-card.md).
 
 | Partie | Token | Ce qu'il règle |
 |---|---|---|
-| Forme | `ecart.entre-composants` | Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée, pour qu'on voie à quel champ appartient un libellé ou un message. |
-| Forme | `largeur.colonne` | Largeur maximale d'une colonne de contenu, comme une liste d'annuaire ; sur un écran plus étroit, la colonne prend toute la largeur de son parent. |
+| Forme | `gap.between-components` | Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée, pour qu'on voie à quel champ appartient un libellé ou un message. |
+| Forme | `width.column` | Largeur maximale d'une colonne de contenu, comme une liste d'annuaire ; sur un écran plus étroit, la colonne prend toute la largeur de son parent. |
 <!-- /genere:tokens -->
 
 - Une liste (`ul`), une `MemberCard` par élément, en colonne.

@@ -54,6 +54,7 @@ Node : la version de `.node-version` (Node 24 LTS), seule source pour le poste, 
 
 - `ARCHITECTURE.md` : avant de toucher à `src/` ou d'ajouter un dossier, une commande ou une couche de jetons.
 - `docs/decisions.md` : avant de changer un jeton, un nom de rôle ou une règle de contrôle.
+- `docs/anciens-noms.json` : pour lire un nom de token cité par une décision ou un attendu d'avant le 21/11/2026 (D62).
 - `docs/identifiants.md` : avant de citer ou de créer un identifiant de règle.
 - `docs/contrat-de-marque.md` : avant de toucher à la saisie ou à un motif de refus.
 - `KNOWN_ISSUES.md` : avant de proposer un lot, et pour y ajouter toute dette laissée en sortant.

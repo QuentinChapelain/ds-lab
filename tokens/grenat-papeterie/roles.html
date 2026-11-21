@@ -19,7 +19,7 @@
       td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
       code { font: 13px ui-monospace, Menlo, monospace; overflow-wrap: anywhere; }
       .hex { font: 12px ui-monospace, Menlo, monospace; color: var(--gris); }
-      .pastille { display: inline-block; width: 18px; height: 18px; border: 1px solid var(--trait); border-radius: 4px; vertical-align: middle; margin-right: 8px; }
+      .echantillon-fond { display: inline-block; width: 18px; height: 18px; border: 1px solid var(--trait); border-radius: 4px; vertical-align: middle; margin-right: 8px; }
       .echantillon { display: inline-block; min-width: 132px; padding: 6px 10px; margin: 2px 8px 2px 0; border-radius: 6px; font-weight: 500; vertical-align: middle; }
       .echantillon.bordure { min-width: 96px; border: 2px solid; color: #363026; }
       .paire { display: inline-block; vertical-align: middle; }
@@ -46,601 +46,601 @@
     <h1>Rôles de couleur, Grenat Papeterie</h1>
     <p>Marque fictive. Paires déclarées dans paires.json, rôles dans semantique.tokens.json ; contraste WCAG 2.1, ratio tronqué à 2 décimales.</p>
     <p class="bilan">76 paires, 0 en échec, 2 exceptions écrites, 8 paires interdites.</p>
-    <section data-propriete="texte">
+    <section data-propriete="text">
       <h2>Texte <span class="compte">58 paires, 4 interdites</span></h2>
       <p>Texte posé sur un fond de rôle, seuil 4,5:1 (WCAG 2.1, 1.4.3) ; 3:1 pour le texte de marque des grands titres.</p>
       <div class="table-wrap"><table>
         <thead><tr><th>Fond</th><th>Mot écrit</th><th>Ratio</th><th>Seuil</th><th>Verdict</th></tr></thead>
         <tbody>
-        <tr data-devant="texte.principal" data-fond="fond.app" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fbfbfb"></span><code>fond.app</code> <span class="hex">#fbfbfb</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#363026">Réserver une table</span><span class="paire"><code>texte.principal</code> <span class="hex">#363026</span> <span class="sur">sur <code>fond.app</code></span></span></td>
+        <tr data-devant="text.default" data-fond="background.app" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fbfbfb"></span><code>background.app</code> <span class="hex">#fbfbfb</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#363026">Réserver une table</span><span class="paire"><code>text.default</code> <span class="hex">#363026</span> <span class="sur">sur <code>background.app</code></span></span></td>
           <td data-label="Ratio" class="num">12,62:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.principal" data-fond="fond.surface" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#363026">Réserver une table</span><span class="paire"><code>texte.principal</code> <span class="hex">#363026</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+        <tr data-devant="text.default" data-fond="background.surface" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ffffff"></span><code>background.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#363026">Réserver une table</span><span class="paire"><code>text.default</code> <span class="hex">#363026</span> <span class="sur">sur <code>background.surface</code></span></span></td>
           <td data-label="Ratio" class="num">13,06:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.principal" data-fond="fond.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#f8f8f7"></span><code>fond.discret</code> <span class="hex">#f8f8f7</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f8f8f7;color:#363026">Réserver une table</span><span class="paire"><code>texte.principal</code> <span class="hex">#363026</span> <span class="sur">sur <code>fond.discret</code></span></span></td>
+        <tr data-devant="text.default" data-fond="background.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f8f8f7"></span><code>background.subtle</code> <span class="hex">#f8f8f7</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f8f8f7;color:#363026">Réserver une table</span><span class="paire"><code>text.default</code> <span class="hex">#363026</span> <span class="sur">sur <code>background.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">12,29:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.principal" data-fond="fond.composant" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#f3f2f1"></span><code>fond.composant</code> <span class="hex">#f3f2f1</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#363026">Réserver une table</span><span class="paire"><code>texte.principal</code> <span class="hex">#363026</span> <span class="sur">sur <code>fond.composant</code></span></span></td>
+        <tr data-devant="text.default" data-fond="background.component" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f3f2f1"></span><code>background.component</code> <span class="hex">#f3f2f1</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#363026">Réserver une table</span><span class="paire"><code>text.default</code> <span class="hex">#363026</span> <span class="sur">sur <code>background.component</code></span></span></td>
           <td data-label="Ratio" class="num">11,68:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.principal" data-fond="fond.composant.survol" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ecebe9"></span><code>fond.composant.survol</code> <span class="hex">#ecebe9</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ecebe9;color:#363026">Réserver une table</span><span class="paire"><code>texte.principal</code> <span class="hex">#363026</span> <span class="sur">sur <code>fond.composant.survol</code></span></span></td>
+        <tr data-devant="text.default" data-fond="background.component.hover" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ecebe9"></span><code>background.component.hover</code> <span class="hex">#ecebe9</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ecebe9;color:#363026">Réserver une table</span><span class="paire"><code>text.default</code> <span class="hex">#363026</span> <span class="sur">sur <code>background.component.hover</code></span></span></td>
           <td data-label="Ratio" class="num">10,96:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.principal" data-fond="fond.composant.appui" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#e3e2df"></span><code>fond.composant.appui</code> <span class="hex">#e3e2df</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#e3e2df;color:#363026">Réserver une table</span><span class="paire"><code>texte.principal</code> <span class="hex">#363026</span> <span class="sur">sur <code>fond.composant.appui</code></span></span></td>
+        <tr data-devant="text.default" data-fond="background.component.pressed" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#e3e2df"></span><code>background.component.pressed</code> <span class="hex">#e3e2df</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#e3e2df;color:#363026">Réserver une table</span><span class="paire"><code>text.default</code> <span class="hex">#363026</span> <span class="sur">sur <code>background.component.pressed</code></span></span></td>
           <td data-label="Ratio" class="num">10,08:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.secondaire" data-fond="fond.app" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fbfbfb"></span><code>fond.app</code> <span class="hex">#fbfbfb</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#6d675b">Réserver une table</span><span class="paire"><code>texte.secondaire</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>fond.app</code></span></span></td>
+        <tr data-devant="text.secondary" data-fond="background.app" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fbfbfb"></span><code>background.app</code> <span class="hex">#fbfbfb</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#6d675b">Réserver une table</span><span class="paire"><code>text.secondary</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>background.app</code></span></span></td>
           <td data-label="Ratio" class="num">5,42:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.secondaire" data-fond="fond.surface" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#6d675b">Réserver une table</span><span class="paire"><code>texte.secondaire</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+        <tr data-devant="text.secondary" data-fond="background.surface" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ffffff"></span><code>background.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#6d675b">Réserver une table</span><span class="paire"><code>text.secondary</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>background.surface</code></span></span></td>
           <td data-label="Ratio" class="num">5,61:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.secondaire" data-fond="fond.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#f8f8f7"></span><code>fond.discret</code> <span class="hex">#f8f8f7</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f8f8f7;color:#6d675b">Réserver une table</span><span class="paire"><code>texte.secondaire</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>fond.discret</code></span></span></td>
+        <tr data-devant="text.secondary" data-fond="background.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f8f8f7"></span><code>background.subtle</code> <span class="hex">#f8f8f7</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f8f8f7;color:#6d675b">Réserver une table</span><span class="paire"><code>text.secondary</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>background.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">5,28:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.secondaire" data-fond="fond.composant" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#f3f2f1"></span><code>fond.composant</code> <span class="hex">#f3f2f1</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#6d675b">Réserver une table</span><span class="paire"><code>texte.secondaire</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>fond.composant</code></span></span></td>
+        <tr data-devant="text.secondary" data-fond="background.component" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f3f2f1"></span><code>background.component</code> <span class="hex">#f3f2f1</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#6d675b">Réserver une table</span><span class="paire"><code>text.secondary</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>background.component</code></span></span></td>
           <td data-label="Ratio" class="num">5,02:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.secondaire" data-fond="fond.composant.survol" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ecebe9"></span><code>fond.composant.survol</code> <span class="hex">#ecebe9</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ecebe9;color:#6d675b">Réserver une table</span><span class="paire"><code>texte.secondaire</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>fond.composant.survol</code></span></span></td>
+        <tr data-devant="text.secondary" data-fond="background.component.hover" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ecebe9"></span><code>background.component.hover</code> <span class="hex">#ecebe9</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ecebe9;color:#6d675b">Réserver une table</span><span class="paire"><code>text.secondary</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>background.component.hover</code></span></span></td>
           <td data-label="Ratio" class="num">4,71:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.interactif" data-fond="fond.app" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fbfbfb"></span><code>fond.app</code> <span class="hex">#fbfbfb</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#4f0020">Réserver une table</span><span class="paire"><code>texte.interactif</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>fond.app</code></span></span></td>
+        <tr data-devant="text.interactive" data-fond="background.app" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fbfbfb"></span><code>background.app</code> <span class="hex">#fbfbfb</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#4f0020">Réserver une table</span><span class="paire"><code>text.interactive</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>background.app</code></span></span></td>
           <td data-label="Ratio" class="num">14,99:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.interactif" data-fond="fond.surface" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#4f0020">Réserver une table</span><span class="paire"><code>texte.interactif</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+        <tr data-devant="text.interactive" data-fond="background.surface" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ffffff"></span><code>background.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#4f0020">Réserver une table</span><span class="paire"><code>text.interactive</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>background.surface</code></span></span></td>
           <td data-label="Ratio" class="num">15,51:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.interactif" data-fond="fond.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#f8f8f7"></span><code>fond.discret</code> <span class="hex">#f8f8f7</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f8f8f7;color:#4f0020">Réserver une table</span><span class="paire"><code>texte.interactif</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>fond.discret</code></span></span></td>
+        <tr data-devant="text.interactive" data-fond="background.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f8f8f7"></span><code>background.subtle</code> <span class="hex">#f8f8f7</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f8f8f7;color:#4f0020">Réserver une table</span><span class="paire"><code>text.interactive</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>background.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">14,60:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.interactif" data-fond="fond.interactif.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fcf0f2"></span><code>fond.interactif.discret</code> <span class="hex">#fcf0f2</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fcf0f2;color:#4f0020">Réserver une table</span><span class="paire"><code>texte.interactif</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>fond.interactif.discret</code></span></span></td>
+        <tr data-devant="text.interactive" data-fond="background.interactive.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fcf0f2"></span><code>background.interactive.subtle</code> <span class="hex">#fcf0f2</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fcf0f2;color:#4f0020">Réserver une table</span><span class="paire"><code>text.interactive</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>background.interactive.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">13,95:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.accent" data-fond="fond.app" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fbfbfb"></span><code>fond.app</code> <span class="hex">#fbfbfb</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#6d675b">Réserver une table</span><span class="paire"><code>texte.accent</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>fond.app</code></span></span></td>
+        <tr data-devant="text.accent" data-fond="background.app" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fbfbfb"></span><code>background.app</code> <span class="hex">#fbfbfb</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#6d675b">Réserver une table</span><span class="paire"><code>text.accent</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>background.app</code></span></span></td>
           <td data-label="Ratio" class="num">5,42:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.accent" data-fond="fond.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#f8f8f7"></span><code>fond.discret</code> <span class="hex">#f8f8f7</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f8f8f7;color:#6d675b">Réserver une table</span><span class="paire"><code>texte.accent</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>fond.discret</code></span></span></td>
+        <tr data-devant="text.accent" data-fond="background.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f8f8f7"></span><code>background.subtle</code> <span class="hex">#f8f8f7</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f8f8f7;color:#6d675b">Réserver une table</span><span class="paire"><code>text.accent</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>background.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">5,28:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.erreur" data-fond="fond.app" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fbfbfb"></span><code>fond.app</code> <span class="hex">#fbfbfb</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#cb1d2a">Réserver une table</span><span class="paire"><code>texte.erreur</code> <span class="hex">#cb1d2a</span> <span class="sur">sur <code>fond.app</code></span></span></td>
+        <tr data-devant="text.error" data-fond="background.app" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fbfbfb"></span><code>background.app</code> <span class="hex">#fbfbfb</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#cb1d2a">Réserver une table</span><span class="paire"><code>text.error</code> <span class="hex">#cb1d2a</span> <span class="sur">sur <code>background.app</code></span></span></td>
           <td data-label="Ratio" class="num">5,41:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.erreur" data-fond="fond.surface" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#cb1d2a">Réserver une table</span><span class="paire"><code>texte.erreur</code> <span class="hex">#cb1d2a</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+        <tr data-devant="text.error" data-fond="background.surface" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ffffff"></span><code>background.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#cb1d2a">Réserver une table</span><span class="paire"><code>text.error</code> <span class="hex">#cb1d2a</span> <span class="sur">sur <code>background.surface</code></span></span></td>
           <td data-label="Ratio" class="num">5,60:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.erreur" data-fond="fond.erreur.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fff0ee"></span><code>fond.erreur.discret</code> <span class="hex">#fff0ee</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fff0ee;color:#cb1d2a">Réserver une table</span><span class="paire"><code>texte.erreur</code> <span class="hex">#cb1d2a</span> <span class="sur">sur <code>fond.erreur.discret</code></span></span></td>
+        <tr data-devant="text.error" data-fond="background.error.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fff0ee"></span><code>background.error.subtle</code> <span class="hex">#fff0ee</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fff0ee;color:#cb1d2a">Réserver une table</span><span class="paire"><code>text.error</code> <span class="hex">#cb1d2a</span> <span class="sur">sur <code>background.error.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">5,05:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.succes" data-fond="fond.app" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fbfbfb"></span><code>fond.app</code> <span class="hex">#fbfbfb</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#00774a">Réserver une table</span><span class="paire"><code>texte.succes</code> <span class="hex">#00774a</span> <span class="sur">sur <code>fond.app</code></span></span></td>
+        <tr data-devant="text.success" data-fond="background.app" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fbfbfb"></span><code>background.app</code> <span class="hex">#fbfbfb</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#00774a">Réserver une table</span><span class="paire"><code>text.success</code> <span class="hex">#00774a</span> <span class="sur">sur <code>background.app</code></span></span></td>
           <td data-label="Ratio" class="num">5,42:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.succes" data-fond="fond.surface" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#00774a">Réserver une table</span><span class="paire"><code>texte.succes</code> <span class="hex">#00774a</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+        <tr data-devant="text.success" data-fond="background.surface" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ffffff"></span><code>background.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#00774a">Réserver une table</span><span class="paire"><code>text.success</code> <span class="hex">#00774a</span> <span class="sur">sur <code>background.surface</code></span></span></td>
           <td data-label="Ratio" class="num">5,61:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.succes" data-fond="fond.succes.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ecf4ef"></span><code>fond.succes.discret</code> <span class="hex">#ecf4ef</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ecf4ef;color:#00774a">Réserver une table</span><span class="paire"><code>texte.succes</code> <span class="hex">#00774a</span> <span class="sur">sur <code>fond.succes.discret</code></span></span></td>
+        <tr data-devant="text.success" data-fond="background.success.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ecf4ef"></span><code>background.success.subtle</code> <span class="hex">#ecf4ef</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ecf4ef;color:#00774a">Réserver une table</span><span class="paire"><code>text.success</code> <span class="hex">#00774a</span> <span class="sur">sur <code>background.success.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">5,01:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.avertissement" data-fond="fond.app" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fbfbfb"></span><code>fond.app</code> <span class="hex">#fbfbfb</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#8b5f00">Réserver une table</span><span class="paire"><code>texte.avertissement</code> <span class="hex">#8b5f00</span> <span class="sur">sur <code>fond.app</code></span></span></td>
+        <tr data-devant="text.warning" data-fond="background.app" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fbfbfb"></span><code>background.app</code> <span class="hex">#fbfbfb</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#8b5f00">Réserver une table</span><span class="paire"><code>text.warning</code> <span class="hex">#8b5f00</span> <span class="sur">sur <code>background.app</code></span></span></td>
           <td data-label="Ratio" class="num">5,43:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.avertissement" data-fond="fond.surface" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#8b5f00">Réserver une table</span><span class="paire"><code>texte.avertissement</code> <span class="hex">#8b5f00</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+        <tr data-devant="text.warning" data-fond="background.surface" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ffffff"></span><code>background.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#8b5f00">Réserver une table</span><span class="paire"><code>text.warning</code> <span class="hex">#8b5f00</span> <span class="sur">sur <code>background.surface</code></span></span></td>
           <td data-label="Ratio" class="num">5,62:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.avertissement" data-fond="fond.avertissement.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fef1de"></span><code>fond.avertissement.discret</code> <span class="hex">#fef1de</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fef1de;color:#8b5f00">Réserver une table</span><span class="paire"><code>texte.avertissement</code> <span class="hex">#8b5f00</span> <span class="sur">sur <code>fond.avertissement.discret</code></span></span></td>
+        <tr data-devant="text.warning" data-fond="background.warning.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fef1de"></span><code>background.warning.subtle</code> <span class="hex">#fef1de</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fef1de;color:#8b5f00">Réserver une table</span><span class="paire"><code>text.warning</code> <span class="hex">#8b5f00</span> <span class="sur">sur <code>background.warning.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">5,04:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.info" data-fond="fond.app" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fbfbfb"></span><code>fond.app</code> <span class="hex">#fbfbfb</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#006da6">Réserver une table</span><span class="paire"><code>texte.info</code> <span class="hex">#006da6</span> <span class="sur">sur <code>fond.app</code></span></span></td>
+        <tr data-devant="text.info" data-fond="background.app" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fbfbfb"></span><code>background.app</code> <span class="hex">#fbfbfb</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#006da6">Réserver une table</span><span class="paire"><code>text.info</code> <span class="hex">#006da6</span> <span class="sur">sur <code>background.app</code></span></span></td>
           <td data-label="Ratio" class="num">5,42:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.info" data-fond="fond.surface" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#006da6">Réserver une table</span><span class="paire"><code>texte.info</code> <span class="hex">#006da6</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+        <tr data-devant="text.info" data-fond="background.surface" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ffffff"></span><code>background.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#006da6">Réserver une table</span><span class="paire"><code>text.info</code> <span class="hex">#006da6</span> <span class="sur">sur <code>background.surface</code></span></span></td>
           <td data-label="Ratio" class="num">5,61:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.info" data-fond="fond.info.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#e8f5ff"></span><code>fond.info.discret</code> <span class="hex">#e8f5ff</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#e8f5ff;color:#006da6">Réserver une table</span><span class="paire"><code>texte.info</code> <span class="hex">#006da6</span> <span class="sur">sur <code>fond.info.discret</code></span></span></td>
+        <tr data-devant="text.info" data-fond="background.info.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#e8f5ff"></span><code>background.info.subtle</code> <span class="hex">#e8f5ff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#e8f5ff;color:#006da6">Réserver une table</span><span class="paire"><code>text.info</code> <span class="hex">#006da6</span> <span class="sur">sur <code>background.info.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">5,06:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.sur-interactif" data-fond="fond.interactif.fort" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#7a1f3d"></span><code>fond.interactif.fort</code> <span class="hex">#7a1f3d</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#7a1f3d;color:#ffffff">Réserver une table</span><span class="paire"><code>texte.sur-interactif</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>fond.interactif.fort</code></span></span></td>
+        <tr data-devant="text.on-interactive" data-fond="background.interactive.strong" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#7a1f3d"></span><code>background.interactive.strong</code> <span class="hex">#7a1f3d</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#7a1f3d;color:#ffffff">Réserver une table</span><span class="paire"><code>text.on-interactive</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>background.interactive.strong</code></span></span></td>
           <td data-label="Ratio" class="num">10,04:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.sur-interactif" data-fond="fond.interactif.fort.survol" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#6a0d30"></span><code>fond.interactif.fort.survol</code> <span class="hex">#6a0d30</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#6a0d30;color:#ffffff">Réserver une table</span><span class="paire"><code>texte.sur-interactif</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>fond.interactif.fort.survol</code></span></span></td>
+        <tr data-devant="text.on-interactive" data-fond="background.interactive.strong.hover" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#6a0d30"></span><code>background.interactive.strong.hover</code> <span class="hex">#6a0d30</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#6a0d30;color:#ffffff">Réserver une table</span><span class="paire"><code>text.on-interactive</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>background.interactive.strong.hover</code></span></span></td>
           <td data-label="Ratio" class="num">12,25:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.sur-accent" data-fond="fond.accent.fort" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#6d675b"></span><code>fond.accent.fort</code> <span class="hex">#6d675b</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#6d675b;color:#ffffff">Réserver une table</span><span class="paire"><code>texte.sur-accent</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>fond.accent.fort</code></span></span></td>
+        <tr data-devant="text.on-accent" data-fond="background.accent.strong" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#6d675b"></span><code>background.accent.strong</code> <span class="hex">#6d675b</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#6d675b;color:#ffffff">Réserver une table</span><span class="paire"><code>text.on-accent</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>background.accent.strong</code></span></span></td>
           <td data-label="Ratio" class="num">5,61:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.sur-erreur" data-fond="fond.erreur.fort" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#cb1d2a"></span><code>fond.erreur.fort</code> <span class="hex">#cb1d2a</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#cb1d2a;color:#ffffff">Réserver une table</span><span class="paire"><code>texte.sur-erreur</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>fond.erreur.fort</code></span></span></td>
+        <tr data-devant="text.on-error" data-fond="background.error.strong" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#cb1d2a"></span><code>background.error.strong</code> <span class="hex">#cb1d2a</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#cb1d2a;color:#ffffff">Réserver une table</span><span class="paire"><code>text.on-error</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>background.error.strong</code></span></span></td>
           <td data-label="Ratio" class="num">5,60:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.sur-succes" data-fond="fond.succes.fort" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#00774a"></span><code>fond.succes.fort</code> <span class="hex">#00774a</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#00774a;color:#ffffff">Réserver une table</span><span class="paire"><code>texte.sur-succes</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>fond.succes.fort</code></span></span></td>
+        <tr data-devant="text.on-success" data-fond="background.success.strong" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#00774a"></span><code>background.success.strong</code> <span class="hex">#00774a</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#00774a;color:#ffffff">Réserver une table</span><span class="paire"><code>text.on-success</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>background.success.strong</code></span></span></td>
           <td data-label="Ratio" class="num">5,61:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.sur-avertissement" data-fond="fond.avertissement.fort" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#e5a000"></span><code>fond.avertissement.fort</code> <span class="hex">#e5a000</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#e5a000;color:#442d01">Réserver une table</span><span class="paire"><code>texte.sur-avertissement</code> <span class="hex">#442d01</span> <span class="sur">sur <code>fond.avertissement.fort</code></span></span></td>
+        <tr data-devant="text.on-warning" data-fond="background.warning.strong" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#e5a000"></span><code>background.warning.strong</code> <span class="hex">#e5a000</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#e5a000;color:#442d01">Réserver une table</span><span class="paire"><code>text.on-warning</code> <span class="hex">#442d01</span> <span class="sur">sur <code>background.warning.strong</code></span></span></td>
           <td data-label="Ratio" class="num">5,77:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.sur-info" data-fond="fond.info.fort" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#006da6"></span><code>fond.info.fort</code> <span class="hex">#006da6</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#006da6;color:#ffffff">Réserver une table</span><span class="paire"><code>texte.sur-info</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>fond.info.fort</code></span></span></td>
+        <tr data-devant="text.on-info" data-fond="background.info.strong" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#006da6"></span><code>background.info.strong</code> <span class="hex">#006da6</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#006da6;color:#ffffff">Réserver une table</span><span class="paire"><code>text.on-info</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>background.info.strong</code></span></span></td>
           <td data-label="Ratio" class="num">5,61:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.sur-inverse" data-fond="fond.inverse" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#363026"></span><code>fond.inverse</code> <span class="hex">#363026</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#363026;color:#ffffff">Réserver une table</span><span class="paire"><code>texte.sur-inverse</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>fond.inverse</code></span></span></td>
+        <tr data-devant="text.on-inverse" data-fond="background.inverse" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#363026"></span><code>background.inverse</code> <span class="hex">#363026</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#363026;color:#ffffff">Réserver une table</span><span class="paire"><code>text.on-inverse</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>background.inverse</code></span></span></td>
           <td data-label="Ratio" class="num">13,06:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.principal" data-fond="fond.marque.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fcf0f2"></span><code>fond.marque.discret</code> <span class="hex">#fcf0f2</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fcf0f2;color:#363026">Réserver une table</span><span class="paire"><code>texte.principal</code> <span class="hex">#363026</span> <span class="sur">sur <code>fond.marque.discret</code></span></span></td>
+        <tr data-devant="text.default" data-fond="background.brand.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fcf0f2"></span><code>background.brand.subtle</code> <span class="hex">#fcf0f2</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fcf0f2;color:#363026">Réserver une table</span><span class="paire"><code>text.default</code> <span class="hex">#363026</span> <span class="sur">sur <code>background.brand.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">11,74:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.secondaire" data-fond="fond.marque.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fcf0f2"></span><code>fond.marque.discret</code> <span class="hex">#fcf0f2</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fcf0f2;color:#6d675b">Réserver une table</span><span class="paire"><code>texte.secondaire</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>fond.marque.discret</code></span></span></td>
+        <tr data-devant="text.secondary" data-fond="background.brand.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fcf0f2"></span><code>background.brand.subtle</code> <span class="hex">#fcf0f2</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fcf0f2;color:#6d675b">Réserver une table</span><span class="paire"><code>text.secondary</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>background.brand.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">5,04:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.interactif" data-fond="fond.marque.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fcf0f2"></span><code>fond.marque.discret</code> <span class="hex">#fcf0f2</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fcf0f2;color:#4f0020">Réserver une table</span><span class="paire"><code>texte.interactif</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>fond.marque.discret</code></span></span></td>
+        <tr data-devant="text.interactive" data-fond="background.brand.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fcf0f2"></span><code>background.brand.subtle</code> <span class="hex">#fcf0f2</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fcf0f2;color:#4f0020">Réserver une table</span><span class="paire"><code>text.interactive</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>background.brand.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">13,95:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.marque.grand" data-fond="fond.marque.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fcf0f2"></span><code>fond.marque.discret</code> <span class="hex">#fcf0f2</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fcf0f2;color:#7a1f3d">Réserver une table</span><span class="paire"><code>texte.marque.grand</code> <span class="hex">#7a1f3d</span> <span class="sur">sur <code>fond.marque.discret</code></span></span></td>
+        <tr data-devant="text.brand.large" data-fond="background.brand.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fcf0f2"></span><code>background.brand.subtle</code> <span class="hex">#fcf0f2</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fcf0f2;color:#7a1f3d">Réserver une table</span><span class="paire"><code>text.brand.large</code> <span class="hex">#7a1f3d</span> <span class="sur">sur <code>background.brand.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">9,03:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.principal" data-fond="fond.accent.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#f3f2f1"></span><code>fond.accent.discret</code> <span class="hex">#f3f2f1</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#363026">Réserver une table</span><span class="paire"><code>texte.principal</code> <span class="hex">#363026</span> <span class="sur">sur <code>fond.accent.discret</code></span></span></td>
+        <tr data-devant="text.default" data-fond="background.accent.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f3f2f1"></span><code>background.accent.subtle</code> <span class="hex">#f3f2f1</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#363026">Réserver une table</span><span class="paire"><code>text.default</code> <span class="hex">#363026</span> <span class="sur">sur <code>background.accent.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">11,68:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.secondaire" data-fond="fond.accent.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#f3f2f1"></span><code>fond.accent.discret</code> <span class="hex">#f3f2f1</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#6d675b">Réserver une table</span><span class="paire"><code>texte.secondaire</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>fond.accent.discret</code></span></span></td>
+        <tr data-devant="text.secondary" data-fond="background.accent.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f3f2f1"></span><code>background.accent.subtle</code> <span class="hex">#f3f2f1</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#6d675b">Réserver une table</span><span class="paire"><code>text.secondary</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>background.accent.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">5,02:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.interactif" data-fond="fond.accent.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#f3f2f1"></span><code>fond.accent.discret</code> <span class="hex">#f3f2f1</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#4f0020">Réserver une table</span><span class="paire"><code>texte.interactif</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>fond.accent.discret</code></span></span></td>
+        <tr data-devant="text.interactive" data-fond="background.accent.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f3f2f1"></span><code>background.accent.subtle</code> <span class="hex">#f3f2f1</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#4f0020">Réserver une table</span><span class="paire"><code>text.interactive</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>background.accent.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">13,87:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.marque.grand" data-fond="fond.accent.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#f3f2f1"></span><code>fond.accent.discret</code> <span class="hex">#f3f2f1</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#7a1f3d">Réserver une table</span><span class="paire"><code>texte.marque.grand</code> <span class="hex">#7a1f3d</span> <span class="sur">sur <code>fond.accent.discret</code></span></span></td>
+        <tr data-devant="text.brand.large" data-fond="background.accent.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f3f2f1"></span><code>background.accent.subtle</code> <span class="hex">#f3f2f1</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#7a1f3d">Réserver une table</span><span class="paire"><code>text.brand.large</code> <span class="hex">#7a1f3d</span> <span class="sur">sur <code>background.accent.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">8,98:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.accent" data-fond="fond.accent.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#f3f2f1"></span><code>fond.accent.discret</code> <span class="hex">#f3f2f1</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#6d675b">Réserver une table</span><span class="paire"><code>texte.accent</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>fond.accent.discret</code></span></span></td>
+        <tr data-devant="text.accent" data-fond="background.accent.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f3f2f1"></span><code>background.accent.subtle</code> <span class="hex">#f3f2f1</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#6d675b">Réserver une table</span><span class="paire"><code>text.accent</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>background.accent.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">5,02:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.marque.grand" data-fond="fond.app" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fbfbfb"></span><code>fond.app</code> <span class="hex">#fbfbfb</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#7a1f3d">Réserver une table</span><span class="paire"><code>texte.marque.grand</code> <span class="hex">#7a1f3d</span> <span class="sur">sur <code>fond.app</code></span></span></td>
+        <tr data-devant="text.brand.large" data-fond="background.app" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fbfbfb"></span><code>background.app</code> <span class="hex">#fbfbfb</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#7a1f3d">Réserver une table</span><span class="paire"><code>text.brand.large</code> <span class="hex">#7a1f3d</span> <span class="sur">sur <code>background.app</code></span></span></td>
           <td data-label="Ratio" class="num">9,70:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.marque.grand" data-fond="fond.surface" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#7a1f3d">Réserver une table</span><span class="paire"><code>texte.marque.grand</code> <span class="hex">#7a1f3d</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+        <tr data-devant="text.brand.large" data-fond="background.surface" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ffffff"></span><code>background.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#7a1f3d">Réserver une table</span><span class="paire"><code>text.brand.large</code> <span class="hex">#7a1f3d</span> <span class="sur">sur <code>background.surface</code></span></span></td>
           <td data-label="Ratio" class="num">10,04:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.marque.grand" data-fond="fond.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#f8f8f7"></span><code>fond.discret</code> <span class="hex">#f8f8f7</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f8f8f7;color:#7a1f3d">Réserver une table</span><span class="paire"><code>texte.marque.grand</code> <span class="hex">#7a1f3d</span> <span class="sur">sur <code>fond.discret</code></span></span></td>
+        <tr data-devant="text.brand.large" data-fond="background.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f8f8f7"></span><code>background.subtle</code> <span class="hex">#f8f8f7</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f8f8f7;color:#7a1f3d">Réserver une table</span><span class="paire"><code>text.brand.large</code> <span class="hex">#7a1f3d</span> <span class="sur">sur <code>background.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">9,45:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.sur-marque" data-fond="fond.marque.fort" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#7a1f3d"></span><code>fond.marque.fort</code> <span class="hex">#7a1f3d</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#7a1f3d;color:#ffffff">Réserver une table</span><span class="paire"><code>texte.sur-marque</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>fond.marque.fort</code></span></span></td>
+        <tr data-devant="text.on-brand" data-fond="background.brand.strong" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#7a1f3d"></span><code>background.brand.strong</code> <span class="hex">#7a1f3d</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#7a1f3d;color:#ffffff">Réserver une table</span><span class="paire"><code>text.on-brand</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>background.brand.strong</code></span></span></td>
           <td data-label="Ratio" class="num">10,04:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.sur-interactif.inverse" data-fond="fond.interactif.inverse" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.interactif.inverse</code> <span class="hex">#ffffff</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#7a1f3d">Réserver une table</span><span class="paire"><code>texte.sur-interactif.inverse</code> <span class="hex">#7a1f3d</span> <span class="sur">sur <code>fond.interactif.inverse</code></span></span></td>
+        <tr data-devant="text.on-interactive.inverse" data-fond="background.interactive.inverse" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ffffff"></span><code>background.interactive.inverse</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#7a1f3d">Réserver une table</span><span class="paire"><code>text.on-interactive.inverse</code> <span class="hex">#7a1f3d</span> <span class="sur">sur <code>background.interactive.inverse</code></span></span></td>
           <td data-label="Ratio" class="num">10,04:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.sur-interactif.inverse.survol" data-fond="fond.interactif.inverse" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.interactif.inverse</code> <span class="hex">#ffffff</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#6a0d30">Réserver une table</span><span class="paire"><code>texte.sur-interactif.inverse.survol</code> <span class="hex">#6a0d30</span> <span class="sur">sur <code>fond.interactif.inverse</code></span></span></td>
+        <tr data-devant="text.on-interactive.inverse.hover" data-fond="background.interactive.inverse" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ffffff"></span><code>background.interactive.inverse</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#ffffff;color:#6a0d30">Réserver une table</span><span class="paire"><code>text.on-interactive.inverse.hover</code> <span class="hex">#6a0d30</span> <span class="sur">sur <code>background.interactive.inverse</code></span></span></td>
           <td data-label="Ratio" class="num">12,25:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.sur-erreur" data-fond="fond.erreur.fort.survol" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#b9001a"></span><code>fond.erreur.fort.survol</code> <span class="hex">#b9001a</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#b9001a;color:#ffffff">Réserver une table</span><span class="paire"><code>texte.sur-erreur</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>fond.erreur.fort.survol</code></span></span></td>
+        <tr data-devant="text.on-error" data-fond="background.error.strong.hover" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#b9001a"></span><code>background.error.strong.hover</code> <span class="hex">#b9001a</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#b9001a;color:#ffffff">Réserver une table</span><span class="paire"><code>text.on-error</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>background.error.strong.hover</code></span></span></td>
           <td data-label="Ratio" class="num">6,82:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.desactive" data-fond="fond.desactive" class="exception">
-          <td data-label="Fond"><span class="pastille" style="background:#f3f2f1"></span><code>fond.desactive</code> <span class="hex">#f3f2f1</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#8a8478">Réserver une table</span><span class="paire"><code>texte.desactive</code> <span class="hex">#8a8478</span> <span class="sur">sur <code>fond.desactive</code></span></span></td>
+        <tr data-devant="text.disabled" data-fond="background.disabled" class="exception">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f3f2f1"></span><code>background.disabled</code> <span class="hex">#f3f2f1</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#8a8478">Réserver une table</span><span class="paire"><code>text.disabled</code> <span class="hex">#8a8478</span> <span class="sur">sur <code>background.disabled</code></span></span></td>
           <td data-label="Ratio" class="num">3,32:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">exception</span> <span class="motif">composant désactivé, exempté du seuil de contraste (WCAG 1.4.3) ; valeur à juger sur la planche du bouton</span></td>
         </tr>
-        <tr data-devant="texte.desactive" data-fond="fond.app" class="exception">
-          <td data-label="Fond"><span class="pastille" style="background:#fbfbfb"></span><code>fond.app</code> <span class="hex">#fbfbfb</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#8a8478">Réserver une table</span><span class="paire"><code>texte.desactive</code> <span class="hex">#8a8478</span> <span class="sur">sur <code>fond.app</code></span></span></td>
+        <tr data-devant="text.disabled" data-fond="background.app" class="exception">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fbfbfb"></span><code>background.app</code> <span class="hex">#fbfbfb</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fbfbfb;color:#8a8478">Réserver une table</span><span class="paire"><code>text.disabled</code> <span class="hex">#8a8478</span> <span class="sur">sur <code>background.app</code></span></span></td>
           <td data-label="Ratio" class="num">3,59:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">exception</span> <span class="motif">composant désactivé sans fond (bouton discret), exempté du seuil de contraste (WCAG 1.4.3) ; valeur à juger sur la planche du bouton</span></td>
         </tr>
-        <tr data-devant="texte.marque" data-fond="fond.marque.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fcf0f2"></span><code>fond.marque.discret</code> <span class="hex">#fcf0f2</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fcf0f2;color:#2d000f">Réserver une table</span><span class="paire"><code>texte.marque</code> <span class="hex">#2d000f</span> <span class="sur">sur <code>fond.marque.discret</code></span></span></td>
+        <tr data-devant="text.brand" data-fond="background.brand.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fcf0f2"></span><code>background.brand.subtle</code> <span class="hex">#fcf0f2</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fcf0f2;color:#2d000f">Réserver une table</span><span class="paire"><code>text.brand</code> <span class="hex">#2d000f</span> <span class="sur">sur <code>background.brand.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">16,88:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.principal" data-fond="fond.teinte" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#f3f2f1"></span><code>fond.teinte</code> <span class="hex">#f3f2f1</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#363026">Réserver une table</span><span class="paire"><code>texte.principal</code> <span class="hex">#363026</span> <span class="sur">sur <code>fond.teinte</code></span></span></td>
+        <tr data-devant="text.default" data-fond="background.tint" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f3f2f1"></span><code>background.tint</code> <span class="hex">#f3f2f1</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#f3f2f1;color:#363026">Réserver une table</span><span class="paire"><code>text.default</code> <span class="hex">#363026</span> <span class="sur">sur <code>background.tint</code></span></span></td>
           <td data-label="Ratio" class="num">11,68:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.marque" data-fond="fond.marque.teinte" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fcf0f2"></span><code>fond.marque.teinte</code> <span class="hex">#fcf0f2</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fcf0f2;color:#2d000f">Réserver une table</span><span class="paire"><code>texte.marque</code> <span class="hex">#2d000f</span> <span class="sur">sur <code>fond.marque.teinte</code></span></span></td>
+        <tr data-devant="text.brand" data-fond="background.brand.tint" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fcf0f2"></span><code>background.brand.tint</code> <span class="hex">#fcf0f2</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#fcf0f2;color:#2d000f">Réserver une table</span><span class="paire"><code>text.brand</code> <span class="hex">#2d000f</span> <span class="sur">sur <code>background.brand.tint</code></span></span></td>
           <td data-label="Ratio" class="num">16,88:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="texte.secondaire" data-fond="fond.composant.appui" class="interdite">
-          <td data-label="Fond"><span class="pastille" style="background:#e3e2df"></span><code>fond.composant.appui</code> <span class="hex">#e3e2df</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#e3e2df;color:#6d675b">Réserver une table</span><span class="paire"><code>texte.secondaire</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>fond.composant.appui</code></span></span></td>
+        <tr data-devant="text.secondary" data-fond="background.component.pressed" class="interdite">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#e3e2df"></span><code>background.component.pressed</code> <span class="hex">#e3e2df</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#e3e2df;color:#6d675b">Réserver une table</span><span class="paire"><code>text.secondary</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>background.component.pressed</code></span></span></td>
           <td data-label="Ratio" class="num">4,33:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
-          <td data-label="Verdict"><span class="verdict">interdite</span> <span class="motif">sur fond.composant.appui, le texte passe en texte.principal</span></td>
+          <td data-label="Verdict"><span class="verdict">interdite</span> <span class="motif">sur background.component.pressed, le texte passe en text.default</span></td>
         </tr>
-        <tr data-devant="texte.secondaire" data-fond="fond.interactif.fort" class="interdite">
-          <td data-label="Fond"><span class="pastille" style="background:#7a1f3d"></span><code>fond.interactif.fort</code> <span class="hex">#7a1f3d</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#7a1f3d;color:#6d675b">Réserver une table</span><span class="paire"><code>texte.secondaire</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>fond.interactif.fort</code></span></span></td>
+        <tr data-devant="text.secondary" data-fond="background.interactive.strong" class="interdite">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#7a1f3d"></span><code>background.interactive.strong</code> <span class="hex">#7a1f3d</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#7a1f3d;color:#6d675b">Réserver une table</span><span class="paire"><code>text.secondary</code> <span class="hex">#6d675b</span> <span class="sur">sur <code>background.interactive.strong</code></span></span></td>
           <td data-label="Ratio" class="num">1,78:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
-          <td data-label="Verdict"><span class="verdict">interdite</span> <span class="motif">sur un plein, le texte est texte.sur-*</span></td>
+          <td data-label="Verdict"><span class="verdict">interdite</span> <span class="motif">sur un plein, le texte est text.on-*</span></td>
         </tr>
-        <tr data-devant="texte.marque.grand" data-fond="fond.marque.fort" class="interdite">
-          <td data-label="Fond"><span class="pastille" style="background:#7a1f3d"></span><code>fond.marque.fort</code> <span class="hex">#7a1f3d</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#7a1f3d;color:#7a1f3d">Réserver une table</span><span class="paire"><code>texte.marque.grand</code> <span class="hex">#7a1f3d</span> <span class="sur">sur <code>fond.marque.fort</code></span></span></td>
+        <tr data-devant="text.brand.large" data-fond="background.brand.strong" class="interdite">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#7a1f3d"></span><code>background.brand.strong</code> <span class="hex">#7a1f3d</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#7a1f3d;color:#7a1f3d">Réserver une table</span><span class="paire"><code>text.brand.large</code> <span class="hex">#7a1f3d</span> <span class="sur">sur <code>background.brand.strong</code></span></span></td>
           <td data-label="Ratio" class="num">1,00:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
-          <td data-label="Verdict"><span class="verdict">interdite</span> <span class="motif">sur fond.marque.fort, les titres prennent texte.sur-marque</span></td>
+          <td data-label="Verdict"><span class="verdict">interdite</span> <span class="motif">sur background.brand.strong, les titres prennent text.on-brand</span></td>
         </tr>
-        <tr data-devant="texte.interactif" data-fond="fond.marque.fort" class="interdite">
-          <td data-label="Fond"><span class="pastille" style="background:#7a1f3d"></span><code>fond.marque.fort</code> <span class="hex">#7a1f3d</span></td>
-          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#7a1f3d;color:#4f0020">Réserver une table</span><span class="paire"><code>texte.interactif</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>fond.marque.fort</code></span></span></td>
+        <tr data-devant="text.interactive" data-fond="background.brand.strong" class="interdite">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#7a1f3d"></span><code>background.brand.strong</code> <span class="hex">#7a1f3d</span></td>
+          <td data-label="Mot écrit"><span class="echantillon texte" style="background:#7a1f3d;color:#4f0020">Réserver une table</span><span class="paire"><code>text.interactive</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>background.brand.strong</code></span></span></td>
           <td data-label="Ratio" class="num">1,54:1</td>
           <td data-label="Seuil" class="num">4,5:1</td>
-          <td data-label="Verdict"><span class="verdict">interdite</span> <span class="motif">sur fond.marque.fort, un lien prend texte.sur-marque et reste souligné</span></td>
+          <td data-label="Verdict"><span class="verdict">interdite</span> <span class="motif">sur background.brand.strong, un lien prend text.on-brand et reste souligné</span></td>
         </tr>
         </tbody>
       </table></div>
     </section>
-    <section data-propriete="bordure">
+    <section data-propriete="border">
       <h2>Bordure <span class="compte">18 paires, 3 interdites</span></h2>
-      <p>Bordure qui repère un composant ou un état, et anneau de focus, seuil 3:1 (WCAG 2.1, 1.4.11). bordure.discrete et bordure.defaut sont décoratives et n'ont pas de paire.</p>
+      <p>Bordure qui repère un composant ou un état, et anneau de focus, seuil 3:1 (WCAG 2.1, 1.4.11). border.subtle et border.default sont décoratives et n'ont pas de paire.</p>
       <div class="table-wrap"><table>
         <thead><tr><th>Fond</th><th>Mot écrit</th><th>Ratio</th><th>Seuil</th><th>Verdict</th></tr></thead>
         <tbody>
-        <tr data-devant="bordure.forte" data-fond="fond.app" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fbfbfb"></span><code>fond.app</code> <span class="hex">#fbfbfb</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#fbfbfb;border-color:#958f84">Champ</span><span class="paire"><code>bordure.forte</code> <span class="hex">#958f84</span> <span class="sur">sur <code>fond.app</code></span></span></td>
+        <tr data-devant="border.strong" data-fond="background.app" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fbfbfb"></span><code>background.app</code> <span class="hex">#fbfbfb</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#fbfbfb;border-color:#958f84">Champ</span><span class="paire"><code>border.strong</code> <span class="hex">#958f84</span> <span class="sur">sur <code>background.app</code></span></span></td>
           <td data-label="Ratio" class="num">3,10:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.forte" data-fond="fond.surface" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#ffffff;border-color:#958f84">Champ</span><span class="paire"><code>bordure.forte</code> <span class="hex">#958f84</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+        <tr data-devant="border.strong" data-fond="background.surface" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ffffff"></span><code>background.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#ffffff;border-color:#958f84">Champ</span><span class="paire"><code>border.strong</code> <span class="hex">#958f84</span> <span class="sur">sur <code>background.surface</code></span></span></td>
           <td data-label="Ratio" class="num">3,21:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.forte" data-fond="fond.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#f8f8f7"></span><code>fond.discret</code> <span class="hex">#f8f8f7</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#f8f8f7;border-color:#958f84">Champ</span><span class="paire"><code>bordure.forte</code> <span class="hex">#958f84</span> <span class="sur">sur <code>fond.discret</code></span></span></td>
+        <tr data-devant="border.strong" data-fond="background.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f8f8f7"></span><code>background.subtle</code> <span class="hex">#f8f8f7</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#f8f8f7;border-color:#958f84">Champ</span><span class="paire"><code>border.strong</code> <span class="hex">#958f84</span> <span class="sur">sur <code>background.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">3,02:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.erreur" data-fond="fond.app" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fbfbfb"></span><code>fond.app</code> <span class="hex">#fbfbfb</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#fbfbfb;border-color:#e76862">Champ</span><span class="paire"><code>bordure.erreur</code> <span class="hex">#e76862</span> <span class="sur">sur <code>fond.app</code></span></span></td>
+        <tr data-devant="border.error" data-fond="background.app" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fbfbfb"></span><code>background.app</code> <span class="hex">#fbfbfb</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#fbfbfb;border-color:#e76862">Champ</span><span class="paire"><code>border.error</code> <span class="hex">#e76862</span> <span class="sur">sur <code>background.app</code></span></span></td>
           <td data-label="Ratio" class="num">3,09:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.succes" data-fond="fond.app" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fbfbfb"></span><code>fond.app</code> <span class="hex">#fbfbfb</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#fbfbfb;border-color:#529f76">Champ</span><span class="paire"><code>bordure.succes</code> <span class="hex">#529f76</span> <span class="sur">sur <code>fond.app</code></span></span></td>
+        <tr data-devant="border.success" data-fond="background.app" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fbfbfb"></span><code>background.app</code> <span class="hex">#fbfbfb</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#fbfbfb;border-color:#529f76">Champ</span><span class="paire"><code>border.success</code> <span class="hex">#529f76</span> <span class="sur">sur <code>background.app</code></span></span></td>
           <td data-label="Ratio" class="num">3,08:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.avertissement" data-fond="fond.app" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fbfbfb"></span><code>fond.app</code> <span class="hex">#fbfbfb</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#fbfbfb;border-color:#bf8501">Champ</span><span class="paire"><code>bordure.avertissement</code> <span class="hex">#bf8501</span> <span class="sur">sur <code>fond.app</code></span></span></td>
+        <tr data-devant="border.warning" data-fond="background.app" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fbfbfb"></span><code>background.app</code> <span class="hex">#fbfbfb</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#fbfbfb;border-color:#bf8501">Champ</span><span class="paire"><code>border.warning</code> <span class="hex">#bf8501</span> <span class="sur">sur <code>background.app</code></span></span></td>
           <td data-label="Ratio" class="num">3,08:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.info" data-fond="fond.app" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fbfbfb"></span><code>fond.app</code> <span class="hex">#fbfbfb</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#fbfbfb;border-color:#2f97da">Champ</span><span class="paire"><code>bordure.info</code> <span class="hex">#2f97da</span> <span class="sur">sur <code>fond.app</code></span></span></td>
+        <tr data-devant="border.info" data-fond="background.app" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fbfbfb"></span><code>background.app</code> <span class="hex">#fbfbfb</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#fbfbfb;border-color:#2f97da">Champ</span><span class="paire"><code>border.info</code> <span class="hex">#2f97da</span> <span class="sur">sur <code>background.app</code></span></span></td>
           <td data-label="Ratio" class="num">3,09:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.focus" data-fond="fond.app" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fbfbfb"></span><code>fond.app</code> <span class="hex">#fbfbfb</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#fbfbfb;border-color:#4f0020">Champ</span><span class="paire"><code>bordure.focus</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>fond.app</code></span></span></td>
+        <tr data-devant="border.focus" data-fond="background.app" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fbfbfb"></span><code>background.app</code> <span class="hex">#fbfbfb</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#fbfbfb;border-color:#4f0020">Champ</span><span class="paire"><code>border.focus</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>background.app</code></span></span></td>
           <td data-label="Ratio" class="num">14,99:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.focus" data-fond="fond.surface" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#ffffff;border-color:#4f0020">Champ</span><span class="paire"><code>bordure.focus</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+        <tr data-devant="border.focus" data-fond="background.surface" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ffffff"></span><code>background.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#ffffff;border-color:#4f0020">Champ</span><span class="paire"><code>border.focus</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>background.surface</code></span></span></td>
           <td data-label="Ratio" class="num">15,51:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.focus" data-fond="fond.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#f8f8f7"></span><code>fond.discret</code> <span class="hex">#f8f8f7</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#f8f8f7;border-color:#4f0020">Champ</span><span class="paire"><code>bordure.focus</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>fond.discret</code></span></span></td>
+        <tr data-devant="border.focus" data-fond="background.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f8f8f7"></span><code>background.subtle</code> <span class="hex">#f8f8f7</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#f8f8f7;border-color:#4f0020">Champ</span><span class="paire"><code>border.focus</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>background.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">14,60:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.focus" data-fond="fond.composant" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#f3f2f1"></span><code>fond.composant</code> <span class="hex">#f3f2f1</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#f3f2f1;border-color:#4f0020">Champ</span><span class="paire"><code>bordure.focus</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>fond.composant</code></span></span></td>
+        <tr data-devant="border.focus" data-fond="background.component" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f3f2f1"></span><code>background.component</code> <span class="hex">#f3f2f1</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#f3f2f1;border-color:#4f0020">Champ</span><span class="paire"><code>border.focus</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>background.component</code></span></span></td>
           <td data-label="Ratio" class="num">13,87:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.focus" data-fond="fond.marque.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#fcf0f2"></span><code>fond.marque.discret</code> <span class="hex">#fcf0f2</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#fcf0f2;border-color:#4f0020">Champ</span><span class="paire"><code>bordure.focus</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>fond.marque.discret</code></span></span></td>
+        <tr data-devant="border.focus" data-fond="background.brand.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#fcf0f2"></span><code>background.brand.subtle</code> <span class="hex">#fcf0f2</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#fcf0f2;border-color:#4f0020">Champ</span><span class="paire"><code>border.focus</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>background.brand.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">13,95:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.focus" data-fond="fond.accent.discret" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#f3f2f1"></span><code>fond.accent.discret</code> <span class="hex">#f3f2f1</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#f3f2f1;border-color:#4f0020">Champ</span><span class="paire"><code>bordure.focus</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>fond.accent.discret</code></span></span></td>
+        <tr data-devant="border.focus" data-fond="background.accent.subtle" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f3f2f1"></span><code>background.accent.subtle</code> <span class="hex">#f3f2f1</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#f3f2f1;border-color:#4f0020">Champ</span><span class="paire"><code>border.focus</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>background.accent.subtle</code></span></span></td>
           <td data-label="Ratio" class="num">13,87:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.focus.inverse" data-fond="fond.marque.fort" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#7a1f3d"></span><code>fond.marque.fort</code> <span class="hex">#7a1f3d</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#7a1f3d;border-color:#ffffff">Champ</span><span class="paire"><code>bordure.focus.inverse</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>fond.marque.fort</code></span></span></td>
+        <tr data-devant="border.focus.inverse" data-fond="background.brand.strong" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#7a1f3d"></span><code>background.brand.strong</code> <span class="hex">#7a1f3d</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#7a1f3d;border-color:#ffffff">Champ</span><span class="paire"><code>border.focus.inverse</code> <span class="hex">#ffffff</span> <span class="sur">sur <code>background.brand.strong</code></span></span></td>
           <td data-label="Ratio" class="num">10,04:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.erreur" data-fond="fond.surface" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#ffffff;border-color:#e76862">Champ</span><span class="paire"><code>bordure.erreur</code> <span class="hex">#e76862</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+        <tr data-devant="border.error" data-fond="background.surface" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ffffff"></span><code>background.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#ffffff;border-color:#e76862">Champ</span><span class="paire"><code>border.error</code> <span class="hex">#e76862</span> <span class="sur">sur <code>background.surface</code></span></span></td>
           <td data-label="Ratio" class="num">3,20:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.succes" data-fond="fond.surface" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#ffffff;border-color:#529f76">Champ</span><span class="paire"><code>bordure.succes</code> <span class="hex">#529f76</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+        <tr data-devant="border.success" data-fond="background.surface" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ffffff"></span><code>background.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#ffffff;border-color:#529f76">Champ</span><span class="paire"><code>border.success</code> <span class="hex">#529f76</span> <span class="sur">sur <code>background.surface</code></span></span></td>
           <td data-label="Ratio" class="num">3,19:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.avertissement" data-fond="fond.surface" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#ffffff;border-color:#bf8501">Champ</span><span class="paire"><code>bordure.avertissement</code> <span class="hex">#bf8501</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+        <tr data-devant="border.warning" data-fond="background.surface" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ffffff"></span><code>background.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#ffffff;border-color:#bf8501">Champ</span><span class="paire"><code>border.warning</code> <span class="hex">#bf8501</span> <span class="sur">sur <code>background.surface</code></span></span></td>
           <td data-label="Ratio" class="num">3,19:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.info" data-fond="fond.surface" class="conforme">
-          <td data-label="Fond"><span class="pastille" style="background:#ffffff"></span><code>fond.surface</code> <span class="hex">#ffffff</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#ffffff;border-color:#2f97da">Champ</span><span class="paire"><code>bordure.info</code> <span class="hex">#2f97da</span> <span class="sur">sur <code>fond.surface</code></span></span></td>
+        <tr data-devant="border.info" data-fond="background.surface" class="conforme">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#ffffff"></span><code>background.surface</code> <span class="hex">#ffffff</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#ffffff;border-color:#2f97da">Champ</span><span class="paire"><code>border.info</code> <span class="hex">#2f97da</span> <span class="sur">sur <code>background.surface</code></span></span></td>
           <td data-label="Ratio" class="num">3,20:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">conforme</span></td>
         </tr>
-        <tr data-devant="bordure.forte" data-fond="fond.composant" class="interdite">
-          <td data-label="Fond"><span class="pastille" style="background:#f3f2f1"></span><code>fond.composant</code> <span class="hex">#f3f2f1</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#f3f2f1;border-color:#958f84">Champ</span><span class="paire"><code>bordure.forte</code> <span class="hex">#958f84</span> <span class="sur">sur <code>fond.composant</code></span></span></td>
+        <tr data-devant="border.strong" data-fond="background.component" class="interdite">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#f3f2f1"></span><code>background.component</code> <span class="hex">#f3f2f1</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#f3f2f1;border-color:#958f84">Champ</span><span class="paire"><code>border.strong</code> <span class="hex">#958f84</span> <span class="sur">sur <code>background.component</code></span></span></td>
           <td data-label="Ratio" class="num">2,87:1</td>
           <td data-label="Seuil" class="num">3:1</td>
-          <td data-label="Verdict"><span class="verdict">interdite</span> <span class="motif">un champ se pose sur fond.surface</span></td>
+          <td data-label="Verdict"><span class="verdict">interdite</span> <span class="motif">un champ se pose sur background.surface</span></td>
         </tr>
-        <tr data-devant="bordure.focus" data-fond="fond.interactif.fort" class="interdite">
-          <td data-label="Fond"><span class="pastille" style="background:#7a1f3d"></span><code>fond.interactif.fort</code> <span class="hex">#7a1f3d</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#7a1f3d;border-color:#4f0020">Champ</span><span class="paire"><code>bordure.focus</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>fond.interactif.fort</code></span></span></td>
+        <tr data-devant="border.focus" data-fond="background.interactive.strong" class="interdite">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#7a1f3d"></span><code>background.interactive.strong</code> <span class="hex">#7a1f3d</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#7a1f3d;border-color:#4f0020">Champ</span><span class="paire"><code>border.focus</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>background.interactive.strong</code></span></span></td>
           <td data-label="Ratio" class="num">1,54:1</td>
           <td data-label="Seuil" class="num">3:1</td>
           <td data-label="Verdict"><span class="verdict">interdite</span> <span class="motif">l’anneau de focus est décalé de 2 px et se pose sur le fond de la page, jamais sur le plein</span></td>
         </tr>
-        <tr data-devant="bordure.focus" data-fond="fond.marque.fort" class="interdite">
-          <td data-label="Fond"><span class="pastille" style="background:#7a1f3d"></span><code>fond.marque.fort</code> <span class="hex">#7a1f3d</span></td>
-          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#7a1f3d;border-color:#4f0020">Champ</span><span class="paire"><code>bordure.focus</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>fond.marque.fort</code></span></span></td>
+        <tr data-devant="border.focus" data-fond="background.brand.strong" class="interdite">
+          <td data-label="Fond"><span class="echantillon-fond" style="background:#7a1f3d"></span><code>background.brand.strong</code> <span class="hex">#7a1f3d</span></td>
+          <td data-label="Mot écrit"><span class="echantillon bordure" style="background:#7a1f3d;border-color:#4f0020">Champ</span><span class="paire"><code>border.focus</code> <span class="hex">#4f0020</span> <span class="sur">sur <code>background.brand.strong</code></span></span></td>
           <td data-label="Ratio" class="num">1,54:1</td>
           <td data-label="Seuil" class="num">3:1</td>
-          <td data-label="Verdict"><span class="verdict">interdite</span> <span class="motif">sur fond.marque.fort, l’anneau de focus prend bordure.focus.inverse</span></td>
+          <td data-label="Verdict"><span class="verdict">interdite</span> <span class="motif">sur background.brand.strong, l’anneau de focus prend border.focus.inverse</span></td>
         </tr>
         </tbody>
       </table></div>

@@ -85,11 +85,11 @@ function ecarts(vu, v, largeur) {
   /** @type {string[]} */
   const e = [];
   // Large, la largeur de colonne ; étroite, toute la largeur du parent. Les planches visent les deux cas.
-  const colonne = parseFloat(v['ds-largeur-colonne']) < parseFloat(vu.parent);
-  const attendue = colonne ? v['ds-largeur-colonne'] : vu.parent;
+  const colonne = parseFloat(v['ds-width-column']) < parseFloat(vu.parent);
+  const attendue = colonne ? v['ds-width-column'] : vu.parent;
   if (vu.largeur !== attendue) e.push(`largeur ${vu.largeur} (attendu ${attendue})`);
   if (colonne !== (largeur === LARGEURS[0])) e.push(`à ${largeur} px, parent de ${vu.parent}`);
-  if (JSON.stringify(vu.ecarts) !== JSON.stringify([v['ds-ecart-entre-composants']])) e.push(`écarts ${vu.ecarts.join(', ')} (attendu ${v['ds-ecart-entre-composants']})`);
+  if (JSON.stringify(vu.ecarts) !== JSON.stringify([v['ds-gap-between-components']])) e.push(`écarts ${vu.ecarts.join(', ')} (attendu ${v['ds-gap-between-components']})`);
   if (!vu.colonne || !vu.cartes) e.push('pas une colonne de cartes pleine largeur');
   if (JSON.stringify(vu.ordre) !== JSON.stringify(MEMBRES.map(([c]) => c))) e.push(`ordre ${vu.ordre.join(', ')}`);
   if (vu.role !== 'list' || vu.puces !== 'none' || vu.marge !== '0px 0px') e.push(`liste ${vu.role}, puces ${vu.puces}, marge ${vu.marge}`);

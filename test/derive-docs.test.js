@@ -89,7 +89,7 @@ test('l\'extracteur trouve les commandes et les chemins cités (attendu écrit �
   const texte = [
     'Lancer npm run contraste, puis npm test ; npm run inexistante n\'existe pas.',
     'Voir `src/cli/typo.js` et [la carte](ARCHITECTURE.md#commandes), `revue.html`, `local/audits/x.json`,',
-    '`scr/inexistant.js`, `--sources <fichier>`, `@projectwallace/css-analyzer`, `ecart.section`, `$extensions["ds-lab.etroit"]`, [site](https://example.com/a/b).',
+    '`scr/inexistant.js`, `--sources <fichier>`, `@projectwallace/css-analyzer`, `gap.section`, `$extensions["ds-lab.etroit"]`, [site](https://example.com/a/b).',
     '@docs/regles.md',
     '```',
     'tokens/orbe-cafe/  →  src/tokens/  npm run typo',

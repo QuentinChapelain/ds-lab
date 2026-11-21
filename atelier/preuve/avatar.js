@@ -17,6 +17,9 @@ const ETATS = { photo: 'couvre', initiales: 'aucune', echec: 'aucune', decoratif
 /** Cas de la règle des initiales de la planche → lettres attendues (docs/attendus/avatar-etiquette.md). */
 const CAS = { 'deux-mots': 'CF', 'trait-union': 'JM', 'un-mot-trait-union': 'ML', 'un-mot': 'N', particule: 'HL', 'particule-tete': 'L', elision: 'IA', accent: 'ÉB' };
 
+/** Taille de la planche → valeur de la prop size, qui nomme aussi les variables du thème. */
+const TAILLES = /** @type {Record<string, string>} */ ({ normale: 'medium', grande: 'large' });
+
 /** @param {number} n */
 const px = (n) => `${Math.round(n * 10000) / 10000}px`;
 
@@ -29,22 +32,22 @@ function attenduAvatars(t) {
   /** @type {Map<string, Record<string, any>>} */
   const out = new Map();
   for (const taille of ['normale', 'grande']) {
-    const cote = v[`ds-taille-avatar-${taille}`];
-    const s = `ds-initiales-${taille}`;
+    const cote = v[`ds-avatar-size-${TAILLES[taille]}`];
+    const s = `ds-initials-${TAILLES[taille]}`;
     for (const [etat, image] of Object.entries(ETATS))
       out.set(`${taille}-${etat}`, {
         boite: `${cote} × ${cote}`,
-        rayon: v['ds-arrondi-pilule'],
-        fond: css(t.couleurs['marque-teinte']),
+        rayon: v['ds-border-radius-full'],
+        fond: css(t.couleurs['brand-tint']),
         ombre: 'none',
         transition: '0s',
         initiales: {
           texte: 'CF',
-          couleur: css(t.couleurs['on-marque-teinte']),
+          couleur: css(t.couleurs['on-brand-tint']),
           police: t.policeTexte.join('|'),
-          taille: v[`${s}-taille`],
-          graisse: v[`${s}-graisse`],
-          interligne: px(parseFloat(v[`${s}-taille`]) * Number(v[`${s}-interligne`])),
+          taille: v[`${s}-font-size`],
+          graisse: v[`${s}-font-weight`],
+          interligne: px(parseFloat(v[`${s}-font-size`]) * Number(v[`${s}-line-height`])),
           muettes: true,
           centrees: true,
         },

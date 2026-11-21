@@ -100,13 +100,13 @@ test('K1 modifications.json : simulation, lignes et hors, sans hôte ni port', (
   assert.equal(mods.simulation.spacing['30px'], '32px');
   assert.deepEqual(mods.lignes.map((/** @type {any} */ l) => l.id).sort(), ['coul-01', 'coul-02', 'coul-03', 'coul-04', 'esp-03']);
   const coul04 = mods.lignes.find((/** @type {any} */ l) => l.id === 'coul-04');
-  assert.deepEqual([coul04.cles, coul04.jeton, coul04.ancienne, coul04.nouvelle, coul04.pages], [['colors|#dadada|bordure'], '--couleur-neutre-6', '#dadada', '#d8d6d2', [PAGE]]);
+  assert.deepEqual([coul04.cles, coul04.jeton, coul04.ancienne, coul04.nouvelle, coul04.pages], [['colors|#dadada|bordure'], '--color-neutral-6', '#dadada', '#d8d6d2', [PAGE]]);
   const port = new URL(servers.origin).port;
   const champs = JSON.stringify({ simulation: mods.simulation, lignes: mods.lignes, hors: mods.hors });
   assert.ok(!champs.includes('127.0.0.1') && !champs.includes(port), champs);
   assert.deepEqual(
     mods.hors.map((/** @type {any} */ h) => h.texte),
-    mods.brief.reste.map((/** @type {string} */ t) => t.replace(': unité inconnue ; si la valeur calculée est bien #f2f2f2, écris var(--couleur-neutre-3, ) à la main.', ': raccourci en var() ; si la valeur calculée est bien #f2f2f2, écris var(--couleur-neutre-3, #f2f2f2) à la main.')),
+    mods.brief.reste.map((/** @type {string} */ t) => t.replace(': unité inconnue ; si la valeur calculée est bien #f2f2f2, écris var(--color-neutral-3, ) à la main.', ': raccourci en var() ; si la valeur calculée est bien #f2f2f2, écris var(--color-neutral-3, #f2f2f2) à la main.')),
   );
   assert.deepEqual(Object.fromEntries(mods.hors.filter((/** @type {any} */ h) => h.lignes.length === 1 && h.lignes[0] !== 'tail-01').map((/** @type {any} */ h) => [h.lignes[0], h.cause])), {
     'esp-03': 'attribut style',
@@ -149,18 +149,18 @@ test('K4 canal en clair et ce qu\'il faut faire', () => {
   assert.deepEqual(esp03.map((o) => o.canal.categories), [['attribut style']]);
   assert.equal(esp03[0].canal.cause, 'attribut style');
   assert.match(esp03[0].canal.texte, /attribut style/);
-  assert.match(esp03[0].canal.aFaire, /var\(--espace-32, 30px\)/);
+  assert.match(esp03[0].canal.aFaire, /var\(--space-32, 30px\)/);
   assert.equal(esp03[0].annotation.ecrite, null);
   const coul02 = ratees('coul-02');
   assert.deepEqual(coul02.map((o) => [o.declaration, o.canal.categories]), [['<style> .bouton-theme', ['bloc de style injecté par un script']]]);
-  assert.match(coul02[0].canal.aFaire, /var\(--couleur-neutre-5, #e0e0e0\)/);
+  assert.match(coul02[0].canal.aFaire, /var\(--color-neutral-5, #e0e0e0\)/);
   const coul04 = ratees('coul-04');
   assert.equal(coul04.length, 4);
   for (const o of coul04) {
     assert.deepEqual(o.canal.categories, ['raccourci', 'variable']);
     assert.match(o.canal.texte, /--trait-cadre/);
     assert.match(o.canal.texte, /attribut style de l'élément/);
-    assert.match(o.canal.aFaire, /--couleur-neutre-6/);
+    assert.match(o.canal.aFaire, /--color-neutral-6/);
     assert.deepEqual([o.annotation.ecrite, o.annotation.cause, o.annotation.injectee], [false, 'raccourci', false]);
   }
   const coul03 = ratees('coul-03');

@@ -16,7 +16,7 @@ const LONGUE = 'Ingénierie des systèmes embarqués et temps réel';
 /** États de la planche → ton. */
 const ETATS = { neutre: 'neutre', marque: 'marque', 'neutre-survol': 'neutre', 'marque-survol': 'marque' };
 /** Couleur du thème de chaque ton. */
-const COULEUR = { neutre: 'teinte', marque: 'marque-teinte' };
+const COULEUR = { neutre: 'tint', marque: 'brand-tint' };
 
 /** @param {number} n */
 const px = (n) => `${Math.round(n * 10000) / 10000}px`;
@@ -32,22 +32,22 @@ function attenduPlanche(t) {
   for (const [etat, ton] of Object.entries(ETATS)) {
     const c = COULEUR[/** @type {keyof typeof COULEUR} */ (ton)];
     out.set(etat, {
-      hauteur: v['ds-hauteur-etiquette'],
-      marges: `${v['ds-marge-interieure-etiquette']} ${v['ds-marge-interieure-etiquette']}`,
-      rayon: v['ds-arrondi-pilule'],
+      hauteur: v['ds-height-tag'],
+      marges: `${v['ds-padding-tag']} ${v['ds-padding-tag']}`,
+      rayon: v['ds-border-radius-full'],
       fond: css(t.couleurs[c]),
       couleur: css(t.couleurs[`on-${c}`]),
       police: t.policeTexte.join('|'),
-      taille: v['ds-corps-petit-taille'],
-      graisse: v['ds-corps-petit-graisse'],
-      interligne: px(parseFloat(v['ds-corps-petit-taille']) * Number(v['ds-corps-petit-interligne'])),
+      taille: v['ds-body-small-font-size'],
+      graisse: v['ds-body-small-font-weight'],
+      interligne: px(parseFloat(v['ds-body-small-font-size']) * Number(v['ds-body-small-line-height'])),
       ombre: 'none',
       transition: '0s',
       curseur: 'auto',
       statique: 'ni tabindex, ni rôle, ni voile, sous-couche masquée',
     });
   }
-  const e = v['ds-ecart-entre-etiquettes'];
+  const e = v['ds-gap-between-tags'];
   out.set('rangee', { ecartEnLigne: e, ecartEntreLignes: e, lignes: 'au moins 2' });
   out.set('longue', { largeur: 'au plus celle du parent', coupe: 'ellipsis', texte: LONGUE });
   return out;

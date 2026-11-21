@@ -7,7 +7,7 @@
  *      600 px [H] dans $extensions["ds-lab.largeur"] ; ordre primitives, marque, roles, mode, largeur ;
  *   R2 le resolver écrit est celui que la saisie produit (pas de dérive) ;
  *   R3 Orbe Café en large : les rôles résolus sont tokens/commun/semantique.tokens.json tel quel ; en étroit,
- *      ecart.section = {espace.32}, titre.1 = taille-texte.24 et interligne 1,3333, le reste égal au large ;
+ *      gap.section = {space.32}, titre.1 = font-size.24 et interligne 1,3333, le reste égal au large ;
  *   R4 fusion : le dernier jeton gagne en entier (un composite n'est pas fusionné champ par champ), un groupe garde
  *      l'ordre de première apparition ;
  *   R5 refus : version autre que 2025.10, modificateur ou contexte inconnu, modificateur sans entrée ni défaut.
@@ -60,10 +60,10 @@ test('R3 Orbe Café : rôles en large = semantique.tokens.json ; en étroit, sec
   assert.deepEqual(large.semantique, rolesFichier);
   assert.deepEqual(partager(lireResolver(chemin, { largeur: 'large', mode: 'clair' })).semantique, rolesFichier);
   const etroit = partager(lireResolver(chemin, { largeur: 'etroit' })).semantique;
-  assert.equal(etroit.ecart.section.$value, '{espace.32}');
-  assert.equal(etroit.typo.titre['1'].$value.fontSize, '{taille-texte.24}');
-  assert.equal(etroit.typo.titre['1'].$value.lineHeight, 1.3333);
-  assert.equal(etroit.typo.titre['1'].$value.fontFamily, '{marque.police.titre}');
+  assert.equal(etroit.gap.section.$value, '{space.32}');
+  assert.equal(etroit.typography.heading['1'].$value.fontSize, '{font-size.24}');
+  assert.equal(etroit.typography.heading['1'].$value.lineHeight, 1.3333);
+  assert.equal(etroit.typography.heading['1'].$value.fontFamily, '{brand.font.heading}');
   const changes = [];
   for (const g of Object.keys(sem)) if (!g.startsWith('$')) for (const [k, v] of Object.entries(sem[g])) {
     if (k.startsWith('$')) continue;
@@ -73,7 +73,7 @@ test('R3 Orbe Café : rôles en large = semantique.tokens.json ; en étroit, sec
     };
     walk(v, etroit[g][k], `${g}.${k}`);
   }
-  assert.deepEqual(changes, ['ecart.section', 'typo.affichage.grand', 'typo.affichage.moyen', 'typo.titre.1', 'typo.titre.2', 'typo.titre.3']);
+  assert.deepEqual(changes, ['gap.section', 'typography.display.large', 'typography.display.medium', 'typography.heading.1', 'typography.heading.2', 'typography.heading.3']);
 });
 
 test('R4 fusion : jeton remplacé en entier, groupe fusionné dans l\'ordre de première apparition', () => {

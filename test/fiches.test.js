@@ -226,7 +226,7 @@ test('U4 variable du thème inconnue, variable ds- écrite inconnue : pannes', (
   const vide = { theme: new Set(), ds: new Set(), emplacements: [] };
   assert.throws(() => pairesDe({ ...vide, ds: new Set(['ds-inconnue']) }, TABLE, PAIRES, 'essai.vue'), { message: 'essai.vue : variable inconnue de la table : --v-ds-inconnue' });
   assert.throws(() => pairesDe({ ...vide, theme: new Set(['inconnue']) }, TABLE, PAIRES, 'essai.vue'), { message: 'essai.vue : variable inconnue de la table : --v-theme-inconnue' });
-  const texte = lire(FICHE).replace('(`ds-ecart-entre-etiquettes`)', '(`ds-ecart-inconnu`)');
+  const texte = lire(FICHE).replace('(`ds-gap-between-tags`)', '(`ds-ecart-inconnu`)');
   assert.throws(() => ecartsEcrits(texte, FICHE, parNom('DsTag'), ctx()), { message: `${FICHE} : variable inconnue de la table : ds-ecart-inconnu` });
 });
 
@@ -237,13 +237,13 @@ test('U5 bloc contrastes du DsTag ; exception écrite ; paire absente en panne',
       '| Devant | Fond | Plus bas des 10 thèmes | Seuil |',
       '|---|---|---|---|',
       // Fonds teintés (docs/attendus/carte-membre-liste.md) : le plus bas passe en sombre, au pas 5.
-      '| `texte.marque` | `fond.marque.teinte` | 10,07:1 (Atelier Lavandine, sombre) | 4,50:1 |',
-      '| `texte.principal` | `fond.teinte` | 10,06:1 (Atelier Lavandine, sombre) | 4,50:1 |',
+      '| `text.brand` | `background.brand.tint` | 10,07:1 (Atelier Lavandine, sombre) | 4,50:1 |',
+      '| `text.default` | `background.tint` | 10,06:1 (Atelier Lavandine, sombre) | 4,50:1 |',
     ].join('\n'),
   );
-  assert.match(genere('DsButton').contrastes, /^\| `texte\.desactive` \| `fond\.desactive` \| [\d,]+:1 \([^)]+\) \| 4,50:1, exception écrite \|$/m);
-  const c = { theme: new Set(['teinte']), ds: new Set(), emplacements: [] };
-  assert.throws(() => pairesDe(c, TABLE, { paires: [] }, 'essai.vue'), { message: 'essai.vue : paire absente de tokens/commun/paires.json : texte.principal sur fond.teinte' });
+  assert.match(genere('DsButton').contrastes, /^\| `text\.disabled` \| `background\.disabled` \| [\d,]+:1 \([^)]+\) \| 4,50:1, exception écrite \|$/m);
+  const c = { theme: new Set(['tint']), ds: new Set(), emplacements: [] };
+  assert.throws(() => pairesDe(c, TABLE, { pairs: [] }, 'essai.vue'), { message: 'essai.vue : paire absente de tokens/commun/paires.json : text.default sur background.tint' });
 });
 
 test('U6 marques en panne ; régénérer garde les parties écrites, deux fois de suite', () => {
@@ -372,33 +372,33 @@ test('U11 anatomie du DsTag ; le bouton à icône sans danger plein ; tokens san
       '',
       '| Partie | Token | Ce qu\'il règle |',
       '|---|---|---|',
-      '| Couleur, tone neutral | `fond.teinte` | Fond teinté d\'une pièce statique qui porte un texte court pour classer, posée sur la page ou sur une surface ; jamais un fond cliquable. |',
-      '| Couleur, tone neutral | `texte.principal` | Texte courant et titres. |',
-      '| Couleur, tone brand | `fond.marque.teinte` | Fond teinté de la marque d\'une pièce statique qui porte un texte court ou des initiales pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable. |',
-      '| Couleur, tone brand | `texte.marque` | Texte de marque posé sur le fond teinté de la marque, comme les initiales de DsAvatar ou un DsTag mis en avant. |',
-      '| Forme | `arrondi.pilule` | Arrondi complet d\'une forme ronde ou en pilule, comme un avatar ou une étiquette. |',
-      '| Forme | `hauteur.etiquette` | Hauteur d\'une étiquette, sur une ligne. |',
-      '| Forme | `marge-interieure.etiquette` | Marge intérieure gauche et droite d\'une étiquette, de part et d\'autre de son texte. |',
-      '| Texte | `typo.corps.petit` | Texte de tableau ou d\'étiquette, plus petit que le texte courant. |',
+      '| Couleur, tone neutral | `background.tint` | Fond teinté d\'une pièce statique qui porte un texte court pour classer, posée sur la page ou sur une surface ; jamais un fond cliquable. |',
+      '| Couleur, tone neutral | `text.default` | Texte courant et titres. |',
+      '| Couleur, tone brand | `background.brand.tint` | Fond teinté de la marque d\'une pièce statique qui porte un texte court ou des initiales pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable. |',
+      '| Couleur, tone brand | `text.brand` | Texte de marque posé sur le fond teinté de la marque, comme les initiales de DsAvatar ou un DsTag mis en avant. |',
+      '| Forme | `border-radius.full` | Arrondi complet d\'une forme ronde ou en pilule, comme un avatar ou une étiquette. |',
+      '| Forme | `height.tag` | Hauteur d\'une étiquette, sur une ligne. |',
+      '| Forme | `padding.tag` | Marge intérieure gauche et droite d\'une étiquette, de part et d\'autre de son texte. |',
+      '| Texte | `typography.body.small` | Texte de tableau ou d\'étiquette, plus petit que le texte courant. |',
     ].join('\n'),
   );
   const bi = genere('DsIconButton').tokens;
   assert.doesNotMatch(bi, /variant danger(?!-)/);
-  assert.match(bi, /^\| Couleur, variant danger-ghost \| `texte\.erreur` \|/m);
+  assert.match(bi, /^\| Couleur, variant danger-ghost \| `text\.error` \|/m);
   assert.doesNotMatch(bi, /block|loading/);
-  assert.match(genere('DsButton').tokens, /^\| Couleur, variant danger \| `fond\.erreur\.fort` \|/m);
-  assert.match(genere('DsTextInput').tokens, /^\| Couleur, errorMessage \| `bordure\.erreur` \|/m);
+  assert.match(genere('DsButton').tokens, /^\| Couleur, variant danger \| `background\.error\.strong` \|/m);
+  assert.match(genere('DsTextInput').tokens, /^\| Couleur, errorMessage \| `border\.error` \|/m);
   const c = lireComposant('DsTag');
-  const sans = new Map([...DESCRIPTIONS].filter(([k]) => k !== 'hauteur.etiquette'));
-  assert.throws(() => anatomie(c, PAR_NOM.get('DsTag'), TABLE, sans, 'essai.vue', PAR_NOM), { message: 'essai.vue : token sans description : hauteur.etiquette' });
+  const sans = new Map([...DESCRIPTIONS].filter(([k]) => k !== 'height.tag'));
+  assert.throws(() => anatomie(c, PAR_NOM.get('DsTag'), TABLE, sans, 'essai.vue', PAR_NOM), { message: 'essai.vue : token sans description : height.tag' });
   // DOC3 par lecture : une phrase, sans numéro de règle ni de décision, sans nom de token, sans mesure, sans pas.
-  assert.deepEqual(motifsDescription('Texte de marque posé sur fond.marque.discret ; pas 12 du primaire (D05).'), ['numéro de règle ou de décision', 'nom de token', 'pas d\'échelle']);
+  assert.deepEqual(motifsDescription('Texte de marque posé sur background.brand.subtle ; pas 12 du primaire (D05).'), ['numéro de règle ou de décision', 'nom de token', 'pas d\'échelle']);
   assert.deepEqual(motifsDescription('Anneau de focus clavier (3:1).'), ['mesure']);
   assert.deepEqual(motifsDescription('Texte de tableau ; ligne visée 20 px.'), ['mesure']);
   assert.deepEqual(motifsDescription('Deux phrases. Une de trop.'), ['pas une seule phrase']);
   assert.deepEqual(motifsDescription('Texte courant et titres.'), []);
-  assert.deepEqual(ecartsDescriptions(['texte.principal', 'hauteur.etiquette'], new Map([['texte.principal', 'Texte courant et titres.'], ['hauteur.etiquette', 'Hauteur de 24 px.']])), ['description à réécrire : hauteur.etiquette (mesure)']);
-  const pose = lire(FICHE).replace('`ecart.entre-etiquettes` (`ds-ecart-entre-etiquettes`)', '`ecart.inconnu` (`ds-ecart-entre-etiquettes`)');
+  assert.deepEqual(ecartsDescriptions(['text.default', 'height.tag'], new Map([['text.default', 'Texte courant et titres.'], ['height.tag', 'Hauteur de 24 px.']])), ['description à réécrire : height.tag (mesure)']);
+  const pose = lire(FICHE).replace('`gap.between-tags` (`ds-gap-between-tags`)', '`ecart.inconnu` (`ds-gap-between-tags`)');
   assert.throws(() => ecartsEcrits(pose, FICHE, parNom('DsTag'), ctx()), { message: `${FICHE} : token sans description : ecart.inconnu` });
 });
 
@@ -468,8 +468,8 @@ test('U14 modules : en-tête, tokens et contrastes, messages déclarés, table d
       '',
       '| Partie | Token | Ce qu\'il règle |',
       '|---|---|---|',
-      `| Forme | \`ecart.entre-composants\` | ${DESCRIPTIONS.get('ecart.entre-composants')} |`,
-      `| Forme | \`largeur.colonne\` | ${DESCRIPTIONS.get('largeur.colonne')} |`,
+      `| Forme | \`gap.between-components\` | ${DESCRIPTIONS.get('gap.between-components')} |`,
+      `| Forme | \`width.column\` | ${DESCRIPTIONS.get('width.column')} |`,
     ].join('\n'),
   );
   assert.equal(

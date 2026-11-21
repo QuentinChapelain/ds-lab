@@ -76,28 +76,28 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 
 | Partie | Token | Ce qu'il règle |
 |---|---|---|
-| Couleur | `fond.surface` | Fond d'une carte ou d'un champ, posé sur le fond de la page. |
-| Couleur | `texte.principal` | Texte courant et titres. |
-| Couleur | `texte.erreur` | Texte d'un message d'erreur. |
-| Couleur | `texte.secondaire` | Texte d'appoint, comme une aide, une légende ou une date. |
-| Couleur | `bordure.forte` | Contour qui suffit à repérer un champ ou une case à cocher. |
-| Couleur, au focus | `bordure.focus` | Anneau de focus clavier, autour du composant qui a le focus. |
-| Couleur, disabled | `fond.desactive` | Fond d'un composant désactivé, quelle que soit sa variante (bouton plein ou secondaire). |
-| Couleur, disabled | `texte.desactive` | Texte d'un composant désactivé, sur son fond ou sur la page. |
-| Couleur, disabled | `bordure.discrete` | Séparateur léger entre deux zones, décoratif, jamais seule pour repérer un champ ou un état. |
-| Couleur, errorMessage | `bordure.erreur` | Contour d'un champ en erreur ; sur un fond de statut, décorative : le texte porte le sens. |
-| Forme | `arrondi.controle` | Arrondi d'un contrôle, comme un bouton ou un champ, le même à toutes les tailles. |
-| Forme | `hauteur.controle.normale` | Hauteur d'un contrôle de taille normale, comme un bouton. |
-| Forme | `epaisseur.contour` | Épaisseur du contour d'un contrôle, comme le bouton secondaire. |
-| Forme | `taille-icone.normale` | Icône d'un contrôle de taille normale. |
-| Forme | `ecart.icone-texte` | Écart entre l'icône et le texte d'un contrôle, comme un bouton ou un champ. |
-| Forme | `marge-interieure.composant` | Marge intérieure d'un composant à bord visible, comme une carte, un encadré ou une zone de formulaire. |
-| Forme | `ecart.dans-composant` | Écart entre les parties d'un même composant, comme une étiquette et son champ ou un champ et son message d'erreur. |
-| Forme, au focus | `epaisseur.focus` | Épaisseur de l'anneau de focus clavier. |
-| Forme, au focus | `decalage.focus` | Décalage de l'anneau de focus clavier hors du composant, pour qu'il se pose sur le fond de la page et jamais sur le plein. |
-| Texte | `typo.libelle` | Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. |
-| Texte | `typo.corps.moyen` | Texte courant, comme le texte d'une carte ou la saisie d'un champ. |
-| Texte | `typo.mention` | Aide, message d'erreur ou légende, sous un champ. |
+| Couleur | `background.surface` | Fond d'une carte ou d'un champ, posé sur le fond de la page. |
+| Couleur | `text.default` | Texte courant et titres. |
+| Couleur | `text.error` | Texte d'un message d'erreur. |
+| Couleur | `text.secondary` | Texte d'appoint, comme une aide, une légende ou une date. |
+| Couleur | `border.strong` | Contour qui suffit à repérer un champ ou une case à cocher. |
+| Couleur, au focus | `border.focus` | Anneau de focus clavier, autour du composant qui a le focus. |
+| Couleur, disabled | `background.disabled` | Fond d'un composant désactivé, quelle que soit sa variante (bouton plein ou secondaire). |
+| Couleur, disabled | `text.disabled` | Texte d'un composant désactivé, sur son fond ou sur la page. |
+| Couleur, disabled | `border.subtle` | Séparateur léger entre deux zones, décoratif, jamais seule pour repérer un champ ou un état. |
+| Couleur, errorMessage | `border.error` | Contour d'un champ en erreur ; sur un fond de statut, décorative : le texte porte le sens. |
+| Forme | `border-radius.control` | Arrondi d'un contrôle, comme un bouton ou un champ, le même à toutes les tailles. |
+| Forme | `height.control.medium` | Hauteur d'un contrôle de taille normale, comme un bouton. |
+| Forme | `border-width.default` | Épaisseur du contour d'un contrôle, comme le bouton secondaire. |
+| Forme | `icon-size.medium` | Icône d'un contrôle de taille normale. |
+| Forme | `gap.icon-text` | Écart entre l'icône et le texte d'un contrôle, comme un bouton ou un champ. |
+| Forme | `padding.component` | Marge intérieure d'un composant à bord visible, comme une carte, un encadré ou une zone de formulaire. |
+| Forme | `gap.within-component` | Écart entre les parties d'un même composant, comme une étiquette et son champ ou un champ et son message d'erreur. |
+| Forme, au focus | `border-width.focus` | Épaisseur de l'anneau de focus clavier. |
+| Forme, au focus | `offset.focus` | Décalage de l'anneau de focus clavier hors du composant, pour qu'il se pose sur le fond de la page et jamais sur le plein. |
+| Texte | `typography.label` | Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. |
+| Texte | `typography.body.medium` | Texte courant, comme le texte d'une carte ou la saisie d'un champ. |
+| Texte | `typography.supporting-text` | Aide, message d'erreur ou légende, sous un champ. |
 <!-- /genere:tokens -->
 
 ## Accessibilité
@@ -110,19 +110,19 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 <!-- genere:contrastes : écrit par npm --prefix atelier run fiches -->
 | Devant | Fond | Plus bas des 10 thèmes | Seuil |
 |---|---|---|---|
-| `texte.principal` | `fond.app` | 12,62:1 (Atelier Lavandine, clair) | 4,50:1 |
-| `texte.principal` | `fond.surface` | 12,12:1 (Atelier Lavandine, sombre) | 4,50:1 |
-| `texte.desactive` | `fond.desactive` | 3,32:1 (Atelier Lavandine, clair) | 4,50:1, exception écrite |
-| `bordure.focus` | `fond.app` | 5,40:1 (Orbe Café, clair) | 3,00:1 |
-| `bordure.focus` | `fond.surface` | 5,59:1 (Orbe Café, clair) | 3,00:1 |
-| `bordure.forte` | `fond.app` | 3,10:1 (Atelier Lavandine, clair) | 3,00:1 |
-| `bordure.forte` | `fond.surface` | 3,10:1 (Atelier Lavandine, sombre) | 3,00:1 |
-| `texte.secondaire` | `fond.app` | 5,42:1 (Atelier Lavandine, clair) | 4,50:1 |
-| `texte.secondaire` | `fond.surface` | 5,22:1 (Atelier Lavandine, sombre) | 4,50:1 |
-| `texte.erreur` | `fond.app` | 5,41:1 (Atelier Lavandine, clair) | 4,50:1 |
-| `texte.erreur` | `fond.surface` | 5,60:1 (Atelier Lavandine, clair) | 4,50:1 |
-| `bordure.erreur` | `fond.app` | 3,10:1 (Atelier Lavandine, clair) | 3,00:1 |
-| `bordure.erreur` | `fond.surface` | 3,11:1 (Atelier Lavandine, sombre) | 3,00:1 |
+| `text.default` | `background.app` | 12,62:1 (Atelier Lavandine, clair) | 4,50:1 |
+| `text.default` | `background.surface` | 12,12:1 (Atelier Lavandine, sombre) | 4,50:1 |
+| `text.disabled` | `background.disabled` | 3,32:1 (Atelier Lavandine, clair) | 4,50:1, exception écrite |
+| `border.focus` | `background.app` | 5,40:1 (Orbe Café, clair) | 3,00:1 |
+| `border.focus` | `background.surface` | 5,59:1 (Orbe Café, clair) | 3,00:1 |
+| `border.strong` | `background.app` | 3,10:1 (Atelier Lavandine, clair) | 3,00:1 |
+| `border.strong` | `background.surface` | 3,10:1 (Atelier Lavandine, sombre) | 3,00:1 |
+| `text.secondary` | `background.app` | 5,42:1 (Atelier Lavandine, clair) | 4,50:1 |
+| `text.secondary` | `background.surface` | 5,22:1 (Atelier Lavandine, sombre) | 4,50:1 |
+| `text.error` | `background.app` | 5,41:1 (Atelier Lavandine, clair) | 4,50:1 |
+| `text.error` | `background.surface` | 5,60:1 (Atelier Lavandine, clair) | 4,50:1 |
+| `border.error` | `background.app` | 3,10:1 (Atelier Lavandine, clair) | 3,00:1 |
+| `border.error` | `background.surface` | 3,11:1 (Atelier Lavandine, sombre) | 3,00:1 |
 <!-- /genere:contrastes -->
 
 ## En situation

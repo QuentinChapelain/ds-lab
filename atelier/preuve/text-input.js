@@ -29,34 +29,34 @@ const ETATS = ['repos', 'survol', 'focus', 'rempli', 'exemple', 'aide', 'erreur'
 function attenduChamps(t) {
   const v = t.variables;
   const c = (/** @type {string} */ k) => css(t.couleurs[k]);
-  const anneau = `solid ${v['ds-epaisseur-focus']} ${css(v['ds-focus'])} ${v['ds-decalage-focus']}`;
-  const mention = { taille: v['ds-mention-taille'], graisse: v['ds-mention-graisse'], police: t.policeTexte.join('|') };
+  const anneau = `solid ${v['ds-border-width-focus']} ${css(v['ds-focus'])} ${v['ds-offset-focus']}`;
+  const mention = { taille: v['ds-supporting-text-font-size'], graisse: v['ds-supporting-text-font-weight'], police: t.policeTexte.join('|') };
   /** @type {Map<string, Record<string, any>>} */
   const out = new Map();
   for (const etat of ETATS) {
     const erreur = etat.startsWith('erreur');
     const desactive = etat === 'désactivé';
     out.set(etat, {
-      hauteur: v['ds-hauteur-controle-normale'],
-      rayon: v['ds-arrondi-controle'],
-      bord: `${v['ds-epaisseur-contour']} ${css(v[erreur ? 'ds-contour-erreur' : desactive ? 'ds-contour-desactive' : 'ds-contour'])}`,
-      fond: desactive ? c('desactive') : c('surface'),
-      texte: desactive ? c('on-desactive') : c('on-surface'),
+      hauteur: v['ds-height-control-medium'],
+      rayon: v['ds-border-radius-control'],
+      bord: `${v['ds-border-width-default']} ${css(v[erreur ? 'ds-border-error' : desactive ? 'ds-border-disabled' : 'ds-border'])}`,
+      fond: desactive ? c('disabled') : c('surface'),
+      texte: desactive ? c('on-disabled') : c('on-surface'),
       police: t.policeTexte.join('|'),
-      taille: v['ds-corps-taille'],
-      graisse: v['ds-corps-graisse'],
+      taille: v['ds-body-font-size'],
+      graisse: v['ds-body-font-weight'],
       // Du bord intérieur au premier élément (texte, ou icône) à gauche, du texte au bord intérieur à droite.
-      marge: `${v['ds-marge-interieure-composant']}/${v['ds-marge-interieure-composant']}`,
+      marge: `${v['ds-padding-component']}/${v['ds-padding-component']}`,
       anneau: etat === 'focus' || etat === 'erreur-focus' ? anneau : 'none',
       opacite: '1',
       natif: desactive ? 'disabled' : 'actif',
-      libelle: { couleur: c('on-background'), taille: v['ds-libelle-taille'], graisse: v['ds-libelle-graisse'], police: t.policeLibelle.join('|') },
-      ecartLibelle: v['ds-ecart-dans-composant'],
-      obligatoire: etat === 'obligatoire' ? { texte: ' (obligatoire)', couleur: css(v['ds-texte-secondaire']) } : null,
-      erreur: erreur ? { couleur: css(v['ds-texte-erreur']), ...mention, ecart: v['ds-ecart-dans-composant'] } : null,
-      aide: etat === 'aide' || desactive ? { couleur: css(v['ds-texte-secondaire']), ...mention, ecart: v['ds-ecart-dans-composant'], masquee: false } : erreur ? { couleur: css(v['ds-texte-secondaire']), ...mention, masquee: true } : null,
-      exemple: etat === 'exemple' || etat === 'icône' ? `${css(v['ds-texte-secondaire'])} 1` : null,
-      icone: etat === 'icône' ? { taille: v['ds-taille-icone-normale'], ecart: v['ds-ecart-icone-texte'], muette: true } : null,
+      libelle: { couleur: c('on-background'), taille: v['ds-label-font-size'], graisse: v['ds-label-font-weight'], police: t.policeLibelle.join('|') },
+      ecartLibelle: v['ds-gap-within-component'],
+      obligatoire: etat === 'obligatoire' ? { texte: ' (obligatoire)', couleur: css(v['ds-text-secondary']) } : null,
+      erreur: erreur ? { couleur: css(v['ds-text-error']), ...mention, ecart: v['ds-gap-within-component'] } : null,
+      aide: etat === 'aide' || desactive ? { couleur: css(v['ds-text-secondary']), ...mention, ecart: v['ds-gap-within-component'], masquee: false } : erreur ? { couleur: css(v['ds-text-secondary']), ...mention, masquee: true } : null,
+      exemple: etat === 'exemple' || etat === 'icône' ? `${css(v['ds-text-secondary'])} 1` : null,
+      icone: etat === 'icône' ? { taille: v['ds-icon-size-medium'], ecart: v['ds-gap-icon-text'], muette: true } : null,
     });
   }
   return out;
@@ -236,8 +236,8 @@ async function clavier(contexte, base, t) {
     return { anneau: `${s.outlineStyle} ${s.outlineWidth} ${s.outlineColor} ${s.outlineOffset}`, bord: s.borderTopColor };
   });
   const v = t.variables;
-  const attendu = `solid ${v['ds-epaisseur-focus']} ${css(v['ds-focus'])} ${v['ds-decalage-focus']}`;
-  out.push([focus.anneau === attendu && focus.bord === css(v['ds-contour-erreur']), `${t.nom}, focus clavier du champ en erreur : ${focus.anneau} (jetons ${attendu}), contour ${focus.bord}`]);
+  const attendu = `solid ${v['ds-border-width-focus']} ${css(v['ds-focus'])} ${v['ds-offset-focus']}`;
+  out.push([focus.anneau === attendu && focus.bord === css(v['ds-border-error']), `${t.nom}, focus clavier du champ en erreur : ${focus.anneau} (jetons ${attendu}), contour ${focus.bord}`]);
 
   // Valeur tapée émise, puis envoi par Entrée : le désactivé ne part pas.
   await page.locator('[data-cas="nom"] input').focus();
@@ -281,7 +281,7 @@ export async function preuveChamp({ themes, contexte, developpement, construite,
       verifier(e.length === 0 && n === attendu.size && r.erreurs.length === 0, `${t.nom}, ${mode}, planche du champ : ${n} champs sur ${attendu.size}${e.length ? `, ${e.length} écart(s) : ${e.slice(0, 4).join(' ; ')}` : ', contour, fond, dimensions, textes et messages égaux aux jetons dans chaque état'}${r.erreurs.length ? `, ${r.erreurs.join(' ; ')}` : ''}`);
     }
     const a = bld.alignement;
-    const h = t.variables['ds-hauteur-controle-normale'];
+    const h = t.variables['ds-height-control-medium'];
     const aligne = a !== null && `${a.champ[2]}px` === h && `${a.bouton[2]}px` === h && a.champ[0] === a.bouton[0] && a.champ[1] === a.bouton[1];
     verifier(aligne, `${t.nom}, champ + bouton normal : ${a ? `champ ${a.champ[2]} px (${a.champ[0]} à ${a.champ[1]}), bouton ${a.bouton[2]} px (${a.bouton[0]} à ${a.bouton[1]})` : 'ligne absente'}`);
     mkdirSync(CAPTURES, { recursive: true });

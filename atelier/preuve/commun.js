@@ -90,7 +90,7 @@ export function attendus() {
         policeTexte: police(table.polices['font-body'].jeton),
         policeTitre: police(table.polices['font-heading'].jeton),
         // Police du libellé : celle du produit, jamais celle du texte de la marque (D44).
-        policeLibelle: resoudreAlias(tous, tous.get('typo.libelle').$value.fontFamily, { depuis: 'typo.libelle', chaine: ['typo.libelle'] }).valeur,
+        policeLibelle: resoudreAlias(tous, tous.get('typography.label').$value.fontFamily, { depuis: 'typography.label', chaine: ['typography.label'] }).valeur,
         // Variables des enveloppes (--v-ds-<clé>), relues dans les jetons : couleur en r,g,b comme Vuetify l'écrit,
         // dimension en px, nombre tel quel ; rangées par nom.
         variables,

@@ -5,6 +5,7 @@
  * section est une liste d'entrées ; migration.md en écrit le texte, modifications.json lit les entrées, jamais le texte.
  */
 import { fr } from '../lib/format.js';
+import { cssVarFallback } from '../lib/nom-css.js';
 
 /** La liste des sélecteurs est-elle coupée ? @param {{ selectorsCut?: boolean }} r */
 export const cutNote = (r) => (r.selectorsCut ? ' (liste coupée au relevé, d’autres éléments sont touchés)' : '');
@@ -68,8 +69,6 @@ const relationOf = (r) => {
   return rel && rel !== '—' ? ` Relation : ${rel}.` : '';
 };
 
-/** Variable CSS d'un jeton DTCG (points en tirets), avec repli : l'ancienne valeur mesurée. @param {string} token @param {string} old */
-export const cssVarFallback = (token, old) => `var(--${token.replace(/\./g, '-')}, ${old})`;
 /** La ligne a-t-elle un jeton ? @param {any} r */
 export const hasToken = (r) => !!r.token && r.token !== 'jeton absent' && r.token !== '—';
 /** I4 : relation d'une ligne en quelques mots (sans signal ni lieu), ou rien. @param {any} r */
@@ -111,7 +110,7 @@ export function consigneAgent(d, s) {
   lines.push('CONTEXTE');
   lines.push(`Tu migres les feuilles CSS des pages ${m.pages.join(', ')} vers les jetons ${m.tokens ?? '(aucun fichier de jetons)'} de la cible ${m.target}.`);
   lines.push(
-    "Écris chaque jeton sous la forme var(--couleur-neutre-11, ancienne valeur) : chemin du jeton, points remplacés par des tirets ; en repli, l'ancienne valeur ; si la source l'écrit autrement (rem, rgb()), garde l'écriture de la source. Si la ligne dit « jeton absent », écris la valeur hex ou px indiquée.",
+    "Écris chaque jeton sous la forme var(--color-neutral-11, ancienne valeur) : chemin du jeton, points remplacés par des tirets ; en repli, l'ancienne valeur ; si la source l'écrit autrement (rem, rgb()), garde l'écriture de la source. Si la ligne dit « jeton absent », écris la valeur hex ou px indiquée.",
   );
   lines.push('Les valeurs ci-dessous sont des valeurs calculées : dans la source, elles peuvent être écrites autrement (rem, em, rgb(), mot-clé) ; cherche leur équivalent.');
   // Unité relative et conflits de déclarations, en règle générale.

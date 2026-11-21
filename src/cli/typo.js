@@ -26,9 +26,9 @@ await lancer('typo', () => {
     const contexte = values.etroit ? [lireJson(values.etroit)] : l.contexte;
     const r = typo(
       sem,
-      // La consigne de hauteur de capitale (groupe police, tokens/commun/police.tokens.json) vient du resolver
+      // La consigne de hauteur de capitale (groupe font, tokens/commun/police.tokens.json) vient du resolver
       // quand le fichier de primitives donné ne la porte pas.
-      values.primitives ? { police: l.large.primitives.police, ...lireJson(values.primitives) } : l.large.primitives,
+      values.primitives ? { font: l.large.primitives.font, ...lireJson(values.primitives) } : l.large.primitives,
       values['couche-marque'] ? lireJson(values['couche-marque']) : l.large.marque,
       { ...l.etroit, semantique: enEtroit(sem, contexte) },
     );
@@ -42,7 +42,7 @@ await lancer('typo', () => {
       s.etroit ? `étroit ${fr(s.etroit.taille, D4)} / ${ligne(s.etroit.ligne)} px` : '',
       s.etroit ? `rapport ${fr(s.etroit.interligne, D4)}` : '',
       String(s.graisse),
-      String(s.police).replace(/^\{(?:marque\.)?(.*)\}$/, '$1'),
+      String(s.police).replace(/^\{(.*)\}$/, '$1'),
       s.hauteurCapitale !== null ? `capitale ${fr(s.hauteurCapitale, D4)} × taille` : '',
     ]);
     const w = cols[0].map((_, i) => Math.max(...cols.map((c) => c[i].length)));

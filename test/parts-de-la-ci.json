@@ -4,6 +4,7 @@
     [
       "test/addresses.test.js",
       "test/alias.test.js",
+      "test/anciens-noms.test.js",
       "test/aplats.test.js",
       "test/apply-unit.test.js",
       "test/audit-properties.test.js",

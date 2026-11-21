@@ -34,22 +34,24 @@ import { fr } from '../lib/format.js';
 
 export { COMMUN };
 const CLES = ['nom', 'description', 'primaire', 'accent', 'polices'];
-const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
+const STATUTS = ['error', 'success', 'warning', 'info'];
 const HEX = /^#[0-9a-f]{6}$/i;
-const LABELS = { primaire: 'Primaire', accent: 'Accent' };
+const LABELS = { primary: 'Primaire', accent: 'Accent' };
+/** Clé d'un emplacement dans l'entrée → nom de l'emplacement et de son échelle générée. */
+const EMPLACEMENTS = /** @type {const} */ ({ primaire: 'primary', accent: 'accent' });
 
 /** Échelles écrites à la main d'une marque, dans son dossier (D25). */
 const PROPRES = 'primitives.tokens.json';
 
 /**
  * Fonds clairs communs sur lesquels le texte de marque des grands titres doit tenir 3:1 :
- * hex de fond.app, fond.surface et fond.discret, résolus dans les couches communes.
+ * hex de background.app, background.surface et background.subtle, résolus dans les couches communes.
  * @param {import('./roles.js').RoleSet} commun
  */
 export function fondsClairs(commun) {
-  const f = commun.semantique.fond;
-  const roles = resolveRoles({ fond: { $type: 'color', app: f.app, surface: f.surface, discret: f.discret } }, commun.primitives);
-  return ['fond.app', 'fond.surface', 'fond.discret'].map((r) => /** @type {any} */ (roles.get(r)).hex);
+  const f = commun.semantique.background;
+  const roles = resolveRoles({ background: { $type: 'color', app: f.app, surface: f.surface, subtle: f.subtle } }, commun.primitives);
+  return ['background.app', 'background.surface', 'background.subtle'].map((r) => /** @type {any} */ (roles.get(r)).hex);
 }
 
 /**
@@ -76,8 +78,8 @@ export const echellesPropres = (dossier) => (existsSync(join(dossier, PROPRES)) 
  * @param {any} propres echellesPropres(dossier) @param {import('./roles.js').RoleSet} [commun] @returns {string[]}
  */
 export function echellesCommunesRedefinies(propres, commun = chargerCommun()) {
-  const communes = new Set(Object.keys(commun.primitives.couleur ?? {}).filter((k) => !k.startsWith('$')));
-  return Object.keys(propres?.couleur ?? {}).filter((k) => !k.startsWith('$') && communes.has(k));
+  const communes = new Set(Object.keys(commun.primitives.color ?? {}).filter((k) => !k.startsWith('$')));
+  return Object.keys(propres?.color ?? {}).filter((k) => !k.startsWith('$') && communes.has(k));
 }
 
 /** Motif de refus, ligne d'échec de contraste. @param {string[]} noms */
@@ -219,7 +221,7 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
     return vide;
   }
   /** @type {Record<string, any>} */
-  const nommables = propres?.couleur ?? {};
+  const nommables = propres?.color ?? {};
   /** @type {Record<string, ReturnType<typeof generateScale>>} */
   const generees = {};
   /** @param {'primaire' | 'accent'} slot @returns {Source | undefined} */
@@ -227,8 +229,9 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
     const v = entree[slot];
     if (v === undefined) return undefined;
     if (typeof v === 'string' && HEX.test(v)) {
-      generees[slot] = generateScale(slot, v.toLowerCase());
-      return { scale: slot, steps: generees[slot].steps };
+      const nom = EMPLACEMENTS[slot];
+      generees[nom] = generateScale(nom, v.toLowerCase());
+      return { scale: nom, steps: generees[nom].steps };
     }
     if (v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 1 && typeof v.echelle === 'string') {
       if (!propres) return void invalide(`${slot}, échelle existante : aucune échelle écrite à la main dans le dossier de la marque (${PROPRES})`);
@@ -286,31 +289,31 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   if (motifs.length || !primaire || !polices) return { ...vide, policeTitre };
 
   /** @param {string} s @returns {Source} */
-  const commune = (s) => ({ scale: s, steps: Array.from({ length: 12 }, (_, i) => commun.primitives.couleur[s][String(i + 1)].$value.hex) });
+  const commune = (s) => ({ scale: s, steps: Array.from({ length: 12 }, (_, i) => commun.primitives.color[s][String(i + 1)].$value.hex) });
   /** Pas d'une échelle commune en mode sombre. @param {string} s */
-  const communeSombre = (s) => Array.from({ length: 12 }, (_, i) => communSombre.primitives.couleur[s][String(i + 1)].$value.hex);
+  const communeSombre = (s) => Array.from({ length: 12 }, (_, i) => communSombre.primitives.color[s][String(i + 1)].$value.hex);
   const noms = Object.keys(generees);
   /** @type {any} */
   let echelles = null;
   if (noms.length) {
     /** @type {Record<string, any>} */
     const couleur = { $type: 'color', $description: `Échelles générées de ${entree.nom} (generateScale, src/valise/generate.js), pas 9 = couleur saisie.` };
-    for (const n of noms) couleur[n] = scaleToDtcg(generees[n], `${LABELS[/** @type {'primaire' | 'accent'} */ (n)]} de ${entree.nom}`);
+    for (const n of noms) couleur[n] = scaleToDtcg(generees[n], `${LABELS[/** @type {'primary' | 'accent'} */ (n)]} de ${entree.nom}`);
     echelles = {
       $description: `Échelles de ${entree.nom}, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues avec les couches communes de tokens/commun/.`,
-      couleur,
+      color: couleur,
     };
     for (const f of checkValise(valiseFromTokens(echelles))) motifs.push(`checkValise (clair) : ${f}`);
   }
   const marque = marqueTokens({
     primaire,
-    accent: accent ?? commune('neutre'),
+    accent: accent ?? commune('neutral'),
     statuts: Object.fromEntries(STATUTS.map((s) => [s, commune(s)])),
     polices,
     fonds: fondsClairs(commun),
     description:
       entree.description ??
-      `Emplacements de marque de ${entree.nom}, écrits par la saisie depuis entree.json. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers marque.<emplacement>.* ; chaque emplacement pointe vers une échelle (${noms.length ? 'générées dans echelles.tokens.json, ' : ''}communes dans tokens/commun/), et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9.${accent ? '' : ' Sans accent saisi : repli sur le neutre (D05).'}`,
+      `Emplacements de marque de ${entree.nom}, écrits par la saisie depuis entree.json. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers brand.<emplacement>.* ; chaque emplacement pointe vers une échelle (${noms.length ? 'générées dans echelles.tokens.json, ' : ''}communes dans tokens/commun/), et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9.${accent ? '' : ' Sans accent saisi : repli sur le neutre (D05).'}`,
   });
   // Mode sombre : échelles en miroir du primaire et de l'accent, depuis leur pas 9, sous le même nom.
   /** @type {Record<string, any>} */
@@ -320,7 +323,7 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   };
   /** @type {Record<string, string[]>} */
   const sombres = {};
-  for (const [slot, src] of /** @type {const} */ ([['primaire', primaire], ['accent', accent]])) {
+  for (const [slot, src] of /** @type {const} */ ([['primary', primaire], ['accent', accent]])) {
     if (!src) continue;
     const g = generateScale(src.scale, src.steps[8], OPTIONS_COULEUR_SOMBRE);
     sombres[slot] = g.steps;
@@ -328,20 +331,20 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   }
   const echellesSombres = {
     $description: `Échelles de ${entree.nom} en mode sombre, écrites par la saisie depuis entree.json. Format DTCG 2025.10. Lues dans le contexte sombre de marque.resolver.json, après tokens/commun/mode.sombre.tokens.json.`,
-    couleur: couleurSombre,
+    color: couleurSombre,
   };
   for (const f of checkValise(valiseFromTokens(echellesSombres))) motifs.push(`checkValise (sombre) : ${f}`);
   const marqueSombre = marqueSombreTokens({
     marque,
     clairs: {
-      primaire: primaire.steps,
-      accent: (accent ?? commune('neutre')).steps,
+      primary: primaire.steps,
+      accent: (accent ?? commune('neutral')).steps,
       ...Object.fromEntries(STATUTS.map((s) => [s, commune(s).steps])),
     },
-    echelles: { primaire: primaire.scale, ...Object.fromEntries(STATUTS.map((s) => [s, s])) },
+    echelles: { primary: primaire.scale, ...Object.fromEntries(STATUTS.map((s) => [s, s])) },
     // Pas sombres des emplacements à bouton, pour leur survol (D45) : primaire généré ici, statuts communs.
-    sombres: { primaire: sombres.primaire, ...Object.fromEntries(STATUTS.map((s) => [s, communeSombre(s)])) },
-    primaireSombre: { scale: primaire.scale, steps: sombres.primaire },
+    sombres: { primary: sombres.primary, ...Object.fromEntries(STATUTS.map((s) => [s, communeSombre(s)])) },
+    primaireSombre: { scale: primaire.scale, steps: sombres.primary },
     fonds: fondsClairs(communSombre),
     description: `Couche marque de ${entree.nom} en mode sombre, écrite par la saisie. Format DTCG 2025.10. Posée sur marque.tokens.json dans le contexte sombre : les boutons prennent la version lumineuse de la couleur (pas 11 de l'échelle sombre, survol calculé, D04 et D45), l'aplat plein garde ses valeurs claires, le texte de marque des grands titres est choisi sur l'échelle sombre.`,
   });

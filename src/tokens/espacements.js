@@ -1,24 +1,24 @@
 // @ts-check
 /**
  * Espacements par relation de la couche sémantique (semantique.tokens.json, type dimension),
- * résolus vers espace.* (primitives.tokens.json).
+ * résolus vers space.* (primitives.tokens.json).
  * Les quatre ecart, du plus proche au plus lointain, doivent être strictement croissants ; le rapport
- * entre voisins est calculé pour information, jamais contrôlé. marge-interieure.*, ecart.icone-texte,
- * ecart.entre-etiquettes et ecart.entre-blocs (écarts internes d'un contrôle, d'une suite d'étiquettes ou d'un
+ * entre voisins est calculé pour information, jamais contrôlé. padding.*, gap.icon-text,
+ * gap.between-tags et gap.between-blocks (écarts internes d'un contrôle, d'une suite d'étiquettes ou d'un
  * composant, hors de l'échelle des relations) sont hors contrôle.
  * Un ecart peut avoir une valeur en étroit (le rôle du contexte étroit, largeur.etroit.tokens.json,
  * quand il diffère du large ; seuil sur le modificateur largeur) ; elle doit rester strictement supérieure à l'ecart
  * précédent (sa valeur en étroit s'il en a une) et inférieure ou égale à sa propre valeur large.
- * Règle de proximité : ecart.entre-composants vaut au moins le double de ecart.dans-composant, pour qu'on
+ * Règle de proximité : gap.between-components vaut au moins le double de gap.within-component, pour qu'on
  * voie à quel champ appartient un libellé ou un message ; régularité observée dans les systèmes lus, pas
  * une norme. Les autres rapports entre voisins n'ont pas de seuil.
  */
 import { flattenTokens, primitivesSansRole, resoudreAlias } from './roles.js';
 
 /** Ordre des relations, du plus proche au plus lointain. */
-const ORDRE = ['ecart.dans-composant', 'ecart.entre-composants', 'ecart.entre-groupes', 'ecart.section'];
+const ORDRE = ['gap.within-component', 'gap.between-components', 'gap.between-groups', 'gap.section'];
 /** Rôles affichés sans contrôle d'ordre. */
-const HORS_CONTROLE = ['ecart.icone-texte', 'ecart.entre-etiquettes', 'ecart.entre-blocs', 'marge-interieure.composant', 'marge-interieure.etiquette'];
+const HORS_CONTROLE = ['gap.icon-text', 'gap.between-tags', 'gap.between-blocks', 'padding.component', 'padding.tag'];
 
 /**
  * @typedef {{ role: string, alias: string, cible: string, px: number, description: string }} Espace
@@ -34,8 +34,8 @@ const HORS_CONTROLE = ['ecart.icone-texte', 'ecart.entre-etiquettes', 'ecart.ent
  */
 const REGLES = [
   {
-    de: 'ecart.dans-composant',
-    vers: 'ecart.entre-composants',
+    de: 'gap.within-component',
+    vers: 'gap.between-components',
     min: 2,
     raison: "pour qu'on voie à quel champ appartient un libellé ou un message",
     statut: 'régularité observée dans les systèmes lus, pas une norme',
@@ -109,6 +109,6 @@ export function espacements(semantique, primitives, largeurEtroite) {
     ecarts, horsControle, voisins, fails: voisins.filter((v) => !v.ok),
     etroits, etroitsFails: etroits.filter((t) => !t.ok),
     regles, reglesFails: regles.filter((g) => !g.ok),
-    sansRole: primitivesSansRole([semantique, largeurEtroite?.semantique ?? {}], [primitives], ['espace']),
+    sansRole: primitivesSansRole([semantique, largeurEtroite?.semantique ?? {}], [primitives], ['space']),
   };
 }

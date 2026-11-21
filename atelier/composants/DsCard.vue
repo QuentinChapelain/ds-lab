@@ -50,8 +50,8 @@ export default definirEnveloppe(MENU, (props, { attrs, slots }) => () => {
   flex-direction: column;
   /* Rien n'est coupé : l'anneau de focus de la carte à lien dépasse la carte. */
   overflow: visible;
-  border: var(--v-ds-epaisseur-contour) solid rgb(var(--v-ds-contour-carte));
-  border-radius: var(--v-ds-arrondi-surface);
+  border: var(--v-ds-border-width-default) solid rgb(var(--v-ds-card-border));
+  border-radius: var(--v-ds-border-radius-surface);
   background: rgb(var(--v-theme-surface));
   color: rgb(var(--v-theme-on-surface));
   box-shadow: none;
@@ -70,52 +70,52 @@ export default definirEnveloppe(MENU, (props, { attrs, slots }) => () => {
   aspect-ratio: 16 / 9;
   object-fit: cover;
   object-position: center;
-  border-radius: calc(var(--v-ds-arrondi-surface) - var(--v-ds-epaisseur-contour)) calc(var(--v-ds-arrondi-surface) - var(--v-ds-epaisseur-contour)) 0 0;
+  border-radius: calc(var(--v-ds-border-radius-surface) - var(--v-ds-border-width-default)) calc(var(--v-ds-border-radius-surface) - var(--v-ds-border-width-default)) 0 0;
 }
 
 /* Le contenu porte la marge intérieure et l'écart entre le bloc titre et texte et les actions (DS3). */
 .ds-card__content {
   display: flex;
   flex-direction: column;
-  gap: var(--v-ds-ecart-entre-composants);
-  padding: var(--v-ds-marge-interieure-composant);
+  gap: var(--v-ds-gap-between-components);
+  padding: var(--v-ds-padding-component);
 }
 .ds-card__body {
   display: flex;
   flex-direction: column;
-  gap: var(--v-ds-ecart-dans-composant);
+  gap: var(--v-ds-gap-within-component);
 }
 .ds-card__title {
   margin: 0;
-  font-family: var(--v-ds-titre-carte-police);
-  font-size: var(--v-ds-titre-carte-taille);
-  font-weight: var(--v-ds-titre-carte-graisse);
-  line-height: var(--v-ds-titre-carte-interligne);
-  font-size-adjust: cap-height var(--v-ds-titre-carte-hauteur-capitale);
+  font-family: var(--v-ds-card-title-font-family);
+  font-size: var(--v-ds-card-title-font-size);
+  font-weight: var(--v-ds-card-title-font-weight);
+  line-height: var(--v-ds-card-title-line-height);
+  font-size-adjust: cap-height var(--v-ds-card-title-cap-height);
   letter-spacing: 0;
   color: rgb(var(--v-theme-on-surface));
 }
 /* Taille small : le titre prend le style titre 4, dans la police du texte, sans consigne de hauteur de capitale. */
 .ds-card--small .ds-card__title {
-  font-family: var(--v-ds-titre-4-police);
-  font-size: var(--v-ds-titre-4-taille);
-  font-weight: var(--v-ds-titre-4-graisse);
-  line-height: var(--v-ds-titre-4-interligne);
+  font-family: var(--v-ds-heading-4-font-family);
+  font-size: var(--v-ds-heading-4-font-size);
+  font-weight: var(--v-ds-heading-4-font-weight);
+  line-height: var(--v-ds-heading-4-line-height);
   font-size-adjust: none;
 }
 .ds-card__subtitle {
   margin: 0;
-  font-family: var(--v-ds-corps-petit-police);
-  font-size: var(--v-ds-corps-petit-taille);
-  font-weight: var(--v-ds-corps-petit-graisse);
-  line-height: var(--v-ds-corps-petit-interligne);
+  font-family: var(--v-ds-body-small-font-family);
+  font-size: var(--v-ds-body-small-font-size);
+  font-weight: var(--v-ds-body-small-font-weight);
+  line-height: var(--v-ds-body-small-line-height);
   letter-spacing: 0;
-  color: rgb(var(--v-ds-texte-secondaire));
+  color: rgb(var(--v-ds-text-secondary));
 }
 /* Le titre et le sous-titre forment l'en-tête ; le contenu qui le suit est un autre bloc d'information, à l'écart entre
    blocs (le corps porte déjà l'écart dans le composant). */
 .ds-card__subtitle + .ds-card__text {
-  margin-top: calc(var(--v-ds-ecart-entre-blocs) - var(--v-ds-ecart-dans-composant));
+  margin-top: calc(var(--v-ds-gap-between-blocks) - var(--v-ds-gap-within-component));
 }
 /* Carte horizontale : la pièce du slot prepend à gauche, alignée en haut, la colonne à droite, qui peut rétrécir. */
 .ds-card--prepend .ds-card__content {
@@ -130,20 +130,20 @@ export default definirEnveloppe(MENU, (props, { attrs, slots }) => () => {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: var(--v-ds-ecart-entre-composants);
+  gap: var(--v-ds-gap-between-components);
   min-width: 0;
 }
 .ds-card__text {
-  font-family: var(--v-ds-corps-police);
-  font-size: var(--v-ds-corps-taille);
-  font-weight: var(--v-ds-corps-graisse);
-  line-height: var(--v-ds-corps-interligne);
+  font-family: var(--v-ds-body-font-family);
+  font-size: var(--v-ds-body-font-size);
+  font-weight: var(--v-ds-body-font-weight);
+  line-height: var(--v-ds-body-line-height);
   color: rgb(var(--v-theme-on-surface));
 }
 .ds-card__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--v-ds-ecart-entre-composants);
+  gap: var(--v-ds-gap-between-components);
 }
 
 /* Carte à lien : le lien du titre couvre toute la carte, contour compris. Son texte ne prend pas les clics : il ne
@@ -158,13 +158,13 @@ export default definirEnveloppe(MENU, (props, { attrs, slots }) => () => {
 .ds-card__link::after {
   content: '';
   position: absolute;
-  inset: calc(-1 * var(--v-ds-epaisseur-contour));
-  border-radius: var(--v-ds-arrondi-surface);
+  inset: calc(-1 * var(--v-ds-border-width-default));
+  border-radius: var(--v-ds-border-radius-surface);
 }
 /* Survol et focus : le contour fonce et le titre se souligne ; au focus clavier, l'anneau entoure la carte (DS2). */
 .ds-card--link.v-card:hover,
 .ds-card--link.v-card:has(.ds-card__link:focus-visible) {
-  border-color: rgb(var(--v-ds-contour));
+  border-color: rgb(var(--v-ds-border));
 }
 .ds-card--link.v-card:hover .ds-card__link,
 .ds-card__link:focus-visible {
@@ -174,7 +174,7 @@ export default definirEnveloppe(MENU, (props, { attrs, slots }) => () => {
   outline: none;
 }
 .ds-card__link:focus-visible::after {
-  outline: var(--v-ds-epaisseur-focus) solid rgb(var(--v-ds-focus));
-  outline-offset: var(--v-ds-decalage-focus);
+  outline: var(--v-ds-border-width-focus) solid rgb(var(--v-ds-focus));
+  outline-offset: var(--v-ds-offset-focus);
 }
 </style>

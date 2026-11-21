@@ -165,10 +165,10 @@ export function rolesDuResolver(resolver, base, entrees, paires) {
  */
 export function contratRoles(set) {
   const roles = resolveRoles(set.semantique, set.primitives, set.marque ?? {}, ...(set.echelles ?? []));
-  const seuils = set.paires.seuils ?? {};
+  const seuils = set.paires.thresholds ?? {};
   /** @param {any} p */
   const known = (p) => {
-    for (const r of [p.devant, p.fond]) if (!roles.has(r)) throw new Error(`paire ${p.devant} sur ${p.fond} : rôle inconnu ${r}`);
+    for (const r of [p.foreground, p.background]) if (!roles.has(r)) throw new Error(`paire ${p.foreground} sur ${p.background} : rôle inconnu ${r}`);
   };
   /** @param {string} devant @param {string} fond */
   const measure = (devant, fond) => {
@@ -177,24 +177,24 @@ export function contratRoles(set) {
     return { hexDevant, hexFond, raw: contrastRatio(hexDevant, hexFond) };
   };
   const forbidden = new Set();
-  const interdites = (set.paires.interdites ?? []).map((/** @type {any} */ p) => {
+  const interdites = (set.paires.forbidden ?? []).map((/** @type {any} */ p) => {
     known(p);
-    if (!(typeof p.regle === 'string' && p.regle.trim())) throw new Error(`paire interdite ${p.devant} sur ${p.fond} : règle vide`);
-    forbidden.add(`${p.devant}|${p.fond}`);
-    const { hexDevant, hexFond, raw } = measure(p.devant, p.fond);
-    return { devant: p.devant, fond: p.fond, regle: p.regle, hexDevant, hexFond, ratio: r4(raw) };
+    if (!(typeof p.rule === 'string' && p.rule.trim())) throw new Error(`paire interdite ${p.foreground} sur ${p.background} : règle vide`);
+    forbidden.add(`${p.foreground}|${p.background}`);
+    const { hexDevant, hexFond, raw } = measure(p.foreground, p.background);
+    return { devant: p.foreground, fond: p.background, regle: p.rule, hexDevant, hexFond, ratio: r4(raw) };
   });
-  const pairs = (set.paires.paires ?? []).map((/** @type {any} */ p) => {
+  const pairs = (set.paires.pairs ?? []).map((/** @type {any} */ p) => {
     known(p);
-    if (forbidden.has(`${p.devant}|${p.fond}`)) throw new Error(`paire ${p.devant} sur ${p.fond} : déclarée et interdite`);
+    if (forbidden.has(`${p.foreground}|${p.background}`)) throw new Error(`paire ${p.foreground} sur ${p.background} : déclarée et interdite`);
     const min = seuils[p.type];
-    if (typeof min !== 'number') throw new Error(`paire ${p.devant} sur ${p.fond} : type inconnu ${p.type}`);
+    if (typeof min !== 'number') throw new Error(`paire ${p.foreground} sur ${p.background} : type inconnu ${p.type}`);
     if ('exception' in p && !(typeof p.exception === 'string' && p.exception.trim()))
-      throw new Error(`paire ${p.devant} sur ${p.fond} : exception vide`);
-    const { hexDevant, hexFond, raw: ratio } = measure(p.devant, p.fond);
+      throw new Error(`paire ${p.foreground} sur ${p.background} : exception vide`);
+    const { hexDevant, hexFond, raw: ratio } = measure(p.foreground, p.background);
     return {
-      devant: p.devant,
-      fond: p.fond,
+      devant: p.foreground,
+      fond: p.background,
       type: p.type,
       min,
       hexDevant,
@@ -217,11 +217,11 @@ export function contratRoles(set) {
  * @param {RoleSet} set
  */
 export function contrat(set) {
-  return { echelles: contractOf(valiseFromTokens({ couleur: ordreEchelles(set.primitives) })), roles: contratRoles(set) };
+  return { echelles: contractOf(valiseFromTokens({ color: ordreEchelles(set.primitives) })), roles: contratRoles(set) };
 }
 
 /** Statuts, dans l'ordre d'affichage. */
-const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
+const STATUTS = ['error', 'success', 'warning', 'info'];
 
 /**
  * Échelles du contrat par échelle, dans l'ordre d'origine : neutre, échelles de la marque, statuts.
@@ -230,8 +230,8 @@ const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
 function ordreEchelles(...fichiers) {
   /** @type {Record<string, any>} */
   const toutes = {};
-  for (const f of fichiers) for (const [k, v] of Object.entries(f?.couleur ?? {})) if (!k.startsWith('$')) toutes[k] = v;
+  for (const f of fichiers) for (const [k, v] of Object.entries(f?.color ?? {})) if (!k.startsWith('$')) toutes[k] = v;
   const noms = Object.keys(toutes);
-  const ordre = [...noms.filter((n) => n === 'neutre'), ...noms.filter((n) => n !== 'neutre' && !STATUTS.includes(n)), ...STATUTS.filter((n) => noms.includes(n))];
+  const ordre = [...noms.filter((n) => n === 'neutral'), ...noms.filter((n) => n !== 'neutral' && !STATUTS.includes(n)), ...STATUTS.filter((n) => noms.includes(n))];
   return Object.fromEntries(ordre.map((n) => [n, toutes[n]]));
 }

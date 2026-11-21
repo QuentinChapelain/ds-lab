@@ -20,8 +20,8 @@ Les mots du métier, tels que les fiches les emploient, et le mot que ds-lab emp
 | Mot | Ce qu'il veut dire | Ancien mot de ds-lab |
 |---|---|---|
 | token | Nom d'une valeur de design (couleur, taille, espace, rayon, graisse, interligne, durée), dont chaque marque donne la valeur | jeton |
-| token sémantique | Token nommé d'après son usage (`texte.principal`, `fond.surface`), qui pointe vers une primitive | rôle |
-| primitive | Valeur brute d'une échelle (`couleur.neutre.3`, `taille.24`), jamais employée seule par un composant (DS9) | primitive |
+| token sémantique | Token nommé d'après son usage (`text.default`, `background.surface`), qui pointe vers une primitive | rôle |
+| primitive | Valeur brute d'une échelle (`color.neutral.3`, `size.24`), jamais employée seule par un composant (DS9) | primitive |
 | composant | Pièce d'interface de ds-lab, posée sur une pièce de Vuetify qu'elle seule emploie (CP4) | enveloppe (wrapper) |
 | module | Assemblage de composants pour un usage du produit (`MemberCard`), sans pièce de Vuetify ni valeur visuelle propre ; ailleurs, *pattern* | module |
 | prop | Réglage d'un composant (`tone`, `size`) | option |

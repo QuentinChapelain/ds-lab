@@ -70,14 +70,14 @@ export default definirEnveloppe(MENU, (props, { attrs, emit, slots }) => {
 <style>
 /* Règles hors couche : elles passent devant celles de Vuetify, rangées dans ses couches, sans !important. */
 .ds-button.v-btn {
-  height: var(--v-ds-hauteur-controle-normale);
+  height: var(--v-ds-height-control-medium);
   min-width: 0;
-  padding: 0 var(--v-ds-marge-interieure-composant);
-  border-radius: var(--v-ds-arrondi-controle);
-  font-family: var(--v-ds-libelle-police);
-  font-size: var(--v-ds-libelle-taille);
-  font-weight: var(--v-ds-libelle-graisse);
-  line-height: var(--v-ds-libelle-interligne);
+  padding: 0 var(--v-ds-padding-component);
+  border-radius: var(--v-ds-border-radius-control);
+  font-family: var(--v-ds-label-font-family);
+  font-size: var(--v-ds-label-font-size);
+  font-weight: var(--v-ds-label-font-weight);
+  line-height: var(--v-ds-label-line-height);
   letter-spacing: 0;
   text-indent: 0;
   text-transform: none;
@@ -85,7 +85,7 @@ export default definirEnveloppe(MENU, (props, { attrs, emit, slots }) => {
   transition: none;
 }
 .ds-button.v-btn.ds-button--small {
-  height: var(--v-ds-hauteur-controle-petite);
+  height: var(--v-ds-height-control-small);
 }
 /* Pleine largeur : la largeur minimale nulle ci-dessus annulerait celle que Vuetify donne au bouton block. */
 .ds-button.v-btn.ds-button--block {
@@ -98,24 +98,24 @@ export default definirEnveloppe(MENU, (props, { attrs, emit, slots }) => {
   display: none;
 }
 .ds-button.v-btn:focus-visible {
-  outline: var(--v-ds-epaisseur-focus) solid rgb(var(--v-ds-focus));
-  outline-offset: var(--v-ds-decalage-focus);
+  outline: var(--v-ds-border-width-focus) solid rgb(var(--v-ds-focus));
+  outline-offset: var(--v-ds-offset-focus);
 }
 
 /* Icône avant le texte. */
 .ds-button.v-btn .v-btn__prepend {
-  margin-inline: 0 var(--v-ds-ecart-icone-texte);
+  margin-inline: 0 var(--v-ds-gap-icon-text);
 }
 .ds-button__icon,
 .ds-button__icon > svg {
   display: block;
-  width: var(--v-ds-taille-icone-normale);
-  height: var(--v-ds-taille-icone-normale);
+  width: var(--v-ds-icon-size-medium);
+  height: var(--v-ds-icon-size-medium);
 }
 .ds-button--small .ds-button__icon,
 .ds-button--small .ds-button__icon > svg {
-  width: var(--v-ds-taille-icone-petite);
-  height: var(--v-ds-taille-icone-petite);
+  width: var(--v-ds-icon-size-small);
+  height: var(--v-ds-icon-size-small);
 }
 
 /* Variantes, au repos et au survol ; un bouton inactif ne change pas au survol. */
@@ -130,42 +130,42 @@ export default definirEnveloppe(MENU, (props, { attrs, emit, slots }) => {
 .ds-button--secondary.v-btn {
   background: rgb(var(--v-theme-surface));
   color: rgb(var(--v-theme-on-surface));
-  border: var(--v-ds-epaisseur-contour) solid rgb(var(--v-ds-contour));
+  border: var(--v-ds-border-width-default) solid rgb(var(--v-ds-border));
 }
 .ds-button--secondary.v-btn:not(.ds-button--inactive):hover {
-  background: rgb(var(--v-theme-composant-survol));
-  color: rgb(var(--v-theme-on-composant-survol));
+  background: rgb(var(--v-theme-component-hover));
+  color: rgb(var(--v-theme-on-component-hover));
 }
 .ds-button--ghost.v-btn {
   background: transparent;
-  color: rgb(var(--v-theme-on-interactif-discret));
+  color: rgb(var(--v-theme-on-interactive-subtle));
 }
 .ds-button--ghost.v-btn:not(.ds-button--inactive):hover {
-  background: rgb(var(--v-theme-interactif-discret));
+  background: rgb(var(--v-theme-interactive-subtle));
 }
 .ds-button--danger.v-btn {
   background: rgb(var(--v-theme-error));
   color: rgb(var(--v-theme-on-error));
 }
 .ds-button--danger.v-btn:not(.ds-button--inactive):hover {
-  background: rgb(var(--v-theme-erreur-fort-survol));
-  color: rgb(var(--v-theme-on-erreur-fort-survol));
+  background: rgb(var(--v-theme-error-strong-hover));
+  color: rgb(var(--v-theme-on-error-strong-hover));
 }
 .ds-button--danger-ghost.v-btn {
   background: transparent;
-  color: rgb(var(--v-theme-on-erreur-discret));
+  color: rgb(var(--v-theme-on-error-subtle));
 }
 .ds-button--danger-ghost.v-btn:not(.ds-button--inactive):hover {
-  background: rgb(var(--v-theme-erreur-discret));
+  background: rgb(var(--v-theme-error-subtle));
 }
 
 /* Désactivé : la même apparence pour toutes les variantes ; les discrets gardent la page pour fond. */
 .ds-button--disabled.v-btn {
-  background: rgb(var(--v-theme-desactive));
-  color: rgb(var(--v-theme-on-desactive));
+  background: rgb(var(--v-theme-disabled));
+  color: rgb(var(--v-theme-on-disabled));
 }
 .ds-button--disabled.ds-button--secondary.v-btn {
-  border-color: rgb(var(--v-ds-contour-desactive));
+  border-color: rgb(var(--v-ds-border-disabled));
 }
 .ds-button--disabled.ds-button--ghost.v-btn,
 .ds-button--disabled.ds-button--danger-ghost.v-btn {
@@ -188,14 +188,14 @@ export default definirEnveloppe(MENU, (props, { attrs, emit, slots }) => {
   justify-content: center;
 }
 .ds-button__spinner > svg {
-  width: var(--v-ds-taille-icone-normale);
-  height: var(--v-ds-taille-icone-normale);
+  width: var(--v-ds-icon-size-medium);
+  height: var(--v-ds-icon-size-medium);
   /* Durée sans jeton : le dépôt n'a pas encore de jeton de durée (KNOWN_ISSUES.md). */
   animation: ds-button-spinner 1s linear infinite;
 }
 .ds-button--small .ds-button__spinner > svg {
-  width: var(--v-ds-taille-icone-petite);
-  height: var(--v-ds-taille-icone-petite);
+  width: var(--v-ds-icon-size-small);
+  height: var(--v-ds-icon-size-small);
 }
 @keyframes ds-button-spinner {
   to {

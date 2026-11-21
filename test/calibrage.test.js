@@ -51,8 +51,8 @@ const ATTENDU = {
   'orbe-cafe': ['foncée', 'sombre', true, 9, 0.093, 'info', 18.0, 28.7],
   'atelier-lavandine': ['normale', 'soutenu', true, 9, 0.201, 'info', 17.5, 42.8],
   'ecume-et-sel': ['plein clair', 'clair', true, 9, 0.101, 'info', 26.5, 35.3],
-  'grenat-papeterie': ['foncée', 'sombre', true, 9, 0.127, 'erreur', 20.8, null],
-  'maison-alberto': ['plein clair', 'moyen', false, 11, 0.112, 'avertissement', 6.8, 25.5],
+  'grenat-papeterie': ['foncée', 'sombre', true, 9, 0.127, 'error', 20.8, null],
+  'maison-alberto': ['plein clair', 'moyen', false, 11, 0.112, 'warning', 6.8, 25.5],
 };
 
 const r1 = (/** @type {number} */ n) => Math.round(n * 10) / 10;
@@ -76,7 +76,7 @@ for (const [slug, [ecole, classe, exacte, pas, c, statut, dStatut, dAccent]] of 
 
 test('colonne d\'une marque refusée : motif, pas de classe', () => {
   const col = colonne({ dossier: join(ROOT, 'tokens', 'essai'), entree: { nom: 'Essai', primaire: '#00ccff', polices: { titre: ['a'], texte: ['b'] } } });
-  assert.deepEqual(col.motifs, ['checkValise (clair) : primaire : doublon, pas 7 = pas 9 (#00ccff)']);
+  assert.deepEqual(col.motifs, ['checkValise (clair) : primary : doublon, pas 7 = pas 9 (#00ccff)']);
   assert.equal(col.primaire.classe, 'moyen', 'la classe reste montrée');
 });
 

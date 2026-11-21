@@ -2,9 +2,9 @@
 /**
  * Consigne commune de hauteur de capitale des styles de titre (docs/attendus/etape-4c-police-des-titres.md,
  * réponse 9). Attendus écrits à la main avant le code :
- *   C1 tokens/commun/police.tokens.json déclare police.titre.hauteur-capitale, $type number, 0,7 [H] ;
+ *   C1 tokens/commun/police.tokens.json déclare font.heading.cap-height, $type number, 0,7 [H] ;
  *   C2 dans semantique.tokens.json et largeur.etroit.tokens.json, affichage et titres 1 à 3 portent
- *      $extensions["ds-lab.hauteur-capitale"] = "{police.titre.hauteur-capitale}" ; aucun autre style n'en porte ;
+ *      $extensions["ds-lab.hauteur-capitale"] = "{font.heading.cap-height}" ; aucun autre style n'en porte ;
  *      la valeur composite garde ses cinq propriétés DTCG ;
  *   C3 typo() lit la consigne, résolue, en large et en étroit : 0,7 pour les cinq styles, rien pour les autres ;
  *      la règle « hauteur-capitale » échoue si un style de titre la perd ou si un autre style la porte ;
@@ -24,10 +24,10 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const lire = (/** @type {string} */ f) => JSON.parse(readFileSync(join(COMMUN, f), 'utf8'));
-const ALIAS = '{police.titre.hauteur-capitale}';
+const ALIAS = '{font.heading.cap-height}';
 
 test('C1 jeton commun de la consigne', () => {
-  const t = lire('police.tokens.json').police.titre['hauteur-capitale'];
+  const t = lire('police.tokens.json').font.heading['cap-height'];
   assert.equal(t.$type, 'number');
   assert.equal(t.$value, 0.7);
   assert.equal(CONSIGNE, 'ds-lab.hauteur-capitale');
@@ -56,17 +56,17 @@ test('C3 typo() lit la consigne ; la règle échoue si elle manque ou déborde',
   }
   assert.ok(r.regles.find((g) => g.id === 'hauteur-capitale')?.ok);
   const sans = structuredClone(l.large.semantique);
-  delete sans.typo.titre['2'].$extensions;
-  sans.typo.corps.moyen.$extensions = { 'ds-lab.hauteur-capitale': ALIAS };
+  delete sans.typography.heading['2'].$extensions;
+  sans.typography.body.medium.$extensions = { 'ds-lab.hauteur-capitale': ALIAS };
   const g = run(sans).regles.find((x) => x.id === 'hauteur-capitale');
-  assert.deepEqual(g?.details, ['titre.2 en large : consigne absente', 'corps.moyen en large : consigne hors des styles de titre']);
+  assert.deepEqual(g?.details, ['heading.2 en large : consigne absente', 'body.medium en large : consigne hors des styles de titre']);
 });
 
 test('C4 la planche typo écrit la consigne sur les cinq styles de titre seulement', () => {
   const html = planche(ORBE);
-  for (const s of ['affichage-grand', 'affichage-moyen', 'titre-1', 'titre-2', 'titre-3'])
+  for (const s of ['display-large', 'display-medium', 'heading-1', 'heading-2', 'heading-3'])
     assert.match(html, new RegExp(`\\.t-${s} \\{[^}]*font-size-adjust: cap-height 0\\.7;`), s);
-  for (const s of ['titre-4', 'corps-moyen', 'libelle', 'mention']) assert.doesNotMatch(html, new RegExp(`\\.t-${s} \\{[^}]*font-size-adjust`), s);
+  for (const s of ['heading-4', 'body-medium', 'label', 'supporting-text']) assert.doesNotMatch(html, new RegExp(`\\.t-${s} \\{[^}]*font-size-adjust`), s);
 });
 
 test('C5 chaque marque fictive résout la consigne', () => {

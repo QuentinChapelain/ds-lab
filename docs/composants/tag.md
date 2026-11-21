@@ -59,17 +59,17 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 
 | Partie | Token | Ce qu'il règle |
 |---|---|---|
-| Couleur, tone neutral | `fond.teinte` | Fond teinté d'une pièce statique qui porte un texte court pour classer, posée sur la page ou sur une surface ; jamais un fond cliquable. |
-| Couleur, tone neutral | `texte.principal` | Texte courant et titres. |
-| Couleur, tone brand | `fond.marque.teinte` | Fond teinté de la marque d'une pièce statique qui porte un texte court ou des initiales pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable. |
-| Couleur, tone brand | `texte.marque` | Texte de marque posé sur le fond teinté de la marque, comme les initiales de DsAvatar ou un DsTag mis en avant. |
-| Forme | `arrondi.pilule` | Arrondi complet d'une forme ronde ou en pilule, comme un avatar ou une étiquette. |
-| Forme | `hauteur.etiquette` | Hauteur d'une étiquette, sur une ligne. |
-| Forme | `marge-interieure.etiquette` | Marge intérieure gauche et droite d'une étiquette, de part et d'autre de son texte. |
-| Texte | `typo.corps.petit` | Texte de tableau ou d'étiquette, plus petit que le texte courant. |
+| Couleur, tone neutral | `background.tint` | Fond teinté d'une pièce statique qui porte un texte court pour classer, posée sur la page ou sur une surface ; jamais un fond cliquable. |
+| Couleur, tone neutral | `text.default` | Texte courant et titres. |
+| Couleur, tone brand | `background.brand.tint` | Fond teinté de la marque d'une pièce statique qui porte un texte court ou des initiales pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable. |
+| Couleur, tone brand | `text.brand` | Texte de marque posé sur le fond teinté de la marque, comme les initiales de DsAvatar ou un DsTag mis en avant. |
+| Forme | `border-radius.full` | Arrondi complet d'une forme ronde ou en pilule, comme un avatar ou une étiquette. |
+| Forme | `height.tag` | Hauteur d'une étiquette, sur une ligne. |
+| Forme | `padding.tag` | Marge intérieure gauche et droite d'une étiquette, de part et d'autre de son texte. |
+| Texte | `typography.body.small` | Texte de tableau ou d'étiquette, plus petit que le texte courant. |
 <!-- /genere:tokens -->
 
-- Posé par le parent : `ecart.entre-etiquettes` (`ds-ecart-entre-etiquettes`) : l'écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes. L'étiquette n'a pas de marge.
+- Posé par le parent : `gap.between-tags` (`ds-gap-between-tags`) : l'écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes. L'étiquette n'a pas de marge.
 
 ## Accessibilité
 
@@ -81,8 +81,8 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 <!-- genere:contrastes : écrit par npm --prefix atelier run fiches -->
 | Devant | Fond | Plus bas des 10 thèmes | Seuil |
 |---|---|---|---|
-| `texte.marque` | `fond.marque.teinte` | 10,07:1 (Atelier Lavandine, sombre) | 4,50:1 |
-| `texte.principal` | `fond.teinte` | 10,06:1 (Atelier Lavandine, sombre) | 4,50:1 |
+| `text.brand` | `background.brand.tint` | 10,07:1 (Atelier Lavandine, sombre) | 4,50:1 |
+| `text.default` | `background.tint` | 10,06:1 (Atelier Lavandine, sombre) | 4,50:1 |
 <!-- /genere:contrastes -->
 
 ## En situation

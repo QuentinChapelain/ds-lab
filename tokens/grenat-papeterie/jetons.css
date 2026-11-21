@@ -1,834 +1,848 @@
 /* Jetons de Grenat Papeterie, écrits par npm run css depuis marque.resolver.json (Terrazzo). Ne pas modifier à la main. */
 
 :root {
-  /* Arrondi d'un contrôle, comme un bouton ou un champ, le même à toutes les tailles. */
-  --arrondi-controle: var(--rayon-8);
-  /* Arrondi complet d'une forme ronde ou en pilule, comme un avatar ou une étiquette. */
-  --arrondi-pilule: var(--rayon-pilule);
-  /* Arrondi d'une surface posée sur la page, comme une carte. */
-  --arrondi-surface: var(--rayon-12);
-  /* Contour d'un champ ou d'un encadré d'avertissement (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app. */
-  --bordure-avertissement: var(--couleur-avertissement-8);
-  /* Contour ordinaire d'une carte ou d'un séparateur, décoratif, jamais seule pour repérer un champ ou un état. */
-  --bordure-defaut: var(--couleur-neutre-7);
-  /* Séparateur léger entre deux zones, décoratif, jamais seule pour repérer un champ ou un état. */
-  --bordure-discrete: var(--couleur-neutre-6);
-  /* Contour d'un champ en erreur ; sur un fond de statut, décorative : le texte porte le sens. */
-  --bordure-erreur: var(--couleur-erreur-8);
-  /* Anneau de focus clavier, autour du composant qui a le focus. */
-  --bordure-focus: var(--marque-primaire-11);
-  /* Anneau de focus clavier sur fond.marque.fort (3:1). */
-  --bordure-focus-inverse: var(--marque-primaire-sur-aplat);
-  /* Contour qui suffit à repérer un champ ou une case à cocher. */
-  --bordure-forte: var(--couleur-neutre-8);
-  /* Contour d'un encadré d'information (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app. */
-  --bordure-info: var(--couleur-info-8);
-  /* Contour d'un champ validé (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app. */
-  --bordure-succes: var(--couleur-succes-8);
-  /* fond d'application */
-  --couleur-avertissement-1: #fefcf9;
-  /* fond discret */
-  --couleur-avertissement-2: #fff8ee;
-  /* fond de composant */
-  --couleur-avertissement-3: #fef1de;
-  /* fond de composant, survol */
-  --couleur-avertissement-4: #fee8c7;
-  /* fond de composant, appui */
-  --couleur-avertissement-5: #ffdeac;
-  /* bordure discrète */
-  --couleur-avertissement-6: #ffcf83;
-  /* bordure de composant */
-  --couleur-avertissement-7: #f3b034;
-  /* bordure d'interaction, focus (3:1) */
-  --couleur-avertissement-8: #bf8501;
-  /* plein, couleur source */
-  --couleur-avertissement-9: #e5a000;
-  /* plein, survol */
-  --couleur-avertissement-10: #d39300;
-  /* texte secondaire (4,5:1) */
-  --couleur-avertissement-11: #8b5f00;
-  /* texte principal */
-  --couleur-avertissement-12: #442d01;
-  /* texte posé sur les pas 9 et 10 (4,5:1) */
-  --couleur-avertissement-sur-plein: #4c3200;
-  --couleur-blanc: #ffffff;
-  /* fond d'application */
-  --couleur-erreur-1: #fffaf9;
-  /* fond discret */
-  --couleur-erreur-2: #fff7f7;
-  /* fond de composant */
-  --couleur-erreur-3: #fff0ee;
-  /* fond de composant, survol */
-  --couleur-erreur-4: #ffe6e3;
-  /* fond de composant, appui */
-  --couleur-erreur-5: #fed9d6;
-  /* bordure discrète */
-  --couleur-erreur-6: #fccac6;
-  /* bordure de composant */
-  --couleur-erreur-7: #f7a7a0;
-  /* bordure d'interaction, focus (3:1) */
-  --couleur-erreur-8: #e76862;
-  /* plein, couleur source */
-  --couleur-erreur-9: #d93036;
-  /* plein, survol */
-  --couleur-erreur-10: #c8292e;
-  /* texte secondaire (4,5:1) */
-  --couleur-erreur-11: #cb1d2a;
-  /* texte principal */
-  --couleur-erreur-12: #6a0000;
-  /* texte posé sur le pas 9 (4,5:1) */
-  --couleur-erreur-sur-plein: #ffffff;
-  /* fond d'application */
-  --couleur-info-1: #fafdff;
-  /* fond discret */
-  --couleur-info-2: #f5fafe;
-  /* fond de composant */
-  --couleur-info-3: #e8f5ff;
-  /* fond de composant, survol */
-  --couleur-info-4: #daeefe;
-  /* fond de composant, appui */
-  --couleur-info-5: #c8e6fe;
-  /* bordure discrète */
-  --couleur-info-6: #afdcff;
-  /* bordure de composant */
-  --couleur-info-7: #7cc3f8;
-  /* bordure d'interaction, focus (3:1) */
-  --couleur-info-8: #2f97da;
-  /* plein, couleur source */
-  --couleur-info-9: #0284c7;
-  /* plein, survol */
-  --couleur-info-10: #017bba;
-  /* texte secondaire (4,5:1) */
-  --couleur-info-11: #006da6;
-  /* texte principal */
-  --couleur-info-12: #013452;
-  /* texte posé sur les pas 9 et 10 (4,5:1) */
-  --couleur-info-sur-plein: #000104;
-  /* fond d'application */
-  --couleur-neutre-1: #fbfbfb;
-  /* fond discret */
-  --couleur-neutre-2: #f8f8f7;
-  /* fond de composant */
-  --couleur-neutre-3: #f3f2f1;
-  /* fond de composant, survol */
-  --couleur-neutre-4: #ecebe9;
-  /* fond de composant, appui */
-  --couleur-neutre-5: #e3e2df;
-  /* bordure discrète */
-  --couleur-neutre-6: #d8d6d2;
-  /* bordure de composant */
-  --couleur-neutre-7: #bfbbb5;
-  /* bordure d'interaction, focus (3:1) */
-  --couleur-neutre-8: #958f84;
-  /* plein, couleur source */
-  --couleur-neutre-9: #8a8478;
-  /* plein, survol */
-  --couleur-neutre-10: #7d776c;
-  /* texte secondaire (4,5:1) */
-  --couleur-neutre-11: #6d675b;
-  /* texte principal */
-  --couleur-neutre-12: #363026;
-  /* texte posé sur le pas 9 (4,5:1) */
-  --couleur-neutre-sur-plein: #201d17;
-  /* fond d'application */
-  --couleur-primaire-1: #fffcfd;
-  /* fond discret */
-  --couleur-primaire-2: #fef8f9;
-  /* fond de composant */
-  --couleur-primaire-3: #fcf0f2;
-  /* fond de composant, survol */
-  --couleur-primaire-4: #fbe6ea;
-  /* fond de composant, appui */
-  --couleur-primaire-5: #f7dce1;
-  /* bordure discrète */
-  --couleur-primaire-6: #f3cdd4;
-  /* bordure de composant */
-  --couleur-primaire-7: #e7adb9;
-  /* bordure d'interaction, focus (3:1) */
-  --couleur-primaire-8: #c9788b;
-  /* plein, couleur source */
-  --couleur-primaire-9: #7a1f3d;
-  /* plein, survol */
-  --couleur-primaire-10: #660a2e;
-  /* texte secondaire (4,5:1) */
-  --couleur-primaire-11: #4f0020;
-  /* texte principal */
-  --couleur-primaire-12: #2d000f;
-  /* texte posé sur les pas 9 et 10 (4,5:1) */
-  --couleur-primaire-sur-plein: #ffffff;
-  /* fond d'application */
-  --couleur-succes-1: #fafcfb;
-  /* fond discret */
-  --couleur-succes-2: #f4f9f6;
-  /* fond de composant */
-  --couleur-succes-3: #ecf4ef;
-  /* fond de composant, survol */
-  --couleur-succes-4: #e2eee6;
-  /* fond de composant, appui */
-  --couleur-succes-5: #d4e7db;
-  /* bordure discrète */
-  --couleur-succes-6: #c2dccc;
-  /* bordure de composant */
-  --couleur-succes-7: #9bc6ad;
-  /* bordure d'interaction, focus (3:1) */
-  --couleur-succes-8: #529f76;
-  /* plein, couleur source */
-  --couleur-succes-9: #1f8a5b;
-  /* plein, survol */
-  --couleur-succes-10: #1a7e50;
-  /* texte secondaire (4,5:1) */
-  --couleur-succes-11: #00774a;
-  /* texte principal */
-  --couleur-succes-12: #003a12;
-  /* texte posé sur le pas 9 (4,5:1) */
-  --couleur-succes-sur-plein: #001005;
-  /* Texte posé sur fond.inverse (texte.sur-inverse) : blanc en clair ; en sombre, la référence du miroir. */
-  --couleur-sur-inverse: #ffffff;
-  /* Surface posée sur le fond de page (fond.surface) : blanc en clair ; en sombre, la référence du miroir (tokens/commun/mode.sombre.tokens.json). */
-  --couleur-surface: #ffffff;
-  /* fond de composant */
-  --couleur-teinte: var(--couleur-neutre-3);
-  /* Décalage de l'anneau de focus clavier hors du composant, pour qu'il se pose sur le fond de la page et jamais sur le plein. */
-  --decalage-focus: var(--trait-2);
-  /* Écart entre les parties d'un même composant, comme une étiquette et son champ ou un champ et son message d'erreur. */
-  --ecart-dans-composant: var(--espace-4);
-  /* Écart entre deux blocs d'information d'un même composant, comme l'en-tête d'une carte, titre et sous-titre, et son contenu. */
-  --ecart-entre-blocs: var(--espace-8);
-  /* Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée, pour qu'on voie à quel champ appartient un libellé ou un message. */
-  --ecart-entre-composants: var(--espace-16);
-  /* Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes. */
-  --ecart-entre-etiquettes: var(--espace-8);
-  /* Écart entre deux groupes d'une même section, comme un titre de section et son contenu ou les champs d'un formulaire et ses boutons. */
-  --ecart-entre-groupes: var(--espace-24);
-  /* Écart entre l'icône et le texte d'un contrôle, comme un bouton ou un champ. */
-  --ecart-icone-texte: var(--espace-8);
-  /* Écart entre deux sections de la page, la plus grande respiration verticale ; plus petit en étroit (largeur.etroit.tokens.json). */
-  --ecart-section: var(--espace-48);
-  /* Épaisseur du contour d'un contrôle, comme le bouton secondaire. */
-  --epaisseur-contour: var(--trait-1);
-  /* Épaisseur de l'anneau de focus clavier. */
-  --epaisseur-focus: var(--trait-2);
-  --espace-0: 0px;
-  --espace-4: 4px;
-  --espace-8: 8px;
-  --espace-12: 12px;
-  --espace-16: 16px;
-  --espace-24: 24px;
-  --espace-32: 32px;
-  --espace-48: 48px;
-  --espace-64: 64px;
-  /* fond de composant */
-  --fond-accent-discret: var(--marque-accent-3);
-  /* texte secondaire (4,5:1) */
-  --fond-accent-fort: var(--marque-accent-plein);
-  /* fond d'application */
-  --fond-app: var(--couleur-neutre-1);
-  /* fond de composant */
-  --fond-avertissement-discret: var(--couleur-avertissement-3);
-  /* plein, couleur source */
-  --fond-avertissement-fort: var(--marque-avertissement-plein);
-  /* fond de composant */
-  --fond-composant: var(--couleur-neutre-3);
-  /* fond de composant, appui */
-  --fond-composant-appui: var(--couleur-neutre-5);
-  /* fond de composant, survol */
-  --fond-composant-survol: var(--couleur-neutre-4);
-  /* fond de composant */
-  --fond-desactive: var(--couleur-neutre-3);
-  /* fond discret */
-  --fond-discret: var(--couleur-neutre-2);
-  /* fond de composant */
-  --fond-erreur-discret: var(--couleur-erreur-3);
-  /* texte secondaire (4,5:1) */
-  --fond-erreur-fort: var(--marque-erreur-plein);
-  /* Plein qui signale une erreur ou une action destructrice, survolé. */
-  --fond-erreur-fort-survol: var(--marque-erreur-plein-survol);
-  /* fond de composant */
-  --fond-info-discret: var(--couleur-info-3);
-  /* texte secondaire (4,5:1) */
-  --fond-info-fort: var(--marque-info-plein);
-  /* fond de composant */
-  --fond-interactif-discret: var(--marque-primaire-3);
-  /* plein, couleur source */
-  --fond-interactif-fort: var(--marque-primaire-plein);
-  /* Plein de l'action principale survolée. */
-  --fond-interactif-fort-survol: var(--marque-primaire-plein-survol);
-  --fond-interactif-inverse: var(--marque-primaire-sur-aplat);
-  /* texte principal */
-  --fond-inverse: var(--couleur-neutre-12);
-  /* fond de composant */
-  --fond-marque-discret: var(--marque-primaire-3);
-  /* plein, couleur source */
-  --fond-marque-fort: var(--marque-primaire-aplat);
-  /* fond de composant */
-  --fond-marque-teinte: var(--marque-primaire-teinte);
-  /* fond de composant */
-  --fond-succes-discret: var(--couleur-succes-3);
-  /* texte secondaire (4,5:1) */
-  --fond-succes-fort: var(--marque-succes-plein);
-  /* Surface posée sur le fond de page (fond.surface) : blanc en clair ; en sombre, la référence du miroir (tokens/commun/mode.sombre.tokens.json). */
-  --fond-surface: var(--couleur-surface);
-  /* fond de composant */
-  --fond-teinte: var(--couleur-teinte);
-  /* normale, corps et mentions */
-  --graisse-400: 400;
-  /* demi-grasse, libellés et titre de carte */
-  --graisse-600: 600;
-  /* grasse, affichage et titres */
-  --graisse-700: 700;
-  /* Hauteur d'un contrôle de taille normale, comme un bouton. */
-  --hauteur-controle-normale: var(--taille-40);
-  /* Hauteur d'un contrôle de petite taille, comme un bouton. */
-  --hauteur-controle-petite: var(--taille-32);
-  /* Hauteur d'une étiquette, sur une ligne. */
-  --hauteur-etiquette: var(--taille-24);
-  /* Largeur maximale d'une colonne de contenu, comme une liste d'annuaire ; sur un écran plus étroit, la colonne prend toute la largeur de son parent. */
-  --largeur-colonne: var(--taille-640);
-  --marge-interieure-composant: var(--espace-16);
-  --marge-interieure-etiquette: var(--espace-12);
-  /* fond d'application */
-  --marque-accent-1: var(--couleur-neutre-1);
-  /* fond discret */
-  --marque-accent-2: var(--couleur-neutre-2);
-  /* fond de composant */
-  --marque-accent-3: var(--couleur-neutre-3);
-  /* fond de composant, survol */
-  --marque-accent-4: var(--couleur-neutre-4);
-  /* fond de composant, appui */
-  --marque-accent-5: var(--couleur-neutre-5);
-  /* bordure discrète */
-  --marque-accent-6: var(--couleur-neutre-6);
-  /* bordure de composant */
-  --marque-accent-7: var(--couleur-neutre-7);
-  /* bordure d'interaction, focus (3:1) */
-  --marque-accent-8: var(--couleur-neutre-8);
-  /* plein, couleur source */
-  --marque-accent-9: var(--couleur-neutre-9);
-  /* plein, survol */
-  --marque-accent-10: var(--couleur-neutre-10);
-  /* texte secondaire (4,5:1) */
-  --marque-accent-11: var(--couleur-neutre-11);
-  /* texte principal */
-  --marque-accent-12: var(--couleur-neutre-12);
-  /* texte secondaire (4,5:1) */
-  --marque-accent-plein: var(--couleur-neutre-11);
-  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
-  --marque-accent-plein-survol: #5f594d;
-  --marque-accent-sur-plein: var(--couleur-blanc);
-  /* plein, couleur source */
-  --marque-avertissement-plein: var(--couleur-avertissement-9);
-  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
-  --marque-avertissement-plein-survol: #d49000;
-  /* texte principal */
-  --marque-avertissement-sur-plein: var(--couleur-avertissement-12);
-  /* texte secondaire (4,5:1) */
-  --marque-erreur-plein: var(--couleur-erreur-11);
-  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
-  --marque-erreur-plein-survol: #b9001a;
-  --marque-erreur-sur-plein: var(--couleur-blanc);
-  /* texte secondaire (4,5:1) */
-  --marque-info-plein: var(--couleur-info-11);
-  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
-  --marque-info-plein-survol: #005e96;
-  --marque-info-sur-plein: var(--couleur-blanc);
-  /* Police des titres 4, du corps et des mentions ; le libellé garde la police du produit (D44). */
-  --marque-police-texte: "Helvetica", "Arial", sans-serif;
-  /* Police des styles affichage et titre 1 à 3. */
-  --marque-police-titre: "Palatino", serif;
-  /* fond d'application */
-  --marque-primaire-1: var(--couleur-primaire-1);
-  /* fond discret */
-  --marque-primaire-2: var(--couleur-primaire-2);
-  /* fond de composant */
-  --marque-primaire-3: var(--couleur-primaire-3);
-  /* fond de composant, survol */
-  --marque-primaire-4: var(--couleur-primaire-4);
-  /* fond de composant, appui */
-  --marque-primaire-5: var(--couleur-primaire-5);
-  /* bordure discrète */
-  --marque-primaire-6: var(--couleur-primaire-6);
-  /* bordure de composant */
-  --marque-primaire-7: var(--couleur-primaire-7);
-  /* bordure d'interaction, focus (3:1) */
-  --marque-primaire-8: var(--couleur-primaire-8);
-  /* plein, couleur source */
-  --marque-primaire-9: var(--couleur-primaire-9);
-  /* plein, survol */
-  --marque-primaire-10: var(--couleur-primaire-10);
-  /* texte secondaire (4,5:1) */
-  --marque-primaire-11: var(--couleur-primaire-11);
-  /* texte principal */
-  --marque-primaire-12: var(--couleur-primaire-12);
-  /* plein, couleur source */
-  --marque-primaire-aplat: var(--marque-primaire-plein);
-  /* aplat plein (fond.marque.fort et bouton inversé) : plein-survol du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json) */
-  --marque-primaire-aplat-survol: var(--marque-primaire-plein-survol);
-  /* plein, couleur source */
-  --marque-primaire-plein: var(--couleur-primaire-9);
-  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
-  --marque-primaire-plein-survol: #6a0d30;
-  --marque-primaire-sur-aplat: var(--marque-primaire-sur-plein);
-  --marque-primaire-sur-plein: var(--couleur-blanc);
-  /* fond de composant */
-  --marque-primaire-teinte: var(--marque-primaire-3);
-  /* plein, couleur source */
-  --marque-primaire-texte-grand: var(--couleur-primaire-9);
-  /* texte secondaire (4,5:1) */
-  --marque-succes-plein: var(--couleur-succes-11);
-  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
-  --marque-succes-plein-survol: #00683c;
-  --marque-succes-sur-plein: var(--couleur-blanc);
-  /* Police du produit, commune à toutes les marques : texte par défaut (marque.police.texte) et, toujours, libellés (D44). Valeur à choisir avec une vraie police [H]. */
-  --police-produit: system-ui, sans-serif;
-  /* Hauteur des capitales des titres (affichage, titres 1 à 3), la même quelle que soit la police. */
-  --police-titre-hauteur-capitale: 0.7;
-  --rayon-0: 0px;
-  --rayon-2: 2px;
-  --rayon-4: 4px;
-  --rayon-8: 8px;
-  --rayon-12: 12px;
-  --rayon-pilule: 9999px;
-  --taille-16: 16px;
-  --taille-20: 20px;
-  --taille-24: 24px;
-  --taille-32: 32px;
-  --taille-40: 40px;
-  --taille-56: 56px;
-  --taille-640: 640px;
   /* Côté d'un grand avatar, comme celui d'une carte membre. */
-  --taille-avatar-grande: var(--taille-56);
+  --avatar-size-large: var(--size-56);
   /* Côté d'un avatar de taille normale. */
-  --taille-avatar-normale: var(--taille-40);
+  --avatar-size-medium: var(--size-40);
+  /* Plein qui met en avant sans appeler à l'action, sur de petites surfaces, comme une étiquette. */
+  --background-accent-strong: var(--brand-accent-solid);
+  /* Aplat clair de l'accent, non cliquable, comme un encadré ; sans accent, le neutre. */
+  --background-accent-subtle: var(--brand-accent-3);
+  /* Fond de la page entière, sous tout le reste. */
+  --background-app: var(--color-neutral-1);
+  /* Aplat plein de la marque, non cliquable, de la valeur du plein du primaire, comme un bandeau qui donne du relief. */
+  --background-brand-strong: var(--brand-primary-feature);
+  /* Aplat clair de la marque, non cliquable, comme un bandeau, une section ou un encadré. */
+  --background-brand-subtle: var(--brand-primary-3);
+  /* Fond teinté de la marque d'une pièce statique qui porte un texte court ou des initiales pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable. */
+  --background-brand-tint: var(--brand-primary-tint);
+  /* Fond d'un composant au repos, plus soutenu que la surface. */
+  --background-component: var(--color-neutral-3);
+  /* Fond d'un composant survolé par le pointeur. */
+  --background-component-hover: var(--color-neutral-4);
+  /* Fond d'un composant pendant l'appui, ou sélectionné. */
+  --background-component-pressed: var(--color-neutral-5);
+  /* Fond d'un composant désactivé, quelle que soit sa variante (bouton plein ou secondaire). */
+  --background-disabled: var(--color-neutral-3);
+  /* Plein qui signale une erreur ou une action destructrice. */
+  --background-error-strong: var(--brand-error-solid);
+  /* Plein qui signale une erreur ou une action destructrice, survolé. */
+  --background-error-strong-hover: var(--brand-error-solid-hover);
+  /* Fond léger d'un message ou d'un champ en erreur. */
+  --background-error-subtle: var(--color-error-3);
+  /* Plein qui signale une information, avec un texte blanc posé dessus. */
+  --background-info-strong: var(--brand-info-solid);
+  /* Fond léger d'un message d'information. */
+  --background-info-subtle: var(--color-info-3);
+  /* Fond du bouton inversé, réservé à background.brand.strong : la valeur du texte posé sur le plein de la marque. */
+  --background-interactive-inverse: var(--brand-primary-on-feature);
+  /* Plein de l'action principale, comme le bouton qui valide. */
+  --background-interactive-strong: var(--brand-primary-solid);
+  /* Plein de l'action principale survolée. */
+  --background-interactive-strong-hover: var(--brand-primary-solid-hover);
+  /* Fond teinté d'un élément interactif peu appuyé, comme un bouton léger ou une ligne sélectionnée. */
+  --background-interactive-subtle: var(--brand-primary-3);
+  /* Fond sombre d'une zone inversée, comme un pied de page ou une bulle d'aide. */
+  --background-inverse: var(--color-neutral-12);
+  /* Zone qui se distingue à peine du fond de page, comme un panneau latéral ou une bande. */
+  --background-subtle: var(--color-neutral-2);
+  /* Plein qui signale une réussite, avec un texte blanc posé dessus. */
+  --background-success-strong: var(--brand-success-solid);
+  /* Fond léger d'un message de réussite. */
+  --background-success-subtle: var(--color-success-3);
+  /* Fond d'une carte ou d'un champ, posé sur le fond de la page. */
+  --background-surface: var(--color-surface);
+  /* Fond teinté d'une pièce statique qui porte un texte court pour classer, posée sur la page ou sur une surface ; jamais un fond cliquable. */
+  --background-tint: var(--color-tint);
+  /* Plein qui signale un avertissement, avec un texte foncé posé dessus. */
+  --background-warning-strong: var(--brand-warning-solid);
+  /* Fond léger d'un message d'avertissement. */
+  --background-warning-subtle: var(--color-warning-3);
+  /* Contour ordinaire d'une carte ou d'un séparateur, décoratif, jamais seule pour repérer un champ ou un état. */
+  --border-default: var(--color-neutral-7);
+  /* Contour d'un champ en erreur ; sur un fond de statut, décorative : le texte porte le sens. */
+  --border-error: var(--color-error-8);
+  /* Anneau de focus clavier, autour du composant qui a le focus. */
+  --border-focus: var(--brand-primary-11);
+  /* Anneau de focus clavier sur background.brand.strong (3:1). */
+  --border-focus-inverse: var(--brand-primary-on-feature);
+  /* Contour d'un encadré d'information (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde background.app. */
+  --border-info: var(--color-info-8);
+  /* Arrondi d'un contrôle, comme un bouton ou un champ, le même à toutes les tailles. */
+  --border-radius-control: var(--radius-8);
+  /* Arrondi complet d'une forme ronde ou en pilule, comme un avatar ou une étiquette. */
+  --border-radius-full: var(--radius-full);
+  /* Arrondi d'une surface posée sur la page, comme une carte. */
+  --border-radius-surface: var(--radius-12);
+  /* Contour qui suffit à repérer un champ ou une case à cocher. */
+  --border-strong: var(--color-neutral-8);
+  /* Séparateur léger entre deux zones, décoratif, jamais seule pour repérer un champ ou un état. */
+  --border-subtle: var(--color-neutral-6);
+  /* Contour d'un champ validé (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde background.app. */
+  --border-success: var(--color-success-8);
+  /* Contour d'un champ ou d'un encadré d'avertissement (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde background.app. */
+  --border-warning: var(--color-warning-8);
+  /* Épaisseur du contour d'un contrôle, comme le bouton secondaire. */
+  --border-width-default: var(--stroke-1);
+  /* Épaisseur de l'anneau de focus clavier. */
+  --border-width-focus: var(--stroke-2);
+  /* pas 1 de l'échelle neutral */
+  --brand-accent-1: var(--color-neutral-1);
+  /* pas 2 de l'échelle neutral */
+  --brand-accent-2: var(--color-neutral-2);
+  /* pas 3 de l'échelle neutral */
+  --brand-accent-3: var(--color-neutral-3);
+  /* pas 4 de l'échelle neutral */
+  --brand-accent-4: var(--color-neutral-4);
+  /* pas 5 de l'échelle neutral */
+  --brand-accent-5: var(--color-neutral-5);
+  /* pas 6 de l'échelle neutral */
+  --brand-accent-6: var(--color-neutral-6);
+  /* pas 7 de l'échelle neutral */
+  --brand-accent-7: var(--color-neutral-7);
+  /* pas 8 de l'échelle neutral */
+  --brand-accent-8: var(--color-neutral-8);
+  /* pas 9 de l'échelle neutral */
+  --brand-accent-9: var(--color-neutral-9);
+  /* pas 10 de l'échelle neutral */
+  --brand-accent-10: var(--color-neutral-10);
+  /* pas 11 de l'échelle neutral */
+  --brand-accent-11: var(--color-neutral-11);
+  /* pas 12 de l'échelle neutral */
+  --brand-accent-12: var(--color-neutral-12);
+  /* texte sur le plein : blanc */
+  --brand-accent-on-solid: var(--color-white);
+  /* plein : pas 11 */
+  --brand-accent-solid: var(--color-neutral-11);
+  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
+  --brand-accent-solid-hover: #5f594d;
+  /* texte sur le plein : blanc */
+  --brand-error-on-solid: var(--color-white);
+  /* plein : pas 11 */
+  --brand-error-solid: var(--color-error-11);
+  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
+  --brand-error-solid-hover: #b9001a;
+  /* Police des titres 4, du corps et des mentions ; le libellé garde la police du produit (D44). */
+  --brand-font-body: "Helvetica", "Arial", sans-serif;
+  /* Police des styles affichage et titre 1 à 3. */
+  --brand-font-heading: "Palatino", serif;
+  /* texte sur le plein : blanc */
+  --brand-info-on-solid: var(--color-white);
+  /* plein : pas 11 */
+  --brand-info-solid: var(--color-info-11);
+  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
+  --brand-info-solid-hover: #005e96;
+  /* pas 1 de l'échelle primary */
+  --brand-primary-1: var(--color-primary-1);
+  /* pas 2 de l'échelle primary */
+  --brand-primary-2: var(--color-primary-2);
+  /* pas 3 de l'échelle primary */
+  --brand-primary-3: var(--color-primary-3);
+  /* pas 4 de l'échelle primary */
+  --brand-primary-4: var(--color-primary-4);
+  /* pas 5 de l'échelle primary */
+  --brand-primary-5: var(--color-primary-5);
+  /* pas 6 de l'échelle primary */
+  --brand-primary-6: var(--color-primary-6);
+  /* pas 7 de l'échelle primary */
+  --brand-primary-7: var(--color-primary-7);
+  /* pas 8 de l'échelle primary */
+  --brand-primary-8: var(--color-primary-8);
+  /* pas 9 de l'échelle primary */
+  --brand-primary-9: var(--color-primary-9);
+  /* pas 10 de l'échelle primary */
+  --brand-primary-10: var(--color-primary-10);
+  /* pas 11 de l'échelle primary */
+  --brand-primary-11: var(--color-primary-11);
+  /* pas 12 de l'échelle primary */
+  --brand-primary-12: var(--color-primary-12);
+  /* aplat plein (background.brand.strong et bouton inversé) : plein du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json) */
+  --brand-primary-feature: var(--brand-primary-solid);
+  /* aplat plein (background.brand.strong et bouton inversé) : plein-survol du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json) */
+  --brand-primary-feature-hover: var(--brand-primary-solid-hover);
+  /* aplat plein (background.brand.strong et bouton inversé) : sur-plein du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json) */
+  --brand-primary-on-feature: var(--brand-primary-on-solid);
+  /* texte sur le plein : blanc */
+  --brand-primary-on-solid: var(--color-white);
+  /* plein : pas 9 */
+  --brand-primary-solid: var(--color-primary-9);
+  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
+  --brand-primary-solid-hover: #6a0d30;
+  /* texte de marque des grands titres (affichage, titres 1 et 2) : pas 9, premier des pas 9, 10, 11 à tenir 3:1 sur background.app, background.surface, background.subtle et background.brand.subtle */
+  --brand-primary-text-large: var(--color-primary-9);
+  /* pas 3 de l'échelle primary */
+  --brand-primary-tint: var(--brand-primary-3);
+  /* texte sur le plein : blanc */
+  --brand-success-on-solid: var(--color-white);
+  /* plein : pas 11 */
+  --brand-success-solid: var(--color-success-11);
+  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
+  --brand-success-solid-hover: #00683c;
+  /* texte sur le plein : pas 12 */
+  --brand-warning-on-solid: var(--color-warning-12);
+  /* plein : pas 9, couleur exacte */
+  --brand-warning-solid: var(--color-warning-9);
+  /* plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45) */
+  --brand-warning-solid-hover: #d49000;
+  /* fond d'application */
+  --color-error-1: #fffaf9;
+  /* fond discret */
+  --color-error-2: #fff7f7;
+  /* fond de composant */
+  --color-error-3: #fff0ee;
+  /* fond de composant, survol */
+  --color-error-4: #ffe6e3;
+  /* fond de composant, appui */
+  --color-error-5: #fed9d6;
+  /* bordure discrète */
+  --color-error-6: #fccac6;
+  /* bordure de composant */
+  --color-error-7: #f7a7a0;
+  /* bordure d'interaction, focus (3:1) */
+  --color-error-8: #e76862;
+  /* plein, couleur source */
+  --color-error-9: #d93036;
+  /* plein, survol */
+  --color-error-10: #c8292e;
+  /* texte secondaire (4,5:1) */
+  --color-error-11: #cb1d2a;
+  /* texte principal */
+  --color-error-12: #6a0000;
+  /* texte posé sur le pas 9 (4,5:1) */
+  --color-error-on-solid: #ffffff;
+  /* fond d'application */
+  --color-info-1: #fafdff;
+  /* fond discret */
+  --color-info-2: #f5fafe;
+  /* fond de composant */
+  --color-info-3: #e8f5ff;
+  /* fond de composant, survol */
+  --color-info-4: #daeefe;
+  /* fond de composant, appui */
+  --color-info-5: #c8e6fe;
+  /* bordure discrète */
+  --color-info-6: #afdcff;
+  /* bordure de composant */
+  --color-info-7: #7cc3f8;
+  /* bordure d'interaction, focus (3:1) */
+  --color-info-8: #2f97da;
+  /* plein, couleur source */
+  --color-info-9: #0284c7;
+  /* plein, survol */
+  --color-info-10: #017bba;
+  /* texte secondaire (4,5:1) */
+  --color-info-11: #006da6;
+  /* texte principal */
+  --color-info-12: #013452;
+  /* texte posé sur les pas 9 et 10 (4,5:1) */
+  --color-info-on-solid: #000104;
+  /* fond d'application */
+  --color-neutral-1: #fbfbfb;
+  /* fond discret */
+  --color-neutral-2: #f8f8f7;
+  /* fond de composant */
+  --color-neutral-3: #f3f2f1;
+  /* fond de composant, survol */
+  --color-neutral-4: #ecebe9;
+  /* fond de composant, appui */
+  --color-neutral-5: #e3e2df;
+  /* bordure discrète */
+  --color-neutral-6: #d8d6d2;
+  /* bordure de composant */
+  --color-neutral-7: #bfbbb5;
+  /* bordure d'interaction, focus (3:1) */
+  --color-neutral-8: #958f84;
+  /* plein, couleur source */
+  --color-neutral-9: #8a8478;
+  /* plein, survol */
+  --color-neutral-10: #7d776c;
+  /* texte secondaire (4,5:1) */
+  --color-neutral-11: #6d675b;
+  /* texte principal */
+  --color-neutral-12: #363026;
+  /* texte posé sur le pas 9 (4,5:1) */
+  --color-neutral-on-solid: #201d17;
+  /* Texte posé sur background.inverse (text.on-inverse) : blanc en clair ; en sombre, la référence du miroir. */
+  --color-on-inverse: #ffffff;
+  /* fond d'application */
+  --color-primary-1: #fffcfd;
+  /* fond discret */
+  --color-primary-2: #fef8f9;
+  /* fond de composant */
+  --color-primary-3: #fcf0f2;
+  /* fond de composant, survol */
+  --color-primary-4: #fbe6ea;
+  /* fond de composant, appui */
+  --color-primary-5: #f7dce1;
+  /* bordure discrète */
+  --color-primary-6: #f3cdd4;
+  /* bordure de composant */
+  --color-primary-7: #e7adb9;
+  /* bordure d'interaction, focus (3:1) */
+  --color-primary-8: #c9788b;
+  /* plein, couleur source */
+  --color-primary-9: #7a1f3d;
+  /* plein, survol */
+  --color-primary-10: #660a2e;
+  /* texte secondaire (4,5:1) */
+  --color-primary-11: #4f0020;
+  /* texte principal */
+  --color-primary-12: #2d000f;
+  /* texte posé sur les pas 9 et 10 (4,5:1) */
+  --color-primary-on-solid: #ffffff;
+  /* fond d'application */
+  --color-success-1: #fafcfb;
+  /* fond discret */
+  --color-success-2: #f4f9f6;
+  /* fond de composant */
+  --color-success-3: #ecf4ef;
+  /* fond de composant, survol */
+  --color-success-4: #e2eee6;
+  /* fond de composant, appui */
+  --color-success-5: #d4e7db;
+  /* bordure discrète */
+  --color-success-6: #c2dccc;
+  /* bordure de composant */
+  --color-success-7: #9bc6ad;
+  /* bordure d'interaction, focus (3:1) */
+  --color-success-8: #529f76;
+  /* plein, couleur source */
+  --color-success-9: #1f8a5b;
+  /* plein, survol */
+  --color-success-10: #1a7e50;
+  /* texte secondaire (4,5:1) */
+  --color-success-11: #00774a;
+  /* texte principal */
+  --color-success-12: #003a12;
+  /* texte posé sur le pas 9 (4,5:1) */
+  --color-success-on-solid: #001005;
+  /* Surface posée sur le fond de page (background.surface) : blanc en clair ; en sombre, la référence du miroir (tokens/commun/mode.sombre.tokens.json). */
+  --color-surface: #ffffff;
+  /* fond de composant */
+  --color-tint: var(--color-neutral-3);
+  /* fond d'application */
+  --color-warning-1: #fefcf9;
+  /* fond discret */
+  --color-warning-2: #fff8ee;
+  /* fond de composant */
+  --color-warning-3: #fef1de;
+  /* fond de composant, survol */
+  --color-warning-4: #fee8c7;
+  /* fond de composant, appui */
+  --color-warning-5: #ffdeac;
+  /* bordure discrète */
+  --color-warning-6: #ffcf83;
+  /* bordure de composant */
+  --color-warning-7: #f3b034;
+  /* bordure d'interaction, focus (3:1) */
+  --color-warning-8: #bf8501;
+  /* plein, couleur source */
+  --color-warning-9: #e5a000;
+  /* plein, survol */
+  --color-warning-10: #d39300;
+  /* texte secondaire (4,5:1) */
+  --color-warning-11: #8b5f00;
+  /* texte principal */
+  --color-warning-12: #442d01;
+  /* texte posé sur les pas 9 et 10 (4,5:1) */
+  --color-warning-on-solid: #4c3200;
+  --color-white: #ffffff;
+  /* Hauteur des capitales des titres (affichage, titres 1 à 3), la même quelle que soit la police. */
+  --font-heading-cap-height: 0.7;
+  /* Police du produit, commune à toutes les marques : texte par défaut (brand.font.body) et, toujours, libellés (D44). Valeur à choisir avec une vraie police [H]. */
+  --font-product: system-ui, sans-serif;
+  --font-size-12: 12px;
+  --font-size-14: 14px;
+  --font-size-16: 16px;
+  --font-size-18: 18px;
+  --font-size-20: 20px;
+  --font-size-24: 24px;
+  --font-size-30: 30px;
+  --font-size-36: 36px;
+  --font-size-48: 48px;
+  --font-size-60: 60px;
+  /* normale, corps et mentions */
+  --font-weight-400: 400;
+  /* demi-grasse, libellés et titre de carte */
+  --font-weight-600: 600;
+  /* grasse, affichage et titres */
+  --font-weight-700: 700;
+  /* Écart entre deux blocs d'information d'un même composant, comme l'en-tête d'une carte, titre et sous-titre, et son contenu. */
+  --gap-between-blocks: var(--space-8);
+  /* Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée, pour qu'on voie à quel champ appartient un libellé ou un message. */
+  --gap-between-components: var(--space-16);
+  /* Écart entre deux groupes d'une même section, comme un titre de section et son contenu ou les champs d'un formulaire et ses boutons. */
+  --gap-between-groups: var(--space-24);
+  /* Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes. */
+  --gap-between-tags: var(--space-8);
+  /* Écart entre l'icône et le texte d'un contrôle, comme un bouton ou un champ. */
+  --gap-icon-text: var(--space-8);
+  /* Écart entre deux sections de la page, la plus grande respiration verticale ; plus petit en étroit (largeur.etroit.tokens.json). */
+  --gap-section: var(--space-48);
+  /* Écart entre les parties d'un même composant, comme une étiquette et son champ ou un champ et son message d'erreur. */
+  --gap-within-component: var(--space-4);
+  /* Hauteur d'un contrôle de taille normale, comme un bouton. */
+  --height-control-medium: var(--size-40);
+  /* Hauteur d'un contrôle de petite taille, comme un bouton. */
+  --height-control-small: var(--size-32);
+  /* Hauteur d'une étiquette, sur une ligne. */
+  --height-tag: var(--size-24);
   /* Icône d'un contrôle de taille normale. */
-  --taille-icone-normale: var(--taille-20);
+  --icon-size-medium: var(--size-20);
   /* Icône d'un contrôle de petite taille. */
-  --taille-icone-petite: var(--taille-16);
-  --taille-texte-12: 12px;
-  --taille-texte-14: 14px;
-  --taille-texte-16: 16px;
-  --taille-texte-18: 18px;
-  --taille-texte-20: 20px;
-  --taille-texte-24: 24px;
-  --taille-texte-30: 30px;
-  --taille-texte-36: 36px;
-  --taille-texte-48: 48px;
-  --taille-texte-60: 60px;
-  /* texte secondaire (4,5:1) */
-  --texte-accent: var(--marque-accent-11);
-  /* texte secondaire (4,5:1) */
-  --texte-avertissement: var(--couleur-avertissement-11);
-  /* plein, couleur source */
-  --texte-desactive: var(--couleur-neutre-9);
-  /* texte secondaire (4,5:1) */
-  --texte-erreur: var(--couleur-erreur-11);
-  /* texte secondaire (4,5:1) */
-  --texte-info: var(--couleur-info-11);
-  /* texte secondaire (4,5:1) */
-  --texte-interactif: var(--marque-primaire-11);
+  --icon-size-small: var(--size-16);
+  /* Décalage de l'anneau de focus clavier hors du composant, pour qu'il se pose sur le fond de la page et jamais sur le plein. */
+  --offset-focus: var(--stroke-2);
+  /* Marge intérieure d'un composant à bord visible, comme une carte, un encadré ou une zone de formulaire. */
+  --padding-component: var(--space-16);
+  /* Marge intérieure gauche et droite d'une étiquette, de part et d'autre de son texte. */
+  --padding-tag: var(--space-12);
+  --radius-0: 0px;
+  --radius-2: 2px;
+  --radius-4: 4px;
+  --radius-8: 8px;
+  --radius-12: 12px;
+  --radius-full: 9999px;
+  --size-16: 16px;
+  --size-20: 20px;
+  --size-24: 24px;
+  --size-32: 32px;
+  --size-40: 40px;
+  --size-56: 56px;
+  --size-640: 640px;
+  --space-0: 0px;
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+  --space-64: 64px;
+  --stroke-1: 1px;
+  --stroke-2: 2px;
+  /* pas 11 de l'échelle neutral */
+  --text-accent: var(--brand-accent-11);
+  /* pas 12 de l'échelle primary */
+  --text-brand: var(--brand-primary-12);
+  /* texte de marque des grands titres (affichage, titres 1 et 2) : pas 9, premier des pas 9, 10, 11 à tenir 3:1 sur background.app, background.surface, background.subtle et background.brand.subtle */
+  --text-brand-large: var(--brand-primary-text-large);
   /* texte principal */
-  --texte-marque: var(--marque-primaire-12);
+  --text-default: var(--color-neutral-12);
   /* plein, couleur source */
-  --texte-marque-grand: var(--marque-primaire-texte-grand);
-  /* texte principal */
-  --texte-principal: var(--couleur-neutre-12);
+  --text-disabled: var(--color-neutral-9);
   /* texte secondaire (4,5:1) */
-  --texte-secondaire: var(--couleur-neutre-11);
+  --text-error: var(--color-error-11);
   /* texte secondaire (4,5:1) */
-  --texte-succes: var(--couleur-succes-11);
-  --texte-sur-accent: var(--marque-accent-sur-plein);
-  /* texte principal */
-  --texte-sur-avertissement: var(--marque-avertissement-sur-plein);
-  --texte-sur-erreur: var(--marque-erreur-sur-plein);
-  --texte-sur-info: var(--marque-info-sur-plein);
-  --texte-sur-interactif: var(--marque-primaire-sur-plein);
-  /* plein, couleur source */
-  --texte-sur-interactif-inverse: var(--marque-primaire-aplat);
-  /* aplat plein (fond.marque.fort et bouton inversé) : plein-survol du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json) */
-  --texte-sur-interactif-inverse-survol: var(--marque-primaire-aplat-survol);
-  /* Texte posé sur fond.inverse (texte.sur-inverse) : blanc en clair ; en sombre, la référence du miroir. */
-  --texte-sur-inverse: var(--couleur-sur-inverse);
-  --texte-sur-marque: var(--marque-primaire-sur-aplat);
-  --texte-sur-succes: var(--marque-succes-sur-plein);
-  --trait-1: 1px;
-  --trait-2: 2px;
-  /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */
-  --typo-affichage-grand-font-family: var(--marque-police-titre);
-  /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */
-  --typo-affichage-grand-font-size: var(--taille-texte-60);
-  /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */
-  --typo-affichage-grand-font-weight: var(--graisse-700);
-  /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */
-  --typo-affichage-grand-letter-spacing: 0px;
-  /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */
-  --typo-affichage-grand-line-height: 1.2667;
-  /* Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit. */
-  --typo-affichage-moyen-font-family: var(--marque-police-titre);
-  /* Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit. */
-  --typo-affichage-moyen-font-size: var(--taille-texte-48);
-  /* Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit. */
-  --typo-affichage-moyen-font-weight: var(--graisse-700);
-  /* Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit. */
-  --typo-affichage-moyen-letter-spacing: 0px;
-  /* Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit. */
-  --typo-affichage-moyen-line-height: 1.25;
+  --text-info: var(--color-info-11);
+  /* pas 11 de l'échelle primary */
+  --text-interactive: var(--brand-primary-11);
+  /* texte sur le plein : blanc */
+  --text-on-accent: var(--brand-accent-on-solid);
+  /* aplat plein (background.brand.strong et bouton inversé) : sur-plein du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json) */
+  --text-on-brand: var(--brand-primary-on-feature);
+  /* texte sur le plein : blanc */
+  --text-on-error: var(--brand-error-on-solid);
+  /* texte sur le plein : blanc */
+  --text-on-info: var(--brand-info-on-solid);
+  /* texte sur le plein : blanc */
+  --text-on-interactive: var(--brand-primary-on-solid);
+  /* aplat plein (background.brand.strong et bouton inversé) : plein du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json) */
+  --text-on-interactive-inverse: var(--brand-primary-feature);
+  /* aplat plein (background.brand.strong et bouton inversé) : plein-survol du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json) */
+  --text-on-interactive-inverse-hover: var(--brand-primary-feature-hover);
+  /* Texte posé sur background.inverse (text.on-inverse) : blanc en clair ; en sombre, la référence du miroir. */
+  --text-on-inverse: var(--color-on-inverse);
+  /* texte sur le plein : blanc */
+  --text-on-success: var(--brand-success-on-solid);
+  /* texte sur le plein : pas 12 */
+  --text-on-warning: var(--brand-warning-on-solid);
+  /* texte secondaire (4,5:1) */
+  --text-secondary: var(--color-neutral-11);
+  /* texte secondaire (4,5:1) */
+  --text-success: var(--color-success-11);
+  /* texte secondaire (4,5:1) */
+  --text-warning: var(--color-warning-11);
   /* Chapô, sous un titre de page ; ligne visée 28 px. */
-  --typo-corps-grand-font-family: var(--marque-police-texte);
+  --typography-body-large-font-family: var(--brand-font-body);
   /* Chapô, sous un titre de page ; ligne visée 28 px. */
-  --typo-corps-grand-font-size: var(--taille-texte-18);
+  --typography-body-large-font-size: var(--font-size-18);
   /* Chapô, sous un titre de page ; ligne visée 28 px. */
-  --typo-corps-grand-font-weight: var(--graisse-400);
+  --typography-body-large-font-weight: var(--font-weight-400);
   /* Chapô, sous un titre de page ; ligne visée 28 px. */
-  --typo-corps-grand-letter-spacing: 0px;
+  --typography-body-large-letter-spacing: 0px;
   /* Chapô, sous un titre de page ; ligne visée 28 px. */
-  --typo-corps-grand-line-height: 1.5556;
+  --typography-body-large-line-height: 1.5556;
   /* Texte courant, comme le texte d'une carte ou la saisie d'un champ. */
-  --typo-corps-moyen-font-family: var(--marque-police-texte);
+  --typography-body-medium-font-family: var(--brand-font-body);
   /* Texte courant, comme le texte d'une carte ou la saisie d'un champ. */
-  --typo-corps-moyen-font-size: var(--taille-texte-16);
+  --typography-body-medium-font-size: var(--font-size-16);
   /* Texte courant, comme le texte d'une carte ou la saisie d'un champ. */
-  --typo-corps-moyen-font-weight: var(--graisse-400);
+  --typography-body-medium-font-weight: var(--font-weight-400);
   /* Texte courant, comme le texte d'une carte ou la saisie d'un champ. */
-  --typo-corps-moyen-letter-spacing: 0px;
+  --typography-body-medium-letter-spacing: 0px;
   /* Texte courant, comme le texte d'une carte ou la saisie d'un champ. */
-  --typo-corps-moyen-line-height: 1.5;
+  --typography-body-medium-line-height: 1.5;
   /* Texte de tableau ou d'étiquette, plus petit que le texte courant. */
-  --typo-corps-petit-font-family: var(--marque-police-texte);
+  --typography-body-small-font-family: var(--brand-font-body);
   /* Texte de tableau ou d'étiquette, plus petit que le texte courant. */
-  --typo-corps-petit-font-size: var(--taille-texte-14);
+  --typography-body-small-font-size: var(--font-size-14);
   /* Texte de tableau ou d'étiquette, plus petit que le texte courant. */
-  --typo-corps-petit-font-weight: var(--graisse-400);
+  --typography-body-small-font-weight: var(--font-weight-400);
   /* Texte de tableau ou d'étiquette, plus petit que le texte courant. */
-  --typo-corps-petit-letter-spacing: 0px;
+  --typography-body-small-letter-spacing: 0px;
   /* Texte de tableau ou d'étiquette, plus petit que le texte courant. */
-  --typo-corps-petit-line-height: 1.4286;
-  /* Initiales du grand avatar. */
-  --typo-initiales-grande-font-family: var(--marque-police-texte);
-  /* Initiales du grand avatar. */
-  --typo-initiales-grande-font-size: var(--taille-texte-24);
-  /* Initiales du grand avatar. */
-  --typo-initiales-grande-font-weight: var(--graisse-600);
-  /* Initiales du grand avatar. */
-  --typo-initiales-grande-letter-spacing: 0px;
-  /* Initiales du grand avatar. */
-  --typo-initiales-grande-line-height: 1.3333;
-  /* Initiales de l'avatar normal. */
-  --typo-initiales-normale-font-family: var(--marque-police-texte);
-  /* Initiales de l'avatar normal. */
-  --typo-initiales-normale-font-size: var(--taille-texte-16);
-  /* Initiales de l'avatar normal. */
-  --typo-initiales-normale-font-weight: var(--graisse-600);
-  /* Initiales de l'avatar normal. */
-  --typo-initiales-normale-letter-spacing: 0px;
-  /* Initiales de l'avatar normal. */
-  --typo-initiales-normale-line-height: 1.5;
-  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. */
-  --typo-libelle-font-family: var(--police-produit);
-  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. */
-  --typo-libelle-font-size: var(--taille-texte-14);
-  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. */
-  --typo-libelle-font-weight: var(--graisse-600);
-  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. */
-  --typo-libelle-letter-spacing: 0px;
-  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. */
-  --typo-libelle-line-height: 1.4286;
-  /* Aide, message d'erreur ou légende, sous un champ. */
-  --typo-mention-font-family: var(--marque-police-texte);
-  /* Aide, message d'erreur ou légende, sous un champ. */
-  --typo-mention-font-size: var(--taille-texte-12);
-  /* Aide, message d'erreur ou légende, sous un champ. */
-  --typo-mention-font-weight: var(--graisse-400);
-  /* Aide, message d'erreur ou légende, sous un champ. */
-  --typo-mention-letter-spacing: 0px;
-  /* Aide, message d'erreur ou légende, sous un champ. */
-  --typo-mention-line-height: 1.3333;
+  --typography-body-small-line-height: 1.4286;
+  /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */
+  --typography-display-large-font-family: var(--brand-font-heading);
+  /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */
+  --typography-display-large-font-size: var(--font-size-60);
+  /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */
+  --typography-display-large-font-weight: var(--font-weight-700);
+  /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */
+  --typography-display-large-letter-spacing: 0px;
+  /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */
+  --typography-display-large-line-height: 1.2667;
+  /* Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit. */
+  --typography-display-medium-font-family: var(--brand-font-heading);
+  /* Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit. */
+  --typography-display-medium-font-size: var(--font-size-48);
+  /* Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit. */
+  --typography-display-medium-font-weight: var(--font-weight-700);
+  /* Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit. */
+  --typography-display-medium-letter-spacing: 0px;
+  /* Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit. */
+  --typography-display-medium-line-height: 1.25;
   /* Titre de page ; ligne visée 40 px en large, 32 px en étroit. */
-  --typo-titre-1-font-family: var(--marque-police-titre);
+  --typography-heading-1-font-family: var(--brand-font-heading);
   /* Titre de page ; ligne visée 40 px en large, 32 px en étroit. */
-  --typo-titre-1-font-size: var(--taille-texte-30);
+  --typography-heading-1-font-size: var(--font-size-30);
   /* Titre de page ; ligne visée 40 px en large, 32 px en étroit. */
-  --typo-titre-1-font-weight: var(--graisse-700);
+  --typography-heading-1-font-weight: var(--font-weight-700);
   /* Titre de page ; ligne visée 40 px en large, 32 px en étroit. */
-  --typo-titre-1-letter-spacing: 0px;
+  --typography-heading-1-letter-spacing: 0px;
   /* Titre de page ; ligne visée 40 px en large, 32 px en étroit. */
-  --typo-titre-1-line-height: 1.3333;
+  --typography-heading-1-line-height: 1.3333;
   /* Titre de section ; ligne visée 32 px en large, 28 px en étroit. */
-  --typo-titre-2-font-family: var(--marque-police-titre);
+  --typography-heading-2-font-family: var(--brand-font-heading);
   /* Titre de section ; ligne visée 32 px en large, 28 px en étroit. */
-  --typo-titre-2-font-size: var(--taille-texte-24);
+  --typography-heading-2-font-size: var(--font-size-24);
   /* Titre de section ; ligne visée 32 px en large, 28 px en étroit. */
-  --typo-titre-2-font-weight: var(--graisse-700);
+  --typography-heading-2-font-weight: var(--font-weight-700);
   /* Titre de section ; ligne visée 32 px en large, 28 px en étroit. */
-  --typo-titre-2-letter-spacing: 0px;
+  --typography-heading-2-letter-spacing: 0px;
   /* Titre de section ; ligne visée 32 px en large, 28 px en étroit. */
-  --typo-titre-2-line-height: 1.3333;
+  --typography-heading-2-line-height: 1.3333;
   /* Titre de carte. */
-  --typo-titre-3-font-family: var(--marque-police-titre);
+  --typography-heading-3-font-family: var(--brand-font-heading);
   /* Titre de carte. */
-  --typo-titre-3-font-size: var(--taille-texte-20);
+  --typography-heading-3-font-size: var(--font-size-20);
   /* Titre de carte. */
-  --typo-titre-3-font-weight: var(--graisse-600);
+  --typography-heading-3-font-weight: var(--font-weight-600);
   /* Titre de carte. */
-  --typo-titre-3-letter-spacing: 0px;
+  --typography-heading-3-letter-spacing: 0px;
   /* Titre de carte. */
-  --typo-titre-3-line-height: 1.4;
+  --typography-heading-3-line-height: 1.4;
   /* Titre de sous-groupe, sur les écrans denses, comme le titre d'une DsCard en taille small. */
-  --typo-titre-4-font-family: var(--marque-police-texte);
+  --typography-heading-4-font-family: var(--brand-font-body);
   /* Titre de sous-groupe, sur les écrans denses, comme le titre d'une DsCard en taille small. */
-  --typo-titre-4-font-size: var(--taille-texte-16);
+  --typography-heading-4-font-size: var(--font-size-16);
   /* Titre de sous-groupe, sur les écrans denses, comme le titre d'une DsCard en taille small. */
-  --typo-titre-4-font-weight: var(--graisse-700);
+  --typography-heading-4-font-weight: var(--font-weight-700);
   /* Titre de sous-groupe, sur les écrans denses, comme le titre d'une DsCard en taille small. */
-  --typo-titre-4-letter-spacing: 0px;
+  --typography-heading-4-letter-spacing: 0px;
   /* Titre de sous-groupe, sur les écrans denses, comme le titre d'une DsCard en taille small. */
-  --typo-titre-4-line-height: 1.5;
+  --typography-heading-4-line-height: 1.5;
+  /* Initiales du grand avatar. */
+  --typography-initials-large-font-family: var(--brand-font-body);
+  /* Initiales du grand avatar. */
+  --typography-initials-large-font-size: var(--font-size-24);
+  /* Initiales du grand avatar. */
+  --typography-initials-large-font-weight: var(--font-weight-600);
+  /* Initiales du grand avatar. */
+  --typography-initials-large-letter-spacing: 0px;
+  /* Initiales du grand avatar. */
+  --typography-initials-large-line-height: 1.3333;
+  /* Initiales de l'avatar normal. */
+  --typography-initials-medium-font-family: var(--brand-font-body);
+  /* Initiales de l'avatar normal. */
+  --typography-initials-medium-font-size: var(--font-size-16);
+  /* Initiales de l'avatar normal. */
+  --typography-initials-medium-font-weight: var(--font-weight-600);
+  /* Initiales de l'avatar normal. */
+  --typography-initials-medium-letter-spacing: 0px;
+  /* Initiales de l'avatar normal. */
+  --typography-initials-medium-line-height: 1.5;
+  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. */
+  --typography-label-font-family: var(--font-product);
+  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. */
+  --typography-label-font-size: var(--font-size-14);
+  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. */
+  --typography-label-font-weight: var(--font-weight-600);
+  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. */
+  --typography-label-letter-spacing: 0px;
+  /* Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. */
+  --typography-label-line-height: 1.4286;
+  /* Aide, message d'erreur ou légende, sous un champ. */
+  --typography-supporting-text-font-family: var(--brand-font-body);
+  /* Aide, message d'erreur ou légende, sous un champ. */
+  --typography-supporting-text-font-size: var(--font-size-12);
+  /* Aide, message d'erreur ou légende, sous un champ. */
+  --typography-supporting-text-font-weight: var(--font-weight-400);
+  /* Aide, message d'erreur ou légende, sous un champ. */
+  --typography-supporting-text-letter-spacing: 0px;
+  /* Aide, message d'erreur ou légende, sous un champ. */
+  --typography-supporting-text-line-height: 1.3333;
+  --width-column: var(--size-640);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* fond d'application */
-    --couleur-avertissement-1: #121212;
-    /* fond discret */
-    --couleur-avertissement-2: #151515;
-    /* fond de composant */
-    --couleur-avertissement-3: #1f1b15;
-    /* fond de composant, survol */
-    --couleur-avertissement-4: #25211b;
-    /* fond de composant, appui */
-    --couleur-avertissement-5: #2d271e;
-    /* bordure discrète */
-    --couleur-avertissement-6: #372f23;
-    /* bordure de composant */
-    --couleur-avertissement-7: #4f4029;
-    /* bordure d'interaction, focus (3:1) */
-    --couleur-avertissement-8: #82612a;
-    /* plein, survol */
-    --couleur-avertissement-10: #fbbb4d;
-    /* texte secondaire (4,5:1) */
-    --couleur-avertissement-11: #ffd595;
-    /* texte principal */
-    --couleur-avertissement-12: #fff0da;
-    /* texte posé sur les pas 9 et 10 (4,5:1) */
-    --couleur-avertissement-sur-plein: #000000;
-    /* fond d'application */
-    --couleur-erreur-1: #1a0f0e;
-    /* fond discret */
-    --couleur-erreur-2: #1e1312;
-    /* fond de composant */
-    --couleur-erreur-3: #231918;
-    /* fond de composant, survol */
-    --couleur-erreur-4: #331a18;
-    /* fond de composant, appui */
-    --couleur-erreur-5: #3a211f;
-    /* bordure discrète */
-    --couleur-erreur-6: #4f2321;
-    /* bordure de composant */
-    --couleur-erreur-7: #742927;
-    /* bordure d'interaction, focus (3:1) */
-    --couleur-erreur-8: #c6232c;
-    /* plein, survol */
-    --couleur-erreur-10: #c8242d;
-    /* texte secondaire (4,5:1) */
-    --couleur-erreur-11: #ff978f;
-    /* texte principal */
-    --couleur-erreur-12: #fcc9c4;
-    /* texte posé sur les pas 9 et 10 (4,5:1) */
-    --couleur-erreur-sur-plein: #fff8f7;
-    /* fond d'application */
-    --couleur-info-1: #0e1317;
-    /* fond discret */
-    --couleur-info-2: #11161a;
-    /* fond de composant */
-    --couleur-info-3: #131c23;
-    /* fond de composant, survol */
-    --couleur-info-4: #192229;
-    /* fond de composant, appui */
-    --couleur-info-5: #1c2933;
-    /* bordure discrète */
-    --couleur-info-6: #21323f;
-    /* bordure de composant */
-    --couleur-info-7: #1f4560;
-    /* bordure d'interaction, focus (3:1) */
-    --couleur-info-8: #016ca4;
-    /* plein, survol */
-    --couleur-info-10: #2491d4;
-    /* texte secondaire (4,5:1) */
-    --couleur-info-11: #5dbcff;
-    /* texte principal */
-    --couleur-info-12: #addafd;
-    /* texte posé sur les pas 9 et 10 (4,5:1) */
-    --couleur-info-sur-plein: #000000;
-    /* fond d'application */
-    --couleur-neutre-1: #121212;
-    /* fond discret */
-    --couleur-neutre-2: #151515;
-    /* fond de composant */
-    --couleur-neutre-3: #1b1b1b;
-    /* fond de composant, survol */
-    --couleur-neutre-4: #212121;
-    /* fond de composant, appui */
-    --couleur-neutre-5: #282828;
-    /* bordure discrète */
-    --couleur-neutre-6: #303030;
-    /* bordure de composant */
-    --couleur-neutre-7: #45423b;
-    /* bordure d'interaction, focus (3:1) */
-    --couleur-neutre-8: #6a665c;
-    /* plein, couleur source */
-    --couleur-neutre-9: #7d786c;
-    /* plein, survol */
-    --couleur-neutre-10: #868175;
-    /* texte secondaire (4,5:1) */
-    --couleur-neutre-11: #8f8b81;
-    /* texte principal */
-    --couleur-neutre-12: #d8d5ce;
-    /* texte posé sur les pas 9 et 10 (4,5:1) */
-    --couleur-neutre-sur-plein: #000000;
-    /* fond d'application */
-    --couleur-primaire-1: #1e0d11;
-    /* fond discret */
-    --couleur-primaire-2: #201215;
-    /* fond de composant */
-    --couleur-primaire-3: #2f1119;
-    /* fond de composant, survol */
-    --couleur-primaire-4: #3a151f;
-    /* fond de composant, appui */
-    --couleur-primaire-5: #461825;
-    /* bordure discrète */
-    --couleur-primaire-6: #5b152c;
-    /* bordure de composant */
-    --couleur-primaire-7: #79203d;
-    /* bordure d'interaction, focus (3:1) */
-    --couleur-primaire-8: #a44861;
-    /* plein, survol */
-    --couleur-primaire-10: #842e48;
-    /* texte secondaire (4,5:1) */
-    --couleur-primaire-11: #fc96ae;
-    /* texte principal */
-    --couleur-primaire-12: #fec7d2;
-    /* texte posé sur les pas 9 et 10 (4,5:1) */
-    --couleur-primaire-sur-plein: #e7aeb9;
-    /* fond d'application */
-    --couleur-succes-1: #0e1310;
-    /* fond discret */
-    --couleur-succes-2: #121714;
-    /* fond de composant */
-    --couleur-succes-3: #171c19;
-    /* fond de composant, survol */
-    --couleur-succes-4: #16241c;
-    /* fond de composant, appui */
-    --couleur-succes-5: #1e2a23;
-    /* bordure discrète */
-    --couleur-succes-6: #1d3528;
-    /* bordure de composant */
-    --couleur-succes-7: #1f4a34;
-    /* bordure d'interaction, focus (3:1) */
-    --couleur-succes-8: #16754c;
-    /* plein, survol */
-    --couleur-succes-10: #339667;
-    /* texte secondaire (4,5:1) */
-    --couleur-succes-11: #00cd84;
-    /* texte principal */
-    --couleur-succes-12: #03f39e;
-    /* texte posé sur les pas 9 et 10 (4,5:1) */
-    --couleur-succes-sur-plein: #000000;
-    /* Texte sur fond.inverse en sombre : la page, pas 1 du neutre. */
-    --couleur-sur-inverse: var(--couleur-neutre-1);
-    /* Surface en sombre : plus claire que fond.discret, plus foncée que les fonds de composant, jamais plus foncée que la page [H]. */
-    --couleur-surface: #181818;
-    /* fond de composant */
-    --couleur-teinte: var(--couleur-neutre-5);
-    /* texte secondaire (4,5:1) */
-    --marque-accent-plein: #6d675b;
-    /* plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur */
-    --marque-avertissement-plein: var(--couleur-avertissement-11);
-    /* plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45) */
-    --marque-avertissement-plein-survol: #ffe6ac;
-    /* texte principal */
-    --marque-avertissement-sur-plein: var(--couleur-avertissement-1);
-    /* plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45) */
-    --marque-erreur-plein-survol: #ffaaa2;
+    /* plein : pas 11, valeur du mode clair, figée en sombre */
+    --brand-accent-solid: #6d675b;
     /* texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1) */
-    --marque-erreur-sur-plein: var(--couleur-erreur-1);
+    --brand-error-on-solid: var(--color-error-1);
     /* plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45) */
-    --marque-info-plein-survol: #73ccff;
+    --brand-error-solid-hover: #ffaaa2;
     /* texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1) */
-    --marque-info-sur-plein: var(--couleur-info-1);
+    --brand-info-on-solid: var(--color-info-1);
+    /* plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45) */
+    --brand-info-solid-hover: #73ccff;
     /* aplat plein en sombre : plein du primaire en clair, figé (couleur exacte du client) */
-    --marque-primaire-aplat: #7a1f3d;
+    --brand-primary-feature: #7a1f3d;
     /* aplat plein en sombre : plein-survol du primaire en clair, figé (couleur exacte du client) */
-    --marque-primaire-aplat-survol: #6a0d30;
-    /* plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur */
-    --marque-primaire-plein: var(--couleur-primaire-11);
-    /* plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45) */
-    --marque-primaire-plein-survol: #ffa7be;
+    --brand-primary-feature-hover: #6a0d30;
     /* aplat plein en sombre : sur-plein du primaire en clair, figé (couleur exacte du client) */
-    --marque-primaire-sur-aplat: var(--couleur-blanc);
+    --brand-primary-on-feature: var(--color-white);
     /* texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1) */
-    --marque-primaire-sur-plein: var(--couleur-primaire-1);
-    /* fond de composant */
-    --marque-primaire-teinte: var(--marque-primaire-5);
-    /* texte de marque des grands titres en sombre : pas 11 de l'échelle sombre, premier des pas 9, 10, 11 à tenir 3:1 sur fond.app, fond.surface, fond.discret et fond.marque.discret sombres */
-    --marque-primaire-texte-grand: var(--couleur-primaire-11);
+    --brand-primary-on-solid: var(--color-primary-1);
+    /* plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur */
+    --brand-primary-solid: var(--color-primary-11);
     /* plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45) */
-    --marque-succes-plein-survol: #31de93;
+    --brand-primary-solid-hover: #ffa7be;
+    /* texte de marque des grands titres en sombre : pas 11 de l'échelle sombre, premier des pas 9, 10, 11 à tenir 3:1 sur background.app, background.surface, background.subtle et background.brand.subtle sombres */
+    --brand-primary-text-large: var(--color-primary-11);
+    /* Fond teinté de la marque (background.brand.tint) en sombre : pas 5 de l'échelle sombre du primaire, pour se détacher d'une surface. */
+    --brand-primary-tint: var(--brand-primary-5);
     /* texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1) */
-    --marque-succes-sur-plein: var(--couleur-succes-1);
+    --brand-success-on-solid: var(--color-success-1);
+    /* plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45) */
+    --brand-success-solid-hover: #31de93;
+    /* texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1) */
+    --brand-warning-on-solid: var(--color-warning-1);
+    /* plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur */
+    --brand-warning-solid: var(--color-warning-11);
+    /* plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45) */
+    --brand-warning-solid-hover: #ffe6ac;
+    /* fond d'application */
+    --color-error-1: #1a0f0e;
+    /* fond discret */
+    --color-error-2: #1e1312;
+    /* fond de composant */
+    --color-error-3: #231918;
+    /* fond de composant, survol */
+    --color-error-4: #331a18;
+    /* fond de composant, appui */
+    --color-error-5: #3a211f;
+    /* bordure discrète */
+    --color-error-6: #4f2321;
+    /* bordure de composant */
+    --color-error-7: #742927;
+    /* bordure d'interaction, focus (3:1) */
+    --color-error-8: #c6232c;
+    /* plein, survol */
+    --color-error-10: #c8242d;
+    /* texte secondaire (4,5:1) */
+    --color-error-11: #ff978f;
+    /* texte principal */
+    --color-error-12: #fcc9c4;
+    /* texte posé sur les pas 9 et 10 (4,5:1) */
+    --color-error-on-solid: #fff8f7;
+    /* fond d'application */
+    --color-info-1: #0e1317;
+    /* fond discret */
+    --color-info-2: #11161a;
+    /* fond de composant */
+    --color-info-3: #131c23;
+    /* fond de composant, survol */
+    --color-info-4: #192229;
+    /* fond de composant, appui */
+    --color-info-5: #1c2933;
+    /* bordure discrète */
+    --color-info-6: #21323f;
+    /* bordure de composant */
+    --color-info-7: #1f4560;
+    /* bordure d'interaction, focus (3:1) */
+    --color-info-8: #016ca4;
+    /* plein, survol */
+    --color-info-10: #2491d4;
+    /* texte secondaire (4,5:1) */
+    --color-info-11: #5dbcff;
+    /* texte principal */
+    --color-info-12: #addafd;
+    /* texte posé sur les pas 9 et 10 (4,5:1) */
+    --color-info-on-solid: #000000;
+    /* fond d'application */
+    --color-neutral-1: #121212;
+    /* fond discret */
+    --color-neutral-2: #151515;
+    /* fond de composant */
+    --color-neutral-3: #1b1b1b;
+    /* fond de composant, survol */
+    --color-neutral-4: #212121;
+    /* fond de composant, appui */
+    --color-neutral-5: #282828;
+    /* bordure discrète */
+    --color-neutral-6: #303030;
+    /* bordure de composant */
+    --color-neutral-7: #45423b;
+    /* bordure d'interaction, focus (3:1) */
+    --color-neutral-8: #6a665c;
+    /* plein, couleur source */
+    --color-neutral-9: #7d786c;
+    /* plein, survol */
+    --color-neutral-10: #868175;
+    /* texte secondaire (4,5:1) */
+    --color-neutral-11: #8f8b81;
+    /* texte principal */
+    --color-neutral-12: #d8d5ce;
+    /* texte posé sur les pas 9 et 10 (4,5:1) */
+    --color-neutral-on-solid: #000000;
+    /* Texte sur background.inverse en sombre : la page, pas 1 du neutre. */
+    --color-on-inverse: var(--color-neutral-1);
+    /* fond d'application */
+    --color-primary-1: #1e0d11;
+    /* fond discret */
+    --color-primary-2: #201215;
+    /* fond de composant */
+    --color-primary-3: #2f1119;
+    /* fond de composant, survol */
+    --color-primary-4: #3a151f;
+    /* fond de composant, appui */
+    --color-primary-5: #461825;
+    /* bordure discrète */
+    --color-primary-6: #5b152c;
+    /* bordure de composant */
+    --color-primary-7: #79203d;
+    /* bordure d'interaction, focus (3:1) */
+    --color-primary-8: #a44861;
+    /* plein, survol */
+    --color-primary-10: #842e48;
+    /* texte secondaire (4,5:1) */
+    --color-primary-11: #fc96ae;
+    /* texte principal */
+    --color-primary-12: #fec7d2;
+    /* texte posé sur les pas 9 et 10 (4,5:1) */
+    --color-primary-on-solid: #e7aeb9;
+    /* fond d'application */
+    --color-success-1: #0e1310;
+    /* fond discret */
+    --color-success-2: #121714;
+    /* fond de composant */
+    --color-success-3: #171c19;
+    /* fond de composant, survol */
+    --color-success-4: #16241c;
+    /* fond de composant, appui */
+    --color-success-5: #1e2a23;
+    /* bordure discrète */
+    --color-success-6: #1d3528;
+    /* bordure de composant */
+    --color-success-7: #1f4a34;
+    /* bordure d'interaction, focus (3:1) */
+    --color-success-8: #16754c;
+    /* plein, survol */
+    --color-success-10: #339667;
+    /* texte secondaire (4,5:1) */
+    --color-success-11: #00cd84;
+    /* texte principal */
+    --color-success-12: #03f39e;
+    /* texte posé sur les pas 9 et 10 (4,5:1) */
+    --color-success-on-solid: #000000;
+    /* Surface en sombre : plus claire que background.subtle, plus foncée que les fonds de composant, jamais plus foncée que la page [H]. */
+    --color-surface: #181818;
+    /* fond de composant */
+    --color-tint: var(--color-neutral-5);
+    /* fond d'application */
+    --color-warning-1: #121212;
+    /* fond discret */
+    --color-warning-2: #151515;
+    /* fond de composant */
+    --color-warning-3: #1f1b15;
+    /* fond de composant, survol */
+    --color-warning-4: #25211b;
+    /* fond de composant, appui */
+    --color-warning-5: #2d271e;
+    /* bordure discrète */
+    --color-warning-6: #372f23;
+    /* bordure de composant */
+    --color-warning-7: #4f4029;
+    /* bordure d'interaction, focus (3:1) */
+    --color-warning-8: #82612a;
+    /* plein, survol */
+    --color-warning-10: #fbbb4d;
+    /* texte secondaire (4,5:1) */
+    --color-warning-11: #ffd595;
+    /* texte principal */
+    --color-warning-12: #fff0da;
+    /* texte posé sur les pas 9 et 10 (4,5:1) */
+    --color-warning-on-solid: #000000;
   }
 }
 
 @media (width < 600px) {
   :root {
     /* Écart entre deux sections de la page, la plus grande respiration verticale ; plus petit en étroit (largeur.etroit.tokens.json). */
-    --ecart-section: var(--espace-32);
+    --gap-section: var(--space-32);
     /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */
-    --typo-affichage-grand-font-family: var(--marque-police-titre);
+    --typography-display-large-font-family: var(--brand-font-heading);
     /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */
-    --typo-affichage-grand-font-size: var(--taille-texte-36);
+    --typography-display-large-font-size: var(--font-size-36);
     /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */
-    --typo-affichage-grand-font-weight: var(--graisse-700);
+    --typography-display-large-font-weight: var(--font-weight-700);
     /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */
-    --typo-affichage-grand-letter-spacing: 0px;
+    --typography-display-large-letter-spacing: 0px;
     /* Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit. */
-    --typo-affichage-grand-line-height: 1.3333;
+    --typography-display-large-line-height: 1.3333;
     /* Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit. */
-    --typo-affichage-moyen-font-family: var(--marque-police-titre);
+    --typography-display-medium-font-family: var(--brand-font-heading);
     /* Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit. */
-    --typo-affichage-moyen-font-size: var(--taille-texte-30);
+    --typography-display-medium-font-size: var(--font-size-30);
     /* Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit. */
-    --typo-affichage-moyen-font-weight: var(--graisse-700);
+    --typography-display-medium-font-weight: var(--font-weight-700);
     /* Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit. */
-    --typo-affichage-moyen-letter-spacing: 0px;
+    --typography-display-medium-letter-spacing: 0px;
     /* Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit. */
-    --typo-affichage-moyen-line-height: 1.3333;
+    --typography-display-medium-line-height: 1.3333;
     /* Titre de page ; ligne visée 40 px en large, 32 px en étroit. */
-    --typo-titre-1-font-family: var(--marque-police-titre);
+    --typography-heading-1-font-family: var(--brand-font-heading);
     /* Titre de page ; ligne visée 40 px en large, 32 px en étroit. */
-    --typo-titre-1-font-size: var(--taille-texte-24);
+    --typography-heading-1-font-size: var(--font-size-24);
     /* Titre de page ; ligne visée 40 px en large, 32 px en étroit. */
-    --typo-titre-1-font-weight: var(--graisse-700);
+    --typography-heading-1-font-weight: var(--font-weight-700);
     /* Titre de page ; ligne visée 40 px en large, 32 px en étroit. */
-    --typo-titre-1-letter-spacing: 0px;
+    --typography-heading-1-letter-spacing: 0px;
     /* Titre de page ; ligne visée 40 px en large, 32 px en étroit. */
-    --typo-titre-1-line-height: 1.3333;
+    --typography-heading-1-line-height: 1.3333;
     /* Titre de section ; ligne visée 32 px en large, 28 px en étroit. */
-    --typo-titre-2-font-family: var(--marque-police-titre);
+    --typography-heading-2-font-family: var(--brand-font-heading);
     /* Titre de section ; ligne visée 32 px en large, 28 px en étroit. */
-    --typo-titre-2-font-size: var(--taille-texte-20);
+    --typography-heading-2-font-size: var(--font-size-20);
     /* Titre de section ; ligne visée 32 px en large, 28 px en étroit. */
-    --typo-titre-2-font-weight: var(--graisse-700);
+    --typography-heading-2-font-weight: var(--font-weight-700);
     /* Titre de section ; ligne visée 32 px en large, 28 px en étroit. */
-    --typo-titre-2-letter-spacing: 0px;
+    --typography-heading-2-letter-spacing: 0px;
     /* Titre de section ; ligne visée 32 px en large, 28 px en étroit. */
-    --typo-titre-2-line-height: 1.4;
+    --typography-heading-2-line-height: 1.4;
     /* Titre de carte ; ligne visée 28 px en large, 24 px en étroit. */
-    --typo-titre-3-font-family: var(--marque-police-titre);
+    --typography-heading-3-font-family: var(--brand-font-heading);
     /* Titre de carte ; ligne visée 28 px en large, 24 px en étroit. */
-    --typo-titre-3-font-size: var(--taille-texte-18);
+    --typography-heading-3-font-size: var(--font-size-18);
     /* Titre de carte ; ligne visée 28 px en large, 24 px en étroit. */
-    --typo-titre-3-font-weight: var(--graisse-600);
+    --typography-heading-3-font-weight: var(--font-weight-600);
     /* Titre de carte ; ligne visée 28 px en large, 24 px en étroit. */
-    --typo-titre-3-letter-spacing: 0px;
+    --typography-heading-3-letter-spacing: 0px;
     /* Titre de carte ; ligne visée 28 px en large, 24 px en étroit. */
-    --typo-titre-3-line-height: 1.3333;
+    --typography-heading-3-line-height: 1.3333;
   }
 }

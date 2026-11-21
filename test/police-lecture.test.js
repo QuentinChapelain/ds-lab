@@ -68,7 +68,7 @@ test('L6 sans fichier : acceptée par ses noms, non contrôlée, couche marque i
   const r = saisir(entree(['Georgia', 'serif']), { dossier: '/ailleurs' });
   assert.deepEqual(r.motifs, []);
   assert.deepEqual(r.policeTitre, { familles: ['Georgia', 'serif'], controlee: false, fichiers: [] });
-  assert.deepEqual(r.marque.marque.police.titre, { $value: ['Georgia', 'serif'], $description: 'Police des styles affichage et titre 1 à 3.' });
+  assert.deepEqual(r.marque.brand.font.heading, { $value: ['Georgia', 'serif'], $description: 'Police des styles affichage et titre 1 à 3.' });
 });
 
 test('L7 avec fichiers : lus, familles en $value, chemins en $extensions', () => {
@@ -78,7 +78,7 @@ test('L7 avec fichiers : lus, familles en $value, chemins en $extensions', () =>
   assert.equal(r.policeTitre.fichiers.length, 1);
   assert.equal(r.policeTitre.fichiers[0].chemin, 'oswald/oswald-latin-wght-normal.woff2');
   assert.equal(r.policeTitre.fichiers[0].police.capitale, 810);
-  const t = r.marque.marque.police.titre;
+  const t = r.marque.brand.font.heading;
   assert.deepEqual(t.$value, ['Oswald', 'sans-serif']);
   assert.deepEqual(t.$extensions, { 'ds-lab.police': { fichiers: ['oswald/oswald-latin-wght-normal.woff2'] } });
 });

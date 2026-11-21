@@ -60,7 +60,7 @@ for (const nom of ['pieges', 'proximite']) {
 test('P4 marque : coul-06, simplement rattachée, est un rattachement non fait', () => {
   const t = R.marque.ajout.pertes;
   const rattachements = t.slice(t.indexOf('RATTACHEMENTS NON FAITS'), t.indexOf('HORS DE MODIFICATIONS.JSON')).split('\n');
-  assert.ok(rattachements.includes('- coul-06 : /marque/styles/marque.css:41 .onglet-actif { border-bottom-color } : var(--couleur-bleu-9, currentcolor). À faire : rattacher dans la source quand le composant sera refait.'), t);
+  assert.ok(rattachements.includes('- coul-06 : /marque/styles/marque.css:41 .onglet-actif { border-bottom-color } : var(--color-blue-9, currentcolor). À faire : rattacher dans la source quand le composant sera refait.'), t);
 });
 
 test('P5 proximité : aucune feuille ajoutée, .message rattachement non fait', () => {
@@ -94,8 +94,8 @@ for (const nom of ['pieges', 'proximite', 'marque']) {
 
 test('P7 marque : coul-09 et coul-11, cause « valeur en var() », à faire du fichier des pertes', () => {
   for (const [id, aFaire] of [
-    ['coul-09', 'si la valeur calculée est bien #8f8f8f, écris var(--couleur-neutre-11, var(--marque-secondary-color)) à la main.'],
-    ['coul-11', 'si la valeur calculée est bien #c8553d, écris var(--couleur-terre-11, var(--marque-accent-color)) à la main.'],
+    ['coul-09', 'si la valeur calculée est bien #8f8f8f, écris var(--color-neutral-11, var(--marque-secondary-color)) à la main.'],
+    ['coul-11', 'si la valeur calculée est bien #c8553d, écris var(--color-earth-11, var(--marque-accent-color)) à la main.'],
   ]) {
     const l = /** @type {any} */ (R.marque.verdict.lignes.find((x) => x.id === id));
     assert.ok(l.texte.endsWith(' ; cause : valeur en var()'), l.texte);

@@ -1,23 +1,23 @@
 {
   "$description": "Emplacements de l'aplat plein et du fond teinté de la marque, communs à toutes les marques. Format DTCG 2025.10. En clair, alias du plein et du pas 3 du primaire ; en sombre, la couche marque sombre fige l'aplat aux valeurs claires, pendant que le bouton prend la version lumineuse de la couleur du client (D04), et le fond teinté passe au pas 5 (mode.sombre.tokens.json).",
-  "marque": {
+  "brand": {
     "$type": "color",
-    "primaire": {
-      "aplat": {
-        "$value": "{marque.primaire.plein}",
-        "$description": "aplat plein (fond.marque.fort et bouton inversé) : plein du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json)"
+    "primary": {
+      "feature": {
+        "$value": "{brand.primary.solid}",
+        "$description": "aplat plein (background.brand.strong et bouton inversé) : plein du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json)"
       },
-      "sur-aplat": {
-        "$value": "{marque.primaire.sur-plein}",
-        "$description": "aplat plein (fond.marque.fort et bouton inversé) : sur-plein du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json)"
+      "on-feature": {
+        "$value": "{brand.primary.on-solid}",
+        "$description": "aplat plein (background.brand.strong et bouton inversé) : sur-plein du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json)"
       },
-      "aplat-survol": {
-        "$value": "{marque.primaire.plein-survol}",
-        "$description": "aplat plein (fond.marque.fort et bouton inversé) : plein-survol du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json)"
+      "feature-hover": {
+        "$value": "{brand.primary.solid-hover}",
+        "$description": "aplat plein (background.brand.strong et bouton inversé) : plein-survol du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json)"
       },
-      "teinte": {
-        "$value": "{marque.primaire.3}",
-        "$description": "fond teinté de la marque (fond.marque.teinte) : pas 3 du primaire en clair ; en sombre, pas 5 (mode.sombre.tokens.json)"
+      "tint": {
+        "$value": "{brand.primary.3}",
+        "$description": "fond teinté de la marque (background.brand.tint) : pas 3 du primaire en clair ; en sombre, pas 5 (mode.sombre.tokens.json)"
       }
     }
   }

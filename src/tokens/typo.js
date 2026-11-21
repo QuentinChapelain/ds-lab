@@ -1,11 +1,11 @@
 // @ts-check
 /**
- * Styles de texte de la couche sémantique (groupe typo, composites DTCG typography),
- * résolus vers taille-texte.*, graisse.* et marque.police.*. Tailles lues en px ou en rem (16 px = 1 rem).
+ * Styles de texte de la couche sémantique (groupe typography, composites DTCG),
+ * résolus vers font-size.*, font-weight.* et brand.font.*. Tailles lues en px ou en rem (16 px = 1 rem).
  * Interligne sans unité ; ligne = taille × interligne. La valeur en étroit est le style du contexte étroit
  * (largeur.etroit.tokens.json, lu par le resolver) quand il diffère du large ; seuil sur le modificateur largeur.
  * Affichage et titres 1 à 3 portent la consigne commune de hauteur de capitale ($extensions["ds-lab.hauteur-capitale"],
- * alias vers police.titre.hauteur-capitale), lue en large et en étroit.
+ * alias vers font.heading.cap-height), lue en large et en étroit.
  * Neuf règles (échec, code 1) ; le rapport de chaque style et les primitives sans rôle sont affichés sans seuil.
  */
 import { flattenTokens, tokenTypes, primitivesSansRole, resoudreAlias } from './roles.js';
@@ -16,18 +16,18 @@ const PAS = 4;
 const TOLERANCE = 0.01;
 const MIN_PX = 12;
 /** Affichage et titres, du plus grand au plus petit. */
-const ORDRE = ['affichage.grand', 'affichage.moyen', 'titre.1', 'titre.2', 'titre.3', 'titre.4'];
-/** Styles sur police.titre ; le libellé sur la police du produit (D44) ; tous les autres sur police.texte. */
-export const SUR_POLICE_TITRE = ['affichage.grand', 'affichage.moyen', 'titre.1', 'titre.2', 'titre.3'];
-const SUR_POLICE_PRODUIT = ['libelle'];
+const ORDRE = ['display.large', 'display.medium', 'heading.1', 'heading.2', 'heading.3', 'heading.4'];
+/** Styles sur brand.font.heading ; le libellé sur la police du produit (D44) ; tous les autres sur brand.font.body. */
+export const SUR_POLICE_TITRE = ['display.large', 'display.medium', 'heading.1', 'heading.2', 'heading.3'];
+const SUR_POLICE_PRODUIT = ['label'];
 /** Alias de police attendu d'un style. @param {string} style */
-const policeAttendue = (style) => (SUR_POLICE_TITRE.includes(style) ? '{marque.police.titre}' : SUR_POLICE_PRODUIT.includes(style) ? '{police.produit}' : '{marque.police.texte}');
+const policeAttendue = (style) => (SUR_POLICE_TITRE.includes(style) ? '{brand.font.heading}' : SUR_POLICE_PRODUIT.includes(style) ? '{font.product}' : '{brand.font.body}');
 /** Clé de la consigne commune de hauteur de capitale, dans $extensions d'un style de titre. */
 export const CONSIGNE = 'ds-lab.hauteur-capitale';
 /** Interlignes minimaux. */
 const INTERLIGNES_MIN = [
-  { id: 'corps-1-5', styles: ['corps.grand', 'corps.moyen'], min: 1.5 },
-  { id: 'petits-1-3', styles: ['corps.petit', 'libelle', 'mention'], min: 1.3 },
+  { id: 'corps-1-5', styles: ['body.large', 'body.medium'], min: 1.5 },
+  { id: 'petits-1-3', styles: ['body.small', 'label', 'supporting-text'], min: 1.3 },
 ];
 
 /**
@@ -89,7 +89,7 @@ export function typo(semantique, primitives, marque, largeurEtroite) {
   const styles = [];
   for (const [path, t] of sem) {
     if (path.endsWith('.$root') || types.get(path) !== 'typography') continue;
-    const style = path.replace(/^typo\./, '');
+    const style = path.replace(/^typography\./, '');
     const v = t.$value;
     const large = mesure(px(v.fontSize, `${style}.fontSize`, path), nombre(v.lineHeight, `${style}.lineHeight`, path), consigne(t, style, path));
     const te = semEtroit?.get(path);
@@ -151,8 +151,8 @@ export function typo(semantique, primitives, marque, largeurEtroite) {
     );
   regle(
     'corps-1rem',
-    `corps.moyen au moins 1 rem (${REM} px)`,
-    variantes(get('corps.moyen')).filter(([, m]) => m.taille < REM).map(([n, m]) => `corps.moyen en ${n} : ${fr(m.taille, D4)} px < ${REM} px (1 rem)`),
+    `body.medium au moins 1 rem (${REM} px)`,
+    variantes(get('body.medium')).filter(([, m]) => m.taille < REM).map(([n, m]) => `body.medium en ${n} : ${fr(m.taille, D4)} px < ${REM} px (1 rem)`),
   );
   regle(
     'min-12',
@@ -161,7 +161,7 @@ export function typo(semantique, primitives, marque, largeurEtroite) {
   );
   regle(
     'police',
-    'police par rôle : affichage et titres 1 à 3 sur police.titre, libellé sur police.produit, le reste sur police.texte',
+    'police par rôle : affichage et titres 1 à 3 sur brand.font.heading, libellé sur font.product, le reste sur brand.font.body',
     styles.flatMap((s) => {
       const attendu = policeAttendue(s.style);
       return s.police === attendu ? [] : [`${s.style} : ${s.police}, attendu ${attendu}`];
@@ -186,5 +186,5 @@ export function typo(semantique, primitives, marque, largeurEtroite) {
     ],
   );
 
-  return { styles, regles, fails: regles.filter((g) => !g.ok), sansRole: primitivesSansRole([semantique, largeurEtroite?.semantique ?? {}], [primitives], ['taille-texte', 'graisse']) };
+  return { styles, regles, fails: regles.filter((g) => !g.ok), sansRole: primitivesSansRole([semantique, largeurEtroite?.semantique ?? {}], [primitives], ['font-size', 'font-weight']) };
 }

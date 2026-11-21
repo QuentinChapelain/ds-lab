@@ -5,11 +5,11 @@
  * La page HTML guide : l'anneau des origines, ce qu'il reste à faire, les scores et leurs barres, le sommaire des
  * versions type par type, les fiches des types (toutes repliées ; un lien du sommaire vise le contenu d'une fiche, que le
  * navigateur ouvre), les non identifiés, « Comment lire ce constat » (replié) et les limites. Quatre explications (i), sur
- * les scores. Graphiques en SVG écrit par le rendu, couleurs d'origine des jetons communs (framework `texte.info`, équipe
- * `texte.principal`, navigateur nu `bordure.forte` hachuré), un espace de la surface entre deux segments ; chaque arc et
+ * les scores. Graphiques en SVG écrit par le rendu, couleurs d'origine des jetons communs (framework `text.info`, équipe
+ * `text.default`, navigateur nu `border.strong` hachuré), un espace de la surface entre deux segments ; chaque arc et
  * chaque segment a son texte de remplacement. Un seul fichier, lisible sur un téléphone : les captures y sont en data:, à la taille réelle de l'élément
  * (réduites seulement si elles dépassent la colonne) ; aucun script, aucune requête ; clair et sombre selon le système,
- * couleurs prises dans les rôles neutres communs des jetons (`couleursDuConstat`), accent : `texte.info`. Les étiquettes
+ * couleurs prises dans les rôles neutres communs des jetons (`couleursDuConstat`), accent : `text.info`. Les étiquettes
  * d'origine ont toutes le même style neutre. Toute chaîne venue de la page auditée est échappée.
  */
 import { readFileSync } from 'node:fs';
@@ -37,17 +37,17 @@ const SCORES = /** @type {const} */ ([
 
 /** Variable CSS du constat → rôle neutre commun (D47). */
 const ROLES_DU_CONSTAT = /** @type {Record<string, string>} */ ({
-  fond: 'fond.app',
-  'fond-discret': 'fond.discret',
-  surface: 'fond.surface',
-  texte: 'texte.principal',
-  doux: 'texte.secondaire',
-  trait: 'bordure.discrete',
-  'trait-fort': 'bordure.defaut',
-  'trait-soutenu': 'bordure.forte',
-  accent: 'texte.info',
-  'accent-fond': 'fond.info.discret',
-  'accent-trait': 'bordure.info',
+  fond: 'background.app',
+  'fond-doux': 'background.subtle',
+  surface: 'background.surface',
+  texte: 'text.default',
+  doux: 'text.secondary',
+  trait: 'border.subtle',
+  'trait-fort': 'border.default',
+  'trait-soutenu': 'border.strong',
+  accent: 'text.info',
+  'accent-fond': 'background.info.subtle',
+  'accent-trait': 'border.info',
 });
 
 /**
@@ -76,7 +76,7 @@ function couleursDuConstat() {
   return {
     clair: resolus(jeux(['primitives.tokens.json', 'statuts.tokens.json', 'semantique.tokens.json'])),
     sombre: resolus(jeux(['primitives.tokens.json', 'statuts.tokens.json', 'mode.sombre.tokens.json', 'semantique.tokens.json'])),
-    police: famille(lire('police.tokens.json').police.produit.$value),
+    police: famille(lire('police.tokens.json').font.product.$value),
   };
 }
 
@@ -261,7 +261,7 @@ ${t.fois ? encadreAFaire(t.aFaire) : ''}</article></details>`;
 const STYLE = (/** @type {ReturnType<typeof couleursDuConstat>} */ k) => {
   const vars = (/** @type {Record<string, string>} */ c) => Object.entries(c).map(([n, v]) => `--${n}: ${v};`).join(' ');
   return `
-:root { ${vars(k.clair)} --vignette: ${k.clair['fond-discret']}; color-scheme: light dark; }
+:root { ${vars(k.clair)} --vignette: ${k.clair['fond-doux']}; color-scheme: light dark; }
 @media (prefers-color-scheme: dark) { :root { ${vars(k.sombre)} } }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -312,7 +312,7 @@ details.code > summary { cursor: pointer; color: var(--doux); min-height: 24px; 
 details.code dl { margin: 6px 0 0; }
 details.code dt { color: var(--doux); font-size: 14px; margin-top: 6px; }
 details.code dd { margin: 0; overflow-wrap: anywhere; }
-pre { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--fond-discret); padding: 8px; border-radius: 6px; margin: 4px 0; font-size: 13px; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--fond-doux); padding: 8px; border-radius: 6px; margin: 4px 0; font-size: 13px; }
 ul.apparences { list-style: none; padding: 0; margin: 0; }
 ul.apparences li { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
 .mini { flex: 0 0 auto; max-width: 120px; background: var(--vignette); border-radius: 6px; padding: 4px; }

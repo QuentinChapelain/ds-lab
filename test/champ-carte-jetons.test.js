@@ -4,14 +4,14 @@
  *
  * Attendus écrits à la main avant le code (19/11/2026, docs/attendus/champ-carte.md) ; couleurs lues dans les jetons
  * par un résolveur écrit à part, rapports par culori 4.0.2 (wcagContrast) ; script et commande dans l'attendu :
- *   H1 rôle ajouté : arrondi.surface → {rayon.12}, 12 px dans les dix thèmes ; aucun rôle de couleur ajouté ;
+ *   H1 rôle ajouté : border-radius.surface → {radius.12}, 12 px dans les dix thèmes ; aucun rôle de couleur ajouté ;
  *   H2 rapports du tableau de l'attendu, recopiés ci-dessous : neutres et statuts, les mêmes dans les cinq marques par
- *      mode ; anneau de focus par thème ; le contour du champ (bordure.forte) et celui de l'erreur tiennent 3:1 sur la
- *      page et sur la surface, bordure.defaut reste sous 3 (jamais pour un champ), les textes tiennent 4,5:1 ;
+ *      mode ; anneau de focus par thème ; le contour du champ (border.strong) et celui de l'erreur tiennent 3:1 sur la
+ *      page et sur la surface, border.default reste sous 3 (jamais pour un champ), les textes tiennent 4,5:1 ;
  *   H3 variables ds- ajoutées à la table Vuetify : couleurs égales à leurs rôles, dimensions, styles de texte (corps
  *      moyen, mention, titre de carte) et consigne de hauteur de capitale, dans les dix thèmes ; le contour de la carte
  *      est sans paire, décoratif ;
- *   H4 descriptions corrigées de bordure.defaut et fond.composant, mot pour mot (bordure.defaut garde la formule que
+ *   H4 descriptions corrigées de border.default et background.component, mot pour mot (border.default garde la formule que
  *      T1 de test/roles-semantique.test.js exige, « jamais seule pour repérer un champ ou un état » : correction de
  *      l'attendu).
  */
@@ -30,33 +30,33 @@ const MODES = /** @type {const} */ (['clair', 'sombre']);
 
 /** Paires communes : [devant, fond, clair : devant, fond, rapport, sombre : devant, fond, rapport]. */
 const PAIRES = [
-  ['bordure.forte', 'fond.surface', '#958f84', '#ffffff', 3.21, '#6a665c', '#181818', 3.1],
-  ['bordure.forte', 'fond.app', '#958f84', '#fbfbfb', 3.1, '#6a665c', '#121212', 3.27],
-  ['bordure.defaut', 'fond.surface', '#bfbbb5', '#ffffff', 1.91, '#45423b', '#181818', 1.77],
-  ['bordure.defaut', 'fond.app', '#bfbbb5', '#fbfbfb', 1.85, '#45423b', '#121212', 1.87],
-  ['bordure.erreur', 'fond.surface', '#e76862', '#ffffff', 3.2, '#c6232c', '#181818', 3.11],
-  ['bordure.erreur', 'fond.app', '#e76862', '#fbfbfb', 3.1, '#c6232c', '#121212', 3.28],
-  ['texte.secondaire', 'fond.surface', '#6d675b', '#ffffff', 5.61, '#8f8b81', '#181818', 5.22],
-  ['texte.secondaire', 'fond.app', '#6d675b', '#fbfbfb', 5.42, '#8f8b81', '#121212', 5.51],
-  ['texte.erreur', 'fond.surface', '#cb1d2a', '#ffffff', 5.6, '#ff978f', '#181818', 8.52],
-  ['texte.erreur', 'fond.app', '#cb1d2a', '#fbfbfb', 5.41, '#ff978f', '#121212', 8.99],
-  ['texte.principal', 'fond.surface', '#363026', '#ffffff', 13.06, '#d8d5ce', '#181818', 12.12],
-  ['texte.principal', 'fond.app', '#363026', '#fbfbfb', 12.62, '#d8d5ce', '#121212', 12.78],
-  ['texte.desactive', 'fond.desactive', '#8a8478', '#f3f2f1', 3.32, '#7d786c', '#1b1b1b', 3.92],
-  ['bordure.discrete', 'fond.app', '#d8d6d2', '#fbfbfb', 1.4, '#303030', '#121212', 1.42],
-  ['fond.surface', 'fond.app', '#ffffff', '#fbfbfb', 1.03, '#181818', '#121212', 1.06],
-  ['bordure.defaut', 'bordure.forte', '#bfbbb5', '#958f84', 1.68, '#45423b', '#6a665c', 1.75],
+  ['border.strong', 'background.surface', '#958f84', '#ffffff', 3.21, '#6a665c', '#181818', 3.1],
+  ['border.strong', 'background.app', '#958f84', '#fbfbfb', 3.1, '#6a665c', '#121212', 3.27],
+  ['border.default', 'background.surface', '#bfbbb5', '#ffffff', 1.91, '#45423b', '#181818', 1.77],
+  ['border.default', 'background.app', '#bfbbb5', '#fbfbfb', 1.85, '#45423b', '#121212', 1.87],
+  ['border.error', 'background.surface', '#e76862', '#ffffff', 3.2, '#c6232c', '#181818', 3.11],
+  ['border.error', 'background.app', '#e76862', '#fbfbfb', 3.1, '#c6232c', '#121212', 3.28],
+  ['text.secondary', 'background.surface', '#6d675b', '#ffffff', 5.61, '#8f8b81', '#181818', 5.22],
+  ['text.secondary', 'background.app', '#6d675b', '#fbfbfb', 5.42, '#8f8b81', '#121212', 5.51],
+  ['text.error', 'background.surface', '#cb1d2a', '#ffffff', 5.6, '#ff978f', '#181818', 8.52],
+  ['text.error', 'background.app', '#cb1d2a', '#fbfbfb', 5.41, '#ff978f', '#121212', 8.99],
+  ['text.default', 'background.surface', '#363026', '#ffffff', 13.06, '#d8d5ce', '#181818', 12.12],
+  ['text.default', 'background.app', '#363026', '#fbfbfb', 12.62, '#d8d5ce', '#121212', 12.78],
+  ['text.disabled', 'background.disabled', '#8a8478', '#f3f2f1', 3.32, '#7d786c', '#1b1b1b', 3.92],
+  ['border.subtle', 'background.app', '#d8d6d2', '#fbfbfb', 1.4, '#303030', '#121212', 1.42],
+  ['background.surface', 'background.app', '#ffffff', '#fbfbfb', 1.03, '#181818', '#121212', 1.06],
+  ['border.default', 'border.strong', '#bfbbb5', '#958f84', 1.68, '#45423b', '#6a665c', 1.75],
 ];
 /** Seuils de l'attendu : [devant, fond, seuil, passe]. */
 const SEUILS = [
-  ['bordure.forte', 'fond.surface', 3, true], ['bordure.forte', 'fond.app', 3, true],
-  ['bordure.erreur', 'fond.surface', 3, true], ['bordure.erreur', 'fond.app', 3, true],
-  ['bordure.defaut', 'fond.surface', 3, false], ['bordure.defaut', 'fond.app', 3, false],
-  ['texte.secondaire', 'fond.surface', 4.5, true], ['texte.secondaire', 'fond.app', 4.5, true],
-  ['texte.erreur', 'fond.surface', 4.5, true], ['texte.erreur', 'fond.app', 4.5, true],
-  ['texte.principal', 'fond.surface', 4.5, true], ['texte.principal', 'fond.app', 4.5, true],
+  ['border.strong', 'background.surface', 3, true], ['border.strong', 'background.app', 3, true],
+  ['border.error', 'background.surface', 3, true], ['border.error', 'background.app', 3, true],
+  ['border.default', 'background.surface', 3, false], ['border.default', 'background.app', 3, false],
+  ['text.secondary', 'background.surface', 4.5, true], ['text.secondary', 'background.app', 4.5, true],
+  ['text.error', 'background.surface', 4.5, true], ['text.error', 'background.app', 4.5, true],
+  ['text.default', 'background.surface', 4.5, true], ['text.default', 'background.app', 4.5, true],
 ];
-/** Anneau de focus par thème : [couleur, sur fond.surface, sur fond.app]. */
+/** Anneau de focus par thème : [couleur, sur background.surface, sur background.app]. */
 const FOCUS = {
   'atelier-lavandine-clair': ['#8247ce', 5.61, 5.42],
   'atelier-lavandine-sombre': ['#c4a4fe', 8.53, 9.0],
@@ -71,24 +71,24 @@ const FOCUS = {
 };
 /** Variables ajoutées, hors couleurs et polices, les mêmes dans les dix thèmes. */
 const VALEURS = {
-  'ds-arrondi-surface': '12px',
-  'ds-ecart-dans-composant': '4px',
-  'ds-ecart-entre-composants': '16px',
-  'ds-corps-taille': '16px',
-  'ds-corps-graisse': '400',
-  'ds-corps-interligne': '1.5',
-  'ds-mention-taille': '12px',
-  'ds-mention-graisse': '400',
-  'ds-mention-interligne': '1.3333',
-  'ds-titre-carte-taille': '20px',
-  'ds-titre-carte-graisse': '600',
-  'ds-titre-carte-interligne': '1.4',
-  'ds-titre-carte-hauteur-capitale': '0.7',
+  'ds-border-radius-surface': '12px',
+  'ds-gap-within-component': '4px',
+  'ds-gap-between-components': '16px',
+  'ds-body-font-size': '16px',
+  'ds-body-font-weight': '400',
+  'ds-body-line-height': '1.5',
+  'ds-supporting-text-font-size': '12px',
+  'ds-supporting-text-font-weight': '400',
+  'ds-supporting-text-line-height': '1.3333',
+  'ds-card-title-font-size': '20px',
+  'ds-card-title-font-weight': '600',
+  'ds-card-title-line-height': '1.4',
+  'ds-card-title-cap-height': '0.7',
 };
 /** Variables de couleur ajoutées → leur rôle. */
-const COULEURS = { 'ds-texte-secondaire': 'texte.secondaire', 'ds-texte-erreur': 'texte.erreur', 'ds-contour-erreur': 'bordure.erreur', 'ds-contour-carte': 'bordure.defaut' };
+const COULEURS = { 'ds-text-secondary': 'text.secondary', 'ds-text-error': 'text.error', 'ds-border-error': 'border.error', 'ds-card-border': 'border.default' };
 /** Variables de police ajoutées → la police du thème qu'elles reprennent. */
-const POLICES = { 'ds-corps-police': 'font-body', 'ds-mention-police': 'font-body', 'ds-titre-carte-police': 'font-heading' };
+const POLICES = { 'ds-body-font-family': 'font-body', 'ds-supporting-text-font-family': 'font-body', 'ds-card-title-font-family': 'font-heading' };
 
 /** Rapport culori à deux décimales. @param {string} a @param {string} b */
 const r2 = (a, b) => Math.round(wcagContrast(a, b) * 100) / 100;
@@ -108,14 +108,14 @@ function theme(marque, mode) {
   return { hex, jetons, roles };
 }
 
-test('H1 arrondi de surface : {rayon.12}, 12 px dans les dix thèmes', () => {
+test('H1 arrondi de surface : {radius.12}, 12 px dans les dix thèmes', () => {
   const sem = charger('semantique.tokens.json');
-  assert.equal(sem.arrondi.surface.$value, '{rayon.12}');
+  assert.equal(sem['border-radius'].surface.$value, '{radius.12}');
   for (const m of MARQUES) for (const mode of MODES) {
     const { jetons } = theme(m, mode);
-    const { valeur } = resoudreAlias(jetons, '{rayon.12}', { depuis: 'arrondi.surface', chaine: ['arrondi.surface'] });
+    const { valeur } = resoudreAlias(jetons, '{radius.12}', { depuis: 'border-radius.surface', chaine: ['border-radius.surface'] });
     assert.deepEqual(valeur, { value: 12, unit: 'px' }, `${m}-${mode}`);
-    assert.equal(jetons.get('arrondi.surface')?.$value, '{rayon.12}', `${m}-${mode}`);
+    assert.equal(jetons.get('border-radius.surface')?.$value, '{radius.12}', `${m}-${mode}`);
   }
 });
 
@@ -133,15 +133,15 @@ test('H2 rapports du champ et de la carte, dans les dix thèmes', () => {
       assert.equal(r >= /** @type {number} */ (seuil), passe, `${nom} : ${devant} sur ${fond} ${r.toFixed(2)} contre ${seuil}`);
     }
     const [c, surface, app] = FOCUS[/** @type {keyof typeof FOCUS} */ (nom)];
-    assert.deepEqual([hex('bordure.focus'), r2(hex('bordure.focus'), hex('fond.surface')), r2(hex('bordure.focus'), hex('fond.app'))], [c, surface, app], `${nom} : focus`);
+    assert.deepEqual([hex('border.focus'), r2(hex('border.focus'), hex('background.surface')), r2(hex('border.focus'), hex('background.app'))], [c, surface, app], `${nom} : focus`);
   }
 });
 
 test('H3 variables ds- du champ et de la carte, dans les dix thèmes', () => {
   const table = lireTable();
-  assert.equal(table.variables['ds-contour-carte'].jeton, 'bordure.defaut');
-  assert.match(String(table.variables['ds-contour-carte'].sansPaire), /décorative/);
-  assert.equal(table.variables['ds-titre-carte-hauteur-capitale'].jeton, 'police.titre.hauteur-capitale');
+  assert.equal(table.variables['ds-card-border'].jeton, 'border.default');
+  assert.match(String(table.variables['ds-card-border'].sansPaire), /décorative/);
+  assert.equal(table.variables['ds-card-title-cap-height'].jeton, 'font.heading.cap-height');
   for (const m of MARQUES) {
     const themes = Object.values(themesVuetify(join(ROOT, 'tokens', m)).themes);
     for (const [i, mode] of MODES.entries()) {
@@ -157,9 +157,9 @@ test('H3 variables ds- du champ et de la carte, dans les dix thèmes', () => {
 test('H4 descriptions corrigées', () => {
   const sem = charger('semantique.tokens.json');
   // Réécrites pour le lecteur des fiches (DOC3, D57) ; le texte d'avant reste dans la note de l'équipe, mot pour mot.
-  assert.equal(sem.bordure.defaut.$description, 'Contour ordinaire d\'une carte ou d\'un séparateur, décoratif, jamais seule pour repérer un champ ou un état.');
-  assert.equal(sem.bordure.defaut.$extensions['ds-lab.note'], 'Contour ordinaire d\'une carte ou d\'un séparateur, décoratif, jamais seule pour repérer un champ ou un état (sous 3:1 : un champ prend bordure.forte).');
-  // DsTag ne lit plus fond.composant (fond.teinte, docs/attendus/carte-membre-liste.md) : l'exemple d'usage est retiré.
-  assert.equal(sem.fond.composant.$root.$description, 'Fond d\'un composant au repos, plus soutenu que la surface.');
-  assert.equal(sem.fond.composant.$root.$extensions['ds-lab.note'], 'Fond d\'un composant au repos, plus soutenu que la surface ; un champ, une carte et le bouton secondaire se posent sur fond.surface.');
+  assert.equal(sem.border.default.$description, 'Contour ordinaire d\'une carte ou d\'un séparateur, décoratif, jamais seule pour repérer un champ ou un état.');
+  assert.equal(sem.border.default.$extensions['ds-lab.note'], 'Contour ordinaire d\'une carte ou d\'un séparateur, décoratif, jamais seule pour repérer un champ ou un état (sous 3:1 : un champ prend border.strong).');
+  // DsTag ne lit plus background.component (background.tint, docs/attendus/carte-membre-liste.md) : l'exemple d'usage est retiré.
+  assert.equal(sem.background.component.$root.$description, 'Fond d\'un composant au repos, plus soutenu que la surface.');
+  assert.equal(sem.background.component.$root.$extensions['ds-lab.note'], 'Fond d\'un composant au repos, plus soutenu que la surface ; un champ, une carte et le bouton secondaire se posent sur background.surface.');
 });

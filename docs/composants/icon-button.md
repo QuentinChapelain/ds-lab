@@ -70,35 +70,35 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 
 | Partie | Token | Ce qu'il règle |
 |---|---|---|
-| Couleur, au focus | `bordure.focus` | Anneau de focus clavier, autour du composant qui a le focus. |
-| Couleur, disabled | `fond.desactive` | Fond d'un composant désactivé, quelle que soit sa variante (bouton plein ou secondaire). |
-| Couleur, disabled | `texte.desactive` | Texte d'un composant désactivé, sur son fond ou sur la page. |
-| Couleur, variant ghost | `texte.interactif` | Texte d'un lien ou d'une action sans fond plein. |
-| Couleur, variant ghost, au survol | `fond.interactif.discret` | Fond teinté d'un élément interactif peu appuyé, comme un bouton léger ou une ligne sélectionnée. |
-| Couleur, variant secondary | `fond.surface` | Fond d'une carte ou d'un champ, posé sur le fond de la page. |
-| Couleur, variant secondary | `texte.principal` | Texte courant et titres. |
-| Couleur, variant secondary | `bordure.forte` | Contour qui suffit à repérer un champ ou une case à cocher. |
-| Couleur, variant secondary, au survol | `fond.composant.survol` | Fond d'un composant survolé par le pointeur. |
-| Couleur, variant secondary, au survol | `texte.principal` | Texte courant et titres. |
-| Couleur, variant secondary, disabled | `bordure.discrete` | Séparateur léger entre deux zones, décoratif, jamais seule pour repérer un champ ou un état. |
-| Couleur, variant primary | `fond.interactif.fort` | Plein de l'action principale, comme le bouton qui valide. |
-| Couleur, variant primary | `texte.sur-interactif` | Texte posé sur le plein de l'action principale, au repos comme au survol. |
-| Couleur, variant primary, au survol | `fond.interactif.fort.survol` | Plein de l'action principale survolée. |
-| Couleur, variant primary, au survol | `texte.sur-interactif` | Texte posé sur le plein de l'action principale, au repos comme au survol. |
-| Couleur, variant danger-ghost | `texte.erreur` | Texte d'un message d'erreur. |
-| Couleur, variant danger-ghost, au survol | `fond.erreur.discret` | Fond léger d'un message ou d'un champ en erreur. |
-| Forme | `arrondi.controle` | Arrondi d'un contrôle, comme un bouton ou un champ, le même à toutes les tailles. |
-| Forme | `hauteur.controle.normale` | Hauteur d'un contrôle de taille normale, comme un bouton. |
-| Forme | `taille-icone.normale` | Icône d'un contrôle de taille normale. |
-| Forme | `ecart.icone-texte` | Écart entre l'icône et le texte d'un contrôle, comme un bouton ou un champ. |
-| Forme | `marge-interieure.composant` | Marge intérieure d'un composant à bord visible, comme une carte, un encadré ou une zone de formulaire. |
-| Forme, au focus | `epaisseur.focus` | Épaisseur de l'anneau de focus clavier. |
-| Forme, au focus | `decalage.focus` | Décalage de l'anneau de focus clavier hors du composant, pour qu'il se pose sur le fond de la page et jamais sur le plein. |
-| Forme, size medium | `hauteur.controle.normale` | Hauteur d'un contrôle de taille normale, comme un bouton. |
-| Forme, size small | `hauteur.controle.petite` | Hauteur d'un contrôle de petite taille, comme un bouton. |
-| Forme, size small | `taille-icone.petite` | Icône d'un contrôle de petite taille. |
-| Forme, variant secondary | `epaisseur.contour` | Épaisseur du contour d'un contrôle, comme le bouton secondaire. |
-| Texte | `typo.libelle` | Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. |
+| Couleur, au focus | `border.focus` | Anneau de focus clavier, autour du composant qui a le focus. |
+| Couleur, disabled | `background.disabled` | Fond d'un composant désactivé, quelle que soit sa variante (bouton plein ou secondaire). |
+| Couleur, disabled | `text.disabled` | Texte d'un composant désactivé, sur son fond ou sur la page. |
+| Couleur, variant ghost | `text.interactive` | Texte d'un lien ou d'une action sans fond plein. |
+| Couleur, variant ghost, au survol | `background.interactive.subtle` | Fond teinté d'un élément interactif peu appuyé, comme un bouton léger ou une ligne sélectionnée. |
+| Couleur, variant secondary | `background.surface` | Fond d'une carte ou d'un champ, posé sur le fond de la page. |
+| Couleur, variant secondary | `text.default` | Texte courant et titres. |
+| Couleur, variant secondary | `border.strong` | Contour qui suffit à repérer un champ ou une case à cocher. |
+| Couleur, variant secondary, au survol | `background.component.hover` | Fond d'un composant survolé par le pointeur. |
+| Couleur, variant secondary, au survol | `text.default` | Texte courant et titres. |
+| Couleur, variant secondary, disabled | `border.subtle` | Séparateur léger entre deux zones, décoratif, jamais seule pour repérer un champ ou un état. |
+| Couleur, variant primary | `background.interactive.strong` | Plein de l'action principale, comme le bouton qui valide. |
+| Couleur, variant primary | `text.on-interactive` | Texte posé sur le plein de l'action principale, au repos comme au survol. |
+| Couleur, variant primary, au survol | `background.interactive.strong.hover` | Plein de l'action principale survolée. |
+| Couleur, variant primary, au survol | `text.on-interactive` | Texte posé sur le plein de l'action principale, au repos comme au survol. |
+| Couleur, variant danger-ghost | `text.error` | Texte d'un message d'erreur. |
+| Couleur, variant danger-ghost, au survol | `background.error.subtle` | Fond léger d'un message ou d'un champ en erreur. |
+| Forme | `border-radius.control` | Arrondi d'un contrôle, comme un bouton ou un champ, le même à toutes les tailles. |
+| Forme | `height.control.medium` | Hauteur d'un contrôle de taille normale, comme un bouton. |
+| Forme | `icon-size.medium` | Icône d'un contrôle de taille normale. |
+| Forme | `gap.icon-text` | Écart entre l'icône et le texte d'un contrôle, comme un bouton ou un champ. |
+| Forme | `padding.component` | Marge intérieure d'un composant à bord visible, comme une carte, un encadré ou une zone de formulaire. |
+| Forme, au focus | `border-width.focus` | Épaisseur de l'anneau de focus clavier. |
+| Forme, au focus | `offset.focus` | Décalage de l'anneau de focus clavier hors du composant, pour qu'il se pose sur le fond de la page et jamais sur le plein. |
+| Forme, size medium | `height.control.medium` | Hauteur d'un contrôle de taille normale, comme un bouton. |
+| Forme, size small | `height.control.small` | Hauteur d'un contrôle de petite taille, comme un bouton. |
+| Forme, size small | `icon-size.small` | Icône d'un contrôle de petite taille. |
+| Forme, variant secondary | `border-width.default` | Épaisseur du contour d'un contrôle, comme le bouton secondaire. |
+| Texte | `typography.label` | Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit. |
 <!-- /genere:tokens -->
 
 ## Accessibilité
@@ -111,19 +111,19 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 <!-- genere:contrastes : écrit par npm --prefix atelier run fiches -->
 | Devant | Fond | Plus bas des 10 thèmes | Seuil |
 |---|---|---|---|
-| `texte.principal` | `fond.surface` | 12,12:1 (Atelier Lavandine, sombre) | 4,50:1 |
-| `texte.sur-interactif` | `fond.interactif.fort` | 5,01:1 (Atelier Lavandine, clair) | 4,50:1 |
-| `texte.sur-interactif` | `fond.interactif.fort.survol` | 6,26:1 (Atelier Lavandine, clair) | 4,50:1 |
-| `texte.sur-erreur` | `fond.erreur.fort` | 5,60:1 (Atelier Lavandine, clair) | 4,50:1 |
-| `texte.sur-erreur` | `fond.erreur.fort.survol` | 6,82:1 (Atelier Lavandine, clair) | 4,50:1 |
-| `texte.principal` | `fond.composant.survol` | 10,96:1 (Atelier Lavandine, clair) | 4,50:1 |
-| `texte.interactif` | `fond.interactif.discret` | 5,03:1 (Écume et Sel, clair) | 4,50:1 |
-| `texte.erreur` | `fond.erreur.discret` | 5,06:1 (Atelier Lavandine, clair) | 4,50:1 |
-| `texte.desactive` | `fond.desactive` | 3,32:1 (Atelier Lavandine, clair) | 4,50:1, exception écrite |
-| `bordure.focus` | `fond.app` | 5,40:1 (Orbe Café, clair) | 3,00:1 |
-| `bordure.focus` | `fond.surface` | 5,59:1 (Orbe Café, clair) | 3,00:1 |
-| `bordure.forte` | `fond.app` | 3,10:1 (Atelier Lavandine, clair) | 3,00:1 |
-| `bordure.forte` | `fond.surface` | 3,10:1 (Atelier Lavandine, sombre) | 3,00:1 |
+| `text.default` | `background.surface` | 12,12:1 (Atelier Lavandine, sombre) | 4,50:1 |
+| `text.on-interactive` | `background.interactive.strong` | 5,01:1 (Atelier Lavandine, clair) | 4,50:1 |
+| `text.on-interactive` | `background.interactive.strong.hover` | 6,26:1 (Atelier Lavandine, clair) | 4,50:1 |
+| `text.on-error` | `background.error.strong` | 5,60:1 (Atelier Lavandine, clair) | 4,50:1 |
+| `text.on-error` | `background.error.strong.hover` | 6,82:1 (Atelier Lavandine, clair) | 4,50:1 |
+| `text.default` | `background.component.hover` | 10,96:1 (Atelier Lavandine, clair) | 4,50:1 |
+| `text.interactive` | `background.interactive.subtle` | 5,03:1 (Écume et Sel, clair) | 4,50:1 |
+| `text.error` | `background.error.subtle` | 5,06:1 (Atelier Lavandine, clair) | 4,50:1 |
+| `text.disabled` | `background.disabled` | 3,32:1 (Atelier Lavandine, clair) | 4,50:1, exception écrite |
+| `border.focus` | `background.app` | 5,40:1 (Orbe Café, clair) | 3,00:1 |
+| `border.focus` | `background.surface` | 5,59:1 (Orbe Café, clair) | 3,00:1 |
+| `border.strong` | `background.app` | 3,10:1 (Atelier Lavandine, clair) | 3,00:1 |
+| `border.strong` | `background.surface` | 3,10:1 (Atelier Lavandine, sombre) | 3,00:1 |
 <!-- /genere:contrastes -->
 
 ## En situation

@@ -1,265 +1,265 @@
 {
-  "$description": "Rôles de couleur (14/11/2026), d'espacement par relation et styles de texte (15/11/2026) communs à toutes les marques. Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json, statuts.tokens.json et marque.tokens.json pour les couleurs, vers espace.* de primitives.tokens.json pour les espacements, vers taille-texte.*, graisse.*, marque.police.* et police.produit (libellé, D44) pour les styles de texte (typo, composites DTCG typography, interligne sans unité) ; les couleurs de marque et tous les pleins, statuts compris, passent par marque.<emplacement>.* (Orbe Café : primaire = bleu, accent = terre). Arrondis, hauteurs, épaisseurs, décalages et tailles d'icône des contrôles (18/11/2026), arrondi des surfaces (19/11/2026), largeur de colonne (20/11/2026), vers rayon.*, taille.* et trait.* de primitives.tokens.json ; aucun groupe de rôles ne porte le nom d'un groupe de primitives. Paires de contraste déclarées dans paires.json.",
-  "fond": {
+  "$description": "Rôles de couleur (14/11/2026), d'espacement par relation et styles de texte (15/11/2026) communs à toutes les marques. Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json, statuts.tokens.json et marque.tokens.json pour les couleurs, vers space.* de primitives.tokens.json pour les espacements, vers font-size.*, font-weight.*, brand.font.* et font.product (libellé, D44) pour les styles de texte (typo, composites DTCG typography, interligne sans unité) ; les couleurs de marque et tous les pleins, statuts compris, passent par brand.<emplacement>.* (Orbe Café : primaire = bleu, accent = terre). Arrondis, hauteurs, épaisseurs, décalages et tailles d'icône des contrôles (18/11/2026), arrondi des surfaces (19/11/2026), largeur de colonne (20/11/2026), vers radius.*, size.* et stroke.* de primitives.tokens.json ; aucun groupe de rôles ne porte le nom d'un groupe de primitives. Paires de contraste déclarées dans paires.json.",
+  "background": {
     "$type": "color",
     "$description": "Surfaces sur lesquelles se posent texte et bordures.",
     "app": {
-      "$value": "{couleur.neutre.1}",
+      "$value": "{color.neutral.1}",
       "$description": "Fond de la page entière, sous tout le reste."
     },
-    "discret": {
-      "$value": "{couleur.neutre.2}",
+    "subtle": {
+      "$value": "{color.neutral.2}",
       "$description": "Zone qui se distingue à peine du fond de page, comme un panneau latéral ou une bande."
     },
     "surface": {
-      "$value": "{couleur.surface}",
+      "$value": "{color.surface}",
       "$description": "Fond d'une carte ou d'un champ, posé sur le fond de la page.",
       "$extensions": {
         "ds-lab.note": "Fond blanc d'une carte ou d'un champ, posé sur le fond de page."
       }
     },
     "inverse": {
-      "$value": "{couleur.neutre.12}",
+      "$value": "{color.neutral.12}",
       "$description": "Fond sombre d'une zone inversée, comme un pied de page ou une bulle d'aide."
     },
-    "composant": {
+    "component": {
       "$root": {
-        "$value": "{couleur.neutre.3}",
+        "$value": "{color.neutral.3}",
         "$description": "Fond d'un composant au repos, plus soutenu que la surface.",
         "$extensions": {
-          "ds-lab.note": "Fond d'un composant au repos, plus soutenu que la surface ; un champ, une carte et le bouton secondaire se posent sur fond.surface."
+          "ds-lab.note": "Fond d'un composant au repos, plus soutenu que la surface ; un champ, une carte et le bouton secondaire se posent sur background.surface."
         }
       },
-      "survol": {
-        "$value": "{couleur.neutre.4}",
+      "hover": {
+        "$value": "{color.neutral.4}",
         "$description": "Fond d'un composant survolé par le pointeur."
       },
-      "appui": {
-        "$value": "{couleur.neutre.5}",
+      "pressed": {
+        "$value": "{color.neutral.5}",
         "$description": "Fond d'un composant pendant l'appui, ou sélectionné."
       }
     },
-    "teinte": {
-      "$value": "{couleur.teinte}",
+    "tint": {
+      "$value": "{color.tint}",
       "$description": "Fond teinté d'une pièce statique qui porte un texte court pour classer, posée sur la page ou sur une surface ; jamais un fond cliquable.",
       "$extensions": {
-        "ds-lab.note": "Pas 3 du neutre en clair, pas 5 en sombre, par l'emplacement couleur.teinte (D59) : en sombre, le pas 3 ne se détachait pas d'une surface (1,03:1). Lu par DsTag neutre."
+        "ds-lab.note": "Pas 3 du neutre en clair, pas 5 en sombre, par l'emplacement color.tint (D59) : en sombre, le pas 3 ne se détachait pas d'une surface (1,03:1). Lu par DsTag neutre."
       }
     },
-    "interactif": {
-      "discret": {
-        "$value": "{marque.primaire.3}",
+    "interactive": {
+      "subtle": {
+        "$value": "{brand.primary.3}",
         "$description": "Fond teinté d'un élément interactif peu appuyé, comme un bouton léger ou une ligne sélectionnée."
       },
-      "fort": {
+      "strong": {
         "$root": {
-          "$value": "{marque.primaire.plein}",
+          "$value": "{brand.primary.solid}",
           "$description": "Plein de l'action principale, comme le bouton qui valide."
         },
-        "survol": {
-          "$value": "{marque.primaire.plein-survol}",
+        "hover": {
+          "$value": "{brand.primary.solid-hover}",
           "$description": "Plein de l'action principale survolée."
         }
       },
       "inverse": {
-        "$value": "{marque.primaire.sur-aplat}",
-        "$description": "Fond du bouton inversé, réservé à fond.marque.fort : la valeur du texte posé sur le plein de la marque."
+        "$value": "{brand.primary.on-feature}",
+        "$description": "Fond du bouton inversé, réservé à background.brand.strong : la valeur du texte posé sur le plein de la marque."
       }
     },
     "accent": {
-      "discret": {
-        "$value": "{marque.accent.3}",
+      "subtle": {
+        "$value": "{brand.accent.3}",
         "$description": "Aplat clair de l'accent, non cliquable, comme un encadré ; sans accent, le neutre."
       },
-      "fort": {
-        "$value": "{marque.accent.plein}",
+      "strong": {
+        "$value": "{brand.accent.solid}",
         "$description": "Plein qui met en avant sans appeler à l'action, sur de petites surfaces, comme une étiquette."
       }
     },
-    "marque": {
-      "discret": {
-        "$value": "{marque.primaire.3}",
+    "brand": {
+      "subtle": {
+        "$value": "{brand.primary.3}",
         "$description": "Aplat clair de la marque, non cliquable, comme un bandeau, une section ou un encadré."
       },
-      "teinte": {
-        "$value": "{marque.primaire.teinte}",
+      "tint": {
+        "$value": "{brand.primary.tint}",
         "$description": "Fond teinté de la marque d'une pièce statique qui porte un texte court ou des initiales pour mettre en avant, posée sur la page ou sur une surface ; jamais un fond cliquable.",
         "$extensions": {
-          "ds-lab.note": "Pas 3 du primaire en clair, pas 5 en sombre, par l'emplacement marque.primaire.teinte (D59) : en sombre, le pas 3 ne se détachait pas d'une surface (1,03:1). Lu par DsTag marque et DsAvatar."
+          "ds-lab.note": "Pas 3 du primaire en clair, pas 5 en sombre, par l'emplacement brand.primary.tint (D59) : en sombre, le pas 3 ne se détachait pas d'une surface (1,03:1). Lu par DsTag marque et DsAvatar."
         }
       },
-      "fort": {
-        "$value": "{marque.primaire.aplat}",
+      "strong": {
+        "$value": "{brand.primary.feature}",
         "$description": "Aplat plein de la marque, non cliquable, de la valeur du plein du primaire, comme un bandeau qui donne du relief."
       }
     },
-    "erreur": {
-      "discret": {
-        "$value": "{couleur.erreur.3}",
+    "error": {
+      "subtle": {
+        "$value": "{color.error.3}",
         "$description": "Fond léger d'un message ou d'un champ en erreur."
       },
-      "fort": {
+      "strong": {
         "$root": {
-          "$value": "{marque.erreur.plein}",
+          "$value": "{brand.error.solid}",
           "$description": "Plein qui signale une erreur ou une action destructrice."
         },
-        "survol": {
-          "$value": "{marque.erreur.plein-survol}",
+        "hover": {
+          "$value": "{brand.error.solid-hover}",
           "$description": "Plein qui signale une erreur ou une action destructrice, survolé."
         }
       }
     },
-    "succes": {
-      "discret": {
-        "$value": "{couleur.succes.3}",
+    "success": {
+      "subtle": {
+        "$value": "{color.success.3}",
         "$description": "Fond léger d'un message de réussite."
       },
-      "fort": {
-        "$value": "{marque.succes.plein}",
+      "strong": {
+        "$value": "{brand.success.solid}",
         "$description": "Plein qui signale une réussite, avec un texte blanc posé dessus."
       }
     },
-    "avertissement": {
-      "discret": {
-        "$value": "{couleur.avertissement.3}",
+    "warning": {
+      "subtle": {
+        "$value": "{color.warning.3}",
         "$description": "Fond léger d'un message d'avertissement."
       },
-      "fort": {
-        "$value": "{marque.avertissement.plein}",
+      "strong": {
+        "$value": "{brand.warning.solid}",
         "$description": "Plein qui signale un avertissement, avec un texte foncé posé dessus."
       }
     },
     "info": {
-      "discret": {
-        "$value": "{couleur.info.3}",
+      "subtle": {
+        "$value": "{color.info.3}",
         "$description": "Fond léger d'un message d'information."
       },
-      "fort": {
-        "$value": "{marque.info.plein}",
+      "strong": {
+        "$value": "{brand.info.solid}",
         "$description": "Plein qui signale une information, avec un texte blanc posé dessus."
       }
     },
-    "desactive": {
-      "$value": "{couleur.neutre.3}",
+    "disabled": {
+      "$value": "{color.neutral.3}",
       "$description": "Fond d'un composant désactivé, quelle que soit sa variante (bouton plein ou secondaire)."
     }
   },
-  "texte": {
+  "text": {
     "$type": "color",
     "$description": "Texte et icônes, posés sur un fond de rôle.",
-    "principal": {
-      "$value": "{couleur.neutre.12}",
+    "default": {
+      "$value": "{color.neutral.12}",
       "$description": "Texte courant et titres."
     },
-    "secondaire": {
-      "$value": "{couleur.neutre.11}",
+    "secondary": {
+      "$value": "{color.neutral.11}",
       "$description": "Texte d'appoint, comme une aide, une légende ou une date."
     },
-    "interactif": {
-      "$value": "{marque.primaire.11}",
+    "interactive": {
+      "$value": "{brand.primary.11}",
       "$description": "Texte d'un lien ou d'une action sans fond plein."
     },
     "accent": {
-      "$value": "{marque.accent.11}",
+      "$value": "{brand.accent.11}",
       "$description": "Texte mis en avant sans être une action."
     },
-    "marque": {
+    "brand": {
       "$root": {
-        "$value": "{marque.primaire.12}",
+        "$value": "{brand.primary.12}",
         "$description": "Texte de marque posé sur le fond teinté de la marque, comme les initiales de DsAvatar ou un DsTag mis en avant.",
         "$extensions": {
-          "ds-lab.note": "Posé sur fond.marque.teinte (D59) et sur fond.marque.discret ; pas 12 du primaire, et non la couleur des liens (D05)."
+          "ds-lab.note": "Posé sur background.brand.tint (D59) et sur background.brand.subtle ; pas 12 du primaire, et non la couleur des liens (D05)."
         }
       },
-      "grand": {
-        "$value": "{marque.primaire.texte-grand}",
+      "large": {
+        "$value": "{brand.primary.text-large}",
         "$description": "Texte de marque des grands titres, styles affichage et titres 1 et 2 seulement, choisi à la saisie pour tenir 3:1 sur les fonds clairs."
       }
     },
-    "erreur": {
-      "$value": "{couleur.erreur.11}",
+    "error": {
+      "$value": "{color.error.11}",
       "$description": "Texte d'un message d'erreur."
     },
-    "succes": {
-      "$value": "{couleur.succes.11}",
+    "success": {
+      "$value": "{color.success.11}",
       "$description": "Texte d'un message de réussite."
     },
-    "avertissement": {
-      "$value": "{couleur.avertissement.11}",
+    "warning": {
+      "$value": "{color.warning.11}",
       "$description": "Texte d'un message d'avertissement."
     },
     "info": {
-      "$value": "{couleur.info.11}",
+      "$value": "{color.info.11}",
       "$description": "Texte d'un message d'information."
     },
-    "sur-interactif": {
+    "on-interactive": {
       "$root": {
-        "$value": "{marque.primaire.sur-plein}",
+        "$value": "{brand.primary.on-solid}",
         "$description": "Texte posé sur le plein de l'action principale, au repos comme au survol."
       },
       "inverse": {
         "$root": {
-          "$value": "{marque.primaire.aplat}",
+          "$value": "{brand.primary.feature}",
           "$description": "Texte du bouton inversé, de la valeur du plein du primaire."
         },
-        "survol": {
-          "$value": "{marque.primaire.aplat-survol}",
+        "hover": {
+          "$value": "{brand.primary.feature-hover}",
           "$description": "Texte du bouton inversé survolé, seul à changer, de la valeur du plein survolé."
         }
       }
     },
-    "sur-accent": {
-      "$value": "{marque.accent.sur-plein}",
+    "on-accent": {
+      "$value": "{brand.accent.on-solid}",
       "$description": "Texte posé sur le plein d'accent."
     },
-    "sur-marque": {
-      "$value": "{marque.primaire.sur-aplat}",
-      "$description": "Texte posé sur fond.marque.fort, titres compris."
+    "on-brand": {
+      "$value": "{brand.primary.on-feature}",
+      "$description": "Texte posé sur background.brand.strong, titres compris."
     },
-    "sur-erreur": {
-      "$value": "{marque.erreur.sur-plein}",
+    "on-error": {
+      "$value": "{brand.error.on-solid}",
       "$description": "Texte posé sur le plein d'erreur."
     },
-    "sur-succes": {
-      "$value": "{marque.succes.sur-plein}",
+    "on-success": {
+      "$value": "{brand.success.on-solid}",
       "$description": "Texte posé sur le plein de réussite."
     },
-    "sur-avertissement": {
-      "$value": "{marque.avertissement.sur-plein}",
+    "on-warning": {
+      "$value": "{brand.warning.on-solid}",
       "$description": "Texte posé sur le plein d'avertissement."
     },
-    "sur-info": {
-      "$value": "{marque.info.sur-plein}",
+    "on-info": {
+      "$value": "{brand.info.on-solid}",
       "$description": "Texte posé sur le plein d'information."
     },
-    "sur-inverse": {
-      "$value": "{couleur.sur-inverse}",
+    "on-inverse": {
+      "$value": "{color.on-inverse}",
       "$description": "Texte posé sur le fond inversé."
     },
-    "desactive": {
-      "$value": "{couleur.neutre.9}",
+    "disabled": {
+      "$value": "{color.neutral.9}",
       "$description": "Texte d'un composant désactivé, sur son fond ou sur la page.",
       "$extensions": {
-        "ds-lab.note": "Texte d'un composant désactivé, sur fond.desactive ou sur la page ; exempté du seuil de contraste (WCAG 1.4.3, composant inactif)."
+        "ds-lab.note": "Texte d'un composant désactivé, sur background.disabled ou sur la page ; exempté du seuil de contraste (WCAG 1.4.3, composant inactif)."
       }
     }
   },
-  "bordure": {
+  "border": {
     "$type": "color",
     "$description": "Contours et séparateurs.",
-    "discrete": {
-      "$value": "{couleur.neutre.6}",
+    "subtle": {
+      "$value": "{color.neutral.6}",
       "$description": "Séparateur léger entre deux zones, décoratif, jamais seule pour repérer un champ ou un état."
     },
-    "defaut": {
-      "$value": "{couleur.neutre.7}",
+    "default": {
+      "$value": "{color.neutral.7}",
       "$description": "Contour ordinaire d'une carte ou d'un séparateur, décoratif, jamais seule pour repérer un champ ou un état.",
       "$extensions": {
-        "ds-lab.note": "Contour ordinaire d'une carte ou d'un séparateur, décoratif, jamais seule pour repérer un champ ou un état (sous 3:1 : un champ prend bordure.forte)."
+        "ds-lab.note": "Contour ordinaire d'une carte ou d'un séparateur, décoratif, jamais seule pour repérer un champ ou un état (sous 3:1 : un champ prend border.strong)."
       }
     },
-    "forte": {
-      "$value": "{couleur.neutre.8}",
+    "strong": {
+      "$value": "{color.neutral.8}",
       "$description": "Contour qui suffit à repérer un champ ou une case à cocher.",
       "$extensions": {
         "ds-lab.note": "Contour qui suffit à repérer un champ ou une case à cocher (3:1)."
@@ -267,113 +267,113 @@
     },
     "focus": {
       "$root": {
-        "$value": "{marque.primaire.11}",
+        "$value": "{brand.primary.11}",
         "$description": "Anneau de focus clavier, autour du composant qui a le focus.",
         "$extensions": {
           "ds-lab.note": "Anneau de focus clavier (3:1)."
         }
       },
       "inverse": {
-        "$value": "{marque.primaire.sur-aplat}",
-        "$description": "Anneau de focus clavier sur fond.marque.fort (3:1)."
+        "$value": "{brand.primary.on-feature}",
+        "$description": "Anneau de focus clavier sur background.brand.strong (3:1)."
       }
     },
-    "erreur": {
-      "$value": "{couleur.erreur.8}",
+    "error": {
+      "$value": "{color.error.8}",
       "$description": "Contour d'un champ en erreur ; sur un fond de statut, décorative : le texte porte le sens.",
       "$extensions": {
-        "ds-lab.note": "Contour d'un champ en erreur (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app."
+        "ds-lab.note": "Contour d'un champ en erreur (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde background.app."
       }
     },
-    "succes": {
-      "$value": "{couleur.succes.8}",
-      "$description": "Contour d'un champ validé (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app."
+    "success": {
+      "$value": "{color.success.8}",
+      "$description": "Contour d'un champ validé (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde background.app."
     },
-    "avertissement": {
-      "$value": "{couleur.avertissement.8}",
-      "$description": "Contour d'un champ ou d'un encadré d'avertissement (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app."
+    "warning": {
+      "$value": "{color.warning.8}",
+      "$description": "Contour d'un champ ou d'un encadré d'avertissement (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde background.app."
     },
     "info": {
-      "$value": "{couleur.info.8}",
-      "$description": "Contour d'un encadré d'information (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde fond.app."
+      "$value": "{color.info.8}",
+      "$description": "Contour d'un encadré d'information (3:1) ; sur un fond de statut, décorative : le texte porte le sens ; un champ en erreur garde background.app."
     }
   },
-  "ecart": {
+  "gap": {
     "$type": "dimension",
     "$description": "Espace entre éléments frères, porté par leur parent (gap) ; strictement croissant de dans-composant à section.",
-    "dans-composant": {
-      "$value": "{espace.4}",
+    "within-component": {
+      "$value": "{space.4}",
       "$description": "Écart entre les parties d'un même composant, comme une étiquette et son champ ou un champ et son message d'erreur."
     },
-    "entre-blocs": {
-      "$value": "{espace.8}",
+    "between-blocks": {
+      "$value": "{space.8}",
       "$description": "Écart entre deux blocs d'information d'un même composant, comme l'en-tête d'une carte, titre et sous-titre, et son contenu.",
       "$extensions": {
-        "ds-lab.note": "Écart entre deux blocs d'information d'un même composant ; hors du contrôle d'ordre des écarts (DS5), comme ecart.entre-etiquettes."
+        "ds-lab.note": "Écart entre deux blocs d'information d'un même composant ; hors du contrôle d'ordre des écarts (DS5), comme gap.between-tags."
       }
     },
-    "entre-composants": {
-      "$value": "{espace.16}",
+    "between-components": {
+      "$value": "{space.16}",
       "$description": "Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée, pour qu'on voie à quel champ appartient un libellé ou un message.",
       "$extensions": {
-        "ds-lab.note": "Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée ; au moins le double de ecart.dans-composant, pour qu'on voie à quel champ appartient un libellé ou un message (régularité observée dans les systèmes lus, pas une norme)."
+        "ds-lab.note": "Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée ; au moins le double de gap.within-component, pour qu'on voie à quel champ appartient un libellé ou un message (régularité observée dans les systèmes lus, pas une norme)."
       }
     },
-    "entre-groupes": {
-      "$value": "{espace.24}",
+    "between-groups": {
+      "$value": "{space.24}",
       "$description": "Écart entre deux groupes d'une même section, comme un titre de section et son contenu ou les champs d'un formulaire et ses boutons."
     },
     "section": {
-      "$value": "{espace.48}",
+      "$value": "{space.48}",
       "$description": "Écart entre deux sections de la page, la plus grande respiration verticale ; plus petit en étroit (largeur.etroit.tokens.json)."
     },
-    "icone-texte": {
-      "$value": "{espace.8}",
+    "icon-text": {
+      "$value": "{space.8}",
       "$description": "Écart entre l'icône et le texte d'un contrôle, comme un bouton ou un champ.",
       "$extensions": {
-        "ds-lab.note": "Écart entre l'icône et le texte d'un contrôle, comme un bouton ; hors du contrôle d'ordre des écarts (DS5), comme marge-interieure.composant."
+        "ds-lab.note": "Écart entre l'icône et le texte d'un contrôle, comme un bouton ; hors du contrôle d'ordre des écarts (DS5), comme padding.component."
       }
     },
-    "entre-etiquettes": {
-      "$value": "{espace.8}",
+    "between-tags": {
+      "$value": "{space.8}",
       "$description": "Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes.",
       "$extensions": {
-        "ds-lab.note": "Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes ; hors du contrôle d'ordre des écarts (DS5), comme ecart.icone-texte."
+        "ds-lab.note": "Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes ; hors du contrôle d'ordre des écarts (DS5), comme gap.icon-text."
       }
     }
   },
-  "largeur": {
+  "width": {
     "$type": "dimension",
     "$description": "Largeurs de conteneur : la largeur maximale d'un bloc de contenu dans la page ; en dessous, il prend la largeur de son parent.",
-    "colonne": {
-      "$value": "{taille.640}",
+    "column": {
+      "$value": "{size.640}",
       "$description": "Largeur maximale d'une colonne de contenu, comme une liste d'annuaire ; sur un écran plus étroit, la colonne prend toute la largeur de son parent.",
       "$extensions": {
         "ds-lab.note": "640 px [H], à juger sur les planches de MemberList ; la grille reste à faire (KNOWN_ISSUES.md, B6)."
       }
     }
   },
-  "marge-interieure": {
+  "padding": {
     "$type": "dimension",
     "$description": "Espace entre le bord d'un composant et son contenu, porté par le composant lui-même (padding).",
-    "composant": {
-      "$value": "{espace.16}",
+    "component": {
+      "$value": "{space.16}",
       "$description": "Marge intérieure d'un composant à bord visible, comme une carte, un encadré ou une zone de formulaire."
     },
-    "etiquette": {
-      "$value": "{espace.12}",
+    "tag": {
+      "$value": "{space.12}",
       "$description": "Marge intérieure gauche et droite d'une étiquette, de part et d'autre de son texte."
     }
   },
-  "typo": {
+  "typography": {
     "$type": "typography",
     "$description": "Styles de texte : un jeton composite par style, sans couleur ; interligne = hauteur de ligne visée ÷ taille, arrondi à 4 décimales, la hauteur visée est écrite dans la description ; valeurs en étroit dans largeur.etroit.tokens.json ; letterSpacing 0 px, exigé par le format, valeur à décider [V].",
-    "affichage": {
-      "grand": {
+    "display": {
+      "large": {
         "$value": {
-          "fontFamily": "{marque.police.titre}",
-          "fontSize": "{taille-texte.60}",
-          "fontWeight": "{graisse.700}",
+          "fontFamily": "{brand.font.heading}",
+          "fontSize": "{font-size.60}",
+          "fontWeight": "{font-weight.700}",
           "letterSpacing": {
             "value": 0,
             "unit": "px"
@@ -382,14 +382,14 @@
         },
         "$description": "Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit.",
         "$extensions": {
-          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
+          "ds-lab.hauteur-capitale": "{font.heading.cap-height}"
         }
       },
-      "moyen": {
+      "medium": {
         "$value": {
-          "fontFamily": "{marque.police.titre}",
-          "fontSize": "{taille-texte.48}",
-          "fontWeight": "{graisse.700}",
+          "fontFamily": "{brand.font.heading}",
+          "fontSize": "{font-size.48}",
+          "fontWeight": "{font-weight.700}",
           "letterSpacing": {
             "value": 0,
             "unit": "px"
@@ -398,16 +398,16 @@
         },
         "$description": "Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit.",
         "$extensions": {
-          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
+          "ds-lab.hauteur-capitale": "{font.heading.cap-height}"
         }
       }
     },
-    "titre": {
+    "heading": {
       "1": {
         "$value": {
-          "fontFamily": "{marque.police.titre}",
-          "fontSize": "{taille-texte.30}",
-          "fontWeight": "{graisse.700}",
+          "fontFamily": "{brand.font.heading}",
+          "fontSize": "{font-size.30}",
+          "fontWeight": "{font-weight.700}",
           "letterSpacing": {
             "value": 0,
             "unit": "px"
@@ -416,14 +416,14 @@
         },
         "$description": "Titre de page ; ligne visée 40 px en large, 32 px en étroit.",
         "$extensions": {
-          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
+          "ds-lab.hauteur-capitale": "{font.heading.cap-height}"
         }
       },
       "2": {
         "$value": {
-          "fontFamily": "{marque.police.titre}",
-          "fontSize": "{taille-texte.24}",
-          "fontWeight": "{graisse.700}",
+          "fontFamily": "{brand.font.heading}",
+          "fontSize": "{font-size.24}",
+          "fontWeight": "{font-weight.700}",
           "letterSpacing": {
             "value": 0,
             "unit": "px"
@@ -432,14 +432,14 @@
         },
         "$description": "Titre de section ; ligne visée 32 px en large, 28 px en étroit.",
         "$extensions": {
-          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
+          "ds-lab.hauteur-capitale": "{font.heading.cap-height}"
         }
       },
       "3": {
         "$value": {
-          "fontFamily": "{marque.police.titre}",
-          "fontSize": "{taille-texte.20}",
-          "fontWeight": "{graisse.600}",
+          "fontFamily": "{brand.font.heading}",
+          "fontSize": "{font-size.20}",
+          "fontWeight": "{font-weight.600}",
           "letterSpacing": {
             "value": 0,
             "unit": "px"
@@ -448,15 +448,15 @@
         },
         "$description": "Titre de carte.",
         "$extensions": {
-          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}",
+          "ds-lab.hauteur-capitale": "{font.heading.cap-height}",
           "ds-lab.note": "Titre de carte ; ligne visée 28 px en large, 24 px en étroit."
         }
       },
       "4": {
         "$value": {
-          "fontFamily": "{marque.police.texte}",
-          "fontSize": "{taille-texte.16}",
-          "fontWeight": "{graisse.700}",
+          "fontFamily": "{brand.font.body}",
+          "fontSize": "{font-size.16}",
+          "fontWeight": "{font-weight.700}",
           "letterSpacing": {
             "value": 0,
             "unit": "px"
@@ -469,12 +469,12 @@
         }
       }
     },
-    "corps": {
-      "grand": {
+    "body": {
+      "large": {
         "$value": {
-          "fontFamily": "{marque.police.texte}",
-          "fontSize": "{taille-texte.18}",
-          "fontWeight": "{graisse.400}",
+          "fontFamily": "{brand.font.body}",
+          "fontSize": "{font-size.18}",
+          "fontWeight": "{font-weight.400}",
           "letterSpacing": {
             "value": 0,
             "unit": "px"
@@ -483,11 +483,11 @@
         },
         "$description": "Chapô, sous un titre de page ; ligne visée 28 px."
       },
-      "moyen": {
+      "medium": {
         "$value": {
-          "fontFamily": "{marque.police.texte}",
-          "fontSize": "{taille-texte.16}",
-          "fontWeight": "{graisse.400}",
+          "fontFamily": "{brand.font.body}",
+          "fontSize": "{font-size.16}",
+          "fontWeight": "{font-weight.400}",
           "letterSpacing": {
             "value": 0,
             "unit": "px"
@@ -499,11 +499,11 @@
           "ds-lab.note": "Texte courant ; ligne visée 24 px."
         }
       },
-      "petit": {
+      "small": {
         "$value": {
-          "fontFamily": "{marque.police.texte}",
-          "fontSize": "{taille-texte.14}",
-          "fontWeight": "{graisse.400}",
+          "fontFamily": "{brand.font.body}",
+          "fontSize": "{font-size.14}",
+          "fontWeight": "{font-weight.400}",
           "letterSpacing": {
             "value": 0,
             "unit": "px"
@@ -516,11 +516,11 @@
         }
       }
     },
-    "libelle": {
+    "label": {
       "$value": {
-        "fontFamily": "{police.produit}",
-        "fontSize": "{taille-texte.14}",
-        "fontWeight": "{graisse.600}",
+        "fontFamily": "{font.product}",
+        "fontSize": "{font-size.14}",
+        "fontWeight": "{font-weight.600}",
         "letterSpacing": {
           "value": 0,
           "unit": "px"
@@ -532,11 +532,11 @@
         "ds-lab.note": "Libellé de champ, de bouton ou d'onglet, toujours dans la police du produit (D44) ; ligne visée 20 px."
       }
     },
-    "mention": {
+    "supporting-text": {
       "$value": {
-        "fontFamily": "{marque.police.texte}",
-        "fontSize": "{taille-texte.12}",
-        "fontWeight": "{graisse.400}",
+        "fontFamily": "{brand.font.body}",
+        "fontSize": "{font-size.12}",
+        "fontWeight": "{font-weight.400}",
         "letterSpacing": {
           "value": 0,
           "unit": "px"
@@ -548,12 +548,12 @@
         "ds-lab.note": "Aide, message d'erreur ou légende ; ligne visée 16 px."
       }
     },
-    "initiales": {
-      "normale": {
+    "initials": {
+      "medium": {
         "$value": {
-          "fontFamily": "{marque.police.texte}",
-          "fontSize": "{taille-texte.16}",
-          "fontWeight": "{graisse.600}",
+          "fontFamily": "{brand.font.body}",
+          "fontSize": "{font-size.16}",
+          "fontWeight": "{font-weight.600}",
           "letterSpacing": {
             "value": 0,
             "unit": "px"
@@ -565,11 +565,11 @@
           "ds-lab.note": "Initiales de l'avatar normal ; ligne visée 24 px."
         }
       },
-      "grande": {
+      "large": {
         "$value": {
-          "fontFamily": "{marque.police.texte}",
-          "fontSize": "{taille-texte.24}",
-          "fontWeight": "{graisse.600}",
+          "fontFamily": "{brand.font.body}",
+          "fontSize": "{font-size.24}",
+          "fontWeight": "{font-weight.600}",
           "letterSpacing": {
             "value": 0,
             "unit": "px"
@@ -583,84 +583,84 @@
       }
     }
   },
-  "arrondi": {
+  "border-radius": {
     "$type": "dimension",
     "$description": "Arrondis des composants.",
-    "controle": {
-      "$value": "{rayon.8}",
+    "control": {
+      "$value": "{radius.8}",
       "$description": "Arrondi d'un contrôle, comme un bouton ou un champ, le même à toutes les tailles."
     },
     "surface": {
-      "$value": "{rayon.12}",
+      "$value": "{radius.12}",
       "$description": "Arrondi d'une surface posée sur la page, comme une carte."
     },
-    "pilule": {
-      "$value": "{rayon.pilule}",
+    "full": {
+      "$value": "{radius.full}",
       "$description": "Arrondi complet d'une forme ronde ou en pilule, comme un avatar ou une étiquette."
     }
   },
-  "hauteur": {
+  "height": {
     "$type": "dimension",
     "$description": "Hauteurs des contrôles et des étiquettes.",
-    "controle": {
-      "normale": {
-        "$value": "{taille.40}",
+    "control": {
+      "medium": {
+        "$value": "{size.40}",
         "$description": "Hauteur d'un contrôle de taille normale, comme un bouton."
       },
-      "petite": {
-        "$value": "{taille.32}",
+      "small": {
+        "$value": "{size.32}",
         "$description": "Hauteur d'un contrôle de petite taille, comme un bouton."
       }
     },
-    "etiquette": {
-      "$value": "{taille.24}",
+    "tag": {
+      "$value": "{size.24}",
       "$description": "Hauteur d'une étiquette, sur une ligne."
     }
   },
-  "epaisseur": {
+  "border-width": {
     "$type": "dimension",
     "$description": "Épaisseurs de trait.",
-    "contour": {
-      "$value": "{trait.1}",
+    "default": {
+      "$value": "{stroke.1}",
       "$description": "Épaisseur du contour d'un contrôle, comme le bouton secondaire."
     },
     "focus": {
-      "$value": "{trait.2}",
+      "$value": "{stroke.2}",
       "$description": "Épaisseur de l'anneau de focus clavier.",
       "$extensions": {
-        "ds-lab.note": "Épaisseur de l'anneau de focus clavier (bordure.focus), décalé de 2 px sur le fond de la page (DS2)."
+        "ds-lab.note": "Épaisseur de l'anneau de focus clavier (border.focus), décalé de 2 px sur le fond de la page (DS2)."
       }
     }
   },
-  "taille-icone": {
+  "icon-size": {
     "$type": "dimension",
     "$description": "Tailles d'icône dans un contrôle.",
-    "normale": {
-      "$value": "{taille.20}",
+    "medium": {
+      "$value": "{size.20}",
       "$description": "Icône d'un contrôle de taille normale."
     },
-    "petite": {
-      "$value": "{taille.16}",
+    "small": {
+      "$value": "{size.16}",
       "$description": "Icône d'un contrôle de petite taille."
     }
   },
-  "taille-avatar": {
+  "avatar-size": {
     "$type": "dimension",
     "$description": "Côtés d'un avatar.",
-    "normale": {
-      "$value": "{taille.40}",
+    "medium": {
+      "$value": "{size.40}",
       "$description": "Côté d'un avatar de taille normale."
     },
-    "grande": {
-      "$value": "{taille.56}",
+    "large": {
+      "$value": "{size.56}",
       "$description": "Côté d'un grand avatar, comme celui d'une carte membre."
     }
   },
-  "decalage": {
+  "offset": {
     "$type": "dimension",
     "$description": "Décalages entre un trait et le bord de son composant.",
     "focus": {
-      "$value": "{trait.2}",
+      "$value": "{stroke.2}",
       "$description": "Décalage de l'anneau de focus clavier hors du composant, pour qu'il se pose sur le fond de la page et jamais sur le plein.",
       "$extensions": {
         "ds-lab.note": "Décalage de l'anneau de focus clavier hors du composant, pour qu'il se pose sur le fond de la page et jamais sur le plein (DS2)."

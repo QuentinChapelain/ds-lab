@@ -5,23 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Typographie Grenat Papeterie</title>
     <style>
-      :root { --police-titre: Palatino, serif; --police-texte: Helvetica, Arial, sans-serif; --police-produit: system-ui, sans-serif; --affichage-grand-taille: 60px; --affichage-grand-interligne: 1.2667; --affichage-moyen-taille: 48px; --affichage-moyen-interligne: 1.25; --titre-1-taille: 30px; --titre-1-interligne: 1.3333; --titre-2-taille: 24px; --titre-2-interligne: 1.3333; --titre-3-taille: 20px; --titre-3-interligne: 1.4; --titre-4-taille: 16px; --titre-4-interligne: 1.5; --corps-grand-taille: 18px; --corps-grand-interligne: 1.5556; --corps-moyen-taille: 16px; --corps-moyen-interligne: 1.5; --corps-petit-taille: 14px; --corps-petit-interligne: 1.4286; --libelle-taille: 14px; --libelle-interligne: 1.4286; --mention-taille: 12px; --mention-interligne: 1.3333; --initiales-normale-taille: 16px; --initiales-normale-interligne: 1.5; --initiales-grande-taille: 24px; --initiales-grande-interligne: 1.3333; --ecart-dans-composant: 4px; --ecart-entre-composants: 16px; --ecart-entre-groupes: 24px; --ecart-section: 48px; --ecart-icone-texte: 8px; --ecart-entre-etiquettes: 8px; --ecart-entre-blocs: 8px; --marge-interieure-composant: 16px; --marge-interieure-etiquette: 12px; }
-      @media (max-width: 599.98px) { :root { --affichage-grand-taille: 36px; --affichage-grand-interligne: 1.3333; --affichage-moyen-taille: 30px; --affichage-moyen-interligne: 1.3333; --titre-1-taille: 24px; --titre-1-interligne: 1.3333; --titre-2-taille: 20px; --titre-2-interligne: 1.4; --titre-3-taille: 18px; --titre-3-interligne: 1.3333; --ecart-section: 32px; } }
+      :root { --brand-font-heading: Palatino, serif; --brand-font-body: Helvetica, Arial, sans-serif; --font-product: system-ui, sans-serif; --typography-display-large-font-size: 60px; --typography-display-large-line-height: 1.2667; --typography-display-medium-font-size: 48px; --typography-display-medium-line-height: 1.25; --typography-heading-1-font-size: 30px; --typography-heading-1-line-height: 1.3333; --typography-heading-2-font-size: 24px; --typography-heading-2-line-height: 1.3333; --typography-heading-3-font-size: 20px; --typography-heading-3-line-height: 1.4; --typography-heading-4-font-size: 16px; --typography-heading-4-line-height: 1.5; --typography-body-large-font-size: 18px; --typography-body-large-line-height: 1.5556; --typography-body-medium-font-size: 16px; --typography-body-medium-line-height: 1.5; --typography-body-small-font-size: 14px; --typography-body-small-line-height: 1.4286; --typography-label-font-size: 14px; --typography-label-line-height: 1.4286; --typography-supporting-text-font-size: 12px; --typography-supporting-text-line-height: 1.3333; --typography-initials-medium-font-size: 16px; --typography-initials-medium-line-height: 1.5; --typography-initials-large-font-size: 24px; --typography-initials-large-line-height: 1.3333; --gap-within-component: 4px; --gap-between-components: 16px; --gap-between-groups: 24px; --gap-section: 48px; --gap-icon-text: 8px; --gap-between-tags: 8px; --gap-between-blocks: 8px; --padding-component: 16px; --padding-tag: 12px; }
+      @media (max-width: 599.98px) { :root { --typography-display-large-font-size: 36px; --typography-display-large-line-height: 1.3333; --typography-display-medium-font-size: 30px; --typography-display-medium-line-height: 1.3333; --typography-heading-1-font-size: 24px; --typography-heading-1-line-height: 1.3333; --typography-heading-2-font-size: 20px; --typography-heading-2-line-height: 1.4; --typography-heading-3-font-size: 18px; --typography-heading-3-line-height: 1.3333; --gap-section: 32px; } }
 
-      /* Styles de texte : un par jeton composite du groupe typo. */
-      .t-affichage-grand { font-family: var(--police-titre); font-size: var(--affichage-grand-taille); line-height: var(--affichage-grand-interligne); font-weight: 700; letter-spacing: 0px; font-size-adjust: cap-height 0.7; }
-      .t-affichage-moyen { font-family: var(--police-titre); font-size: var(--affichage-moyen-taille); line-height: var(--affichage-moyen-interligne); font-weight: 700; letter-spacing: 0px; font-size-adjust: cap-height 0.7; }
-      .t-titre-1 { font-family: var(--police-titre); font-size: var(--titre-1-taille); line-height: var(--titre-1-interligne); font-weight: 700; letter-spacing: 0px; font-size-adjust: cap-height 0.7; }
-      .t-titre-2 { font-family: var(--police-titre); font-size: var(--titre-2-taille); line-height: var(--titre-2-interligne); font-weight: 700; letter-spacing: 0px; font-size-adjust: cap-height 0.7; }
-      .t-titre-3 { font-family: var(--police-titre); font-size: var(--titre-3-taille); line-height: var(--titre-3-interligne); font-weight: 600; letter-spacing: 0px; font-size-adjust: cap-height 0.7; }
-      .t-titre-4 { font-family: var(--police-texte); font-size: var(--titre-4-taille); line-height: var(--titre-4-interligne); font-weight: 700; letter-spacing: 0px; }
-      .t-corps-grand { font-family: var(--police-texte); font-size: var(--corps-grand-taille); line-height: var(--corps-grand-interligne); font-weight: 400; letter-spacing: 0px; }
-      .t-corps-moyen { font-family: var(--police-texte); font-size: var(--corps-moyen-taille); line-height: var(--corps-moyen-interligne); font-weight: 400; letter-spacing: 0px; }
-      .t-corps-petit { font-family: var(--police-texte); font-size: var(--corps-petit-taille); line-height: var(--corps-petit-interligne); font-weight: 400; letter-spacing: 0px; }
-      .t-libelle { font-family: var(--police-produit); font-size: var(--libelle-taille); line-height: var(--libelle-interligne); font-weight: 600; letter-spacing: 0px; }
-      .t-mention { font-family: var(--police-texte); font-size: var(--mention-taille); line-height: var(--mention-interligne); font-weight: 400; letter-spacing: 0px; }
-      .t-initiales-normale { font-family: var(--police-texte); font-size: var(--initiales-normale-taille); line-height: var(--initiales-normale-interligne); font-weight: 600; letter-spacing: 0px; }
-      .t-initiales-grande { font-family: var(--police-texte); font-size: var(--initiales-grande-taille); line-height: var(--initiales-grande-interligne); font-weight: 600; letter-spacing: 0px; }
+      /* Styles de texte : un par jeton composite du groupe typography. */
+      .t-display-large { font-family: var(--brand-font-heading); font-size: var(--typography-display-large-font-size); line-height: var(--typography-display-large-line-height); font-weight: 700; letter-spacing: 0px; font-size-adjust: cap-height 0.7; }
+      .t-display-medium { font-family: var(--brand-font-heading); font-size: var(--typography-display-medium-font-size); line-height: var(--typography-display-medium-line-height); font-weight: 700; letter-spacing: 0px; font-size-adjust: cap-height 0.7; }
+      .t-heading-1 { font-family: var(--brand-font-heading); font-size: var(--typography-heading-1-font-size); line-height: var(--typography-heading-1-line-height); font-weight: 700; letter-spacing: 0px; font-size-adjust: cap-height 0.7; }
+      .t-heading-2 { font-family: var(--brand-font-heading); font-size: var(--typography-heading-2-font-size); line-height: var(--typography-heading-2-line-height); font-weight: 700; letter-spacing: 0px; font-size-adjust: cap-height 0.7; }
+      .t-heading-3 { font-family: var(--brand-font-heading); font-size: var(--typography-heading-3-font-size); line-height: var(--typography-heading-3-line-height); font-weight: 600; letter-spacing: 0px; font-size-adjust: cap-height 0.7; }
+      .t-heading-4 { font-family: var(--brand-font-body); font-size: var(--typography-heading-4-font-size); line-height: var(--typography-heading-4-line-height); font-weight: 700; letter-spacing: 0px; }
+      .t-body-large { font-family: var(--brand-font-body); font-size: var(--typography-body-large-font-size); line-height: var(--typography-body-large-line-height); font-weight: 400; letter-spacing: 0px; }
+      .t-body-medium { font-family: var(--brand-font-body); font-size: var(--typography-body-medium-font-size); line-height: var(--typography-body-medium-line-height); font-weight: 400; letter-spacing: 0px; }
+      .t-body-small { font-family: var(--brand-font-body); font-size: var(--typography-body-small-font-size); line-height: var(--typography-body-small-line-height); font-weight: 400; letter-spacing: 0px; }
+      .t-label { font-family: var(--font-product); font-size: var(--typography-label-font-size); line-height: var(--typography-label-line-height); font-weight: 600; letter-spacing: 0px; }
+      .t-supporting-text { font-family: var(--brand-font-body); font-size: var(--typography-supporting-text-font-size); line-height: var(--typography-supporting-text-line-height); font-weight: 400; letter-spacing: 0px; }
+      .t-initials-medium { font-family: var(--brand-font-body); font-size: var(--typography-initials-medium-font-size); line-height: var(--typography-initials-medium-line-height); font-weight: 600; letter-spacing: 0px; }
+      .t-initials-large { font-family: var(--brand-font-body); font-size: var(--typography-initials-large-font-size); line-height: var(--typography-initials-large-line-height); font-weight: 600; letter-spacing: 0px; }
 
       /* Le parent porte l'espace : gap et padding, avec les rôles d'espacement ; aucun enfant n'a de marge. */
       * { margin: 0; box-sizing: border-box; }
@@ -30,35 +30,35 @@
         padding: 32px 16px 64px; /* gouttière de page, hors des rôles */
         background: #fbfbfb; color: #363026;
       }
-      main { display: flex; flex-direction: column; gap: var(--ecart-section); }
-      main > header, main > section { display: flex; flex-direction: column; gap: var(--ecart-entre-groupes); }
-      .entete { display: flex; flex-direction: column; gap: var(--ecart-dans-composant); }
-      .secondaire, .t-mention { color: #6d675b; }
+      main { display: flex; flex-direction: column; gap: var(--gap-section); }
+      main > header, main > section { display: flex; flex-direction: column; gap: var(--gap-between-groups); }
+      .entete { display: flex; flex-direction: column; gap: var(--gap-within-component); }
+      .secondaire, .t-supporting-text { color: #6d675b; }
       .meta { font: 13px/20px ui-monospace, Menlo, monospace; color: #6d675b; overflow-wrap: anywhere; }
       code { font: inherit; }
 
 
-      .specimen { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--ecart-entre-composants); }
-      .specimen li { display: flex; flex-direction: column; gap: var(--ecart-dans-composant); padding-bottom: var(--ecart-entre-composants); border-bottom: 1px solid #d8d6d2; overflow-wrap: anywhere; }
+      .specimen { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--gap-between-components); }
+      .specimen li { display: flex; flex-direction: column; gap: var(--gap-within-component); padding-bottom: var(--gap-between-components); border-bottom: 1px solid #d8d6d2; overflow-wrap: anywhere; }
 
-      .cadre { display: flex; flex-direction: column; gap: var(--ecart-entre-groupes); padding: var(--marge-interieure-composant); background: #ffffff; border: 1px solid #d8d6d2; border-radius: 8px; }
-      .hero { padding-block: var(--ecart-section); }
-      .hero-texte { display: flex; flex-direction: column; gap: var(--ecart-entre-composants); }
+      .cadre { display: flex; flex-direction: column; gap: var(--gap-between-groups); padding: var(--padding-component); background: #ffffff; border: 1px solid #d8d6d2; border-radius: 8px; }
+      .hero { padding-block: var(--gap-section); }
+      .hero-texte { display: flex; flex-direction: column; gap: var(--gap-between-components); }
       #hero-titre { max-width: 8.5em; }
       .hero .chapo { max-width: 36em; color: #6d675b; }
-      .actions { display: flex; flex-wrap: wrap; gap: var(--ecart-entre-composants); }
-      .actions button { padding: var(--ecart-dans-composant) var(--marge-interieure-composant); min-height: 40px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; background: #7a1f3d; color: #ffffff; }
+      .actions { display: flex; flex-wrap: wrap; gap: var(--gap-between-components); }
+      .actions button { padding: var(--gap-within-component) var(--padding-component); min-height: 40px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; background: #7a1f3d; color: #ffffff; }
       .actions button:focus-visible, .champ input:focus-visible { outline: 2px solid #4f0020; outline-offset: 2px; }
 
       .article { max-width: 40rem; }
-      .bloc { display: flex; flex-direction: column; gap: var(--ecart-entre-composants); }
-      .bloc-titre { display: flex; flex-direction: column; gap: var(--ecart-entre-composants); }
+      .bloc { display: flex; flex-direction: column; gap: var(--gap-between-components); }
+      .bloc-titre { display: flex; flex-direction: column; gap: var(--gap-between-components); }
 
-      .dense-entete { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--ecart-entre-composants); }
-      .champ { display: flex; flex-direction: column; gap: var(--ecart-dans-composant); min-width: 0; flex: 0 1 280px; }
-      .champ input { width: 100%; min-height: 40px; padding: var(--ecart-dans-composant) var(--ecart-entre-composants); color: #363026; background: #ffffff; border: 1px solid #958f84; border-radius: 6px; }
+      .dense-entete { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--gap-between-components); }
+      .champ { display: flex; flex-direction: column; gap: var(--gap-within-component); min-width: 0; flex: 0 1 280px; }
+      .champ input { width: 100%; min-height: 40px; padding: var(--gap-within-component) var(--gap-between-components); color: #363026; background: #ffffff; border: 1px solid #958f84; border-radius: 6px; }
       table { width: 100%; border-collapse: collapse; }
-      th, td { text-align: left; vertical-align: top; padding: var(--ecart-dans-composant) var(--ecart-entre-composants) var(--ecart-dans-composant) 0; border-bottom: 1px solid #d8d6d2; }
+      th, td { text-align: left; vertical-align: top; padding: var(--gap-within-component) var(--gap-between-components) var(--gap-within-component) 0; border-bottom: 1px solid #d8d6d2; }
       td.num, th.num { text-align: right; padding-right: 0; font-variant-numeric: tabular-nums; }
     </style>
   </head>
@@ -66,126 +66,126 @@
     <main>
       <header>
         <div class="entete">
-          <h1 class="t-titre-1" data-style="titre.1">Typographie, Grenat Papeterie</h1>
-          <p class="t-corps-moyen secondaire" data-style="corps.moyen">Marque fictive. Onze styles de texte, un jeton composite chacun (groupe typo de semantique.tokens.json) : police de la marque, taille, graisse et interligne sans unité, hauteur de ligne visée multiple de 4 px. Sous 600 px de large [H], affichage et titres 1 à 3 prennent leur valeur en étroit.</p>
-          <p class="t-mention" data-style="mention">9 règles tenues, contrôlées par npm run typo.</p>
+          <h1 class="t-heading-1" data-style="heading.1">Typographie, Grenat Papeterie</h1>
+          <p class="t-body-medium secondaire" data-style="body.medium">Marque fictive. Onze styles de texte, un jeton composite chacun (groupe typography de semantique.tokens.json) : police de la marque, taille, graisse et interligne sans unité, hauteur de ligne visée multiple de 4 px. Sous 600 px de large [H], affichage et titres 1 à 3 prennent leur valeur en étroit.</p>
+          <p class="t-supporting-text" data-style="supporting-text">9 règles tenues, contrôlées par npm run typo.</p>
         </div>
       </header>
 
       <section aria-labelledby="titre-specimen">
         <div class="entete">
-          <h2 class="t-titre-2" data-style="titre.2" id="titre-specimen">Spécimen</h2>
-          <p class="t-mention" data-style="mention">Taille / ligne en px et rapport (ligne ÷ taille), en large puis en étroit ; graisse ; police.</p>
+          <h2 class="t-heading-2" data-style="heading.2" id="titre-specimen">Spécimen</h2>
+          <p class="t-supporting-text" data-style="supporting-text">Taille / ligne en px et rapport (ligne ÷ taille), en large puis en étroit ; graisse ; police.</p>
         </div>
         <ol class="specimen">
-          <li data-specimen="affichage.grand">
-            <p class="meta"><code>affichage.grand</code> · 60 / 76 px · rapport 1,2667 · étroit 36 / 48 px · rapport 1,3333 · 700 · police.titre · capitale 0,7 × taille</p>
-            <p class="t-affichage-grand" data-style="affichage.grand">Grenat Papeterie ouvre le mardi</p>
+          <li data-specimen="display.large">
+            <p class="meta"><code>display.large</code> · 60 / 76 px · rapport 1,2667 · étroit 36 / 48 px · rapport 1,3333 · 700 · brand.font.heading · capitale 0,7 × taille</p>
+            <p class="t-display-large" data-style="display.large">Grenat Papeterie ouvre le mardi</p>
           </li>
-          <li data-specimen="affichage.moyen">
-            <p class="meta"><code>affichage.moyen</code> · 48 / 60 px · rapport 1,25 · étroit 30 / 40 px · rapport 1,3333 · 700 · police.titre · capitale 0,7 × taille</p>
-            <p class="t-affichage-moyen" data-style="affichage.moyen">Grenat Papeterie ouvre le mardi</p>
+          <li data-specimen="display.medium">
+            <p class="meta"><code>display.medium</code> · 48 / 60 px · rapport 1,25 · étroit 30 / 40 px · rapport 1,3333 · 700 · brand.font.heading · capitale 0,7 × taille</p>
+            <p class="t-display-medium" data-style="display.medium">Grenat Papeterie ouvre le mardi</p>
           </li>
-          <li data-specimen="titre.1">
-            <p class="meta"><code>titre.1</code> · 30 / 40 px · rapport 1,3333 · étroit 24 / 32 px · rapport 1,3333 · 700 · police.titre · capitale 0,7 × taille</p>
-            <p class="t-titre-1" data-style="titre.1">Grenat Papeterie ouvre le mardi</p>
+          <li data-specimen="heading.1">
+            <p class="meta"><code>heading.1</code> · 30 / 40 px · rapport 1,3333 · étroit 24 / 32 px · rapport 1,3333 · 700 · brand.font.heading · capitale 0,7 × taille</p>
+            <p class="t-heading-1" data-style="heading.1">Grenat Papeterie ouvre le mardi</p>
           </li>
-          <li data-specimen="titre.2">
-            <p class="meta"><code>titre.2</code> · 24 / 32 px · rapport 1,3333 · étroit 20 / 28 px · rapport 1,4 · 700 · police.titre · capitale 0,7 × taille</p>
-            <p class="t-titre-2" data-style="titre.2">Grenat Papeterie ouvre le mardi</p>
+          <li data-specimen="heading.2">
+            <p class="meta"><code>heading.2</code> · 24 / 32 px · rapport 1,3333 · étroit 20 / 28 px · rapport 1,4 · 700 · brand.font.heading · capitale 0,7 × taille</p>
+            <p class="t-heading-2" data-style="heading.2">Grenat Papeterie ouvre le mardi</p>
           </li>
-          <li data-specimen="titre.3">
-            <p class="meta"><code>titre.3</code> · 20 / 28 px · rapport 1,4 · étroit 18 / 24 px · rapport 1,3333 · 600 · police.titre · capitale 0,7 × taille</p>
-            <p class="t-titre-3" data-style="titre.3">Grenat Papeterie ouvre le mardi</p>
+          <li data-specimen="heading.3">
+            <p class="meta"><code>heading.3</code> · 20 / 28 px · rapport 1,4 · étroit 18 / 24 px · rapport 1,3333 · 600 · brand.font.heading · capitale 0,7 × taille</p>
+            <p class="t-heading-3" data-style="heading.3">Grenat Papeterie ouvre le mardi</p>
           </li>
-          <li data-specimen="titre.4">
-            <p class="meta"><code>titre.4</code> · 16 / 24 px · rapport 1,5 · 700 · police.texte</p>
-            <p class="t-titre-4" data-style="titre.4">Grenat Papeterie ouvre le mardi</p>
+          <li data-specimen="heading.4">
+            <p class="meta"><code>heading.4</code> · 16 / 24 px · rapport 1,5 · 700 · brand.font.body</p>
+            <p class="t-heading-4" data-style="heading.4">Grenat Papeterie ouvre le mardi</p>
           </li>
-          <li data-specimen="corps.grand">
-            <p class="meta"><code>corps.grand</code> · 18 / 28 px · rapport 1,5556 · 400 · police.texte</p>
-            <p class="t-corps-grand" data-style="corps.grand">Grenat Papeterie ouvre le mardi</p>
+          <li data-specimen="body.large">
+            <p class="meta"><code>body.large</code> · 18 / 28 px · rapport 1,5556 · 400 · brand.font.body</p>
+            <p class="t-body-large" data-style="body.large">Grenat Papeterie ouvre le mardi</p>
           </li>
-          <li data-specimen="corps.moyen">
-            <p class="meta"><code>corps.moyen</code> · 16 / 24 px · rapport 1,5 · 400 · police.texte</p>
-            <p class="t-corps-moyen" data-style="corps.moyen">Grenat Papeterie ouvre le mardi</p>
+          <li data-specimen="body.medium">
+            <p class="meta"><code>body.medium</code> · 16 / 24 px · rapport 1,5 · 400 · brand.font.body</p>
+            <p class="t-body-medium" data-style="body.medium">Grenat Papeterie ouvre le mardi</p>
           </li>
-          <li data-specimen="corps.petit">
-            <p class="meta"><code>corps.petit</code> · 14 / 20 px · rapport 1,4286 · 400 · police.texte</p>
-            <p class="t-corps-petit" data-style="corps.petit">Grenat Papeterie ouvre le mardi</p>
+          <li data-specimen="body.small">
+            <p class="meta"><code>body.small</code> · 14 / 20 px · rapport 1,4286 · 400 · brand.font.body</p>
+            <p class="t-body-small" data-style="body.small">Grenat Papeterie ouvre le mardi</p>
           </li>
-          <li data-specimen="libelle">
-            <p class="meta"><code>libelle</code> · 14 / 20 px · rapport 1,4286 · 600 · police.produit</p>
-            <p class="t-libelle" data-style="libelle">Grenat Papeterie ouvre le mardi</p>
+          <li data-specimen="label">
+            <p class="meta"><code>label</code> · 14 / 20 px · rapport 1,4286 · 600 · font.product</p>
+            <p class="t-label" data-style="label">Grenat Papeterie ouvre le mardi</p>
           </li>
-          <li data-specimen="mention">
-            <p class="meta"><code>mention</code> · 12 / 16 px · rapport 1,3333 · 400 · police.texte</p>
-            <p class="t-mention" data-style="mention">Grenat Papeterie ouvre le mardi</p>
+          <li data-specimen="supporting-text">
+            <p class="meta"><code>supporting-text</code> · 12 / 16 px · rapport 1,3333 · 400 · brand.font.body</p>
+            <p class="t-supporting-text" data-style="supporting-text">Grenat Papeterie ouvre le mardi</p>
           </li>
-          <li data-specimen="initiales.normale">
-            <p class="meta"><code>initiales.normale</code> · 16 / 24 px · rapport 1,5 · 600 · police.texte</p>
-            <p class="t-initiales-normale" data-style="initiales.normale">Grenat Papeterie ouvre le mardi</p>
+          <li data-specimen="initials.medium">
+            <p class="meta"><code>initials.medium</code> · 16 / 24 px · rapport 1,5 · 600 · brand.font.body</p>
+            <p class="t-initials-medium" data-style="initials.medium">Grenat Papeterie ouvre le mardi</p>
           </li>
-          <li data-specimen="initiales.grande">
-            <p class="meta"><code>initiales.grande</code> · 24 / 32 px · rapport 1,3333 · 600 · police.texte</p>
-            <p class="t-initiales-grande" data-style="initiales.grande">Grenat Papeterie ouvre le mardi</p>
+          <li data-specimen="initials.large">
+            <p class="meta"><code>initials.large</code> · 24 / 32 px · rapport 1,3333 · 600 · brand.font.body</p>
+            <p class="t-initials-large" data-style="initials.large">Grenat Papeterie ouvre le mardi</p>
           </li>
         </ol>
       </section>
 
       <section data-situation="hero" aria-labelledby="titre-hero">
-        <h2 class="t-titre-2" data-style="titre.2" id="titre-hero">Hero d'une page d'accueil</h2>
+        <h2 class="t-heading-2" data-style="heading.2" id="titre-hero">Hero d'une page d'accueil</h2>
         <div class="cadre hero">
           <div class="hero-texte">
-            <p class="t-affichage-grand" data-style="affichage.grand" id="hero-titre">Prenez le temps d'un café</p>
-            <p class="t-corps-grand chapo" data-style="corps.grand">Trois salles, un torréfacteur sur place et une carte qui change avec les arrivages, du mardi au dimanche.</p>
+            <p class="t-display-large" data-style="display.large" id="hero-titre">Prenez le temps d'un café</p>
+            <p class="t-body-large chapo" data-style="body.large">Trois salles, un torréfacteur sur place et une carte qui change avec les arrivages, du mardi au dimanche.</p>
           </div>
           <div class="actions">
-            <button class="t-libelle" data-style="libelle" type="button">Réserver une table</button>
+            <button class="t-label" data-style="label" type="button">Réserver une table</button>
           </div>
         </div>
       </section>
 
       <section data-situation="contenu" aria-labelledby="titre-contenu">
-        <h2 class="t-titre-2" data-style="titre.2" id="titre-contenu">Page de contenu</h2>
+        <h2 class="t-heading-2" data-style="heading.2" id="titre-contenu">Page de contenu</h2>
         <article class="cadre article">
           <div class="bloc-titre">
-            <h3 class="t-titre-1" data-style="titre.1" id="titre-long">Du grain à la tasse : comment nous choisissons, torréfions et servons chaque café de notre carte</h3>
-            <p class="t-corps-grand secondaire" data-style="corps.grand">Chaque mardi, la machine tourne avant l'ouverture ; voici ce qui se passe entre le sac de café vert et la tasse posée sur le comptoir.</p>
+            <h3 class="t-heading-1" data-style="heading.1" id="titre-long">Du grain à la tasse : comment nous choisissons, torréfions et servons chaque café de notre carte</h3>
+            <p class="t-body-large secondaire" data-style="body.large">Chaque mardi, la machine tourne avant l'ouverture ; voici ce qui se passe entre le sac de café vert et la tasse posée sur le comptoir.</p>
           </div>
           <div class="bloc">
-            <h4 class="t-titre-2" data-style="titre.2">D'où viennent nos grains</h4>
-            <p class="t-corps-moyen" data-style="corps.moyen">Nous achetons à quatre coopératives, par petits lots, et nous goûtons chaque lot avant de le commander. Un lot qui ne passe pas la dégustation ne passe pas la porte, même s'il est déjà payé.</p>
-            <p class="t-corps-moyen" data-style="corps.moyen">Les sacs arrivent au fil des saisons ; la carte suit, et un café peut disparaître pendant plusieurs mois.</p>
+            <h4 class="t-heading-2" data-style="heading.2">D'où viennent nos grains</h4>
+            <p class="t-body-medium" data-style="body.medium">Nous achetons à quatre coopératives, par petits lots, et nous goûtons chaque lot avant de le commander. Un lot qui ne passe pas la dégustation ne passe pas la porte, même s'il est déjà payé.</p>
+            <p class="t-body-medium" data-style="body.medium">Les sacs arrivent au fil des saisons ; la carte suit, et un café peut disparaître pendant plusieurs mois.</p>
           </div>
           <div class="bloc">
-            <h5 class="t-titre-3" data-style="titre.3">La torréfaction du mardi</h5>
-            <p class="t-corps-moyen" data-style="corps.moyen">Douze minutes en moyenne, une courbe notée pour chaque lot, et trois jours de repos avant la première tasse.</p>
-            <p class="t-mention" data-style="mention">Mis à jour le 15 novembre 2026.</p>
+            <h5 class="t-heading-3" data-style="heading.3">La torréfaction du mardi</h5>
+            <p class="t-body-medium" data-style="body.medium">Douze minutes en moyenne, une courbe notée pour chaque lot, et trois jours de repos avant la première tasse.</p>
+            <p class="t-supporting-text" data-style="supporting-text">Mis à jour le 15 novembre 2026.</p>
           </div>
         </article>
       </section>
 
       <section data-situation="dense" aria-labelledby="titre-dense">
-        <h2 class="t-titre-2" data-style="titre.2" id="titre-dense">Écran dense</h2>
+        <h2 class="t-heading-2" data-style="heading.2" id="titre-dense">Écran dense</h2>
         <div class="cadre">
           <div class="dense-entete">
-            <h3 class="t-titre-4" data-style="titre.4">Commandes du jour</h3>
+            <h3 class="t-heading-4" data-style="heading.4">Commandes du jour</h3>
             <div class="champ">
-              <label class="t-libelle" data-style="libelle" for="filtre-table">Table</label>
-              <input class="t-corps-moyen" data-style="corps.moyen" id="filtre-table" type="text" value="T3" autocomplete="off" aria-describedby="filtre-aide">
-              <p class="t-mention" data-style="mention" id="filtre-aide">Numéro de table, ou vide pour tout voir.</p>
+              <label class="t-label" data-style="label" for="filtre-table">Table</label>
+              <input class="t-body-medium" data-style="body.medium" id="filtre-table" type="text" value="T3" autocomplete="off" aria-describedby="filtre-aide">
+              <p class="t-supporting-text" data-style="supporting-text" id="filtre-aide">Numéro de table, ou vide pour tout voir.</p>
             </div>
           </div>
-          <table class="t-corps-petit" data-style="corps.petit">
-            <thead><tr><th class="t-libelle" data-style="libelle" scope="col">Heure</th><th class="t-libelle" data-style="libelle" scope="col">Table</th><th class="t-libelle" data-style="libelle" scope="col">Commande</th><th class="t-libelle num" data-style="libelle" scope="col">Montant</th></tr></thead>
+          <table class="t-body-small" data-style="body.small">
+            <thead><tr><th class="t-label" data-style="label" scope="col">Heure</th><th class="t-label" data-style="label" scope="col">Table</th><th class="t-label" data-style="label" scope="col">Commande</th><th class="t-label num" data-style="label" scope="col">Montant</th></tr></thead>
             <tbody>
               <tr><td>8 h 05</td><td>T3</td><td>2 allongés, 1 tartine beurre</td><td class="num">7,40 €</td></tr>
               <tr><td>8 h 12</td><td>T3</td><td>1 filtre du moment</td><td class="num">4,20 €</td></tr>
               <tr><td>8 h 31</td><td>T3</td><td>1 cappuccino, 1 brioche, 1 jus pressé</td><td class="num">11,90 €</td></tr>
             </tbody>
           </table>
-          <p class="t-mention" data-style="mention">Montants TTC ; la liste se met à jour à chaque commande validée en caisse.</p>
+          <p class="t-supporting-text" data-style="supporting-text">Montants TTC ; la liste se met à jour à chaque commande validée en caisse.</p>
         </div>
       </section>
     </main>

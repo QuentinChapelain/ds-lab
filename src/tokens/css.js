@@ -21,7 +21,7 @@ import { pathToFileURL } from 'node:url';
 import { parse, build, defineConfig } from '@terrazzo/parser';
 import css, { FILE_PREFIX } from '@terrazzo/plugin-css';
 import { lireJson } from '../lib/fichiers.js';
-import { cssVar } from '../report/modifications.js';
+import { cssVar } from '../lib/nom-css.js';
 import { RESOLVER, lireResolver, seuilEtroit } from './resolver.js';
 import { flattenTokens, tokenTypes, resoudreAlias } from './roles.js';
 

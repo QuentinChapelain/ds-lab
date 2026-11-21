@@ -5,17 +5,17 @@
  * écrite à la main dans le dossier de sa marque, primitives.tokens.json ; la différence entre marques vit dans ce fichier.
  *
  * Attendus écrits à la main avant le code (16/11/2026) :
- *   E1 echellesPropres(dossier) : le contenu de primitives.tokens.json du dossier, ou null ; Orbe Café donne bleu, terre,
- *      sable ; les quatre autres marques n'en ont pas ;
+ *   E1 echellesPropres(dossier) : le contenu de primitives.tokens.json du dossier, ou null ; Orbe Café donne blue, earth,
+ *      sand ; les quatre autres marques n'en ont pas ;
  *   E2 sans ce fichier, nommer une échelle est refusé : « entrée invalide : primaire, échelle existante : aucune échelle
  *      écrite à la main dans le dossier de la marque (primitives.tokens.json) » ;
  *   E3 une marque quelconque qui a son fichier (dossier temporaire, échelle « olive » de 12 pas) nomme son échelle :
  *      acceptée, resolver du jeu marque = aplat, police, primitives.tokens.json, marque.tokens.json ;
- *   E4 une échelle commune (neutre) ne se nomme plus, même dans un dossier qui a son fichier : « échelle inconnue neutre » ;
+ *   E4 une échelle commune (neutral) ne se nomme plus, même dans un dossier qui a son fichier : « échelle inconnue neutral » ;
  *   E5 défaut corrigé : une couleur et une échelle nommée, mêlées, ne sont plus une panne ; les deux fichiers d'échelles
  *      claires entrent au resolver, primitives.tokens.json puis echelles.tokens.json, et au contrôle de contraste ;
  *   E6 Orbe Café : couche marque et resolver réécrits à l'identique, octet par octet ;
- *   E7 calibrage : une échelle nommée est lue dans le dossier de sa marque ; « terre » n'existe pas pour une autre marque
+ *   E7 calibrage : une échelle nommée est lue dans le dossier de sa marque ; « earth » n'existe pas pour une autre marque
  *      (accent absent de la colonne, motif de la saisie).
  */
 import { test } from 'node:test';
@@ -40,19 +40,19 @@ const lire = (/** @type {string} */ d, /** @type {string} */ f) => readFileSync(
 function avecOlive() {
   const d = mkdtempSync(join(tmpdir(), 'ds-lab-propres-'));
   const olive = scaleToDtcg(generateScale('olive', '#6b7a2a'), 'Olive, écrite à la main');
-  writeFileSync(join(d, 'primitives.tokens.json'), JSON.stringify({ couleur: { $type: 'color', olive } }));
+  writeFileSync(join(d, 'primitives.tokens.json'), JSON.stringify({ color: { $type: 'color', olive } }));
   return d;
 }
 
 test('E1 echellesPropres : le fichier du dossier, ou null', () => {
   const o = echellesPropres(ORBE);
-  assert.deepEqual(Object.keys(o?.couleur ?? {}).filter((k) => !k.startsWith('$')), ['bleu', 'terre', 'sable']);
+  assert.deepEqual(Object.keys(o?.color ?? {}).filter((k) => !k.startsWith('$')), ['blue', 'earth', 'sand']);
   for (const m of ['atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto']) assert.equal(echellesPropres(dossier(m)), null, m);
 });
 
 test('E2 sans fichier d\'échelles écrites à la main, nommer une échelle est refusé', () => {
   for (const m of ['atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto']) {
-    const r = saisir({ nom: 'Essai', primaire: { echelle: 'bleu' }, polices: POLICES }, { dossier: dossier(m) });
+    const r = saisir({ nom: 'Essai', primaire: { echelle: 'blue' }, polices: POLICES }, { dossier: dossier(m) });
     assert.deepEqual(r.motifs, [`entrée invalide : primaire, ${SANS_FICHIER}`], m);
   }
 });
@@ -63,18 +63,18 @@ test('E3 une marque qui a son fichier nomme son échelle', () => {
   assert.deepEqual(r.motifs, []);
   assert.equal(r.echelles, null);
   assert.deepEqual(r.resolver.sets.marque.sources.map((/** @type {any} */ s) => s.$ref.split('/').pop()), ['aplat.tokens.json', 'police.tokens.json', 'primitives.tokens.json', 'marque.tokens.json']);
-  assert.equal(r.marque.marque.primaire['9'].$value, '{couleur.olive.9}');
+  assert.equal(r.marque.brand.primary['9'].$value, '{color.olive.9}');
 });
 
 test('E4 une échelle commune ne se nomme plus', () => {
   for (const d of [ORBE, avecOlive()]) {
-    const r = saisir({ nom: 'Essai', primaire: { echelle: 'bleu' }, accent: { echelle: 'neutre' }, polices: POLICES }, { dossier: d });
-    assert.ok(r.motifs.includes('entrée invalide : accent, échelle inconnue neutre'), r.motifs.join('\n'));
+    const r = saisir({ nom: 'Essai', primaire: { echelle: 'blue' }, accent: { echelle: 'neutral' }, polices: POLICES }, { dossier: d });
+    assert.ok(r.motifs.includes('entrée invalide : accent, échelle inconnue neutral'), r.motifs.join('\n'));
   }
 });
 
 test('E5 une couleur et une échelle nommée, mêlées : ni panne, ni fichier oublié', () => {
-  const r = saisir({ nom: 'Essai', primaire: '#8a4fd8', accent: { echelle: 'terre' }, polices: POLICES }, { dossier: ORBE });
+  const r = saisir({ nom: 'Essai', primaire: '#8a4fd8', accent: { echelle: 'earth' }, polices: POLICES }, { dossier: ORBE });
   assert.deepEqual(r.motifs, []);
   assert.deepEqual(r.resolver.sets.marque.sources.map((/** @type {any} */ s) => s.$ref.split('/').pop()), ['aplat.tokens.json', 'police.tokens.json', 'primitives.tokens.json', 'echelles.tokens.json', 'marque.tokens.json']);
 });
@@ -88,7 +88,7 @@ test('E6 Orbe Café : couche marque et resolver identiques, octet par octet', ()
 
 test('E7 calibrage : l\'échelle nommée se lit dans le dossier de sa marque', () => {
   const d = dossier('atelier-lavandine');
-  const c = colonne({ dossier: d, entree: { ...JSON.parse(lire(d, 'entree.json')), accent: { echelle: 'terre' } } });
+  const c = colonne({ dossier: d, entree: { ...JSON.parse(lire(d, 'entree.json')), accent: { echelle: 'earth' } } });
   assert.equal(c.accent, null);
   assert.deepEqual(c.motifs, [`entrée invalide : accent, ${SANS_FICHIER}`]);
   const o = colonne({ dossier: ORBE, entree: JSON.parse(lire(ORBE, 'entree.json')) });

@@ -45,28 +45,28 @@ function attenduCartes(t) {
     const image = etat.startsWith('image') || etat === 'lien-focus';
     out.set(etat, {
       fond: c('surface'),
-      bord: `${v['ds-epaisseur-contour']} ${css(v[force ? 'ds-contour' : 'ds-contour-carte'])}`,
-      rayon: v['ds-arrondi-surface'],
+      bord: `${v['ds-border-width-default']} ${css(v[force ? 'ds-border' : 'ds-card-border'])}`,
+      rayon: v['ds-border-radius-surface'],
       ombre: 'none',
-      marge: v['ds-marge-interieure-composant'],
+      marge: v['ds-padding-component'],
       titre: {
         balise: 'H3',
         police: t.policeTitre.join('|'),
-        taille: v['ds-titre-carte-taille'],
-        graisse: v['ds-titre-carte-graisse'],
-        interligne: px(parseFloat(v['ds-titre-carte-taille']) * Number(v['ds-titre-carte-interligne'])),
-        ajustement: `cap-height ${v['ds-titre-carte-hauteur-capitale']}`,
+        taille: v['ds-card-title-font-size'],
+        graisse: v['ds-card-title-font-weight'],
+        interligne: px(parseFloat(v['ds-card-title-font-size']) * Number(v['ds-card-title-line-height'])),
+        ajustement: `cap-height ${v['ds-card-title-cap-height']}`,
         couleur: c('on-surface'),
         souligne: force ? 'underline' : 'none',
       },
-      texte: { police: t.policeTexte.join('|'), taille: v['ds-corps-taille'], graisse: v['ds-corps-graisse'], couleur: c('on-surface') },
-      ecartTitreTexte: v['ds-ecart-dans-composant'],
-      ecartActions: avecActions ? v['ds-ecart-entre-composants'] : null,
+      texte: { police: t.policeTexte.join('|'), taille: v['ds-body-font-size'], graisse: v['ds-body-font-weight'], couleur: c('on-surface') },
+      ecartTitreTexte: v['ds-gap-within-component'],
+      ecartActions: avecActions ? v['ds-gap-between-components'] : null,
       image: image
-        ? { alt, format: '16:9', cadrage: 'cover 50% 50%', coinsHauts: px(parseFloat(v['ds-arrondi-surface']) - parseFloat(v['ds-epaisseur-contour'])), coinsBas: '0px', ecartTitre: v['ds-marge-interieure-composant'] }
+        ? { alt, format: '16:9', cadrage: 'cover 50% 50%', coinsHauts: px(parseFloat(v['ds-border-radius-surface']) - parseFloat(v['ds-border-width-default'])), coinsBas: '0px', ecartTitre: v['ds-padding-component'] }
         : null,
       lien: lien
-        ? { recouvre: `-${v['ds-epaisseur-contour']} ${v['ds-arrondi-surface']}`, anneau: force === 'focus' ? `solid ${v['ds-epaisseur-focus']} ${css(v['ds-focus'])} ${v['ds-decalage-focus']}` : 'none' }
+        ? { recouvre: `-${v['ds-border-width-default']} ${v['ds-border-radius-surface']}`, anneau: force === 'focus' ? `solid ${v['ds-border-width-focus']} ${css(v['ds-focus'])} ${v['ds-offset-focus']}` : 'none' }
         : null,
       focalisables: lien ? 1 : avecActions ? 2 : 0,
     });
@@ -166,30 +166,30 @@ function attenduVariantes(t) {
   /** @type {Map<string, Record<string, any>>} */
   const out = new Map();
   for (const [etat, [sousTitre, small, devant, lien]] of Object.entries(VARIANTES)) {
-    const k = small ? 'ds-titre-4' : 'ds-titre-carte';
+    const k = small ? 'ds-heading-4' : 'ds-card-title';
     out.set(etat, {
       titre: {
         balise: 'H3',
         police: (small ? t.policeTexte : t.policeTitre).join('|'),
-        taille: v[`${k}-taille`],
-        graisse: v[`${k}-graisse`],
-        interligne: px(parseFloat(v[`${k}-taille`]) * Number(v[`${k}-interligne`])),
-        ajustement: small ? 'none' : `cap-height ${v['ds-titre-carte-hauteur-capitale']}`,
+        taille: v[`${k}-font-size`],
+        graisse: v[`${k}-font-weight`],
+        interligne: px(parseFloat(v[`${k}-font-size`]) * Number(v[`${k}-line-height`])),
+        ajustement: small ? 'none' : `cap-height ${v['ds-card-title-cap-height']}`,
       },
       sousTitre: sousTitre
         ? {
             police: t.policeTexte.join('|'),
-            taille: v['ds-corps-petit-taille'],
-            graisse: v['ds-corps-petit-graisse'],
+            taille: v['ds-body-small-font-size'],
+            graisse: v['ds-body-small-font-weight'],
             // Au dix-millième, comme le navigateur le calcule (14 × 1,4286 = 20,0004 px), et comme la preuve de DsTag.
-            interligne: `${Math.round(parseFloat(v['ds-corps-petit-taille']) * Number(v['ds-corps-petit-interligne']) * 10000) / 10000}px`,
-            couleur: css(v['ds-texte-secondaire']),
-            ecartTitre: v['ds-ecart-dans-composant'],
-            ecartTexte: v['ds-ecart-entre-blocs'],
+            interligne: `${Math.round(parseFloat(v['ds-body-small-font-size']) * Number(v['ds-body-small-line-height']) * 10000) / 10000}px`,
+            couleur: css(v['ds-text-secondary']),
+            ecartTitre: v['ds-gap-within-component'],
+            ecartTexte: v['ds-gap-between-blocks'],
           }
         : null,
       devant: devant
-        ? { cote: `${v['ds-taille-avatar-grande']} ${v['ds-taille-avatar-grande']}`, gauche: v['ds-marge-interieure-composant'], haut: v['ds-marge-interieure-composant'], ecartColonne: v['ds-ecart-entre-composants'], titreAligne: '0px' }
+        ? { cote: `${v['ds-avatar-size-large']} ${v['ds-avatar-size-large']}`, gauche: v['ds-padding-component'], haut: v['ds-padding-component'], ecartColonne: v['ds-gap-between-components'], titreAligne: '0px' }
         : null,
       largeur: '320px',
       focalisables: lien ? 1 : 0,
@@ -295,8 +295,8 @@ async function clavier(contexte, base, t) {
     const p = getComputedStyle(a, '::after');
     return { visible: a.matches(':focus-visible'), anneau: `${p.outlineStyle} ${p.outlineWidth} ${p.outlineColor} ${p.outlineOffset}`, bord: getComputedStyle(e).borderTopColor, souligne: getComputedStyle(a).textDecorationLine };
   });
-  const attendu = `solid ${v['ds-epaisseur-focus']} ${css(v['ds-focus'])} ${v['ds-decalage-focus']}`;
-  out.push([focus.visible && focus.anneau === attendu && focus.bord === css(v['ds-contour']) && focus.souligne === 'underline', `${t.nom}, focus clavier de la carte à lien : ${focus.anneau} (jetons ${attendu}), contour ${focus.bord}, titre ${focus.souligne}`]);
+  const attendu = `solid ${v['ds-border-width-focus']} ${css(v['ds-focus'])} ${v['ds-offset-focus']}`;
+  out.push([focus.visible && focus.anneau === attendu && focus.bord === css(v['ds-border']) && focus.souligne === 'underline', `${t.nom}, focus clavier de la carte à lien : ${focus.anneau} (jetons ${attendu}), contour ${focus.bord}, titre ${focus.souligne}`]);
 
   // Un clic dans le texte, loin du titre, suit le lien.
   const boite = await page.locator('[data-cas="lien-a"] .ds-card__text').boundingBox();

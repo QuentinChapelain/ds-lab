@@ -1,20 +1,20 @@
 {
   "$description": "Contexte étroit du modificateur largeur (marque.resolver.json) : sous 600 px [H], seuls l'écart de section et les grands textes changent (DS6). Chaque jeton remplace en entier celui de semantique.tokens.json. Format DTCG 2025.10.",
-  "ecart": {
+  "gap": {
     "$type": "dimension",
     "section": {
-      "$value": "{espace.32}",
+      "$value": "{space.32}",
       "$description": "Écart entre deux sections de la page, la plus grande respiration verticale ; plus petit en étroit (largeur.etroit.tokens.json)."
     }
   },
-  "typo": {
+  "typography": {
     "$type": "typography",
-    "affichage": {
-      "grand": {
+    "display": {
+      "large": {
         "$value": {
-          "fontFamily": "{marque.police.titre}",
-          "fontSize": "{taille-texte.36}",
-          "fontWeight": "{graisse.700}",
+          "fontFamily": "{brand.font.heading}",
+          "fontSize": "{font-size.36}",
+          "fontWeight": "{font-weight.700}",
           "letterSpacing": {
             "value": 0,
             "unit": "px"
@@ -23,14 +23,14 @@
         },
         "$description": "Hero d'une page d'accueil ; ligne visée 76 px en large, 48 px en étroit.",
         "$extensions": {
-          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
+          "ds-lab.hauteur-capitale": "{font.heading.cap-height}"
         }
       },
-      "moyen": {
+      "medium": {
         "$value": {
-          "fontFamily": "{marque.police.titre}",
-          "fontSize": "{taille-texte.30}",
-          "fontWeight": "{graisse.700}",
+          "fontFamily": "{brand.font.heading}",
+          "fontSize": "{font-size.30}",
+          "fontWeight": "{font-weight.700}",
           "letterSpacing": {
             "value": 0,
             "unit": "px"
@@ -39,16 +39,16 @@
         },
         "$description": "Grand chiffre ou bandeau ; ligne visée 60 px en large, 40 px en étroit.",
         "$extensions": {
-          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
+          "ds-lab.hauteur-capitale": "{font.heading.cap-height}"
         }
       }
     },
-    "titre": {
+    "heading": {
       "1": {
         "$value": {
-          "fontFamily": "{marque.police.titre}",
-          "fontSize": "{taille-texte.24}",
-          "fontWeight": "{graisse.700}",
+          "fontFamily": "{brand.font.heading}",
+          "fontSize": "{font-size.24}",
+          "fontWeight": "{font-weight.700}",
           "letterSpacing": {
             "value": 0,
             "unit": "px"
@@ -57,14 +57,14 @@
         },
         "$description": "Titre de page ; ligne visée 40 px en large, 32 px en étroit.",
         "$extensions": {
-          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
+          "ds-lab.hauteur-capitale": "{font.heading.cap-height}"
         }
       },
       "2": {
         "$value": {
-          "fontFamily": "{marque.police.titre}",
-          "fontSize": "{taille-texte.20}",
-          "fontWeight": "{graisse.700}",
+          "fontFamily": "{brand.font.heading}",
+          "fontSize": "{font-size.20}",
+          "fontWeight": "{font-weight.700}",
           "letterSpacing": {
             "value": 0,
             "unit": "px"
@@ -73,14 +73,14 @@
         },
         "$description": "Titre de section ; ligne visée 32 px en large, 28 px en étroit.",
         "$extensions": {
-          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
+          "ds-lab.hauteur-capitale": "{font.heading.cap-height}"
         }
       },
       "3": {
         "$value": {
-          "fontFamily": "{marque.police.titre}",
-          "fontSize": "{taille-texte.18}",
-          "fontWeight": "{graisse.600}",
+          "fontFamily": "{brand.font.heading}",
+          "fontSize": "{font-size.18}",
+          "fontWeight": "{font-weight.600}",
           "letterSpacing": {
             "value": 0,
             "unit": "px"
@@ -89,7 +89,7 @@
         },
         "$description": "Titre de carte ; ligne visée 28 px en large, 24 px en étroit.",
         "$extensions": {
-          "ds-lab.hauteur-capitale": "{police.titre.hauteur-capitale}"
+          "ds-lab.hauteur-capitale": "{font.heading.cap-height}"
         }
       }
     }

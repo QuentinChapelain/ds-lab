@@ -6,7 +6,7 @@
  *    A. Aussi quand le fond est déjà sur la cible (inchangé) : aucune opération de fond à
  *       laquelle se lier, le texte change quand même dans la simulation complète.
  * 2. Une couleur onSolid de la cible, en texte sur le pas 9 ou 10 de son échelle, est « inchangé »,
- *    nom <échelle>-sur-plein, jeton couleur.<échelle>.sur-plein ; pas « hors table ».
+ *    nom <échelle>-sur-plein, jeton color.<échelle>.on-solid ; pas « hors table ».
  * B. Un fond de pas 9 ou 10 dont le texte est l'onSolid de la même échelle a l'usage « plein » :
  *    pas de signalement hors tranche. Les autres cas ne changent pas (sable-9 sous bleu-12 : fond).
  * Contrastes (culori 4.0.2) :
@@ -122,7 +122,7 @@ test('2 : onSolid terre sur un fond qui n’est pas un pas 9-10 de terre → res
 });
 
 test('2 : jeton sur-plein choisi par son nom de ligne', () => {
-  assert.equal(pickColorToken(['couleur.terre.sur-plein'], { name: 'terre-sur-plein' }), 'couleur.terre.sur-plein');
+  assert.equal(pickColorToken(['color.earth.on-solid'], { name: 'earth-sur-plein' }), 'color.earth.on-solid');
 });
 
 test('B : paires plein de la cible = pas 9 et 10 de chaque échelle avec son onSolid, rien d’autre', () => {
@@ -133,12 +133,14 @@ test('B : paires plein de la cible = pas 9 et 10 de chaque échelle avec son onS
   assert.ok(!s.has('#f0c987|#103060'), 'bleu-12 sur sable-9 : pas un onSolid');
 });
 
-test('2 et B (réduction) : #220000 sur terre-9 inchangé, jeton couleur.terre.sur-plein ; terre-9 en plein, sable-9 toujours en fond', () => {
+test('2 et B (réduction) : #220000 sur terre-9 inchangé, sans jeton (valise aux anciens noms) ; terre-9 en plein, sable-9 toujours en fond', () => {
   const m = run.migration;
   const row = m.rows.find((/** @type {any} */ r) => r.value === '#220000');
   assert.ok(row, 'ligne #220000');
   assert.equal(row.status, 'inchangé');
-  assert.equal(row.token, 'couleur.terre.sur-plein');
+  // La valise de démonstration nomme ses échelles en français (terre) ; les jetons d'Orbe Café sont en anglais
+  // (docs/attendus/noms-en-anglais.md) : le texte sur plein ne se relie plus par le nom de l'échelle (KNOWN_ISSUES.md).
+  assert.equal(row.token, 'jeton absent');
   assert.deepEqual(m.rows.filter((/** @type {any} */ r) => r.status === 'hors table').map((/** @type {any} */ r) => r.value), []);
   const oos = m.exceptions.outOfSlice.map((/** @type {any} */ o) => `${o.value}|${o.usage}`);
   assert.ok(!oos.includes('#c8553d|fond'), `terre-9 en fond signalé : ${oos}`);

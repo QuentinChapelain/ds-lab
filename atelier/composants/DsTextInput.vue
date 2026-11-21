@@ -74,37 +74,37 @@ export default definirEnveloppe(MENU, (props, { attrs, emit }) => {
 .ds-text-input {
   display: flex;
   flex-direction: column;
-  gap: var(--v-ds-ecart-dans-composant);
+  gap: var(--v-ds-gap-within-component);
 }
 .ds-text-input__label {
-  font-family: var(--v-ds-libelle-police);
-  font-size: var(--v-ds-libelle-taille);
-  font-weight: var(--v-ds-libelle-graisse);
-  line-height: var(--v-ds-libelle-interligne);
+  font-family: var(--v-ds-label-font-family);
+  font-size: var(--v-ds-label-font-size);
+  font-weight: var(--v-ds-label-font-weight);
+  line-height: var(--v-ds-label-line-height);
   color: rgb(var(--v-theme-on-background));
 }
 .ds-text-input__required {
-  color: rgb(var(--v-ds-texte-secondaire));
+  color: rgb(var(--v-ds-text-secondary));
 }
 
 /* Le champ : contour, hauteur, marges et texte par jeton ; ni contour, ni voile, ni animation de Vuetify. */
 .ds-text-input .v-field {
-  --v-input-control-height: calc(var(--v-ds-hauteur-controle-normale) - 2 * var(--v-ds-epaisseur-contour));
-  --v-field-padding-start: var(--v-ds-marge-interieure-composant);
-  --v-field-padding-end: var(--v-ds-marge-interieure-composant);
+  --v-input-control-height: calc(var(--v-ds-height-control-medium) - 2 * var(--v-ds-border-width-default));
+  --v-field-padding-start: var(--v-ds-padding-component);
+  --v-field-padding-end: var(--v-ds-padding-component);
   --v-field-padding-top: 0px;
   --v-field-padding-bottom: 0px;
   --v-input-padding-top: 0px;
   box-sizing: border-box;
-  height: var(--v-ds-hauteur-controle-normale);
-  border: var(--v-ds-epaisseur-contour) solid rgb(var(--v-ds-contour));
-  border-radius: var(--v-ds-arrondi-controle);
+  height: var(--v-ds-height-control-medium);
+  border: var(--v-ds-border-width-default) solid rgb(var(--v-ds-border));
+  border-radius: var(--v-ds-border-radius-control);
   background: rgb(var(--v-theme-surface));
   color: rgb(var(--v-theme-on-surface));
-  font-family: var(--v-ds-corps-police);
-  font-size: var(--v-ds-corps-taille);
-  font-weight: var(--v-ds-corps-graisse);
-  line-height: var(--v-ds-corps-interligne);
+  font-family: var(--v-ds-body-font-family);
+  font-size: var(--v-ds-body-font-size);
+  font-weight: var(--v-ds-body-font-weight);
+  line-height: var(--v-ds-body-line-height);
   letter-spacing: 0;
   transition: none;
 }
@@ -121,7 +121,7 @@ export default definirEnveloppe(MENU, (props, { attrs, emit }) => {
   letter-spacing: 0;
 }
 .ds-text-input input.v-field__input::placeholder {
-  color: rgb(var(--v-ds-texte-secondaire));
+  color: rgb(var(--v-ds-text-secondary));
   opacity: 1;
 }
 /* Effacement hors menu : la croix native d'un champ de recherche n'est pas rendue. */
@@ -132,8 +132,8 @@ export default definirEnveloppe(MENU, (props, { attrs, emit }) => {
 
 /* Icône avant le texte, muette ; l'écart jusqu'au texte est la marge de début de l'input. */
 .ds-text-input .v-field.v-field--prepended {
-  --v-field-padding-start: var(--v-ds-ecart-icone-texte);
-  padding-inline-start: var(--v-ds-marge-interieure-composant);
+  --v-field-padding-start: var(--v-ds-gap-icon-text);
+  padding-inline-start: var(--v-ds-padding-component);
 }
 .ds-text-input .v-field__prepend-inner {
   padding-inline-end: 0;
@@ -142,46 +142,46 @@ export default definirEnveloppe(MENU, (props, { attrs, emit }) => {
 .ds-text-input__icon,
 .ds-text-input__icon > svg {
   display: block;
-  width: var(--v-ds-taille-icone-normale);
-  height: var(--v-ds-taille-icone-normale);
+  width: var(--v-ds-icon-size-medium);
+  height: var(--v-ds-icon-size-medium);
 }
 
 /* Focus : l'anneau du bouton, décalé sur le fond (DS2) ; le contour, d'erreur compris, reste visible. */
 .ds-text-input .v-field:has(input:focus-visible) {
-  outline: var(--v-ds-epaisseur-focus) solid rgb(var(--v-ds-focus));
-  outline-offset: var(--v-ds-decalage-focus);
+  outline: var(--v-ds-border-width-focus) solid rgb(var(--v-ds-focus));
+  outline-offset: var(--v-ds-offset-focus);
 }
 
 /* Erreur : le contour prend la couleur d'erreur, au repos comme au focus. */
 .ds-text-input--error .v-field {
-  border-color: rgb(var(--v-ds-contour-erreur));
+  border-color: rgb(var(--v-ds-border-error));
 }
 
 /* Désactivé : apparence par jetons, sans l'opacité de Vuetify. */
 .ds-text-input .v-field.v-field--disabled {
   opacity: 1;
-  background: rgb(var(--v-theme-desactive));
-  color: rgb(var(--v-theme-on-desactive));
-  border-color: rgb(var(--v-ds-contour-desactive));
+  background: rgb(var(--v-theme-disabled));
+  color: rgb(var(--v-theme-on-disabled));
+  border-color: rgb(var(--v-ds-border-disabled));
 }
 .ds-text-input .v-field--disabled .v-field__prepend-inner {
-  color: rgb(var(--v-theme-on-desactive));
+  color: rgb(var(--v-theme-on-disabled));
 }
 
 /* Aide et erreur, sous le champ ; le parent porte l'écart (DS3). */
 .ds-text-input__hint,
 .ds-text-input__error {
   margin: 0;
-  font-family: var(--v-ds-mention-police);
-  font-size: var(--v-ds-mention-taille);
-  font-weight: var(--v-ds-mention-graisse);
-  line-height: var(--v-ds-mention-interligne);
+  font-family: var(--v-ds-supporting-text-font-family);
+  font-size: var(--v-ds-supporting-text-font-size);
+  font-weight: var(--v-ds-supporting-text-font-weight);
+  line-height: var(--v-ds-supporting-text-line-height);
 }
 .ds-text-input__hint {
-  color: rgb(var(--v-ds-texte-secondaire));
+  color: rgb(var(--v-ds-text-secondary));
 }
 .ds-text-input__error {
-  color: rgb(var(--v-ds-texte-erreur));
+  color: rgb(var(--v-ds-text-error));
 }
 /* Aide sous une erreur : hors de la vue et du flux, toujours lue. */
 .ds-text-input__hidden {

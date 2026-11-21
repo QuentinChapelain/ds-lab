@@ -1,396 +1,396 @@
 {
   "$description": "Table de correspondance rôle → couleur de thème Vuetify, commune à toutes les marques (D41). Écrite à la main, lue par npm run vuetify (src/tokens/vuetify.js), qui écrit les thèmes clair et sombre de chaque marque dans tokens/<marque>/vuetify.json. Chaque couleur nomme son fond et son texte : Vuetify reçoit on-<couleur> de nous et n'en calcule aucun. La liste couvre les couleurs que Vuetify 4.3.4 définit par défaut (13 fonds, et on-surface-variant) : une couleur absente resterait celle de Material, avec un texte calculé par Vuetify. Viennent ensuite les couleurs de l'enveloppe du bouton, nommées d'après nos rôles, que Vuetify ne connaît pas. Les variables (variables) portent les traits, les dimensions et les styles de texte des enveloppes (bouton, champ, carte, bouton à icône), chacune vers un jeton ; Vuetify les écrit en --v-<clé>, une couleur en r, g, b. Chaque fond et son texte forment une paire de texte de paires.json, contrôlée par npm run contraste. Les autres variables de Vuetify (bordure, ombre, opacités des états) restent les siennes ; les enveloppes ne les lisent pas (KNOWN_ISSUES.md).",
   "vuetify": "4.3.4",
-  "couleurs": {
+  "colors": {
     "background": {
-      "fond": "fond.app",
-      "texte": "texte.principal",
+      "background": "background.app",
+      "text": "text.default",
       "$description": "Fond de la page, sous v-app."
     },
     "surface": {
-      "fond": "fond.surface",
-      "texte": "texte.principal",
+      "background": "background.surface",
+      "text": "text.default",
       "$description": "Surface posée sur la page : carte, menu, champ."
     },
     "surface-bright": {
-      "fond": "fond.surface",
-      "texte": "texte.principal",
+      "background": "background.surface",
+      "text": "text.default",
       "$description": "Surface la plus claire ; nous n'en avons qu'une, la même que surface [H], à juger sur les composants."
     },
     "surface-light": {
-      "fond": "fond.discret",
-      "texte": "texte.principal",
+      "background": "background.subtle",
+      "text": "text.default",
       "$description": "Surface en retrait (fond de piste, squelette de chargement) : le fond discret [H], à juger sur les composants."
     },
     "surface-variant": {
-      "fond": "fond.inverse",
-      "texte": "texte.sur-inverse",
+      "background": "background.inverse",
+      "text": "text.on-inverse",
       "$description": "Surface contrastée, dont Vuetify fait le fond des infobulles : le fond inverse [H], à juger sur les composants."
     },
     "primary": {
-      "fond": "fond.interactif.fort",
-      "texte": "texte.sur-interactif",
+      "background": "background.interactive.strong",
+      "text": "text.on-interactive",
       "$description": "Ce qui se clique (D05) : plein du bouton principal, texte fixé à la saisie (D03, D04)."
     },
     "primary-darken-1": {
-      "fond": "fond.interactif.fort.survol",
-      "texte": "texte.sur-interactif",
+      "background": "background.interactive.strong.hover",
+      "text": "text.on-interactive",
       "$description": "Variante foncée du primaire : le survol du plein [H], à juger sur les composants."
     },
     "secondary": {
-      "fond": "fond.accent.fort",
-      "texte": "texte.sur-accent",
+      "background": "background.accent.strong",
+      "text": "text.on-accent",
       "$description": "Accent de la marque : identité, petites surfaces, jamais porteur d'un sens. Jamais une couleur de bouton (D05) ; la garde contre cet usage viendra avec l'enveloppe du bouton."
     },
     "secondary-darken-1": {
-      "fond": "fond.accent.fort",
-      "texte": "texte.sur-accent",
+      "background": "background.accent.strong",
+      "text": "text.on-accent",
       "$description": "Même valeur que secondary : l'accent n'a pas de survol, puisqu'il ne se clique pas. Jamais une couleur de bouton (D05)."
     },
     "error": {
-      "fond": "fond.erreur.fort",
-      "texte": "texte.sur-erreur",
+      "background": "background.error.strong",
+      "text": "text.on-error",
       "$description": "Plein du statut erreur, commun à toutes les marques."
     },
     "info": {
-      "fond": "fond.info.fort",
-      "texte": "texte.sur-info",
+      "background": "background.info.strong",
+      "text": "text.on-info",
       "$description": "Plein du statut info, commun à toutes les marques."
     },
     "success": {
-      "fond": "fond.succes.fort",
-      "texte": "texte.sur-succes",
+      "background": "background.success.strong",
+      "text": "text.on-success",
       "$description": "Plein du statut succès, commun à toutes les marques."
     },
     "warning": {
-      "fond": "fond.avertissement.fort",
-      "texte": "texte.sur-avertissement",
+      "background": "background.warning.strong",
+      "text": "text.on-warning",
       "$description": "Plein du statut avertissement, commun à toutes les marques."
     },
-    "erreur-fort-survol": {
-      "fond": "fond.erreur.fort.survol",
-      "texte": "texte.sur-erreur",
+    "error-strong-hover": {
+      "background": "background.error.strong.hover",
+      "text": "text.on-error",
       "$description": "Plein du bouton danger survolé ; Vuetify n'en a pas, son survol est un voile."
     },
-    "composant-survol": {
-      "fond": "fond.composant.survol",
-      "texte": "texte.principal",
+    "component-hover": {
+      "background": "background.component.hover",
+      "text": "text.default",
       "$description": "Fond du bouton secondaire survolé ; au repos, il prend surface."
     },
-    "interactif-discret": {
-      "fond": "fond.interactif.discret",
-      "texte": "texte.interactif",
+    "interactive-subtle": {
+      "background": "background.interactive.subtle",
+      "text": "text.interactive",
       "$description": "Bouton discret : son texte au repos, sur la page (on-interactif-discret), et son fond au survol."
     },
-    "erreur-discret": {
-      "fond": "fond.erreur.discret",
-      "texte": "texte.erreur",
+    "error-subtle": {
+      "background": "background.error.subtle",
+      "text": "text.error",
       "$description": "Bouton danger discret : son texte au repos, sur la page (on-erreur-discret), et son fond au survol."
     },
-    "desactive": {
-      "fond": "fond.desactive",
-      "texte": "texte.desactive",
+    "disabled": {
+      "background": "background.disabled",
+      "text": "text.disabled",
       "$description": "Bouton désactivé, quelle que soit sa variante ; un discret désactivé garde la page pour fond. Sa paire porte une exception écrite (WCAG 1.4.3, composant inactif) : seule couleur de la table sous 4,5:1."
     },
-    "marque-teinte": {
-      "fond": "fond.marque.teinte",
-      "texte": "texte.marque",
-      "$description": "Fond teinté de la marque, non cliquable : fond de DsAvatar et de DsTag marque, initiales et texte en texte.marque (on-marque-teinte)."
+    "brand-tint": {
+      "background": "background.brand.tint",
+      "text": "text.brand",
+      "$description": "Fond teinté de la marque, non cliquable : fond de DsAvatar et de DsTag marque, initiales et texte en text.brand (on-marque-teinte)."
     },
-    "teinte": {
-      "fond": "fond.teinte",
-      "texte": "texte.principal",
-      "$description": "Fond teinté, non cliquable : fond de DsTag neutre, son texte en texte.principal (on-teinte)."
+    "tint": {
+      "background": "background.tint",
+      "text": "text.default",
+      "$description": "Fond teinté, non cliquable : fond de DsTag neutre, son texte en text.default (on-teinte)."
     }
   },
-  "polices": {
+  "fonts": {
     "font-body": {
-      "jeton": "marque.police.texte",
+      "token": "brand.font.body",
       "$description": "Police du texte, des libellés et des boutons (D16). Vuetify la lit dans --v-font-body, à défaut Roboto."
     },
     "font-heading": {
-      "jeton": "marque.police.titre",
+      "token": "brand.font.heading",
       "$description": "Police des titres (D16). Vuetify la lit dans --v-font-heading, à défaut --v-font-body."
     }
   },
   "variables": {
     "$description": "Variables du thème pour les enveloppes (bouton, champ, carte, bouton à icône, avatar, étiquette), préfixées ds- pour ne croiser aucune variable de Vuetify. Chacune nomme un jeton ; champ prend une partie d'un style de texte. Une couleur est le trait devant d'une paire de paires.json, ou dit pourquoi elle n'en a pas (sansPaire).",
     "ds-focus": {
-      "jeton": "bordure.focus",
+      "token": "border.focus",
       "$description": "Anneau de focus clavier, posé sur la page, décalé de 2 px (DS2)."
     },
-    "ds-contour": {
-      "jeton": "bordure.forte",
+    "ds-border": {
+      "token": "border.strong",
       "$description": "Contour du bouton secondaire et du champ (3:1 sur la page et sur la surface)."
     },
-    "ds-contour-desactive": {
-      "jeton": "bordure.discrete",
-      "sansPaire": "bordure décorative, sans paire (D07) ; le composant inactif est exempté (WCAG 1.4.11)",
+    "ds-border-disabled": {
+      "token": "border.subtle",
+      "unpaired": "bordure décorative, sans paire (D07) ; le composant inactif est exempté (WCAG 1.4.11)",
       "$description": "Contour du bouton secondaire désactivé."
     },
-    "ds-arrondi-controle": {
-      "jeton": "arrondi.controle",
+    "ds-border-radius-control": {
+      "token": "border-radius.control",
       "$description": "Arrondi du bouton, à toutes les tailles."
     },
-    "ds-hauteur-controle-normale": {
-      "jeton": "hauteur.controle.normale",
+    "ds-height-control-medium": {
+      "token": "height.control.medium",
       "$description": "Hauteur du bouton et du champ, et côté du bouton à icône, en taille normale."
     },
-    "ds-hauteur-controle-petite": {
-      "jeton": "hauteur.controle.petite",
+    "ds-height-control-small": {
+      "token": "height.control.small",
       "$description": "Hauteur du bouton et côté du bouton à icône, en petite taille."
     },
-    "ds-epaisseur-contour": {
-      "jeton": "epaisseur.contour",
+    "ds-border-width-default": {
+      "token": "border-width.default",
       "$description": "Épaisseur du contour du bouton secondaire."
     },
-    "ds-epaisseur-focus": {
-      "jeton": "epaisseur.focus",
+    "ds-border-width-focus": {
+      "token": "border-width.focus",
       "$description": "Épaisseur de l'anneau de focus."
     },
-    "ds-decalage-focus": {
-      "jeton": "decalage.focus",
+    "ds-offset-focus": {
+      "token": "offset.focus",
       "$description": "Décalage de l'anneau de focus hors du bouton (DS2)."
     },
-    "ds-taille-icone-normale": {
-      "jeton": "taille-icone.normale",
+    "ds-icon-size-medium": {
+      "token": "icon-size.medium",
       "$description": "Icône du bouton, du bouton à icône et du champ, en taille normale."
     },
-    "ds-taille-icone-petite": {
-      "jeton": "taille-icone.petite",
+    "ds-icon-size-small": {
+      "token": "icon-size.small",
       "$description": "Icône du bouton et du bouton à icône, en petite taille."
     },
-    "ds-ecart-icone-texte": {
-      "jeton": "ecart.icone-texte",
+    "ds-gap-icon-text": {
+      "token": "gap.icon-text",
       "$description": "Écart entre l'icône et le texte du bouton."
     },
-    "ds-marge-interieure-composant": {
-      "jeton": "marge-interieure.composant",
+    "ds-padding-component": {
+      "token": "padding.component",
       "$description": "Marge intérieure gauche et droite du bouton, aux deux tailles [H], à juger sur la planche."
     },
-    "ds-libelle-police": {
-      "jeton": "typo.libelle",
-      "champ": "fontFamily",
+    "ds-label-font-family": {
+      "token": "typography.label",
+      "field": "fontFamily",
       "$description": "Police du texte du bouton (style libellé) : toujours la police du produit (D44), alors que --v-font-body porte la police du texte de la marque."
     },
-    "ds-libelle-taille": {
-      "jeton": "typo.libelle",
-      "champ": "fontSize",
+    "ds-label-font-size": {
+      "token": "typography.label",
+      "field": "fontSize",
       "$description": "Taille du texte du bouton (style libellé)."
     },
-    "ds-libelle-graisse": {
-      "jeton": "typo.libelle",
-      "champ": "fontWeight",
+    "ds-label-font-weight": {
+      "token": "typography.label",
+      "field": "fontWeight",
       "$description": "Graisse du texte du bouton (style libellé)."
     },
-    "ds-libelle-interligne": {
-      "jeton": "typo.libelle",
-      "champ": "lineHeight",
+    "ds-label-line-height": {
+      "token": "typography.label",
+      "field": "lineHeight",
       "$description": "Interligne du texte du bouton (style libellé), sans unité."
     },
-    "ds-texte-secondaire": {
-      "jeton": "texte.secondaire",
+    "ds-text-secondary": {
+      "token": "text.secondary",
       "$description": "Texte d'exemple et aide du champ, mention « (obligatoire) » du libellé, sous-titre de DsCard (4,5:1 sur la page et sur la surface)."
     },
-    "ds-texte-erreur": {
-      "jeton": "texte.erreur",
+    "ds-text-error": {
+      "token": "text.error",
       "$description": "Message d'erreur du champ (4,5:1 sur la page et sur la surface)."
     },
-    "ds-contour-erreur": {
-      "jeton": "bordure.erreur",
+    "ds-border-error": {
+      "token": "border.error",
       "$description": "Contour d'un champ en erreur (3:1 sur la page et sur la surface)."
     },
-    "ds-contour-carte": {
-      "jeton": "bordure.defaut",
-      "sansPaire": "bordure décorative, sans paire (D07) : la carte se repère à son contenu, et la carte à lien à son titre",
-      "$description": "Contour de la carte au repos ; au survol et au focus de la carte à lien, le contour prend ds-contour."
+    "ds-card-border": {
+      "token": "border.default",
+      "unpaired": "bordure décorative, sans paire (D07) : la carte se repère à son contenu, et la carte à lien à son titre",
+      "$description": "Contour de la carte au repos ; au survol et au focus de la carte à lien, le contour prend ds-border."
     },
-    "ds-arrondi-surface": {
-      "jeton": "arrondi.surface",
+    "ds-border-radius-surface": {
+      "token": "border-radius.surface",
       "$description": "Arrondi de la carte."
     },
-    "ds-ecart-dans-composant": {
-      "jeton": "ecart.dans-composant",
+    "ds-gap-within-component": {
+      "token": "gap.within-component",
       "$description": "Écart entre le libellé et le champ, entre le champ et son message, entre le titre et le texte d'une carte."
     },
-    "ds-ecart-entre-composants": {
-      "jeton": "ecart.entre-composants",
+    "ds-gap-between-components": {
+      "token": "gap.between-components",
       "$description": "Écart entre l'image, le bloc titre et texte, et les actions d'une carte ; dans DsCard horizontale, entre la pièce de gauche et la colonne."
     },
-    "ds-ecart-entre-blocs": {
-      "jeton": "ecart.entre-blocs",
+    "ds-gap-between-blocks": {
+      "token": "gap.between-blocks",
       "$description": "Écart entre l'en-tête d'une carte à sous-titre (titre et sous-titre) et son contenu."
     },
-    "ds-largeur-colonne": {
-      "jeton": "largeur.colonne",
+    "ds-width-column": {
+      "token": "width.column",
       "$description": "Largeur maximale de MemberList ; plus étroite, la liste prend la largeur de son parent."
     },
-    "ds-corps-police": {
-      "jeton": "typo.corps.moyen",
-      "champ": "fontFamily",
+    "ds-body-font-family": {
+      "token": "typography.body.medium",
+      "field": "fontFamily",
       "$description": "Police du texte saisi dans le champ et du texte de la carte (style corps moyen)."
     },
-    "ds-corps-taille": {
-      "jeton": "typo.corps.moyen",
-      "champ": "fontSize",
+    "ds-body-font-size": {
+      "token": "typography.body.medium",
+      "field": "fontSize",
       "$description": "Taille du texte saisi et du texte de la carte (style corps moyen)."
     },
-    "ds-corps-graisse": {
-      "jeton": "typo.corps.moyen",
-      "champ": "fontWeight",
+    "ds-body-font-weight": {
+      "token": "typography.body.medium",
+      "field": "fontWeight",
       "$description": "Graisse du texte saisi et du texte de la carte (style corps moyen)."
     },
-    "ds-corps-interligne": {
-      "jeton": "typo.corps.moyen",
-      "champ": "lineHeight",
+    "ds-body-line-height": {
+      "token": "typography.body.medium",
+      "field": "lineHeight",
       "$description": "Interligne du texte saisi et du texte de la carte (style corps moyen), sans unité."
     },
-    "ds-mention-police": {
-      "jeton": "typo.mention",
-      "champ": "fontFamily",
+    "ds-supporting-text-font-family": {
+      "token": "typography.supporting-text",
+      "field": "fontFamily",
       "$description": "Police de l'aide et du message d'erreur du champ (style mention)."
     },
-    "ds-mention-taille": {
-      "jeton": "typo.mention",
-      "champ": "fontSize",
+    "ds-supporting-text-font-size": {
+      "token": "typography.supporting-text",
+      "field": "fontSize",
       "$description": "Taille de l'aide et du message d'erreur du champ (style mention)."
     },
-    "ds-mention-graisse": {
-      "jeton": "typo.mention",
-      "champ": "fontWeight",
+    "ds-supporting-text-font-weight": {
+      "token": "typography.supporting-text",
+      "field": "fontWeight",
       "$description": "Graisse de l'aide et du message d'erreur du champ (style mention)."
     },
-    "ds-mention-interligne": {
-      "jeton": "typo.mention",
-      "champ": "lineHeight",
+    "ds-supporting-text-line-height": {
+      "token": "typography.supporting-text",
+      "field": "lineHeight",
       "$description": "Interligne de l'aide et du message d'erreur du champ (style mention), sans unité."
     },
-    "ds-titre-carte-police": {
-      "jeton": "typo.titre.3",
-      "champ": "fontFamily",
+    "ds-card-title-font-family": {
+      "token": "typography.heading.3",
+      "field": "fontFamily",
       "$description": "Police du titre de la carte (style titre 3, « titre de carte »), celle des titres de la marque."
     },
-    "ds-titre-carte-taille": {
-      "jeton": "typo.titre.3",
-      "champ": "fontSize",
+    "ds-card-title-font-size": {
+      "token": "typography.heading.3",
+      "field": "fontSize",
       "$description": "Taille du titre de la carte (style titre 3), la même à toutes les largeurs : le thème n'a pas de valeur par largeur (KNOWN_ISSUES.md)."
     },
-    "ds-titre-carte-graisse": {
-      "jeton": "typo.titre.3",
-      "champ": "fontWeight",
+    "ds-card-title-font-weight": {
+      "token": "typography.heading.3",
+      "field": "fontWeight",
       "$description": "Graisse du titre de la carte (style titre 3)."
     },
-    "ds-titre-carte-interligne": {
-      "jeton": "typo.titre.3",
-      "champ": "lineHeight",
+    "ds-card-title-line-height": {
+      "token": "typography.heading.3",
+      "field": "lineHeight",
       "$description": "Interligne du titre de la carte (style titre 3), sans unité."
     },
-    "ds-titre-carte-hauteur-capitale": {
-      "jeton": "police.titre.hauteur-capitale",
+    "ds-card-title-cap-height": {
+      "token": "font.heading.cap-height",
       "$description": "Consigne commune de hauteur de capitale des titres (DS11, D17), posée sur le titre de la carte par font-size-adjust: cap-height."
     },
-    "ds-titre-4-police": {
-      "jeton": "typo.titre.4",
-      "champ": "fontFamily",
+    "ds-heading-4-font-family": {
+      "token": "typography.heading.4",
+      "field": "fontFamily",
       "$description": "Police du titre de DsCard en taille small (style titre 4), celle du texte de la marque."
     },
-    "ds-titre-4-taille": {
-      "jeton": "typo.titre.4",
-      "champ": "fontSize",
+    "ds-heading-4-font-size": {
+      "token": "typography.heading.4",
+      "field": "fontSize",
       "$description": "Taille du titre de DsCard en taille small (style titre 4)."
     },
-    "ds-titre-4-graisse": {
-      "jeton": "typo.titre.4",
-      "champ": "fontWeight",
+    "ds-heading-4-font-weight": {
+      "token": "typography.heading.4",
+      "field": "fontWeight",
       "$description": "Graisse du titre de DsCard en taille small (style titre 4)."
     },
-    "ds-titre-4-interligne": {
-      "jeton": "typo.titre.4",
-      "champ": "lineHeight",
+    "ds-heading-4-line-height": {
+      "token": "typography.heading.4",
+      "field": "lineHeight",
       "$description": "Interligne du titre de DsCard en taille small (style titre 4), sans unité."
     },
-    "ds-arrondi-pilule": {
-      "jeton": "arrondi.pilule",
+    "ds-border-radius-full": {
+      "token": "border-radius.full",
       "$description": "Arrondi complet de l'avatar et de l'étiquette."
     },
-    "ds-taille-avatar-normale": {
-      "jeton": "taille-avatar.normale",
+    "ds-avatar-size-medium": {
+      "token": "avatar-size.medium",
       "$description": "Côté de l'avatar normal."
     },
-    "ds-taille-avatar-grande": {
-      "jeton": "taille-avatar.grande",
+    "ds-avatar-size-large": {
+      "token": "avatar-size.large",
       "$description": "Côté du grand avatar."
     },
-    "ds-initiales-normale-police": {
-      "jeton": "typo.initiales.normale",
-      "champ": "fontFamily",
+    "ds-initials-medium-font-family": {
+      "token": "typography.initials.medium",
+      "field": "fontFamily",
       "$description": "Police des initiales de l'avatar normal."
     },
-    "ds-initiales-normale-taille": {
-      "jeton": "typo.initiales.normale",
-      "champ": "fontSize",
+    "ds-initials-medium-font-size": {
+      "token": "typography.initials.medium",
+      "field": "fontSize",
       "$description": "Taille des initiales de l'avatar normal."
     },
-    "ds-initiales-normale-graisse": {
-      "jeton": "typo.initiales.normale",
-      "champ": "fontWeight",
+    "ds-initials-medium-font-weight": {
+      "token": "typography.initials.medium",
+      "field": "fontWeight",
       "$description": "Graisse des initiales de l'avatar normal."
     },
-    "ds-initiales-normale-interligne": {
-      "jeton": "typo.initiales.normale",
-      "champ": "lineHeight",
+    "ds-initials-medium-line-height": {
+      "token": "typography.initials.medium",
+      "field": "lineHeight",
       "$description": "Interligne des initiales de l'avatar normal, sans unité."
     },
-    "ds-initiales-grande-police": {
-      "jeton": "typo.initiales.grande",
-      "champ": "fontFamily",
+    "ds-initials-large-font-family": {
+      "token": "typography.initials.large",
+      "field": "fontFamily",
       "$description": "Police des initiales du grand avatar."
     },
-    "ds-initiales-grande-taille": {
-      "jeton": "typo.initiales.grande",
-      "champ": "fontSize",
+    "ds-initials-large-font-size": {
+      "token": "typography.initials.large",
+      "field": "fontSize",
       "$description": "Taille des initiales du grand avatar."
     },
-    "ds-initiales-grande-graisse": {
-      "jeton": "typo.initiales.grande",
-      "champ": "fontWeight",
+    "ds-initials-large-font-weight": {
+      "token": "typography.initials.large",
+      "field": "fontWeight",
       "$description": "Graisse des initiales du grand avatar."
     },
-    "ds-initiales-grande-interligne": {
-      "jeton": "typo.initiales.grande",
-      "champ": "lineHeight",
+    "ds-initials-large-line-height": {
+      "token": "typography.initials.large",
+      "field": "lineHeight",
       "$description": "Interligne des initiales du grand avatar, sans unité."
     },
-    "ds-hauteur-etiquette": {
-      "jeton": "hauteur.etiquette",
+    "ds-height-tag": {
+      "token": "height.tag",
       "$description": "Hauteur de l'étiquette."
     },
-    "ds-marge-interieure-etiquette": {
-      "jeton": "marge-interieure.etiquette",
+    "ds-padding-tag": {
+      "token": "padding.tag",
       "$description": "Marge intérieure gauche et droite de l'étiquette."
     },
-    "ds-ecart-entre-etiquettes": {
-      "jeton": "ecart.entre-etiquettes",
+    "ds-gap-between-tags": {
+      "token": "gap.between-tags",
       "$description": "Écart entre deux étiquettes d'une suite, en ligne et entre deux lignes."
     },
-    "ds-corps-petit-police": {
-      "jeton": "typo.corps.petit",
-      "champ": "fontFamily",
+    "ds-body-small-font-family": {
+      "token": "typography.body.small",
+      "field": "fontFamily",
       "$description": "Police du texte de l'étiquette et du sous-titre de DsCard (style corps petit)."
     },
-    "ds-corps-petit-taille": {
-      "jeton": "typo.corps.petit",
-      "champ": "fontSize",
+    "ds-body-small-font-size": {
+      "token": "typography.body.small",
+      "field": "fontSize",
       "$description": "Taille du texte de l'étiquette et du sous-titre de DsCard (style corps petit)."
     },
-    "ds-corps-petit-graisse": {
-      "jeton": "typo.corps.petit",
-      "champ": "fontWeight",
+    "ds-body-small-font-weight": {
+      "token": "typography.body.small",
+      "field": "fontWeight",
       "$description": "Graisse du texte de l'étiquette et du sous-titre de DsCard (style corps petit)."
     },
-    "ds-corps-petit-interligne": {
-      "jeton": "typo.corps.petit",
-      "champ": "lineHeight",
+    "ds-body-small-line-height": {
+      "token": "typography.body.small",
+      "field": "lineHeight",
       "$description": "Interligne du texte de l'étiquette et du sous-titre de DsCard (style corps petit), sans unité."
     }
   }

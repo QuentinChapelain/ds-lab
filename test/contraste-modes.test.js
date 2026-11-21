@@ -5,11 +5,11 @@
  *   C1 npm run contraste --mode clair : même sortie que sans option (un bloc par marque, D26) ; --mode sombre, --largeur etroit acceptés ;
  *      mode inconnu : erreur d'usage, code 2 ;
  *   C2 les 5 marques fictives sortent en 0 dans les deux modes et dans les deux largeurs ; 70 paires (66 + les 4
- *      bordures de statut sur fond.surface), puis 73 avec les paires du bouton (18/11/2026, docs/attendus/bouton.md) ;
- *   C3 bordure.erreur, .succes, .avertissement, .info sur fond.surface : paires de type bordure (3:1), déclarées ;
- *   C4 la saisie dit le mode d'un refus : avec un seuil de 3,15 sur bordure.forte sur fond.surface (clair 3,21:1,
- *      sombre 3,10:1 pour une marque quelconque), le seul motif est « contraste (sombre) : bordure.forte sur
- *      fond.surface, 3,10:1 < 3,15:1 ».
+ *      bordures de statut sur background.surface), puis 73 avec les paires du bouton (18/11/2026, docs/attendus/bouton.md) ;
+ *   C3 border.error, .succes, .avertissement, .info sur background.surface : paires de type bordure (3:1), déclarées ;
+ *   C4 la saisie dit le mode d'un refus : avec un seuil de 3,15 sur border.strong sur background.surface (clair 3,21:1,
+ *      sombre 3,10:1 pour une marque quelconque), le seul motif est « contraste (sombre) : border.strong sur
+ *      background.surface, 3,10:1 < 3,15:1 ».
  *   C5 (D31) : pour les 5 marques fictives, en clair et en sombre, le contrat
  *      que saisir() a calculé (contrats, par la fusion du resolver, sur les fichiers de la marque donnés en mémoire) est
  *      égal au contrat de loadRoles(dossier, { mode }), lu sur les fichiers écrits.
@@ -56,10 +56,10 @@ test('C2 les 5 marques fictives : 0 échec dans les deux modes et les deux large
       }
 });
 
-test('C3 bordures de statut sur fond.surface : paires déclarées, type bordure', () => {
-  const paires = charger('paires.json').paires;
-  for (const s of ['erreur', 'succes', 'avertissement', 'info'])
-    assert.ok(paires.some((/** @type {any} */ p) => p.devant === `bordure.${s}` && p.fond === 'fond.surface' && p.type === 'bordure'), s);
+test('C3 bordures de statut sur background.surface : paires déclarées, type border', () => {
+  const paires = charger('paires.json').pairs;
+  for (const s of ['error', 'success', 'warning', 'info'])
+    assert.ok(paires.some((/** @type {any} */ p) => p.foreground === `border.${s}` && p.background === 'background.surface' && p.type === 'border'), s);
   assert.equal(paires.length, N_PAIRES);
 });
 
@@ -69,12 +69,12 @@ test('C4 la saisie dit le mode du refus', () => {
   /** @param {any} c */
   const durci = (c) => {
     const paires = structuredClone(c.paires);
-    paires.seuils.essai = 3.15;
-    for (const p of paires.paires) if (p.devant === 'bordure.forte' && p.fond === 'fond.surface') p.type = 'essai';
+    paires.thresholds.essai = 3.15;
+    for (const p of paires.pairs) if (p.foreground === 'border.strong' && p.background === 'background.surface') p.type = 'essai';
     return { ...c, paires };
   };
   const r = saisir({ nom: 'Essai', primaire: '#2b4c7e', polices: POLICES }, { dossier: '/ailleurs', commun: durci(commun), communSombre: durci(communSombre) });
-  assert.deepEqual(r.motifs, ['contraste (sombre) : bordure.forte sur fond.surface, 3,10:1 < 3,15:1']);
+  assert.deepEqual(r.motifs, ['contraste (sombre) : border.strong sur background.surface, 3,10:1 < 3,15:1']);
 });
 
 test('C5 contrat calculé par la saisie = contrat du resolver, 5 marques, clair et sombre', () => {

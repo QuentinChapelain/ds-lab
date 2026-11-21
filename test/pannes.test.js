@@ -124,16 +124,16 @@ test('N5 saisie : Chromium qui ne se lance pas pendant le contrôle d\'encre →
 
 test('N6 couche commune cassée : saisir() lève ; la commande, sur une copie cassée, sort en 2 sans rien écrire', () => {
   const commun = chargerCommun();
-  const cassee = { ...commun, paires: { ...commun.paires, paires: [...commun.paires.paires, { devant: 'texte.inexistant', fond: 'fond.app', type: 'texte' }] } };
-  assert.throws(() => saisir({ nom: 'Essai', primaire: '#2b4c7e', polices: POLICES_NOMS }, { dossier: tmp('saisie'), commun: cassee }), /rôle inconnu texte\.inexistant/);
+  const cassee = { ...commun, paires: { ...commun.paires, pairs: [...commun.paires.pairs, { foreground: 'text.inexistant', background: 'background.app', type: 'text' }] } };
+  assert.throws(() => saisir({ nom: 'Essai', primaire: '#2b4c7e', polices: POLICES_NOMS }, { dossier: tmp('saisie'), commun: cassee }), /rôle inconnu text\.inexistant/);
   const d = copie();
   const paires = join(d, 'tokens', 'commun', 'paires.json');
   const p0 = JSON.parse(readFileSync(paires, 'utf8'));
-  p0.paires.push({ devant: 'texte.inexistant', fond: 'fond.app', type: 'texte' });
+  p0.pairs.push({ foreground: 'text.inexistant', background: 'background.app', type: 'text' });
   writeFileSync(paires, JSON.stringify(p0));
   const e = entree({ nom: 'Essai', primaire: '#2b4c7e', polices: POLICES_NOMS });
   const p = lancer(d, 'saisie', [e.fichier]);
-  panne(p, 'saisie', /rôle inconnu texte\.inexistant/);
+  panne(p, 'saisie', /rôle inconnu text\.inexistant/);
   assert.doesNotMatch(p.stderr, /marque refusée/);
   assert.deepEqual(readdirSync(e.dossier), ['entree.json']);
 });
@@ -141,7 +141,7 @@ test('N6 couche commune cassée : saisir() lève ; la commande, sur une copie ca
 test('N7 vrais refus : sortie 1 avec le motif, rien d\'écrit', () => {
   const cas = [
     [{ nom: 'Essai', primaire: 'rouge', polices: POLICES_NOMS }, /entrée invalide : primaire, couleur #rrggbb/],
-    [{ nom: 'Essai', primaire: '#00ccff', polices: POLICES_NOMS }, /checkValise \(clair\) : primaire : doublon/],
+    [{ nom: 'Essai', primaire: '#00ccff', polices: POLICES_NOMS }, /checkValise \(clair\) : primary : doublon/],
     [{ nom: 'Essai', primaire: '#8a4fd8', polices: { titre: { familles: ['Bebas Neue'], fichiers: [BEBAS] } } }, /police des titres : graisses absentes : 600, 700/],
   ];
   for (const [x, motif] of cas) {
@@ -156,12 +156,12 @@ test('N7 vrais refus : sortie 1 avec le motif, rien d\'écrit', () => {
   /** @param {any} c */
   const durci = (c) => {
     const paires = structuredClone(c.paires);
-    paires.seuils.essai = 3.15;
-    for (const q of paires.paires) if (q.devant === 'bordure.forte' && q.fond === 'fond.surface') q.type = 'essai';
+    paires.thresholds.essai = 3.15;
+    for (const q of paires.pairs) if (q.foreground === 'border.strong' && q.background === 'background.surface') q.type = 'essai';
     return { ...c, paires };
   };
   const r = saisir({ nom: 'Essai', primaire: '#2b4c7e', polices: POLICES_NOMS }, { dossier: tmp('saisie'), commun: durci(chargerCommun()), communSombre: durci(chargerCommun({ mode: 'sombre' })) });
-  assert.deepEqual(r.motifs, ['contraste (sombre) : bordure.forte sur fond.surface, 3,10:1 < 3,15:1']);
+  assert.deepEqual(r.motifs, ['contraste (sombre) : border.strong sur background.surface, 3,10:1 < 3,15:1']);
 });
 
 test('N8 marque et verify : option inconnue → 2 ; Chromium qui ne se lance pas → 2', () => {

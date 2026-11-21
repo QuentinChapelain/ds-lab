@@ -24,9 +24,9 @@ export default definirEnveloppe(MENU, (props, { attrs }) => () => {
 .member-list {
   display: flex;
   flex-direction: column;
-  gap: var(--v-ds-ecart-entre-composants);
+  gap: var(--v-ds-gap-between-components);
   width: 100%;
-  max-width: var(--v-ds-largeur-colonne);
+  max-width: var(--v-ds-width-column);
   margin: 0;
   padding: 0;
   list-style: none;

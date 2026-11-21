@@ -39,11 +39,11 @@ export default definirEnveloppe(MENU, (props, { attrs, emit }) => () =>
 }
 /* Carré : le côté est la hauteur du contrôle, sans marge intérieure ; trois classes passent devant les deux du bouton. */
 .ds-icon-button--medium > .ds-button.ds-button--medium {
-  width: var(--v-ds-hauteur-controle-normale);
+  width: var(--v-ds-height-control-medium);
   padding: 0;
 }
 .ds-icon-button--small > .ds-button.ds-button--small {
-  width: var(--v-ds-hauteur-controle-petite);
+  width: var(--v-ds-height-control-small);
   padding: 0;
 }
 /* L'icône prend la place du texte, centrée ; sa couleur est celle du texte du bouton (currentColor). */
@@ -53,12 +53,12 @@ export default definirEnveloppe(MENU, (props, { attrs, emit }) => () =>
 .ds-icon-button__icon,
 .ds-icon-button__icon > svg {
   display: block;
-  width: var(--v-ds-taille-icone-normale);
-  height: var(--v-ds-taille-icone-normale);
+  width: var(--v-ds-icon-size-medium);
+  height: var(--v-ds-icon-size-medium);
 }
 .ds-icon-button--small .ds-icon-button__icon,
 .ds-icon-button--small .ds-icon-button__icon > svg {
-  width: var(--v-ds-taille-icone-petite);
-  height: var(--v-ds-taille-icone-petite);
+  width: var(--v-ds-icon-size-small);
+  height: var(--v-ds-icon-size-small);
 }
 </style>

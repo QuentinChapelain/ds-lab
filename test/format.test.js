@@ -15,8 +15,8 @@
  *     5.4393 → « 5,43 », 4.49987 → « 4,49 » (arrondie 4,4999) ;
  *   null et undefined : « — » avec { vide: '—' } ; sans vide, une erreur qui nomme la valeur (« nombre attendu ») ;
  *   esc : & < > " échappés, null et undefined → chaîne vide (réponse Q2) ; r4(4.51519) = 4.5152 ;
- *   sorties : tokens/orbe-cafe/roles.html, texte.secondaire sur fond.composant (ratio 5,02 par contrat) : « 5,02:1 »
- *     (avant : 5,01:1) ; console de npm run contraste, Écume et Sel en sombre, texte.accent sur fond.discret (ratio
+ *   sorties : tokens/orbe-cafe/roles.html, text.secondary sur background.component (ratio 5,02 par contrat) : « 5,02:1 »
+ *     (avant : 5,01:1) ; console de npm run contraste, Écume et Sel en sombre, text.accent sur background.subtle (ratio
  *     11,655) : « 11,66:1 » (avant : 11,65:1) ;
  *   une définition : dans src/, aucune autre définition de fr, esc, r4, round4, ratioFr ni seuilFr, ni de virgule
  *     décimale écrite à la main, hors des deux copies laissées à part (D22 : script de page de src/report/review.js,
@@ -75,14 +75,14 @@ test('F6 r4 : arrondi à 4 décimales', async () => {
 
 test('F7 roles.html : le ratio 5,02 tronqué reste 5,02', () => {
   const html = readFileSync(join(ROOT, 'tokens/orbe-cafe/roles.html'), 'utf8');
-  const row = /<tr data-devant="texte\.secondaire" data-fond="fond\.composant"[^>]*>([^]*?)<\/tr>/.exec(html)?.[1] ?? '';
+  const row = /<tr data-devant="text\.secondary" data-fond="background\.component"[^>]*>([^]*?)<\/tr>/.exec(html)?.[1] ?? '';
   assert.match(row, /<td data-label="Ratio" class="num">5,02:1<\/td>/);
 });
 
 test('F8 console de contraste : 11,655 s’écrit 11,66', () => {
   const r = spawnSync(process.execPath, ['src/cli/contraste.js', '--marque', 'tokens/ecume-et-sel', '--mode', 'sombre'], { cwd: ROOT, encoding: 'utf8' });
   assert.equal(r.status, 0, r.stderr);
-  assert.match(r.stdout, /✓ texte\.accent sur fond\.discret : 11,66:1, seuil 4,50:1/);
+  assert.match(r.stdout, /✓ text\.accent sur background\.subtle : 11,66:1, seuil 4,50:1/);
 });
 
 /** Fichiers .js de src/, chemins relatifs à la racine. @param {string} d @returns {string[]} */

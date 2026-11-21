@@ -6,13 +6,13 @@
  * Attendus écrits à la main avant le code (16/11/2026) :
  *   J1 un resolver (version et resolutionOrder) est résolu depuis son dossier, dans ses contextes par défaut : le resolver
  *      d'Orbe Café donne 133 entrées à l'index (108 chemins de couleur, 25 de dimension), 139 avec les six primitives
- *      du bouton (taille.16, 20, 32, 40, trait.1 et 2 ; docs/attendus/bouton.md), dont chaque chemin de la copie
+ *      du bouton (size.16, 20, 32, 40, stroke.1 et 2 ; docs/attendus/bouton.md), dont chaque chemin de la copie
  *      figée d'origine, avec sa valeur ; un fichier de jetons est lu tel quel (copie figée : 104 entrées) ;
  *      correction du 18/11/2026 (D45) : 144, les survols de l'accent et des quatre statuts devenant des valeurs
  *      calculées (couleurs en hex, comme celui du primaire), cinq entrées de plus ; ajout du 19/11/2026 : 146, avec les
- *      primitives taille.24 et taille.56 de l'avatar et de l'étiquette (docs/attendus/avatar-etiquette.md), deux valeurs
+ *      primitives size.24 et size.56 de l'avatar et de l'étiquette (docs/attendus/avatar-etiquette.md), deux valeurs
  *      en px de plus, auxquelles une valeur relevée de 24 ou de 56 px se rattache désormais ; ajout du 20/11/2026 : 147,
- *      avec la primitive taille.640 de la largeur de colonne (docs/attendus/carte-membre-liste.md) ;
+ *      avec la primitive size.640 de la largeur de colonne (docs/attendus/carte-membre-liste.md) ;
  *   J2 un fichier qui ne donne aucun jeton ({}, ou les rôles seuls, tout en alias) : sortie 2, une ligne
  *      « reduce : --tokens <chemin> : aucun jeton lu (couleur en hex, dimension en px) ; un fichier .tokens.json ou un
  *      resolver DTCG 2025.10 attendu » ;
@@ -28,6 +28,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { indexTokens } from '../src/report/migration.js';
 import { jetonsDe } from '../src/tokens/resolver.js';
+import { traducteur } from './helpers/anciens-noms.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const RESOLVER = join(ROOT, 'tokens', 'orbe-cafe', 'marque.resolver.json');
@@ -64,7 +65,8 @@ test('J1 un resolver est résolu depuis son dossier ; un fichier de jetons est l
   assert.equal(jetonsDe(copie, COPIE), copie);
   assert.equal(indexTokens(copie).size, 104);
   const vrais = feuilles(r);
-  for (const [chemin, valeur] of feuilles(copie)) assert.equal(vrais.get(chemin), valeur, chemin);
+  // La copie figée garde les anciens noms : ses chemins sont lus à travers la table (docs/anciens-noms.json).
+  for (const [chemin, valeur] of feuilles(traducteur('apres').jetons(copie))) assert.equal(vrais.get(chemin), valeur, chemin);
 });
 
 test('J2 un fichier qui ne donne aucun jeton : sortie 2, message nommé', () => {

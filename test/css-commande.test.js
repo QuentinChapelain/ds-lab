@@ -7,8 +7,8 @@
  * Attendus écrits à la main avant le code (17/11/2026) :
  *   K1 seuil : un seuil de 480 px dans $extensions["ds-lab.largeur"] donne le bloc @media (width < 480px), et aucun
  *      bloc en 600 px ;
- *   K2 sombre et étroit changent un même jeton (une couche sombre de plus qui donne ecart.section, que l'étroit
- *      commun change aussi) : feuilleCss rend le motif « sombre et étroit changent les mêmes jetons : ecart.section ; la
+ *   K2 sombre et étroit changent un même jeton (une couche sombre de plus qui donne gap.section, que l'étroit
+ *      commun change aussi) : feuilleCss rend le motif « sombre et étroit changent les mêmes jetons : gap.section ; la
  *      feuille n'a pas de bloc pour les deux à la fois » et aucun texte ; la commande sort en 1, affiche
  *      « ✗ <motif> » et n'écrit rien ;
  *   K3 --marque <dossier> : seule cette marque, sortie 0, jetons.css écrit dans le dossier, égal au texte de feuilleCss ;
@@ -51,8 +51,8 @@ function marqueEssai({ seuil, sombreEnPlus } = {}) {
   return `${dir}/`;
 }
 
-const MOTIF_K2 = "sombre et étroit changent les mêmes jetons : ecart.section ; la feuille n'a pas de bloc pour les deux à la fois";
-const EN_PLUS = { ecart: { section: { $value: '{espace.64}', $description: 'Essai : la couche sombre change un écart.' } } };
+const MOTIF_K2 = "sombre et étroit changent les mêmes jetons : gap.section ; la feuille n'a pas de bloc pour les deux à la fois";
+const EN_PLUS = { gap: { section: { $value: '{space.64}', $description: 'Essai : la couche sombre change un écart.' } } };
 
 test('K1 seuil lu dans le resolver : 480 px', async () => {
   const dir = marqueEssai({ seuil: 480 });

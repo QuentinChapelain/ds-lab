@@ -54,35 +54,35 @@ export default definirEnveloppe(MENU, (props, { attrs }) => {
 /* Règles hors couche : elles passent devant celles de Vuetify, rangées dans ses couches, sans !important. */
 .ds-avatar.v-avatar {
   position: relative;
-  width: var(--v-ds-taille-avatar-normale);
-  height: var(--v-ds-taille-avatar-normale);
-  border-radius: var(--v-ds-arrondi-pilule);
-  background: rgb(var(--v-theme-marque-teinte));
-  color: rgb(var(--v-theme-on-marque-teinte));
+  width: var(--v-ds-avatar-size-medium);
+  height: var(--v-ds-avatar-size-medium);
+  border-radius: var(--v-ds-border-radius-full);
+  background: rgb(var(--v-theme-brand-tint));
+  color: rgb(var(--v-theme-on-brand-tint));
   box-shadow: none;
   transition: none;
 }
 .ds-avatar.v-avatar.ds-avatar--large {
-  width: var(--v-ds-taille-avatar-grande);
-  height: var(--v-ds-taille-avatar-grande);
+  width: var(--v-ds-avatar-size-large);
+  height: var(--v-ds-avatar-size-large);
 }
 /* Ni sous-couche ni voile de Vuetify. */
 .ds-avatar.v-avatar > .v-avatar__underlay {
   display: none;
 }
 .ds-avatar__initials {
-  font-family: var(--v-ds-initiales-normale-police);
-  font-size: var(--v-ds-initiales-normale-taille);
-  font-weight: var(--v-ds-initiales-normale-graisse);
-  line-height: var(--v-ds-initiales-normale-interligne);
+  font-family: var(--v-ds-initials-medium-font-family);
+  font-size: var(--v-ds-initials-medium-font-size);
+  font-weight: var(--v-ds-initials-medium-font-weight);
+  line-height: var(--v-ds-initials-medium-line-height);
   letter-spacing: 0;
   user-select: none;
 }
 .ds-avatar--large .ds-avatar__initials {
-  font-family: var(--v-ds-initiales-grande-police);
-  font-size: var(--v-ds-initiales-grande-taille);
-  font-weight: var(--v-ds-initiales-grande-graisse);
-  line-height: var(--v-ds-initiales-grande-interligne);
+  font-family: var(--v-ds-initials-large-font-family);
+  font-size: var(--v-ds-initials-large-font-size);
+  font-weight: var(--v-ds-initials-large-font-weight);
+  line-height: var(--v-ds-initials-large-line-height);
 }
 /* La photo couvre le rond, par-dessus les initiales, recadrée au centre. */
 .ds-avatar__image {

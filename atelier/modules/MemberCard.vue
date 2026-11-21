@@ -32,7 +32,7 @@ export default definirEnveloppe(MENU, (props, { attrs }) => () => {
 .member-card__tags {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--v-ds-ecart-entre-etiquettes);
+  gap: var(--v-ds-gap-between-tags);
   margin: 0;
   padding: 0;
   list-style: none;

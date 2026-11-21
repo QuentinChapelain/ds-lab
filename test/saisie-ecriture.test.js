@@ -5,10 +5,10 @@
  * par une marque. Sans navigateur.
  *
  * Attendus écrits à la main :
- *   W1 une marque dont primitives.tokens.json porte une échelle du nom d'une échelle commune (neutre) est refusée par la
+ *   W1 une marque dont primitives.tokens.json porte une échelle du nom d'une échelle commune (neutral) est refusée par la
  *      saisie pour ce seul motif, qui nomme l'échelle : sortie 1, rien d'écrit. Avec la fusion à la main d'avant D31, 18 paires étaient refusées en
  *      sombre, par la fusion à la main (essai C de la confrontation) ;
- *   W2 npm run contraste --marque sur un dossier dont primitives.tokens.json redéfinit neutre : sortie 1, ligne qui nomme
+ *   W2 npm run contraste --marque sur un dossier dont primitives.tokens.json redéfinit neutral : sortie 1, ligne qui nomme
  *      l'échelle ; même définition que la saisie (echellesCommunesRedefinies) ;
  *   W3 panne pendant l'écriture (marque.resolver.json remplacé par un dossier) : sortie 2, aucun fichier du dossier changé,
  *      aucun fichier temporaire laissé ;
@@ -45,22 +45,22 @@ const enDossier = (d, f) => {
   mkdirSync(join(d, f));
   writeFileSync(join(d, f, 'garde'), '');
 };
-/** Échelles écrites à la main : bleu d'Orbe Café et neutre commun (valeur claire). */
+/** Échelles écrites à la main : blue d'Orbe Café et neutral commun (valeur claire). */
 const avecNeutre = () => {
   const d = tmp();
   const orbe = JSON.parse(readFileSync(join(ROOT, 'tokens', 'orbe-cafe', 'primitives.tokens.json'), 'utf8'));
   const commun = JSON.parse(readFileSync(join(COMMUN, 'primitives.tokens.json'), 'utf8'));
-  writeFileSync(join(d, 'primitives.tokens.json'), serialiser({ couleur: { $type: 'color', bleu: orbe.couleur.bleu, neutre: commun.couleur.neutre } }));
+  writeFileSync(join(d, 'primitives.tokens.json'), serialiser({ color: { $type: 'color', blue: orbe.color.blue, neutral: commun.color.neutral } }));
   return d;
 };
-const REDEFINIE = /primitives\.tokens\.json : échelle commune redéfinie, neutre/;
+const REDEFINIE = /primitives\.tokens\.json : échelle commune redéfinie, neutral/;
 
 test('W1 saisie : échelle commune redéfinie par la marque, refus nommé, rien d\'écrit', () => {
   const d = avecNeutre();
-  const r = saisir({ nom: 'Essai', primaire: { echelle: 'bleu' }, polices: POLICES }, { dossier: d });
+  const r = saisir({ nom: 'Essai', primaire: { echelle: 'blue' }, polices: POLICES }, { dossier: d });
   assert.equal(r.motifs.length, 1, r.motifs.join('\n'));
   assert.match(r.motifs[0], REDEFINIE);
-  ecrireEntree(d, { nom: 'Essai', primaire: { echelle: 'bleu' }, polices: POLICES });
+  ecrireEntree(d, { nom: 'Essai', primaire: { echelle: 'blue' }, polices: POLICES });
   const p = run('saisie', join(d, 'entree.json'));
   assert.equal(p.status, 1, p.stderr);
   assert.match(p.stderr, /marque refusée : Essai/);
@@ -71,12 +71,12 @@ test('W1 saisie : échelle commune redéfinie par la marque, refus nommé, rien 
 test('W2 contraste --marque : échelle commune redéfinie, sortie 1, ligne qui nomme l\'échelle', () => {
   const d = tmp();
   const orbe = JSON.parse(readFileSync(join(ROOT, 'tokens', 'orbe-cafe', 'primitives.tokens.json'), 'utf8'));
-  writeFileSync(join(d, 'primitives.tokens.json'), serialiser({ couleur: { $type: 'color', bleu: orbe.couleur.bleu } }));
-  ecrireEntree(d, { nom: 'Essai', primaire: { echelle: 'bleu' }, polices: POLICES });
+  writeFileSync(join(d, 'primitives.tokens.json'), serialiser({ color: { $type: 'color', blue: orbe.color.blue } }));
+  ecrireEntree(d, { nom: 'Essai', primaire: { echelle: 'blue' }, polices: POLICES });
   assert.equal(run('saisie', join(d, 'entree.json')).status, 0);
   assert.equal(run('contraste', '--marque', d).status, 0);
   const commun = JSON.parse(readFileSync(join(COMMUN, 'primitives.tokens.json'), 'utf8'));
-  writeFileSync(join(d, 'primitives.tokens.json'), serialiser({ couleur: { $type: 'color', bleu: orbe.couleur.bleu, neutre: commun.couleur.neutre } }));
+  writeFileSync(join(d, 'primitives.tokens.json'), serialiser({ color: { $type: 'color', blue: orbe.color.blue, neutral: commun.color.neutral } }));
   for (const mode of ['clair', 'sombre']) {
     const p = run('contraste', '--marque', d, '--mode', mode);
     assert.equal(p.status, 1, `${mode} : ${p.stdout}${p.stderr}`);
@@ -103,11 +103,11 @@ test('W3 panne pendant l\'écriture : sortie 2, dossier inchangé, aucun tempora
 test('W4 échelle générée devenue nommée : echelles.tokens.json supprimé au remplacement final seulement', () => {
   const d = tmp();
   const orbe = JSON.parse(readFileSync(join(ROOT, 'tokens', 'orbe-cafe', 'primitives.tokens.json'), 'utf8'));
-  writeFileSync(join(d, 'primitives.tokens.json'), serialiser({ couleur: { $type: 'color', bleu: orbe.couleur.bleu } }));
+  writeFileSync(join(d, 'primitives.tokens.json'), serialiser({ color: { $type: 'color', blue: orbe.color.blue } }));
   ecrireEntree(d, { nom: 'Essai', primaire: '#2b4c7e', polices: POLICES });
   assert.equal(run('saisie', join(d, 'entree.json')).status, 0);
   assert.ok(readdirSync(d).includes('echelles.tokens.json'));
-  ecrireEntree(d, { nom: 'Essai', primaire: { echelle: 'bleu' }, polices: POLICES });
+  ecrireEntree(d, { nom: 'Essai', primaire: { echelle: 'blue' }, polices: POLICES });
   const sombre = readFileSync(join(d, 'echelles.sombre.tokens.json'));
   enDossier(d, 'echelles.sombre.tokens.json');
   const avant = instantane(d);

@@ -154,8 +154,13 @@ export async function lireMenus(sorte = 'composants') {
 /** Table des couleurs et des variables du thème (tokens/commun/vuetify.json). */
 export function lireTable() {
   const t = JSON.parse(lire('tokens/commun/vuetify.json'));
-  const variables = Object.fromEntries(Object.entries(t.variables).filter(([k]) => !k.startsWith('$')));
-  return { couleurs: /** @type {Record<string, { fond: string, texte: string }>} */ (t.couleurs), variables: /** @type {Record<string, any>} */ (variables) };
+  const couleurs = Object.fromEntries(Object.entries(t.colors).filter(([k]) => !k.startsWith('$')).map(([k, c]) => [k, { fond: c.background, texte: c.text }]));
+  const variables = Object.fromEntries(
+    Object.entries(t.variables)
+      .filter(([k]) => !k.startsWith('$'))
+      .map(([k, v]) => [k, { jeton: v.token, ...(v.field ? { champ: v.field } : {}), ...(v.unpaired ? { sansPaire: v.unpaired } : {}) }]),
+  );
+  return { couleurs: /** @type {Record<string, { fond: string, texte: string }>} */ (couleurs), variables: /** @type {Record<string, any>} */ (variables) };
 }
 
 /** Table des noms (NM1 à NM3). */
@@ -427,7 +432,7 @@ function rangsDesTokens(table) {
 }
 
 /** Famille d'un token : Couleur, Texte ou Forme. @param {string} token */
-const familleDe = (token) => (/^(texte|fond|bordure)\./.test(token) ? 'Couleur' : /^(typo|police)\./.test(token) ? 'Texte' : 'Forme');
+const familleDe = (token) => (/^(text|background|border)\./.test(token) ? 'Couleur' : /^(typography|font)\./.test(token) ? 'Texte' : 'Forme');
 
 /**
  * Précision d'une règle pour un composant : les props et valeurs que ses classes de modificateur désignent, puis l'état.
@@ -493,7 +498,7 @@ export function anatomie(composant, menu, table, descriptions, quoi, menus = new
         cle.push(val === null || val === undefined ? 1 : 1 + menu.options[o].valeurs.indexOf(val));
       }
       if (p.etat) morceaux.push(ETATS[p.etat][1]);
-      cle.push(p.etat, ['fond.', 'texte.', 'bordure.'].findIndex((f) => token.startsWith(f)), rangs.get(token) ?? 9999);
+      cle.push(p.etat, ['background.', 'text.', 'border.'].findIndex((f) => token.startsWith(f)), rangs.get(token) ?? 9999);
       const partie = morceaux.join(', ');
       const id = `${partie}|${token}`;
       if (!lignes.has(id)) lignes.set(id, { partie, token, cle });
@@ -551,7 +556,7 @@ export const blocContrastesModule = (assemble) =>
 
 /**
  * Paires de la pièce : celle de chaque couleur employée (fond ou texte), puis, pour chaque variable de texte ou de
- * bordure, les paires où son token est devant, sur un fond de la pièce, sur fond.app ou sur fond.surface.
+ * bordure, les paires où son token est devant, sur un fond de la pièce, sur background.app ou sur background.surface.
  * @param {any} composant @param {any} table @param {any} paires @param {string} quoi
  * @returns {{ devant: string, fond: string }[]}
  */
@@ -564,16 +569,16 @@ export function pairesDe(composant, table, paires, quoi) {
   };
   for (const v of composant.theme) tokenDe(`theme-${v}`, table, quoi);
   for (const v of composant.ds) tokenDe(v, table, quoi);
-  const fonds = new Set(['fond.app', 'fond.surface']);
+  const fonds = new Set(['background.app', 'background.surface']);
   for (const [c, { fond, texte }] of Object.entries(table.couleurs)) {
     if (!composant.theme.has(c) && !composant.theme.has(`on-${c}`)) continue;
     fonds.add(fond);
-    if (!paires.paires.some((/** @type {any} */ p) => p.devant === texte && p.fond === fond)) throw new Error(`${quoi} : paire absente de tokens/commun/paires.json : ${texte} sur ${fond}`);
+    if (!paires.pairs.some((/** @type {any} */ p) => p.foreground === texte && p.background === fond)) throw new Error(`${quoi} : paire absente de tokens/commun/paires.json : ${texte} sur ${fond}`);
     ajouter(texte, fond);
   }
   for (const [k, v] of Object.entries(table.variables)) {
-    if (!composant.ds.has(k) || !/^(texte|bordure)\./.test(v.jeton)) continue;
-    for (const p of paires.paires) if (p.devant === v.jeton && fonds.has(p.fond)) ajouter(p.devant, p.fond);
+    if (!composant.ds.has(k) || !/^(text|border)\./.test(v.jeton)) continue;
+    for (const p of paires.pairs) if (p.foreground === v.jeton && fonds.has(p.background)) ajouter(p.foreground, p.background);
   }
   return out;
 }

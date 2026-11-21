@@ -18,9 +18,9 @@ import { consigneAgent, cutNote, hasToken, m6Text } from './consigne.js';
 
 /** Groupes de jetons de dimension, par famille de la table. */
 const DIM_GROUPS = /** @type {Record<string, string[]>} */ ({
-  spacing: ['espace', 'spacing', 'space'],
-  fontSizes: ['taille-texte', 'font-size', 'fontSize'],
-  radii: ['rayon', 'radius', 'radii'],
+  spacing: ['space', 'spacing'],
+  fontSizes: ['font-size', 'fontSize'],
+  radii: ['radius', 'radii'],
 });
 /** Familles du rendu derrière une ligne (origine CSS). */
 const SPACING_FAMILY = /** @type {Record<string, string>} */ ({ marge: 'margins', retrait: 'paddings', gouttière: 'gaps' });
@@ -32,8 +32,8 @@ const isOnSolid = (path) => /\.(sur-plein|on-solid|onSolid)$/.test(path);
 
 /**
  * Choix d'un jeton de couleur quand plusieurs ont la même valeur : d'abord celui
- * qui porte le nom de la ligne dans la valise (blanc → couleur.blanc, neutre-11 →
- * couleur.neutre.11) ; un jeton sur-plein seulement pour un texte posé sur le
+ * qui porte le nom de la ligne dans la valise (blanc → color.white, neutre-11 →
+ * color.neutral.11) ; un jeton sur-plein seulement pour un texte posé sur le
  * plein de cette échelle ; sinon le premier jeton qui n'est pas sur-plein.
  * @param {string[]} paths
  * @param {{ name?: string | null, pleinScales?: Set<string> }} [ctx]

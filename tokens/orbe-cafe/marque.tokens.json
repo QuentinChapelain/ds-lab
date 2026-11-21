@@ -1,69 +1,69 @@
 {
-  "$description": "Emplacements de marque d'Orbe Café (marque fictive), du 15/11/2026. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers marque.<emplacement>.* ; chaque emplacement pointe vers une échelle, et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9. Alias seulement, sauf le survol des pleins (clarté OKLCH du plein − 0,05, D45 : valeur calculée, formule en $extensions). Polices de la marque en marque.police (titre, texte). Changer de marque, c'est changer ce fichier.",
-  "marque": {
+  "$description": "Emplacements de marque d'Orbe Café (marque fictive), du 15/11/2026. Format DTCG 2025.10. Les rôles de semantique.tokens.json pointent vers brand.<emplacement>.* ; chaque emplacement pointe vers une échelle, et ses pleins suivent la règle en trois cas (sombre, moyen, clair) lue sur le pas 9. Alias seulement, sauf le survol des pleins (clarté OKLCH du plein − 0,05, D45 : valeur calculée, formule en $extensions). Polices de la marque en brand.font (titre, texte). Changer de marque, c'est changer ce fichier.",
+  "brand": {
     "$type": "color",
     "$description": "Emplacements de marque : primaire et accent (12 pas, plein, plein survolé, texte sur plein), statuts (plein, plein survolé, texte sur plein). Règle des pleins en trois cas, lue sur le pas 9 : sombre, moyen, clair. Survol de tous les pleins : clarté OKLCH du plein − 0,05 (D45).",
-    "primaire": {
+    "primary": {
       "1": {
-        "$value": "{couleur.bleu.1}",
-        "$description": "pas 1 de l'échelle bleu"
+        "$value": "{color.blue.1}",
+        "$description": "pas 1 de l'échelle blue"
       },
       "2": {
-        "$value": "{couleur.bleu.2}",
-        "$description": "pas 2 de l'échelle bleu"
+        "$value": "{color.blue.2}",
+        "$description": "pas 2 de l'échelle blue"
       },
       "3": {
-        "$value": "{couleur.bleu.3}",
-        "$description": "pas 3 de l'échelle bleu"
+        "$value": "{color.blue.3}",
+        "$description": "pas 3 de l'échelle blue"
       },
       "4": {
-        "$value": "{couleur.bleu.4}",
-        "$description": "pas 4 de l'échelle bleu"
+        "$value": "{color.blue.4}",
+        "$description": "pas 4 de l'échelle blue"
       },
       "5": {
-        "$value": "{couleur.bleu.5}",
-        "$description": "pas 5 de l'échelle bleu"
+        "$value": "{color.blue.5}",
+        "$description": "pas 5 de l'échelle blue"
       },
       "6": {
-        "$value": "{couleur.bleu.6}",
-        "$description": "pas 6 de l'échelle bleu"
+        "$value": "{color.blue.6}",
+        "$description": "pas 6 de l'échelle blue"
       },
       "7": {
-        "$value": "{couleur.bleu.7}",
-        "$description": "pas 7 de l'échelle bleu"
+        "$value": "{color.blue.7}",
+        "$description": "pas 7 de l'échelle blue"
       },
       "8": {
-        "$value": "{couleur.bleu.8}",
-        "$description": "pas 8 de l'échelle bleu"
+        "$value": "{color.blue.8}",
+        "$description": "pas 8 de l'échelle blue"
       },
       "9": {
-        "$value": "{couleur.bleu.9}",
-        "$description": "pas 9 de l'échelle bleu"
+        "$value": "{color.blue.9}",
+        "$description": "pas 9 de l'échelle blue"
       },
       "10": {
-        "$value": "{couleur.bleu.10}",
-        "$description": "pas 10 de l'échelle bleu"
+        "$value": "{color.blue.10}",
+        "$description": "pas 10 de l'échelle blue"
       },
       "11": {
-        "$value": "{couleur.bleu.11}",
-        "$description": "pas 11 de l'échelle bleu"
+        "$value": "{color.blue.11}",
+        "$description": "pas 11 de l'échelle blue"
       },
       "12": {
-        "$value": "{couleur.bleu.12}",
-        "$description": "pas 12 de l'échelle bleu"
+        "$value": "{color.blue.12}",
+        "$description": "pas 12 de l'échelle blue"
       },
-      "$description": "Primaire (actions) : échelle bleu, plein sombre.",
+      "$description": "Primaire (actions) : échelle blue, plein sombre.",
       "$extensions": {
         "ds-lab.plein": {
           "classe": "sombre",
           "regle": "sombre (blanc ≥ 5,5 sur le pas 9) : plein = pas 9, texte blanc ; survol = clarté OKLCH du plein − 0,05 (D45)"
         }
       },
-      "plein": {
-        "$value": "{couleur.bleu.9}",
+      "solid": {
+        "$value": "{color.blue.9}",
         "$description": "plein : pas 9"
       },
-      "plein-survol": {
+      "solid-hover": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -76,83 +76,83 @@
         "$description": "plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45)",
         "$extensions": {
           "ds-lab.survol": {
-            "base": "{couleur.bleu.9}",
+            "base": "{color.blue.9}",
             "clarte": -0.05,
             "espace": "oklch",
             "gamut": "srgb, chroma réduite (CSS Color 4)"
           }
         }
       },
-      "sur-plein": {
-        "$value": "{couleur.blanc}",
+      "on-solid": {
+        "$value": "{color.white}",
         "$description": "texte sur le plein : blanc"
       },
-      "texte-grand": {
-        "$value": "{couleur.bleu.9}",
-        "$description": "texte de marque des grands titres (affichage, titres 1 et 2) : pas 9, premier des pas 9, 10, 11 à tenir 3:1 sur fond.app, fond.surface, fond.discret et fond.marque.discret"
+      "text-large": {
+        "$value": "{color.blue.9}",
+        "$description": "texte de marque des grands titres (affichage, titres 1 et 2) : pas 9, premier des pas 9, 10, 11 à tenir 3:1 sur background.app, background.surface, background.subtle et background.brand.subtle"
       }
     },
     "accent": {
       "1": {
-        "$value": "{couleur.terre.1}",
-        "$description": "pas 1 de l'échelle terre"
+        "$value": "{color.earth.1}",
+        "$description": "pas 1 de l'échelle earth"
       },
       "2": {
-        "$value": "{couleur.terre.2}",
-        "$description": "pas 2 de l'échelle terre"
+        "$value": "{color.earth.2}",
+        "$description": "pas 2 de l'échelle earth"
       },
       "3": {
-        "$value": "{couleur.terre.3}",
-        "$description": "pas 3 de l'échelle terre"
+        "$value": "{color.earth.3}",
+        "$description": "pas 3 de l'échelle earth"
       },
       "4": {
-        "$value": "{couleur.terre.4}",
-        "$description": "pas 4 de l'échelle terre"
+        "$value": "{color.earth.4}",
+        "$description": "pas 4 de l'échelle earth"
       },
       "5": {
-        "$value": "{couleur.terre.5}",
-        "$description": "pas 5 de l'échelle terre"
+        "$value": "{color.earth.5}",
+        "$description": "pas 5 de l'échelle earth"
       },
       "6": {
-        "$value": "{couleur.terre.6}",
-        "$description": "pas 6 de l'échelle terre"
+        "$value": "{color.earth.6}",
+        "$description": "pas 6 de l'échelle earth"
       },
       "7": {
-        "$value": "{couleur.terre.7}",
-        "$description": "pas 7 de l'échelle terre"
+        "$value": "{color.earth.7}",
+        "$description": "pas 7 de l'échelle earth"
       },
       "8": {
-        "$value": "{couleur.terre.8}",
-        "$description": "pas 8 de l'échelle terre"
+        "$value": "{color.earth.8}",
+        "$description": "pas 8 de l'échelle earth"
       },
       "9": {
-        "$value": "{couleur.terre.9}",
-        "$description": "pas 9 de l'échelle terre"
+        "$value": "{color.earth.9}",
+        "$description": "pas 9 de l'échelle earth"
       },
       "10": {
-        "$value": "{couleur.terre.10}",
-        "$description": "pas 10 de l'échelle terre"
+        "$value": "{color.earth.10}",
+        "$description": "pas 10 de l'échelle earth"
       },
       "11": {
-        "$value": "{couleur.terre.11}",
-        "$description": "pas 11 de l'échelle terre"
+        "$value": "{color.earth.11}",
+        "$description": "pas 11 de l'échelle earth"
       },
       "12": {
-        "$value": "{couleur.terre.12}",
-        "$description": "pas 12 de l'échelle terre"
+        "$value": "{color.earth.12}",
+        "$description": "pas 12 de l'échelle earth"
       },
-      "$description": "Accent (mise en avant) : échelle terre, plein moyen.",
+      "$description": "Accent (mise en avant) : échelle earth, plein moyen.",
       "$extensions": {
         "ds-lab.plein": {
           "classe": "moyen",
           "regle": "moyen : plein = pas 11, texte blanc ; survol = clarté OKLCH du plein − 0,05 (D45)"
         }
       },
-      "plein": {
-        "$value": "{couleur.terre.11}",
+      "solid": {
+        "$value": "{color.earth.11}",
         "$description": "plein : pas 11"
       },
-      "plein-survol": {
+      "solid-hover": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -165,31 +165,31 @@
         "$description": "plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45)",
         "$extensions": {
           "ds-lab.survol": {
-            "base": "{couleur.terre.11}",
+            "base": "{color.earth.11}",
             "clarte": -0.05,
             "espace": "oklch",
             "gamut": "srgb, chroma réduite (CSS Color 4)"
           }
         }
       },
-      "sur-plein": {
-        "$value": "{couleur.blanc}",
+      "on-solid": {
+        "$value": "{color.white}",
         "$description": "texte sur le plein : blanc"
       }
     },
-    "erreur": {
-      "$description": "Statut erreur : échelle erreur, plein moyen.",
+    "error": {
+      "$description": "Statut erreur : échelle error, plein moyen.",
       "$extensions": {
         "ds-lab.plein": {
           "classe": "moyen",
           "regle": "moyen : plein = pas 11, texte blanc ; survol = clarté OKLCH du plein − 0,05 (D45)"
         }
       },
-      "plein": {
-        "$value": "{couleur.erreur.11}",
+      "solid": {
+        "$value": "{color.error.11}",
         "$description": "plein : pas 11"
       },
-      "plein-survol": {
+      "solid-hover": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -202,31 +202,31 @@
         "$description": "plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45)",
         "$extensions": {
           "ds-lab.survol": {
-            "base": "{couleur.erreur.11}",
+            "base": "{color.error.11}",
             "clarte": -0.05,
             "espace": "oklch",
             "gamut": "srgb, chroma réduite (CSS Color 4)"
           }
         }
       },
-      "sur-plein": {
-        "$value": "{couleur.blanc}",
+      "on-solid": {
+        "$value": "{color.white}",
         "$description": "texte sur le plein : blanc"
       }
     },
-    "succes": {
-      "$description": "Statut succès : échelle succes, plein moyen.",
+    "success": {
+      "$description": "Statut succès : échelle success, plein moyen.",
       "$extensions": {
         "ds-lab.plein": {
           "classe": "moyen",
           "regle": "moyen : plein = pas 11, texte blanc ; survol = clarté OKLCH du plein − 0,05 (D45)"
         }
       },
-      "plein": {
-        "$value": "{couleur.succes.11}",
+      "solid": {
+        "$value": "{color.success.11}",
         "$description": "plein : pas 11"
       },
-      "plein-survol": {
+      "solid-hover": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -239,31 +239,31 @@
         "$description": "plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45)",
         "$extensions": {
           "ds-lab.survol": {
-            "base": "{couleur.succes.11}",
+            "base": "{color.success.11}",
             "clarte": -0.05,
             "espace": "oklch",
             "gamut": "srgb, chroma réduite (CSS Color 4)"
           }
         }
       },
-      "sur-plein": {
-        "$value": "{couleur.blanc}",
+      "on-solid": {
+        "$value": "{color.white}",
         "$description": "texte sur le plein : blanc"
       }
     },
-    "avertissement": {
-      "$description": "Statut avertissement : échelle avertissement, plein clair.",
+    "warning": {
+      "$description": "Statut avertissement : échelle warning, plein clair.",
       "$extensions": {
         "ds-lab.plein": {
           "classe": "clair",
           "regle": "clair, jaune ou orangé : plein = pas 9, texte = pas 12 ; survol = clarté OKLCH du plein − 0,05 (D45)"
         }
       },
-      "plein": {
-        "$value": "{couleur.avertissement.9}",
+      "solid": {
+        "$value": "{color.warning.9}",
         "$description": "plein : pas 9, couleur exacte"
       },
-      "plein-survol": {
+      "solid-hover": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -276,15 +276,15 @@
         "$description": "plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45)",
         "$extensions": {
           "ds-lab.survol": {
-            "base": "{couleur.avertissement.9}",
+            "base": "{color.warning.9}",
             "clarte": -0.05,
             "espace": "oklch",
             "gamut": "srgb, chroma réduite (CSS Color 4)"
           }
         }
       },
-      "sur-plein": {
-        "$value": "{couleur.avertissement.12}",
+      "on-solid": {
+        "$value": "{color.warning.12}",
         "$description": "texte sur le plein : pas 12"
       }
     },
@@ -296,11 +296,11 @@
           "regle": "moyen : plein = pas 11, texte blanc ; survol = clarté OKLCH du plein − 0,05 (D45)"
         }
       },
-      "plein": {
-        "$value": "{couleur.info.11}",
+      "solid": {
+        "$value": "{color.info.11}",
         "$description": "plein : pas 11"
       },
-      "plein-survol": {
+      "solid-hover": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -313,29 +313,29 @@
         "$description": "plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45)",
         "$extensions": {
           "ds-lab.survol": {
-            "base": "{couleur.info.11}",
+            "base": "{color.info.11}",
             "clarte": -0.05,
             "espace": "oklch",
             "gamut": "srgb, chroma réduite (CSS Color 4)"
           }
         }
       },
-      "sur-plein": {
-        "$value": "{couleur.blanc}",
+      "on-solid": {
+        "$value": "{color.white}",
         "$description": "texte sur le plein : blanc"
       }
     },
-    "police": {
+    "font": {
       "$type": "fontFamily",
       "$description": "Polices de la marque : titre pour les styles affichage et titre 1 à 3, texte pour les autres, sauf le libellé, dans la police du produit (D44).",
-      "titre": {
+      "heading": {
         "$value": [
           "Georgia",
           "serif"
         ],
         "$description": "Police des styles affichage et titre 1 à 3."
       },
-      "texte": {
+      "body": {
         "$value": [
           "Orbe Sans",
           "Arial",

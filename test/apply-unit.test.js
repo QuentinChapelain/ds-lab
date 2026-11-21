@@ -50,9 +50,9 @@ const CSS = `/* Feuille fictive (lot S). */
 
 const EXPECTED = `/* Feuille fictive (lot S). */
 .carte {
-  padding: var(--espace-4, 5px) var(--espace-12, 12px);
-  border: 1px solid var(--couleur-neutre-6, #dadada);
-  color: var(--couleur-neutre-11, #595959);
+  padding: var(--space-4, 5px) var(--space-12, 12px);
+  border: 1px solid var(--color-neutral-6, #dadada);
+  color: var(--color-neutral-11, #595959);
 }
 
 .titre {
@@ -66,7 +66,7 @@ const EXPECTED = `/* Feuille fictive (lot S). */
 }
 
 .carte {
-  border-radius: var(--rayon-4, 6px);
+  border-radius: var(--radius-4, 6px);
 }
 
 .note {
@@ -74,7 +74,7 @@ const EXPECTED = `/* Feuille fictive (lot S). */
   background-color: var(--fond, #ffffff);
 }
 
-.prix { color: var(--couleur-sable-11, #f0c987) }
+.prix { color: var(--color-sand-11, #f0c987) }
 
 .pied {
   /* ds-lab : en attente du designer, 6px gouttière (esp-7, 2026-11-14T1200) */
@@ -83,7 +83,7 @@ const EXPECTED = `/* Feuille fictive (lot S). */
 `;
 
 const HTML = '<!doctype html><html lang="fr"><head><link rel="stylesheet" href="/s/a.css"></head><body><p class="prix">3,90 €</p></body></html>\n';
-const TOKENS_CSS = ':root {\n  --couleur-neutre-6: #d8d6d2;\n}\n';
+const TOKENS_CSS = ':root {\n  --color-neutral-6: #d8d6d2;\n}\n';
 
 const SIDES = ['top', 'right', 'bottom', 'left'];
 /** @param {number} line @param {string} selector @param {string} property @param {string} written @param {string} value @param {string} row @param {string} section */
@@ -93,16 +93,16 @@ const MODS = {
   host: '127.0.0.1:1',
   stamp: '2026-11-14T1200',
   entries: [
-    entry(2, '.carte', 'padding-top', '5px', 'var(--espace-4, 5px)', 'esp-1'),
-    entry(2, '.carte', 'padding-bottom', '5px', 'var(--espace-4, 5px)', 'esp-1'),
-    entry(2, '.carte', 'padding-right', '12px', 'var(--espace-12, 12px)', 'esp-2', 'RATTACHE'),
-    entry(2, '.carte', 'padding-left', '12px', 'var(--espace-12, 12px)', 'esp-2', 'RATTACHE'),
-    ...SIDES.map((s) => entry(2, '.carte', `border-${s}-color`, '#dadada', 'var(--couleur-neutre-6, #dadada)', 'coul-1', 'RATTACHE')),
-    entry(2, '.carte', 'color', '#595959', 'var(--couleur-neutre-11, #595959)', 'coul-2'),
-    ...['top-left', 'top-right', 'bottom-right', 'bottom-left'].map((c) => entry(16, '.carte', `border-${c}-radius`, '6px', 'var(--rayon-4, 6px)', 'arr-1')),
-    entry(20, '.note', 'margin-top', '10px', 'var(--espace-12, 10px)', 'esp-3'),
-    entry(20, '.note', 'margin-bottom', '10px', 'var(--espace-4, 10px)', 'esp-4'),
-    entry(25, '.prix', 'color', '#f0c987', 'var(--couleur-sable-11, #f0c987)', 'coul-3'),
+    entry(2, '.carte', 'padding-top', '5px', 'var(--space-4, 5px)', 'esp-1'),
+    entry(2, '.carte', 'padding-bottom', '5px', 'var(--space-4, 5px)', 'esp-1'),
+    entry(2, '.carte', 'padding-right', '12px', 'var(--space-12, 12px)', 'esp-2', 'RATTACHE'),
+    entry(2, '.carte', 'padding-left', '12px', 'var(--space-12, 12px)', 'esp-2', 'RATTACHE'),
+    ...SIDES.map((s) => entry(2, '.carte', `border-${s}-color`, '#dadada', 'var(--color-neutral-6, #dadada)', 'coul-1', 'RATTACHE')),
+    entry(2, '.carte', 'color', '#595959', 'var(--color-neutral-11, #595959)', 'coul-2'),
+    ...['top-left', 'top-right', 'bottom-right', 'bottom-left'].map((c) => entry(16, '.carte', `border-${c}-radius`, '6px', 'var(--radius-4, 6px)', 'arr-1')),
+    entry(20, '.note', 'margin-top', '10px', 'var(--space-12, 10px)', 'esp-3'),
+    entry(20, '.note', 'margin-bottom', '10px', 'var(--space-4, 10px)', 'esp-4'),
+    entry(25, '.prix', 'color', '#f0c987', 'var(--color-sand-11, #f0c987)', 'coul-3'),
   ],
   comments: [
     { sheet: '/s/a.css', line: 8, selector: '.titre', property: 'font-size', kind: 'unité relative', rows: ['tail-1'], text: 'ds-lab : unité relative, non rattachée (1rem, 2026-11-14)' },
@@ -113,7 +113,7 @@ const MODS = {
   brief: {
     pages: ['/p.html'],
     sheets: ['/s/a.css'],
-    reste: ['coul-4 Fond · note : /s/a.css:20 .note { background-color: var(--fond, #ffffff) } : unité inconnue ; écris var(--couleur-blanc, …) à la main si la valeur calculée est bien #ffffff.'],
+    reste: ['coul-4 Fond · note : /s/a.css:20 .note { background-color: var(--fond, #ffffff) } : unité inconnue ; écris var(--color-white, …) à la main si la valeur calculée est bien #ffffff.'],
     changeAussi: ['Relie chaque message à son champ par aria-describedby : 0 trouvé ici.'],
     neTouchePas: ['Composant tiers : .tiers et tout ce qu’il contient.'],
     signale: ['Élément injecté après le chargement : non mesuré ; signale-le si tu en trouves.'],
@@ -196,10 +196,10 @@ test('S3 : deux copies fraîches : fichiers identiques octet pour octet', async 
 test('S2 : sélecteur écrit autrement par le navigateur (:nth-child(even) lu :nth-child(2n)) : la règle seule à sa ligne est retrouvée', async () => {
   const root = await fresh();
   await writeFile(join(root, 's', 'b.css'), '.ligne:nth-child(even) {\n  background-color: #f6f5f6;\n}\n');
-  const mods = { ...MODS, entries: [{ sheet: '/s/b.css', line: 1, selector: '.ligne:nth-child(2n)', property: 'background-color', written: '#f6f5f6', value: 'var(--couleur-neutre-2, #f6f5f6)', rows: ['coul-9'], section: 'REMPLACEMENTS' }], comments: [] };
+  const mods = { ...MODS, entries: [{ sheet: '/s/b.css', line: 1, selector: '.ligne:nth-child(2n)', property: 'background-color', written: '#f6f5f6', value: 'var(--color-neutral-2, #f6f5f6)', rows: ['coul-9'], section: 'REMPLACEMENTS' }], comments: [] };
   const r = await applyModifications(mods, { root });
   assert.equal(r.results[0].status, 'appliquée', r.results[0].reason);
-  assert.equal(await readFile(join(root, 's', 'b.css'), 'utf8'), '.ligne:nth-child(even) {\n  background-color: var(--couleur-neutre-2, #f6f5f6);\n}\n');
+  assert.equal(await readFile(join(root, 's', 'b.css'), 'utf8'), '.ligne:nth-child(even) {\n  background-color: var(--color-neutral-2, #f6f5f6);\n}\n');
 });
 
 test('S4 : le HTML n’est pas touché ; reste.md : contexte, reste (lien, change aussi, unité inconnue, écarts de l’exécution), puis les sections de la consigne', async () => {
@@ -225,7 +225,7 @@ test('S4 : le HTML n’est pas touché ; reste.md : contexte, reste (lien, chang
 test('S9 : un border écrit après border-radius ne couvre pas les rayons ; border-top non plus', async () => {
   const root = await fresh();
   await writeFile(join(root, 's', 'c.css'), '.carte {\n  border-radius: 4px;\n  border: 1px solid #ccc;\n}\n\n.onglet {\n  border-top-left-radius: 4px;\n  border-top: 1px solid #ccc;\n}\n');
-  const coin = (/** @type {number} */ line, /** @type {string} */ selector, /** @type {string} */ c) => ({ sheet: '/s/c.css', line, selector, property: `border-${c}-radius`, written: '4px', value: 'var(--rayon-4, 4px)', rows: ['arr-9'], section: 'REMPLACEMENTS' });
+  const coin = (/** @type {number} */ line, /** @type {string} */ selector, /** @type {string} */ c) => ({ sheet: '/s/c.css', line, selector, property: `border-${c}-radius`, written: '4px', value: 'var(--radius-4, 4px)', rows: ['arr-9'], section: 'REMPLACEMENTS' });
   const mods = { ...MODS, entries: [...['top-left', 'top-right', 'bottom-right', 'bottom-left'].map((c) => coin(1, '.carte', c)), coin(6, '.onglet', 'top-left')], comments: [] };
   const r = await applyModifications(mods, { root });
   assert.deepEqual(r.results.map((/** @type {any} */ x) => `${x.entry.selector} ${x.entry.property} ${x.status}${x.reason ? ` (${x.reason})` : ''}`), [
@@ -237,6 +237,6 @@ test('S9 : un border écrit après border-radius ne couvre pas les rayons ; bord
   ]);
   assert.equal(
     await readFile(join(root, 's', 'c.css'), 'utf8'),
-    '.carte {\n  border-radius: var(--rayon-4, 4px);\n  border: 1px solid #ccc;\n}\n\n.onglet {\n  border-top-left-radius: var(--rayon-4, 4px);\n  border-top: 1px solid #ccc;\n}\n',
+    '.carte {\n  border-radius: var(--radius-4, 4px);\n  border: 1px solid #ccc;\n}\n\n.onglet {\n  border-top-left-radius: var(--radius-4, 4px);\n  border-top: 1px solid #ccc;\n}\n',
   );
 });

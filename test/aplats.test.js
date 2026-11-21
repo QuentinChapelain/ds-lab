@@ -3,23 +3,23 @@
  * aplats et titres de marque (docs/attendus/etape-4-contrat-de-marque.md, complément).
  *
  * Attendus écrits à la main avant le code (15/11/2026). Valeurs lues dans les jetons ; contrastes culori wcagContrast,
- * commande : node --input-type=module -e (wcagContrast du pas 9, 10, 11 du primaire sur fond.app #fbfbfb,
- * fond.surface #ffffff, fond.discret #f8f8f7 et le pas 3 du primaire).
+ * commande : node --input-type=module -e (wcagContrast du pas 9, 10, 11 du primaire sur background.app #fbfbfb,
+ * background.surface #ffffff, background.subtle #f8f8f7 et le pas 3 du primaire).
  *   Rôles ajoutés (9), et leur valeur chez Orbe Café :
- *     fond.marque.discret → marque.primaire.3 (#f1f3f7) ; fond.accent.discret → marque.accent.3 (#fcf1ef) ;
- *     fond.marque.fort → marque.primaire.plein (#2b4c7e) ; texte.sur-marque → marque.primaire.sur-plein (#ffffff) ;
- *     texte.marque.grand → marque.primaire.texte-grand (#2b4c7e, pas 9 : 7,7544 au plus bas) ;
- *     fond.interactif.inverse → marque.primaire.sur-plein (#ffffff) ;
- *     texte.sur-interactif.inverse → marque.primaire.plein (#2b4c7e) ;
- *     texte.sur-interactif.inverse.survol → marque.primaire.plein-survol (#3c5a88) ;
- *     bordure.focus.inverse → marque.primaire.sur-plein (#ffffff).
+ *     background.brand.subtle → brand.primary.3 (#f1f3f7) ; background.accent.subtle → brand.accent.3 (#fcf1ef) ;
+ *     background.brand.strong → brand.primary.solid (#2b4c7e) ; text.on-brand → brand.primary.on-solid (#ffffff) ;
+ *     text.brand.large → brand.primary.text-large (#2b4c7e, pas 9 : 7,7544 au plus bas) ;
+ *     background.interactive.inverse → brand.primary.on-solid (#ffffff) ;
+ *     text.on-interactive.inverse → brand.primary.solid (#2b4c7e) ;
+ *     text.on-interactive.inverse.hover → brand.primary.solid-hover (#3c5a88) ;
+ *     border.focus.inverse → brand.primary.on-solid (#ffffff).
  *   texte-grand : Orbe Café pas 9 ; Atelier Lavandine pas 9 (4,5091) ; Écume et Sel pas 11 (9 : 1,4007,
  *     10 : 1,6485, 11 : 5,0277) ; Grenat Papeterie pas 9 (9,0322) ; Maison Alberto (18/11/2026, même commande) pas 11
  *     (9 : 2,4733 ; 10 : 2,798 ; 11 : 5,0671, au plus bas des quatre fonds).
  *   Orbe Café : marque.tokens.json, l'emplacement texte-grand retiré, redevient identique octet par octet
  *     (empreinte 2abaca33…, test/saisie.test.js).
  *   Paires : les 48 d'origine, inchangées et en tête, puis 18 ajoutées (66) ; seuil grand-texte 3 ; 4 interdites
- *     ajoutées sur fond.marque.fort (8). Les cinq marques fictives : 0 paire en échec.
+ *     ajoutées sur background.brand.strong (8). Les cinq marques fictives : 0 paire en échec.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -46,31 +46,31 @@ test('Orbe Café : les 9 rôles ajoutés, en alias vers la couche marque, et leu
   assert.equal(roles.size, N_ROLES, 'plus les rôles du bouton (helpers/roles-ajoutes.js)');
 });
 
-test('fond.accent.fort : petites surfaces, comme une étiquette', () => {
-  assert.match(charger('semantique.tokens.json').fond.accent.fort.$description, /[Pp]etites surfaces, comme une étiquette/);
+test('background.accent.strong : petites surfaces, comme une étiquette', () => {
+  assert.match(charger('semantique.tokens.json').background.accent.strong.$description, /[Pp]etites surfaces, comme une étiquette/);
 });
 
-test('texte-grand choisi à la saisie : pas 9, 10 ou 11', () => {
-  const pas = { 'orbe-cafe': '{couleur.bleu.9}', 'atelier-lavandine': '{couleur.primaire.9}', 'ecume-et-sel': '{couleur.primaire.11}', 'grenat-papeterie': '{couleur.primaire.9}', 'maison-alberto': '{couleur.primaire.11}' };
-  for (const [slug, ref] of Object.entries(pas)) assert.equal(load(join(ROOT, 'tokens', slug), 'marque.tokens.json').marque.primaire['texte-grand'].$value, ref, slug);
+test('text-large choisi à la saisie : pas 9, 10 ou 11', () => {
+  const pas = { 'orbe-cafe': '{color.blue.9}', 'atelier-lavandine': '{color.primary.9}', 'ecume-et-sel': '{color.primary.11}', 'grenat-papeterie': '{color.primary.9}', 'maison-alberto': '{color.primary.11}' };
+  for (const [slug, ref] of Object.entries(pas)) assert.equal(load(join(ROOT, 'tokens', slug), 'marque.tokens.json').brand.primary['text-large'].$value, ref, slug);
 });
 
-test('Orbe Café : sans l\'emplacement texte-grand, la couche marque redevient identique octet par octet', () => {
+test('Orbe Café : sans l\'emplacement text-large, la couche marque redevient identique octet par octet', () => {
   const m = load(DIR, 'marque.tokens.json');
-  delete m.marque.primaire['texte-grand'];
-  assert.equal(createHash('sha256').update(serialiser(m)).digest('hex'), 'c6717998900ac0add8cc9114c2cd7eca7e1a091f50984d81b0ff250ad9a8b537');
+  delete m.brand.primary['text-large'];
+  assert.equal(createHash('sha256').update(serialiser(m)).digest('hex'), 'fe878df65c88545d1c193e8a520071ee4ddbed409cdb8a80ea407a01cec7f8c9');
 });
 
 test('paires.json : 48 paires d\'origine en tête, 18 ajoutées, 4 interdites ajoutées', () => {
   const p = charger('paires.json');
-  assert.equal(p.seuils['grand-texte'], 3);
-  assert.equal(p.paires.length, N_PAIRES, '+ 4 bordures de statut sur fond.surface, + les paires du bouton, de l\'avatar et de l\'étiquette');
-  assert.deepEqual(p.paires.slice(70, 73).map((/** @type {any} */ x) => [x.devant, x.fond, x.type]), PAIRES_BOUTON);
-  assert.deepEqual(p.paires.slice(73).map((/** @type {any} */ x) => [x.devant, x.fond, x.type]), PAIRES_AVATAR);
-  assert.deepEqual(p.paires.slice(48, 66).map((/** @type {any} */ x) => [x.devant, x.fond, x.type]), PAIRES_AJOUTEES);
-  assert.equal(p.interdites.length, 8);
-  assert.deepEqual(p.interdites.slice(4).map((/** @type {any} */ x) => [x.devant, x.fond]), INTERDITES_AJOUTEES.map((d) => [d, 'fond.marque.fort']));
-  for (const x of p.interdites.slice(4)) assert.ok(x.regle.length > 10, x.devant);
+  assert.equal(p.thresholds['large-text'], 3);
+  assert.equal(p.pairs.length, N_PAIRES, '+ 4 bordures de statut sur background.surface, + les paires du bouton, de l\'avatar et de l\'étiquette');
+  assert.deepEqual(p.pairs.slice(70, 73).map((/** @type {any} */ x) => [x.foreground, x.background, x.type]), PAIRES_BOUTON);
+  assert.deepEqual(p.pairs.slice(73).map((/** @type {any} */ x) => [x.foreground, x.background, x.type]), PAIRES_AVATAR);
+  assert.deepEqual(p.pairs.slice(48, 66).map((/** @type {any} */ x) => [x.foreground, x.background, x.type]), PAIRES_AJOUTEES);
+  assert.equal(p.forbidden.length, 8);
+  assert.deepEqual(p.forbidden.slice(4).map((/** @type {any} */ x) => [x.foreground, x.background]), INTERDITES_AJOUTEES.map((d) => [d, 'background.brand.strong']));
+  for (const x of p.forbidden.slice(4)) assert.ok(x.rule.length > 10, x.foreground);
 });
 
 test('les cinq marques fictives : 0 paire en échec, toutes les paires, 8 interdites', () => {

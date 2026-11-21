@@ -8,9 +8,9 @@
  * (contrôlée par npm run contraste), et aucune clé n'est écrite en on-. Un rôle absent d'une marque lève.
  * Les variables de la table (traits et dimensions de l'enveloppe du bouton) vont aussi dans les variables du thème,
  * sous une clé en ds- : une couleur en hex (Vuetify l'écrit en r, g, b), une dimension en px, un nombre tel quel, une
- * police en liste CSS (famille) ; champ
+ * police en liste CSS (famille) ; field
  * prend une partie d'un style de texte. Une variable de couleur est le trait devant d'une paire de paires.json, ou porte
- * sa raison (sansPaire) ; sinon, panne.
+ * sa raison (unpaired) ; sinon, panne.
  */
 import { readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
@@ -45,22 +45,22 @@ const cles = (o) => Object.keys(o ?? {}).filter((k) => !k.startsWith('$'));
 export function lireTable(brute = JSON.parse(readFileSync(join(COMMUN, 'vuetify.json'), 'utf8')), paires = JSON.parse(readFileSync(join(COMMUN, 'paires.json'), 'utf8'))) {
   /** @type {Table} */
   const table = { couleurs: {}, polices: {}, variables: {} };
-  for (const k of cles(brute.couleurs)) {
+  for (const k of cles(brute.colors)) {
     if (k.startsWith('on-')) throw new Error(`table Vuetify : clé en on- : ${k}`);
-    const { fond, texte } = brute.couleurs[k];
-    const paire = (paires.paires ?? []).some((/** @type {any} */ p) => p.type === 'texte' && p.fond === fond && p.devant === texte);
+    const { background: fond, text: texte } = brute.colors[k];
+    const paire = (paires.pairs ?? []).some((/** @type {any} */ p) => p.type === 'text' && p.background === fond && p.foreground === texte);
     if (!paire) throw new Error(`table Vuetify : paire hors de paires.json : ${texte} sur ${fond} (${k})`);
     table.couleurs[k] = { fond, texte };
   }
-  for (const k of cles(brute.polices)) table.polices[k] = { jeton: brute.polices[k].jeton };
+  for (const k of cles(brute.fonts)) table.polices[k] = { jeton: brute.fonts[k].token };
   for (const k of cles(brute.variables)) {
     if (!k.startsWith(PREFIXE)) throw new Error(`table Vuetify : variable sans le préfixe ${PREFIXE} : ${k}`);
-    const { jeton, champ, sansPaire } = brute.variables[k];
+    const { token: jeton, field: champ, unpaired: sansPaire } = brute.variables[k];
     if (typeof jeton !== 'string' || !jeton) throw new Error(`table Vuetify : variable sans jeton : ${k}`);
-    if (champ !== undefined && !CHAMPS.includes(champ)) throw new Error(`table Vuetify : champ inconnu : ${champ} (${k} ; ${CHAMPS.join(', ')})`);
-    if (sansPaire !== undefined && !(typeof sansPaire === 'string' && sansPaire.trim())) throw new Error(`table Vuetify : sansPaire vide : ${k}`);
-    const paire = (paires.paires ?? []).some((/** @type {any} */ p) => p.devant === jeton);
-    if (paire && sansPaire !== undefined) throw new Error(`table Vuetify : sansPaire sur un trait qui a sa paire : ${jeton} (${k})`);
+    if (champ !== undefined && !CHAMPS.includes(champ)) throw new Error(`table Vuetify : field inconnu : ${champ} (${k} ; ${CHAMPS.join(', ')})`);
+    if (sansPaire !== undefined && !(typeof sansPaire === 'string' && sansPaire.trim())) throw new Error(`table Vuetify : unpaired vide : ${k}`);
+    const paire = (paires.pairs ?? []).some((/** @type {any} */ p) => p.foreground === jeton);
+    if (paire && sansPaire !== undefined) throw new Error(`table Vuetify : unpaired sur un trait qui a sa paire : ${jeton} (${k})`);
     table.variables[k] = { jeton, ...(champ ? { champ } : {}), paire, ...(sansPaire ? { sansPaire } : {}) };
   }
   return table;
@@ -81,7 +81,7 @@ function valeurVariable(jetons, cle, v, ou) {
   if (typeof valeur === 'number') return String(valeur);
   if (Array.isArray(valeur) && valeur.length && valeur.every((f) => typeof f === 'string')) return famille(valeur);
   if (typeof valeur?.hex === 'string') {
-    if (!v.paire && !v.sansPaire) throw new Error(`table Vuetify : couleur sans paire : ${v.jeton} (${cle}) ; la déclarer dans paires.json, ou dire pourquoi (sansPaire)`);
+    if (!v.paire && !v.sansPaire) throw new Error(`table Vuetify : couleur sans paire : ${v.jeton} (${cle}) ; la déclarer dans paires.json, ou dire pourquoi (unpaired)`);
     return valeur.hex.toLowerCase();
   }
   if (typeof valeur?.value === 'number' && valeur.unit === 'px') return `${valeur.value}px`;

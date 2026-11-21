@@ -30,12 +30,12 @@
       "outOfTable": { "total": 2, "rows": [{ "family": "colors", "value": "#2196f3", "reason": "aucune échelle (R4)" }, { "family": "colors", "value": "#24426f", "reason": "fond plus sombre que le pas 10" }], "corrected": "16/11/2026, revue de code, lot 2 (D19) : #24426f, fond de bouton au survol, entre dans la table ; plus sombre que bleu-10, il est hors table par R8, comme tout fond de ce genre (1 → 2)" }
     },
     "tokens": [
-      { "family": "colors", "value": "#999999", "usage": "texte", "token": "couleur.neutre.11" },
-      { "family": "colors", "value": "#999999", "usage": "bordure", "token": "couleur.neutre.8" },
-      { "family": "colors", "value": "#4990e2", "usage": "plein", "token": "couleur.bleu.9" },
-      { "family": "spacing", "value": "15px", "usage": "marge", "token": "espace.16" },
-      { "family": "fontSizes", "value": "13.5px", "token": "taille-texte.14" },
-      { "family": "radii", "value": "50%", "usage": "pilule", "token": "rayon.pilule" },
+      { "family": "colors", "value": "#999999", "usage": "texte", "token": "color.neutral.11" },
+      { "family": "colors", "value": "#999999", "usage": "bordure", "token": "color.neutral.8" },
+      { "family": "colors", "value": "#4990e2", "usage": "plein", "token": "color.blue.9" },
+      { "family": "spacing", "value": "15px", "usage": "marge", "token": "space.16" },
+      { "family": "fontSizes", "value": "13.5px", "token": "font-size.14" },
+      { "family": "radii", "value": "50%", "usage": "pilule", "token": "radius.full" },
       { "family": "radii", "value": "3px", "usage": "rayon", "token": "—", "corrected": "16/11/2026, revue de code, lot 2 (D20) : égalité 2/4, décision sans défaut, pas de jeton (avant : rayon.2)" }
     ],
     "origins": [

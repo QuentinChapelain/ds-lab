@@ -63,7 +63,7 @@ test('D3 contraste --marque : sortie d\'une seule marque, sans en-tête', () => 
 test('D4 une marque qui échoue : sortie 1', () => {
   const dir = mkdtempSync(join(tmpdir(), 'ds-lab-sans-marque-'));
   const paires = JSON.parse(readFileSync(join(ROOT, 'tokens', 'commun', 'paires.json'), 'utf8'));
-  for (const k of Object.keys(paires.seuils ?? {})) paires.seuils[k] = 21;
+  for (const k of Object.keys(paires.thresholds ?? {})) paires.thresholds[k] = 21;
   writeFileSync(join(dir, 'paires.json'), JSON.stringify(paires));
   const p = run('contraste', '--paires', join(dir, 'paires.json'));
   assert.equal(p.status, 1, p.stderr);

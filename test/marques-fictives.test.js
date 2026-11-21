@@ -68,28 +68,28 @@ for (const [slug, [nom, primaire, accent, ecoles, pleins]] of Object.entries(MAR
   });
 
   test(`${nom} : écoles du générateur et classes de plein`, () => {
-    const echelles = JSON.parse(read('echelles.tokens.json')).couleur;
-    const marque = JSON.parse(read('marque.tokens.json')).marque;
-    assert.equal(echelles.primaire.$extensions['ds-lab.valise'].ecole, ecoles[0]);
+    const echelles = JSON.parse(read('echelles.tokens.json')).color;
+    const marque = JSON.parse(read('marque.tokens.json')).brand;
+    assert.equal(echelles.primary.$extensions['ds-lab.valise'].ecole, ecoles[0]);
     if (ecoles[1]) assert.equal(echelles.accent.$extensions['ds-lab.valise'].ecole, ecoles[1]);
     else assert.equal(echelles.accent, undefined);
-    assert.equal(marque.primaire.$extensions['ds-lab.plein'].classe, pleins[0]);
+    assert.equal(marque.primary.$extensions['ds-lab.plein'].classe, pleins[0]);
     assert.equal(marque.accent.$extensions['ds-lab.plein'].classe, pleins[1]);
-    assert.equal(marque.primaire['9'].$value, '{couleur.primaire.9}');
-    assert.equal(marque.accent['9'].$value, accent ? '{couleur.accent.9}' : '{couleur.neutre.9}');
+    assert.equal(marque.primary['9'].$value, '{color.primary.9}');
+    assert.equal(marque.accent['9'].$value, accent ? '{color.accent.9}' : '{color.neutral.9}');
   });
 
   test(`${nom} : survol du primaire, clarté OKLCH du plein − 0,05`, () => {
-    const p = JSON.parse(read('marque.tokens.json')).marque.primaire;
-    const t = p['plein-survol'];
+    const p = JSON.parse(read('marque.tokens.json')).brand.primary;
+    const t = p['solid-hover'];
     assert.equal(t.$value.hex, SURVOLS[slug], slug);
-    assert.deepEqual({ base: t.$extensions['ds-lab.survol'].base, clarte: t.$extensions['ds-lab.survol'].clarte }, { base: p.plein.$value, clarte: -0.05 });
+    assert.deepEqual({ base: t.$extensions['ds-lab.survol'].base, clarte: t.$extensions['ds-lab.survol'].clarte }, { base: p.solid.$value, clarte: -0.05 });
   });
 
   test(`${nom} : statuts identiques à ceux d'Orbe Café`, () => {
-    const orbe = JSON.parse(readFileSync(join(ROOT, 'tokens', 'orbe-cafe', 'marque.tokens.json'), 'utf8')).marque;
-    const marque = JSON.parse(read('marque.tokens.json')).marque;
-    for (const s of ['erreur', 'succes', 'avertissement', 'info']) assert.deepEqual(marque[s], orbe[s], s);
+    const orbe = JSON.parse(readFileSync(join(ROOT, 'tokens', 'orbe-cafe', 'marque.tokens.json'), 'utf8')).brand;
+    const marque = JSON.parse(read('marque.tokens.json')).brand;
+    for (const s of ['error', 'success', 'warning', 'info']) assert.deepEqual(marque[s], orbe[s], s);
   });
 
   test(`${nom} : npm run contraste -- --marque sort 0`, () => {

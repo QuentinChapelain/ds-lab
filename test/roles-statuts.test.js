@@ -26,35 +26,36 @@ import { wcagContrast, rgb } from 'culori';
 import { generateScale, checkValise } from '../src/valise/generate.js';
 import { valiseFromTokens } from '../src/tokens/primitives.js';
 import { charger, COMMUN, ORBE } from './helpers/jetons.js';
+import { traducteur } from './helpers/anciens-noms.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');
 const read = (/** @type {string} */ f) => readFileSync(join(COMMUN, f), 'utf8');
 
 const PRIMITIVES_SHA256 = 'a6cee106711c62c619d8af653a2c040bccea4d642c5c6cc3805a22cbdd3667ce';
-const SOURCES = { avertissement: '#e5a000', info: '#0284c7' };
-const SCHOOLS = { avertissement: 'plein clair', info: 'normale' };
-const ON_SOLID = { avertissement: '#4c3200', info: '#000104' };
-const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'sur-plein'];
+const SOURCES = { warning: '#e5a000', info: '#0284c7' };
+const SCHOOLS = { warning: 'plein clair', info: 'normale' };
+const ON_SOLID = { warning: '#4c3200', info: '#000104' };
+const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'on-solid'];
 
 /** @type {any} */
 let statuts;
 test('T0 statuts.tokens.json existe et se lit en JSON', () => {
   statuts = JSON.parse(read('statuts.tokens.json'));
   assert.ok(typeof statuts.$description === 'string' && /DTCG 2025\.10/.test(statuts.$description), 'description racine citant DTCG 2025.10');
-  assert.equal(statuts.couleur.$type, 'color');
+  assert.equal(statuts.color.$type, 'color');
 });
 
-test('T0 deux échelles exactement : avertissement et info', () => {
-  const scales = Object.keys(statuts.couleur).filter((k) => !k.startsWith('$'));
-  assert.deepEqual(scales, ['avertissement', 'info']);
-  for (const s of scales) assert.deepEqual(Object.keys(statuts.couleur[s]).filter((k) => !k.startsWith('$')), KEYS, `${s} : 12 pas et sur-plein`);
+test('T0 deux échelles exactement : warning et info', () => {
+  const scales = Object.keys(statuts.color).filter((k) => !k.startsWith('$'));
+  assert.deepEqual(scales, ['warning', 'info']);
+  for (const s of scales) assert.deepEqual(Object.keys(statuts.color[s]).filter((k) => !k.startsWith('$')), KEYS, `${s} : 12 pas et on-solid`);
 });
 
 test('T0 chaque jeton : valeur DTCG 2025.10 cohérente (srgb, composantes à 4 décimales, hex)', () => {
   for (const s of Object.keys(SOURCES)) {
     for (const k of KEYS) {
-      const v = statuts.couleur[s][k].$value;
+      const v = statuts.color[s][k].$value;
       assert.equal(v.colorSpace, 'srgb', `${s}.${k}`);
       assert.match(v.hex, /^#[0-9a-f]{6}$/, `${s}.${k}`);
       const c = rgb(v.hex);
@@ -63,41 +64,41 @@ test('T0 chaque jeton : valeur DTCG 2025.10 cohérente (srgb, composantes à 4 d
   }
 });
 
-test('T0 pas égaux à generateScale ; pas 9 = source ; sur-plein = onSolid', () => {
+test('T0 pas égaux à generateScale ; pas 9 = source ; on-solid = onSolid', () => {
   for (const [s, src] of Object.entries(SOURCES)) {
     const g = generateScale(s, src);
-    const got = KEYS.slice(0, 12).map((k) => statuts.couleur[s][k].$value.hex);
+    const got = KEYS.slice(0, 12).map((k) => statuts.color[s][k].$value.hex);
     assert.deepEqual(got, g.steps, s);
     assert.equal(got[8], src, `${s} : pas 9 = source`);
-    assert.equal(statuts.couleur[s]['sur-plein'].$value.hex, ON_SOLID[/** @type {keyof ON_SOLID} */ (s)], `${s} : sur-plein`);
+    assert.equal(statuts.color[s]['on-solid'].$value.hex, ON_SOLID[/** @type {keyof ON_SOLID} */ (s)], `${s} : on-solid`);
   }
 });
 
 test('T0 école et source écrites dans $extensions de chaque échelle', () => {
   for (const [s, src] of Object.entries(SOURCES)) {
-    const x = statuts.couleur[s].$extensions?.['ds-lab.valise'];
+    const x = statuts.color[s].$extensions?.['ds-lab.valise'];
     assert.ok(x, `${s} : $extensions["ds-lab.valise"]`);
     assert.equal(x.source, src);
     assert.equal(x.ecole, SCHOOLS[/** @type {keyof SCHOOLS} */ (s)]);
   }
 });
 
-test('T0 sur-plein lisible sur les pas 9 et 10 (culori, ≥ 4,5)', () => {
+test('T0 on-solid lisible sur les pas 9 et 10 (culori, ≥ 4,5)', () => {
   for (const s of Object.keys(SOURCES)) {
-    const os = statuts.couleur[s]['sur-plein'].$value.hex;
+    const os = statuts.color[s]['on-solid'].$value.hex;
     for (const step of ['9', '10']) {
-      const r = wcagContrast(os, statuts.couleur[s][step].$value.hex);
-      assert.ok(r >= 4.5, `${s} : sur-plein sur ${step}, ${r.toFixed(2)}`);
+      const r = wcagContrast(os, statuts.color[s][step].$value.hex);
+      assert.ok(r >= 4.5, `${s} : on-solid sur ${step}, ${r.toFixed(2)}`);
     }
   }
 });
 
-test('T0 phrases d\'usage : chaque pas a celle de primitives.tokens.json ; sur-plein cite les pas 9 et 10', () => {
-  const prim = charger('primitives.tokens.json').couleur.bleu;
+test('T0 phrases d\'usage : chaque pas a celle de primitives.tokens.json ; on-solid cite les pas 9 et 10', () => {
+  const prim = charger('primitives.tokens.json').color.blue;
   for (const s of Object.keys(SOURCES)) {
-    for (const k of KEYS.slice(0, 12)) assert.equal(statuts.couleur[s][k].$description, prim[k].$description, `${s}.${k}`);
-    assert.equal(statuts.couleur[s]['sur-plein'].$description, 'texte posé sur les pas 9 et 10 (4,5:1)');
-    assert.ok(typeof statuts.couleur[s].$description === 'string' && statuts.couleur[s].$description.length > 0, `${s} : phrase d'échelle`);
+    for (const k of KEYS.slice(0, 12)) assert.equal(statuts.color[s][k].$description, prim[k].$description, `${s}.${k}`);
+    assert.equal(statuts.color[s]['on-solid'].$description, 'texte posé sur les pas 9 et 10 (4,5:1)');
+    assert.ok(typeof statuts.color[s].$description === 'string' && statuts.color[s].$description.length > 0, `${s} : phrase d'échelle`);
   }
 });
 
@@ -114,28 +115,29 @@ test('T0 copie figée des primitives d’origine intacte (empreinte de 3fddd72),
 });
 
 test('primitives communes et échelles d\'Orbe Café réunies = primitives d\'avant le rangement, descriptions de fichier et du groupe graisse mises à part', () => {
-  const avant = JSON.parse(readFileSync(join(ROOT, 'fixtures', 'marque-demo', 'jetons', 'primitives.tokens.json'), 'utf8'));
+  // La copie figée garde les anciens noms : elle est lue à travers la table (docs/anciens-noms.json).
+  const avant = traducteur('apres').jetons(JSON.parse(readFileSync(join(ROOT, 'fixtures', 'marque-demo', 'jetons', 'primitives.tokens.json'), 'utf8')));
   const apres = charger('primitives.tokens.json');
   delete avant.$description;
   delete apres.$description;
   // La copie figée garde sa description du groupe graisse ; celle des primitives communes l'a perdue.
-  delete avant.graisse.$description;
-  delete apres.graisse.$description;
-  // Deux primitives ajoutées, blanches comme couleur.blanc.
-  assert.equal(apres.couleur.surface.$value.hex, '#ffffff');
-  assert.equal(apres.couleur['sur-inverse'].$value.hex, '#ffffff');
-  delete apres.couleur.surface;
-  delete apres.couleur['sur-inverse'];
+  delete avant['font-weight'].$description;
+  delete apres['font-weight'].$description;
+  // Deux primitives ajoutées, blanches comme color.white.
+  assert.equal(apres.color.surface.$value.hex, '#ffffff');
+  assert.equal(apres.color['on-inverse'].$value.hex, '#ffffff');
+  delete apres.color.surface;
+  delete apres.color['on-inverse'];
   // Emplacement du fond teinté, alias du pas 3 du neutre en clair (docs/attendus/carte-membre-liste.md).
-  assert.equal(apres.couleur.teinte.$value, '{couleur.neutre.3}');
-  delete apres.couleur.teinte;
+  assert.equal(apres.color.tint.$value, '{color.neutral.3}');
+  delete apres.color.tint;
   // Groupes ajoutés pour le bouton (docs/attendus/bouton.md) : tailles de contrôle et d'icône, trait ; puis, dans le
   // même groupe taille, 24 et 56 pour la hauteur de l'étiquette et le côté du grand avatar
   // (docs/attendus/avatar-etiquette.md) ; puis 640 pour la largeur de colonne (docs/attendus/carte-membre-liste.md).
-  assert.deepEqual(Object.keys(apres.taille).filter((k) => !k.startsWith('$')), ['16', '20', '24', '32', '40', '56', '640']);
-  assert.deepEqual(Object.keys(apres.trait).filter((k) => !k.startsWith('$')), ['1', '2']);
-  delete apres.taille;
-  delete apres.trait;
+  assert.deepEqual(Object.keys(apres.size).filter((k) => !k.startsWith('$')), ['16', '20', '24', '32', '40', '56', '640']);
+  assert.deepEqual(Object.keys(apres.stroke).filter((k) => !k.startsWith('$')), ['1', '2']);
+  delete apres.size;
+  delete apres.stroke;
   const tri = (/** @type {any} */ o) => JSON.stringify(o, (_, v) => (v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => a.localeCompare(b))) : v));
   assert.equal(tri(apres), tri(avant));
 });

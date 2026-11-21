@@ -1,12 +1,12 @@
 {
   "$description": "Couche marque de Grenat Papeterie en mode sombre, écrite par la saisie. Format DTCG 2025.10. Posée sur marque.tokens.json dans le contexte sombre : les boutons prennent la version lumineuse de la couleur (pas 11 de l'échelle sombre, survol calculé, D04 et D45), l'aplat plein garde ses valeurs claires, le texte de marque des grands titres est choisi sur l'échelle sombre.",
-  "marque": {
-    "primaire": {
-      "plein": {
-        "$value": "{couleur.primaire.11}",
+  "brand": {
+    "primary": {
+      "solid": {
+        "$value": "{color.primary.11}",
         "$description": "plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur"
       },
-      "plein-survol": {
+      "solid-hover": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -19,18 +19,18 @@
         "$description": "plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45)",
         "$extensions": {
           "ds-lab.survol": {
-            "base": "{couleur.primaire.11}",
+            "base": "{color.primary.11}",
             "clarte": 0.05,
             "espace": "oklch",
             "gamut": "srgb, chroma réduite (CSS Color 4)"
           }
         }
       },
-      "sur-plein": {
-        "$value": "{couleur.primaire.1}",
+      "on-solid": {
+        "$value": "{color.primary.1}",
         "$description": "texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1)"
       },
-      "aplat": {
+      "feature": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -43,15 +43,15 @@
         "$description": "aplat plein en sombre : plein du primaire en clair, figé (couleur exacte du client)",
         "$extensions": {
           "ds-lab.mode": {
-            "clair": "{couleur.primaire.9}"
+            "clair": "{color.primary.9}"
           }
         }
       },
-      "sur-aplat": {
-        "$value": "{couleur.blanc}",
+      "on-feature": {
+        "$value": "{color.white}",
         "$description": "aplat plein en sombre : sur-plein du primaire en clair, figé (couleur exacte du client)"
       },
-      "aplat-survol": {
+      "feature-hover": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -63,17 +63,17 @@
         },
         "$description": "aplat plein en sombre : plein-survol du primaire en clair, figé (couleur exacte du client)"
       },
-      "texte-grand": {
-        "$value": "{couleur.primaire.11}",
-        "$description": "texte de marque des grands titres en sombre : pas 11 de l'échelle sombre, premier des pas 9, 10, 11 à tenir 3:1 sur fond.app, fond.surface, fond.discret et fond.marque.discret sombres"
+      "text-large": {
+        "$value": "{color.primary.11}",
+        "$description": "texte de marque des grands titres en sombre : pas 11 de l'échelle sombre, premier des pas 9, 10, 11 à tenir 3:1 sur background.app, background.surface, background.subtle et background.brand.subtle sombres"
       }
     },
-    "erreur": {
-      "plein": {
-        "$value": "{couleur.erreur.11}",
+    "error": {
+      "solid": {
+        "$value": "{color.error.11}",
         "$description": "plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur"
       },
-      "plein-survol": {
+      "solid-hover": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -86,24 +86,24 @@
         "$description": "plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45)",
         "$extensions": {
           "ds-lab.survol": {
-            "base": "{couleur.erreur.11}",
+            "base": "{color.error.11}",
             "clarte": 0.05,
             "espace": "oklch",
             "gamut": "srgb, chroma réduite (CSS Color 4)"
           }
         }
       },
-      "sur-plein": {
-        "$value": "{couleur.erreur.1}",
+      "on-solid": {
+        "$value": "{color.error.1}",
         "$description": "texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1)"
       }
     },
-    "succes": {
-      "plein": {
-        "$value": "{couleur.succes.11}",
+    "success": {
+      "solid": {
+        "$value": "{color.success.11}",
         "$description": "plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur"
       },
-      "plein-survol": {
+      "solid-hover": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -116,24 +116,24 @@
         "$description": "plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45)",
         "$extensions": {
           "ds-lab.survol": {
-            "base": "{couleur.succes.11}",
+            "base": "{color.success.11}",
             "clarte": 0.05,
             "espace": "oklch",
             "gamut": "srgb, chroma réduite (CSS Color 4)"
           }
         }
       },
-      "sur-plein": {
-        "$value": "{couleur.succes.1}",
+      "on-solid": {
+        "$value": "{color.success.1}",
         "$description": "texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1)"
       }
     },
-    "avertissement": {
-      "plein": {
-        "$value": "{couleur.avertissement.11}",
+    "warning": {
+      "solid": {
+        "$value": "{color.warning.11}",
         "$description": "plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur"
       },
-      "plein-survol": {
+      "solid-hover": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -146,24 +146,24 @@
         "$description": "plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45)",
         "$extensions": {
           "ds-lab.survol": {
-            "base": "{couleur.avertissement.11}",
+            "base": "{color.warning.11}",
             "clarte": 0.05,
             "espace": "oklch",
             "gamut": "srgb, chroma réduite (CSS Color 4)"
           }
         }
       },
-      "sur-plein": {
-        "$value": "{couleur.avertissement.1}",
+      "on-solid": {
+        "$value": "{color.warning.1}",
         "$description": "texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1)"
       }
     },
     "info": {
-      "plein": {
-        "$value": "{couleur.info.11}",
+      "solid": {
+        "$value": "{color.info.11}",
         "$description": "plein en sombre : pas 11 de l'échelle sombre, version lumineuse de la couleur"
       },
-      "plein-survol": {
+      "solid-hover": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -176,20 +176,20 @@
         "$description": "plein survolé : clarté OKLCH du plein + 0,05, teinte et chroma gardées, valeur calculée (D45)",
         "$extensions": {
           "ds-lab.survol": {
-            "base": "{couleur.info.11}",
+            "base": "{color.info.11}",
             "clarte": 0.05,
             "espace": "oklch",
             "gamut": "srgb, chroma réduite (CSS Color 4)"
           }
         }
       },
-      "sur-plein": {
-        "$value": "{couleur.info.1}",
+      "on-solid": {
+        "$value": "{color.info.1}",
         "$description": "texte sur le plein en sombre : pas 1 de l'échelle sombre (7:1 au moins, DS1)"
       }
     },
     "accent": {
-      "plein": {
+      "solid": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -202,11 +202,11 @@
         "$description": "plein : pas 11, valeur du mode clair, figée en sombre",
         "$extensions": {
           "ds-lab.mode": {
-            "clair": "{couleur.neutre.11}"
+            "clair": "{color.neutral.11}"
           }
         }
       },
-      "plein-survol": {
+      "solid-hover": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -218,8 +218,8 @@
         },
         "$description": "plein survolé : clarté OKLCH du plein − 0,05, teinte et chroma gardées, valeur calculée (D45), valeur du mode clair, figée en sombre"
       },
-      "sur-plein": {
-        "$value": "{couleur.blanc}",
+      "on-solid": {
+        "$value": "{color.white}",
         "$description": "texte sur le plein : blanc, valeur du mode clair, figée en sombre"
       }
     }

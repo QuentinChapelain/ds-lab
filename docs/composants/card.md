@@ -75,26 +75,26 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 
 | Partie | Token | Ce qu'il règle |
 |---|---|---|
-| Couleur | `fond.surface` | Fond d'une carte ou d'un champ, posé sur le fond de la page. |
-| Couleur | `texte.principal` | Texte courant et titres. |
-| Couleur | `texte.secondaire` | Texte d'appoint, comme une aide, une légende ou une date. |
-| Couleur | `bordure.defaut` | Contour ordinaire d'une carte ou d'un séparateur, décoratif, jamais seule pour repérer un champ ou un état. |
-| Couleur, au focus | `bordure.focus` | Anneau de focus clavier, autour du composant qui a le focus. |
-| Couleur, href, au survol | `bordure.forte` | Contour qui suffit à repérer un champ ou une case à cocher. |
-| Couleur, href, au focus | `bordure.forte` | Contour qui suffit à repérer un champ ou une case à cocher. |
-| Forme | `epaisseur.contour` | Épaisseur du contour d'un contrôle, comme le bouton secondaire. |
-| Forme | `marge-interieure.composant` | Marge intérieure d'un composant à bord visible, comme une carte, un encadré ou une zone de formulaire. |
-| Forme | `arrondi.surface` | Arrondi d'une surface posée sur la page, comme une carte. |
-| Forme | `ecart.dans-composant` | Écart entre les parties d'un même composant, comme une étiquette et son champ ou un champ et son message d'erreur. |
-| Forme | `ecart.entre-composants` | Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée, pour qu'on voie à quel champ appartient un libellé ou un message. |
-| Forme | `ecart.entre-blocs` | Écart entre deux blocs d'information d'un même composant, comme l'en-tête d'une carte, titre et sous-titre, et son contenu. |
-| Forme, au focus | `epaisseur.focus` | Épaisseur de l'anneau de focus clavier. |
-| Forme, au focus | `decalage.focus` | Décalage de l'anneau de focus clavier hors du composant, pour qu'il se pose sur le fond de la page et jamais sur le plein. |
-| Texte | `typo.corps.moyen` | Texte courant, comme le texte d'une carte ou la saisie d'un champ. |
-| Texte | `typo.titre.3` | Titre de carte. |
-| Texte | `police.titre.hauteur-capitale` | Hauteur des capitales des titres (affichage, titres 1 à 3), la même quelle que soit la police. |
-| Texte | `typo.corps.petit` | Texte de tableau ou d'étiquette, plus petit que le texte courant. |
-| Texte, size | `typo.titre.4` | Titre de sous-groupe, sur les écrans denses, comme le titre d'une DsCard en taille small. |
+| Couleur | `background.surface` | Fond d'une carte ou d'un champ, posé sur le fond de la page. |
+| Couleur | `text.default` | Texte courant et titres. |
+| Couleur | `text.secondary` | Texte d'appoint, comme une aide, une légende ou une date. |
+| Couleur | `border.default` | Contour ordinaire d'une carte ou d'un séparateur, décoratif, jamais seule pour repérer un champ ou un état. |
+| Couleur, au focus | `border.focus` | Anneau de focus clavier, autour du composant qui a le focus. |
+| Couleur, href, au survol | `border.strong` | Contour qui suffit à repérer un champ ou une case à cocher. |
+| Couleur, href, au focus | `border.strong` | Contour qui suffit à repérer un champ ou une case à cocher. |
+| Forme | `border-width.default` | Épaisseur du contour d'un contrôle, comme le bouton secondaire. |
+| Forme | `padding.component` | Marge intérieure d'un composant à bord visible, comme une carte, un encadré ou une zone de formulaire. |
+| Forme | `border-radius.surface` | Arrondi d'une surface posée sur la page, comme une carte. |
+| Forme | `gap.within-component` | Écart entre les parties d'un même composant, comme une étiquette et son champ ou un champ et son message d'erreur. |
+| Forme | `gap.between-components` | Écart entre deux composants voisins d'un même groupe, comme deux champs d'un formulaire ou deux cartes d'une rangée, pour qu'on voie à quel champ appartient un libellé ou un message. |
+| Forme | `gap.between-blocks` | Écart entre deux blocs d'information d'un même composant, comme l'en-tête d'une carte, titre et sous-titre, et son contenu. |
+| Forme, au focus | `border-width.focus` | Épaisseur de l'anneau de focus clavier. |
+| Forme, au focus | `offset.focus` | Décalage de l'anneau de focus clavier hors du composant, pour qu'il se pose sur le fond de la page et jamais sur le plein. |
+| Texte | `typography.body.medium` | Texte courant, comme le texte d'une carte ou la saisie d'un champ. |
+| Texte | `typography.heading.3` | Titre de carte. |
+| Texte | `font.heading.cap-height` | Hauteur des capitales des titres (affichage, titres 1 à 3), la même quelle que soit la police. |
+| Texte | `typography.body.small` | Texte de tableau ou d'étiquette, plus petit que le texte courant. |
+| Texte, size | `typography.heading.4` | Titre de sous-groupe, sur les écrans denses, comme le titre d'une DsCard en taille small. |
 <!-- /genere:tokens -->
 
 ## Accessibilité
@@ -108,13 +108,13 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 <!-- genere:contrastes : écrit par npm --prefix atelier run fiches -->
 | Devant | Fond | Plus bas des 10 thèmes | Seuil |
 |---|---|---|---|
-| `texte.principal` | `fond.surface` | 12,12:1 (Atelier Lavandine, sombre) | 4,50:1 |
-| `bordure.focus` | `fond.app` | 5,40:1 (Orbe Café, clair) | 3,00:1 |
-| `bordure.focus` | `fond.surface` | 5,59:1 (Orbe Café, clair) | 3,00:1 |
-| `bordure.forte` | `fond.app` | 3,10:1 (Atelier Lavandine, clair) | 3,00:1 |
-| `bordure.forte` | `fond.surface` | 3,10:1 (Atelier Lavandine, sombre) | 3,00:1 |
-| `texte.secondaire` | `fond.app` | 5,42:1 (Atelier Lavandine, clair) | 4,50:1 |
-| `texte.secondaire` | `fond.surface` | 5,22:1 (Atelier Lavandine, sombre) | 4,50:1 |
+| `text.default` | `background.surface` | 12,12:1 (Atelier Lavandine, sombre) | 4,50:1 |
+| `border.focus` | `background.app` | 5,40:1 (Orbe Café, clair) | 3,00:1 |
+| `border.focus` | `background.surface` | 5,59:1 (Orbe Café, clair) | 3,00:1 |
+| `border.strong` | `background.app` | 3,10:1 (Atelier Lavandine, clair) | 3,00:1 |
+| `border.strong` | `background.surface` | 3,10:1 (Atelier Lavandine, sombre) | 3,00:1 |
+| `text.secondary` | `background.app` | 5,42:1 (Atelier Lavandine, clair) | 4,50:1 |
+| `text.secondary` | `background.surface` | 5,22:1 (Atelier Lavandine, sombre) | 4,50:1 |
 <!-- /genere:contrastes -->
 
 ## En situation

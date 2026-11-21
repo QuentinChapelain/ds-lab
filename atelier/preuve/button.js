@@ -19,6 +19,9 @@ const PRINCIPAL = '.ds-button[data-variante="principal"][data-taille="normale"][
 /** États que la preuve force sur les boutons de leur colonne. */
 const FORCES = { survol: ['hover'], focus: ['focus', 'focus-visible'] };
 
+/** Taille de la planche → valeur de la prop size, qui nomme aussi les variables du thème. */
+const TAILLES = /** @type {Record<string, string>} */ ({ normale: 'medium', petite: 'small' });
+
 /**
  * Mesures attendues de chaque bouton de la planche, par « variante|taille|état », au format de getComputedStyle.
  * Couleurs : clés de la table (fond et texte de chaque couleur) ; traits et dimensions : variables de la table.
@@ -30,10 +33,10 @@ function attenduBoutons(c, v, police) {
   /** Variante → [couleur au repos, couleur au survol, fond transparent au repos]. */
   const VARIANTES = {
     principal: ['primary', 'primary-darken-1', false],
-    secondaire: ['surface', 'composant-survol', false],
-    discret: ['interactif-discret', 'interactif-discret', true],
-    danger: ['error', 'erreur-fort-survol', false],
-    'danger-discret': ['erreur-discret', 'erreur-discret', true],
+    secondaire: ['surface', 'component-hover', false],
+    discret: ['interactive-subtle', 'interactive-subtle', true],
+    danger: ['error', 'error-strong-hover', false],
+    'danger-discret': ['error-subtle', 'error-subtle', true],
   };
   /** @type {Map<string, Record<string, string>>} */
   const out = new Map();
@@ -41,21 +44,21 @@ function attenduBoutons(c, v, police) {
     for (const taille of ['normale', 'petite'])
       for (const etat of ['repos', 'survol', 'focus', 'désactivé', 'chargement']) {
         const desactive = etat === 'désactivé';
-        const couleur = desactive ? 'desactive' : etat === 'survol' ? survol : repos;
+        const couleur = desactive ? 'disabled' : etat === 'survol' ? survol : repos;
         const transparent = discret && (etat !== 'survol');
         out.set(`${variante}|${taille}|${etat}`, {
           fond: transparent ? TRANSPARENT : css(c(couleur).fond),
           texte: css(c(couleur).texte),
-          ...(variante === 'secondaire' ? { contour: `${v['ds-epaisseur-contour']} ${css(v[desactive ? 'ds-contour-desactive' : 'ds-contour'])}` } : {}),
-          anneau: etat === 'focus' ? `solid ${v['ds-epaisseur-focus']} ${css(v['ds-focus'])} ${v['ds-decalage-focus']}` : 'none',
-          hauteur: v[`ds-hauteur-controle-${taille}`],
-          rayon: v['ds-arrondi-controle'],
-          marge: v['ds-marge-interieure-composant'],
-          taille: v['ds-libelle-taille'],
-          graisse: v['ds-libelle-graisse'],
+          ...(variante === 'secondaire' ? { contour: `${v['ds-border-width-default']} ${css(v[desactive ? 'ds-border-disabled' : 'ds-border'])}` } : {}),
+          anneau: etat === 'focus' ? `solid ${v['ds-border-width-focus']} ${css(v['ds-focus'])} ${v['ds-offset-focus']}` : 'none',
+          hauteur: v[`ds-height-control-${TAILLES[taille]}`],
+          rayon: v['ds-border-radius-control'],
+          marge: v['ds-padding-component'],
+          taille: v['ds-label-font-size'],
+          graisse: v['ds-label-font-weight'],
           police: police.join('|'),
-          icone: v[`ds-taille-icone-${taille}`],
-          ecart: v['ds-ecart-icone-texte'],
+          icone: v[`ds-icon-size-${TAILLES[taille]}`],
+          ecart: v['ds-gap-icon-text'],
         });
       }
   return out;
@@ -215,7 +218,7 @@ async function clavier(contexte, base, t) {
     const s = getComputedStyle(e);
     return { visible: e.matches(':focus-visible'), anneau: `${s.outlineStyle} ${s.outlineWidth} ${s.outlineColor} ${s.outlineOffset}` };
   });
-  const attendu = `solid ${t.variables['ds-epaisseur-focus']} rgb(${t.variables['ds-focus'].split(',').join(', ')}) ${t.variables['ds-decalage-focus']}`;
+  const attendu = `solid ${t.variables['ds-border-width-focus']} rgb(${t.variables['ds-focus'].split(',').join(', ')}) ${t.variables['ds-offset-focus']}`;
   out.push([anneau.visible && anneau.anneau === attendu, `${t.nom}, focus au clavier : ${anneau.anneau} (jetons ${attendu})`]);
 
   // Inactifs : ni clic émis ni envoi, au clavier, à la souris et par envoi implicite (Entrée dans un champ).

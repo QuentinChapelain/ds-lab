@@ -1,9 +1,9 @@
 {
   "$description": "Échelles propres à Orbe Café (marque fictive), du 11/11/2026 : bleu, terre, sable. Format DTCG 2025.10. Source : fixtures/marque-demo/cible-valise.json. Les primitives communes sont dans tokens/commun/primitives.tokens.json.",
-  "couleur": {
+  "color": {
     "$type": "color",
     "$description": "Échelles de 12 pas. Pas 9 = couleur source exacte ; autres pas générés par contraste visé contre le blanc (Leonardo, hors dépôt) ; paires d'usage vérifiées en WCAG 2.1 AA.",
-    "bleu": {
+    "blue": {
       "1": {
         "$value": {
           "colorSpace": "srgb",
@@ -148,7 +148,7 @@
         },
         "$description": "texte principal"
       },
-      "sur-plein": {
+      "on-solid": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -161,7 +161,7 @@
         "$description": "texte posé sur le pas 9 (4,5:1)"
       }
     },
-    "terre": {
+    "earth": {
       "1": {
         "$value": {
           "colorSpace": "srgb",
@@ -306,7 +306,7 @@
         },
         "$description": "texte principal"
       },
-      "sur-plein": {
+      "on-solid": {
         "$value": {
           "colorSpace": "srgb",
           "components": [
@@ -319,7 +319,7 @@
         "$description": "texte posé sur le pas 9 (4,5:1)"
       }
     },
-    "sable": {
+    "sand": {
       "1": {
         "$value": {
           "colorSpace": "srgb",
@@ -464,7 +464,7 @@
         },
         "$description": "texte principal"
       },
-      "sur-plein": {
+      "on-solid": {
         "$value": {
           "colorSpace": "srgb",
           "components": [

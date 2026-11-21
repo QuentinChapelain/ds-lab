@@ -31,7 +31,7 @@ const RANGEE = /** @type {const} */ ([
 const suite = (items, o = {}) =>
   h(
     'ul',
-    { ...o, style: `display:flex;flex-wrap:wrap;gap:var(--v-ds-ecart-entre-etiquettes);margin:0;padding:0;list-style:none;${o.style ?? ''}` },
+    { ...o, style: `display:flex;flex-wrap:wrap;gap:var(--v-ds-gap-between-tags);margin:0;padding:0;list-style:none;${o.style ?? ''}` },
     items.map(([texte, ton]) => h('li', { style: 'display:flex;min-width:0;max-width:100%' }, [h(DsTag, { text: texte, tone: ton })])),
   );
 
@@ -61,9 +61,9 @@ function planche(mesures = true) {
 const situation = () =>
   h('div', { style: 'display:flex;gap:16px;align-items:flex-start;width:420px', 'data-cas': 'situation' }, [
     h(DsAvatar, { name: 'Camille Ferrand', image: PORTRAIT, size: 'large', decorative: true }),
-    h('div', { style: 'display:flex;flex-direction:column;gap:var(--v-ds-ecart-dans-composant);min-width:0;flex:1' }, [
-      h('p', { style: 'margin:0;font-family:var(--v-ds-titre-4-police);font-size:var(--v-ds-titre-4-taille);font-weight:var(--v-ds-titre-4-graisse);line-height:var(--v-ds-titre-4-interligne);color:rgb(var(--v-theme-on-surface))' }, 'Camille Ferrand'),
-      h('p', { style: 'margin:0;font-family:var(--v-ds-corps-petit-police);font-size:var(--v-ds-corps-petit-taille);line-height:var(--v-ds-corps-petit-interligne);color:rgb(var(--v-ds-texte-secondaire))' }, 'Promo 2015'),
+    h('div', { style: 'display:flex;flex-direction:column;gap:var(--v-ds-gap-within-component);min-width:0;flex:1' }, [
+      h('p', { style: 'margin:0;font-family:var(--v-ds-heading-4-font-family);font-size:var(--v-ds-heading-4-font-size);font-weight:var(--v-ds-heading-4-font-weight);line-height:var(--v-ds-heading-4-line-height);color:rgb(var(--v-theme-on-surface))' }, 'Camille Ferrand'),
+      h('p', { style: 'margin:0;font-family:var(--v-ds-body-small-font-family);font-size:var(--v-ds-body-small-font-size);line-height:var(--v-ds-body-small-line-height);color:rgb(var(--v-ds-text-secondary))' }, 'Promo 2015'),
       suite(
         [
           ['Lyon', 'neutral'],
@@ -71,7 +71,7 @@ const situation = () =>
           ['Mentor', 'brand'],
           [LONGUE, 'neutral'],
         ],
-        { style: 'margin-top:calc(var(--v-ds-ecart-entre-blocs) - var(--v-ds-ecart-dans-composant))' },
+        { style: 'margin-top:calc(var(--v-ds-gap-between-blocks) - var(--v-ds-gap-within-component))' },
       ),
     ]),
   ]);

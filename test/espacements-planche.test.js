@@ -7,18 +7,18 @@
  *   avec un message d'erreur sur deux lignes et une rangée de trois cartes ;
  *   les cinq espaces cotés et nommés, une cote [data-cote] par rôle, qui porte le nom du rôle et sa valeur
  *   en px ; chaque cote couvre exactement l'espace réel qu'elle nomme :
- *     ecart.dans-composant 4 (étiquette → champ), ecart.entre-composants 16 (champ → champ),
- *     ecart.entre-groupes 24 (en-tête de section → contenu), ecart.section 48 (section → section),
- *     marge-interieure.composant 16 (bord d'une carte → son contenu) ;
+ *     gap.within-component 4 (étiquette → champ), gap.between-components 16 (champ → champ),
+ *     gap.between-groups 24 (en-tête de section → contenu), gap.section 48 (section → section),
+ *     padding.component 16 (bord d'une carte → son contenu) ;
  *   le parent porte l'espace : gap et padding uniquement ; marge calculée nulle sur tous les éléments,
  *     une seule déclaration margin dans la feuille, la remise à zéro ;
  *   rendue dans Chromium à 420 et à 1 200 px de large : aucun défilement horizontal, cotes dans la fenêtre ;
  *     les trois cartes sur une ligne à 1 200 px, une par ligne à 420 px ; le message d'erreur sur deux lignes
  *     aux deux largeurs ;
  *   Plus aucun réglage (ni bouton radio, ni « réglage ») ; la planche
- *     lit ses valeurs dans les jetons : ecart.section vaut 48 px, et 32 px sous 600 px (valeur en étroit
+ *     lit ses valeurs dans les jetons : gap.section vaut 48 px, et 32 px sous 600 px (valeur en étroit
  *     de ds-lab.etroit, seuil [H]) ; à 420 px la cote de section mesure et affiche 32 px, en étroit ;
- *     à 1 200 px, 48 px ; ecart.dans-composant reste à 4 px ;
+ *     à 1 200 px, 48 px ; gap.within-component reste à 4 px ;
  *   page autonome : aucune ressource externe, aucun script ; le fichier versionné est à jour.
  */
 import { test, before, after } from 'node:test';
@@ -35,11 +35,11 @@ const html = readFileSync(FILE, 'utf8');
 
 /** Valeur attendue par rôle à une largeur donnée (section : 32 px sous 600 px). @param {number} width */
 const attendu = (width) => /** @type {Record<string, number>} */ ({
-  'ecart.dans-composant': 4,
-  'ecart.entre-composants': 16,
-  'ecart.entre-groupes': 24,
-  'ecart.section': width < 600 ? 32 : 48,
-  'marge-interieure.composant': 16,
+  'gap.within-component': 4,
+  'gap.between-components': 16,
+  'gap.between-groups': 24,
+  'gap.section': width < 600 ? 32 : 48,
+  'padding.component': 16,
 });
 
 /** @type {import('playwright-core').Browser} */
@@ -72,7 +72,7 @@ const mesures = (page) =>
       const role = c.getAttribute('data-cote');
       let reel;
       let bande;
-      if (role === 'marge-interieure.composant') {
+      if (role === 'padding.component') {
         const s = getComputedStyle(host);
         reel = [s.paddingTop, s.paddingRight, s.paddingBottom, s.paddingLeft].map(parseFloat);
         bande = parseFloat(getComputedStyle(c).borderTopWidth);
@@ -95,8 +95,8 @@ test('planche : page autonome, sans script, fichier à jour', () => {
 
 test('planche : aucun réglage, valeurs lues dans les jetons', () => {
   assert.doesNotMatch(html, /type="radio"|réglage|reglage/i);
-  assert.match(html, /--ecart-section: 48px;/);
-  assert.match(html, /@media \(max-width: 599\.98px\) \{ :root \{ --ecart-section: 32px; \} \}/);
+  assert.match(html, /--gap-section: 48px;/);
+  assert.match(html, /@media \(max-width: 599\.98px\) \{ :root \{ --gap-section: 32px; \} \}/);
 });
 
 test('planche : une seule déclaration margin, la remise à zéro', () => {
@@ -145,7 +145,7 @@ for (const width of [420, 1200]) {
     for (const c of m) {
       const px = ATTENDU[/** @type {string} */ (c.role)];
       assert.ok(c.texte.includes(/** @type {string} */ (c.role)) && c.texte.includes(`${px} px`), `${c.role} : texte « ${c.texte} »`);
-      if (c.role === 'ecart.section') assert.equal(/étroit/.test(c.texte), width < 600, `section : « ${c.texte} »`);
+      if (c.role === 'gap.section') assert.equal(/étroit/.test(c.texte), width < 600, `section : « ${c.texte} »`);
       assert.ok(c.visible && c.gauche >= 0 && c.droite <= width, `${c.role} : dans la fenêtre`);
       if (Array.isArray(c.reel)) assert.deepEqual(c.reel, [px, px, px, px], `${c.role} : padding`);
       else assert.equal(c.reel, px, `${c.role} : espace réel`);

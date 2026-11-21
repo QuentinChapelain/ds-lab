@@ -17,7 +17,7 @@ import { saisir, chargerCommun, echellesPropres } from '../tokens/saisie.js';
 import { fr, esc } from '../lib/format.js';
 
 const WHITE = '#ffffff';
-const STATUTS = ['erreur', 'succes', 'avertissement', 'info'];
+const STATUTS = ['error', 'success', 'warning', 'info'];
 const dEok = differenceEuclidean('oklab');
 /** ΔE OKLab × 100. @param {string} a @param {string} b */
 const dE = (a, b) => 100 * dEok(a, b);
@@ -65,7 +65,7 @@ export function colonne({ dossier, entree }, commun = chargerCommun()) {
   const r = saisir(entree, { dossier, commun });
   // D25 : une échelle nommée se lit dans le dossier de sa marque ; les statuts, dans le commun.
   /** @type {Record<string, any>} */
-  const propres = echellesPropres(dossier)?.couleur ?? {};
+  const propres = echellesPropres(dossier)?.color ?? {};
   /** @param {Record<string, any>} ou @param {string} s */
   const pasDe = (ou, s) => Array.from({ length: 12 }, (_, i) => ou[s][String(i + 1)].$value.hex);
   /** @param {any} v @returns {string[] | null} */
@@ -79,7 +79,7 @@ export function colonne({ dossier, entree }, commun = chargerCommun()) {
   const primaire = sp ? lecture(sp) : null;
   const accent = sa ? lecture(sa) : null;
   const statutProche = primaire
-    ? STATUTS.map((s) => ({ nom: s, dE: dE(primaire.hex, pasDe(commun.primitives.couleur, s)[8]) })).sort((a, b) => a.dE - b.dE)[0]
+    ? STATUTS.map((s) => ({ nom: s, dE: dE(primaire.hex, pasDe(commun.primitives.color, s)[8]) })).sort((a, b) => a.dE - b.dE)[0]
     : null;
   return {
     nom: typeof entree?.nom === 'string' ? entree.nom : dossier,

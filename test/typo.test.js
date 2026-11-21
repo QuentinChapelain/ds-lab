@@ -4,30 +4,30 @@
  *
  * Attendu écrit à la main avant le code, d'après le plan typo du 15/11/2026. Règles en échec (code 1) :
  *   R1 taille × interligne multiple de 4 px (tolérance 0,01 px), en large et en étroit ;
- *   R2 affichage et titres (affichage.grand, affichage.moyen, titre.1 à titre.4) strictement décroissants
+ *   R2 affichage et titres (display.large, display.medium, heading.1 à heading.4) strictement décroissants
  *      en taille, en large et en étroit (un style sans valeur en étroit garde sa valeur large) ;
  *   R3 étroit inférieur ou égal au large (taille et hauteur de ligne) ;
- *   R4 corps.grand et corps.moyen : interligne au moins 1,5 ;
- *   R5 corps.petit, libelle, mention : interligne au moins 1,3 ;
- *   R6 corps.moyen au moins 1 rem (16 px) ;
+ *   R4 body.large et body.medium : interligne au moins 1,5 ;
+ *   R5 body.small, label, supporting-text : interligne au moins 1,3 ;
+ *   R6 body.medium au moins 1 rem (16 px) ;
  *   R7 aucune taille sous 12 px, en large et en étroit ;
- *   R8 bonne police par rôle : affichage et titres 1 à 3 sur {marque.police.titre}, le reste sur
- *      {marque.police.texte}.
+ *   R8 bonne police par rôle : affichage et titres 1 à 3 sur {brand.font.heading}, le reste sur
+ *      {brand.font.body}.
  * Affiché sans seuil : le rapport de chaque style (4 décimales, virgule) ; les primitives sans rôle
- *   (taille-texte et graisse ; Orbe Café : aucune depuis que mention cite taille-texte.12, décision du 15/11/2026).
+ *   (font-size et font-weight ; Orbe Café : aucune depuis que supporting-text cite font-size.12, décision du 15/11/2026).
  * Orbe Café : 9 règles (8, plus la consigne de hauteur de capitale, DS11), aucune en échec, code 0 ; ligne affichée = taille × rapport arrondie au centième
  *   (60 × 1,2667 = 76,002 → 76 ; lignes des titres relevées, D17).
  * Rouges, chacun ne fait tomber que sa règle :
- *   R1 titre.2 interligne 1,3 → 24 × 1,3 = 31,2 px ;
- *   R2 titre.3 → {taille-texte.24}, interligne 1,3333 (32 px) : 30, 24, 24 en large ;
- *   R3 corps.grand reçoit une valeur en étroit {taille-texte.20}, interligne 1,6 (32 px) : 20 > 18 ;
- *   R4 corps.moyen interligne 1,25 (20 px) ;
- *   R5 libelle interligne 1,1429 (16 px) ;
- *   R6 corps.moyen → {taille-texte.14}, interligne 1,7143 (24 px) ;
- *   R7 primitive d'essai taille-texte.10 (10 px), mention → {taille-texte.10}, interligne 1,6 (16 px) ;
- *   R8 titre.2 → {marque.police.texte}.
- * Correction du 18/11/2026 (D44) : R8 met le libellé sur {police.produit}, police du produit que la couche marque ne
- *   remplace pas ; rouge : libelle → {marque.police.texte}.
+ *   R1 heading.2 interligne 1,3 → 24 × 1,3 = 31,2 px ;
+ *   R2 heading.3 → {font-size.24}, interligne 1,3333 (32 px) : 30, 24, 24 en large ;
+ *   R3 body.large reçoit une valeur en étroit {font-size.20}, interligne 1,6 (32 px) : 20 > 18 ;
+ *   R4 body.medium interligne 1,25 (20 px) ;
+ *   R5 label interligne 1,1429 (16 px) ;
+ *   R6 body.medium → {font-size.14}, interligne 1,7143 (24 px) ;
+ *   R7 primitive d'essai font-size.10 (10 px), supporting-text → {font-size.10}, interligne 1,6 (16 px) ;
+ *   R8 heading.2 → {brand.font.body}.
+ * Correction du 18/11/2026 (D44) : R8 met le libellé sur {font.product}, police du produit que la couche marque ne
+ *   remplace pas ; rouge : label → {brand.font.body}.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -94,54 +94,54 @@ test('typo vert : Orbe Café, 9 règles tenues (DS11 : consigne de hauteur de ca
   assert.equal(p.status, 0, p.stdout + p.stderr);
   assert.doesNotMatch(p.stdout, /✗/);
   for (const l of [
-    /affichage\.grand +60 \/ 76 px +rapport 1,2667 +étroit 36 \/ 48 px +rapport 1,3333 +700 +police\.titre +capitale 0,7 × taille\n/,
-    /titre\.3 +20 \/ 28 px +rapport 1,4 +étroit 18 \/ 24 px +rapport 1,3333 +600 +police\.titre +capitale 0,7 × taille\n/,
-    /titre\.4 +16 \/ 24 px +rapport 1,5 +700 +police\.texte\n/,
-    /corps\.grand +18 \/ 28 px +rapport 1,5556 +400 +police\.texte\n/,
-    /mention +12 \/ 16 px +rapport 1,3333 +400 +police\.texte\n/,
+    /display\.large +60 \/ 76 px +rapport 1,2667 +étroit 36 \/ 48 px +rapport 1,3333 +700 +brand\.font\.heading +capitale 0,7 × taille\n/,
+    /heading\.3 +20 \/ 28 px +rapport 1,4 +étroit 18 \/ 24 px +rapport 1,3333 +600 +brand\.font\.heading +capitale 0,7 × taille\n/,
+    /heading\.4 +16 \/ 24 px +rapport 1,5 +700 +brand\.font\.body\n/,
+    /body\.large +18 \/ 28 px +rapport 1,5556 +400 +brand\.font\.body\n/,
+    /supporting-text +12 \/ 16 px +rapport 1,3333 +400 +brand\.font\.body\n/,
     /primitives sans rôle \(affiché, non contrôlé\)\n {2}aucune\n/,
     /9 règles, aucune en échec\./,
   ]) assert.match(p.stdout, l);
 });
 
-test('typo rouge R1 : titre.2 interligne 1,3, 31,2 px', () => {
-  rouge(variant((s) => { s.typo.titre[2].$value.lineHeight = 1.3; }), undefined, 'multiple-4', 'titre.2 en large : 24 px × 1,3 = 31,2 px');
+test('typo rouge R1 : heading.2 interligne 1,3, 31,2 px', () => {
+  rouge(variant((s) => { s.typography.heading[2].$value.lineHeight = 1.3; }), undefined, 'multiple-4', 'heading.2 en large : 24 px × 1,3 = 31,2 px');
 });
 
-test('typo rouge R2 : titre.3 à 24 px, égal à titre.2', () => {
-  rouge(variant((s) => { Object.assign(s.typo.titre[3].$value, { fontSize: '{taille-texte.24}', lineHeight: 1.3333 }); }), undefined, 'decroissants', 'en large : titre.2 24 px, titre.3 24 px');
+test('typo rouge R2 : heading.3 à 24 px, égal à heading.2', () => {
+  rouge(variant((s) => { Object.assign(s.typography.heading[3].$value, { fontSize: '{font-size.24}', lineHeight: 1.3333 }); }), undefined, 'decroissants', 'en large : heading.2 24 px, heading.3 24 px');
 });
 
-test('typo rouge R3 : corps.grand plus grand en étroit qu\'en large', () => {
+test('typo rouge R3 : body.large plus grand en étroit qu\'en large', () => {
   const sem = structuredClone(l.large.semantique);
   const etroit = load('largeur.etroit.tokens.json');
-  etroit.typo.corps = { grand: { $value: { ...sem.typo.corps.grand.$value, fontSize: '{taille-texte.20}', lineHeight: 1.6 } } };
-  rouge(sem, undefined, 'etroit-large', 'corps.grand : étroit 20 / 32 px, large 18 / 28 px', etroit);
+  etroit.typography.body = { large: { $value: { ...sem.typography.body.large.$value, fontSize: '{font-size.20}', lineHeight: 1.6 } } };
+  rouge(sem, undefined, 'etroit-large', 'body.large : étroit 20 / 32 px, large 18 / 28 px', etroit);
 });
 
-test('typo rouge R4 : corps.moyen interligne 1,25', () => {
-  rouge(variant((s) => { s.typo.corps.moyen.$value.lineHeight = 1.25; }), undefined, 'corps-1-5', 'corps.moyen en large : 1,25 < 1,5');
+test('typo rouge R4 : body.medium interligne 1,25', () => {
+  rouge(variant((s) => { s.typography.body.medium.$value.lineHeight = 1.25; }), undefined, 'corps-1-5', 'body.medium en large : 1,25 < 1,5');
 });
 
-test('typo rouge R5 : libelle interligne 1,1429', () => {
-  rouge(variant((s) => { s.typo.libelle.$value.lineHeight = 1.1429; }), undefined, 'petits-1-3', 'libelle en large : 1,1429 < 1,3');
+test('typo rouge R5 : label interligne 1,1429', () => {
+  rouge(variant((s) => { s.typography.label.$value.lineHeight = 1.1429; }), undefined, 'petits-1-3', 'label en large : 1,1429 < 1,3');
 });
 
-test('typo rouge R6 : corps.moyen à 14 px', () => {
-  rouge(variant((s) => { Object.assign(s.typo.corps.moyen.$value, { fontSize: '{taille-texte.14}', lineHeight: 1.7143 }); }), undefined, 'corps-1rem', 'corps.moyen en large : 14 px < 16 px (1 rem)');
+test('typo rouge R6 : body.medium à 14 px', () => {
+  rouge(variant((s) => { Object.assign(s.typography.body.medium.$value, { fontSize: '{font-size.14}', lineHeight: 1.7143 }); }), undefined, 'corps-1rem', 'body.medium en large : 14 px < 16 px (1 rem)');
 });
 
-test('typo rouge R7 : mention à 10 px', () => {
+test('typo rouge R7 : supporting-text à 10 px', () => {
   const prims = structuredClone(l.large.primitives);
-  prims['taille-texte']['10'] = { $value: { value: 10, unit: 'px' } };
-  const sem = variant((s) => { Object.assign(s.typo.mention.$value, { fontSize: '{taille-texte.10}', lineHeight: 1.6 }); });
-  rouge(sem, prims, 'min-12', 'mention en large : 10 px < 12 px');
+  prims['font-size']['10'] = { $value: { value: 10, unit: 'px' } };
+  const sem = variant((s) => { Object.assign(s.typography['supporting-text'].$value, { fontSize: '{font-size.10}', lineHeight: 1.6 }); });
+  rouge(sem, prims, 'min-12', 'supporting-text en large : 10 px < 12 px');
 });
 
-test('typo rouge R8 : libellé sur police.texte', () => {
-  rouge(variant((s) => { s.typo.libelle.$value.fontFamily = '{marque.police.texte}'; }), undefined, 'police', 'libelle : {marque.police.texte}, attendu {police.produit}');
+test('typo rouge R8 : libellé sur brand.font.body', () => {
+  rouge(variant((s) => { s.typography.label.$value.fontFamily = '{brand.font.body}'; }), undefined, 'police', 'label : {brand.font.body}, attendu {font.product}');
 });
 
-test('typo rouge R8 : titre.2 sur police.texte', () => {
-  rouge(variant((s) => { s.typo.titre[2].$value.fontFamily = '{marque.police.texte}'; }), undefined, 'police', 'titre.2 : {marque.police.texte}, attendu {marque.police.titre}');
+test('typo rouge R8 : heading.2 sur brand.font.body', () => {
+  rouge(variant((s) => { s.typography.heading[2].$value.fontFamily = '{brand.font.body}'; }), undefined, 'police', 'heading.2 : {brand.font.body}, attendu {brand.font.heading}');
 });

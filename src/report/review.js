@@ -70,8 +70,8 @@ const short = (family, v) => {
 /** Nombres de la revue : 2 décimales au plus. */
 const D2 = { decimales: 2 };
 /** Nom de jeton d'un pas de dimension (les couleurs gardent le nom de la valise). */
-const TOKEN_PREFIX = /** @type {Record<string, string>} */ ({ spacing: 'espace', radii: 'rayon', fontSizes: 'taille-texte' });
-/** Nom du pas d'une version, « terre-9 » ou « espace.8 ». @param {string} family @param {{ value: string, name?: string }} c */
+const TOKEN_PREFIX = /** @type {Record<string, string>} */ ({ spacing: 'space', radii: 'radius', fontSizes: 'font-size' });
+/** Nom du pas d'une version, « terre-9 » ou « space.8 ». @param {string} family @param {{ value: string, name?: string }} c */
 const stepName = (family, c) => c.name ?? (num(c.value) !== null && TOKEN_PREFIX[family] ? `${TOKEN_PREFIX[family]}.${num(c.value)}` : '');
 /** @param {number} n @param {number} d */
 const pct = (n, d) => `${((100 * n) / d).toFixed(3)}%`;

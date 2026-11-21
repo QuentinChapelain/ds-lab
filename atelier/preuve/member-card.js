@@ -56,17 +56,17 @@ const px = (n) => `${Math.round(n * 1000) / 1000}px`;
  */
 function attenduMembres(t) {
   const v = t.variables;
-  const fond = { neutral: css(t.couleurs.teinte), brand: css(t.couleurs['marque-teinte']) };
+  const fond = { neutral: css(t.couleurs.tint), brand: css(t.couleurs['brand-tint']) };
   /** @type {Map<string, Record<string, any>>} */
   const out = new Map();
   for (const [cas, [promo, tons]] of Object.entries(CAS)) {
     out.set(cas, {
       largeur: '400px',
-      avatar: { cote: `${v['ds-taille-avatar-grande']} ${v['ds-taille-avatar-grande']}`, gauche: v['ds-marge-interieure-composant'], haut: v['ds-marge-interieure-composant'], ecartColonne: v['ds-ecart-entre-composants'], cache: 'true' },
-      titre: { balise: 'H3', taille: v['ds-titre-4-taille'], graisse: v['ds-titre-4-graisse'], police: t.policeTexte.join('|') },
+      avatar: { cote: `${v['ds-avatar-size-large']} ${v['ds-avatar-size-large']}`, gauche: v['ds-padding-component'], haut: v['ds-padding-component'], ecartColonne: v['ds-gap-between-components'], cache: 'true' },
+      titre: { balise: 'H3', taille: v['ds-heading-4-font-size'], graisse: v['ds-heading-4-font-weight'], police: t.policeTexte.join('|') },
       promo,
       suite: tons.length
-        ? { role: 'list', puces: 'none', marge: '0px', retrait: '0px', avant: promo ? v['ds-ecart-entre-blocs'] : v['ds-ecart-dans-composant'], ecart: `${v['ds-ecart-entre-etiquettes']} ${v['ds-ecart-entre-etiquettes']}`, fonds: tons.map((x) => fond[/** @type {'neutral' | 'brand'} */ (x)]) }
+        ? { role: 'list', puces: 'none', marge: '0px', retrait: '0px', avant: promo ? v['ds-gap-between-blocks'] : v['ds-gap-within-component'], ecart: `${v['ds-gap-between-tags']} ${v['ds-gap-between-tags']}`, fonds: tons.map((x) => fond[/** @type {'neutral' | 'brand'} */ (x)]) }
         : null,
       deborde: false,
     });

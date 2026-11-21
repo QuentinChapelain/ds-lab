@@ -737,7 +737,7 @@
           ],
           "property": "border-*-radius",
           "detail": "avatars",
-          "target": "rayon.pilule",
+          "target": "radius.full",
           "new": "9999px",
           "class": "auto",
           "corrected": "12/11/2026 : R7 étendue, un rayon en pourcentage de 50 % ou plus est une pilule (hors table auparavant)"

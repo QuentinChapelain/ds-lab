@@ -17,8 +17,8 @@ import assert from 'node:assert/strict';
 import { feuilleDe, canalDe } from '../src/verify/arrivee.js';
 import { aFaireRaccourci } from '../src/apply/ajout.js';
 
-const TOKENS = ':root {\n  --couleur-neutre-12: #2f3136;\n}\n';
-const AJOUT = '.x {\n  color: var(--couleur-neutre-12, #212121); /* coul-21 */\n}\n';
+const TOKENS = ':root {\n  --color-neutral-12: #2f3136;\n}\n';
+const AJOUT = '.x {\n  color: var(--color-neutral-12, #212121); /* coul-21 */\n}\n';
 /** @type {Map<string, { nom: string, sorte: 'jetons' | 'ajout' }>} */
 const POSES = new Map([
   [TOKENS, { nom: '/styles/tokens.css', sorte: 'jetons' }],
@@ -57,13 +57,13 @@ const PAR_ID = new Map([
   ['S', { chemin: null, ajout: null, sorte: 'script' }],
   ['F', { chemin: '/styles/site.css', ajout: null, sorte: 'fichier' }],
 ]);
-const LIGNE = { cible: 'var(--couleur-neutre-12, #212121)', jeton: '--couleur-neutre-12', nouvelle: '#2f3136' };
-const SOI = /--couleur-neutre-12: var\(--couleur-neutre-12/;
+const LIGNE = { cible: 'var(--color-neutral-12, #212121)', jeton: '--color-neutral-12', nouvelle: '#2f3136' };
+const SOI = /--color-neutral-12: var\(--color-neutral-12/;
 
 test('V2 variable du jeton posée par tokens.css : « posé par verify », rien à poser sur le site', () => {
   const m = {
-    matchedCSSRules: [regle('A', '.x', [['color', 'var(--couleur-neutre-12, #212121)']])],
-    inherited: [{ matchedCSSRules: [regle('T', ':root', [['--couleur-neutre-12', '#2f3136']])] }],
+    matchedCSSRules: [regle('A', '.x', [['color', 'var(--color-neutral-12, #212121)']])],
+    inherited: [{ matchedCSSRules: [regle('T', ':root', [['--color-neutral-12', '#2f3136']])] }],
   };
   const c = canalDe(m, 'color', PAR_ID, LIGNE);
   assert.ok(c.categories.includes('posé par verify'), JSON.stringify(c));
@@ -74,7 +74,7 @@ test('V2 variable du jeton posée par tokens.css : « posé par verify », rien 
 });
 
 test('V2 variable du jeton posée nulle part : charger tokens.css, sans var() d\'elle-même', () => {
-  const m = { matchedCSSRules: [regle('A', '.x', [['color', 'var(--couleur-neutre-12, #212121)']])], inherited: [] };
+  const m = { matchedCSSRules: [regle('A', '.x', [['color', 'var(--color-neutral-12, #212121)']])], inherited: [] };
   const c = canalDe(m, 'color', PAR_ID, LIGNE);
   assert.doesNotMatch(c.aFaire, SOI);
   assert.match(c.aFaire, /charger tokens\.css/);
@@ -82,12 +82,12 @@ test('V2 variable du jeton posée nulle part : charger tokens.css, sans var() d\
 
 test('V2 variable du jeton posée par la page (homonyme) : y écrire la valeur du jeton', () => {
   const m = {
-    matchedCSSRules: [regle('A', '.x', [['color', 'var(--couleur-neutre-12, #212121)']])],
-    inherited: [{ matchedCSSRules: [regle('F', '.zone', [['--couleur-neutre-12', '#212121']])] }],
+    matchedCSSRules: [regle('A', '.x', [['color', 'var(--color-neutral-12, #212121)']])],
+    inherited: [{ matchedCSSRules: [regle('F', '.zone', [['--color-neutral-12', '#212121']])] }],
   };
   const c = canalDe(m, 'color', PAR_ID, LIGNE);
   assert.doesNotMatch(c.aFaire, SOI);
-  assert.match(c.aFaire, /poser --couleur-neutre-12: #2f3136 là où elle est posée/);
+  assert.match(c.aFaire, /poser --color-neutral-12: #2f3136 là où elle est posée/);
   assert.match(c.texte, /\/styles\/site\.css/);
 });
 
@@ -106,7 +106,7 @@ test('V3 bloc injecté : la feuille ajoutée n\'est proposée que si elle porte 
 });
 
 test('V4 raccourci d\'origine !important : l\'« à faire » le dit', () => {
-  const LIGNE_GRIS = { cible: 'var(--couleur-neutre-10, #808080)', jeton: '--couleur-neutre-10', nouvelle: '#7b7e85' };
+  const LIGNE_GRIS = { cible: 'var(--color-neutral-10, #808080)', jeton: '--color-neutral-10', nouvelle: '#7b7e85' };
   const m = {
     matchedCSSRules: [regle('F', '.carre', [['border', 'thin solid var(--color)', true, ['border-top-color']]])],
     inlineStyle: style([['--color', '#808080']]),
@@ -116,8 +116,8 @@ test('V4 raccourci d\'origine !important : l\'« à faire » le dit', () => {
   assert.ok(c.categories.includes('raccourci'), JSON.stringify(c));
   assert.match(c.aFaire, /écrire border-top-color à part, avec !important, après le raccourci border \(qui porte !important\)/);
   assert.match(
-    aFaireRaccourci({ propriete: 'border-top-color', source: 'thin solid var(--color)', valeur: 'var(--couleur-neutre-10, #808080)', jeton: '--couleur-neutre-10', important: true }),
+    aFaireRaccourci({ propriete: 'border-top-color', source: 'thin solid var(--color)', valeur: 'var(--color-neutral-10, #808080)', jeton: '--color-neutral-10', important: true }),
     /le raccourci porte !important : écrire border-top-color avec !important/,
   );
-  assert.doesNotMatch(aFaireRaccourci({ propriete: 'border-top-color', source: 'thin solid var(--color)', valeur: 'var(--couleur-neutre-10, #808080)', jeton: '--couleur-neutre-10', important: false }), /important/);
+  assert.doesNotMatch(aFaireRaccourci({ propriete: 'border-top-color', source: 'thin solid var(--color)', valeur: 'var(--color-neutral-10, #808080)', jeton: '--color-neutral-10', important: false }), /important/);
 });

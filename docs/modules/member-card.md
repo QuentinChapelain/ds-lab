@@ -70,7 +70,7 @@ Assemble : [`DsCard`](../composants/card.md), [`DsAvatar`](../composants/avatar.
 
 | Partie | Token | Ce qu'il règle |
 |---|---|---|
-| Forme | `ecart.entre-etiquettes` | Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes. |
+| Forme | `gap.between-tags` | Écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes. |
 <!-- /genere:tokens -->
 
 - `DsCard` `small` à lien, horizontale : `DsAvatar` `large` et décoratif dans le slot `prepend`, la promo en sous-titre.

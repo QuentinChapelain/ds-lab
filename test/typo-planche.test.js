@@ -10,15 +10,15 @@
  *   chaque élément [data-style] a, dans Chromium, la taille, la hauteur de ligne (à 0,01 px), la graisse et la
  *   police de son style ; à 420 px la valeur en étroit quand le style en a une (sous 600 px), à 1 200 px la
  *   valeur large ;
- *   polices calculées : 'Georgia, serif' (police.titre), '"Orbe Sans", Arial, sans-serif' (police.texte) ;
+ *   polices calculées : 'Georgia, serif' (brand.font.heading), '"Orbe Sans", Arial, sans-serif' (brand.font.body) ;
  *   libellé : 'system-ui, sans-serif', police du produit (correction du 18/11/2026, D44) ;
- *   décisions du 15/11/2026 prises sur la planche : mention à 12 / 16 dans les jetons ; hero et corps.petit
+ *   décisions du 15/11/2026 prises sur la planche : supporting-text à 12 / 16 dans les jetons ; hero et body.small
  *   inchangés ; plus aucun réglage (ni bouton radio, ni « réglage ») : la planche lit ses valeurs dans les jetons ;
  *   gap et padding seulement : marge calculée nulle partout, une seule déclaration margin (la remise à zéro),
- *   chaque gap vaut un rôle d'espacement (var(--ecart-…) ou var(--marge-interieure-…)) ;
+ *   chaque gap vaut un rôle d'espacement (var(--gap-…) ou var(--padding-…)) ;
  *   rendue à 420 et à 1 200 px sans défilement horizontal ; page autonome, aucun script ni ressource externe ;
  *   le fichier versionné est à jour.
- * D17 : lignes d'affichage.grand 76 / 48, d'affichage.moyen 60 / 40, de titre.1 40 en large.
+ * D17 : lignes d'display.large 76 / 48, d'display.medium 60 / 40, de titre.1 40 en large.
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -37,19 +37,19 @@ const TEXTE = '"Orbe Sans", Arial, sans-serif';
 const PRODUIT = 'system-ui, sans-serif';
 /** style → [taille, ligne, taille étroit, ligne étroit, graisse, police] */
 const STYLES = /** @type {Record<string, [number, number, number | null, number | null, number, string]>} */ ({
-  'affichage.grand': [60, 76, 36, 48, 700, TITRE],
-  'affichage.moyen': [48, 60, 30, 40, 700, TITRE],
-  'titre.1': [30, 40, 24, 32, 700, TITRE],
-  'titre.2': [24, 32, 20, 28, 700, TITRE],
-  'titre.3': [20, 28, 18, 24, 600, TITRE],
-  'titre.4': [16, 24, null, null, 700, TEXTE],
-  'corps.grand': [18, 28, null, null, 400, TEXTE],
-  'corps.moyen': [16, 24, null, null, 400, TEXTE],
-  'corps.petit': [14, 20, null, null, 400, TEXTE],
-  libelle: [14, 20, null, null, 600, PRODUIT],
-  mention: [12, 16, null, null, 400, TEXTE],
-  'initiales.normale': [16, 24, null, null, 600, TEXTE],
-  'initiales.grande': [24, 32, null, null, 600, TEXTE],
+  'display.large': [60, 76, 36, 48, 700, TITRE],
+  'display.medium': [48, 60, 30, 40, 700, TITRE],
+  'heading.1': [30, 40, 24, 32, 700, TITRE],
+  'heading.2': [24, 32, 20, 28, 700, TITRE],
+  'heading.3': [20, 28, 18, 24, 600, TITRE],
+  'heading.4': [16, 24, null, null, 700, TEXTE],
+  'body.large': [18, 28, null, null, 400, TEXTE],
+  'body.medium': [16, 24, null, null, 400, TEXTE],
+  'body.small': [14, 20, null, null, 400, TEXTE],
+  label: [14, 20, null, null, 600, PRODUIT],
+  'supporting-text': [12, 16, null, null, 400, TEXTE],
+  'initials.medium': [16, 24, null, null, 600, TEXTE],
+  'initials.large': [24, 32, null, null, 600, TEXTE],
 });
 /** @param {string} style @param {number} width @returns {[number, number]} */
 const attendu = (style, width) => {
@@ -99,16 +99,16 @@ test('typo planche : page autonome, sans script, fichier à jour', () => {
 
 test('typo planche : aucun réglage, valeurs lues dans les jetons', () => {
   assert.doesNotMatch(html, /type="radio"|<input type="radio"|réglage|reglage|:has\(/i);
-  assert.match(html, /--mention-taille: 12px; --mention-interligne: 1\.3333;/);
-  assert.match(html, /--affichage-grand-interligne: 1\.2667;/);
-  assert.match(html, /--corps-petit-interligne: 1\.4286;/);
+  assert.match(html, /--typography-supporting-text-font-size: 12px; --typography-supporting-text-line-height: 1\.3333;/);
+  assert.match(html, /--typography-display-large-line-height: 1\.2667;/);
+  assert.match(html, /--typography-body-small-line-height: 1\.4286;/);
 });
 
 test('typo planche : une seule déclaration margin, chaque gap est un rôle d\'espacement', () => {
   assert.deepEqual(html.match(/margin[\w-]*\s*:[^;}]*/g) ?? [], ['margin: 0']);
   const gaps = html.match(/[^-\w]gap\s*:[^;}]*/g) ?? [];
   assert.ok(gaps.length > 5, `gaps : ${gaps.length}`);
-  for (const g of gaps) assert.match(g, /gap: var\(--(ecart|marge-interieure)-[\w-]+\)$/, g);
+  for (const g of gaps) assert.match(g, /gap: var\(--(gap|padding)-[\w-]+\)$/, g);
 });
 
 for (const width of [420, 1200]) {
@@ -117,8 +117,8 @@ for (const width of [420, 1200]) {
     const r = await page.evaluate(() => ({
       specimens: [...document.querySelectorAll('[data-specimen]')].map((e) => e.getAttribute('data-specimen')),
       situations: [...document.querySelectorAll('[data-situation]')].map((e) => e.getAttribute('data-situation')),
-      dense: ['table', '[data-style="titre.4"]', '[data-style="corps.petit"]'].map((q) => !!document.querySelector(`[data-situation="dense"] ${q}`)),
-      contenu: ['titre.1', 'titre.2', 'titre.3', 'corps.grand', 'corps.moyen'].map((s) => !!document.querySelector(`[data-situation="contenu"] [data-style="${s}"]`)),
+      dense: ['table', '[data-style="heading.4"]', '[data-style="body.small"]'].map((q) => !!document.querySelector(`[data-situation="dense"] ${q}`)),
+      contenu: ['heading.1', 'heading.2', 'heading.3', 'body.large', 'body.medium'].map((s) => !!document.querySelector(`[data-situation="contenu"] [data-style="${s}"]`)),
       textes: [...document.querySelectorAll('[data-specimen]')].map((e) => e.textContent ?? ''),
       scroll: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       marges: [...document.querySelectorAll('*')]
@@ -162,10 +162,10 @@ for (const width of [420, 1200]) {
     const hero = m.find((e) => e.id === 'hero-titre');
     const long = m.find((e) => e.id === 'titre-long');
     assert.ok(hero && long);
-    assert.equal(hero.style, 'affichage.grand');
+    assert.equal(hero.style, 'display.large');
     assert.equal(hero.lignes, 2, `hero : ${hero.hauteur} px`);
     assert.ok(Math.abs(hero.hauteur - 2 * hero.ligne) < 1, 'hero : hauteur = deux lignes');
-    assert.equal(long.style, 'titre.1');
+    assert.equal(long.style, 'heading.1');
     assert.ok(long.lignes >= 2, `titre long : ${long.lignes} ligne(s)`);
     assert.ok(Math.abs(long.hauteur - long.lignes * long.ligne) < 1, 'titre long : hauteur = lignes × ligne');
     await page.close();

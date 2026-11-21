@@ -20,7 +20,7 @@
  *      même valeur : couleur au hex du jeton, dimension valeur et unité, police comme liste de noms (guillemets
  *      ignorés), nombre et graisse tels quels ;
  *   F5 apply : chaque jeton que npm run apply sait écrire (couleur en hex, dimension en px, valeur littérale) est déclaré
- *      dans :root sous le nom cssVar et avec la valeur tokenValue de src/report/modifications.js.
+ *      dans :root sous le nom cssVar (src/lib/nom-css.js) et avec la valeur tokenValue de src/report/modifications.js.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -30,7 +30,8 @@ import postcss from 'postcss';
 import { feuilleCss } from '../src/tokens/css.js';
 import { dossiersDeMarque, nomDeMarque, lireResolver, seuilEtroit, RESOLVER } from '../src/tokens/resolver.js';
 import { flattenTokens, tokenTypes, resoudreAlias } from '../src/tokens/roles.js';
-import { cssVar, tokenValue } from '../src/report/modifications.js';
+import { tokenValue } from '../src/report/modifications.js';
+import { cssVar } from '../src/lib/nom-css.js';
 
 const MARQUES = dossiersDeMarque();
 const COMBINAISONS = [

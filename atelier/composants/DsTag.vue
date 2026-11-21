@@ -26,25 +26,25 @@ export default definirEnveloppe(MENU, (props, { attrs }) => () =>
 <style>
 /* Règles hors couche : elles passent devant celles de Vuetify, rangées dans ses couches, sans !important. */
 .ds-tag.v-chip {
-  height: var(--v-ds-hauteur-etiquette);
+  height: var(--v-ds-height-tag);
   max-width: 100%;
-  padding: 0 var(--v-ds-marge-interieure-etiquette);
-  border-radius: var(--v-ds-arrondi-pilule);
-  font-family: var(--v-ds-corps-petit-police);
-  font-size: var(--v-ds-corps-petit-taille);
-  font-weight: var(--v-ds-corps-petit-graisse);
-  line-height: var(--v-ds-corps-petit-interligne);
+  padding: 0 var(--v-ds-padding-tag);
+  border-radius: var(--v-ds-border-radius-full);
+  font-family: var(--v-ds-body-small-font-family);
+  font-size: var(--v-ds-body-small-font-size);
+  font-weight: var(--v-ds-body-small-font-weight);
+  line-height: var(--v-ds-body-small-line-height);
   letter-spacing: 0;
   box-shadow: none;
   transition: none;
 }
 .ds-tag--neutral.v-chip {
-  background: rgb(var(--v-theme-teinte));
-  color: rgb(var(--v-theme-on-teinte));
+  background: rgb(var(--v-theme-tint));
+  color: rgb(var(--v-theme-on-tint));
 }
 .ds-tag--brand.v-chip {
-  background: rgb(var(--v-theme-marque-teinte));
-  color: rgb(var(--v-theme-on-marque-teinte));
+  background: rgb(var(--v-theme-brand-tint));
+  color: rgb(var(--v-theme-on-brand-tint));
 }
 /* Ni sous-couche ni voile de Vuetify : rien ne change au survol. */
 .ds-tag.v-chip > .v-chip__underlay,

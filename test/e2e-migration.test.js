@@ -77,13 +77,13 @@ test('désordre : jetons DTCG repris du resolver d’Orbe Café', () => {
     assert.ok(row, `${t.family} ${t.value} ${t.usage ?? ''} absente`);
     assert.equal(row.token, t.token, `${t.value} ${t.usage ?? ''}`);
   }
-  assert.ok(desordre.data.rows.every((/** @type {any} */ r) => r.token === '—' || r.token === 'jeton absent' || /^(couleur|espace|taille-texte|rayon)\./.test(r.token)));
+  assert.ok(desordre.data.rows.every((/** @type {any} */ r) => r.token === '—' || r.token === 'jeton absent' || /^(color|space|font-size|radius)\./.test(r.token)));
 });
 
-test('désordre et pièges : #ffffff → couleur.blanc ; aucun jeton sur-plein hors d’un texte posé sur un plein', () => {
+test('désordre et pièges : #ffffff → color.white ; aucun jeton sur-plein hors d’un texte posé sur un plein', () => {
   for (const d of [desordre.data, pieges.data]) {
-    for (const r of d.rows.filter((/** @type {any} */ x) => x.family === 'colors' && x.value === '#ffffff' && x.class === 'inchangé')) assert.equal(r.token, 'couleur.blanc', `#ffffff ${r.usage}`);
-    for (const r of d.rows.filter((/** @type {any} */ x) => /sur-plein/.test(x.token))) assert.equal(r.usage, 'texte', `${r.value} ${r.usage} : ${r.token}`);
+    for (const r of d.rows.filter((/** @type {any} */ x) => x.family === 'colors' && x.value === '#ffffff' && x.class === 'inchangé')) assert.equal(r.token, 'color.white', `#ffffff ${r.usage}`);
+    for (const r of d.rows.filter((/** @type {any} */ x) => /on-solid/.test(x.token))) assert.equal(r.usage, 'texte', `${r.value} ${r.usage} : ${r.token}`);
   }
 });
 
@@ -160,7 +160,7 @@ test('I1 : RATTACHE après REMPLACEMENTS, une ligne par valeur inchangée qui a 
     }
   }
   const white = desordre.data.rows.find((/** @type {any} */ r) => r.family === 'colors' && r.value === '#ffffff' && r.usage === 'texte');
-  assert.ok(stepOf(sec, white.id)?.includes('Propriété color, usage texte, valeur #ffffff : remplace la valeur écrite par var(--couleur-blanc, #ffffff) ; aucun changement visible sur les pages mesurées.'), '#ffffff en texte');
+  assert.ok(stepOf(sec, white.id)?.includes('Propriété color, usage texte, valeur #ffffff : remplace la valeur écrite par var(--color-white, #ffffff) ; aucun changement visible sur les pages mesurées.'), '#ffffff en texte');
 });
 
 test('I2 : inchangé sans jeton absent de RATTACHE ; sans fichier de jetons, une seule phrase', () => {

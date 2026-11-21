@@ -8,7 +8,7 @@ import { MEMBRES, props } from './membres.js';
 
 /** Les dix membres, leur cas en data-cas pour le test de rendu. */
 const MEMBRES_LISTE = MEMBRES.map((m) => ({ ...props(m), 'data-cas': m.cas }));
-const TITRE = 'font-family:var(--v-ds-titre-carte-police);font-size:var(--v-ds-titre-carte-taille);font-weight:var(--v-ds-titre-carte-graisse);color:rgb(var(--v-theme-on-background));margin:0';
+const TITRE = 'font-family:var(--v-ds-card-title-font-family);font-size:var(--v-ds-card-title-font-size);font-weight:var(--v-ds-card-title-font-weight);color:rgb(var(--v-theme-on-background));margin:0';
 
 /**
  * Page d'annuaire : le titre qui nomme la liste, puis la liste, sur toute la largeur de la page.

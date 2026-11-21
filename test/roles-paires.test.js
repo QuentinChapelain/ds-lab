@@ -9,38 +9,38 @@
  *   node --input-type=module -e '
  *     import { wcagContrast } from "culori"; import { readFileSync } from "node:fs";
  *     const L=f=>JSON.parse(readFileSync("tokens/orbe-cafe/"+f,"utf8"));
- *     const P=L("primitives.tokens.json").couleur, S=L("statuts.tokens.json").couleur, sem=L("semantique.tokens.json"), pa=L("paires.json");
+ *     const P=L("primitives.tokens.json").color, S=L("statuts.tokens.json").color, sem=L("semantique.tokens.json"), pa=L("paires.json");
  *     const hex=role=>{let n=sem; for(const k of role.split(".")) n=n[k]; if(!("$value" in n)) n=n.$root;
- *       const [,sc,st]=/^\{couleur\.([^.]+)\.([^}]+)\}$/.exec(n.$value); return (P[sc]??S[sc])[st].$value.hex;};
- *     for (const p of pa.paires) console.log(p.devant, p.fond, wcagContrast(hex(p.devant),hex(p.fond)).toFixed(4));'
- * Hypothèse de l'attendu : texte.secondaire sous 4,5:1 sur fond.composant.appui → mesurée à 4,3327 [F].
+ *       const [,sc,st]=/^\{color\.([^.]+)\.([^}]+)\}$/.exec(n.$value); return (P[sc]??S[sc])[st].$value.hex;};
+ *     for (const p of pa.pairs) console.log(p.foreground, p.background, wcagContrast(hex(p.foreground),hex(p.background)).toFixed(4));'
+ * Hypothèse de l'attendu : text.secondary sous 4,5:1 sur background.component.pressed → mesurée à 4,3327 [F].
  *
  * Décisions du 14/11/2026 (attendu complété à la main, ratios culori) :
- *   texte.secondaire sur fond.composant.appui : paire interdite, règle « sur fond.composant.appui, le texte
- *     passe en texte.principal » (texte.principal sur fond.composant.appui reste déclarée) ;
- *   bordure.forte sur fond.composant : paire interdite, règle « un champ se pose sur fond.app » ;
- *   les 4 paires bordure.<statut> sur fond.<statut>.discret sont retirées ;
- *   bordure.focus → bleu 9 : 8,3247 / 8,1063 / 7,7046 sur neutre 1, 2, 3 ;
+ *   text.secondary sur background.component.pressed : paire interdite, règle « sur background.component.pressed, le texte
+ *     passe en text.default » (text.default sur background.component.pressed reste déclarée) ;
+ *   border.strong sur background.component : paire interdite, règle « un champ se pose sur background.app » ;
+ *   les 4 paires border.<statut> sur background.<statut>.subtle sont retirées ;
+ *   border.focus → bleu 9 : 8,3247 / 8,1063 / 7,7046 sur neutre 1, 2, 3 ;
  *   blanc sur terre 10, succes 10, info 10 : 5,1669 / 5,0674 / 4,6220 (attendus annoncés : 5,17, 5,07, 4,62) ;
  *     commande : wcagContrast('#ffffff', hex du pas 10), même lecture des fichiers que ci-dessus.
  *
  * Décisions après T5 (14/11/2026), ratios culori, commande : wcagContrast(hex devant, hex fond) sur les
- * pas lus dans primitives et statuts (couleur.blanc = #ffffff) :
- *   fond.surface (blanc) : texte.principal 13,0628, texte.secondaire 5,6129, texte.interactif 5,5917,
- *     texte.erreur 5,6023, texte.succes 5,6186, texte.avertissement 5,6230, texte.info 5,6178,
- *     bordure.forte 3,2110, bordure.focus 8,6144 ;
- *   texte.sur-inverse (blanc) sur fond.inverse (neutre 12) : 13,0628 ;
- *   interdite texte.secondaire sur fond.interactif.fort : 1,5348, règle « sur un plein, le texte est texte.sur-* » ;
- *   règle de bordure.forte sur fond.composant : « un champ se pose sur fond.surface ».
+ * pas lus dans primitives et statuts (color.white = #ffffff) :
+ *   background.surface (blanc) : text.default 13,0628, text.secondary 5,6129, text.interactive 5,5917,
+ *     text.error 5,6023, text.success 5,6186, text.warning 5,6230, text.info 5,6178,
+ *     border.strong 3,2110, border.focus 8,6144 ;
+ *   text.on-inverse (blanc) sur background.inverse (neutre 12) : 13,0628 ;
+ *   interdite text.secondary sur background.interactive.strong : 1,5348, règle « sur un plein, le texte est text.on-* » ;
+ *   règle de border.strong sur background.component : « un champ se pose sur background.surface ».
  *
  * Règle des pleins en trois cas (15/11/2026), ratios culori, commande : node local/scripts/ratios-pleins.mjs
  * (wcagContrast sur les pas lus dans primitives et statuts ; voile = interpolate([bleu 9, blanc], 'rgb')(0,08) = #3c5a88) :
  *   blanc sur bleu 9 + voile 8 % : 6,9765 ; blanc sur terre 11 : 5,6287 ; sur erreur 11 : 5,6023 ;
  *   sur succes 11 : 5,6186 ; sur info 11 : 5,6178 ; avertissement 12 sur avertissement 9 : 5,7721.
  * D45 (18/11/2026) : survol du plein = clarté OKLCH du bleu 9 − 0,05 = #1e3e6f ; wcagContrast('#ffffff', '#1e3e6f') = 10,6394.
- * Décision du 15/11/2026 : bordure.focus → marque.primaire.11 (bleu 11 #4c6994) ; ratios culori
- *   (wcagContrast('#4c6994', fond)) : fond.app 5,4037, fond.surface 5,5917, fond.discret 5,2619, fond.composant 5,0011.
- * Décision du 15/11/2026 : interdite bordure.focus sur fond.interactif.fort (bleu 11 sur bleu 9 :
+ * Décision du 15/11/2026 : border.focus → brand.primary.11 (bleu 11 #4c6994) ; ratios culori
+ *   (wcagContrast('#4c6994', fond)) : background.app 5,4037, background.surface 5,5917, background.subtle 5,2619, background.component 5,0011.
+ * Décision du 15/11/2026 : interdite border.focus sur background.interactive.strong (bleu 11 sur bleu 9 :
  *   wcagContrast('#4c6994', '#2b4c7e') = 1,5406), règle « l’anneau de focus est décalé de 2 px et se pose sur le fond de la page, jamais sur le plein ».
  */
 import { test } from 'node:test';
@@ -60,54 +60,54 @@ const load = charger;
 
 /** devant | fond | ratio culori (4 décimales) | seuil. */
 const TABLE = `
-texte.principal | fond.app | 12.6234 | 4.5
-texte.principal | fond.surface | 13.0628 | 4.5
-texte.principal | fond.discret | 12.2923 | 4.5
-texte.principal | fond.composant | 11.6831 | 4.5
-texte.principal | fond.composant.survol | 10.9644 | 4.5
-texte.principal | fond.composant.appui | 10.0834 | 4.5
-texte.secondaire | fond.app | 5.4241 | 4.5
-texte.secondaire | fond.surface | 5.6129 | 4.5
-texte.secondaire | fond.discret | 5.2818 | 4.5
-texte.secondaire | fond.composant | 5.0200 | 4.5
-texte.secondaire | fond.composant.survol | 4.7112 | 4.5
-texte.interactif | fond.app | 5.4037 | 4.5
-texte.interactif | fond.surface | 5.5917 | 4.5
-texte.interactif | fond.discret | 5.2619 | 4.5
-texte.interactif | fond.interactif.discret | 5.0335 | 4.5
-texte.accent | fond.app | 5.4393 | 4.5
-texte.accent | fond.discret | 5.2967 | 4.5
-texte.erreur | fond.app | 5.4139 | 4.5
-texte.erreur | fond.surface | 5.6023 | 4.5
-texte.erreur | fond.erreur.discret | 5.0556 | 4.5
-texte.succes | fond.app | 5.4296 | 4.5
-texte.succes | fond.surface | 5.6186 | 4.5
-texte.succes | fond.succes.discret | 5.0174 | 4.5
-texte.avertissement | fond.app | 5.4339 | 4.5
-texte.avertissement | fond.surface | 5.6230 | 4.5
-texte.avertissement | fond.avertissement.discret | 5.0476 | 4.5
-texte.info | fond.app | 5.4289 | 4.5
-texte.info | fond.surface | 5.6178 | 4.5
-texte.info | fond.info.discret | 5.0657 | 4.5
-texte.sur-interactif | fond.interactif.fort | 8.6144 | 4.5
-texte.sur-interactif | fond.interactif.fort.survol | 10.6394 | 4.5
-texte.sur-accent | fond.accent.fort | 5.6287 | 4.5
-texte.sur-erreur | fond.erreur.fort | 5.6023 | 4.5
-texte.sur-succes | fond.succes.fort | 5.6186 | 4.5
-texte.sur-avertissement | fond.avertissement.fort | 5.7721 | 4.5
-texte.sur-info | fond.info.fort | 5.6178 | 4.5
-texte.sur-inverse | fond.inverse | 13.0628 | 4.5
-bordure.forte | fond.app | 3.1030 | 3
-bordure.forte | fond.surface | 3.2110 | 3
-bordure.forte | fond.discret | 3.0216 | 3
-bordure.erreur | fond.app | 3.0963 | 3
-bordure.succes | fond.app | 3.0843 | 3
-bordure.avertissement | fond.app | 3.0885 | 3
-bordure.info | fond.app | 3.0936 | 3
-bordure.focus | fond.app | 5.4037 | 3
-bordure.focus | fond.surface | 5.5917 | 3
-bordure.focus | fond.discret | 5.2619 | 3
-bordure.focus | fond.composant | 5.0011 | 3
+text.default | background.app | 12.6234 | 4.5
+text.default | background.surface | 13.0628 | 4.5
+text.default | background.subtle | 12.2923 | 4.5
+text.default | background.component | 11.6831 | 4.5
+text.default | background.component.hover | 10.9644 | 4.5
+text.default | background.component.pressed | 10.0834 | 4.5
+text.secondary | background.app | 5.4241 | 4.5
+text.secondary | background.surface | 5.6129 | 4.5
+text.secondary | background.subtle | 5.2818 | 4.5
+text.secondary | background.component | 5.0200 | 4.5
+text.secondary | background.component.hover | 4.7112 | 4.5
+text.interactive | background.app | 5.4037 | 4.5
+text.interactive | background.surface | 5.5917 | 4.5
+text.interactive | background.subtle | 5.2619 | 4.5
+text.interactive | background.interactive.subtle | 5.0335 | 4.5
+text.accent | background.app | 5.4393 | 4.5
+text.accent | background.subtle | 5.2967 | 4.5
+text.error | background.app | 5.4139 | 4.5
+text.error | background.surface | 5.6023 | 4.5
+text.error | background.error.subtle | 5.0556 | 4.5
+text.success | background.app | 5.4296 | 4.5
+text.success | background.surface | 5.6186 | 4.5
+text.success | background.success.subtle | 5.0174 | 4.5
+text.warning | background.app | 5.4339 | 4.5
+text.warning | background.surface | 5.6230 | 4.5
+text.warning | background.warning.subtle | 5.0476 | 4.5
+text.info | background.app | 5.4289 | 4.5
+text.info | background.surface | 5.6178 | 4.5
+text.info | background.info.subtle | 5.0657 | 4.5
+text.on-interactive | background.interactive.strong | 8.6144 | 4.5
+text.on-interactive | background.interactive.strong.hover | 10.6394 | 4.5
+text.on-accent | background.accent.strong | 5.6287 | 4.5
+text.on-error | background.error.strong | 5.6023 | 4.5
+text.on-success | background.success.strong | 5.6186 | 4.5
+text.on-warning | background.warning.strong | 5.7721 | 4.5
+text.on-info | background.info.strong | 5.6178 | 4.5
+text.on-inverse | background.inverse | 13.0628 | 4.5
+border.strong | background.app | 3.1030 | 3
+border.strong | background.surface | 3.2110 | 3
+border.strong | background.subtle | 3.0216 | 3
+border.error | background.app | 3.0963 | 3
+border.success | background.app | 3.0843 | 3
+border.warning | background.app | 3.0885 | 3
+border.info | background.app | 3.0936 | 3
+border.focus | background.app | 5.4037 | 3
+border.focus | background.surface | 5.5917 | 3
+border.focus | background.subtle | 5.2619 | 3
+border.focus | background.component | 5.0011 | 3
 `
   .trim()
   .split('\n')
@@ -117,57 +117,57 @@ bordure.focus | fond.composant | 5.0011 | 3
   });
 /** Paires interdites : devant | fond | ratio culori | règle. */
 const INTERDITES = [
-  { devant: 'texte.secondaire', fond: 'fond.composant.appui', ratio: 4.3327, regle: 'sur fond.composant.appui, le texte passe en texte.principal' },
-  { devant: 'texte.secondaire', fond: 'fond.interactif.fort', ratio: 1.5348, regle: 'sur un plein, le texte est texte.sur-*' },
-  { devant: 'bordure.forte', fond: 'fond.composant', ratio: 2.8718, regle: 'un champ se pose sur fond.surface' },
-  { devant: 'bordure.focus', fond: 'fond.interactif.fort', ratio: 1.5406, regle: 'l’anneau de focus est décalé de 2 px et se pose sur le fond de la page, jamais sur le plein' },
+  { devant: 'text.secondary', fond: 'background.component.pressed', ratio: 4.3327, regle: 'sur background.component.pressed, le texte passe en text.default' },
+  { devant: 'text.secondary', fond: 'background.interactive.strong', ratio: 1.5348, regle: 'sur un plein, le texte est text.on-*' },
+  { devant: 'border.strong', fond: 'background.component', ratio: 2.8718, regle: 'un champ se pose sur background.surface' },
+  { devant: 'border.focus', fond: 'background.interactive.strong', ratio: 1.5406, regle: 'l’anneau de focus est décalé de 2 px et se pose sur le fond de la page, jamais sur le plein' },
 ];
-const RETIREES = ['erreur', 'succes', 'avertissement', 'info'].map((s) => `bordure.${s}|fond.${s}.discret`);
+const RETIREES = ['error', 'success', 'warning', 'info'].map((s) => `border.${s}|background.${s}.subtle`);
 
 const paires = load('paires.json');
 const sem = load('semantique.tokens.json');
 
 test('T2 paires.json : seuils 4,5 texte, 3 bordure et focus (et grand texte) ; 48 paires en tête, sans doublon, dans l\'ordre', () => {
-  assert.deepEqual(paires.seuils, { texte: 4.5, bordure: 3, focus: 3, 'grand-texte': 3 });
-  assert.equal(paires.paires.length, 48 + PAIRES_AJOUTEES.length + 4 + PAIRES_BOUTON.length + PAIRES_AVATAR.length, '+ 4 bordures de statut sur fond.surface, + les paires du bouton, de l\'avatar et de l\'étiquette');
-  const keys = paires.paires.map((/** @type {any} */ p) => `${p.devant}|${p.fond}`);
+  assert.deepEqual(paires.thresholds, { text: 4.5, border: 3, focus: 3, 'large-text': 3 });
+  assert.equal(paires.pairs.length, 48 + PAIRES_AJOUTEES.length + 4 + PAIRES_BOUTON.length + PAIRES_AVATAR.length, '+ 4 bordures de statut sur background.surface, + les paires du bouton, de l\'avatar et de l\'étiquette');
+  const keys = paires.pairs.map((/** @type {any} */ p) => `${p.foreground}|${p.background}`);
   assert.equal(new Set(keys).size, keys.length);
-  assert.deepEqual(paires.paires.slice(0, 48).map((/** @type {any} */ p) => [p.devant, p.fond]), TABLE.map((t) => [t.devant, t.fond]));
+  assert.deepEqual(paires.pairs.slice(0, 48).map((/** @type {any} */ p) => [p.foreground, p.background]), TABLE.map((t) => [t.devant, t.fond]));
   for (const r of RETIREES) assert.ok(!keys.includes(r), `retirée : ${r}`);
-  assert.ok(keys.includes('texte.principal|fond.composant.appui'));
+  assert.ok(keys.includes('text.default|background.component.pressed'));
 });
 
 test('T2 paires.json : quatre paires interdites, chacune avec sa règle, absentes des paires', () => {
   assert.deepEqual(
-    paires.interdites.slice(0, 4).map((/** @type {any} */ p) => ({ devant: p.devant, fond: p.fond, regle: p.regle })),
+    paires.forbidden.slice(0, 4).map((/** @type {any} */ p) => ({ devant: p.foreground, fond: p.background, regle: p.rule })),
     INTERDITES.map(({ devant, fond, regle }) => ({ devant, fond, regle })),
   );
 });
 
 test('T2 rôles des paires : existent, texte devant un fond, type selon la propriété', () => {
   const roles = resolveRoles(sem, load('primitives.tokens.json'), load('statuts.tokens.json'), load('marque.tokens.json'));
-  for (const p of [...paires.paires, ...paires.interdites]) {
-    assert.ok(roles.has(p.devant), p.devant);
-    assert.ok(roles.has(p.fond), p.fond);
-    assert.match(p.fond, /^fond\./);
+  for (const p of [...paires.pairs, ...paires.forbidden]) {
+    assert.ok(roles.has(p.foreground), p.foreground);
+    assert.ok(roles.has(p.background), p.background);
+    assert.match(p.background, /^background\./);
   }
-  const type = (/** @type {string} */ d) => (d.startsWith('bordure.focus') ? 'focus' : d === 'texte.marque.grand' ? 'grand-texte' : d.split('.')[0]);
-  for (const p of paires.paires) assert.equal(p.type, type(p.devant), `${p.devant} : type`);
+  const type = (/** @type {string} */ d) => (d.startsWith('border.focus') ? 'focus' : d === 'text.brand.large' ? 'large-text' : d.split('.')[0]);
+  for (const p of paires.pairs) assert.equal(p.type, type(p.foreground), `${p.foreground} : type`);
 });
 
-test('T2 couverture : chaque texte et chaque bordure non décorative a une paire ; discrete et defaut n\'en ont pas', () => {
-  const devants = new Set(paires.paires.map((/** @type {any} */ p) => p.devant));
+test('T2 couverture : chaque texte et chaque bordure non décorative a une paire ; subtle et default n\'en ont pas', () => {
+  const devants = new Set(paires.pairs.map((/** @type {any} */ p) => p.foreground));
   const roles = resolveRoles(sem, load('primitives.tokens.json'), load('statuts.tokens.json'), load('marque.tokens.json'));
   for (const r of roles.keys()) {
-    if (r.startsWith('texte.')) assert.ok(devants.has(r), r);
-    if (r.startsWith('bordure.') && !['bordure.discrete', 'bordure.defaut'].includes(r)) assert.ok(devants.has(r), r);
+    if (r.startsWith('text.')) assert.ok(devants.has(r), r);
+    if (r.startsWith('border.') && !['border.subtle', 'border.default'].includes(r)) assert.ok(devants.has(r), r);
   }
-  assert.ok(!devants.has('bordure.discrete') && !devants.has('bordure.defaut'));
+  assert.ok(!devants.has('border.subtle') && !devants.has('border.default'));
 });
 
 test('T2 contratRoles : ratios égaux à culori (± 0,0001), seuil par type', () => {
   const c = contratRoles(loadRoles(DIR));
-  assert.equal(c.pairs.length, TABLE.length + PAIRES_AJOUTEES.length + 4 + PAIRES_BOUTON.length + PAIRES_AVATAR.length, '+ 4 bordures de statut sur fond.surface, + les paires du bouton, de l\'avatar et de l\'étiquette');
+  assert.equal(c.pairs.length, TABLE.length + PAIRES_AJOUTEES.length + 4 + PAIRES_BOUTON.length + PAIRES_AVATAR.length, '+ 4 bordures de statut sur background.surface, + les paires du bouton, de l\'avatar et de l\'étiquette');
   c.pairs.slice(0, TABLE.length).forEach((/** @type {any} */ p, /** @type {number} */ i) => {
     assert.equal(p.devant, TABLE[i].devant);
     assert.equal(p.fond, TABLE[i].fond);
@@ -181,7 +181,7 @@ test('T2 contratRoles : ratios égaux à culori (± 0,0001), seuil par type', ()
 
 test('T2 pleins moyens au pas 11, texte blanc : accent 5,63, erreur 5,60, succès 5,62, info 5,62 ; avertissement clair, texte pas 12 : 5,77', () => {
   const c = contratRoles(loadRoles(DIR));
-  const got = ['accent', 'erreur', 'succes', 'info', 'avertissement'].map((s) => c.pairs.find((/** @type {any} */ p) => p.devant === `texte.sur-${s}`));
+  const got = ['accent', 'error', 'success', 'info', 'warning'].map((s) => c.pairs.find((/** @type {any} */ p) => p.devant === `text.on-${s}`));
   assert.deepEqual(got.map((p) => p.hexDevant), ['#ffffff', '#ffffff', '#ffffff', '#ffffff', '#442d01']);
   assert.deepEqual(got.map((p) => p.ratio.toFixed(2)), ['5.63', '5.60', '5.62', '5.62', '5.77']);
 });
@@ -197,8 +197,8 @@ test('T2 interdites mesurées et listées à part, hors échecs', () => {
   });
 });
 
-test('T2 hypothèse : texte.secondaire sous 4,5:1 sur fond.composant.appui (4,3327), désormais interdite', () => {
-  const p = contratRoles(loadRoles(DIR)).interdites.find((/** @type {any} */ x) => x.devant === 'texte.secondaire' && x.fond === 'fond.composant.appui');
+test('T2 hypothèse : text.secondary sous 4,5:1 sur background.component.pressed (4,3327), désormais interdite', () => {
+  const p = contratRoles(loadRoles(DIR)).interdites.find((/** @type {any} */ x) => x.devant === 'text.secondary' && x.fond === 'background.component.pressed');
   assert.ok(p && p.ratio < 4.5 && Math.abs(p.ratio - 4.3327) <= 1e-4);
 });
 
@@ -216,12 +216,12 @@ test('T2 contrat : par échelle (ordre, 80 paires, trois échecs, trois rapports
   const tout = contrat(set);
   assert.deepEqual(tout.roles, contratRoles(set));
   const c = tout.echelles;
-  assert.deepEqual([...new Set(c.pairs.map((/** @type {any} */ p) => p.scale))], ['neutre', 'bleu', 'terre', 'sable', 'erreur', 'succes', 'avertissement', 'info']);
+  assert.deepEqual([...new Set(c.pairs.map((/** @type {any} */ p) => p.scale))], ['neutral', 'blue', 'earth', 'sand', 'error', 'success', 'warning', 'info']);
   assert.equal(c.pairs.length, 80);
-  assert.deepEqual(c.fails, ['neutre : onSolid sur 10, 3,7832 < 4,5', 'terre : onSolid sur 10, 3,8055 < 4,5', 'succes : onSolid sur 10, 3,8503 < 4,5']);
+  assert.deepEqual(c.fails, ['neutral : onSolid sur 10, 3,7832 < 4,5', 'earth : onSolid sur 10, 3,8055 < 4,5', 'success : onSolid sur 10, 3,8503 < 4,5']);
   /** @param {string} scale @param {string} fg @param {string} bg */
   const ratio = (scale, fg, bg) => c.pairs.find((/** @type {any} */ p) => p.scale === scale && p.fg === fg && p.bg === bg)?.ratio;
-  for (const [scale, fg, bg, want] of /** @type {const} */ ([['neutre', '11', '1', 5.424088602627833], ['bleu', 'onSolid', '9', 8.614442961097723], ['neutre', 'onSolid', '10', 3.7832254575552007]]))
+  for (const [scale, fg, bg, want] of /** @type {const} */ ([['neutral', '11', '1', 5.424088602627833], ['blue', 'onSolid', '9', 8.614442961097723], ['neutral', 'onSolid', '10', 3.7832254575552007]]))
     assert.ok(Math.abs(/** @type {number} */ (ratio(scale, fg, bg)) - want) <= 1e-4, `${scale} ${fg} sur ${bg} : ${ratio(scale, fg, bg)}`);
 });
 
@@ -233,30 +233,30 @@ test('T3 aucun échec ; seules exceptions écrites, les deux paires du désactiv
 
 test('T3 paire sous le seuil : échec sans exception ; exception écrite : listée à part ; exception vide refusée', () => {
   const set = structuredClone(loadRoles(DIR));
-  const added = { devant: 'bordure.forte', fond: 'fond.composant.appui', type: 'bordure' };
-  set.paires.paires.push(added);
-  assert.deepEqual(contratRoles(set).fails.map((/** @type {any} */ f) => `${f.devant} sur ${f.fond}`), ['bordure.forte sur fond.composant.appui']);
-  set.paires.paires[set.paires.paires.length - 1] = { ...added, exception: 'Champ toujours doublé de son libellé.' };
+  const added = { foreground: 'border.strong', background: 'background.component.pressed', type: 'border' };
+  set.paires.pairs.push(added);
+  assert.deepEqual(contratRoles(set).fails.map((/** @type {any} */ f) => `${f.devant} sur ${f.fond}`), ['border.strong sur background.component.pressed']);
+  set.paires.pairs[set.paires.pairs.length - 1] = { ...added, exception: 'Champ toujours doublé de son libellé.' };
   const c = contratRoles(set);
   assert.deepEqual(c.fails, []);
-  assert.deepEqual(c.exceptions.map((/** @type {any} */ f) => `${f.devant} sur ${f.fond}`), [...EXCEPTIONS_BOUTON, 'bordure.forte sur fond.composant.appui']);
-  set.paires.paires[set.paires.paires.length - 1] = { ...added, exception: '  ' };
+  assert.deepEqual(c.exceptions.map((/** @type {any} */ f) => `${f.devant} sur ${f.fond}`), [...EXCEPTIONS_BOUTON, 'border.strong sur background.component.pressed']);
+  set.paires.pairs[set.paires.pairs.length - 1] = { ...added, exception: '  ' };
   assert.throws(() => contratRoles(set), /exception vide/);
 });
 
 test('T3 paire invalide : rôle inconnu, type inconnu, interdite déclarée, règle vide refusés', () => {
   const base = loadRoles(DIR);
   const a = structuredClone(base);
-  a.paires.paires.push({ devant: 'texte.inconnu', fond: 'fond.app', type: 'texte' });
-  assert.throws(() => contratRoles(a), /texte\.inconnu/);
+  a.paires.pairs.push({ foreground: 'text.inconnu', background: 'background.app', type: 'text' });
+  assert.throws(() => contratRoles(a), /text\.inconnu/);
   const b = structuredClone(base);
-  b.paires.paires.push({ devant: 'texte.principal', fond: 'fond.app', type: 'ombre' });
+  b.paires.pairs.push({ foreground: 'text.default', background: 'background.app', type: 'ombre' });
   assert.throws(() => contratRoles(b), /ombre/);
   const c = structuredClone(base);
-  c.paires.paires.push({ devant: 'texte.secondaire', fond: 'fond.composant.appui', type: 'texte' });
+  c.paires.pairs.push({ foreground: 'text.secondary', background: 'background.component.pressed', type: 'text' });
   assert.throws(() => contratRoles(c), /déclarée et interdite/);
   const d = structuredClone(base);
-  d.paires.interdites[0].regle = ' ';
+  d.paires.forbidden[0].rule = ' ';
   assert.throws(() => contratRoles(d), /règle vide/);
 });
 
@@ -268,7 +268,7 @@ test('T3 npm run contraste : sort en 0 sur les fichiers du dépôt ; en 1 avec u
 
   const tmp = mkdtempSync(join(tmpdir(), 'contraste-'));
   const pp = structuredClone(paires);
-  pp.paires.push({ devant: 'bordure.forte', fond: 'fond.composant.appui', type: 'bordure' });
+  pp.pairs.push({ foreground: 'border.strong', background: 'background.component.pressed', type: 'border' });
   writeFileSync(join(tmp, 'paires.json'), JSON.stringify(pp));
   let code = 0;
   let out = '';
@@ -280,7 +280,7 @@ test('T3 npm run contraste : sort en 0 sur les fichiers du dépôt ; en 1 avec u
   }
   assert.equal(code, 1);
   assert.match(out, /1 paire en échec/);
-  assert.ok(out.includes('bordure.forte sur fond.composant.appui'));
+  assert.ok(out.includes('border.strong sur background.component.pressed'));
 });
 
 test('T3 package.json : script contraste', () => {
