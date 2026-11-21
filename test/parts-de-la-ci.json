@@ -119,6 +119,7 @@
       "test/pages-temoins.test.js",
       "test/pannes-migration.test.js",
       "test/planche-commande.test.js",
+      "test/regles.test.js",
       "test/roles-paires.test.js",
       "test/roles-planche.test.js",
       "test/saisie.test.js",

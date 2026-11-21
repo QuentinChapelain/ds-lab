@@ -63,5 +63,6 @@ Node : la version de `.node-version` (Node 24 LTS), seule source pour le poste, 
 - `docs/feuille-de-route.md` : ce qui manque au design system ; avant de proposer un composant ou un token.
 - `docs/attendus/` : l'attendu nommé dans le message, avant le plan.
 - `README.md` : avant de changer ce que l'outil fait ou ses commandes.
-- `docs/regles.md` : avant de nommer un composant, une prop ou un token, ou d'écrire une fiche (NM, CP, DOC).
+- `docs/regles.md` : avant de nommer un composant, une prop ou un token, d'écrire une fiche (NM, CP, DOC), ou d'écrire ou de changer une règle (ses huit règles d'écriture, D65).
+- `docs/techniques/` : le comment d'une règle dans un framework, une ligne par règle ; avant de toucher à une enveloppe ou d'ajouter un framework.
 - `docs/composants/` et `docs/modules/` : avant d'employer ou de changer un composant ou un module ; après un changement de props, de rendu ou de tokens, `npm --prefix atelier run fiches` régénère les fiches (D56, D61).

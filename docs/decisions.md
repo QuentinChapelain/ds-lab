@@ -1,6 +1,6 @@
 # Décisions
 
-Soixante-quatre décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/commun/` et dans le dossier de chaque marque. Un renvoi à `KNOWN_ISSUES.md` écrit avant le 21/11/2026 vise la puce « Limite » de la même décision, une fiche, la feuille de route (`docs/feuille-de-route.md`) ou le README ; `KNOWN_ISSUES.md` ne porte plus que la dette à payer (D64).
+Soixante-cinq décisions, chacune avec sa raison et sa conséquence. Aucune valeur n'est recopiée ici : elles se lisent dans `tokens/commun/` et dans le dossier de chaque marque. Un renvoi à `KNOWN_ISSUES.md` écrit avant le 21/11/2026 vise la puce « Limite » de la même décision, une fiche, la feuille de route (`docs/feuille-de-route.md`) ou le README ; `KNOWN_ISSUES.md` ne porte plus que la dette à payer (D64).
 
 ### D01
 - **Décision** : les rôles se nomment propriété.sens.emphase.état.
@@ -478,3 +478,31 @@ Soixante-quatre décisions, chacune avec sa raison et sa conséquence. Aucune va
   3. Les trous comblés ou choisis (B4, B5, B8, B10, B11) sortent de la table ; les fiches qui les citaient citent la décision (D54, D55) ou la règle (CP8). B12 nomme le bouton sur l'aplat de marque, jusqu'ici dette sans place.
 - **Raison** : tri validé par Quentin le 21/11/2026, un verdict par entrée (195), sur proposition de Claude, vérifié dans le dépôt par Claude Code avant d'écrire. Le fichier mêlait dette à payer, limites acceptées, mesures périmées et histoire ; on n'y voyait plus ce qui reste à faire. Pas de lot « zéro dette » : une limite écrite et assumée n'est pas une dette.
 - **Conséquence** : sur 195 entrées, 4 payées (le fond de `DsAvatar`, D63 ; la description du jeu `marque` des resolvers ; les noms de code dans la prose des fiches ; les descriptions de `jetons.css`), 5 gardées (CP3, les trois limites des thèmes Vuetify, la valise de démonstration), 133 acceptées (83 écrites à leur place, 50 déjà dites là où elles vont) et 53 retirées (39 sans ligne : doublons, mesures périmées, hypothèses jamais revues, faits ; 4 replacées : B12, la sortie Dart, le préfixe de NM2 ; 10 laissent un fait d'une ligne). `KNOWN_ISSUES.md` passe de 230 à 17 lignes. `CLAUDE.md` dit où écrire une limite, cite la feuille de route et demande `npm audit` à chaque lot.
+
+### D65
+- **Décision** : `docs/regles.md` range chaque énoncé dans l'une de quatre cases. Une règle est vraie ou fausse, un contrôle la tranche, la CI bloque. Un défaut est une valeur posée ou calculée sans seuil sourcé, écrite dans une décision ; il bloque comme une règle et se change par une décision écrite, une règle ne se change pas. Une technique est le comment d'une règle dans un framework, dans `docs/techniques/<framework>.md`. Une consigne est dite à l'agent, sans contrôle, et ne bloque pas. Huit règles d'écriture des règles sont en tête du fichier. Les tables portent 33 règles, 10 défauts et 7 consignes.
+  1. Tri des 37 règles. Vingt restent entières. DS4 et DOC5 deviennent des défauts, DS16 et CP8 des consignes, sans changer de numéro. Treize sont scindées : la part qui reste garde le numéro, la part détachée prend DF<n> (défaut) ou CS<n> (consigne), dans l'ordre des règles :
+     - DF1, le décalage de l'anneau (de DS2) ;
+     - DF2, ce qui change en étroit (de DS6) ;
+     - DF3, le rapport de hauteur de capitale (de DS11) ;
+     - DF4, la police des titres et du texte (de DS17) ;
+     - CS1, la méthode de la hauteur de ligne (de DS7, qui devient un défaut) ;
+     - CS2, un seul affichage grand par page (de DS10) ;
+     - CS3, l'accent (de DS13) ;
+     - CS4, la langue du texte (de NM1) ;
+     - CS5, le bloc cliquable (de CP6).
+
+     NM1, NM3, CP4 et CP9 ne nomment plus Vuetify ; NM2 dit que `Ds` est le préfixe de ds-lab.
+  2. `npm run typo` bloquait déjà sur quatre règles sans ligne : DS18, l'interligne du corps au moins 1,5 (WCAG 1.4.8, niveau AAA, technique suffisante C21) ; DF5, l'interligne des petits styles au moins 1,3 ; DF6, le corps moyen au moins 1 rem ; DF7, aucune taille sous 12 px. Sa cinquième, « l'étroit au plus égal au large », est DS6.
+  3. DS17 rejoint D16 et D44 : seul le libellé prend toujours la police du produit ; le texte la prend sauf si l'entrée en déclare une (DF4).
+  4. Une règle garde son numéro pour toujours. Une technique n'a pas de numéro : elle porte celui de sa règle, une ligne par règle marquée « Oui » dans la colonne Technique. Les règles qui ont une technique sont NM1, NM3, CP1, CP3, CP4, CP9 et CP10.
+  5. La colonne Contrôle commence par l'un de quatre mots :
+     - Relit : le résultat écrit, pour toute marque, tout composant ou tout module ;
+     - Liste fixe ;
+     - Recopié ;
+     - Absent.
+
+     Quand plusieurs contrôles se partagent un énoncé, le mot est celui du plus faible ; « en partie » dit qu'une part de l'énoncé n'est pas contrôlée.
+  6. `test/regles.test.js` vérifie la forme (Z1 à Z3) : numéros uniques et bien formés ; mot du contrôle ; comptes de cette décision égaux à ceux des tables ; une ligne de technique par règle marquée dans chaque fichier de `docs/techniques/`, et réciproquement.
+- **Raison** : demande et décisions de Quentin du 21/11/2026, attendu `docs/attendus/etape-9-regles.md` : ajouter un composant ou un framework vite, de façon presque déterministe. Veille du 21/11/2026, hors dépôt : WCAG sépare le critère, vrai ou faux, de ses techniques ; des systèmes publics séparent la valeur posée de la règle tranchée. Le tri a relu chaque contrôle : cinq énoncés n'en ont pas, ou un qui ne bloque pas (DS1, DS9, DS13, DS16, CP8), DS10 et CP7 n'en ont qu'en partie ; DS2 et DS12 ne sont jugées en sombre et en étroit que sur cinq marques écrites en dur [F].
+- **Conséquence** : `docs/techniques/vuetify.md`, une ligne par règle marquée. Les écarts aux règles d'écriture non payés sont dans `KNOWN_ISSUES.md`, à l'étape 9. Les renvois vers une part détachée la citent : DF1 dans deux descriptions de la table du thème, « DS6, DF2 » dans la description du modificateur de largeur des resolvers et dans celle du contexte étroit. Aucune valeur ne change. `docs/identifiants.md` note les préfixes DF et CS.

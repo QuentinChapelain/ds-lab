@@ -5,6 +5,15 @@
 ## À payer à l'étape 9
 
 - CP3, aucune valeur en dur : pas de garde de lecture du style des `.vue` des composants avant l'étape 9 (les modules ont la leur, L2) ; elle trouverait deux cas [F] : `1px` du texte caché aux yeux (bouton, champ), justifié, et `1s` de la roue de chargement (B2, `docs/feuille-de-route.md`).
+- Écarts aux règles d'écriture (D65, `docs/regles.md`), un contrôle à écrire ou à élargir chacun :
+  - DS1 : rien ne relit la règle sur les jetons écrits ; dans `npm run contraste`, un texte foncé sur un plein doit atteindre 7:1 sur le plein et 4,5:1 sur le survol (environ 30 min [H]).
+  - DS9 : la liste « sans rôle » s'affiche sans bloquer ; chaque entrée de `tokens/commun/vuetify.json` doit nommer un rôle, non une primitive (environ 20 min [H]).
+  - DS13 : aucun contrôle ; aucun rôle d'interaction (`background.interactive`, `border.focus`, lien) ne doit pointer sur l'accent, lu dans `tokens/commun/semantique.tokens.json` et la table du thème (environ 20 min [H]).
+  - CP7 : seuls `DsTag` et `MemberCard` sont vérifiés ; rejouer chaque menu avec un texte de 10 000 caractères dans chaque option texte, aucun refus attendu (environ 20 min [H]).
+  - Listes fixes de DS3 (planche d'Orbe Café, preuve de `DsTag`), DS10 (styles écrits dans `test/typo-jetons.test.js`), DS15 (contour de `DsTextInput`), CP4 (sept pièces de Vuetify), CP5 (attributs retirés, menu par menu) et CP6 (preuve de `DsCard`) : chacune à relire pour tout composant ou tout style quand la pièce suivante arrive (de 20 min à 1 h chacune [H]).
+  - Valeurs recopiées de NM2 (comptes de Component Gallery dans `atelier/composants/noms.json`), NM3 (source déclarée à la main), DF1 (`test/bouton-jetons.test.js`) et DF2 (`test/typo-jetons.test.js`).
+  - Onze tests comparent des valeurs écrites à la main pour chaque marque et chaque thème : A3, A6 et A7 (`test/avatar-etiquette.test.js`), B3 et B5 (`test/bouton-jetons.test.js`), H2 (`test/champ-carte-jetons.test.js`), la colonne de `test/calibrage.test.js`, trois tests de `test/marques-fictives.test.js`, M5 (`test/sombre.test.js`), le grand texte de `test/aplats.test.js` et P5 (`test/police-produit.test.js`), environ 115 lignes ; U5 (`test/fiches.test.js`) écrit en dur le plus bas rapport. À garder pour une marque, comme fixture, avec des relations pour toutes (environ une demi-journée [H]).
+  - CP10 : le message de L2 (`test/modules.test.js`) nomme la déclaration sans dire quoi faire.
 
 ## À payer à l'étape 10
 

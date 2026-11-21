@@ -172,7 +172,7 @@ export function modeleResolver({ nom, marque, sombre = [], dossier }) {
         default: 'light',
       },
       width: {
-        description: "Largeur de l'écran. Large : valeurs des jeux. Étroit : grands écarts et grands textes réduits (DS6).",
+        description: "Largeur de l'écran. Large : valeurs des jeux. Étroit : grands écarts et grands textes réduits (DS6, DF2).",
         contexts: { wide: [], narrow: [commun('largeur.etroit.tokens.json')] },
         default: 'wide',
         $extensions: { [LARGEUR]: { narrow: { sous: { value: 600, unit: 'px' }, seuil: '[H]' } } },

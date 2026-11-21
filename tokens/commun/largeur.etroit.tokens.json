@@ -1,5 +1,5 @@
 {
-  "$description": "Contexte étroit du modificateur largeur (marque.resolver.json) : sous 600 px [H], seuls l'écart de section et les grands textes changent (DS6). Chaque jeton remplace en entier celui de semantique.tokens.json. Format DTCG 2025.10.",
+  "$description": "Contexte étroit du modificateur largeur (marque.resolver.json) : sous 600 px [H], seuls l'écart de section et les grands textes changent (DS6, DF2). Chaque jeton remplace en entier celui de semantique.tokens.json. Format DTCG 2025.10.",
   "gap": {
     "$type": "dimension",
     "section": {

@@ -149,7 +149,7 @@ Les sorties vont dans `local/composants/<hôte>/<horodatage>/`. La commande sort
 
 ## Règles
 
-Les règles du langage que l'outil produit, pour tout utilisateur : le design system, le nommage, les composants et leur documentation, chacune avec sa raison et son contrôle, sont dans `docs/regles.md`. Les fiches des composants les suivent : `docs/composants/README.md`.
+Les règles du langage que l'outil produit, pour tout utilisateur : le design system, le nommage, les composants et leur documentation, sont dans `docs/regles.md`, rangées en quatre cases (D65) : une règle est tranchée par un contrôle et bloque la CI ; un défaut est une valeur posée, qui bloque aussi et se change par une décision écrite ; une consigne se lit, sans contrôle. Chacune dit sa raison, la source de son seuil et son contrôle. Le comment d'une règle dans Vuetify, une technique, est dans `docs/techniques/vuetify.md` ; un autre framework y prendrait son fichier, aux mêmes lignes. Les fiches des composants les suivent : `docs/composants/README.md`.
 
 ## Atelier des composants
 

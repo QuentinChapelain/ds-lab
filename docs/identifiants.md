@@ -74,6 +74,7 @@ Définitions d'origine : D1 à D15 et R1 à R14 dans `fixtures/marque-demo/expec
 | Id | Règle | Codée dans | Affichée dans |
 |---|---|---|---|
 | DS1, DS6 | Règles du design system (`docs/regles.md`) | `src/tokens/pleins.js`, `src/tokens/resolver.js` | `$description` des jetons écrits par la saisie |
+| DF1 à DF7, CS1 à CS5 | Défauts et consignes détachés d'une règle (`docs/regles.md`, D65) | `src/tokens/resolver.js` (DF2) | `$description` du modificateur de largeur des resolvers, descriptions de la table du thème (DF1) |
 | D04, D05 | Décisions (`docs/decisions.md`) | `src/tokens/pleins.js`, `src/tokens/saisie.js`, `src/report/calibrage.js` | `$description` des jetons écrits par la saisie ; D04 aussi dans la page de calibrage |
 | G5 | La valise n'est écrite que si elle passe tous ses contrôles (checkValise) | `src/valise/generate.js` | message d'erreur de la génération |
 

@@ -122,7 +122,7 @@
     "$description": "Variables du thème pour les enveloppes (bouton, champ, carte, bouton à icône, avatar, étiquette), préfixées ds- pour ne croiser aucune variable de Vuetify. Chacune nomme un jeton ; champ prend une partie d'un style de texte. Une couleur est le trait devant d'une paire de paires.json, ou dit pourquoi elle n'en a pas (sansPaire).",
     "ds-focus": {
       "token": "border.focus",
-      "$description": "Anneau de focus clavier, posé sur la page, décalé de 2 px (DS2)."
+      "$description": "Anneau de focus clavier, posé sur la page, décalé de 2 px (DS2, DF1)."
     },
     "ds-border": {
       "token": "border.strong",
@@ -155,7 +155,7 @@
     },
     "ds-offset-focus": {
       "token": "offset.focus",
-      "$description": "Décalage de l'anneau de focus hors du bouton (DS2)."
+      "$description": "Décalage de l'anneau de focus hors du bouton (DF1)."
     },
     "ds-icon-size-medium": {
       "token": "icon-size.medium",
