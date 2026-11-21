@@ -696,7 +696,7 @@ export function createRenderedAggregator({ solid = new Set() } = {}) {
           v.count++;
           // D19 : une couleur d'état entre dans la table si le site l'a écrite. Les
           // échantillons d'état ne sont pas tracés : l'anneau de focus du navigateur est reconnu par repli, un contour
-          // outline-style auto (KNOWN_ISSUES.md) ; il reste dans « États non lus ».
+          // outline-style auto (D19) ; il reste dans « États non lus ».
           const navigateur = c.property === 'outline-color' && snap.el?.['outline-style'] === 'auto';
           const ck = `${state}\n${c.property}\n${smp.role}`;
           let x = v.ctx.get(ck);

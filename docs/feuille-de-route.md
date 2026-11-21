@@ -1,0 +1,13 @@
+# Feuille de route du design system
+
+Ce qui manque au design system, le moment où ce manque mordra, et l'avis qui guide la pièce à venir. Les numéros sont cités par les fiches (`docs/composants/`, `docs/modules/`) : le contrôle des fiches (`npm --prefix atelier run fiches -- --verifier`) refuse un `B<n>` absent de cette table. Une pièce faite sort de la table ; sa décision la remplace dans les fiches.
+
+| # | Trou | Mordra à | Avis |
+|---|---|---|---|
+| B1 | Aucun token d'élévation, de superposition (z-index) ni de voile | Menu déroulant, fenêtre, info-bulle, liste de choix | Déjà visible : `DsCard` n'a pas d'ombre, et Vuetify garde la sienne pour tout composant sans enveloppe. L'info-bulle viendra avec ces tokens, comme pièce à part ; sa règle est écrite (D52) : l'info-bulle d'un bouton à icône seule reprend son libellé, au survol et au focus |
+| B2 | Aucun token de mouvement (durées, courbes) ; `DsButton` gère `prefers-reduced-motion` à la main, et sa roue tourne d'un tour par seconde, valeur écrite dans le composant | Menu, fenêtre, focus animé | Les animations du champ de Vuetify (contour, 250 ms) sont coupées ; avec des tokens de mouvement, reprendre `DsButton` et `DsTextInput` |
+| B3 | Pas d'état « sélectionné » ni « coché » en rôle | Onglet, case à cocher | |
+| B6 | Pas de grille ni de largeurs de conteneur ; seuil de l'étroit à 600 px [H] ; le thème Vuetify n'a pas de contexte de largeur : le titre de `DsCard` ne rétrécit pas en étroit | Liste d'annuaire sur plusieurs colonnes | En partie (D61) : `width.column` et `MemberList` en une colonne ; la grille et le titre de `DsCard` en étroit restent à faire |
+| B7 | Motifs de formulaire absents : groupe de champs, résumé d'erreurs, état vide, chargement d'une liste | Formulaires, listes | Le résumé d'erreurs dira aussi si une erreur s'annonce et qui valide : `DsTextInput` ne valide rien, et sa story coupe la validation du navigateur. État vide et chargement de `MemberList` (D61) |
+| B9 | Pas de token de soulignement (épaisseur, décalage) ni de composant de lien | Lien dans le texte, pied de page | Le titre souligné de `DsCard` prend le soulignement par défaut du navigateur |
+| B12 | Pas de `DsButton` pour l'aplat de marque (`background.brand.strong`) : ni variante inverse (`background.interactive.inverse`, `border.focus.inverse`, D14), ni refus quand on l'y pose ; sur l'aplat clair d'une marque claire, `DsButton` principal se détache peu (1,40:1 chez Écume et Sel, jugé suffisant sur image, sans paire) | Bandeau de marque avec une action | Une variante inverse, ou un refus écrit dans la fiche ; piste pour l'aplat clair : un contour très léger de la teinte du bouton |

@@ -10,7 +10,7 @@
  *      devenue échelle nommée : echelles.tokens.json).
  * Une panne à l'un des temps 2 à 4 efface les temporaires et remet les fichiers d'origine, lus au temps 1 : une panne ou un
  * contrôle en échec ne laisse rien d'écrit. Si la remise en place tombe elle-même (disque plein), le message nomme les
- * fichiers laissés en l'état (KNOWN_ISSUES.md).
+ * fichiers laissés en l'état (D31 ; codé sans test, ARCHITECTURE.md).
  */
 import * as nodeFs from 'node:fs';
 import { join } from 'node:path';

@@ -11,6 +11,7 @@
  * src/ : commentaires et chaînes ; d'un composant .vue (D43), le script, le gabarit, le style et leurs commentaires. Hors de la garde : les attendus de
  * fixtures/ (notes datées) et la copie figée fixtures/marque-demo/jetons/, qui est une empreinte.
  * Le mot « étape » sans numéro (étape de chargement d'une page) n'est pas une mention d'histoire.
+ * La garde est lexicale, par motifs : une histoire dite sans numéro (« retouche », « second passage ») lui échappe.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

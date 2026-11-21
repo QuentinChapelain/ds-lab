@@ -19,7 +19,7 @@ Un rond qui montre la photo d'une personne, ou ses initiales quand la photo manq
 
 - Pour montrer qui est une personne, à côté de son nom : `MemberCard`, une liste, un commentaire.
 - Quand le nom est écrit à côté : `decorative`, pour qu'il ne soit pas lu deux fois.
-- Pour un groupe de personnes, un badge d'état ou une couleur par personne : à venir (B5).
+- Pour un groupe de personnes, un badge d'état ou une couleur par personne : à venir (D54).
 - Pour mener vers un profil : le lien appartient à la pièce qui entoure `DsAvatar`, jamais à `DsAvatar`.
 
 ## Props
@@ -102,9 +102,9 @@ Stories : [atelier/stories/DsAvatar.stories.js](../../atelier/stories/DsAvatar.s
 ## Décisions et dette
 
 - D54 : `DsAvatar`, ses props, la règle des initiales, son nom lu. D51 : tout usage hors des props est refusé.
-- B5 : l'avatar est fait ; restent le badge d'état, le groupe d'avatars.
+- Restent à venir : le badge d'état, le groupe d'avatars (D54).
 - Une photo à fond transparent laisse voir les initiales dessous.
-- Limites des initiales : un double nom espagnol donne la lettre du dernier mot ; un titre comme « Dr » compte comme un mot.
+- Limites des initiales : un double nom espagnol donne la lettre du dernier mot ; un titre comme « Dr » compte comme un mot ; une capitale de plusieurs caractères (`ß` donne `SS`) n'est pas tronquée.
 - D63 : le rond à initiales a son fond, plus marqué que celui de `DsTag`, pour se détacher d'une surface en clair comme en sombre.
 
 ## Test de rendu

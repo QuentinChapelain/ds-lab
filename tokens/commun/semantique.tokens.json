@@ -356,7 +356,7 @@
       "$value": "{size.640}",
       "$description": "Largeur maximale d'une colonne de contenu, comme une liste d'annuaire ; sur un écran plus étroit, la colonne prend toute la largeur de son parent.",
       "$extensions": {
-        "ds-lab.note": "640 px [H], à juger sur les planches de MemberList ; la grille reste à faire (KNOWN_ISSUES.md, B6)."
+        "ds-lab.note": "640 px [H], à juger sur les planches de MemberList ; la grille reste à faire (B6, docs/feuille-de-route.md)."
       }
     }
   },

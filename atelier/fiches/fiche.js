@@ -888,7 +888,7 @@ export async function calculer() {
   const paires = JSON.parse(lire('tokens/commun/paires.json'));
   const themes = mesurerThemes();
   const decisions = lire('docs/decisions.md');
-  const dette = lire('KNOWN_ISSUES.md');
+  const dette = lire('docs/feuille-de-route.md');
   const parFichier = new Map([...parSorte.composants, ...parSorte.modules].map((m) => [m.nom, m.menu]));
   /** @param {string} f */
   const menuDe = (f) => {

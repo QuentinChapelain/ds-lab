@@ -3,9 +3,9 @@
  * Règle des pleins, déclarée dans la couche marque (jamais dans les rôles), D04 :
  * décisions de Quentin sur image (15/11/2026, 13 h 18 à 13 h 48). La classe se lit sur l'échelle, dans cet ordre :
  *   1. blanc ≥ 4,5 sur le pas 9 → couleur exacte (plein = pas 9), texte blanc ; sombre si blanc ≥ 5,5, soutenu
- *      sinon (les deux ne différaient que par le survol, KNOWN_ISSUES.md) ;
+ *      sinon (les deux ne différaient que par le survol, D45) ;
  *   2. clair : sinon, pas 12 sur le pas 9 ≥ 7 et pas 12 sur le pas 10 ≥ 4,5 → plein = pas 9, texte = pas 12
- *      (seuil 7 calibré à l'œil, KNOWN_ISSUES.md) ;
+ *      (seuil 7 jugé sur image, D04) ;
  *   3. moyen : le reste → plein = pas 11, texte blanc.
  * Cette règle vaut pour le primaire et l'accent. Les quatre statuts gardent leur plein et leur texte d'origine, figés
  * ici (STATUTS_FIGES).
@@ -44,7 +44,7 @@ export function classePlein(steps) {
 
 /**
  * Statuts figés : classe et phrase de règle d'origine, écrites telles quelles.
- * Avertissement : texte foncé à 5,77 sur le plein, sous le seuil des couleurs du client (KNOWN_ISSUES.md).
+ * Avertissement : texte foncé à 5,77 sur le plein, sous le seuil des couleurs du client (D04).
  */
 export const STATUTS_FIGES = /** @type {Record<string, { classe: Classe, regle: string }>} */ ({
   error: { classe: 'moyen', regle: 'moyen : plein = pas 11, texte blanc' },

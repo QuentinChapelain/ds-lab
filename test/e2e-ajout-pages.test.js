@@ -4,7 +4,7 @@
  * (docs/attendus/feuille-ajoutee.md, décisions de Quentin du 17/11/2026). Attendus écrits avant le code :
  *   P1 rendu avec les feuilles ajoutées identique au pixel à celui de la copie passée par apply, même arbre ;
  *   P2 0 px et même arbre contre la référence pour les pièges et la proximité ; la page de marque garde l'écart
- *      d'apply (valeurs en var(), KNOWN_ISSUES.md) ;
+ *      d'apply (valeurs en var(), README.md, Limites) ;
  *   P3 système en sombre : rendu identique au rendu en clair ;
  *   P6 verdict par ligne décidée (docs/attendus/verdict-par-decision.md) : pièges, chaque ligne décidée arrivée,
  *      sortie 0 ; proximité, aucune ligne décidée, sortie 0 ; page de marque, coul-09 et coul-11 (valeur écrite en

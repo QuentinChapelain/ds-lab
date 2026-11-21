@@ -142,8 +142,9 @@ Stories : [atelier/stories/DsTextInput.stories.js](../../atelier/stories/DsTextI
 ## Décisions et dette
 
 - D49 : le champ, ses props, son libellé au-dessus, son désactivé natif. D51 : tout usage hors des props est refusé.
-- B7 : ni groupe de champs, ni résumé d'erreurs ; B11 : la règle du texte d'exemple, écrite ici.
+- B7 : ni groupe de champs, ni résumé d'erreurs ; CP8 : la règle du texte d'exemple, écrite ici.
 - En clair, le bord d'erreur est pâle et se voit à peine sous l'anneau de focus.
+- L'erreur n'a pas d'icône : son texte suffit (WCAG 1.4.1).
 - Le composant montre l'erreur qu'on lui donne ; il ne dit rien d'une validation du navigateur.
 
 ## Test de rendu

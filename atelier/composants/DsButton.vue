@@ -9,7 +9,7 @@
 // ni l'un ni l'autre : désactivé et chargement posent aria-disabled, gardent le bouton dans l'ordre du focus, et
 // bloquent le clic et l'action par défaut (envoi d'un formulaire), à la souris comme au clavier.
 // La roue de chargement est dessinée ici, pas prise à Vuetify : sa roue indéterminée (VProgressCircular 4.3.4) fige la
-// page quand le thème change sur place, même seule dans une story (KNOWN_ISSUES.md).
+// page quand le thème change sur place, même seule dans une story (D43).
 import { h } from 'vue';
 import { VBtn } from 'vuetify/components';
 import { definirEnveloppe } from './fabrique.js';
@@ -190,7 +190,7 @@ export default definirEnveloppe(MENU, (props, { attrs, emit, slots }) => {
 .ds-button__spinner > svg {
   width: var(--v-ds-icon-size-medium);
   height: var(--v-ds-icon-size-medium);
-  /* Durée sans jeton : le dépôt n'a pas encore de jeton de durée (KNOWN_ISSUES.md). */
+  /* Durée sans jeton : le dépôt n'a pas encore de jeton de durée (B2, docs/feuille-de-route.md). */
   animation: ds-button-spinner 1s linear infinite;
 }
 .ds-button--small .ds-button__spinner > svg {

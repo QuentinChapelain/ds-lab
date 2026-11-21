@@ -12,6 +12,9 @@
  *                       d'annuaire (D46) ;
  *   lancement           aucun module de src/ ne lance Chromium hors de src/browser/lancement.js (D34).
  * Chaque paire tourne sur le même serveur : même port, donc même entrée.
+ * Un vert isolé prouve peu : l'écart que D34 ferme ne touchait qu'une capture de verify sur dix environ, et il a fallu
+ * 17 lancements pour le voir échouer sans l'option ; la réduction de la page de marque, rouge 9 fois sur 10, garde le
+ * même défaut.
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';

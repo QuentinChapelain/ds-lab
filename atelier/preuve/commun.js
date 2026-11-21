@@ -29,7 +29,8 @@ const MODES = /** @type {const} */ ([['light', 'clair'], ['dark', 'sombre']]);
 /**
  * Variables de Vuetify écrites sous le même préfixe que les couleurs du thème (--v-theme-…) mais qui n'en sont pas :
  * couleurs de kbd et de code, et les deux textes dont Vuetify se sert pour calculer un on- absent. Elles restent les
- * siennes (KNOWN_ISSUES.md).
+ * siennes (D42) : la preuve les écarte nommément, et une version de Vuetify qui en ajoute la fera échouer, ce qui est
+ * voulu.
  */
 export const VARIABLES_VUETIFY = ['code', 'kbd', 'on-code', 'on-dark', 'on-kbd', 'on-light'];
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.ico': 'image/x-icon' };

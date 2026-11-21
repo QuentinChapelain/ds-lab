@@ -3,7 +3,7 @@
  * Feuilles ajoutées sur la réduction des pages en désordre, cible sans valise et décisions du passage 2c
  * (docs/attendus/feuille-ajoutee.md, décisions de Quentin du 17/11/2026). Attendus écrits avant le code : P1, P3, P4
  * et P7 dans test/helpers/ajout-desordre.js ; l'écart à la référence reste celui d'apply (lignes hors de
- * modifications.json, KNOWN_ISSUES.md), sans test P2 ;
+ * modifications.json, README.md, Limites), sans test P2 ;
  *   P6 verdict par ligne décidée (docs/attendus/verdict-par-decision.md) : les neuf lignes sans jeton dans la marque
  *      (hors de modifications.json) non arrivées, coul-26 (vue seulement au survol) non vérifiable (état), sortie 1 ;
  *   P7 les neuf lignes sans jeton finissent par « cause : jeton absent » (docs/attendus/verify-se-reconnait.md).

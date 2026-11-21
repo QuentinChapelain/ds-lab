@@ -1,12 +1,14 @@
 // @ts-check
 /**
  * D30 (docs/attendus/revue-lot-6-structure.md, point 2) : orchestration et calculs dans leur couche.
- * Sans navigateur ; lecture des imports, sans parseur.
+ * Sans navigateur ; lecture des imports par une expression régulière, sans parseur : elle prend pour un import un
+ * exemple écrit dans un commentaire (test/roles-statuts.test.js), et ne voit pas les imports dynamiques ; sans effet sur
+ * L1 et L2, dont les liens de src/ sont ceux que voit dependency-cruiser.
  *
  * Attendus écrits à la main :
  *   L1 src/cli/ ne sert que ses commandes : aucun module de src/ hors de src/cli/ n'en importe ; un test n'importe de
  *      src/cli/reduce.js que l'analyse des arguments (parseReduceArgs). src/cli/login.js, laissé tel quel, garde saveState et
- *      readState, lus par test/login.test.js (KNOWN_ISSUES.md) ;
+ *      readState, lus par test/login.test.js (ARCHITECTURE.md) ;
  *   L2 src/browser/ n'importe que src/browser/ et src/lib/ ; src/apply/ n'importe rien de src/reduce/ ni de src/report/ ;
  *   L3 runReduce et linesOf dans src/reduce/run.js ; couplingsOf et simulationCouplings dans src/reduce/pleins.js ; unitOf
  *      dans src/reduce/declarations.js ; declarationId reste dans src/browser/trace.js (lue aussi par la simulation).

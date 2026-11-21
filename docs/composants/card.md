@@ -139,6 +139,7 @@ Stories : [atelier/stories/DsCard.stories.js](../../atelier/stories/DsCard.stori
 - En étroit, le titre garde sa taille du large : le thème de Vuetify n'a qu'une valeur par marque (B6).
 - Le texte d'un `DsCard` à lien ne prend ni clic ni sélection : prix du lien étendu.
 - Pas d'ombre : aucun token d'élévation encore (B1).
+- Sans `subtitle`, le contenu suit le titre de plus près (D60).
 
 ## Test de rendu
 

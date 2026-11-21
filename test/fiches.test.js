@@ -109,7 +109,7 @@ function genere(nom) {
   };
 }
 
-const ctx = () => ({ table: TABLE, stories: lireStories('DsTag'), decisions: lire('docs/decisions.md'), dette: lire('KNOWN_ISSUES.md'), descriptions: DESCRIPTIONS, menuDe });
+const ctx = () => ({ table: TABLE, stories: lireStories('DsTag'), decisions: lire('docs/decisions.md'), dette: lire('docs/feuille-de-route.md'), descriptions: DESCRIPTIONS, menuDe });
 
 test('U1 en-tête du DsTag, et du bouton à icône par le bouton', () => {
   assert.equal(
@@ -274,7 +274,7 @@ test('U7 écarts des parties écrites, mot pour mot', () => {
   assert.deepEqual(ecarts(texte.replace(/^- `tone` : .*\n/m, '')), ['prop sans sa ligne : tone']);
   assert.deepEqual(ecarts(texte.replace(/^(- `tone` : .*)$/m, '$1\n- `couleur` : une couleur.')), ['ligne d\'une prop hors du composant : couleur']);
   assert.deepEqual(ecarts(texte.replace('- D55 : `DsTag`', '- D99 : `DsTag`')), ['décision inconnue : D99']);
-  assert.deepEqual(ecarts(texte.replace('- B5 : l\'étiquette', '- B99 : l\'étiquette')), ['dette inconnue : B99']);
+  assert.deepEqual(ecarts(texte.replace('pas encore d\'info-bulle (B1)', 'pas encore d\'info-bulle (B99)')), ['dette inconnue : B99']);
   assert.deepEqual(ecarts(texte.replace('story « Planche »', 'story « Planche bis »')), ['story inconnue : « Planche bis »']);
   assert.deepEqual(ecarts(texte.replace('<DsTag text="Lyon" />', '<DsTag text="Lyon" closable />')), ['exemple refusé : DsTag : attribut refusé : closable']);
   assert.deepEqual(ecarts(texte.replace('```vue', '```js')), ['exemple : 0 blocs vue, un attendu']);

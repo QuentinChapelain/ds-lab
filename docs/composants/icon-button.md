@@ -149,6 +149,7 @@ Stories : [atelier/stories/DsIconButton.stories.js](../../atelier/stories/DsIcon
 - Il rend un `DsButton` et en lit les classes : les renommer le casse, et seul le test de rendu le voit.
 - Le survol des variantes `ghost` se voit à peine contre la page ; c'est le seul signe du survol, avec le curseur.
 - Pas d'info-bulle (B1), pas de bouton bascule.
+- Chacun porte la zone `role="status"` de `DsButton`, vide hors chargement : sans effet [H], mais dix `DsIconButton` en ont dix.
 
 ## Test de rendu
 

@@ -17,7 +17,7 @@ Un bouton qui lance une action sur la page : enregistrer, ajouter, supprimer ; i
 
 ## Quand l'utiliser
 
-- Pour l'action principale d'une vue : `variant` `primary`, un seul par vue (B8).
+- Pour l'action principale d'une vue : `variant` `primary`, un seul par vue (CP8).
 - Pour une action à côté de la principale : `secondary` ; pour une action discrète, dans une ligne ou une barre : `ghost`.
 - Pour une action qui détruit (supprimer un membre) : `danger`, ou `danger-ghost` quand elle n'est pas l'action principale.
 - Pour une action sans texte, avec une icône seule : `DsIconButton`.
@@ -151,7 +151,7 @@ Stories : [atelier/stories/DsButton.stories.js](../../atelier/stories/DsButton.s
 ## Décisions et dette
 
 - D43 : `DsButton`, ses props, son désactivé atteignable, son chargement. D44 : son texte prend toujours la police du produit. D45 : le survol des pleins. D51 : tout usage hors des props est refusé.
-- B8 : un seul bouton principal par vue, règle écrite ici, sans contrôle.
+- CP8 : un seul `DsButton` principal par vue, règle écrite ici, sans contrôle.
 - La roue tourne d'un tour par seconde, valeur écrite dans le composant : aucun token de durée encore (B2).
 
 ## Test de rendu

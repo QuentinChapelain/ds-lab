@@ -14,7 +14,7 @@ export default {
   addons: [],
   framework: { name: '@storybook/vue3-vite', options: { docgen: false } },
   // disableWhatsNewNotifications masque la notification des nouveautés ; il n'empêche pas le serveur de développement
-  // de les demander à storybook.js.org à chaque ouverture de l'interface (KNOWN_ISSUES.md).
+  // de les demander à storybook.js.org à chaque ouverture de l'interface (D42).
   core: { disableTelemetry: true, disableWhatsNewNotifications: true },
   // Vite ne sert en développement que les fichiers de sa liste ; on y met la racine du dépôt, nommée, plutôt que de
   // dépendre de la façon dont Vite la devine.

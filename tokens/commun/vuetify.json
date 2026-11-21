@@ -278,7 +278,7 @@
     "ds-card-title-font-size": {
       "token": "typography.heading.3",
       "field": "fontSize",
-      "$description": "Taille du titre de la carte (style titre 3), la même à toutes les largeurs : le thème n'a pas de valeur par largeur (KNOWN_ISSUES.md)."
+      "$description": "Taille du titre de la carte (style titre 3), la même à toutes les largeurs : le thème n'a pas de valeur par largeur (B6, docs/feuille-de-route.md)."
     },
     "ds-card-title-font-weight": {
       "token": "typography.heading.3",

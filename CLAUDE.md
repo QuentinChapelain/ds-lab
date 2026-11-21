@@ -44,6 +44,8 @@ Avant chaque commit qui touche `atelier/`, la table `tokens/commun/vuetify.json`
 
 main n'accepte qu'un push en avance rapide d'un commit dont le check `controles` est vert (ruleset « main protégée », D35) : pousser la branche, attendre sa CI, pousser le même commit sur main, supprimer la branche. La CI de main, rejouée sur ce même commit, n'est pas attendue pour clore le lot : elle reste une trace, et un rouge y est lu au contrôle de départ du lot suivant (D53).
 
+`npm audit` à la racine et dans l'atelier à chaque lot ; un avis ouvert entre dans `KNOWN_ISSUES.md`.
+
 Node : la version de `.node-version` (Node 24 LTS), seule source pour le poste, la CI et la garde des commandes (D40). Une commande de l'outil lancée sous une autre version majeure sort en 2 avant de lire son entrée : vérifier `node -v` avant les commandes.
 
 ## Règles du langage produit
@@ -57,7 +59,8 @@ Node : la version de `.node-version` (Node 24 LTS), seule source pour le poste, 
 - `docs/anciens-noms.json` : pour lire un nom de token cité par une décision ou un attendu d'avant le 21/11/2026 (D62).
 - `docs/identifiants.md` : avant de citer ou de créer un identifiant de règle.
 - `docs/contrat-de-marque.md` : avant de toucher à la saisie ou à un motif de refus.
-- `KNOWN_ISSUES.md` : avant de proposer un lot, et pour y ajouter toute dette laissée en sortant.
+- `KNOWN_ISSUES.md` : la dette à payer, avec son moment ; avant de proposer un lot, et pour y ajouter toute dette laissée en sortant. Une limite acceptée s'écrit à sa place (puce « Limite » de sa décision, fiche, README, ARCHITECTURE), pas dans ce fichier (D64).
+- `docs/feuille-de-route.md` : ce qui manque au design system ; avant de proposer un composant ou un token.
 - `docs/attendus/` : l'attendu nommé dans le message, avant le plan.
 - `README.md` : avant de changer ce que l'outil fait ou ses commandes.
 - `docs/regles.md` : avant de nommer un composant, une prop ou un token, ou d'écrire une fiche (NM, CP, DOC).
