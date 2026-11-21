@@ -162,7 +162,7 @@ export function modeleResolver({ nom, marque, sombre = [], dossier }) {
         description: 'Primitives communes à toutes les marques : neutres, statuts, espaces, tailles de texte, graisses, rayons.',
         sources: [commun('primitives.tokens.json'), commun('statuts.tokens.json')],
       },
-      marque: { description: `Emplacements communs de l'aplat plein, police du produit, échelles et couche marque de ${nom}.`, sources: [commun('aplat.tokens.json'), commun('police.tokens.json'), ...marque.map(ref)] },
+      marque: { description: `Emplacements communs de l'aplat plein et du fond teinté de la marque (brand.primary.tint), police du produit, échelles et couche marque de ${nom}.`, sources: [commun('aplat.tokens.json'), commun('police.tokens.json'), ...marque.map(ref)] },
       roles: { description: 'Rôles communs à toutes les marques.', sources: [commun('semantique.tokens.json')] },
     },
     modifiers: {

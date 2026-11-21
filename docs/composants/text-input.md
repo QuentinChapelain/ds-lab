@@ -104,7 +104,7 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 
 - Le libellé est lié au champ : un clic sur lui y met le focus.
 - L'aide et l'erreur sont lues après le nom, l'erreur d'abord ; sous une erreur, l'aide quitte l'écran mais reste lue.
-- Au focus clavier, le même anneau que le bouton.
+- Au focus clavier, le même anneau que `DsButton`.
 - Chaque texte se lit sur la page et sur la surface dans les dix thèmes :
 
 <!-- genere:contrastes : écrit par npm --prefix atelier run fiches -->
@@ -137,7 +137,7 @@ import DsTextInput from './composants/DsTextInput.vue';
 </template>
 ```
 
-Stories : [atelier/stories/DsTextInput.stories.js](../../atelier/stories/DsTextInput.stories.js), story « Planche » (chaque état, et la ligne champ et bouton) et story « Clavier ».
+Stories : [atelier/stories/DsTextInput.stories.js](../../atelier/stories/DsTextInput.stories.js), story « Planche » (chaque état, et la ligne `DsTextInput` et `DsButton`) et story « Clavier ».
 
 ## Décisions et dette
 
@@ -151,5 +151,5 @@ Stories : [atelier/stories/DsTextInput.stories.js](../../atelier/stories/DsTextI
 `npm --prefix atelier run preuve -- text-input` vérifie, dans les dix thèmes, en développement et en version construite :
 
 - le contour, le fond, les dimensions et les textes de chaque état de la planche, sans opacité de Vuetify ;
-- deux boîtes de 40 px alignées dans la ligne champ et bouton ;
+- deux boîtes de 40 px alignées dans la ligne `DsTextInput` et `DsButton` ;
 - sur le premier thème : le nom, la description, l'erreur, l'obligatoire et le désactivé lus par l'arbre d'accessibilité, la touche Tab, l'anneau, l'envoi sans le champ désactivé et les refus.

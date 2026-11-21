@@ -15,7 +15,7 @@
       ]
     },
     "marque": {
-      "description": "Emplacements communs de l'aplat plein, police du produit, échelles et couche marque de Atelier Lavandine.",
+      "description": "Emplacements communs de l'aplat plein et du fond teinté de la marque (brand.primary.tint), police du produit, échelles et couche marque de Atelier Lavandine.",
       "sources": [
         {
           "$ref": "../commun/aplat.tokens.json"

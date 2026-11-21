@@ -89,6 +89,8 @@ test('N4 aucun ancien nom complet ne reste, hors attendus, décisions, table et 
   const vars = new RegExp(`--(${anciens.map((a) => esc(a.replace(/\./g, '-'))).sort((a, b) => b.length - a.length).join('|')})(?![\\w-])`);
   const theme = new RegExp(`(?<![\\w-])(${Object.keys(TABLE.variablesDuTheme).filter((k) => k !== TABLE.variablesDuTheme[k]).map(esc).join('|')})(?![\\w-])`);
   const couleurs = new RegExp(`--v-theme-(on-)?(${Object.keys(TABLE.couleursDuTheme).map(esc).join('|')})(?![\\w-])`);
+  // Le texte d'une couleur du thème, cité nu dans une description (« on-teinte »).
+  const textes = new RegExp(`(?<![\\w-])on-(${Object.keys(TABLE.couleursDuTheme).map(esc).join('|')})(?![\\w-])`);
   const suivis = execFileSync('git', ['ls-files', 'tokens', 'src', 'atelier', 'test', 'docs', 'README.md', 'ARCHITECTURE.md', 'CLAUDE.md', 'KNOWN_ISSUES.md'], { cwd: ROOT, encoding: 'utf8' })
     .trim()
     .split('\n')
@@ -97,7 +99,7 @@ test('N4 aucun ancien nom complet ne reste, hors attendus, décisions, table et 
   const restes = [];
   for (const f of suivis) {
     const s = lire(f);
-    for (const re of [noms, vars, theme, couleurs]) {
+    for (const re of [noms, vars, theme, couleurs, textes]) {
       const m = re.exec(s);
       if (m) restes.push(`${f} : ${m[0]}`);
     }

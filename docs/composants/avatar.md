@@ -17,10 +17,10 @@ Un rond qui montre la photo d'une personne, ou ses initiales quand la photo manq
 
 ## Quand l'utiliser
 
-- Pour montrer qui est une personne, à côté de son nom : une carte membre, une liste, un commentaire.
+- Pour montrer qui est une personne, à côté de son nom : `MemberCard`, une liste, un commentaire.
 - Quand le nom est écrit à côté : `decorative`, pour qu'il ne soit pas lu deux fois.
 - Pour un groupe de personnes, un badge d'état ou une couleur par personne : à venir (B5).
-- Pour mener vers un profil : le lien appartient à la pièce qui entoure l'avatar, jamais à l'avatar.
+- Pour mener vers un profil : le lien appartient à la pièce qui entoure `DsAvatar`, jamais à `DsAvatar`.
 
 ## Props
 
@@ -37,8 +37,8 @@ Un rond qui montre la photo d'une personne, ou ses initiales quand la photo manq
 
 - `name` : le nom de la personne ; il donne les initiales et le nom lu par le lecteur d'écran.
 - `image` : l'adresse de la photo ; si elle manque ou ne se charge pas, les initiales restent.
-- `decorative` : l'avatar se tait, quand le nom est déjà écrit à côté.
-- `size` : `medium` par défaut, `large` pour une carte membre.
+- `decorative` : `DsAvatar` se tait, quand le nom est déjà écrit à côté.
+- `size` : `medium` par défaut, `large` pour `MemberCard`.
 
 ## Refusé
 
@@ -73,7 +73,7 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 
 ## Accessibilité
 
-- L'avatar est lu une fois, par le nom de la personne, avec ou sans photo ; `decorative`, il se tait.
+- `DsAvatar` est lu une fois, par le nom de la personne, avec ou sans photo ; `decorative`, il se tait.
 - Il ne se clique pas et n'arrête pas la touche Tab.
 - Les initiales : première lettre du premier et du dernier mot, particule et élision sautées, accents gardés (« Hugo de Lassalle » : HL).
 - Les initiales se lisent sur leur fond dans les dix thèmes :
@@ -101,7 +101,7 @@ Stories : [atelier/stories/DsAvatar.stories.js](../../atelier/stories/DsAvatar.s
 
 ## Décisions et dette
 
-- D54 : l'avatar, ses props, la règle des initiales, son nom lu. D51 : tout usage hors des props est refusé.
+- D54 : `DsAvatar`, ses props, la règle des initiales, son nom lu. D51 : tout usage hors des props est refusé.
 - B5 : l'avatar est fait ; restent le badge d'état, le groupe d'avatars.
 - Une photo à fond transparent laisse voir les initiales dessous.
 - Limites des initiales : un double nom espagnol donne la lettre du dernier mot ; un titre comme « Dr » compte comme un mot.
@@ -113,4 +113,4 @@ Stories : [atelier/stories/DsAvatar.stories.js](../../atelier/stories/DsAvatar.s
 
 - le côté, le rond, le fond et les initiales de chaque état, aux deux tailles, initiales centrées ;
 - la photo qui couvre le rond, et l'image en échec qui laisse les initiales ;
-- sur le premier thème : l'avatar lu une fois par son nom, ou pas du tout s'il est décoratif, la touche Tab qui ne s'y arrête pas, et les refus.
+- sur le premier thème : `DsAvatar` lu une fois par son nom, ou pas du tout s'il est décoratif, la touche Tab qui ne s'y arrête pas, et les refus.

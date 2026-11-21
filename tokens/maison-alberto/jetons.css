@@ -173,7 +173,7 @@
   --brand-primary-solid-hover: #745500;
   /* texte de marque des grands titres (affichage, titres 1 et 2) : pas 11, premier des pas 9, 10, 11 à tenir 3:1 sur background.app, background.surface, background.subtle et background.brand.subtle */
   --brand-primary-text-large: var(--color-primary-11);
-  /* pas 3 de l'échelle primary */
+  /* fond teinté de la marque (background.brand.tint) : pas 3 du primaire en clair ; en sombre, pas 5 (mode.sombre.tokens.json) */
   --brand-primary-tint: var(--brand-primary-3);
   /* texte sur le plein : blanc */
   --brand-success-on-solid: var(--color-white);
@@ -347,7 +347,7 @@
   --color-success-on-solid: #001005;
   /* Surface posée sur le fond de page (background.surface) : blanc en clair ; en sombre, la référence du miroir (tokens/commun/mode.sombre.tokens.json). */
   --color-surface: #ffffff;
-  /* fond de composant */
+  /* Fond teinté d'une pièce statique (background.tint) : pas 3 du neutre en clair ; en sombre, pas 5 (tokens/commun/mode.sombre.tokens.json). */
   --color-tint: var(--color-neutral-3);
   /* fond d'application */
   --color-warning-1: #fefcf9;
@@ -450,47 +450,47 @@
   --space-64: 64px;
   --stroke-1: 1px;
   --stroke-2: 2px;
-  /* pas 11 de l'échelle accent */
+  /* Texte mis en avant sans être une action. */
   --text-accent: var(--brand-accent-11);
-  /* pas 12 de l'échelle primary */
+  /* Texte de marque posé sur un fond teinté de la marque, comme les initiales de DsAvatar ou un DsTag mis en avant. */
   --text-brand: var(--brand-primary-12);
-  /* texte de marque des grands titres (affichage, titres 1 et 2) : pas 11, premier des pas 9, 10, 11 à tenir 3:1 sur background.app, background.surface, background.subtle et background.brand.subtle */
+  /* Texte de marque des grands titres, styles affichage et titres 1 et 2 seulement, choisi à la saisie pour tenir 3:1 sur les fonds clairs. */
   --text-brand-large: var(--brand-primary-text-large);
-  /* texte principal */
+  /* Texte courant et titres. */
   --text-default: var(--color-neutral-12);
-  /* plein, couleur source */
+  /* Texte d'un composant désactivé, sur son fond ou sur la page. */
   --text-disabled: var(--color-neutral-9);
-  /* texte secondaire (4,5:1) */
+  /* Texte d'un message d'erreur. */
   --text-error: var(--color-error-11);
-  /* texte secondaire (4,5:1) */
+  /* Texte d'un message d'information. */
   --text-info: var(--color-info-11);
-  /* pas 11 de l'échelle primary */
+  /* Texte d'un lien ou d'une action sans fond plein. */
   --text-interactive: var(--brand-primary-11);
-  /* texte sur le plein : blanc */
+  /* Texte posé sur le plein d'accent. */
   --text-on-accent: var(--brand-accent-on-solid);
-  /* aplat plein (background.brand.strong et bouton inversé) : sur-plein du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json) */
+  /* Texte posé sur background.brand.strong, titres compris. */
   --text-on-brand: var(--brand-primary-on-feature);
-  /* texte sur le plein : blanc */
+  /* Texte posé sur le plein d'erreur. */
   --text-on-error: var(--brand-error-on-solid);
-  /* texte sur le plein : blanc */
+  /* Texte posé sur le plein d'information. */
   --text-on-info: var(--brand-info-on-solid);
-  /* texte sur le plein : blanc */
+  /* Texte posé sur le plein de l'action principale, au repos comme au survol. */
   --text-on-interactive: var(--brand-primary-on-solid);
-  /* aplat plein (background.brand.strong et bouton inversé) : plein du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json) */
+  /* Texte du bouton inversé, de la valeur du plein du primaire. */
   --text-on-interactive-inverse: var(--brand-primary-feature);
-  /* aplat plein (background.brand.strong et bouton inversé) : plein-survol du primaire en clair ; en sombre, valeur claire figée (marque.sombre.tokens.json) */
+  /* Texte du bouton inversé survolé, seul à changer, de la valeur du plein survolé. */
   --text-on-interactive-inverse-hover: var(--brand-primary-feature-hover);
-  /* Texte posé sur background.inverse (text.on-inverse) : blanc en clair ; en sombre, la référence du miroir. */
+  /* Texte posé sur le fond inversé. */
   --text-on-inverse: var(--color-on-inverse);
-  /* texte sur le plein : blanc */
+  /* Texte posé sur le plein de réussite. */
   --text-on-success: var(--brand-success-on-solid);
-  /* texte sur le plein : pas 12 */
+  /* Texte posé sur le plein d'avertissement. */
   --text-on-warning: var(--brand-warning-on-solid);
-  /* texte secondaire (4,5:1) */
+  /* Texte d'appoint, comme une aide, une légende ou une date. */
   --text-secondary: var(--color-neutral-11);
-  /* texte secondaire (4,5:1) */
+  /* Texte d'un message de réussite. */
   --text-success: var(--color-success-11);
-  /* texte secondaire (4,5:1) */
+  /* Texte d'un message d'avertissement. */
   --text-warning: var(--color-warning-11);
   /* Chapô, sous un titre de page ; ligne visée 28 px. */
   --typography-body-large-font-family: var(--brand-font-body);
@@ -622,6 +622,7 @@
   --typography-supporting-text-letter-spacing: 0px;
   /* Aide, message d'erreur ou légende, sous un champ. */
   --typography-supporting-text-line-height: 1.3333;
+  /* Largeur maximale d'une colonne de contenu, comme une liste d'annuaire ; sur un écran plus étroit, la colonne prend toute la largeur de son parent. */
   --width-column: var(--size-640);
 }
 
@@ -811,7 +812,7 @@
     --color-success-on-solid: #000000;
     /* Surface en sombre : plus claire que background.subtle, plus foncée que les fonds de composant, jamais plus foncée que la page [H]. */
     --color-surface: #181818;
-    /* fond de composant */
+    /* Fond teinté d'une pièce statique (background.tint) en sombre : pas 5 du neutre, pour se détacher d'une surface. */
     --color-tint: var(--color-neutral-5);
     /* fond d'application */
     --color-warning-1: #121212;

@@ -19,7 +19,7 @@ Un mot court sur un fond teinté, pour classer un membre (ville, secteur) ou met
 
 - Pour une information courte qui classe : une ville, un secteur, une promo. `tone` `neutral`.
 - Pour mettre en avant ce qui compte le plus, comme « Mentor » : `tone` `brand`.
-- Plusieurs étiquettes forment une liste : un `<ul>`, une étiquette par `<li>`.
+- Plusieurs `DsTag` forment une liste : un `<ul>`, un `DsTag` par `<li>`.
 - Pour lancer une action, prendre un `DsButton`. Pour aller vers une autre page, un lien : à venir (B9).
 - Pour filtrer une liste, une puce de filtre : à venir (B5). Pour retirer une valeur, une puce supprimable : à venir (B5).
 - Pour dire un statut (réussi, en erreur), rien encore : deux tons seulement, sans couleur par catégorie (D55).
@@ -50,7 +50,7 @@ Tout autre usage lève une erreur, et rien n'est rendu. Messages, dans l'ordre o
 - `DsTag : tone : valeur inconnue : <valeur> (neutral, brand)`
 <!-- /genere:refus -->
 
-Une étiquette ne se ferme pas, ne filtre pas et ne mène nulle part : `closable`, `filter`, `link`, `href`, `to` et `tabindex` sont refusés, comme tout attribut hors de la liste.
+`DsTag` ne se ferme pas, ne filtre pas et ne mène nulle part : `closable`, `filter`, `link`, `href`, `to` et `tabindex` sont refusés, comme tout attribut hors de la liste.
 
 ## Anatomie et tokens
 
@@ -69,7 +69,7 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 | Texte | `typography.body.small` | Texte de tableau ou d'étiquette, plus petit que le texte courant. |
 <!-- /genere:tokens -->
 
-- Posé par le parent : `gap.between-tags` (`ds-gap-between-tags`) : l'écart entre deux étiquettes d'une suite, en ligne comme entre deux lignes. L'étiquette n'a pas de marge.
+- Posé par le parent : `gap.between-tags` (`ds-gap-between-tags`) : l'écart entre deux `DsTag` d'une suite, en ligne comme entre deux lignes. `DsTag` n'a pas de marge.
 
 ## Accessibilité
 
@@ -107,7 +107,7 @@ Stories : [atelier/stories/DsTag.stories.js](../../atelier/stories/DsTag.stories
 
 ## Décisions et dette
 
-- D55 : l'étiquette, ses props, son rendu, la suite en liste. D51 : tout usage hors des props est refusé.
+- D55 : `DsTag`, ses props, son rendu, la suite en liste. D51 : tout usage hors des props est refusé.
 - B5 : l'étiquette est faite ; restent les puces de filtre et les puces supprimables.
 - D59 : le fond teinté, au pas 5 en sombre, se détache d'une surface ; chez Écume et Sel en sombre, les deux tons ont chacun le leur.
 - Un texte coupé reste entier pour un lecteur d'écran, mais l'œil n'en lit que le début ; pas encore d'info-bulle (B1).

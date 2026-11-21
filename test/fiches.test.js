@@ -273,7 +273,7 @@ test('U7 écarts des parties écrites, mot pour mot', () => {
   assert.deepEqual(ecarts(texte.replace(/^(Un mot court.*)pas\.$/m, '$1pas')), ['phrase de rôle sans point final']);
   assert.deepEqual(ecarts(texte.replace(/^- `tone` : .*\n/m, '')), ['prop sans sa ligne : tone']);
   assert.deepEqual(ecarts(texte.replace(/^(- `tone` : .*)$/m, '$1\n- `couleur` : une couleur.')), ['ligne d\'une prop hors du composant : couleur']);
-  assert.deepEqual(ecarts(texte.replace('- D55 : l\'étiquette', '- D99 : l\'étiquette')), ['décision inconnue : D99']);
+  assert.deepEqual(ecarts(texte.replace('- D55 : `DsTag`', '- D99 : `DsTag`')), ['décision inconnue : D99']);
   assert.deepEqual(ecarts(texte.replace('- B5 : l\'étiquette', '- B99 : l\'étiquette')), ['dette inconnue : B99']);
   assert.deepEqual(ecarts(texte.replace('story « Planche »', 'story « Planche bis »')), ['story inconnue : « Planche bis »']);
   assert.deepEqual(ecarts(texte.replace('<DsTag text="Lyon" />', '<DsTag text="Lyon" closable />')), ['exemple refusé : DsTag : attribut refusé : closable']);

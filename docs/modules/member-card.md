@@ -18,7 +18,7 @@ Un membre d'un annuaire : sa photo ou ses initiales, son nom qui mène à son pr
 ## Quand l'utiliser
 
 - Pour un membre d'un annuaire : en colonne, par `MemberList` ; seul dans une page, avec le niveau de titre de sa place.
-- Pas pour un profil complet : la carte y mène, elle ne le remplace pas.
+- Pas pour un profil complet : `MemberCard` y mène, il ne le remplace pas.
 
 ## Props
 
@@ -36,7 +36,7 @@ Un membre d'un annuaire : sa photo ou ses initiales, son nom qui mène à son pr
 <!-- /genere:props -->
 
 - `name` : le nom, en entier ; il nomme le lien et donne les initiales.
-- `href` : le profil ; toute la carte y mène.
+- `href` : le profil ; `MemberCard` entier y mène.
 - `image` : la photo ; absente ou en échec, les initiales.
 - `cohort` : la promo, sous le nom.
 - `tags` : la suite de `DsTag`, chacun `{ text, tone }`.
@@ -106,7 +106,7 @@ Stories : [atelier/stories/MemberCard.stories.js](../../atelier/stories/MemberCa
 - D61 : les modules, leurs règles, leur fiche. D51 : tout usage hors des props est refusé.
 - Sans promo, la suite de `DsTag` est plus près du nom.
 - La suite de `DsTag` est écrite aussi dans les stories de `DsTag`, faute de composant de groupe.
-- On ne copie pas une promo ou un `DsTag` à la souris : le texte d'une carte à lien ne se sélectionne pas.
+- On ne copie pas une promo ou un `DsTag` à la souris : le texte d'un `DsCard` à lien ne se sélectionne pas.
 - `DsAvatar` à initiales est très pâle sur une surface en clair.
 
 ## Test de rendu

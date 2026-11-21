@@ -136,5 +136,33 @@ export async function feuilleCss(dossier) {
   const sortie = (await build(tokens, { resolver, sources, config })).outputFiles.find((f) => f.filename === FEUILLE);
   if (!sortie || typeof sortie.contents !== 'string' || !sortie.contents.startsWith(FILE_PREFIX)) throw new Error(`${chemin} : feuille de Terrazzo sans son en-tête attendu`);
   const entete = `/* Jetons de ${nom}, écrits par npm run css depuis marque.resolver.json (Terrazzo). Ne pas modifier à la main. */`;
-  return { texte: entete + sortie.contents.slice(FILE_PREFIX.length), motifs: [] };
+  const blocs = { ':root {': base.set, '@media (prefers-color-scheme: dark) {': valeurs(SOMBRE).set, [`@media (width < ${seuil}px) {`]: valeurs(ETROIT).set };
+  return { texte: entete + descriptionsPropres(sortie.contents.slice(FILE_PREFIX.length), blocs), motifs: [] };
+}
+
+/**
+ * Remet au-dessus de chaque variable d'un jeton simple la description de ce jeton. @terrazzo/plugin-css 2.10.0, en
+ * écrivant un jeton, redéclare aussitôt les alias qui le visent avec la description de la cible ; la première
+ * déclaration d'une variable restant seule, un alias écrit avant son tour garde la description de sa cible
+ * (« pas 11 de l'échelle earth » au-dessus de --text-accent). Seuls les commentaires changent : noms et valeurs restent
+ * ceux de Terrazzo. Les sous-variables d'un style de texte gardent la description du style.
+ * @param {string} texte feuille de Terrazzo, sans son en-tête @param {Record<string, Record<string, any>>} blocs jetons
+ *   de la combinaison de chaque bloc, par sa première ligne
+ */
+function descriptionsPropres(texte, blocs) {
+  /** @type {Map<string, string | undefined> | undefined} */
+  let descriptions;
+  const lignes = texte.split('\n');
+  for (let i = 0; i < lignes.length; i++) {
+    const ouvre = Object.keys(blocs).find((b) => lignes[i] === b);
+    if (ouvre) descriptions = new Map(Object.values(blocs[ouvre]).map((t) => [nomVar(t), t.$description]));
+    const m = /^(\s*)(--[\w-]+):/.exec(lignes[i]);
+    if (!m || !descriptions?.has(m[2])) continue;
+    const d = descriptions.get(m[2]);
+    const commentaire = i > 0 && /^\s*\/\* .* \*\/$/.test(lignes[i - 1]);
+    if (commentaire && d) lignes[i - 1] = `${m[1]}/* ${d} */`;
+    else if (commentaire) lignes.splice(--i, 1);
+    else if (d) lignes.splice(i++, 0, `${m[1]}/* ${d} */`);
+  }
+  return lignes.join('\n');
 }

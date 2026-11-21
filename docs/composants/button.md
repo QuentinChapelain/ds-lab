@@ -43,9 +43,9 @@ Un bouton qui lance une action sur la page : enregistrer, ajouter, supprimer ; i
 - `variant` : le poids de l'action, du plus fort au plus discret ; `danger` et `danger-ghost` pour ce qui détruit.
 - `size` : `medium` par défaut ; `small` dans une ligne serrée, comme une barre d'outils.
 - `prependIcon` : une icône avant le texte, faite par `icone()` d'un chemin de Material Design Icons ; elle est muette.
-- `block` : le bouton prend toute la largeur de son parent.
-- `disabled` : l'action est indisponible ; le bouton reste atteignable au clavier, mais rien ne se passe.
-- `loading` : l'action est en cours ; le bouton garde sa largeur, son nom et le focus, et une roue tourne.
+- `block` : `DsButton` prend toute la largeur de son parent.
+- `disabled` : l'action est indisponible ; `DsButton` reste atteignable au clavier, mais rien ne se passe.
+- `loading` : l'action est en cours ; `DsButton` garde sa largeur, son nom et le focus, et une roue tourne.
 - `type` : `button` par défaut ; `submit` envoie le formulaire qui l'entoure, `reset` le vide.
 
 ## Refusé
@@ -62,7 +62,7 @@ Tout autre usage lève une erreur, et rien n'est rendu. Messages, dans l'ordre o
 - `DsButton : disabled : refusé avec type=submit`
 <!-- /genere:refus -->
 
-`disabled` sur un bouton d'envoi est refusé : un formulaire qu'on ne peut pas envoyer doit dire pourquoi, pas cacher son bouton.
+`disabled` sur un `DsButton` d'envoi est refusé : un formulaire qu'on ne peut pas envoyer doit dire pourquoi, pas cacher son bouton.
 
 ## Anatomie et tokens
 
@@ -107,10 +107,10 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 
 ## Accessibilité
 
-- Le texte du slot `default` est le nom du bouton : un verbe qui dit l'action (« Ajouter un membre »).
-- `disabled` et `loading` posent `aria-disabled`, jamais l'attribut natif : le bouton reste dans l'ordre de la touche Tab, et le lecteur d'écran le dit indisponible.
+- Le texte du slot `default` est le nom de `DsButton` : un verbe qui dit l'action (« Ajouter un membre »).
+- `disabled` et `loading` posent `aria-disabled`, jamais l'attribut natif : `DsButton` reste dans l'ordre de la touche Tab, et le lecteur d'écran le dit indisponible.
 - En chargement, une zone de statut annonce « Chargement en cours ».
-- Au focus clavier, un anneau se pose sur la page, décalé du bouton (DS2).
+- Au focus clavier, un anneau se pose sur la page, décalé de `DsButton` (DS2).
 - Chaque texte se lit sur son fond dans les dix thèmes :
 
 <!-- genere:contrastes : écrit par npm --prefix atelier run fiches -->
@@ -150,7 +150,7 @@ Stories : [atelier/stories/DsButton.stories.js](../../atelier/stories/DsButton.s
 
 ## Décisions et dette
 
-- D43 : le bouton, ses props, son désactivé atteignable, son chargement. D44 : son texte prend toujours la police du produit. D45 : le survol des pleins. D51 : tout usage hors des props est refusé.
+- D43 : `DsButton`, ses props, son désactivé atteignable, son chargement. D44 : son texte prend toujours la police du produit. D45 : le survol des pleins. D51 : tout usage hors des props est refusé.
 - B8 : un seul bouton principal par vue, règle écrite ici, sans contrôle.
 - La roue tourne d'un tour par seconde, valeur écrite dans le composant : aucun token de durée encore (B2).
 
@@ -158,6 +158,6 @@ Stories : [atelier/stories/DsButton.stories.js](../../atelier/stories/DsButton.s
 
 `npm --prefix atelier run preuve -- button` vérifie, dans les dix thèmes, en développement et en version construite :
 
-- les couleurs, l'anneau et les dimensions de chacun des 50 boutons de la planche, au repos, au survol, au focus, désactivés et en chargement ;
+- les couleurs, l'anneau et les dimensions de chacun des 50 `DsButton` de la planche, au repos, au survol, au focus, désactivés et en chargement ;
 - la police du produit sur le texte, et deux rendus identiques au pixel ;
 - sur le premier thème : l'ordre de la touche Tab, le désactivé et le chargement muets au clavier comme à la souris, l'annonce du chargement, la pleine largeur et les refus.

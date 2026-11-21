@@ -21,6 +21,9 @@
  *      ignorés), nombre et graisse tels quels ;
  *   F5 apply : chaque jeton que npm run apply sait écrire (couleur en hex, dimension en px, valeur littérale) est déclaré
  *      dans :root sous le nom cssVar (src/lib/nom-css.js) et avec la valeur tokenValue de src/report/modifications.js.
+ *   F6 descriptions : dans chaque bloc, le commentaire au-dessus de la variable d'un jeton simple est sa $description
+ *      lue par le lecteur dans la combinaison du bloc, et rien quand il n'en a pas ; @terrazzo/plugin-css 2.10.0 donnait
+ *      à un alias la description de sa cible (« pas 11 de l'échelle earth » au-dessus de --text-accent : 25 par marque).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -221,5 +224,29 @@ test('F5 apply : mêmes noms et mêmes valeurs que tokens.css', () => {
       assert.equal(racine.get(cssVar(id)), tokenValue(jetons, id), `${d} ${id}`);
     }
     assert.ok(n >= 100, `${d} : ${n} jetons littéraux`); // mesuré : 107 à 133 selon la marque
+  }
+});
+
+test('F6 descriptions : chaque variable de jeton simple sous la description de son jeton', () => {
+  for (const d of MARQUES) {
+    /** @param {Record<string, string>} c */
+    const descriptions = (c) => new Map([...flattenTokens(lireResolver(join(d, RESOLVER), c).jetons)].map(([id, j]) => [cssVar(id), j.$description]));
+    const lignes = lireFeuille(d).split('\n');
+    /** @type {Map<string, string | undefined> | undefined} */
+    let desc;
+    const ecarts = [];
+    let n = 0;
+    for (const [i, l] of lignes.entries()) {
+      if (l === ':root {') desc = descriptions(COMBINAISONS[0]);
+      else if (l.startsWith('@media (prefers-color-scheme: dark)')) desc = descriptions(COMBINAISONS[1]);
+      else if (l.startsWith('@media (width <')) desc = descriptions(COMBINAISONS[2]);
+      const m = /^\s*(--[\w-]+):/.exec(l);
+      if (!m || !desc?.has(m[1])) continue;
+      n++;
+      const commentaire = /^\s*\/\* (.*) \*\/$/.exec(lignes[i - 1])?.[1];
+      if (commentaire !== desc.get(m[1])) ecarts.push(`${d} ${m[1]} : « ${commentaire} »`);
+    }
+    assert.deepEqual(ecarts, []);
+    assert.ok(n >= 300, `${d} : ${n} variables de jeton simple`); // mesuré : 346 à 384 selon la marque
   }
 });

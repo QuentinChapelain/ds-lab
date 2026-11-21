@@ -80,12 +80,12 @@
     "interactive-subtle": {
       "background": "background.interactive.subtle",
       "text": "text.interactive",
-      "$description": "Bouton discret : son texte au repos, sur la page (on-interactif-discret), et son fond au survol."
+      "$description": "Bouton discret : son texte au repos, sur la page (on-interactive-subtle), et son fond au survol."
     },
     "error-subtle": {
       "background": "background.error.subtle",
       "text": "text.error",
-      "$description": "Bouton danger discret : son texte au repos, sur la page (on-erreur-discret), et son fond au survol."
+      "$description": "Bouton danger discret : son texte au repos, sur la page (on-error-subtle), et son fond au survol."
     },
     "disabled": {
       "background": "background.disabled",
@@ -100,7 +100,7 @@
     "tint": {
       "background": "background.tint",
       "text": "text.default",
-      "$description": "Fond teinté, non cliquable : fond de DsTag neutre, son texte en text.default (on-teinte)."
+      "$description": "Fond teinté, non cliquable : fond de DsTag neutre, son texte en text.default (on-tint)."
     },
     "avatar": {
       "background": "background.avatar",

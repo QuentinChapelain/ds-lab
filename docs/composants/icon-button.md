@@ -17,7 +17,7 @@ Un bouton carré, une icône sans texte, pour une action connue de tous : fermer
 
 ## Quand l'utiliser
 
-- Pour une action courante dont l'icône se comprend seule, dans une barre, une carte ou un champ de recherche.
+- Pour une action courante dont l'icône se comprend seule, dans une barre, un `DsCard` ou un champ de recherche.
 - Pour une action qui a besoin d'un mot : `DsButton`, avec ou sans icône.
 - Pour une icône qui informe sans agir : pas de bouton, une icône muette à côté d'un texte.
 - Pour l'info-bulle qui redit le `label` au survol : à venir (B1).
@@ -41,8 +41,8 @@ Un bouton carré, une icône sans texte, pour une action connue de tous : fermer
 - `label` : le nom de l'action, lu par le lecteur d'écran ; il nomme l'action (« Fermer »), jamais le dessin (« Croix »).
 - `icon` : l'icône, faite par `icone()` d'un chemin de Material Design Icons ; elle est muette.
 - `variant` : `ghost` par défaut ; `secondary`, `primary`, et `danger-ghost` pour ce qui détruit. Pas de `danger` plein.
-- `size` : `medium` (le carré a la hauteur d'un bouton normal) ou `small`.
-- `disabled` : l'action est indisponible ; le bouton reste atteignable au clavier.
+- `size` : `medium` (le carré a la hauteur d'un `DsButton` `medium`) ou `small`.
+- `disabled` : l'action est indisponible ; `DsIconButton` reste atteignable au clavier.
 - `type` : `button` par défaut, `submit` pour envoyer un formulaire, comme une recherche.
 
 ## Refusé
@@ -103,7 +103,7 @@ Un token est le nom d'une valeur de design. Le composant n'a aucune valeur en du
 
 ## Accessibilité
 
-- Le `label` devient le nom du bouton ; l'icône est muette.
+- Le `label` devient le nom de `DsIconButton` ; l'icône est muette.
 - Il garde tout le comportement du `DsButton` qu'il rend : `disabled` atteignable au clavier, anneau de focus sur la page.
 - Sans info-bulle, le nom ne se voit pas : l'icône doit se comprendre seule.
 - L'icône se lit sur son fond dans les dix thèmes :
@@ -145,7 +145,7 @@ Stories : [atelier/stories/DsIconButton.stories.js](../../atelier/stories/DsIcon
 
 ## Décisions et dette
 
-- D52 : le bouton à icône seule, ses props, et Material Design Icons. D51 : tout usage hors des props est refusé.
+- D52 : `DsIconButton`, ses props, et Material Design Icons. D51 : tout usage hors des props est refusé.
 - Il rend un `DsButton` et en lit les classes : les renommer le casse, et seul le test de rendu le voit.
 - Le survol des variantes `ghost` se voit à peine contre la page ; c'est le seul signe du survol, avec le curseur.
 - Pas d'info-bulle (B1), pas de bouton bascule.
@@ -154,6 +154,6 @@ Stories : [atelier/stories/DsIconButton.stories.js](../../atelier/stories/DsIcon
 
 `npm --prefix atelier run preuve -- icon-button` vérifie, dans les dix thèmes, en développement et en version construite :
 
-- pour chacun des 32 boutons de la planche : un carré de la hauteur du contrôle, une icône centrée de la taille du token, les couleurs, le contour et l'anneau ;
+- pour chacun des 32 `DsIconButton` de la planche : un carré de la hauteur du contrôle, une icône centrée de la taille du token, les couleurs, le contour et l'anneau ;
 - le même haut et le même bas dans les deux lignes d'alignement ;
 - sur le premier thème : le nom égal au `label`, l'icône muette, la touche Tab, le désactivé muet, l'envoi et les refus.
