@@ -131,7 +131,7 @@ test('S6 commande saisie : codes de sortie, motif, fichiers', () => {
   const r2 = run('src/cli/saisie.js', join(ok, 'entree.json'));
   assert.equal(r2.status, 0, r2.stderr);
   assert.match(r2.stdout, /marque acceptée : Essai/);
-  assert.match(r2.stdout, /mode sombre, largeur large\n/);
+  assert.match(r2.stdout, /mode dark, largeur wide\n/);
   assert.equal(r2.stdout.match(new RegExp(`${N_PAIRES} paires de rôles, 0 paire en échec`, 'g'))?.length, 2, 'les deux modes');
   assert.ok(existsSync(join(ok, 'marque.tokens.json')) && existsSync(join(ok, 'echelles.tokens.json')));
 });

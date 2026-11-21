@@ -3,8 +3,8 @@
  * Lecteur de resolver DTCG 2025.10 et resolvers des marques (docs/attendus/etape-4b-contextes.md).
  * Attendus écrits à la main avant le code :
  *   R1 chaque marque fictive a tokens/<marque>/marque.resolver.json, version "2025.10" ; jeux primitives, marque, roles ;
- *      modificateurs mode (clair, sombre ; défaut clair) et largeur (large, etroit ; défaut large) ; seuil de l'étroit
- *      600 px [H] dans $extensions["ds-lab.largeur"] ; ordre primitives, marque, roles, mode, largeur ;
+ *      modificateurs mode (light, dark ; défaut light) et width (wide, narrow ; défaut wide, D62) ; seuil de l'étroit
+ *      600 px [H] dans $extensions["ds-lab.largeur"] ; ordre primitives, marque, roles, mode, width ;
  *   R2 le resolver écrit est celui que la saisie produit (pas de dérive) ;
  *   R3 Orbe Café en large : les rôles résolus sont tokens/commun/semantique.tokens.json tel quel ; en étroit,
  *      gap.section = {space.32}, titre.1 = font-size.24 et interligne 1,3333, le reste égal au large ;
@@ -34,12 +34,12 @@ test('R1 resolver de chaque marque fictive : version, jeux, modificateurs, seuil
     assert.deepEqual(r.sets.primitives.sources, [ref('../commun/primitives.tokens.json'), ref('../commun/statuts.tokens.json')], m);
     assert.deepEqual(r.sets.roles.sources, [ref('../commun/semantique.tokens.json')], m);
     assert.deepEqual(r.sets.marque.sources, [ref('../commun/aplat.tokens.json'), ref('../commun/police.tokens.json'), ref(m === 'orbe-cafe' ? 'primitives.tokens.json' : 'echelles.tokens.json'), ref('marque.tokens.json')], m);
-    assert.deepEqual(r.modifiers.mode.contexts, { clair: [], sombre: [ref('../commun/mode.sombre.tokens.json'), ref('echelles.sombre.tokens.json'), ref('marque.sombre.tokens.json')] }, m);
-    assert.equal(r.modifiers.mode.default, 'clair', m);
-    assert.deepEqual(r.modifiers.largeur.contexts, { large: [], etroit: [ref('../commun/largeur.etroit.tokens.json')] }, m);
-    assert.equal(r.modifiers.largeur.default, 'large', m);
-    assert.deepEqual(r.modifiers.largeur.$extensions, { 'ds-lab.largeur': { etroit: { sous: { value: 600, unit: 'px' }, seuil: '[H]' } } }, m);
-    assert.deepEqual(r.resolutionOrder, ['#/sets/primitives', '#/sets/marque', '#/sets/roles', '#/modifiers/mode', '#/modifiers/largeur'].map(ref), m);
+    assert.deepEqual(r.modifiers.mode.contexts, { light: [], dark: [ref('../commun/mode.sombre.tokens.json'), ref('echelles.sombre.tokens.json'), ref('marque.sombre.tokens.json')] }, m);
+    assert.equal(r.modifiers.mode.default, 'light', m);
+    assert.deepEqual(r.modifiers.width.contexts, { wide: [], narrow: [ref('../commun/largeur.etroit.tokens.json')] }, m);
+    assert.equal(r.modifiers.width.default, 'wide', m);
+    assert.deepEqual(r.modifiers.width.$extensions, { 'ds-lab.largeur': { narrow: { sous: { value: 600, unit: 'px' }, seuil: '[H]' } } }, m);
+    assert.deepEqual(r.resolutionOrder, ['#/sets/primitives', '#/sets/marque', '#/sets/roles', '#/modifiers/mode', '#/modifiers/width'].map(ref), m);
   }
 });
 
@@ -58,8 +58,8 @@ test('R3 Orbe Café : rôles en large = semantique.tokens.json ; en étroit, sec
   const large = partager(lireResolver(chemin));
   const { $description, ...rolesFichier } = sem;
   assert.deepEqual(large.semantique, rolesFichier);
-  assert.deepEqual(partager(lireResolver(chemin, { largeur: 'large', mode: 'clair' })).semantique, rolesFichier);
-  const etroit = partager(lireResolver(chemin, { largeur: 'etroit' })).semantique;
+  assert.deepEqual(partager(lireResolver(chemin, { width: 'wide', mode: 'light' })).semantique, rolesFichier);
+  const etroit = partager(lireResolver(chemin, { width: 'narrow' })).semantique;
   assert.equal(etroit.gap.section.$value, '{space.32}');
   assert.equal(etroit.typography.heading['1'].$value.fontSize, '{font-size.24}');
   assert.equal(etroit.typography.heading['1'].$value.lineHeight, 1.3333);

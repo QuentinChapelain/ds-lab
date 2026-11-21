@@ -33,7 +33,7 @@ import { charger } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const MARQUES = ['atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto', 'orbe-cafe'];
-const MODES = /** @type {const} */ (['clair', 'sombre']);
+const MODES = /** @type {const} */ (['light', 'dark']);
 
 /** Variante → [fond au repos, texte, fond au survol]. Le discret et le danger discret sont posés sur la page. */
 const VARIANTES = {
@@ -46,21 +46,21 @@ const VARIANTES = {
 
 /** Ce qui varie avec la marque : principal [fond, texte, repos, survol, rapport survol], discret [texte, rapport, survol, rapport], focus [couleur, rapport]. */
 const PAR_THEME = {
-  'atelier-lavandine-clair': { principal: ['#8a4fd8', '#ffffff', 5.01, '#7b3ec7', 6.26], discret: ['#8247ce', 5.42, '#f5f1fe', 5.05], focus: ['#8247ce', 5.42] },
-  'atelier-lavandine-sombre': { principal: ['#c4a4fe', '#131019', 9.04, '#d4b5ff', 10.62], discret: ['#c4a4fe', 9.0, '#1d1925', 8.28], focus: ['#c4a4fe', 9.0] },
-  'ecume-et-sel-clair': { principal: ['#7fdbff', '#003647', 8.33, '#6fcbee', 7.08], discret: ['#21708b', 5.4, '#e3f6fe', 5.03], focus: ['#21708b', 5.4] },
-  'ecume-et-sel-sombre': { principal: ['#c9efff', '#121212', 15.41, '#ddffff', 17.68], discret: ['#c9efff', 15.41, '#1b1b1b', 14.17], focus: ['#c9efff', 15.41] },
-  'grenat-papeterie-clair': { principal: ['#7a1f3d', '#ffffff', 10.04, '#6a0d30', 12.26], discret: ['#4f0020', 15.0, '#fcf0f2', 13.95], focus: ['#4f0020', 15.0] },
-  'grenat-papeterie-sombre': { principal: ['#fc96ae', '#1e0d11', 9.02, '#ffa7be', 10.28], discret: ['#fc96ae', 9.02, '#2f1119', 8.32], focus: ['#fc96ae', 9.02] },
-  'maison-alberto-clair': { principal: ['#836304', '#ffffff', 5.6, '#745500', 6.9], discret: ['#836304', 5.41, '#fbf3e1', 5.07], focus: ['#836304', 5.41] },
-  'maison-alberto-sombre': { principal: ['#ffd060', '#121212', 12.88, '#ffe17e', 14.56], discret: ['#ffd060', 12.88, '#1d1b17', 11.83], focus: ['#ffd060', 12.88] },
-  'orbe-cafe-clair': { principal: ['#2b4c7e', '#ffffff', 8.61, '#1e3e6f', 10.64], discret: ['#4c6994', 5.4, '#f1f3f7', 5.03], focus: ['#4c6994', 5.4] },
-  'orbe-cafe-sombre': { principal: ['#86b6fe', '#0e1218', 9.06, '#97c6ff', 10.58], discret: ['#86b6fe', 9.04, '#111b2a', 8.35], focus: ['#86b6fe', 9.04] },
+  'atelier-lavandine-light': { principal: ['#8a4fd8', '#ffffff', 5.01, '#7b3ec7', 6.26], discret: ['#8247ce', 5.42, '#f5f1fe', 5.05], focus: ['#8247ce', 5.42] },
+  'atelier-lavandine-dark': { principal: ['#c4a4fe', '#131019', 9.04, '#d4b5ff', 10.62], discret: ['#c4a4fe', 9.0, '#1d1925', 8.28], focus: ['#c4a4fe', 9.0] },
+  'ecume-et-sel-light': { principal: ['#7fdbff', '#003647', 8.33, '#6fcbee', 7.08], discret: ['#21708b', 5.4, '#e3f6fe', 5.03], focus: ['#21708b', 5.4] },
+  'ecume-et-sel-dark': { principal: ['#c9efff', '#121212', 15.41, '#ddffff', 17.68], discret: ['#c9efff', 15.41, '#1b1b1b', 14.17], focus: ['#c9efff', 15.41] },
+  'grenat-papeterie-light': { principal: ['#7a1f3d', '#ffffff', 10.04, '#6a0d30', 12.26], discret: ['#4f0020', 15.0, '#fcf0f2', 13.95], focus: ['#4f0020', 15.0] },
+  'grenat-papeterie-dark': { principal: ['#fc96ae', '#1e0d11', 9.02, '#ffa7be', 10.28], discret: ['#fc96ae', 9.02, '#2f1119', 8.32], focus: ['#fc96ae', 9.02] },
+  'maison-alberto-light': { principal: ['#836304', '#ffffff', 5.6, '#745500', 6.9], discret: ['#836304', 5.41, '#fbf3e1', 5.07], focus: ['#836304', 5.41] },
+  'maison-alberto-dark': { principal: ['#ffd060', '#121212', 12.88, '#ffe17e', 14.56], discret: ['#ffd060', 12.88, '#1d1b17', 11.83], focus: ['#ffd060', 12.88] },
+  'orbe-cafe-light': { principal: ['#2b4c7e', '#ffffff', 8.61, '#1e3e6f', 10.64], discret: ['#4c6994', 5.4, '#f1f3f7', 5.03], focus: ['#4c6994', 5.4] },
+  'orbe-cafe-dark': { principal: ['#86b6fe', '#0e1218', 9.06, '#97c6ff', 10.58], discret: ['#86b6fe', 9.04, '#111b2a', 8.35], focus: ['#86b6fe', 9.04] },
 };
 
 /** Ce qui ne dépend que du mode, identique dans les cinq marques. */
 const PAR_MODE = {
-  clair: {
+  light: {
     page: '#fbfbfb',
     secondaire: ['#ffffff', '#363026', 13.06, '#ecebe9', 10.96],
     contour: ['#958f84', 3.1],
@@ -68,7 +68,7 @@ const PAR_MODE = {
     'danger-discret': ['#cb1d2a', 5.41, '#fff0ee', 5.06],
     desactive: ['#f3f2f1', '#8a8478', 3.32, 3.59, '#d8d6d2'],
   },
-  sombre: {
+  dark: {
     page: '#121212',
     secondaire: ['#181818', '#d8d5ce', 12.12, '#212121', 10.99],
     contour: ['#6a665c', 3.27],
@@ -93,7 +93,7 @@ const DIMENSIONS = {
 /** Rapport culori à deux décimales. @param {string} a @param {string} b */
 const r2 = (a, b) => Math.round(wcagContrast(a, b) * 100) / 100;
 
-/** Rôles et jetons d'un thème. @param {string} marque @param {'clair' | 'sombre'} mode */
+/** Rôles et jetons d'un thème. @param {string} marque @param {'light' | 'dark'} mode */
 function theme(marque, mode) {
   const set = loadRoles(join(ROOT, 'tokens', marque), { mode });
   const roles = resolveRoles(set.semantique, set.primitives, set.marque);
@@ -174,16 +174,16 @@ test('B4 aucun groupe de rôles ne porte le nom d\'un groupe de primitives', () 
 
 /** Icône du bouton à icône, par paire [icône, fond] : couleurs et rapport de l'attendu, par thème (rôles de la marque). */
 const ICONE_PAR_THEME = {
-  'atelier-lavandine-clair': [['#8247ce', '#fbfbfb', 5.42], ['#8247ce', '#ffffff', 5.61], ['#8247ce', '#f5f1fe', 5.05], ['#ffffff', '#8a4fd8', 5.01], ['#ffffff', '#7b3ec7', 6.26]],
-  'atelier-lavandine-sombre': [['#c4a4fe', '#121212', 9.0], ['#c4a4fe', '#181818', 8.53], ['#c4a4fe', '#1d1925', 8.28], ['#131019', '#c4a4fe', 9.04], ['#131019', '#d4b5ff', 10.62]],
-  'ecume-et-sel-clair': [['#21708b', '#fbfbfb', 5.4], ['#21708b', '#ffffff', 5.59], ['#21708b', '#e3f6fe', 5.03], ['#003647', '#7fdbff', 8.33], ['#003647', '#6fcbee', 7.08]],
-  'ecume-et-sel-sombre': [['#c9efff', '#121212', 15.41], ['#c9efff', '#181818', 14.61], ['#c9efff', '#1b1b1b', 14.17], ['#121212', '#c9efff', 15.41], ['#121212', '#ddffff', 17.68]],
-  'grenat-papeterie-clair': [['#4f0020', '#fbfbfb', 15.0], ['#4f0020', '#ffffff', 15.52], ['#4f0020', '#fcf0f2', 13.95], ['#ffffff', '#7a1f3d', 10.04], ['#ffffff', '#6a0d30', 12.26]],
-  'grenat-papeterie-sombre': [['#fc96ae', '#121212', 9.02], ['#fc96ae', '#181818', 8.55], ['#fc96ae', '#2f1119', 8.32], ['#1e0d11', '#fc96ae', 9.02], ['#1e0d11', '#ffa7be', 10.28]],
-  'maison-alberto-clair': [['#836304', '#fbfbfb', 5.41], ['#836304', '#ffffff', 5.6], ['#836304', '#fbf3e1', 5.07], ['#ffffff', '#836304', 5.6], ['#ffffff', '#745500', 6.9]],
-  'maison-alberto-sombre': [['#ffd060', '#121212', 12.88], ['#ffd060', '#181818', 12.21], ['#ffd060', '#1d1b17', 11.83], ['#121212', '#ffd060', 12.88], ['#121212', '#ffe17e', 14.56]],
-  'orbe-cafe-clair': [['#4c6994', '#fbfbfb', 5.4], ['#4c6994', '#ffffff', 5.59], ['#4c6994', '#f1f3f7', 5.03], ['#ffffff', '#2b4c7e', 8.61], ['#ffffff', '#1e3e6f', 10.64]],
-  'orbe-cafe-sombre': [['#86b6fe', '#121212', 9.04], ['#86b6fe', '#181818', 8.57], ['#86b6fe', '#111b2a', 8.35], ['#0e1218', '#86b6fe', 9.06], ['#0e1218', '#97c6ff', 10.58]],
+  'atelier-lavandine-light': [['#8247ce', '#fbfbfb', 5.42], ['#8247ce', '#ffffff', 5.61], ['#8247ce', '#f5f1fe', 5.05], ['#ffffff', '#8a4fd8', 5.01], ['#ffffff', '#7b3ec7', 6.26]],
+  'atelier-lavandine-dark': [['#c4a4fe', '#121212', 9.0], ['#c4a4fe', '#181818', 8.53], ['#c4a4fe', '#1d1925', 8.28], ['#131019', '#c4a4fe', 9.04], ['#131019', '#d4b5ff', 10.62]],
+  'ecume-et-sel-light': [['#21708b', '#fbfbfb', 5.4], ['#21708b', '#ffffff', 5.59], ['#21708b', '#e3f6fe', 5.03], ['#003647', '#7fdbff', 8.33], ['#003647', '#6fcbee', 7.08]],
+  'ecume-et-sel-dark': [['#c9efff', '#121212', 15.41], ['#c9efff', '#181818', 14.61], ['#c9efff', '#1b1b1b', 14.17], ['#121212', '#c9efff', 15.41], ['#121212', '#ddffff', 17.68]],
+  'grenat-papeterie-light': [['#4f0020', '#fbfbfb', 15.0], ['#4f0020', '#ffffff', 15.52], ['#4f0020', '#fcf0f2', 13.95], ['#ffffff', '#7a1f3d', 10.04], ['#ffffff', '#6a0d30', 12.26]],
+  'grenat-papeterie-dark': [['#fc96ae', '#121212', 9.02], ['#fc96ae', '#181818', 8.55], ['#fc96ae', '#2f1119', 8.32], ['#1e0d11', '#fc96ae', 9.02], ['#1e0d11', '#ffa7be', 10.28]],
+  'maison-alberto-light': [['#836304', '#fbfbfb', 5.41], ['#836304', '#ffffff', 5.6], ['#836304', '#fbf3e1', 5.07], ['#ffffff', '#836304', 5.6], ['#ffffff', '#745500', 6.9]],
+  'maison-alberto-dark': [['#ffd060', '#121212', 12.88], ['#ffd060', '#181818', 12.21], ['#ffd060', '#1d1b17', 11.83], ['#121212', '#ffd060', 12.88], ['#121212', '#ffe17e', 14.56]],
+  'orbe-cafe-light': [['#4c6994', '#fbfbfb', 5.4], ['#4c6994', '#ffffff', 5.59], ['#4c6994', '#f1f3f7', 5.03], ['#ffffff', '#2b4c7e', 8.61], ['#ffffff', '#1e3e6f', 10.64]],
+  'orbe-cafe-dark': [['#86b6fe', '#121212', 9.04], ['#86b6fe', '#181818', 8.57], ['#86b6fe', '#111b2a', 8.35], ['#0e1218', '#86b6fe', 9.06], ['#0e1218', '#97c6ff', 10.58]],
 };
 /** Rôles des cinq paires de ICONE_PAR_THEME : discret sur la page, sur une surface, au survol ; principal au repos, au survol. */
 const ICONE_ROLES_THEME = [
@@ -221,12 +221,12 @@ test('B5 icône du bouton à icône contre ce qui l\'entoure, dans les dix thèm
       assert.ok(/** @type {number} */ (attendu[2]) >= 3, `${nom} : ${a} / ${b} sous 3:1`);
     });
     for (const [a, b, clair, sombre] of ICONE_PAR_MODE) {
-      const attendu = /** @type {[string, string, number]} */ (mode === 'clair' ? clair : sombre);
+      const attendu = /** @type {[string, string, number]} */ (mode === 'light' ? clair : sombre);
       assert.deepEqual(paire(/** @type {string} */ (a), /** @type {string} */ (b)), attendu, `${nom} : ${a} / ${b}`);
       assert.ok(attendu[2] >= 3, `${nom} : ${a} / ${b} sous 3:1`);
     }
     for (const [a, b, clair, sombre] of ICONE_DESACTIVE) {
-      const attendu = /** @type {[string, string, number]} */ (mode === 'clair' ? clair : sombre);
+      const attendu = /** @type {[string, string, number]} */ (mode === 'light' ? clair : sombre);
       assert.deepEqual(paire(/** @type {string} */ (a), /** @type {string} */ (b)), attendu, `${nom} : désactivé ${a} / ${b}`);
       assert.ok(attendu[2] < 4.5, `${nom} : désactivé hors de son exception`);
     }

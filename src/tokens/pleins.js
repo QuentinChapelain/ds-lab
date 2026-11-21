@@ -214,7 +214,7 @@ export function marqueSombreTokens({ marque, clairs, echelles, sombres, primaire
     const v = t.$value;
     const mm = typeof v === 'string' ? /^\{color\.[^.]+\.(\d+)\}$/.exec(v) : null;
     const $value = mm ? colorValue(clairs[name][Number(mm[1]) - 1]) : structuredClone(v);
-    return { $value, $description: `${t.$description}, valeur du mode clair, figée en sombre`, ...(mm ? { $extensions: { 'ds-lab.mode': { clair: v } } } : {}) };
+    return { $value, $description: `${t.$description}, valeur du mode clair, figée en sombre`, ...(mm ? { $extensions: { 'ds-lab.mode': { light: v } } } : {}) };
   };
   /** @type {Record<string, any>} */
   const m = {};

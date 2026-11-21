@@ -44,8 +44,8 @@
     "mode": {
       "description": "Mode de couleur. Clair : valeurs des jeux. Sombre : échelles en miroir sous les mêmes noms, communes puis de la marque, et couche marque sombre (mêmes boutons qu'en clair).",
       "contexts": {
-        "clair": [],
-        "sombre": [
+        "light": [],
+        "dark": [
           {
             "$ref": "../commun/mode.sombre.tokens.json"
           },
@@ -57,22 +57,22 @@
           }
         ]
       },
-      "default": "clair"
+      "default": "light"
     },
-    "largeur": {
+    "width": {
       "description": "Largeur de l'écran. Large : valeurs des jeux. Étroit : grands écarts et grands textes réduits (DS6).",
       "contexts": {
-        "large": [],
-        "etroit": [
+        "wide": [],
+        "narrow": [
           {
             "$ref": "../commun/largeur.etroit.tokens.json"
           }
         ]
       },
-      "default": "large",
+      "default": "wide",
       "$extensions": {
         "ds-lab.largeur": {
-          "etroit": {
+          "narrow": {
             "sous": {
               "value": 600,
               "unit": "px"
@@ -97,7 +97,7 @@
       "$ref": "#/modifiers/mode"
     },
     {
-      "$ref": "#/modifiers/largeur"
+      "$ref": "#/modifiers/width"
     }
   ]
 }

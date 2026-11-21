@@ -35,10 +35,10 @@ import { cssVar } from '../src/lib/nom-css.js';
 
 const MARQUES = dossiersDeMarque();
 const COMBINAISONS = [
-  { mode: 'clair', largeur: 'large' },
-  { mode: 'sombre', largeur: 'large' },
-  { mode: 'clair', largeur: 'etroit' },
-  { mode: 'sombre', largeur: 'etroit' },
+  { mode: 'light', width: 'wide' },
+  { mode: 'dark', width: 'wide' },
+  { mode: 'light', width: 'narrow' },
+  { mode: 'dark', width: 'narrow' },
 ];
 const SOUS = { fontFamily: 'font-family', fontSize: 'font-size', fontWeight: 'font-weight', letterSpacing: 'letter-spacing', lineHeight: 'line-height' };
 const TYPE_SOUS = { fontFamily: 'fontFamily', fontSize: 'dimension', letterSpacing: 'dimension', fontWeight: 'fontWeight', lineHeight: 'number' };
@@ -85,14 +85,14 @@ function declarations(regle) {
 
 /**
  * Variables effectives d'une combinaison, var() résolus.
- * @param {ReturnType<typeof blocs>} bs @param {{ mode: string, largeur: string }} c @param {number} seuil
+ * @param {ReturnType<typeof blocs>} bs @param {{ mode: string, width: string }} c @param {number} seuil
  */
 function effectives(bs, c, seuil) {
   /** @type {Map<string, string>} */
   const vars = new Map();
   for (const b of bs) {
-    if (b.condition === '(prefers-color-scheme: dark)' && c.mode !== 'sombre') continue;
-    if (b.condition === `(width < ${seuil}px)` && c.largeur !== 'etroit') continue;
+    if (b.condition === '(prefers-color-scheme: dark)' && c.mode !== 'dark') continue;
+    if (b.condition === `(width < ${seuil}px)` && c.width !== 'narrow') continue;
     for (const [k, v] of b.decls) vars.set(k, v);
   }
   /** @param {string} v @param {string[]} vus @returns {string} */
@@ -177,7 +177,7 @@ test('F4 accord : variables de la feuille et jetons du lecteur, chaque marque, c
     const bs = blocs(lireFeuille(d));
     const seuil = seuilEtroit(lireResolver(chemin)).sous;
     for (const c of COMBINAISONS) {
-      const ici = `${d} ${c.mode}/${c.largeur}`;
+      const ici = `${d} ${c.mode}/${c.width}`;
       const eff = effectives(bs, c, seuil);
       const jetons = lireResolver(chemin, c).jetons;
       const plats = flattenTokens(jetons);

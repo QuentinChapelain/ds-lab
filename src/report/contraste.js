@@ -2,7 +2,7 @@
 /**
  * D31 : texte du contrôle de contraste d'une marque, lu par npm run contraste et par la saisie, qui
  * l'affiche après son contrôle final, sans relancer la commande en sous-processus.
- * Hors du contexte par défaut (clair, large), la sortie nomme le contexte.
+ * Hors du contexte par défaut (light, wide), la sortie nomme le contexte.
  */
 import { fr } from '../lib/format.js';
 
@@ -14,10 +14,10 @@ const plural = (/** @type {number} */ n, /** @type {string} */ one, /** @type {s
  * @param {ReturnType<typeof import('../tokens/roles.js').contrat>} c @param {{ mode?: string, largeur?: string }} [contexte]
  * @returns {string[]}
  */
-export function lignesContraste(c, { mode = 'clair', largeur = 'large' } = {}) {
+export function lignesContraste(c, { mode = 'light', largeur = 'wide' } = {}) {
   /** @type {string[]} */
   const L = [];
-  if (mode !== 'clair' || largeur !== 'large') L.push(`mode ${mode}, largeur ${largeur}`);
+  if (mode !== 'light' || largeur !== 'wide') L.push(`mode ${mode}, largeur ${largeur}`);
   let group = '';
   for (const p of c.roles.pairs) {
     const g = p.devant.split('.')[0];

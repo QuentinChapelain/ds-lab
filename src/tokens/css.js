@@ -28,10 +28,10 @@ import { flattenTokens, tokenTypes, resoudreAlias } from './roles.js';
 /** Nom de la feuille dans le dossier de la marque. */
 export const FEUILLE = 'jetons.css';
 
-const CLAIR_LARGE = { mode: 'clair', largeur: 'large' };
-const SOMBRE = { mode: 'sombre', largeur: 'large' };
-const ETROIT = { mode: 'clair', largeur: 'etroit' };
-const SOMBRE_ETROIT = { mode: 'sombre', largeur: 'etroit' };
+const CLAIR_LARGE = { mode: 'light', width: 'wide' };
+const SOMBRE = { mode: 'dark', width: 'wide' };
+const ETROIT = { mode: 'light', width: 'narrow' };
+const SOMBRE_ETROIT = { mode: 'dark', width: 'narrow' };
 
 /** Variable CSS d'un jeton Terrazzo : la règle de tokens.css de npm run apply. @param {{ id: string }} t */
 const nomVar = (t) => cssVar(t.id);
@@ -65,7 +65,7 @@ function ecarts(tz, chemin, c) {
   const jetons = lireResolver(chemin, c).jetons;
   const plats = flattenTokens(jetons);
   const types = tokenTypes(jetons);
-  const ici = `${c.mode}/${c.largeur}`;
+  const ici = `${c.mode}/${c.width}`;
   const ids = [...plats.keys()].filter((k) => !k.endsWith('.$root'));
   /** @type {string[]} */
   const out = [];

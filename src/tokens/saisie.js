@@ -16,7 +16,8 @@
  * Motifs de refus : entrée invalide ; checkValise en échec sur les échelles générées ; paire de rôles en échec ;
  * police des titres donnée par ses fichiers qui échoue à un garde-fou (src/polices/garde-fous.js), ou dont
  * l'encre de deux lignes se touche sur un style de titre (controlerEncre, dans Chromium, lancé par la commande).
- * checkValise et le contraste sont contrôlés dans les deux modes ; chaque motif dit son mode, (clair) ou (sombre).
+ * checkValise et le contraste sont contrôlés dans les deux modes ; chaque motif dit son mode en français, (clair) ou (sombre),
+ * pour les contextes light et dark du resolver.
  * Les couches communes (neutres, statuts, rôles, paires) sont lues dans tokens/commun/ ; la saisie écrit aussi le resolver
  * de la marque (marque.resolver.json, src/tokens/resolver.js).
  */
@@ -41,6 +42,8 @@ const LABELS = { primary: 'Primaire', accent: 'Accent' };
 
 /** Échelles écrites à la main d'une marque, dans son dossier (D25). */
 const PROPRES = 'primitives.tokens.json';
+/** Mot français d'un contexte de mode, dans les motifs. */
+const MOT = /** @type {const} */ ({ light: 'clair', dark: 'sombre' });
 
 /**
  * Fonds clairs communs sur lesquels le texte de marque des grands titres doit tenir 3:1 :
@@ -98,10 +101,10 @@ export function controlerEcrits(dossier, lus) {
   const resolver = docs[RESOLVER];
   if (!resolver) throw new Error(`contrôle final : ${RESOLVER} absent des fichiers écrits`);
   const paires = JSON.parse(readFileSync(join(COMMUN, 'paires.json'), 'utf8'));
-  return ['clair', 'sombre'].map((mode) => {
+  return ['light', 'dark'].map((mode) => {
     const c = contrat(rolesDuResolver(enLigne(resolver, docs), dossier, { mode }, paires));
     if (c.roles.fails.length)
-      throw new Error(`incohérence de l'outil : le contrôle final (${mode}) trouve une paire en échec que la saisie avait acceptée ; rien n'est écrit dans ${dossier}`);
+      throw new Error(`incohérence de l'outil : le contrôle final (${MOT[mode]}) trouve une paire en échec que la saisie avait acceptée ; rien n'est écrit dans ${dossier}`);
     return [mode, c];
   });
 }
@@ -112,8 +115,8 @@ export function controlerEcrits(dossier, lus) {
  * @param {import('./roles.js').RoleSet} commun
  */
 function etroitCommun(commun) {
-  const r = resoudre(modeleResolver({ nom: 'commun', marque: [], dossier: COMMUN }), COMMUN, { largeur: 'etroit' });
-  const contexte = r.sources.filter((x) => x.ensemble === 'largeur:etroit').map((x) => x.doc);
+  const r = resoudre(modeleResolver({ nom: 'commun', marque: [], dossier: COMMUN }), COMMUN, { width: 'narrow' });
+  const contexte = r.sources.filter((x) => x.ensemble === 'width:narrow').map((x) => x.doc);
   return { semantique: enEtroit(commun.semantique, contexte), ...seuilEtroit(r) };
 }
 
@@ -197,7 +200,7 @@ export const serialiser = (tokens) => JSON.stringify(tokens, null, 2) + '\n';
  *   marque ; couches communes, en clair et en sombre
  * @returns {Saisie}
  */
-export function saisir(entree, { dossier, commun = chargerCommun(), communSombre = chargerCommun({ mode: 'sombre' }) }) {
+export function saisir(entree, { dossier, commun = chargerCommun(), communSombre = chargerCommun({ mode: 'dark' }) }) {
   /** @type {string[]} */
   const motifs = [];
   const invalide = (/** @type {string} */ m) => motifs.push(`entrée invalide : ${m}`);
@@ -359,16 +362,16 @@ export function saisir(entree, { dossier, commun = chargerCommun(), communSombre
   const contrats = {};
   // D18 : une paire sous son seuil est un refus ; un contrat qui ne se calcule pas (paire
   // vers un rôle inconnu, type inconnu : couche commune cassée) est une panne, qui lève.
-  for (const [mode, paires] of /** @type {const} */ ([['clair', commun.paires], ['sombre', communSombre.paires]])) {
+  for (const [mode, paires] of /** @type {const} */ ([['light', commun.paires], ['dark', communSombre.paires]])) {
     /** @type {ReturnType<typeof contratRoles>} */
     let c;
     try {
       c = contratRoles(rolesDuResolver(enLigne(resolver, docs), dossier, { mode }, paires));
     } catch (e) {
-      throw new Error(`contraste (${mode}) : ${/** @type {Error} */ (e).message}`);
+      throw new Error(`contraste (${MOT[mode]}) : ${/** @type {Error} */ (e).message}`);
     }
     contrats[mode] = c;
-    for (const p of c.fails) motifs.push(`contraste (${mode}) : ${p.devant} sur ${p.fond}, ${fr(p.ratio, { decimales: 2, zeros: true })}:1 < ${fr(p.min)}:1`);
+    for (const p of c.fails) motifs.push(`contraste (${MOT[mode]}) : ${p.devant} sur ${p.fond}, ${fr(p.ratio, { decimales: 2, zeros: true })}:1 < ${fr(p.min)}:1`);
   }
   return { motifs, marque, echelles, echellesSombres, marqueSombre, resolver, commun, policeTitre, contrats };
 }

@@ -2,7 +2,7 @@
 /**
  * Contrôle de contraste par mode (docs/attendus/etape-4b-contextes.md).
  * Attendus écrits à la main avant le code :
- *   C1 npm run contraste --mode clair : même sortie que sans option (un bloc par marque, D26) ; --mode sombre, --largeur etroit acceptés ;
+ *   C1 npm run contraste --mode light : même sortie que sans option (un bloc par marque, D26) ; --mode dark, --largeur narrow acceptés ;
  *      mode inconnu : erreur d'usage, code 2 ;
  *   C2 les 5 marques fictives sortent en 0 dans les deux modes et dans les deux largeurs ; 70 paires (66 + les 4
  *      bordures de statut sur background.surface), puis 73 avec les paires du bouton (18/11/2026, docs/attendus/bouton.md) ;
@@ -31,16 +31,16 @@ const POLICES = { heading: ['Georgia', 'serif'], body: ['Arial', 'sans-serif'] }
 /** @param {string[]} args */
 const run = (...args) => spawnSync(process.execPath, [join(ROOT, 'src', 'cli', 'contraste.js'), ...args], { cwd: ROOT, encoding: 'utf8' });
 
-test('C1 --mode et --largeur : clair = sans option ; mode inconnu = code 2', () => {
+test('C1 --mode et --largeur : light = sans option ; mode inconnu = code 2', () => {
   const sans = run();
   assert.equal(sans.status, 0);
-  assert.equal(run('--mode', 'clair').stdout, sans.stdout);
-  assert.equal(run('--mode', 'clair', '--largeur', 'large').stdout, sans.stdout);
-  const sombre = run('--mode', 'sombre');
+  assert.equal(run('--mode', 'light').stdout, sans.stdout);
+  assert.equal(run('--mode', 'light', '--largeur', 'wide').stdout, sans.stdout);
+  const sombre = run('--mode', 'dark');
   assert.equal(sombre.status, 0, sombre.stdout);
   // D26 : sans --marque, un bloc par marque, chacun nomme son contexte après son en-tête.
-  assert.equal(sombre.stdout.match(/^marque [^\n]+\nmode sombre, largeur large$/gm)?.length, 5);
-  assert.equal(run('--largeur', 'etroit').status, 0);
+  assert.equal(sombre.stdout.match(/^marque [^\n]+\nmode dark, largeur wide$/gm)?.length, 5);
+  assert.equal(run('--largeur', 'narrow').status, 0);
   const faux = run('--mode', 'nuit');
   assert.equal(faux.status, 2);
   assert.match(faux.stderr, /contexte inconnu mode=nuit/);
@@ -48,8 +48,8 @@ test('C1 --mode et --largeur : clair = sans option ; mode inconnu = code 2', () 
 
 test('C2 les 5 marques fictives : 0 échec dans les deux modes et les deux largeurs, toutes les paires', () => {
   for (const m of MARQUES)
-    for (const mode of ['clair', 'sombre'])
-      for (const largeur of ['large', 'etroit']) {
+    for (const mode of ['light', 'dark'])
+      for (const largeur of ['wide', 'narrow']) {
         const p = run('--marque', join('tokens', m), '--mode', mode, '--largeur', largeur);
         assert.equal(p.status, 0, `${m} ${mode} ${largeur}\n${p.stdout}`);
         assert.match(p.stdout, new RegExp(`${N_PAIRES} paires de rôles, 0 paire en échec`), `${m} ${mode} ${largeur}`);
@@ -65,7 +65,7 @@ test('C3 bordures de statut sur background.surface : paires déclarées, type bo
 
 test('C4 la saisie dit le mode du refus', () => {
   const commun = chargerCommun();
-  const communSombre = chargerCommun({ mode: 'sombre' });
+  const communSombre = chargerCommun({ mode: 'dark' });
   /** @param {any} c */
   const durci = (c) => {
     const paires = structuredClone(c.paires);
@@ -82,7 +82,7 @@ test('C5 contrat calculé par la saisie = contrat du resolver, 5 marques, clair 
     const dossier = join(ROOT, 'tokens', m);
     const s = saisir(JSON.parse(readFileSync(join(dossier, 'entree.json'), 'utf8')), { dossier });
     assert.deepEqual(s.motifs, [], m);
-    for (const mode of /** @type {const} */ (['clair', 'sombre'])) {
+    for (const mode of /** @type {const} */ (['light', 'dark'])) {
       const saisie = /** @type {any} */ (s.contrats)?.[mode];
       assert.equal(saisie?.pairs.length, N_PAIRES, `${m} ${mode}`);
       assert.deepEqual(saisie, contratRoles(loadRoles(dossier, { mode })), `${m} ${mode}`);

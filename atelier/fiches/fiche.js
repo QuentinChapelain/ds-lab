@@ -90,7 +90,8 @@ export const PHRASE_TOKENS = 'Un token est le nom d\'une valeur de design. Le co
 /** Phrase de tête de la section « Anatomie et tokens » d'un module. */
 export const PHRASE_TOKENS_MODULE = 'Un token est le nom d\'une valeur de design. Le module n\'a aucune valeur visuelle propre : ce qu\'il assemble porte les siennes, et il ne règle que la mise en page, par les tokens ci-dessous.';
 
-const MODES = ['clair', 'sombre'];
+/** Contextes de mode du resolver (D62), et le mot français écrit dans les fiches. */
+const MODES = /** @type {const} */ ([['light', 'clair'], ['dark', 'sombre']]);
 const D2 = { decimales: 2, zeros: true };
 const TYPES = new Map([
   [String, 'texte'],
@@ -333,8 +334,8 @@ export function mesurerThemes() {
   /** @type {Map<string, any[]>} */
   const mesures = new Map();
   for (const dossier of dossiersDeMarque())
-    for (const mode of MODES) {
-      const theme = `${nomDeMarque(dossier)}, ${mode}`;
+    for (const [mode, mot] of MODES) {
+      const theme = `${nomDeMarque(dossier)}, ${mot}`;
       themes.push(theme);
       for (const p of contratRoles(loadRoles(dossier, { mode })).pairs) {
         const cle = `${p.devant}|${p.fond}`;

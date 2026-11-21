@@ -2,7 +2,7 @@
   "$description": "Thèmes Vuetify de Écume et Sel, clair et sombre, écrits par npm run vuetify depuis marque.resolver.json et tokens/commun/vuetify.json. Ne pas modifier à la main.",
   "name": "Écume et Sel",
   "themes": {
-    "ecume-et-sel-clair": {
+    "ecume-et-sel-light": {
       "dark": false,
       "colors": {
         "background": "#fbfbfb",
@@ -112,7 +112,7 @@
         "ds-body-small-line-height": "1.4286"
       }
     },
-    "ecume-et-sel-sombre": {
+    "ecume-et-sel-dark": {
       "dark": true,
       "colors": {
         "background": "#121212",

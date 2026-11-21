@@ -44,9 +44,9 @@ function marqueEssai({ seuil, sombreEnPlus } = {}) {
   for (const m of Object.values(r.modifiers)) for (const c of Object.keys(/** @type {any} */ (m).contexts)) /** @type {any} */ (m).contexts[c] = reloc(/** @type {any} */ (m).contexts[c]);
   if (sombreEnPlus) {
     writeFileSync(join(dir, 'en-plus.sombre.tokens.json'), JSON.stringify(sombreEnPlus, null, 2));
-    r.modifiers.mode.contexts.sombre.push({ $ref: 'en-plus.sombre.tokens.json' });
+    r.modifiers.mode.contexts.dark.push({ $ref: 'en-plus.sombre.tokens.json' });
   }
-  if (seuil) r.modifiers.largeur.$extensions['ds-lab.largeur'].etroit.sous.value = seuil;
+  if (seuil) r.modifiers.width.$extensions['ds-lab.largeur'].narrow.sous.value = seuil;
   writeFileSync(join(dir, RESOLVER), JSON.stringify(r, null, 2));
   return `${dir}/`;
 }

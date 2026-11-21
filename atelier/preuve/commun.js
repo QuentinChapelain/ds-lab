@@ -24,7 +24,8 @@ const CONSTRUITE = join(ICI, 'storybook-static');
 /** Dossier des captures, hors dépôt (local/ n'est jamais versionné). */
 export const LOCAL = join(ICI, '..', 'local');
 export const CADRE = { width: 1100, height: 700 };
-const MODES = ['clair', 'sombre'];
+/** Contextes de mode du resolver (D62), et le mot français du titre dans le sélecteur. */
+const MODES = /** @type {const} */ ([['light', 'clair'], ['dark', 'sombre']]);
 /**
  * Variables de Vuetify écrites sous le même préfixe que les couleurs du thème (--v-theme-…) mais qui n'en sont pas :
  * couleurs de kbd et de code, et les deux textes dont Vuetify se sert pour calculer un on- absent. Elles restent les
@@ -62,7 +63,7 @@ export const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 export function attendus() {
   const table = lireTable();
   return dossiersDeMarque().flatMap((dossier) =>
-    MODES.map((mode) => {
+    MODES.map(([mode, mot]) => {
       const set = loadRoles(dossier, { mode });
       const roles = resolveRoles(set.semantique, set.primitives, set.marque);
       const hex = (/** @type {string} */ role) => /** @type {string} */ (roles.get(role)?.hex);
@@ -76,7 +77,7 @@ export function attendus() {
       );
       return {
         nom: `${basename(dossier)}-${mode}`,
-        titre: `${nomDeMarque(dossier)}, ${mode}`,
+        titre: `${nomDeMarque(dossier)}, ${mot}`,
         fond: hex(table.couleurs.primary.fond),
         texte: hex(table.couleurs.primary.texte),
         page: hex(table.couleurs.background.fond),

@@ -80,7 +80,7 @@ test('F7 roles.html : le ratio 5,02 tronqué reste 5,02', () => {
 });
 
 test('F8 console de contraste : 11,655 s’écrit 11,66', () => {
-  const r = spawnSync(process.execPath, ['src/cli/contraste.js', '--marque', 'tokens/ecume-et-sel', '--mode', 'sombre'], { cwd: ROOT, encoding: 'utf8' });
+  const r = spawnSync(process.execPath, ['src/cli/contraste.js', '--marque', 'tokens/ecume-et-sel', '--mode', 'dark'], { cwd: ROOT, encoding: 'utf8' });
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /✓ text\.accent sur background\.subtle : 11,66:1, seuil 4,50:1/);
 });

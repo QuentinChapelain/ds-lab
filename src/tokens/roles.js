@@ -139,7 +139,8 @@ export function loadRoles(dossier, opts = {}) {
   /** @type {Record<string, string>} */
   const entrees = {};
   if (opts.mode) entrees.mode = opts.mode;
-  if (opts.largeur) entrees.largeur = opts.largeur;
+  // --largeur de npm run contraste nomme le modificateur width (D62).
+  if (opts.largeur) entrees.width = opts.largeur;
   return rolesDuResolver(JSON.parse(readFileSync(join(dossier, RESOLVER), 'utf8')), dossier, entrees, JSON.parse(readFileSync(opts.paires ?? join(COMMUN, 'paires.json'), 'utf8')));
 }
 

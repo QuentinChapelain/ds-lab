@@ -28,8 +28,8 @@ const MARQUES = ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papet
 test('W1 contrastRatio et culori : même nombre sur toutes les paires de rôles', () => {
   let n = 0;
   for (const m of MARQUES)
-    for (const mode of ['clair', 'sombre'])
-      for (const largeur of ['large', 'etroit']) {
+    for (const mode of ['light', 'dark'])
+      for (const largeur of ['wide', 'narrow']) {
         const c = contratRoles(loadRoles(join(ROOT, 'tokens', m), { mode, largeur }));
         for (const p of [...c.pairs, ...c.interdites]) {
           n++;

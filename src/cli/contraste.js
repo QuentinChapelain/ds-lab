@@ -7,13 +7,13 @@
  * --marque <dossier> contrôle la marque de ce dossier. D26 : sans l'option, chaque
  * marque de tokens/, un bloc par marque (parMarque, src/cli/garde.js) ; sortie 1 si une marque échoue.
  * La marque se lit par son resolver (marque.resolver.json), avec les couches communes de tokens/commun/.
- * --mode clair|sombre et --largeur large|etroit choisissent le contexte du resolver (clair et large par
- * défaut) ; un contexte inconnu sort en 2.
+ * --mode light|dark et --largeur wide|narrow choisissent le contexte du resolver (light et wide par
+ * défaut ; --largeur nomme le modificateur width, D62) ; un contexte inconnu sort en 2.
  * D18 : toute panne (option inconnue, fichier absent ou illisible) sort en 2, par la garde
  * commune (src/cli/garde.js).
  * D25, D31 : texte du contrôle dans src/report/contraste.js, lu aussi par la saisie ; une marque dont
  * primitives.tokens.json redéfinit une échelle commune échoue (sortie 1), l'échelle nommée.
- * Usage : npm run contraste [-- --paires <fichier>] [--marque <dossier>] [--mode clair|sombre] [--largeur large|etroit]
+ * Usage : npm run contraste [-- --paires <fichier>] [--marque <dossier>] [--mode light|dark] [--largeur wide|narrow]
  */
 import { parseArgs } from 'node:util';
 import { loadRoles, contrat } from '../tokens/roles.js';

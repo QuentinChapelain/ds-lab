@@ -43,7 +43,7 @@
         "$description": "aplat plein en sombre : plein du primaire en clair, figé (couleur exacte du client)",
         "$extensions": {
           "ds-lab.mode": {
-            "clair": "{color.primary.11}"
+            "light": "{color.primary.11}"
           }
         }
       },
@@ -202,7 +202,7 @@
         "$description": "plein : pas 9, couleur exacte, valeur du mode clair, figée en sombre",
         "$extensions": {
           "ds-lab.mode": {
-            "clair": "{color.accent.9}"
+            "light": "{color.accent.9}"
           }
         }
       },

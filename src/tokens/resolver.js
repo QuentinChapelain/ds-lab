@@ -15,8 +15,9 @@
  *
  * Chaque marque a son tokens/<marque>/marque.resolver.json, écrit par la saisie (modeleResolver) :
  *   jeux        primitives (tokens/commun/), marque (échelles et couche marque du dossier), roles (tokens/commun/) ;
- *   mode        clair | sombre, défaut clair ;
- *   largeur     large | etroit, défaut large ; le seuil de l'étroit est dans $extensions["ds-lab.largeur"].
+ *   mode        light | dark, défaut light ;
+ *   width       wide | narrow, défaut wide ; le seuil de l'étroit est dans $extensions["ds-lab.largeur"].
+ * Noms des modificateurs et des contextes en anglais (D62) ; les jeux gardent les leurs.
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { dirname, join, relative, sep } from 'node:path';
@@ -29,7 +30,7 @@ export const RESOLVER = 'marque.resolver.json';
 export const COMMUN = fileURLToPath(new URL('../../tokens/commun/', import.meta.url));
 /** Dossier des jetons : tokens/commun/ et un dossier par marque. */
 export const TOKENS = fileURLToPath(new URL('../../tokens/', import.meta.url));
-/** Clé d'extension du seuil de largeur, sur le modificateur largeur. */
+/** Clé d'extension du seuil de largeur, sur le modificateur width. */
 const LARGEUR = 'ds-lab.largeur';
 
 /** @param {any} v */
@@ -167,17 +168,17 @@ export function modeleResolver({ nom, marque, sombre = [], dossier }) {
     modifiers: {
       mode: {
         description: 'Mode de couleur. Clair : valeurs des jeux. Sombre : échelles en miroir sous les mêmes noms, communes puis de la marque, et couche marque sombre (mêmes boutons qu\'en clair).',
-        contexts: { clair: [], sombre: [commun('mode.sombre.tokens.json'), ...sombre.map(ref)] },
-        default: 'clair',
+        contexts: { light: [], dark: [commun('mode.sombre.tokens.json'), ...sombre.map(ref)] },
+        default: 'light',
       },
-      largeur: {
+      width: {
         description: "Largeur de l'écran. Large : valeurs des jeux. Étroit : grands écarts et grands textes réduits (DS6).",
-        contexts: { large: [], etroit: [commun('largeur.etroit.tokens.json')] },
-        default: 'large',
-        $extensions: { [LARGEUR]: { etroit: { sous: { value: 600, unit: 'px' }, seuil: '[H]' } } },
+        contexts: { wide: [], narrow: [commun('largeur.etroit.tokens.json')] },
+        default: 'wide',
+        $extensions: { [LARGEUR]: { narrow: { sous: { value: 600, unit: 'px' }, seuil: '[H]' } } },
       },
     },
-    resolutionOrder: [ref('#/sets/primitives'), ref('#/sets/marque'), ref('#/sets/roles'), ref('#/modifiers/mode'), ref('#/modifiers/largeur')],
+    resolutionOrder: [ref('#/sets/primitives'), ref('#/sets/marque'), ref('#/sets/roles'), ref('#/modifiers/mode'), ref('#/modifiers/width')],
   };
 }
 
@@ -200,11 +201,11 @@ export function partager(r) {
 }
 
 /**
- * Seuil de l'étroit déclaré sur le modificateur largeur.
+ * Seuil de l'étroit déclaré sur le modificateur width.
  * @param {Resolu} r @returns {{ sous: number, seuil: string }}
  */
 export function seuilEtroit(r) {
-  const x = r.modifiers.largeur?.$extensions?.[LARGEUR]?.etroit;
+  const x = r.modifiers.width?.$extensions?.[LARGEUR]?.narrow;
   if (x?.sous?.unit !== 'px' || typeof x?.sous?.value !== 'number') throw new Error(`resolver : seuil de l'étroit illisible ($extensions["${LARGEUR}"], px attendu)`);
   return { sous: x.sous.value, seuil: x.seuil ?? '' };
 }
@@ -231,9 +232,9 @@ export const nomDeMarque = (dossier) => String(JSON.parse(readFileSync(join(doss
 export function largeurs(dossier, { mode } = {}) {
   if (!dossier) throw new Error('largeurs : dossier de marque attendu');
   const chemin = join(dossier, RESOLVER);
-  const large = lireResolver(chemin, { ...(mode ? { mode } : {}), largeur: 'large' });
-  const etroit = lireResolver(chemin, { ...(mode ? { mode } : {}), largeur: 'etroit' });
-  const contexte = etroit.sources.filter((x) => x.ensemble === 'largeur:etroit').map((x) => x.doc);
+  const large = lireResolver(chemin, { ...(mode ? { mode } : {}), width: 'wide' });
+  const etroit = lireResolver(chemin, { ...(mode ? { mode } : {}), width: 'narrow' });
+  const contexte = etroit.sources.filter((x) => x.ensemble === 'width:narrow').map((x) => x.doc);
   return { large: partager(large), etroit: { semantique: partager(etroit).semantique, ...seuilEtroit(etroit) }, contexte };
 }
 

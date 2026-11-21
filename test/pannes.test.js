@@ -160,7 +160,7 @@ test('N7 vrais refus : sortie 1 avec le motif, rien d\'écrit', () => {
     for (const q of paires.pairs) if (q.foreground === 'border.strong' && q.background === 'background.surface') q.type = 'essai';
     return { ...c, paires };
   };
-  const r = saisir({ name: 'Essai', primary: '#2b4c7e', fonts: POLICES_NOMS }, { dossier: tmp('saisie'), commun: durci(chargerCommun()), communSombre: durci(chargerCommun({ mode: 'sombre' })) });
+  const r = saisir({ name: 'Essai', primary: '#2b4c7e', fonts: POLICES_NOMS }, { dossier: tmp('saisie'), commun: durci(chargerCommun()), communSombre: durci(chargerCommun({ mode: 'dark' })) });
   assert.deepEqual(r.motifs, ['contraste (sombre) : border.strong sur background.surface, 3,10:1 < 3,15:1']);
 });
 

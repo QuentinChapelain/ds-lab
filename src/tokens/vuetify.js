@@ -22,7 +22,7 @@ import { famille } from '../lib/format.js';
 /** Fichier des thèmes, dans le dossier de chaque marque. */
 export const THEMES = 'vuetify.json';
 /** Modes du resolver, et la valeur dark de Vuetify qui va avec. */
-const MODES = /** @type {const} */ ([['clair', false], ['sombre', true]]);
+const MODES = /** @type {const} */ ([['light', false], ['dark', true]]);
 
 /** Parties d'un style de texte qu'une variable peut prendre. */
 const CHAMPS = ['fontFamily', 'fontSize', 'fontWeight', 'lineHeight'];
@@ -89,7 +89,7 @@ function valeurVariable(jetons, cle, v, ou) {
 }
 
 /**
- * Thèmes clair et sombre d'une marque, nommés <dossier>-clair et <dossier>-sombre, et son nom lu dans le resolver.
+ * Thèmes clair et sombre d'une marque, nommés <dossier>-light et <dossier>-dark (D62), et son nom lu dans le resolver.
  * @param {string} dossier tokens/<marque>/ @param {Table} [table]
  * @returns {{ nom: string, themes: Record<string, { dark: boolean, colors: Record<string, string>, variables: Record<string, string> }> }}
  */

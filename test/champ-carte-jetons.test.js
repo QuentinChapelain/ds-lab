@@ -26,7 +26,7 @@ import { charger } from './helpers/jetons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const MARQUES = ['atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto', 'orbe-cafe'];
-const MODES = /** @type {const} */ (['clair', 'sombre']);
+const MODES = /** @type {const} */ (['light', 'dark']);
 
 /** Paires communes : [devant, fond, clair : devant, fond, rapport, sombre : devant, fond, rapport]. */
 const PAIRES = [
@@ -58,16 +58,16 @@ const SEUILS = [
 ];
 /** Anneau de focus par thème : [couleur, sur background.surface, sur background.app]. */
 const FOCUS = {
-  'atelier-lavandine-clair': ['#8247ce', 5.61, 5.42],
-  'atelier-lavandine-sombre': ['#c4a4fe', 8.53, 9.0],
-  'ecume-et-sel-clair': ['#21708b', 5.59, 5.4],
-  'ecume-et-sel-sombre': ['#c9efff', 14.61, 15.41],
-  'grenat-papeterie-clair': ['#4f0020', 15.52, 15.0],
-  'grenat-papeterie-sombre': ['#fc96ae', 8.55, 9.02],
-  'maison-alberto-clair': ['#836304', 5.6, 5.41],
-  'maison-alberto-sombre': ['#ffd060', 12.21, 12.88],
-  'orbe-cafe-clair': ['#4c6994', 5.59, 5.4],
-  'orbe-cafe-sombre': ['#86b6fe', 8.57, 9.04],
+  'atelier-lavandine-light': ['#8247ce', 5.61, 5.42],
+  'atelier-lavandine-dark': ['#c4a4fe', 8.53, 9.0],
+  'ecume-et-sel-light': ['#21708b', 5.59, 5.4],
+  'ecume-et-sel-dark': ['#c9efff', 14.61, 15.41],
+  'grenat-papeterie-light': ['#4f0020', 15.52, 15.0],
+  'grenat-papeterie-dark': ['#fc96ae', 8.55, 9.02],
+  'maison-alberto-light': ['#836304', 5.6, 5.41],
+  'maison-alberto-dark': ['#ffd060', 12.21, 12.88],
+  'orbe-cafe-light': ['#4c6994', 5.59, 5.4],
+  'orbe-cafe-dark': ['#86b6fe', 8.57, 9.04],
 };
 /** Variables ajoutées, hors couleurs et polices, les mêmes dans les dix thèmes. */
 const VALEURS = {
@@ -95,7 +95,7 @@ const r2 = (a, b) => Math.round(wcagContrast(a, b) * 100) / 100;
 /** Noms d'une valeur CSS font-family, guillemets ôtés. @param {string} s */
 const noms = (s) => s.split(',').map((x) => x.trim().replace(/^"(.*)"$/, '$1'));
 
-/** Rôles et jetons d'un thème. @param {string} marque @param {'clair' | 'sombre'} mode */
+/** Rôles et jetons d'un thème. @param {string} marque @param {'light' | 'dark'} mode */
 function theme(marque, mode) {
   const set = loadRoles(join(ROOT, 'tokens', marque), { mode });
   const roles = resolveRoles(set.semantique, set.primitives, set.marque);

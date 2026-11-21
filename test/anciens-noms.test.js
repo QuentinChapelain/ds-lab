@@ -15,7 +15,11 @@
  *   N6 clés de l'entrée et de la sortie Vuetify : chaque entree.json n'a que des clés nouvelles, à tous les niveaux,
  *      et chaque vuetify.json de marque les clés nouvelles de sa tête (name) ; aucune forme ancienne citée (clés
  *      de l'entrée en JSON, polices.titre, polices.texte) ne reste dans les descriptions des tokens ni dans les docs
- *      (même périmètre que N4).
+ *      (même périmètre que N4) ;
+ *   N7 thèmes, modificateurs et contextes : aucun ancien nom de thème complet (orbe-cafe-clair) ne reste, même
+ *      périmètre que N4 ; dans les fichiers JSON de tokens/, lus comme JSON, les modificateurs, leurs contextes, leur
+ *      défaut, resolutionOrder et les clés sous ds-lab.mode et ds-lab.largeur ne portent que des noms nouveaux ;
+ *      chaque nouveau nom de thème, de modificateur et de contexte existe.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -44,7 +48,7 @@ test('N1 chaque nouveau nom existe : token, variable CSS, variable et couleur du
   /** @type {Set<string>} */
   const couleurs = new Set();
   for (const d of MARQUES) {
-    for (const mode of ['clair', 'sombre']) {
+    for (const mode of ['light', 'dark']) {
       const s = loadRoles(d, { mode });
       for (const f of [s.primitives, s.marque, s.semantique]) for (const k of flattenTokens(f).keys()) chemins.add(k);
     }
@@ -154,4 +158,56 @@ test('N6 clés de l\'entrée et de la sortie Vuetify : nouvelles seulement, aucu
       });
   }
   assert.deepEqual(restes, []);
+});
+
+test('N7 thèmes, modificateurs et contextes : nouveaux seulement, et chacun existe', () => {
+  const changes = (/** @type {Record<string, string>} */ t) => Object.keys(t).filter((k) => t[k] !== k);
+  const modificateurs = new Set(Object.values(TABLE.modificateurs));
+  const contextes = new Set(Object.values(TABLE.contextes));
+  /** @type {string[]} */
+  const restes = [];
+  // Noms de thèmes complets, dans le texte : assez distinctifs pour une recherche.
+  const themes = new RegExp(`(?<![\\w-])(${changes(TABLE.themes).map(esc).join('|')})(?![\\w-])`, 'g');
+  const suivis = execFileSync('git', ['ls-files', 'tokens', 'src', 'atelier', 'test', 'docs', 'README.md', 'ARCHITECTURE.md', 'CLAUDE.md', 'KNOWN_ISSUES.md'], { cwd: ROOT, encoding: 'utf8' })
+    .trim()
+    .split('\n')
+    .filter((f) => !/^docs\/attendus\/|^docs\/decisions\.md$|^docs\/anciens-noms\.json$|^atelier\/storybook-static\/|^test\/anciens-noms\.test\.js$|\.(png|woff2|ico|jpe?g)$/.test(f));
+  for (const f of suivis) for (const m of lire(f).matchAll(themes)) restes.push(`${f} : ${m[0]}`);
+  // Modificateurs, contextes, défauts, resolutionOrder et clés des extensions, lus comme JSON dans tokens/.
+  /** @type {Set<string>} */
+  const vus = new Set();
+  /** @param {any} o @param {string} ou */
+  const extensions = (o, ou) => {
+    if (!o || typeof o !== 'object') return;
+    for (const [k, v] of Object.entries(o)) {
+      if ((k === 'ds-lab.mode' || k === 'ds-lab.largeur') && v && typeof v === 'object')
+        for (const c of Object.keys(v)) if (!contextes.has(c)) restes.push(`${ou} : contexte ${c} sous ${k}`);
+      extensions(v, `${ou}.${k}`);
+    }
+  };
+  for (const f of suivis.filter((x) => x.startsWith('tokens/') && x.endsWith('.json'))) {
+    const doc = JSON.parse(lire(f));
+    extensions(doc, f);
+    if (!doc || typeof doc.modifiers !== 'object') continue;
+    for (const [nom, m] of Object.entries(doc.modifiers)) {
+      if (modificateurs.has(nom)) vus.add(`modificateur ${nom}`);
+      else restes.push(`${f} : modificateur ${nom}`);
+      for (const c of Object.keys(/** @type {any} */ (m).contexts ?? {})) {
+        if (contextes.has(c)) vus.add(`contexte ${c}`);
+        else restes.push(`${f} : contexte ${nom}.${c}`);
+      }
+      const defaut = /** @type {any} */ (m).default;
+      if (defaut !== undefined && !contextes.has(defaut)) restes.push(`${f} : défaut ${nom}=${defaut}`);
+    }
+    for (const r of doc.resolutionOrder ?? []) {
+      const x = /^#\/modifiers\/(.+)$/.exec(r?.$ref ?? '');
+      if (x && !modificateurs.has(x[1])) restes.push(`${f} : resolutionOrder ${r.$ref}`);
+    }
+  }
+  assert.deepEqual(restes, []);
+  // Chaque nouveau nom existe : thèmes dans les vuetify.json, modificateurs et contextes dans un resolver.
+  const tous = new Set(MARQUES.flatMap((d) => Object.keys(JSON.parse(readFileSync(join(d, 'vuetify.json'), 'utf8')).themes)));
+  for (const t of Object.values(TABLE.themes)) assert.ok(tous.has(t), `thème ${t}`);
+  for (const m of modificateurs) assert.ok(vus.has(`modificateur ${m}`), `modificateur ${m}`);
+  for (const c of contextes) assert.ok(vus.has(`contexte ${c}`), `contexte ${c}`);
 });

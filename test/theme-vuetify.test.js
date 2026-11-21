@@ -10,17 +10,17 @@
  *      écrit on-<clé>) ; chaque fond et son texte forment une paire de type texte de paires.json ; polices : font-body
  *      ← brand.font.body, font-heading ← brand.font.heading ; les lignes primary-darken-1, surface-variant,
  *      surface-bright et surface-light disent [H] ; secondary dit « Jamais une couleur de bouton (D05) » ;
- *   V2 chaque marque a deux thèmes, <dossier>-clair (dark false) et <dossier>-sombre (dark true), et son nom lu dans
+ *   V2 chaque marque a deux thèmes, <dossier>-light (dark false) et <dossier>-dark (dark true), et son nom lu dans
  *      le resolver ; chaque thème a 26 couleurs (13 fonds, 13 textes) qui couvrent les 14 clés par défaut de Vuetify
  *      (les 13 fonds et on-surface-variant) : Vuetify n'a aucun texte à calculer ;
  *   V3 valeurs mesurées dans le navigateur par l'essai du 18/11/2026 (local/essai-storybook/rapport.md, Q2 et Q3,
  *      fond et texte du bouton ; background.app et background.surface lus dans themes.generated.json de l'essai) :
- *        orbe-cafe-clair      primary #2b4c7e, on-primary #ffffff, background #fbfbfb, surface #ffffff,
+ *        orbe-cafe-light      primary #2b4c7e, on-primary #ffffff, background #fbfbfb, surface #ffffff,
  *                             on-background #363026, on-surface #363026 ;
- *        orbe-cafe-sombre     primary #86b6fe, on-primary #0e1218, background #121212, surface #181818,
+ *        orbe-cafe-dark     primary #86b6fe, on-primary #0e1218, background #121212, surface #181818,
  *                             on-background #d8d5ce, on-surface #d8d5ce ;
- *        maison-alberto-clair primary #836304 (pas 11, plein moyen), on-primary #ffffff ;
- *        maison-alberto-sombre primary #ffd060, on-primary #121212 ;
+ *        maison-alberto-light primary #836304 (pas 11, plein moyen), on-primary #ffffff ;
+ *        maison-alberto-dark primary #ffd060, on-primary #121212 ;
  *      et, pour toutes les marques, chaque couleur égale la valeur du rôle que nomme la table, lue par le lecteur ;
  *   V4 chaque couleur et son texte : au moins 4,5:1 (culori wcagContrast, oracle indépendant), dans chaque thème ;
  *   V5 polices, au format des planches (nom entre guillemets s'il a une espace) :
@@ -115,9 +115,9 @@ test('V2 deux thèmes nommés par marque, 40 couleurs qui couvrent les défauts 
     const r = themesVuetify(d);
     const slug = d.split('/').filter(Boolean).pop();
     assert.equal(r.nom, nomDeMarque(d));
-    assert.deepEqual(Object.keys(r.themes), [`${slug}-clair`, `${slug}-sombre`]);
-    assert.equal(r.themes[`${slug}-clair`].dark, false);
-    assert.equal(r.themes[`${slug}-sombre`].dark, true);
+    assert.deepEqual(Object.keys(r.themes), [`${slug}-light`, `${slug}-dark`]);
+    assert.equal(r.themes[`${slug}-light`].dark, false);
+    assert.equal(r.themes[`${slug}-dark`].dark, true);
     for (const [nom, th] of Object.entries(r.themes)) {
       assert.equal(Object.keys(th.colors).length, 40, nom);
       for (const k of DEFAUTS) assert.ok(k in th.colors, `${nom} : ${k}`);
@@ -131,14 +131,14 @@ test('V3 valeurs de l\'essai, et chaque couleur égale son rôle', () => {
   const alberto = themesVuetify(dossier('maison-alberto')).themes;
   const pris = (/** @type {any} */ c, /** @type {string[]} */ ks) => Object.fromEntries(ks.map((k) => [k, c[k]]));
   const SIX = ['primary', 'on-primary', 'background', 'surface', 'on-background', 'on-surface'];
-  assert.deepEqual(pris(orbe['orbe-cafe-clair'].colors, SIX), { primary: '#2b4c7e', 'on-primary': '#ffffff', background: '#fbfbfb', surface: '#ffffff', 'on-background': '#363026', 'on-surface': '#363026' });
-  assert.deepEqual(pris(orbe['orbe-cafe-sombre'].colors, SIX), { primary: '#86b6fe', 'on-primary': '#0e1218', background: '#121212', surface: '#181818', 'on-background': '#d8d5ce', 'on-surface': '#d8d5ce' });
-  assert.deepEqual(pris(alberto['maison-alberto-clair'].colors, ['primary', 'on-primary']), { primary: '#836304', 'on-primary': '#ffffff' });
-  assert.deepEqual(pris(alberto['maison-alberto-sombre'].colors, ['primary', 'on-primary']), { primary: '#ffd060', 'on-primary': '#121212' });
+  assert.deepEqual(pris(orbe['orbe-cafe-light'].colors, SIX), { primary: '#2b4c7e', 'on-primary': '#ffffff', background: '#fbfbfb', surface: '#ffffff', 'on-background': '#363026', 'on-surface': '#363026' });
+  assert.deepEqual(pris(orbe['orbe-cafe-dark'].colors, SIX), { primary: '#86b6fe', 'on-primary': '#0e1218', background: '#121212', surface: '#181818', 'on-background': '#d8d5ce', 'on-surface': '#d8d5ce' });
+  assert.deepEqual(pris(alberto['maison-alberto-light'].colors, ['primary', 'on-primary']), { primary: '#836304', 'on-primary': '#ffffff' });
+  assert.deepEqual(pris(alberto['maison-alberto-dark'].colors, ['primary', 'on-primary']), { primary: '#ffd060', 'on-primary': '#121212' });
   const t = brute();
   for (const d of MARQUES) {
     const r = themesVuetify(d);
-    for (const [mode, th] of [['clair', Object.values(r.themes)[0]], ['sombre', Object.values(r.themes)[1]]]) {
+    for (const [mode, th] of [['light', Object.values(r.themes)[0]], ['dark', Object.values(r.themes)[1]]]) {
       const s = loadRoles(d, { mode: /** @type {string} */ (mode) });
       const roles = resolveRoles(s.semantique, s.primitives, s.marque);
       for (const k of COULEURS) {
@@ -232,7 +232,7 @@ test('V9 variables ds- du bouton : dimensions dans les dix thèmes, traits égau
   assert.equal(Object.keys(DIMENSIONS).length + Object.keys(TRAITS).length + CHAMP_CARTE.length + AVATAR_ETIQUETTE_VARIABLES.length + TITRE_4.length, 61);
   for (const d of MARQUES) {
     const themes = Object.values(themesVuetify(d).themes);
-    for (const [i, mode] of /** @type {const} */ (['clair', 'sombre']).entries()) {
+    for (const [i, mode] of /** @type {const} */ (['light', 'dark']).entries()) {
       const x = themes[i].variables;
       assert.deepEqual(Object.keys(x).filter((k) => k.startsWith('ds-')).sort(), [...Object.keys(DIMENSIONS), ...Object.keys(TRAITS), ...CHAMP_CARTE, ...AVATAR_ETIQUETTE_VARIABLES, ...TITRE_4].sort(), `${d} ${mode}`);
       assert.deepEqual(TITRE_4.slice(1).map((k) => x[k]), ['16px', '700', '1.5'], `${d} ${mode} titre 4`);
@@ -245,8 +245,8 @@ test('V9 variables ds- du bouton : dimensions dans les dix thèmes, traits égau
   }
   const orbe = themesVuetify(dossier('orbe-cafe')).themes;
   const traits = (/** @type {Record<string, string>} */ x) => [x['ds-focus'], x['ds-border'], x['ds-border-disabled']];
-  assert.deepEqual(traits(orbe['orbe-cafe-clair'].variables), ['#4c6994', '#958f84', '#d8d6d2']);
-  assert.deepEqual(traits(orbe['orbe-cafe-sombre'].variables), ['#86b6fe', '#6a665c', '#303030']);
+  assert.deepEqual(traits(orbe['orbe-cafe-light'].variables), ['#4c6994', '#958f84', '#d8d6d2']);
+  assert.deepEqual(traits(orbe['orbe-cafe-dark'].variables), ['#86b6fe', '#6a665c', '#303030']);
 });
 
 test('V8 npm run vuetify : une marque, toutes, option inconnue', () => {

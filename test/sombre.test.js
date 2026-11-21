@@ -55,7 +55,7 @@ test('M1 couleur en sombre : pas 9 = source, pas 1 à 8 calés sur la page, pas 
   const g = generateScale('bleu', '#2b4c7e', { fond: 'sombre', cibles: CIBLES_SOMBRES.couleur, chromaTextes: 'max' });
   assert.equal(g.steps[8], '#2b4c7e');
   for (let i = 1; i <= 7; i++) assert.ok(proche(noir(g.steps[i - 1]) / PAGE, TARGETS[i] / 1.02, 0.01), `pas ${i} : ${noir(g.steps[i - 1]) / PAGE}`);
-  assert.ok(wcagContrast(g.steps[7], roles('orbe-cafe', 'sombre')('background.surface')) >= 3, 'pas 8 : 3:1 sur background.surface');
+  assert.ok(wcagContrast(g.steps[7], roles('orbe-cafe', 'dark')('background.surface')) >= 3, 'pas 8 : 3:1 sur background.surface');
   assert.ok(proche(noir(g.steps[10]) / PAGE, 9, 0.01), `pas 11 : ${noir(g.steps[10]) / PAGE}`);
   assert.ok(proche(noir(g.steps[11]) / PAGE, 12.75, 0.01), `pas 12 : ${noir(g.steps[11]) / PAGE}`);
   assert.ok((oklch(g.steps[10]).c ?? 0) >= 0.093, `chroma du pas 11 : ${oklch(g.steps[10]).c}`);
@@ -63,8 +63,8 @@ test('M1 couleur en sombre : pas 9 = source, pas 1 à 8 calés sur la page, pas 
 });
 
 test('M2 neutres dessinés : page vers #121212, surfaces de plus en plus claires, textes proches du clair', () => {
-  const h = roles('orbe-cafe', 'sombre');
-  const c = roles('orbe-cafe', 'clair');
+  const h = roles('orbe-cafe', 'dark');
+  const c = roles('orbe-cafe', 'light');
   assert.ok(proche(noir(h('background.app')), PAGE, 0.01), `background.app ${h('background.app')}`);
   const suite = ['background.app', 'background.subtle', 'background.surface', 'background.component', 'background.component.hover', 'background.component.pressed'].map((r) => noir(h(r)));
   for (let i = 1; i < suite.length; i++) assert.ok(suite[i] > suite[i - 1], `ordre des fonds : ${suite.map((x) => x.toFixed(3)).join(' < ')}`);
@@ -91,8 +91,8 @@ test('M4 rôles identiques dans les deux modes ; surface et texte sur inverse bl
   const chemin = join(ROOT, 'tokens', 'orbe-cafe', RESOLVER);
   const sem = lire(join(COMMUN, 'semantique.tokens.json'));
   const { $description, ...attendus } = sem;
-  for (const mode of ['clair', 'sombre']) assert.deepEqual(partager(lireResolver(chemin, { mode })).semantique, attendus, mode);
-  const c = roles('orbe-cafe', 'clair');
+  for (const mode of ['light', 'dark']) assert.deepEqual(partager(lireResolver(chemin, { mode })).semantique, attendus, mode);
+  const c = roles('orbe-cafe', 'light');
   assert.equal(c('background.surface'), '#ffffff');
   assert.equal(c('text.on-inverse'), '#ffffff');
 });
@@ -117,8 +117,8 @@ test('M5 bouton sombre : pas 11 et 1 en alias, survol calculé qui éclaircit, t
       assert.deepEqual({ base: survol.$extensions['ds-lab.survol'].base, clarte: survol.$extensions['ds-lab.survol'].clarte }, { base: `{color.${s}.11}`, clarte: 0.05 }, `${m} ${e} : formule`);
       assert.equal(sombre[e]['on-solid'].$value, `{color.${s}.1}`, `${m} ${e}`);
     }
-    const h = roles(m, 'sombre');
-    const c = roles(m, 'clair');
+    const h = roles(m, 'dark');
+    const c = roles(m, 'light');
     const ds1 = wcagContrast(h('text.on-interactive'), h('background.interactive.strong'));
     assert.ok(ds1 >= 7, `${m} : ${ds1}`);
     assert.ok(wcagContrast(h('text.on-interactive'), h('background.interactive.strong.hover')) >= 4.5, m);
@@ -136,6 +136,6 @@ test('M6 fichiers sombres = sortie de la saisie ; les 5 marques fictives passent
     assert.deepEqual(r.motifs, [], m);
     assert.equal(serialiser(r.echellesSombres), readFileSync(join(dossier, 'echelles.sombre.tokens.json'), 'utf8'), m);
     assert.equal(serialiser(r.marqueSombre), readFileSync(join(dossier, 'marque.sombre.tokens.json'), 'utf8'), m);
-    assert.deepEqual(contratRoles(loadRoles(dossier, { mode: 'sombre' })).fails, [], m);
+    assert.deepEqual(contratRoles(loadRoles(dossier, { mode: 'dark' })).fails, [], m);
   }
 });

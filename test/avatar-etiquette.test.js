@@ -38,7 +38,7 @@ import { initiales, nomLu } from '../atelier/composants/initiales.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const MARQUES = ['atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto', 'orbe-cafe'];
-const MODES = /** @type {const} */ (['clair', 'sombre']);
+const MODES = /** @type {const} */ (['light', 'dark']);
 
 /** Les quinze cas de la règle des initiales → lettres attendues ; « » pour un nom vide ou sans lettre, refusé par le menu. */
 const INITIALES = [
@@ -84,16 +84,16 @@ const COMMUNES = [
 ];
 /** Rôles de la marque, par thème : [text.brand, background.brand.subtle, rapport, pastel contre background.surface, contre background.app]. */
 const MARQUE = {
-  'atelier-lavandine-clair': ['#470c7e', '#f5f1fe', 11.65, 1.11, 1.07],
-  'atelier-lavandine-sombre': ['#ddcefd', '#1d1925', 11.76, 1.03, 1.09],
-  'ecume-et-sel-clair': ['#003647', '#e3f6fe', 11.66, 1.11, 1.07],
-  'ecume-et-sel-sombre': ['#ebf9ff', '#1b1b1b', 16.02, 1.03, 1.09],
-  'grenat-papeterie-clair': ['#2d000f', '#fcf0f2', 16.88, 1.11, 1.07],
-  'grenat-papeterie-sombre': ['#fec7d2', '#2f1119', 11.78, 1.03, 1.08],
-  'maison-alberto-clair': ['#402e00', '#fbf3e1', 11.82, 1.1, 1.07],
-  'maison-alberto-sombre': ['#feeecb', '#1d1b17', 14.99, 1.03, 1.09],
-  'orbe-cafe-clair': ['#103060', '#f1f3f7', 11.71, 1.11, 1.07],
-  'orbe-cafe-sombre': ['#bdd7fe', '#111b2a', 11.79, 1.03, 1.08],
+  'atelier-lavandine-light': ['#470c7e', '#f5f1fe', 11.65, 1.11, 1.07],
+  'atelier-lavandine-dark': ['#ddcefd', '#1d1925', 11.76, 1.03, 1.09],
+  'ecume-et-sel-light': ['#003647', '#e3f6fe', 11.66, 1.11, 1.07],
+  'ecume-et-sel-dark': ['#ebf9ff', '#1b1b1b', 16.02, 1.03, 1.09],
+  'grenat-papeterie-light': ['#2d000f', '#fcf0f2', 16.88, 1.11, 1.07],
+  'grenat-papeterie-dark': ['#fec7d2', '#2f1119', 11.78, 1.03, 1.08],
+  'maison-alberto-light': ['#402e00', '#fbf3e1', 11.82, 1.1, 1.07],
+  'maison-alberto-dark': ['#feeecb', '#1d1b17', 14.99, 1.03, 1.09],
+  'orbe-cafe-light': ['#103060', '#f1f3f7', 11.71, 1.11, 1.07],
+  'orbe-cafe-dark': ['#bdd7fe', '#111b2a', 11.79, 1.03, 1.08],
 };
 /** Variables ajoutées, hors polices, les mêmes dans les dix thèmes. */
 const VALEURS = {
@@ -121,7 +121,7 @@ const r2 = (a, b) => Math.round(wcagContrast(a, b) * 100) / 100;
 /** Noms d'une valeur CSS font-family, guillemets ôtés. @param {string} s */
 const noms = (s) => s.split(',').map((x) => x.trim().replace(/^"(.*)"$/, '$1'));
 
-/** Rôles et jetons d'un thème. @param {string} marque @param {'clair' | 'sombre'} mode */
+/** Rôles et jetons d'un thème. @param {string} marque @param {'light' | 'dark'} mode */
 function theme(marque, mode) {
   const set = loadRoles(join(ROOT, 'tokens', marque), { mode });
   const roles = resolveRoles(set.semantique, set.primitives, set.marque);
@@ -199,16 +199,16 @@ test('A4 couleurs et variables ds- de l\'avatar et de l\'étiquette, dans les di
 /** Fonds teintés, par thème : [background.tint, rapport de text.default dessus, contre background.surface, contre background.app,
  * background.brand.tint, rapport de text.brand dessus, contre background.surface, contre background.app]. */
 const TEINTES = {
-  'atelier-lavandine-clair': ['#f3f2f1', 11.68, 1.12, 1.08, '#f5f1fe', 11.65, 1.11, 1.07],
-  'atelier-lavandine-sombre': ['#282828', 10.06, 1.2, 1.27, '#2c243b', 10.07, 1.2, 1.27],
-  'ecume-et-sel-clair': ['#f3f2f1', 11.68, 1.12, 1.08, '#e3f6fe', 11.66, 1.11, 1.07],
-  'ecume-et-sel-sombre': ['#282828', 10.06, 1.2, 1.27, '#22292c', 13.74, 1.2, 1.27],
-  'grenat-papeterie-clair': ['#f3f2f1', 11.68, 1.12, 1.08, '#fcf0f2', 16.88, 1.11, 1.07],
-  'grenat-papeterie-sombre': ['#282828', 10.06, 1.2, 1.27, '#461825', 10.1, 1.2, 1.26],
-  'maison-alberto-clair': ['#f3f2f1', 11.68, 1.12, 1.08, '#fbf3e1', 11.82, 1.1, 1.07],
-  'maison-alberto-sombre': ['#282828', 10.06, 1.2, 1.27, '#2b271e', 12.97, 1.19, 1.26],
-  'orbe-cafe-clair': ['#f3f2f1', 11.68, 1.12, 1.08, '#f1f3f7', 11.71, 1.11, 1.07],
-  'orbe-cafe-sombre': ['#282828', 10.06, 1.2, 1.27, '#19283f', 10.11, 1.2, 1.26],
+  'atelier-lavandine-light': ['#f3f2f1', 11.68, 1.12, 1.08, '#f5f1fe', 11.65, 1.11, 1.07],
+  'atelier-lavandine-dark': ['#282828', 10.06, 1.2, 1.27, '#2c243b', 10.07, 1.2, 1.27],
+  'ecume-et-sel-light': ['#f3f2f1', 11.68, 1.12, 1.08, '#e3f6fe', 11.66, 1.11, 1.07],
+  'ecume-et-sel-dark': ['#282828', 10.06, 1.2, 1.27, '#22292c', 13.74, 1.2, 1.27],
+  'grenat-papeterie-light': ['#f3f2f1', 11.68, 1.12, 1.08, '#fcf0f2', 16.88, 1.11, 1.07],
+  'grenat-papeterie-dark': ['#282828', 10.06, 1.2, 1.27, '#461825', 10.1, 1.2, 1.26],
+  'maison-alberto-light': ['#f3f2f1', 11.68, 1.12, 1.08, '#fbf3e1', 11.82, 1.1, 1.07],
+  'maison-alberto-dark': ['#282828', 10.06, 1.2, 1.27, '#2b271e', 12.97, 1.19, 1.26],
+  'orbe-cafe-light': ['#f3f2f1', 11.68, 1.12, 1.08, '#f1f3f7', 11.71, 1.11, 1.07],
+  'orbe-cafe-dark': ['#282828', 10.06, 1.2, 1.27, '#19283f', 10.11, 1.2, 1.26],
 };
 
 test('A5 emplacements et rôles des fonds teintés ; background.component et background.brand.subtle inchangés', () => {
@@ -241,6 +241,6 @@ test('A6 valeurs et rapports des fonds teintés, dans les dix thèmes', () => {
       nom,
     );
     assert.ok(nt >= 10 && bt >= 10, `${nom} : texte au-dessus de 10:1`);
-    if (mode === 'sombre') assert.ok(ns >= 1.19 && bs >= 1.19, `${nom} : détaché de la surface`);
+    if (mode === 'dark') assert.ok(ns >= 1.19 && bs >= 1.19, `${nom} : détaché de la surface`);
   }
 });

@@ -77,7 +77,7 @@ test('W2 contraste --marque : échelle commune redéfinie, sortie 1, ligne qui n
   assert.equal(run('contraste', '--marque', d).status, 0);
   const commun = JSON.parse(readFileSync(join(COMMUN, 'primitives.tokens.json'), 'utf8'));
   writeFileSync(join(d, 'primitives.tokens.json'), serialiser({ color: { $type: 'color', blue: orbe.color.blue, neutral: commun.color.neutral } }));
-  for (const mode of ['clair', 'sombre']) {
+  for (const mode of ['light', 'dark']) {
     const p = run('contraste', '--marque', d, '--mode', mode);
     assert.equal(p.status, 1, `${mode} : ${p.stdout}${p.stderr}`);
     assert.match(p.stdout, REDEFINIE);
