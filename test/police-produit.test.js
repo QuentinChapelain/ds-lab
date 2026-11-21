@@ -24,10 +24,10 @@ import assert from 'node:assert/strict';
 import { readFileSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { saisir } from '../src/tokens/saisie.js';
-import { COMMUN, lireResolver, partager } from '../src/tokens/resolver.js';
+import { dossiersDeMarque, COMMUN, lireResolver, partager } from '../src/tokens/resolver.js';
 import { flattenTokens, resoudreAlias } from '../src/tokens/roles.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -75,7 +75,7 @@ test('P3 fonts.heading demandée ; fonts.body vide refusée', () => {
 });
 
 test('P4 les marques fictives gardent leur police de texte ; le commun est lu avant la couche marque', () => {
-  for (const m of ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto']) {
+  for (const m of dossiersDeMarque().map((d) => basename(d))) {
     const d = join(ROOT, 'tokens', m);
     const r = lire(join(d, 'marque.resolver.json'));
     const sources = r.sets.marque.sources.map((/** @type {any} */ s) => s.$ref);

@@ -15,13 +15,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { lireResolver, resoudre, fusionner, partager, RESOLVER, COMMUN } from '../src/tokens/resolver.js';
+import { dossiersDeMarque, lireResolver, resoudre, fusionner, partager, RESOLVER, COMMUN } from '../src/tokens/resolver.js';
 import { saisir, serialiser } from '../src/tokens/saisie.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const MARQUES = ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto'];
+const MARQUES = dossiersDeMarque().map((d) => basename(d));
 /** @param {string} p */
 const lire = (p) => JSON.parse(readFileSync(p, 'utf8'));
 const ref = (/** @type {string} */ r) => ({ $ref: r });

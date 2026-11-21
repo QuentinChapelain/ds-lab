@@ -25,14 +25,15 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { wcagContrast } from 'culori';
 import { loadRoles, resolveRoles, flattenTokens, resoudreAlias, contratRoles } from '../src/tokens/roles.js';
 import { charger } from './helpers/jetons.js';
+import { dossiersDeMarque } from '../src/tokens/resolver.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const MARQUES = ['atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto', 'orbe-cafe'];
+const MARQUES = dossiersDeMarque().map((d) => basename(d));
 const MODES = /** @type {const} */ (['light', 'dark']);
 
 /** Variante → [fond au repos, texte, fond au survol]. Le discret et le danger discret sont posés sur la page. */

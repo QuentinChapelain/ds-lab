@@ -39,7 +39,11 @@ jobs:
       - run: npm run types
       - run: npm run knip
       - run: npm run dependances
+      # Contraste dans les quatre contextes du resolver, pour toute marque de tokens/ (DS2, DS12, D65).
       - run: npm run contraste
+      - run: npm run contraste -- --mode dark
+      - run: npm run contraste -- --largeur narrow
+      - run: npm run contraste -- --mode dark --largeur narrow
       - run: npm run espacements
       - run: npm run typo
       # Garde du style des composants et des modules (CP3, D65) : Stylelint, sans installation de l'atelier.

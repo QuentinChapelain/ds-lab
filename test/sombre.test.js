@@ -27,17 +27,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { wcagContrast, oklch } from 'culori';
 import { generateScale, checkValise, TARGETS } from '../src/valise/generate.js';
 import { scaleToDtcg, valiseFromTokens, sombreTokens, CIBLES_SOMBRES } from '../src/tokens/primitives.js';
 import { loadRoles, contratRoles, resolveRoles } from '../src/tokens/roles.js';
 import { saisir, serialiser } from '../src/tokens/saisie.js';
-import { COMMUN, RESOLVER, lireResolver, partager } from '../src/tokens/resolver.js';
+import { dossiersDeMarque, COMMUN, RESOLVER, lireResolver, partager } from '../src/tokens/resolver.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const MARQUES = ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto'];
+const MARQUES = dossiersDeMarque().map((d) => basename(d));
 const PAGE = 1.121;
 /** @param {string} p */
 const lire = (p) => JSON.parse(readFileSync(p, 'utf8'));

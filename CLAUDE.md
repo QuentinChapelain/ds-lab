@@ -37,7 +37,7 @@ npm run style            style des composants et des modules (CP3) ; sortie 1 su
 npm --prefix atelier run fiches -- --verifier   fiches des composants et des modules, table des noms ; sortie 1 si une fiche ne correspond plus
 ```
 
-Les trois contrôles de la cible (contraste, espacements, typo) prennent `--marque <dossier>` ; sans l'option, ils jugent chaque marque de `tokens/` et sortent en 1 si une seule échoue (D26). Aucune commande n'a de marque par défaut.
+`npm run contraste` se lance aussi avec `--mode dark`, `--largeur narrow` et les deux : la CI juge les quatre contextes (D65). Les trois contrôles de la cible (contraste, espacements, typo) prennent `--marque <dossier>` ; sans l'option, ils jugent chaque marque de `tokens/` et sortent en 1 si une seule échoue (D26). Aucune commande n'a de marque par défaut.
 
 Les trois contrôles de la cible, npm run types, npm run knip, npm run dependances, npm run style et le contrôle des fiches restent à 0 échec, et npm test ne perd aucun vert, avant chaque commit et à la fin de chaque lot. La CI (`.github/workflows/ci.yml`) rejoue ces commandes à chaque push ; elle ne remplace pas le lancement local.
 

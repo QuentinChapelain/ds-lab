@@ -26,11 +26,12 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { loadRoles, resolveRoles, contratRoles } from '../src/tokens/roles.js';
 import { serialiser } from '../src/tokens/saisie.js';
 import { AJOUTS, PAIRES_AJOUTEES, INTERDITES_AJOUTEES, PAIRES_BOUTON, PAIRES_AVATAR, N_ROLES, N_PAIRES } from './helpers/roles-ajoutes.js';
 import { charger, COMMUN, ORBE } from './helpers/jetons.js';
+import { dossiersDeMarque } from '../src/tokens/resolver.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'tokens', 'orbe-cafe');
@@ -74,7 +75,7 @@ test('paires.json : 48 paires d\'origine en tête, 18 ajoutées, 4 interdites aj
 });
 
 test('les cinq marques fictives : 0 paire en échec, toutes les paires, 8 interdites', () => {
-  for (const slug of ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto']) {
+  for (const slug of dossiersDeMarque().map((d) => basename(d))) {
     const d = join(ROOT, 'tokens', slug);
     // Le jeu de chaque marque, lu par son resolver (avant : rôles et primitives d'Orbe Café
     // pour chacune, couche marque et échelles fusionnées à la main).

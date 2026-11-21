@@ -18,15 +18,16 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { saisir, chargerCommun } from '../src/tokens/saisie.js';
 import { loadRoles, contratRoles } from '../src/tokens/roles.js';
 import { charger } from './helpers/jetons.js';
 import { N_PAIRES } from './helpers/roles-ajoutes.js';
+import { dossiersDeMarque } from '../src/tokens/resolver.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const MARQUES = ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto'];
+const MARQUES = dossiersDeMarque().map((d) => basename(d));
 const POLICES = { heading: ['Georgia', 'serif'], body: ['Arial', 'sans-serif'] };
 /** @param {string[]} args */
 const run = (...args) => spawnSync(process.execPath, [join(ROOT, 'src', 'cli', 'contraste.js'), ...args], { cwd: ROOT, encoding: 'utf8' });

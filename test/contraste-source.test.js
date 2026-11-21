@@ -15,15 +15,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { basename, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { wcagContrast } from 'culori';
 import { contrastRatio } from '../src/lib/color.js';
 import { loadRoles, contratRoles } from '../src/tokens/roles.js';
 import { N_PAIRES } from './helpers/roles-ajoutes.js';
+import { dossiersDeMarque } from '../src/tokens/resolver.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const MARQUES = ['orbe-cafe', 'atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto'];
+const MARQUES = dossiersDeMarque().map((d) => basename(d));
 
 test('W1 contrastRatio et culori : même nombre sur toutes les paires de rôles', () => {
   let n = 0;

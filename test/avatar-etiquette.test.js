@@ -37,16 +37,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { wcagContrast } from 'culori';
 import { loadRoles, resolveRoles, flattenTokens, resoudreAlias } from '../src/tokens/roles.js';
 import { themesVuetify } from '../src/tokens/vuetify.js';
 import { charger } from './helpers/jetons.js';
 import { initiales, nomLu } from '../atelier/composants/initiales.js';
+import { dossiersDeMarque } from '../src/tokens/resolver.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const MARQUES = ['atelier-lavandine', 'ecume-et-sel', 'grenat-papeterie', 'maison-alberto', 'orbe-cafe'];
+const MARQUES = dossiersDeMarque().map((d) => basename(d));
 const MODES = /** @type {const} */ (['light', 'dark']);
 
 /** Les quinze cas de la règle des initiales → lettres attendues ; « » pour un nom vide ou sans lettre, refusé par le menu. */
