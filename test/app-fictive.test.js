@@ -11,7 +11,8 @@
  *   AF4 chaque entrée de marque égale celle de tokens/, à l'octet ; banc.json nomme exactement ces marques ;
  *   AF5 295 membres ; le fichier égale à l'octet ce qu'écrit fixtures/banc/fabriquer-membres.js ; noms et profils
  *       uniques ; au moins deux membres par entreprise du script et par ville ; les trois personnes proposées sont dans
- *       la liste, avec leur question et une raison ; la personne de l'équipe et les trois qui animent ont leurs champs.
+ *       la liste, avec leur question et une raison ; la personne de l'équipe et les trois qui animent ont leurs champs, et le même
+ *       rôle pour la personne qui est des deux.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -96,7 +97,9 @@ test('AF5 295 membres rejouables, des noms uniques, les personnes proposées et 
   /** @param {(m: any) => string} cle */
   const comptes = (cle) => Object.entries(Object.groupBy(MEMBRES, cle)).map(([k, l]) => [k, l?.length]);
   for (const [k, n] of [...comptes((m) => m.entreprise.nom), ...comptes((m) => m.ville)]) assert.ok(Number(n) >= 2, `${k} : ${n} membre`);
-  assert.deepEqual(Object.keys(COUP_DE_MAIN).sort(), ['demander', 'misesEnRelation', 'nom', 'photo']);
+  assert.deepEqual(Object.keys(COUP_DE_MAIN).sort(), ['demander', 'equipe', 'misesEnRelation', 'nom', 'photo', 'role']);
+  assert.match(COUP_DE_MAIN.equipe, /^Équipe /);
+  assert.equal(COUP_DE_MAIN.role, ANIMATION.find((/** @type {any} */ a) => `${a.prenom} ${a.nom}` === COUP_DE_MAIN.nom)?.role, 'la même personne, le même rôle');
   assert.equal(typeof COUP_DE_MAIN.misesEnRelation, 'number');
   assert.equal(typeof PROPOSES.raison, 'string');
   assert.match(PROPOSES.raison, /\.$/);

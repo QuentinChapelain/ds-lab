@@ -335,7 +335,14 @@ const brut = [
 export const MEMBRES = brut.map((m) => ({ ...m, profil: `/membres/${slug(m.nom)}`, ecrire: `/messages/nouveau?a=${slug(m.nom)}` }));
 
 /** Réponse figée de GET /api/coup-de-main : la personne de l'équipe qui met en relation. */
-export const COUP_DE_MAIN = { nom: 'Solène Vasseur', photo: PORTRAIT_C, misesEnRelation: 214, demander: '/coup-de-main/nouveau' };
+export const COUP_DE_MAIN = {
+  nom: 'Solène Vasseur',
+  role: 'Responsable du réseau',
+  equipe: 'Équipe de Quai Nord',
+  photo: PORTRAIT_C,
+  misesEnRelation: 214,
+  demander: '/coup-de-main/nouveau',
+};
 
 /** @param {string} nom */
 const membre = (nom) => MEMBRES.find((m) => m.nom === nom);

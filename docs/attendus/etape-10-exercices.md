@@ -232,6 +232,14 @@ Lu avant le code [F] ; complété à l'arrêt 2 par ce que la fabrication aura m
 | R18 | Sous un titre sans sous-titre, le contenu d'une `DsCard` suit à 4 px : le champ de recherche colle au titre de sa carte (limite écrite de la fiche, D60) |
 | R19 | Trois `DsCard` côte à côte n'alignent pas leurs boutons : rien ne pousse les actions en bas d'une carte étirée |
 
+**Vu sur les planches, après l'arrêt 2** [F, 22/11, 12 h 17 ; ajouté par le lot qui suit]. La case à cocher à 1,51:1 est déjà R16.
+
+| # | Constat |
+|---|---|
+| R20 | L'étiquette n'a ni icône ni ton fort : les ouvertures ne se détachent pas |
+| R21 | Ni conteneur ni ligne de liste : la liste n'a pas de carte, et une ligne prend cinq lignes de texte |
+| R22 | L'aplat garde sa couleur claire en sombre : règle à revoir |
+
 ## 9. Ce qui ne change pas
 
 `verifier` par cause, le relecteur, le carnet, les deux bras, la fin d'un passage, `claude-sonnet-5-5` pour tous. Les trois points non vérifiés du lot 1 (skills du compte écartés, `PATH` du hook, `CLAUDE.md` du clone) se vérifient sur le passage jetable B-9 de Composer, après ce lot.
