@@ -1,0 +1,1 @@
+Ne construis rien. Écris dans `inventaire.md` : les pièces que cette page demande ; pour chacune, ce que l'app a déjà pour la faire, ou ce qui manque ; les questions que tu me poserais avant de commencer.

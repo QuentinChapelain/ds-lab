@@ -11,12 +11,25 @@ import { copierArbre, executer } from './outils.js';
 
 /**
  * @typedef {{ couches: string[], retires: string[], copies: { de: string, vers: string, sauf?: string[] }[], saisir: boolean,
- *   brief: string | null, pages: string[] }} Exercice
+ *   brief: string[], sansHumain: boolean, pages: string[], rendu?: string, reference?: string }} Exercice
  */
 
-/** Ce que disent les exercices, lu dans fixtures/banc/exercices.json. @param {string} depot */
-export const exercices = (depot) =>
-  /** @type {{ caches: string[], signaux: { plusTard: Record<string, string>, refait: string }, exercices: Record<string, Exercice> }} */ (JSON.parse(readFileSync(join(depot, 'fixtures', 'banc', 'exercices.json'), 'utf8')));
+/**
+ * Ce que disent les exercices, lu dans fixtures/banc/exercices.json. Un exercice qui nomme le départ d'un autre en prend
+ * les couches, les retraits, les copies et la saisie.
+ * @param {string} depot
+ */
+export function exercices(depot) {
+  const lu = /** @type {{ caches: string[], signaux: { plusTard: Record<string, string>, refait: string }, exercices: Record<string, any> }} */ (
+    JSON.parse(readFileSync(join(depot, 'fixtures', 'banc', 'exercices.json'), 'utf8'))
+  );
+  const tous = Object.entries(lu.exercices).map(([nom, e]) => {
+    if (!e.depart) return [nom, e];
+    const { couches, retires, copies, saisir } = lu.exercices[e.depart];
+    return [nom, { couches, retires, copies, saisir, ...e }];
+  });
+  return { ...lu, exercices: /** @type {Record<string, Exercice>} */ (Object.fromEntries(tous)) };
+}
 
 /** Les marques de l'app, chacune par son dossier de tokens/. @param {string} depot */
 export const marquesDuBanc = (depot) => /** @type {string[]} */ (JSON.parse(readFileSync(join(depot, 'fixtures', 'app-fictive', 'banc.json'), 'utf8')).marques);

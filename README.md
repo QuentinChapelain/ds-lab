@@ -36,7 +36,7 @@ npm run espacements -- [--marque <dossier> | --marques <dossier>] [--semantique 
 npm run typo        -- [--marque <dossier> | --marques <dossier>] [--semantique <fichier>] [--primitives <fichier>] [--couche-marque <fichier>] [--etroit <fichier>]   contrôler les styles de texte
 npm run verifier    -- --marques <dossier> --style <motif>… [--skill <dossier>]   contrôler les tokens, le style et la copie du skill d'un autre dépôt : contraste dans les quatre contextes, espacements, typo, style ; un bloc par cause, qui dit quoi faire
 npm run skill                                                écrire les textes du skill (skill/ds-lab/) depuis docs/regles.md et docs/techniques/
-npm run banc        -- --exercice composer|etendre|installer --bras A|B --passage <n> --modele <m>  poser le dossier d'un passage du banc d'essai, hors du dépôt ; --exercice <e> --relever <bras>-<n> en relève les traces
+npm run banc        -- --exercice installer|composer|etendre|inventorier --bras A|B --passage <n> --modele <m>  poser le dossier d'un passage du banc d'essai, hors du dépôt ; --exercice <e> --relever <bras>-<n> en relève les traces
 npm run css         -- [--marque <dossier>]                  écrire la feuille CSS complète de chaque marque (tokens/<marque>/jetons.css), par Terrazzo
 npm run vuetify     -- [--marque <dossier>]                  écrire les thèmes Vuetify clair et sombre de chaque marque (tokens/<marque>/vuetify.json)
 npm run types                                                vérifier les types JSDoc de src/ (non strict, sans rien émettre)
@@ -181,19 +181,20 @@ Limites : les couches communes sont celles du clone qui lit, et la CI de l'équi
 
 ds-lab se mesure sur un banc d'essai qui se rejoue à l'identique (D67) : une IA neuve, qui n'a que l'app, le skill et un clone de ds-lab, travaille dans Quai Nord, une petite app Vuetify fictive (`fixtures/app-fictive/`), pour trois marques. La page n'est que le banc : on y mesure l'outil, et l'on relance les mêmes passages après chaque amélioration.
 
-Trois exercices, chacun avec son point de départ et son brief (D68, `fixtures/banc/exercices.json`) :
+Quatre exercices, chacun avec son point de départ et son brief (D68, D69, `fixtures/banc/exercices.json`) :
 
 | Exercice | L'app au départ | Ce que fait l'IA neuve |
 |---|---|---|
 | `installer` | Thèmes et valeurs à la main, trois entrées de marque | Branche les trois marques |
 | `composer` | Marques saisies, thème branché, les six composants, un gabarit de page ; `verifier` sort 0 | Construit la page annuaire |
 | `etendre` | Le même, plus l'annuaire ; `verifier` sort 0 | Ajoute les pièces qui manquent ; pas encore de brief, la pose refuse |
+| `inventorier` | Celui de `composer` | Ne construit rien : écrit `inventaire.md`, les pièces que la page demande, ce que l'app a ou ce qui manque, ses questions |
 
 - **Bras** : A, le skill seul ; B, le skill, plus le relecteur et le carnet.
 - **Relecteur** : un hook `PostToolUse` de Claude Code qui relit le seul fichier que l'agent vient d'écrire, par les contrôles de `verifier`, et lui rend les blocs en échec (code 2) ou « 0 échec » ; `node "$DS_LAB/src/cli/relecteur.js" --poser --marques tokens --style "src/**/*.vue"`, lancé dans le dépôt de l'équipe, le pose dans `<dépôt>/.claude/settings.json`, avec le **carnet** : un bloc du `CLAUDE.md` et `carnet.md`, une ligne par question de l'agent. Il n'entre pas dans le skill avant que les passages l'aient jugé.
 - **Passage** : une session d'agent du début à la fin, dans un dossier à lui, `~/Developer/banc/<exercice>/<bras>-<n>/` par défaut.
 - `npm run banc -- --exercice composer --bras A --passage 1 --modele <modèle>` pose ce dossier : une copie de ds-lab, commité (une pose refuse des changements non commités), sans la référence de l'annuaire ni l'historique, avec `npm ci` ; l'app au départ de l'exercice, fabriquée par les commandes de cette copie, en dépôt git d'un commit « départ », avec `npm ci` ; le skill dans `<passage>/app/.claude/skills/ds-lab/` ; `DS_LAB`, le dossier de la copie et le Node 24 du banc en tête du `PATH` dans `<passage>/app/.claude/settings.local.json` ; `brief.txt` et `brief-seul.txt` (`fixtures/banc/`) ; `depart.txt`, avec les deux commandes qui ouvrent la session, avec ou sans humain, et la sortie de `verifier` au départ.
-- `npm run banc -- --exercice composer --relever A-1` écrit dans `local/banc/composer/A-1/` : le journal de la session, la sortie de `verifier` et ses échecs comptés dans les fichiers neufs ou modifiés et dans les fichiers intouchés, le diff depuis « départ », le carnet, ce que la session a chargé, les heures, ce que le passage a posé (`pose.md` : composants `Ds…`, pièces de Vuetify qui en ont un, composants créés ou modifiés, gabarit employé ou refait, exceptions de style, signaux de ce que le brief remet à plus tard ; pas pour Installer) et douze planches par page de l'exercice (trois marques, clair et sombre, 1 280 et 360 px).
+- `npm run banc -- --exercice composer --relever A-1` écrit dans `local/banc/composer/A-1/` : le journal de la session, la sortie de `verifier` et ses échecs comptés dans les fichiers neufs ou modifiés et dans les fichiers intouchés, le diff depuis « départ », le carnet, ce que la session a chargé et ce qu'elle a lu (`lu.md`), les heures, le fichier que le brief demande, ce que le passage a posé (`pose.md` : composants `Ds…`, pièces de Vuetify qui en ont un, composants créés ou modifiés, gabarit employé ou refait, exceptions de style, signaux de ce que le brief remet à plus tard ; ni pour Installer, ni pour Inventorier), pour Inventorier la comparaison de l'inventaire à une liste de référence (`releve-inventaire.md`, à lire, pas un verdict), et douze planches par page de l'exercice (trois marques, clair et sombre, 1 280 et 360 px).
 
 ## Atelier des composants
 

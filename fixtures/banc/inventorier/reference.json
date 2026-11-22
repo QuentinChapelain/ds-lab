@@ -1,0 +1,249 @@
+{
+  "$description": "Les pièces qu'une page d'annuaire demande, d'après la description brute et la page de référence : ce que l'app de Composer a pour chacune, ou ce qui manque. Lu par le relevé d'Inventorier (src/banc/inventaire.js, D69), jamais copié dans un passage. demande : la description brute la demande ; sinon elle n'est que dans la page de référence, et ne compte jamais comme manquée. attendu : « a » ou « manque ». avec : les composants ou les fichiers de l'app. motif : une ligne qui le contient, sans casse, nomme la pièce ; un motif peut rater une tournure, et le relevé se lit.",
+  "pieces": [
+    {
+      "id": "P1",
+      "piece": "Gabarit de page (barre, largeur, pied)",
+      "demande": true,
+      "attendu": "a",
+      "avec": [
+        "GabaritPage"
+      ],
+      "note": "",
+      "motif": "gabarit(?!.{0,40}bandeau)|barre du haut|pied de page|en-tête de page"
+    },
+    {
+      "id": "P2",
+      "piece": "Aplat et titre h1",
+      "demande": true,
+      "attendu": "a",
+      "avec": [
+        "GabaritPage"
+      ],
+      "note": "le bandeau du gabarit",
+      "motif": "aplat|bandeau|\\bh1\\b|\\bhero\\b"
+    },
+    {
+      "id": "P3",
+      "piece": "Carte de recherche sur l'aplat",
+      "demande": true,
+      "attendu": "a",
+      "avec": [
+        "DsCard"
+      ],
+      "note": "dans le slot bandeau ; elle impose un titre (R6)",
+      "motif": "(carte|fond blanc|surface|DsCard).{0,60}recherche|recherche.{0,60}(carte|fond blanc|surface|DsCard)"
+    },
+    {
+      "id": "P4",
+      "piece": "Champ de recherche",
+      "demande": true,
+      "attendu": "a",
+      "avec": [
+        "DsTextInput"
+      ],
+      "note": "réduire la liste est à écrire",
+      "motif": "(champ|formulaire|barre|zone|saisie).{0,40}recherche|DsTextInput|recherche (simple|par nom|par besoin|libre)"
+    },
+    {
+      "id": "P5",
+      "piece": "Recherche avancée",
+      "demande": true,
+      "attendu": "manque",
+      "avec": [],
+      "note": "",
+      "motif": "recherche[s]? avancée"
+    },
+    {
+      "id": "P6",
+      "piece": "Navigation locale",
+      "demande": true,
+      "attendu": "manque",
+      "avec": [],
+      "note": "aucun rôle « sélectionné » (B3)",
+      "motif": "nav(igation)? (locale|interne|secondaire|de section)|onglets?|ancres?|sous-navigation"
+    },
+    {
+      "id": "P7",
+      "piece": "Titre de section",
+      "demande": false,
+      "attendu": "a",
+      "avec": [
+        "SectionPage"
+      ],
+      "note": "",
+      "motif": "SectionPage|titres? de (section|bloc)"
+    },
+    {
+      "id": "P8",
+      "piece": "Carte du coup de main",
+      "demande": true,
+      "attendu": "a",
+      "avec": [
+        "DsCard"
+      ],
+      "note": "",
+      "motif": "coup de main|mise[s]? en relation"
+    },
+    {
+      "id": "P9",
+      "piece": "Photo ou initiales",
+      "demande": true,
+      "attendu": "a",
+      "avec": [
+        "DsAvatar"
+      ],
+      "note": "",
+      "motif": "photos?|initiales?|avatars?|portraits?|DsAvatar"
+    },
+    {
+      "id": "P10",
+      "piece": "Bouton d'action",
+      "demande": true,
+      "attendu": "a",
+      "avec": [
+        "DsButton"
+      ],
+      "note": "",
+      "motif": "boutons?|\\bCTA\\b|DsButton"
+    },
+    {
+      "id": "P11",
+      "piece": "Lien (nom, entreprise, adresse d'écriture)",
+      "demande": false,
+      "attendu": "manque",
+      "avec": [],
+      "note": "B9, R5",
+      "motif": "\\bliens?\\b|router-link|\\bDsLink\\b"
+    },
+    {
+      "id": "P12",
+      "piece": "Trois cartes côte à côte",
+      "demande": true,
+      "attendu": "a",
+      "avec": [
+        "DsCard"
+      ],
+      "note": "la grille manque (B6), les actions ne s'alignent pas (R19)",
+      "motif": "trois (cartes|personnes|profils)|3 (cartes|personnes|profils)|short ?-?list|courte liste|recommand|sugg(éré|estion)|d'après (mon|le|son|votre) profil"
+    },
+    {
+      "id": "P13",
+      "piece": "Étiquettes d'ouverture",
+      "demande": true,
+      "attendu": "a",
+      "avec": [
+        "DsTag"
+      ],
+      "note": "ni icône ni ton fort (R20)",
+      "motif": "étiquettes?|\\btags?\\b|\\bchips?\\b|DsTag|ouvertures?|ouverte?s? à"
+    },
+    {
+      "id": "P14",
+      "piece": "Question en exemple",
+      "demande": true,
+      "attendu": "a",
+      "avec": [],
+      "note": "aucun composant : du texte, aux styles du thème",
+      "motif": "exemples? de question|question (en |d')?exemple|question (type|suggérée|proposée|à poser)|citation"
+    },
+    {
+      "id": "P15",
+      "piece": "Conteneur de liste",
+      "demande": true,
+      "attendu": "manque",
+      "avec": [],
+      "note": "R21",
+      "motif": "(conteneur|composant|cadre).{0,20}liste|liste (des|de tous les|de) (membres|contacts)|liste de l'annuaire|DsList|MemberList"
+    },
+    {
+      "id": "P16",
+      "piece": "Ligne de liste",
+      "demande": true,
+      "attendu": "manque",
+      "avec": [],
+      "note": "R6, R21",
+      "motif": "lignes? (de (la )?liste|de membre|de contact|d'annuaire)|(élément|item)s? de (la )?liste|ligne (compacte|détaillée)|DsListItem|MemberRow|MemberCard"
+    },
+    {
+      "id": "P17",
+      "piece": "Filtre et tri",
+      "demande": true,
+      "attendu": "manque",
+      "avec": [],
+      "note": "Vuetify a une liste de choix",
+      "motif": "filtr(e|es|er|age)\\b|\\btri(s|er|é)?\\b|pertinence|v-select|VSelect"
+    },
+    {
+      "id": "P18",
+      "piece": "Modes d'affichage",
+      "demande": true,
+      "attendu": "manque",
+      "avec": [],
+      "note": "Vuetify a une bascule",
+      "motif": "modes? d.affichage|bascule|affichage (détaillé|compact|en carte)|détaillée?,? ?/? ?compacte?|v-btn-toggle|VBtnToggle|segmented"
+    },
+    {
+      "id": "P19",
+      "piece": "Pages de la liste",
+      "demande": true,
+      "attendu": "manque",
+      "avec": [],
+      "note": "Vuetify a une pagination",
+      "motif": "pagination|pages? de (la )?liste|plusieurs pages|v-pagination|VPagination"
+    },
+    {
+      "id": "P20",
+      "piece": "Compte des membres",
+      "demande": false,
+      "attendu": "a",
+      "avec": [],
+      "note": "aucun composant : du texte",
+      "motif": "compteur|total|nombre de (membres|résultats)|295 membres?"
+    },
+    {
+      "id": "P21",
+      "piece": "Rien trouvé",
+      "demande": false,
+      "attendu": "manque",
+      "avec": [],
+      "note": "B7",
+      "motif": "état vide|aucun (résultat|membre)|rien trouvé|sans résultat"
+    },
+    {
+      "id": "P22",
+      "piece": "Carte des personnes qui animent",
+      "demande": true,
+      "attendu": "a",
+      "avec": [
+        "DsCard",
+        "DsAvatar"
+      ],
+      "note": "",
+      "motif": "anim(e|ent|ation|ateurs?|atrices?)\\b|équipe d'animation"
+    },
+    {
+      "id": "P23",
+      "piece": "Données",
+      "demande": false,
+      "attendu": "a",
+      "avec": [
+        "src/data/membres.js"
+      ],
+      "note": "",
+      "motif": "membres\\.js|src/data|données|\\bMEMBRES\\b|PROPOSES"
+    },
+    {
+      "id": "P24",
+      "piece": "Route et entrée du menu",
+      "demande": false,
+      "attendu": "a",
+      "avec": [
+        "src/router.js",
+        "GabaritPage"
+      ],
+      "note": "la barre du gabarit liste les routes",
+      "motif": "\\broutes?\\b|router\\.js|entrée (du|de|dans le) menu|/annuaire"
+    }
+  ]
+}

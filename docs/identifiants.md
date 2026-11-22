@@ -88,10 +88,10 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 | AD1 à AD6 | Adresse stable des couches communes : écriture, lecture dans les quatre contextes, marque copiée hors du dépôt, pannes, ancien `$ref` relatif, feuille CSS (D66) | `test/adresse-commune.test.js` |
 | AF1 à AF5 | App fictive du banc d'essai : versions de l'atelier, ni `Ds…` ni annuaire ni ds-lab, les dix membres en tête et les champs du brief, entrées des trois marques, 295 membres rejouables (D67, D68) | `test/app-fictive.test.js` |
 | B1 à B5 | Jetons du bouton dans les dix thèmes, contrastes de l'icône du bouton à icône | `test/bouton-jetons.test.js` |
-| BN1 à BN5 | Banc d'essai : exercice demandé, passage du bras A posé (copie cachée et sans historique, app de départ, skill, réglages, briefs), passage du bras B (hook, carnet), deux poses identiques, `verifier` depuis la copie (D67) | `test/banc.test.js`, BN2 dans `test/relecteur.test.js` |
+| BN1 à BN6 | Banc d'essai : exercice demandé, passage du bras A posé (copie cachée et sans historique, app de départ, skill, réglages, briefs), passage du bras B (hook, carnet), deux poses identiques, `verifier` depuis la copie (D67), passage d'Inventorier posé et relevé (D69) | `test/banc.test.js`, BN2 dans `test/relecteur.test.js` |
 | C1 à C13 | Fenêtre des candidats, grisé des marges, bilan par usage | `test/candidats.test.js`, `test/e2e-candidats-revue.test.js`, `fixtures/marque-demo/expected-candidats.json` |
 | E1 à E12 | Gardes des enveloppes (bouton, champ de texte, carte, bouton à icône, avatar, étiquette), découpage d'un composant `.vue` | `test/enveloppe-bouton.test.js` |
-| EX1 à EX8 | Points de départ des exercices du banc : fichiers qui diffèrent d'un départ à l'autre, `verifier` à 0, composants et fiches copiés, aplat et exceptions du gabarit égaux aux jetons, pages dans le gabarit (D68) | `test/exercices.test.js` |
+| EX1 à EX10 | Points de départ des exercices du banc : fichiers qui diffèrent d'un départ à l'autre, `verifier` à 0, composants et fiches copiés, aplat et exceptions du gabarit égaux aux jetons, pages dans le gabarit (D68), départ, brief et liste de référence d'Inventorier (D69) | `test/exercices.test.js` |
 | G0 à G8 | Générateur de valise | `src/valise/generate.js`, `test/valise-generate.test.js`, `test/gris-neutre.test.js` |
 | H1 à H4 | Jetons du champ de texte et de la carte dans les dix thèmes | `test/champ-carte-jetons.test.js` |
 | I1 à I7 | Rattacher les valeurs inchangées à leur jeton | `test/e2e-migration.test.js`, `test/e2e-migration-decisions.test.js` (I3) |
@@ -102,7 +102,7 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 | P1 à P4 | Proximité des marges | `fixtures/marque-demo/expected-proximite.json` |
 | R-1 à R-9 | Identifiant et titre d'une ligne, captures par version | `test/e2e-identifiants.test.js`, `test/e2e-versions.test.js` |
 | RL1 à RL5 | Relecteur : marque cassée relue, `.vue` propre ou en dur, autre fichier, pose fusionnée et sans effet relancée, sans `DS_LAB` ou entrée illisible, page intouchée tue (D67) | `test/relecteur.test.js` |
-| RV1 à RV4 | Relevé d'un passage du banc : composants, pièces de Vuetify, gabarit, signaux de ce que le brief remet à plus tard, commande entière (D68) | `test/releve.test.js` |
+| RV1 à RV6 | Relevé d'un passage du banc : composants, pièces de Vuetify, gabarit, signaux de ce que le brief remet à plus tard, commande entière (D68), inventaire face à sa liste, ce que la session a lu (D69) | `test/releve.test.js` |
 | S1 à S4 | Modifications et `npm run apply` | `test/e2e-apply.test.js` |
 | SK1 à SK6 | Textes du skill : fraîcheur, règles et défauts avec leur contrôle dans le dépôt de l'équipe, comptes, consignes et techniques, `SKILL.md`, retrait des choix de ds-lab, phrase de priorité (D66, D67) | `test/skill.test.js` |
 | T0 à T5 | Rôles de couleur, paires, planche | `test/roles-statuts.test.js`, `test/roles-semantique.test.js`, `test/roles-paires.test.js`, `test/roles-planche.test.js` |

@@ -1,7 +1,7 @@
 // @ts-check
 /**
- * Le relevé d'un passage (D68, docs/attendus/etape-10-exercices.md), sur un travail simulé posé sur le départ de Composer,
- * sans git ni npm ci :
+ * Le relevé d'un passage (D68, docs/attendus/etape-10-exercices.md ; D69, docs/attendus/etape-10-inventorier.md), sur un
+ * travail simulé posé sur le départ de Composer, sans git ni npm ci :
  *   RV1 comptes : chaque composant Ds… (balise, balise en tirets, rendu par h, :is), ce qu'un fichier modifié a de plus
  *       qu'au départ seulement, ni commentaire ni import ; les pièces de Vuetify qui ont un composant Ds…, leurs composés
  *       compris ; un v-btn qui mène ailleurs à part ; les balises nues, les exceptions de style, les feuilles .css ;
@@ -10,7 +10,12 @@
  *   RV3 les cinq signaux de ce que le brief remet à plus tard ; aucun sur la page de référence, qui emploie les six
  *       composants moins le bouton à icône et passe par le gabarit ;
  *   RV4 la commande entière : un passage posé sans installation, un fichier neuf, un modifié, un supprimé ; --relever écrit
- *       pose.json, pose.md, le diff, les échecs de verifier à part et dit que les planches manquent.
+ *       pose.json, pose.md, le diff, les échecs de verifier à part et dit que les planches manquent ;
+ *   RV5 un inventaire : une pièce trouvée par ses lignes, une manquée, jamais une que la description ne demande pas ; une
+ *       ligne de question est marquée ; un composant et un chemin absents du départ ; les lignes hors de la liste ; un
+ *       fichier touché en dehors ; rendu ailleurs, ou absent ;
+ *   RV6 ce que la session a lu : outil de lecture, commande (dossier changé, DS_LAB, chemin absolu), recherche, skill,
+ *       motif et dossier à part, copie de ds-lab ; ni fichier écrit, ni document d'une commande, ni appel compté deux fois.
  */
 import { before, after, test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -21,6 +26,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { exercices, fabriquer } from '../src/banc/departs.js';
 import { enveloppes, relever, texteDuReleve } from '../src/banc/releve.js';
+import { releverInventaire, texteDeLInventaire } from '../src/banc/inventaire.js';
+import { lectures, texteDesLectures } from '../src/banc/lectures.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const ENVELOPPES = enveloppes(join(ROOT, 'docs', 'composants'));
@@ -167,4 +174,107 @@ test('RV4 --relever écrit ce que le passage a posé', () => {
   assert.deepEqual(JSON.parse(verifier.slice(verifier.indexOf('\n{'))).echecs, { style: { neufs: 1, intouches: 0 } });
   assert.match(readFileSync(join(sortie, 'diff.patch'), 'utf8'), /deleted file mode[\s\S]*evenements|evenements[\s\S]*deleted file mode/);
   assert.match(readFileSync(join(sortie, 'notes.txt'), 'utf8'), /^planches : app non installée \(npm ci\), aucune planche$/m);
+});
+
+/** Les fichiers du départ de Composer, en chemins relatifs. */
+const fichiersDuDepart = () => /** @type {string[]} */ (readdirSync(depart, { recursive: true })).filter((f) => statSync(join(depart, f)).isFile());
+
+test('RV5 un inventaire face à la liste de référence', () => {
+  const { pieces } = JSON.parse(readFileSync(join(ROOT, 'fixtures', 'banc', exercices(ROOT).exercices.inventorier.reference ?? ''), 'utf8'));
+  const texte = `# Inventaire de la page
+
+| Pièce | Ce que l'app a |
+|---|---|
+| Aplat et titre | \`GabaritPage\`, dans \`src/gabarit/GabaritPage.vue\` |
+| Photo de la personne | \`DsAvatar\` |
+| Pagination | manque ; \`DsPagination\` n'existe pas |
+| Carrousel | manque |
+
+1. Les étiquettes : \`DsTag\`, fiche \`docs/composants/tag.md\`.
+2. Le pied de formulaire : \`src/components/Pied.vue\`.
+
+## Questions
+
+- Où va la navigation locale ?
+- Combien de visites par jour ?
+`;
+  const r = releverInventaire({
+    texte,
+    lieu: 'inventaire.md',
+    rendu: 'inventaire.md',
+    touches: [
+      { statut: 'A', fichier: 'inventaire.md' },
+      { statut: 'A', fichier: 'src/pages/Annuaire.vue' },
+    ],
+    depart: fichiersDuDepart(),
+    pieces,
+  });
+  /** @param {string} id */
+  const lignesDe = (id) => r.pieces.find((p) => p.id === id)?.lignes.map((l) => [l.ligne, l.question]);
+  assert.deepEqual(lignesDe('P2'), [[5, false]]);
+  assert.deepEqual(lignesDe('P9'), [[6, false]]);
+  assert.deepEqual(lignesDe('P19'), [[7, false]]);
+  assert.deepEqual(lignesDe('P13'), [[10, false]]);
+  assert.deepEqual(lignesDe('P6'), [[15, true]], 'une pièce que seule une question nomme');
+  assert.deepEqual(lignesDe('P5'), []);
+  assert.deepEqual(r.touches, [{ statut: 'A', fichier: 'src/pages/Annuaire.vue' }]);
+  assert.deepEqual(r.inconnus.map((x) => [x.nom, x.ligne]), [['DsPagination', 7], ['src/components/Pied.vue', 11]]);
+  assert.deepEqual(r.horsListe.map((x) => x.ligne), [1, 8, 11], 'ni l’en-tête de tableau, ni le trait, ni la section des questions');
+  const md = texteDeLInventaire(r);
+  const manquees = md.slice(md.indexOf('## Manquées'), md.indexOf('## Nommées sans'));
+  assert.match(manquees, /^- P5 Recherche avancée\. Attendu : manque$/m);
+  for (const p of pieces.filter((/** @type {any} */ x) => !x.demande)) assert.ok(!manquees.includes(`- ${p.id} `), p.id);
+  assert.match(md, /^ {2}- ligne 15 \(question\) : - Où va la navigation locale \?$/m);
+  assert.match(md, /^- Fichiers touchés en dehors : A src\/pages\/Annuaire\.vue$/m);
+
+  const ailleurs = texteDeLInventaire(releverInventaire({ texte, lieu: 'docs/inventaire.md', rendu: 'inventaire.md', touches: [], depart: [], pieces }));
+  assert.match(ailleurs, /^- Fichier rendu : docs\/inventaire\.md \(attendu : inventaire\.md, à la racine\)$/m);
+  const absent = releverInventaire({ texte: null, lieu: null, rendu: 'inventaire.md', touches: [], depart: [], pieces });
+  assert.match(texteDeLInventaire(absent), /^- Fichier rendu : aucun$[\s\S]*^- Pièces demandées : 0 nommées sur 18$/m);
+});
+
+test('RV6 ce que la session a lu', () => {
+  const app = join(racine, 'rv6', 'app');
+  const copie = join(racine, 'rv6', 'ds-lab');
+  cpSync(depart, app, { recursive: true });
+  mkdirSync(join(copie, 'docs'), { recursive: true });
+  writeFileSync(join(copie, 'docs', 'regles.md'), 'x\n');
+  let n = 0;
+  /** @param {string} name @param {any} input @param {string} [id] */
+  const appel = (name, input, id = `t${n++}`) => JSON.stringify({ type: 'assistant', cwd: app, message: { content: [{ type: 'text', text: 'src/pages/Adhesion.vue' }, { type: 'tool_use', id, name, input }] } });
+  const journal = join(racine, 'rv6', 'session.jsonl');
+  writeFileSync(
+    journal,
+    [
+      appel('Skill', { skill: 'ds-lab' }),
+      appel('Read', { file_path: join(app, 'docs/composants/card.md') }, 'double'),
+      appel('Read', { file_path: join(app, 'docs/composants/card.md') }, 'double'),
+      appel('Bash', { command: 'cd src && cat components/ds/DsCard.vue gabarit/GabaritPage.vue; sed -n 1,20p ../src/data/membres.js' }),
+      appel('Bash', { command: 'cat "$DS_LAB/docs/regles.md"; ls docs/composants/*.md src/pages ~/ailleurs/*.md' }),
+      appel('Bash', { command: "cat > inventaire.md <<'FIN'\n- src/pages/Accueil.vue\nFIN\ncat README.md" }),
+      appel('Grep', { pattern: 'x', path: 'src/pages/Evenements.vue' }),
+      appel('Glob', { pattern: 'src/**/*.vue' }),
+      appel('Write', { file_path: join(app, 'src/plugins/vuetify.js'), content: '' }),
+      'ligne illisible',
+      JSON.stringify({ type: 'user', message: { content: [{ type: 'tool_result', content: 'src/App.vue' }] } }),
+    ].join('\n'),
+  );
+  const l = lectures({ journaux: [journal], app, copie, depart: fichiersDuDepart() });
+  assert.deepEqual(l, {
+    fichiers: {
+      skill: [],
+      fiches: ['docs/composants/card.md'],
+      composants: ['src/components/ds/DsCard.vue'],
+      gabarit: ['src/gabarit/GabaritPage.vue'],
+      pages: ['src/pages/Evenements.vue'],
+      données: ['src/data/membres.js'],
+      'reste de l’app': ['README.md'],
+      'copie de ds-lab': ['docs/regles.md'],
+    },
+    dossiers: ['docs/composants/*.md', 'src/**/*.vue', 'src/pages'],
+    skills: ['ds-lab'],
+    appels: 8,
+  });
+  assert.match(texteDesLectures(l), /^- Skills appelés : ds-lab$[\s\S]*^- Fiches : docs\/composants\/card\.md$[\s\S]*^- Dossiers et motifs nommés, à lire : docs\/composants\/\*\.md, /m);
+  assert.match(texteDesLectures(lectures({ journaux: [], app, copie, depart: [] })), /^Aucun appel d’outil dans le journal : rien à dire\.$/m);
 });

@@ -1,23 +1,25 @@
 #!/usr/bin/env node
 // @ts-check
 /**
- * D67, D68 : le banc d'essai (npm run banc), trois exercices (fixtures/banc/exercices.json).
+ * D67, D68, D69 : le banc d'essai (npm run banc), ses exercices (fixtures/banc/exercices.json).
  * Poser : npm run banc -- --exercice <exercice> --bras A|B --passage <n> --modele <modèle> [--dossier <racine>]
  *   [--sans-installation] pose <racine>/<exercice>/<bras>-<n>/ (src/banc/banc.js) ; un exercice sans brief est refusé ;
  *   --sans-installation remplace les npm ci par un lien vers les node_modules du dépôt, pour les tests.
  * Relever : npm run banc -- --exercice <exercice> --relever <bras>-<n> [--dossier <racine>] [--sortie <dossier>]
  *   écrit dans local/banc/<exercice>/<bras>-<n>/ : le journal de la session, la sortie de verifier et ses échecs comptés
  *   dans les fichiers neufs ou modifiés et dans les fichiers intouchés, le diff depuis « départ », le carnet, ce que la
- *   session a chargé, les heures, ce qu'elle a posé (pose.md et pose.json, src/banc/releve.js ; pas pour un exercice sans
- *   composants au départ) et les planches des pages de l'exercice (marques de banc.json, 1 280 et 360 px, clair et
- *   sombre). Une page qui ne s'ouvre pas est notée, pas une panne.
+ *   session a chargé, ce qu'elle a lu (lu.md et lu.json, src/banc/lectures.js), les heures, le fichier que le brief demande,
+ *   ce qu'elle a posé (pose.md et pose.json, src/banc/releve.js ; pas pour un exercice sans composants au départ ou sans
+ *   page), l'inventaire face à sa liste (releve-inventaire.md et .json, src/banc/inventaire.js, pour un exercice qui en a
+ *   une) et les planches des pages de l'exercice (marques de banc.json, 1 280 et 360 px, clair et sombre ; aucune page,
+ *   aucune construction). Une page qui ne s'ouvre pas est notée, pas une panne ; une copie de ds-lab modifiée aussi.
  * Sortie 0, ou 2 sur une panne (D18).
  */
 import { parseArgs } from 'node:util';
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, globSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync, realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, relative, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import stylelint from 'stylelint';
 import { lancer, marquesDe } from './garde.js';
@@ -27,9 +29,11 @@ import { echecsDeMarque, echecsDeStyle, echecsDeSkill } from '../report/verifier
 import { exercices, marquesDuBanc } from '../banc/departs.js';
 import { planches } from '../banc/planches.js';
 import { enveloppes, relever, texteDuReleve } from '../banc/releve.js';
+import { lectures, texteDesLectures } from '../banc/lectures.js';
+import { releverInventaire, texteDeLInventaire } from '../banc/inventaire.js';
 
 const DEPOT = fileURLToPath(new URL('../..', import.meta.url));
-const USAGE = 'npm run banc -- --exercice composer|etendre|installer --bras A|B --passage <n> --modele <modèle> [--dossier <racine>], ou --exercice <exercice> --relever <bras>-<n> [--dossier <racine>]';
+const USAGE = 'npm run banc -- --exercice installer|composer|etendre|inventorier --bras A|B --passage <n> --modele <modèle> [--dossier <racine>], ou --exercice <exercice> --relever <bras>-<n> [--dossier <racine>]';
 
 await lancer('banc', async () => {
   const { values } = parseArgs({
@@ -86,8 +90,13 @@ async function releverPassage(racine, exercice, id, sortie) {
   // Journal : celui de Claude Code pour le dossier de l'app, et le flux d'un passage sans humain.
   const journaux = dossierDuJournal(realpathSync(app));
   const sessions = existsSync(journaux) ? readdirSync(journaux).filter((f) => f.endsWith('.jsonl')) : [];
+  // Les agents qu'une session a lancés ont leur journal à eux, dans un sous-dossier.
+  const agents = existsSync(journaux) ? globSync('*/**/*.jsonl', { cwd: journaux }) : [];
   mkdirSync(join(sortie, 'journal'), { recursive: true });
-  for (const f of sessions) copyFileSync(join(journaux, f), join(sortie, 'journal', f));
+  for (const f of [...sessions, ...agents]) {
+    mkdirSync(dirname(join(sortie, 'journal', f)), { recursive: true });
+    copyFileSync(join(journaux, f), join(sortie, 'journal', f));
+  }
   if (!sessions.length) notes.push(`aucun journal dans ${journaux}`);
   for (const f of ['session.jsonl', 'depart.txt']) if (existsSync(join(dossier, f))) copyFileSync(join(dossier, f), join(sortie, f));
   if (existsSync(join(app, 'carnet.md'))) copyFileSync(join(app, 'carnet.md'), join(sortie, 'carnet.md'));
@@ -101,6 +110,13 @@ async function releverPassage(racine, exercice, id, sortie) {
   const statuts = executer('git', ['diff', '--cached', '--name-status', '--no-renames', '-z', depart], { cwd: app, env }).split('\0').filter(Boolean);
   const touches = statuts.flatMap((s, i) => (i % 2 ? [{ statut: statuts[i - 1], fichier: s }] : []));
   rmSync(index, { force: true });
+  const fichiersDuDepart = executer('git', ['ls-tree', '-r', '-z', '--name-only', depart], { cwd: app }).split('\0').filter(Boolean);
+  const changes = changesDansLaCopie(copie);
+  if (changes.length) notes.push(`copie de ds-lab modifiée par le passage : ${changes.join(', ')}`);
+
+  // Le fichier que le brief demande : à la racine de l'app, ou le premier du même nom ailleurs.
+  const lieuDuRendu = e.rendu ? (touches.filter((t) => t.statut !== 'D' && basename(t.fichier) === e.rendu).map((t) => t.fichier).sort((a, b) => a.split('/').length - b.split('/').length)[0] ?? null) : null;
+  if (lieuDuRendu) copyFileSync(join(app, lieuDuRendu), join(sortie, basename(lieuDuRendu)));
 
   // verifier, tel que la copie l'écrit, puis ses échecs comptés à part : fichiers neufs ou modifiés, fichiers intouchés.
   const v = spawnSync(process.execPath, [join(copie, 'src', 'cli', 'verifier.js'), '--marques', 'tokens', '--style', 'src/**/*.vue', '--skill', '.claude/skills/ds-lab'], {
@@ -111,7 +127,16 @@ async function releverPassage(racine, exercice, id, sortie) {
   writeFileSync(join(sortie, 'verifier.txt'), `${v.stdout}${v.stderr}sortie ${v.status}\n\n${JSON.stringify(comptes, null, 2)}\n`);
 
   writeFileSync(join(sortie, 'charge.json'), `${JSON.stringify(charge(join(dossier, 'session.jsonl')), null, 2)}\n`);
-  if (e.copies.length) {
+  const lu = lectures({ journaux: sessions.length ? [...sessions, ...agents].map((f) => join(journaux, f)) : [join(dossier, 'session.jsonl')].filter(existsSync), app, copie, depart: fichiersDuDepart });
+  writeFileSync(join(sortie, 'lu.json'), `${JSON.stringify(lu, null, 2)}\n`);
+  writeFileSync(join(sortie, 'lu.md'), texteDesLectures(lu));
+  if (e.reference && e.rendu) {
+    const { pieces } = JSON.parse(readFileSync(join(DEPOT, 'fixtures', 'banc', e.reference), 'utf8'));
+    const r = releverInventaire({ texte: lieuDuRendu && readFileSync(join(app, lieuDuRendu), 'utf8'), lieu: lieuDuRendu, rendu: e.rendu, touches, depart: fichiersDuDepart, pieces });
+    writeFileSync(join(sortie, 'releve-inventaire.json'), `${JSON.stringify(r, null, 2)}\n`);
+    writeFileSync(join(sortie, 'releve-inventaire.md'), texteDeLInventaire(r));
+  }
+  if (e.copies.length && e.pages.length) {
     const r = relever({
       app,
       touches,
@@ -124,10 +149,17 @@ async function releverPassage(racine, exercice, id, sortie) {
     writeFileSync(join(sortie, 'pose.md'), texteDuReleve(r));
   }
   writeFileSync(join(sortie, 'heures.md'), heures(sessions.map((f) => join(journaux, f))));
-  notes.push(...(await planches(app, join(sortie, 'planches'), { marques: marquesDuBanc(DEPOT), pages: e.pages })));
+  if (e.pages.length) notes.push(...(await planches(app, join(sortie, 'planches'), { marques: marquesDuBanc(DEPOT), pages: e.pages })));
   writeFileSync(join(sortie, 'notes.txt'), notes.length ? `${notes.join('\n')}\n` : 'rien à noter\n');
   console.log(`banc : passage ${exercice}/${id} relevé dans ${sortie}`);
   return 0;
+}
+
+/** Les fichiers de la copie de ds-lab que le passage a changés, ajoutés ou retirés depuis sa pose. @param {string} copie */
+function changesDansLaCopie(copie) {
+  const pose = executer('git', ['rev-list', '--max-parents=0', 'HEAD'], { cwd: copie }).trim().split('\n')[0];
+  const liste = (/** @type {string[]} */ args) => executer('git', args, { cwd: copie }).split('\0').filter(Boolean);
+  return [...liste(['diff', '--name-only', '-z', pose]), ...liste(['ls-files', '-z', '--others', '--exclude-standard'])].filter((f) => f !== 'node_modules').sort();
 }
 
 /**

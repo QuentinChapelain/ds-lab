@@ -1,6 +1,7 @@
 // @ts-check
 /**
- * Les points de départ des trois exercices du banc (D68, docs/attendus/etape-10-exercices.md), fabriqués une fois chacun
+ * Les points de départ des exercices du banc (D68, docs/attendus/etape-10-exercices.md ; D69,
+ * docs/attendus/etape-10-inventorier.md), fabriqués une fois chacun
  * dans un dossier temporaire, sans npm ci :
  *   EX1 d'Installer à Composer, ne diffèrent que les fichiers annoncés : marques saisies et thème, composants et fiches,
  *       gabarit, pages, mode d'emploi ; données, dépendances, routes, entrées et construction sont les mêmes à l'octet ;
@@ -11,10 +12,15 @@
  *   EX5 l'aplat des thèmes égale background.brand.strong et text.on-brand, trois marques, deux modes ; chaque exception de
  *       style de l'app est dans src/gabarit/ et égale le jeton qu'elle nomme, dans sa largeur ;
  *   EX6 rien de la référence de l'annuaire n'est dans le départ de Composer, ni dans ce que la copie de ds-lab garde : ni
- *       chemin, ni contenu, ni nom de ses pièces ; la description brute non plus ;
- *   EX7 les briefs ne nomment ni composant, ni token, ni règle, n'ont pas de mise en gras, et finissent par le skill ;
+ *       chemin, ni contenu, ni nom de ses pièces ; la description brute et la liste de référence d'Inventorier non plus ;
+ *   EX7 les briefs ne nomment ni composant, ni token, ni règle, n'ont pas de mise en gras ; celui d'Installer et celui de
+ *       Composer finissent par le skill ;
  *   EX8 chaque page des départs de Composer et d'Étendre passe par le gabarit ; hors de src/components/ds/, aucune pièce de Vuetify qui a
- *       un composant Ds…, sauf la puce d'état (DsTag ne porte pas de statut).
+ *       un composant Ds…, sauf la puce d'état (DsTag ne porte pas de statut) ;
+ *   EX9 le départ d'Inventorier égale celui de Composer à l'octet ; aucun fichier que les briefs demandent n'y est ;
+ *   EX10 le brief d'Inventorier est la description brute, à l'octet, une ligne vide et sa demande, mot pour mot, sans le
+ *       paragraphe d'un passage sans humain ; chaque pièce de la liste de référence a un motif et ne nomme que des composants et des fichiers
+ *       du départ.
  */
 import { before, after, test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -166,7 +172,8 @@ test('EX6 la référence de l’annuaire est absente de Composer et de ce que la
     .filter((f) => f && existsSync(join(ROOT, f)) && !caches.some((c) => f === c || f.startsWith(`${c}/`)));
   assert.ok(gardes.includes('skill/ds-lab/SKILL.md') && !gardes.some((f) => f.startsWith('fixtures/banc/')));
   const brute = join(ROOT, 'fixtures', 'banc', 'composer', 'description-brute.txt');
-  const contenus = [...reference.map((f) => readFileSync(join(COUCHE, f))), readFileSync(brute)];
+  const liste = join(ROOT, 'fixtures', 'banc', exercices(ROOT).exercices.inventorier.reference ?? '');
+  const contenus = [...reference.map((f) => readFileSync(join(COUCHE, f))), readFileSync(brute), readFileSync(liste)];
   /** @param {string} chemin @param {string} f */
   const juger = (chemin, f) => {
     const t = readFileSync(chemin);
@@ -181,13 +188,10 @@ test('EX6 la référence de l’annuaire est absente de Composer et de ce que la
 });
 
 test('EX7 les briefs ne nomment ni composant, ni token, ni règle', () => {
-  const briefs = Object.values(exercices(ROOT).exercices).flatMap((e) => e.brief ?? []);
-  assert.deepEqual(briefs, ['installer/brief.txt', 'composer/brief.txt']);
-  for (const b of briefs) {
-    const t = lire(join(ROOT, 'fixtures', 'banc', b));
-    assert.doesNotMatch(t, /\bDs[A-Z]|--v-|\b(?:DS|NM|CP|DOC|DF|CS|D|B)\d|\b(?:background|text|border|gap|typography)\.|Vuetify|\*\*|^>/m, b);
-    assert.match(t, /\n\nPour le design system, suis le skill ds-lab\.\n$/, b);
-  }
+  const briefs = Object.values(exercices(ROOT).exercices).flatMap((e) => e.brief);
+  assert.deepEqual(briefs, ['installer/brief.txt', 'composer/brief.txt', 'composer/description-brute.txt', 'inventorier/demande.txt']);
+  for (const b of briefs) assert.doesNotMatch(lire(join(ROOT, 'fixtures', 'banc', b)), /\bDs[A-Z]|--v-|\b(?:DS|NM|CP|DOC|DF|CS|D|B)\d|\b(?:background|text|border|gap|typography)\.|Vuetify|\*\*|^>/m, b);
+  for (const b of ['installer', 'composer']) assert.match(lire(join(ROOT, 'fixtures', 'banc', b, 'brief.txt')), /\n\nPour le design system, suis le skill ds-lab\.\n$/, b);
 });
 
 test('EX8 chaque page passe par le gabarit, aucune pièce de Vuetify qui a un composant Ds…', () => {
@@ -201,4 +205,29 @@ test('EX8 chaque page passe par le gabarit, aucune pièce de Vuetify qui a un co
     .filter((f) => f.endsWith('.vue') && !f.startsWith('components/ds/'))
     .flatMap((f) => emballees.filter((v) => new RegExp(`<${v}[\\s>]`).test(lire(join(app, 'src', f)))).map((v) => `${f} : ${v}`));
   assert.deepEqual(trouvees, ['pages/Evenements.vue : v-chip']);
+});
+
+test('EX9 le départ d’Inventorier est celui de Composer', () => {
+  assert.deepEqual(differents(depart('composer'), depart('inventorier')), []);
+  for (const f of ['inventaire.md', 'rapport.md', 'src/provisoire']) assert.equal(existsSync(join(depart('composer'), f)), false, f);
+});
+
+test('EX10 le brief d’Inventorier et sa liste de référence', () => {
+  const e = exercices(ROOT).exercices.inventorier;
+  const banc = (/** @type {string} */ f) => lire(join(ROOT, 'fixtures', 'banc', f));
+  assert.equal(
+    e.brief.map(banc).join('\n'),
+    `${banc('composer/description-brute.txt')}\nNe construis rien. Écris dans \`inventaire.md\` : les pièces que cette page demande ; pour chacune, ce que l'app a déjà pour la faire, ou ce qui manque ; les questions que tu me poserais avant de commencer.\n`,
+  );
+  assert.deepEqual([e.sansHumain, e.pages, e.rendu], [false, [], 'inventaire.md']);
+  const app = depart('inventorier');
+  const { pieces } = JSON.parse(banc(e.reference ?? ''));
+  assert.deepEqual(pieces.map((/** @type {any} */ p) => p.id), Array.from({ length: 24 }, (_, i) => `P${i + 1}`));
+  assert.equal(pieces.filter((/** @type {any} */ p) => p.demande).length, 18);
+  for (const p of pieces) {
+    assert.ok(p.motif && new RegExp(p.motif, 'iu') && ['a', 'manque'].includes(p.attendu), p.id);
+    for (const a of p.avec)
+      assert.ok(['src/components/ds', 'src/gabarit'].some((d) => existsSync(join(app, d, `${a}.vue`))) || existsSync(join(app, a)), `${p.id} : ${a}`);
+    if (p.attendu === 'manque') assert.deepEqual(p.avec, [], p.id);
+  }
 });

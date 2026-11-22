@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * D67, D68 : le banc d'essai. Il pose, hors du dépôt, le dossier d'un passage d'un exercice : une copie de l'arbre de
+ * D67, D68, D69 : le banc d'essai. Il pose, hors du dépôt, le dossier d'un passage d'un exercice : une copie de l'arbre de
  * ds-lab, sans la référence et sans historique (une pose installée refuse un arbre qui a des changements non commités) ;
  * l'app au point de départ de l'exercice (src/banc/departs.js), en dépôt git d'un commit « départ » ; le skill copié, la
  * variable DS_LAB, les deux briefs et depart.txt ; dans le bras B, le relecteur et le carnet, posés par la commande de la
@@ -65,7 +65,7 @@ export function poser(o) {
   const { caches, exercices: tous } = exercices(o.depot);
   const exercice = tous[o.exercice];
   if (!exercice) throw new Error(`exercice inconnu : ${o.exercice} (${Object.keys(tous).join(', ')})`);
-  if (!exercice.brief) throw new Error(`exercice ${o.exercice} : pas encore de brief, aucun passage à poser ; écrire le brief dans fixtures/banc/${o.exercice}/ et le nommer dans fixtures/banc/exercices.json`);
+  if (!exercice.brief.length) throw new Error(`exercice ${o.exercice} : pas encore de brief, aucun passage à poser ; écrire le brief dans fixtures/banc/${o.exercice}/ et le nommer dans fixtures/banc/exercices.json`);
   const dossier = join(o.racine, nomDePassage(o.exercice, o.bras, o.passage));
   if (existsSync(dossier)) throw new Error(`${dossier} existe déjà : prendre un autre numéro de passage, ou supprimer ce dossier`);
   const modifie = executer('git', ['status', '--porcelain'], { cwd: o.depot }).trim() !== '';
@@ -92,9 +92,10 @@ export function poser(o) {
   commit(app, 'départ');
 
   const briefs = join(o.depot, 'fixtures', 'banc');
-  const brief = readFileSync(join(briefs, exercice.brief), 'utf8');
-  writeFileSync(join(dossier, 'brief.txt'), brief);
-  writeFileSync(join(dossier, 'brief-seul.txt'), `${brief.trimEnd()}\n\n${readFileSync(join(briefs, 'sans-humain.txt'), 'utf8')}`);
+  /** @param {string[]} noms */
+  const joindre = (noms) => `${noms.map((n) => readFileSync(join(briefs, n), 'utf8').trimEnd()).join('\n\n')}\n`;
+  writeFileSync(join(dossier, 'brief.txt'), joindre(exercice.brief));
+  writeFileSync(join(dossier, 'brief-seul.txt'), joindre([...exercice.brief, ...(exercice.sansHumain ? ['sans-humain.txt'] : [])]));
   const verifier = spawnSync(process.execPath, [join(copie, 'src', 'cli', 'verifier.js'), '--marques', 'tokens', '--style', 'src/**/*.vue', '--skill', '.claude/skills/ds-lab'], {
     cwd: app,
     encoding: 'utf8',

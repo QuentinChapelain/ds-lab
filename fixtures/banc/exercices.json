@@ -1,5 +1,5 @@
 {
-  "$description": "Exercices du banc d'essai (D68), lus par src/banc/departs.js et npm run banc, jamais copiés dans un passage. Par exercice : couches, les dossiers de fixtures/banc/ posés dans l'ordre sur fixtures/app-fictive/ ; retires, les fichiers de cette base qui partent ; copies, ce qui se copie du clone de ds-lab dans l'app ; saisir, si les marques sont saisies et leurs thèmes écrits ; brief, dans fixtures/banc/, ou null tant qu'il n'est pas écrit ; pages, les adresses des planches. signaux : des motifs lus ligne à ligne par le relevé (src/banc/releve.js), plusTard pour chaque pièce que le brief de Composer remet à plus tard, refait pour ce qui refait le gabarit hors de lui. caches : les chemins que la copie de ds-lab posée avec un passage ne contient pas, les mêmes pour les trois exercices : la référence de l'annuaire (modules, leurs stories, preuves et fiches), son plan et ceux des autres lots (attendus), l'annuaire de la marque de démonstration, l'app fictive, le banc, ses couches et ses briefs. Sans eux, une IA neuve ne peut pas recopier la référence ; un dépôt d'un seul commit empêche l'historique de la rendre.",
+  "$description": "Exercices du banc d'essai (D68), lus par src/banc/departs.js et npm run banc, jamais copiés dans un passage. Par exercice : couches, les dossiers de fixtures/banc/ posés dans l'ordre sur fixtures/app-fictive/ ; retires, les fichiers de cette base qui partent ; copies, ce qui se copie du clone de ds-lab dans l'app ; saisir, si les marques sont saisies et leurs thèmes écrits ; depart, à la place des quatre précédents, l'exercice dont le point de départ est repris ; brief, les fichiers de fixtures/banc/ qui le composent, joints par une ligne vide, aucun tant qu'il n'est pas écrit ; sansHumain, si le paragraphe d'un passage sans humain s'ajoute au brief ; pages, les adresses des planches, aucune pour un exercice qui ne construit rien ; rendu, le fichier que le brief demande à la racine de l'app ; reference, la liste à laquelle le relevé compare ce fichier. signaux : des motifs lus ligne à ligne par le relevé (src/banc/releve.js), plusTard pour chaque pièce que le brief de Composer remet à plus tard, refait pour ce qui refait le gabarit hors de lui. caches : les chemins que la copie de ds-lab posée avec un passage ne contient pas, les mêmes pour tous les exercices : la référence de l'annuaire (modules, leurs stories, preuves et fiches), son plan et ceux des autres lots (attendus), l'annuaire de la marque de démonstration, l'app fictive, le banc, ses couches et ses briefs. Sans eux, une IA neuve ne peut pas recopier la référence ; un dépôt d'un seul commit empêche l'historique de la rendre.",
   "caches": [
     "atelier/modules",
     "atelier/preuve/member-card.js",
@@ -35,7 +35,8 @@
       "retires": [],
       "copies": [],
       "saisir": false,
-      "brief": "installer/brief.txt",
+      "brief": ["installer/brief.txt"],
+      "sansHumain": true,
       "pages": [
         "/",
         "/evenements",
@@ -63,7 +64,8 @@
         }
       ],
       "saisir": true,
-      "brief": "composer/brief.txt",
+      "brief": ["composer/brief.txt"],
+      "sansHumain": true,
       "pages": [
         "/annuaire"
       ]
@@ -90,10 +92,19 @@
         }
       ],
       "saisir": true,
-      "brief": null,
+      "brief": [],
+      "sansHumain": true,
       "pages": [
         "/annuaire"
       ]
+    },
+    "inventorier": {
+      "depart": "composer",
+      "brief": ["composer/description-brute.txt", "inventorier/demande.txt"],
+      "sansHumain": false,
+      "pages": [],
+      "rendu": "inventaire.md",
+      "reference": "inventorier/reference.json"
     }
   }
 }

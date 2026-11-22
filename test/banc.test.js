@@ -10,12 +10,14 @@
  *       l'heure près ;
  *   BN4 verifier, lancé depuis la copie : sortie 2 au départ, qui dit de saisir ; après la saisie et le thème des
  *       trois marques par la copie, sortie 1, des blocs de style seulement, aucun échec de contraste ;
- *   BN5 --exercice absent ou inconnu, et un exercice sans brief : sortie 2, un message qui dit quoi faire, rien de posé.
+ *   BN5 --exercice absent ou inconnu, et un exercice sans brief : sortie 2, un message qui dit quoi faire, rien de posé ;
+ *   BN6 un passage d'Inventorier (D69) : le brief joint, le même sans humain, le départ de Composer ; son relevé, sans
+ *       construction ni planche ni relevé de page ; la copie de ds-lab modifiée est notée.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, lstatSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync } from 'node:fs';
+import { appendFileSync, existsSync, lstatSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -121,15 +123,51 @@ test('BN5 un exercice absent, inconnu ou sans brief : sortie 2, rien de posé', 
   const args = ['--bras', 'A', '--passage', '1'];
   const absent = banc(racine, args, []);
   assert.equal(absent.status, 2);
-  assert.match(absent.stderr, /^banc : --exercice installer\|composer\|etendre attendu ; usage : npm run banc -- --exercice /);
+  assert.match(absent.stderr, /^banc : --exercice installer\|composer\|etendre\|inventorier attendu ; usage : npm run banc -- --exercice /);
   const inconnu = banc(racine, args, ['--exercice', 'annuaire']);
   assert.equal(inconnu.status, 2);
-  assert.match(inconnu.stderr, /^banc : --exercice installer\|composer\|etendre attendu, reçu annuaire ; usage : /);
+  assert.match(inconnu.stderr, /^banc : --exercice installer\|composer\|etendre\|inventorier attendu, reçu annuaire ; usage : /);
   const sansBrief = banc(racine, args, ['--exercice', 'etendre']);
   assert.equal(sansBrief.status, 2);
   assert.equal(sansBrief.stderr, 'banc : exercice etendre : pas encore de brief, aucun passage à poser ; écrire le brief dans fixtures/banc/etendre/ et le nommer dans fixtures/banc/exercices.json\n');
   assert.deepEqual(readdirSync(racine), []);
   const releve = banc(racine, ['--relever', 'A-1'], []);
   assert.equal(releve.status, 2);
+  rmSync(racine, { recursive: true, force: true });
+});
+
+test('BN6 un passage d’Inventorier et son relevé', () => {
+  const racine = mkdtempSync(join(tmpdir(), 'ds-lab-banc-'));
+  const exercice = ['--exercice', 'inventorier'];
+  const p = banc(racine, ['--bras', 'A', '--passage', '1'], exercice);
+  assert.equal(p.status, 0, p.stderr);
+  const dossier = join(racine, 'inventorier', 'A-1');
+  const app = join(dossier, 'app');
+  const brief = readFileSync(join(dossier, 'brief.txt'), 'utf8');
+  assert.equal(brief, ['composer/description-brute.txt', 'inventorier/demande.txt'].map((f) => readFileSync(join(ROOT, 'fixtures', 'banc', f), 'utf8')).join('\n'));
+  assert.equal(readFileSync(join(dossier, 'brief-seul.txt'), 'utf8'), brief, 'pas de paragraphe sans humain');
+  assert.match(readFileSync(join(dossier, 'depart.txt'), 'utf8'), /^passage : inventorier\/A-1, exercice inventorier, bras A$[\s\S]*^verifier au départ \(sortie 0\) :$/m);
+
+  writeFileSync(join(app, 'inventaire.md'), '# Inventaire\n\n- Le champ de recherche : `DsTextInput`.\n- La pagination : `DsPager` manque.\n');
+  appendFileSync(join(app, 'README.md'), 'x\n');
+  appendFileSync(join(dossier, 'ds-lab', 'README.md'), 'x\n');
+  writeFileSync(
+    join(dossier, 'session.jsonl'),
+    `${JSON.stringify({ type: 'assistant', message: { content: [{ type: 'tool_use', id: 't1', name: 'Read', input: { file_path: join(app, 'docs/gabarit.md') } }] } })}\n`,
+  );
+  const sortie = join(racine, 'releve');
+  const r = banc(racine, ['--relever', 'A-1', '--sortie', sortie], exercice);
+  assert.equal(r.status, 0, r.stderr);
+  const lire = (/** @type {string} */ f) => readFileSync(join(sortie, f), 'utf8');
+  assert.equal(lire('inventaire.md'), readFileSync(join(app, 'inventaire.md'), 'utf8'));
+  const releve = lire('releve-inventaire.md');
+  assert.match(releve, /^- Fichier rendu : inventaire\.md$/m);
+  assert.match(releve, /^- Fichiers touchés en dehors : M README\.md$/m);
+  assert.match(releve, /^- Pièces demandées : 2 nommées sur 18$/m);
+  assert.match(releve, /^- DsPager, ligne 4 : /m);
+  assert.deepEqual(JSON.parse(lire('lu.json')).fichiers.gabarit, ['docs/gabarit.md']);
+  assert.match(lire('lu.md'), /^- Gabarit : docs\/gabarit\.md$/m);
+  assert.equal(lire('notes.txt').replace(/^aucun journal dans .*\n/, ''), 'copie de ds-lab modifiée par le passage : README.md\n');
+  for (const f of ['pose.md', 'planches']) assert.equal(existsSync(join(sortie, f)), false, f);
   rmSync(racine, { recursive: true, force: true });
 });
