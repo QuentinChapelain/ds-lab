@@ -91,6 +91,7 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 | BN1 à BN4 | Banc d'essai : passage du bras A posé (copie cachée et sans historique, app de départ, skill, réglages, briefs), passage du bras B (hook, carnet), deux poses identiques, `verifier` depuis la copie (D67) | `test/banc.test.js`, BN2 dans `test/relecteur.test.js` |
 | C1 à C13 | Fenêtre des candidats, grisé des marges, bilan par usage | `test/candidats.test.js`, `test/e2e-candidats-revue.test.js`, `fixtures/marque-demo/expected-candidats.json` |
 | E1 à E12 | Gardes des enveloppes (bouton, champ de texte, carte, bouton à icône, avatar, étiquette), découpage d'un composant `.vue` | `test/enveloppe-bouton.test.js` |
+| EX1 à EX8 | Points de départ des exercices du banc : fichiers qui diffèrent d'un départ à l'autre, `verifier` à 0, composants et fiches copiés, aplat et exceptions du gabarit égaux aux jetons, pages dans le gabarit (D68) | `test/exercices.test.js` |
 | G0 à G8 | Générateur de valise | `src/valise/generate.js`, `test/valise-generate.test.js`, `test/gris-neutre.test.js` |
 | H1 à H4 | Jetons du champ de texte et de la carte dans les dix thèmes | `test/champ-carte-jetons.test.js` |
 | I1 à I7 | Rattacher les valeurs inchangées à leur jeton | `test/e2e-migration.test.js`, `test/e2e-migration-decisions.test.js` (I3) |

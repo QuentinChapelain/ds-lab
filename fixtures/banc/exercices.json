@@ -1,0 +1,61 @@
+{
+  "$description": "Exercices du banc d'essai (D68), lus par src/banc/departs.js et npm run banc, jamais copiés dans un passage. Par exercice : couches, les dossiers de fixtures/banc/ posés dans l'ordre sur fixtures/app-fictive/ ; retires, les fichiers de cette base qui partent ; copies, ce qui se copie du clone de ds-lab dans l'app ; saisir, si les marques sont saisies et leurs thèmes écrits ; brief, dans fixtures/banc/, ou null tant qu'il n'est pas écrit ; pages, les adresses des planches. caches : les chemins que la copie de ds-lab posée avec un passage ne contient pas, les mêmes pour les trois exercices : la référence de l'annuaire (modules, leurs stories, preuves et fiches), son plan et ceux des autres lots (attendus), l'annuaire de la marque de démonstration, l'app fictive, le banc, ses couches et ses briefs. Sans eux, une IA neuve ne peut pas recopier la référence ; un dépôt d'un seul commit empêche l'historique de la rendre.",
+  "caches": [
+    "atelier/modules",
+    "atelier/preuve/member-card.js",
+    "atelier/preuve/member-list.js",
+    "atelier/stories/MemberCard.stories.js",
+    "atelier/stories/MemberList.stories.js",
+    "atelier/stories/membres.js",
+    "docs/modules",
+    "docs/attendus",
+    "fixtures/marque-demo/annuaire",
+    "fixtures/app-fictive",
+    "fixtures/banc",
+    "src/banc",
+    "src/cli/banc.js",
+    "test/app-fictive.test.js",
+    "test/banc.test.js",
+    "test/exercices.test.js"
+  ],
+  "exercices": {
+    "installer": {
+      "couches": [],
+      "retires": [],
+      "copies": [],
+      "saisir": false,
+      "brief": "installer/brief.txt",
+      "pages": [
+        "/",
+        "/evenements",
+        "/adhesion"
+      ]
+    },
+    "composer": {
+      "couches": [
+        "composer/couche"
+      ],
+      "retires": [
+        "src/styles/app.css"
+      ],
+      "copies": [
+        {
+          "de": "atelier/composants",
+          "vers": "src/components/ds",
+          "sauf": [
+            "noms.json"
+          ]
+        },
+        {
+          "de": "docs/composants",
+          "vers": "docs/composants"
+        }
+      ],
+      "saisir": true,
+      "brief": "composer/brief.txt",
+      "pages": [
+        "/annuaire"
+      ]
+    }
+  }
+}

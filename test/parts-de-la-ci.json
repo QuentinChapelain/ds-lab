@@ -119,6 +119,7 @@
       "test/e2e-reduce.test.js",
       "test/e2e-versions.test.js",
       "test/enveloppe-bouton.test.js",
+      "test/exercices.test.js",
       "test/format.test.js",
       "test/garde-style.test.js",
       "test/login.test.js",

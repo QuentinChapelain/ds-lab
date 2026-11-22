@@ -7,9 +7,10 @@
  * date fixes. Il relève ensuite les traces d'un passage (src/cli/banc.js).
  */
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, readFileSync, realpathSync, symlinkSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { copierArbre, executer } from './outils.js';
 
 /** Ce que la copie de ds-lab ne contient pas, lu dans fixtures/banc/caches.json. @param {string} depot */
 export const caches = (depot) => /** @type {string[]} */ (JSON.parse(readFileSync(join(depot, 'fixtures', 'banc', 'caches.json'), 'utf8')).caches);
@@ -26,29 +27,6 @@ const GIT_ENV = {
   GIT_COMMITTER_EMAIL: 'banc@exemple.invalid',
   GIT_COMMITTER_DATE: '2026-01-01T00:00:00Z',
 };
-
-/**
- * Une commande qui doit réussir ; sinon une panne qui la nomme, avec la fin de sa sortie d'erreur.
- * @param {string} cmd @param {string[]} args @param {{ cwd: string, env?: Record<string, string>, input?: Buffer }} o
- */
-export function executer(cmd, args, o) {
-  const r = spawnSync(cmd, args, { cwd: o.cwd, env: { ...process.env, ...o.env }, input: o.input, encoding: 'buffer', maxBuffer: 1 << 28 });
-  if (r.status !== 0) throw new Error(`${cmd} ${args.join(' ')} : sortie ${r.status ?? r.signal} dans ${o.cwd} ; ${String(r.stderr ?? '').trim().split('\n').at(-1) ?? ''}`);
-  return String(r.stdout);
-}
-
-/**
- * Copie les fichiers d'un dossier tels que git les voit dans l'arbre de travail (suivis, ou nouveaux et non ignorés),
- * sauf ceux que le filtre refuse ; ni .git, ni node_modules, ni ce que .gitignore écarte.
- * @param {string} source @param {string} cible @param {(f: string) => boolean} garder
- */
-function copierArbre(source, cible, garder) {
-  const fichiers = executer('git', ['ls-files', '--cached', '--others', '--exclude-standard', '.'], { cwd: source }).split('\n');
-  for (const f of fichiers.filter((x) => x && garder(x) && existsSync(join(source, x)))) {
-    mkdirSync(dirname(join(cible, f)), { recursive: true });
-    cpSync(join(source, f), join(cible, f));
-  }
-}
 
 /** Fait d'un dossier un dépôt git d'un seul commit, au message donné. @param {string} dossier @param {string} message */
 function commit(dossier, message) {

@@ -14,22 +14,20 @@
  */
 import { parseArgs } from 'node:util';
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, globSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync, realpathSync, statSync } from 'node:fs';
-import { createServer } from 'node:http';
+import { copyFileSync, existsSync, globSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync, realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { extname, join, relative, resolve } from 'node:path';
+import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import stylelint from 'stylelint';
 import { lancer, marquesDe } from './garde.js';
-import { RACINE, poser, dossierDuJournal, executer } from '../banc/banc.js';
+import { RACINE, poser, dossierDuJournal } from '../banc/banc.js';
+import { executer } from '../banc/outils.js';
 import { echecsDeMarque, echecsDeStyle, echecsDeSkill } from '../report/verifier.js';
-import { lancerChromium } from '../browser/lancement.js';
+import { exercices, marquesDuBanc } from '../banc/departs.js';
+import { planches } from '../banc/planches.js';
 
 const DEPOT = fileURLToPath(new URL('../..', import.meta.url));
 const USAGE = 'npm run banc -- --bras A|B --passage <n> --modele <modèle> [--dossier <racine>], ou --relever <bras>-<n> [--dossier <racine>]';
-
-/** Types (déclarés avant le lancement : le module attend la commande au premier niveau) des fichiers servis par le serveur des planches. */
-const TYPES = /** @type {Record<string, string>} */ ({ '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.png': 'image/png' });
 
 await lancer('banc', async () => {
   const { values } = parseArgs({
@@ -105,7 +103,7 @@ async function relever(racine, id, sortie) {
 
   writeFileSync(join(sortie, 'charge.json'), `${JSON.stringify(charge(join(dossier, 'session.jsonl')), null, 2)}\n`);
   writeFileSync(join(sortie, 'heures.md'), heures(sessions.map((f) => join(journaux, f))));
-  notes.push(...(await planches(app, join(sortie, 'planches'))));
+  notes.push(...(await planches(app, join(sortie, 'planches'), { marques: marquesDuBanc(DEPOT), pages: exercices(DEPOT).exercices.composer.pages })));
   writeFileSync(join(sortie, 'notes.txt'), notes.length ? `${notes.join('\n')}\n` : 'rien à noter\n');
   console.log(`banc : passage ${id} relevé dans ${sortie}`);
   return 0;
@@ -204,53 +202,4 @@ function heures(journaux) {
     'La fin du passage est le message où l’agent dit avoir fini : à vérifier dans le journal.',
     '',
   ].join('\n');
-}
-
-/**
- * Les planches de l'annuaire : la version construite de l'app, servie en local, chaque marque de banc.json en clair et
- * en sombre, à 1 280 et à 360 px. Rend les notes : construction impossible, page en erreur.
- * @param {string} app @param {string} sortie
- * @returns {Promise<string[]>}
- */
-async function planches(app, sortie) {
-  const banc = JSON.parse(readFileSync(join(DEPOT, 'fixtures', 'app-fictive', 'banc.json'), 'utf8'));
-  if (!existsSync(join(app, 'node_modules'))) return ['planches : app non installée (npm ci), aucune planche'];
-  const b = spawnSync('npm', ['run', 'build'], { cwd: app, encoding: 'utf8' });
-  if (b.status !== 0) return [`planches : npm run build sort en ${b.status} ; ${b.stderr.trim().split('\n').at(-1) ?? ''}`];
-  const dist = join(app, 'dist');
-  const serveur = createServer((req, res) => {
-    const chemin = join(dist, decodeURIComponent(new URL(req.url ?? '/', 'http://x').pathname));
-    const fichier = chemin.startsWith(dist) && existsSync(chemin) && statSync(chemin).isFile() ? chemin : join(dist, 'index.html');
-    res.writeHead(200, { 'content-type': TYPES[extname(fichier)] ?? 'application/octet-stream' });
-    res.end(readFileSync(fichier));
-  });
-  await new Promise((ok) => serveur.listen(0, '127.0.0.1', () => ok(null)));
-  const port = /** @type {import('node:net').AddressInfo} */ (serveur.address()).port;
-  mkdirSync(sortie, { recursive: true });
-  /** @type {string[]} */
-  const notes = [];
-  const navigateur = await lancerChromium();
-  try {
-    for (const marque of banc.marques)
-      for (const mode of ['clair', 'sombre'])
-        for (const largeur of [1280, 360]) {
-          const nom = `${marque}-${mode}-${largeur}`;
-          const page = await navigateur.newPage({ viewport: { width: largeur, height: 900 } });
-          /** @type {string[]} */
-          const erreurs = [];
-          page.on('pageerror', (e) => erreurs.push(e.message));
-          try {
-            await page.goto(`http://127.0.0.1:${port}${banc.page}?marque=${marque}&mode=${mode}`, { waitUntil: 'networkidle', timeout: 20000 });
-            await page.screenshot({ path: join(sortie, `${nom}.png`), fullPage: true });
-          } catch (e) {
-            notes.push(`planche ${nom} : ${String(/** @type {Error} */ (e).message).split('\n')[0]}`);
-          }
-          if (erreurs.length) notes.push(`planche ${nom} : erreur dans la page, ${erreurs[0]}`);
-          await page.close();
-        }
-  } finally {
-    await navigateur.close();
-    serveur.close();
-  }
-  return notes;
 }
