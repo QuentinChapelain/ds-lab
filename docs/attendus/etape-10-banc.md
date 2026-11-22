@@ -267,10 +267,16 @@ Les séries AF, BN et RL sont libres [F] ; elles vont dans `docs/identifiants.md
 |---|---|
 | C1 | Cet attendu, les trois écritures (`verifier` par bloc, `KNOWN_ISSUES.md`, `SKILL.md`), VR9 à VR11, SK6 |
 | C2 | L'app fictive, AF1 à AF4 |
-| C3 | Le banc (pose, référence cachée, relevé), BN1 à BN4, `npm run banc` |
-| C4 | Le relecteur et le carnet, RL1 à RL5, D67 ; après l'essai du hook |
+| C3 | Le banc (pose, référence cachée, relevé), BN1, BN3, BN4, `npm run banc` |
+| C4 | Le relecteur et le carnet, RL1 à RL5, BN2 ; après l'essai du hook |
 
 README, ARCHITECTURE, décisions et identifiants sont mis à jour dans chaque commit qui les touche.
+
+## Écarts relevés en écrivant le code
+
+- **BN4** [H corrigé] : au départ, `verifier` sort en 2, pas en 1. L'app n'a que les entrées des marques, et il dit de lancer d'abord la saisie. BN4 le vérifie, puis saisit les trois marques par la copie : `verifier` sort alors en 1, avec 40 échecs de style en 8 blocs et aucun de contraste [F, 22/11, 1 h 20].
+- **BN2** (le bras B) passe de C3 à C4, avec le relecteur qu'il pose. C3 a BN1, BN3 et BN4 ; le compte total ne change pas.
+- **Les chemins cachés** sont dans `fixtures/banc/caches.json` et non dans le code. La garde des marques prend « atelier » pour le premier mot d'Atelier Lavandine, si bien que `src/` ne peut pas l'écrire.
 
 ## Hors périmètre
 

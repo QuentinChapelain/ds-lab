@@ -10,6 +10,7 @@
       "test/app-fictive.test.js",
       "test/apply-unit.test.js",
       "test/audit-properties.test.js",
+      "test/banc.test.js",
       "test/canal-a-faire.test.js",
       "test/candidats.test.js",
       "test/cartes-plein-lignes-certaines.test.js",

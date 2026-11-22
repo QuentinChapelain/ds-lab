@@ -19,6 +19,7 @@
     "typo": "node src/cli/typo.js",
     "skill": "node src/cli/skill.js",
     "verifier": "node src/cli/verifier.js",
+    "banc": "node src/cli/banc.js",
     "vuetify": "node src/cli/vuetify.js",
     "login": "node src/cli/login.js",
     "marque": "node src/cli/marque.js",

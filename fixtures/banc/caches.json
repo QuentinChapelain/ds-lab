@@ -1,0 +1,20 @@
+{
+  "$description": "Chemins que la copie de ds-lab posée par le banc d'essai ne contient pas (D67) : la référence de l'annuaire (modules, leurs stories, preuves et fiches), son plan et ceux des autres lots (attendus), l'annuaire de la marque de démonstration, l'app fictive et le banc lui-même. Sans eux, l'agent ne peut pas recopier la référence ; git archive et un dépôt d'un seul commit empêchent l'historique de la rendre.",
+  "caches": [
+    "atelier/modules",
+    "atelier/preuve/member-card.js",
+    "atelier/preuve/member-list.js",
+    "atelier/stories/MemberCard.stories.js",
+    "atelier/stories/MemberList.stories.js",
+    "atelier/stories/membres.js",
+    "docs/modules",
+    "docs/attendus",
+    "fixtures/marque-demo/annuaire",
+    "fixtures/app-fictive",
+    "fixtures/banc",
+    "src/banc",
+    "src/cli/banc.js",
+    "test/app-fictive.test.js",
+    "test/banc.test.js"
+  ]
+}

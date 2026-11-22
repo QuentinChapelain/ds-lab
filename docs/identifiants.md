@@ -88,6 +88,7 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 | AD1 à AD6 | Adresse stable des couches communes : écriture, lecture dans les quatre contextes, marque copiée hors du dépôt, pannes, ancien `$ref` relatif, feuille CSS (D66) | `test/adresse-commune.test.js` |
 | AF1 à AF4 | App fictive du banc d'essai : versions de l'atelier, ni `Ds…` ni annuaire ni ds-lab, les dix membres et les champs du brief, entrées des trois marques (D67) | `test/app-fictive.test.js` |
 | B1 à B5 | Jetons du bouton dans les dix thèmes, contrastes de l'icône du bouton à icône | `test/bouton-jetons.test.js` |
+| BN1, BN3, BN4 | Banc d'essai : passage du bras A posé (copie cachée et sans historique, app de départ, skill, réglages, briefs), deux poses identiques, `verifier` depuis la copie (D67) | `test/banc.test.js` |
 | C1 à C13 | Fenêtre des candidats, grisé des marges, bilan par usage | `test/candidats.test.js`, `test/e2e-candidats-revue.test.js`, `fixtures/marque-demo/expected-candidats.json` |
 | E1 à E12 | Gardes des enveloppes (bouton, champ de texte, carte, bouton à icône, avatar, étiquette), découpage d'un composant `.vue` | `test/enveloppe-bouton.test.js` |
 | G0 à G8 | Générateur de valise | `src/valise/generate.js`, `test/valise-generate.test.js`, `test/gris-neutre.test.js` |

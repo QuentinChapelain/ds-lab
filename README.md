@@ -36,6 +36,7 @@ npm run espacements -- [--marque <dossier> | --marques <dossier>] [--semantique 
 npm run typo        -- [--marque <dossier> | --marques <dossier>] [--semantique <fichier>] [--primitives <fichier>] [--couche-marque <fichier>] [--etroit <fichier>]   contrôler les styles de texte
 npm run verifier    -- --marques <dossier> --style <motif>… [--skill <dossier>]   contrôler les tokens, le style et la copie du skill d'un autre dépôt : contraste dans les quatre contextes, espacements, typo, style ; un bloc par cause, qui dit quoi faire
 npm run skill                                                écrire les textes du skill (skill/ds-lab/) depuis docs/regles.md et docs/techniques/
+npm run banc        -- --bras A|B --passage <n> --modele <m>  poser le dossier d'un passage du banc d'essai, hors du dépôt ; --relever <bras>-<n> en relève les traces
 npm run css         -- [--marque <dossier>]                  écrire la feuille CSS complète de chaque marque (tokens/<marque>/jetons.css), par Terrazzo
 npm run vuetify     -- [--marque <dossier>]                  écrire les thèmes Vuetify clair et sombre de chaque marque (tokens/<marque>/vuetify.json)
 npm run types                                                vérifier les types JSDoc de src/ (non strict, sans rien émettre)
@@ -175,6 +176,15 @@ verifier : 33 échecs en 2 blocs (contraste 32, espacements 0, typo 0, style 1, 
 La cause d'un échec de contraste est le jeton primitif par lequel passe le plus de paires en échec de la marque ; celle d'un échec d'espacement ou de typo, sa règle ; celle d'une valeur de style, son fichier et sa règle de Stylelint ; celle d'une copie du skill qui vieillit, la copie (D67).
 
 Limites : les couches communes sont celles du clone qui lit, et la CI de l'équipe fixe son commit ; un outil DTCG tiers ne suit pas l'adresse `ds-lab:` ; le skill est en français ; les règles que `verifier` ne contrôle pas, 27 aujourd'hui (le compte est dans `skill/ds-lab/regles.md`), s'y lisent sans bloquer.
+
+## Banc d'essai
+
+ds-lab se mesure sur un banc d'essai qui se rejoue à l'identique (D67) : un agent neuf, qui n'a que l'app, le skill et un clone de ds-lab, fait un annuaire dans Quai Nord, une petite app Vuetify fictive déjà remplie (`fixtures/app-fictive/`), pour trois marques. La page n'est que le banc : on y mesure l'outil, et l'on relance les mêmes passages après chaque amélioration.
+
+- **Bras** : A, le skill seul ; B, le skill, plus le relecteur et le carnet.
+- **Passage** : une session d'agent du début à la fin, dans un dossier à lui, `~/Developer/banc/<bras>-<n>/` par défaut.
+- `npm run banc -- --bras A --passage 1 --modele <modèle>` pose ce dossier : une copie du commit courant de ds-lab, sans la référence de l'annuaire ni l'historique, avec `npm ci` ; l'app, en dépôt git d'un commit « départ », avec `npm ci` ; le skill dans `<passage>/app/.claude/skills/ds-lab/` ; `DS_LAB` et le dossier de la copie dans `<passage>/app/.claude/settings.local.json` ; `brief.txt` et `brief-seul.txt` (`fixtures/banc/`) ; `depart.txt`, avec les deux commandes qui ouvrent la session, avec ou sans humain, et la sortie de `verifier` au départ.
+- `npm run banc -- --relever A-1` écrit dans `local/banc/A-1/` : le journal de la session, la sortie de `verifier` et ses échecs comptés dans les fichiers neufs ou modifiés et dans les fichiers intouchés, le diff depuis « départ », le carnet, ce que la session a chargé, les heures et douze planches de la page de l'annuaire (trois marques, clair et sombre, 1 280 et 360 px).
 
 ## Atelier des composants
 
