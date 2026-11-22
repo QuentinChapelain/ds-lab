@@ -1,8 +1,8 @@
 # Dette connue
 
-État au 21/11/2026. Ce fichier ne porte que la dette à payer, chacune avec son moment. Les limites acceptées sont écrites à leur place, sous leur décision (puce « Limite »), dans les fiches, le README ou ARCHITECTURE (D64) ; ce qui manque au design system est dans `docs/feuille-de-route.md`.
+État au 22/11/2026. Ce fichier ne porte que la dette à payer, chacune avec son moment. Les limites acceptées sont écrites à leur place, sous leur décision (puce « Limite »), dans les fiches, le README ou ARCHITECTURE (D64) ; ce qui manque au design system est dans `docs/feuille-de-route.md`.
 
-## À payer à l'étape 9
+## À payer à l'ajout d'une marque ou d'un composant
 
 - Écarts aux règles d'écriture (D65, `docs/regles.md`), un contrôle à écrire ou à élargir chacun :
   - DS1 : rien ne relit la règle sur les jetons écrits ; dans `npm run contraste`, un texte foncé sur un plein doit atteindre 7:1 sur le plein et 4,5:1 sur le survol (environ 30 min [H]).

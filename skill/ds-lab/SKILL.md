@@ -13,6 +13,8 @@ Ce skill sert quand on saisit une marque, quand on touche à ses tokens ou à so
 - Node 24 : sous une autre version majeure, chaque commande sort en 2 sans rien lire.
 - La saisie d'une police de titre donnée par ses fichiers mesure l'encre dans Chromium, celui de `playwright-core` du clone.
 
+Le code fait foi sur ce guide : si une commande, un fichier ou une règle du clone contredit ce guide, suivre le clone et signaler l'écart à l'humain.
+
 ## Quatre mots
 
 - **Règle** : vraie ou fausse, un contrôle la tranche, elle bloque.

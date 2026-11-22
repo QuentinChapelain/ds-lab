@@ -34,7 +34,7 @@ npm run saisie     -- <entree.json>                          saisir une marque :
 npm run contraste   -- [--marque <dossier> | --marques <dossier>] [--paires <fichier>] [--mode light|dark] [--largeur wide|narrow]   contrôler les paires de rôles de couleur
 npm run espacements -- [--marque <dossier> | --marques <dossier>] [--semantique <fichier>] [--etroit <fichier>]   contrôler les espacements par relation
 npm run typo        -- [--marque <dossier> | --marques <dossier>] [--semantique <fichier>] [--primitives <fichier>] [--couche-marque <fichier>] [--etroit <fichier>]   contrôler les styles de texte
-npm run verifier    -- --marques <dossier> --style <motif>… [--skill <dossier>]   contrôler les tokens, le style et la copie du skill d'un autre dépôt : contraste dans les quatre contextes, espacements, typo, style ; une ligne par échec, qui dit quoi faire
+npm run verifier    -- --marques <dossier> --style <motif>… [--skill <dossier>]   contrôler les tokens, le style et la copie du skill d'un autre dépôt : contraste dans les quatre contextes, espacements, typo, style ; un bloc par cause, qui dit quoi faire
 npm run skill                                                écrire les textes du skill (skill/ds-lab/) depuis docs/regles.md et docs/techniques/
 npm run css         -- [--marque <dossier>]                  écrire la feuille CSS complète de chaque marque (tokens/<marque>/jetons.css), par Terrazzo
 npm run vuetify     -- [--marque <dossier>]                  écrire les thèmes Vuetify clair et sombre de chaque marque (tokens/<marque>/vuetify.json)
@@ -161,13 +161,18 @@ Une équipe garde ses marques et ses composants dans son propre dépôt ; ds-lab
 1. Cloner ds-lab où l'on veut et lancer `npm ci` dedans ; le chemin du clone va dans `DS_LAB`, que seules les commandes du skill lisent.
 2. Copier `skill/ds-lab/` dans son dépôt, en `<dépôt>/.claude/skills/ds-lab/` : `SKILL.md`, écrit à la main, et trois textes générés par `npm run skill` depuis `docs/regles.md` et `docs/techniques/` : les règles et les défauts, avec pour chacun s'il est contrôlé dans ce dépôt, les consignes, la technique de Vuetify. Les choix propres à ds-lab en sont retirés.
 3. Saisir chaque marque (`node "$DS_LAB/src/cli/saisie.js" tokens/<marque>/entree.json`), puis son thème (`node "$DS_LAB/src/cli/vuetify.js" --marque tokens/<marque>`). Le resolver écrit cite les couches communes par `ds-lab:commun/<fichier>`, lu dans le clone qui lit : rien n'y dépend de l'endroit du clone.
-4. Vérifier, en local et dans sa CI : `node "$DS_LAB/src/cli/verifier.js" --marques tokens --style "src/**/*.vue" --skill .claude/skills/ds-lab`. Il juge le contraste de chaque marque dans les quatre contextes, les espacements, la typo, le style des composants (CP3) et la copie du skill, et écrit une ligne par échec, avec sa règle et ce qu'il faut faire :
+4. Vérifier, en local et dans sa CI : `node "$DS_LAB/src/cli/verifier.js" --marques tokens --style "src/**/*.vue" --skill .claude/skills/ds-lab`. Il juge le contraste de chaque marque dans les quatre contextes, les espacements, la typo, le style des composants (CP3) et la copie du skill. Il regroupe les échecs par cause et écrit un bloc par cause : ce qui est cassé, le compte, la règle, puis un seul « À faire ». Une couleur cassée dans une marque fait un seul bloc, quel que soit le nombre de paires et de contextes qu'elle touche ; ici, une marque fictive, Ruche Basse, dans `tokens/<marque>/` :
 
 ```
 verifier : 2 marques dans tokens/ (Phare Gris, Ruche Basse) ; 3 fichiers de style
-✗ style · src/components/MemberBadge.vue:42 : Valeur brute « 12px » pour padding : prendre var(--v-ds-…) ou rgb(var(--v-theme-…)) ; sinon une exception avec sa raison (CP3). (declaration-property-value-allowed-list)
-verifier : 1 échec (contraste 0, espacements 0, typo 0, style 1, skill 0)
+✗ contraste · Ruche Basse (tokens/<marque>/) : color.primary.11 (#f2e6c4), lu par text.interactive, border.focus, text.on-interactive.inverse, background.interactive.strong, background.brand.strong ; 16 paires sous leur seuil dans 2 contextes sur 4 (clair, large ; clair, étroit), soit 32 échecs, la plus basse à 1,11:1 (DS12 : 18, DS2 : 14).
+  À faire : relancer la saisie sur tokens/<marque>/entree.json ; si elle refuse la marque, changer la couleur qu'elle nomme. Ne pas corriger les jetons à la main.
+✗ style · src/components/<Composant>.vue : ligne 7 : Valeur brute « 12px » pour padding (declaration-property-value-allowed-list).
+  À faire : prendre var(--v-ds-…) ou rgb(var(--v-theme-…)) ; sinon une exception avec sa raison (CP3).
+verifier : 33 échecs en 2 blocs (contraste 32, espacements 0, typo 0, style 1, skill 0)
 ```
+
+La cause d'un échec de contraste est le jeton primitif par lequel passe le plus de paires en échec de la marque ; celle d'un échec d'espacement ou de typo, sa règle ; celle d'une valeur de style, son fichier et sa règle de Stylelint ; celle d'une copie du skill qui vieillit, la copie (D67).
 
 Limites : les couches communes sont celles du clone qui lit, et la CI de l'équipe fixe son commit ; un outil DTCG tiers ne suit pas l'adresse `ds-lab:` ; le skill est en français ; les règles que `verifier` ne contrôle pas, 27 aujourd'hui (le compte est dans `skill/ds-lab/regles.md`), s'y lisent sans bloquer.
 

@@ -13,7 +13,9 @@
  *       de verifier qu'il cite est lue par verifier ; 500 mots au plus hors code, la mesure de DOC5 ;
  *   SK5 le retrait des choix de ds-lab : une proposition après « ; » ou « . », le renvoi « (de XX<n>) » gardé, un
  *       « ds-lab » au milieu d'une phrase gardé ; une cellule qui commence par « ds-lab » est une panne qui nomme
- *       le numéro.
+ *       le numéro ;
+ *   SK6 SKILL.md porte la phrase de priorité, mot pour mot, à la fin de « Avant de commencer » : le clone l'emporte
+ *       sur le guide.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -100,4 +102,11 @@ test('SK5 retrait des choix de ds-lab', () => {
   assert.equal(sansChoixDeDsLab("a ; ds-lab écrit en français, c'est son choix (de NM1)", 'X1'), 'a (de NM1)');
   assert.equal(sansChoixDeDsLab('chaque mot propre à ds-lab est au glossaire', 'X1'), 'chaque mot propre à ds-lab est au glossaire');
   assert.throws(() => sansChoixDeDsLab('ds-lab : tout', 'NM9'), /^Error: skill : NM9, la cellule commence par « ds-lab » et ne se détache pas : écrire le choix de ds-lab dans une proposition à part, après « ; » ou « \. »$/);
+});
+
+test('SK6 la phrase de priorité, à la fin de « Avant de commencer »', () => {
+  const md = lire('SKILL.md');
+  const section = md.slice(md.indexOf('## Avant de commencer'), md.indexOf('## Quatre mots'));
+  const phrase = "Le code fait foi sur ce guide : si une commande, un fichier ou une règle du clone contredit ce guide, suivre le clone et signaler l'écart à l'humain.";
+  assert.equal(section.trimEnd().split('\n').at(-1), phrase);
 });

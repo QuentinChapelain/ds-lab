@@ -6,8 +6,8 @@
  *   --marques <dossier>  chaque sous-dossier qui a un marque.resolver.json (comme npm run contraste --marques) ;
  *   --style <motif>      fichiers des composants de l'équipe, jugés par stylelint.config.mjs du clone (CP3) ;
  *   --skill <dossier>    la copie du skill, comparée à skill/ds-lab/ du clone : un fichier absent ou différent échoue.
- * Juge, dans le processus : contraste dans les quatre contextes, espacements, typo, style. Écrit un en-tête, une ligne
- * par échec qui dit quoi faire (src/report/verifier.js), et un bilan. Sortie 0 sans échec, 1 sinon, 2 sur une panne :
+ * Juge, dans le processus : contraste dans les quatre contextes, espacements, typo, style. Écrit un en-tête, un bloc
+ * par cause qui dit quoi faire (src/report/verifier.js), et un bilan. Sortie 0 sans échec, 1 sinon, 2 sur une panne :
  * option absente, motif sans fichier, dossier sans marque, copie du skill introuvable (D18, src/cli/garde.js).
  */
 import { parseArgs } from 'node:util';
@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 import stylelint from 'stylelint';
 import { lancer, marquesDe } from './garde.js';
 import { nomDeMarque } from '../tokens/resolver.js';
-import { echecsDeMarque, echecsDeStyle, echecsDeSkill, entete, bilan } from '../report/verifier.js';
+import { echecsDeMarque, echecsDeStyle, echecsDeSkill, blocs, entete, bilan } from '../report/verifier.js';
 
 const CONFIG = fileURLToPath(new URL('../../stylelint.config.mjs', import.meta.url));
 const USAGE = 'node <clone>/src/cli/verifier.js --marques <dossier> --style <motif> [--style <motif>…] [--skill <dossier>]';
@@ -43,7 +43,7 @@ await lancer('verifier', async () => {
   const { results } = await stylelint.lint({ files: uniques, configFile: CONFIG });
   echecs.push(...echecsDeStyle(results));
   echecs.push(...echecsSkill);
-  for (const e of echecs) console.log(e.texte);
+  for (const b of blocs(echecs)) console.log(b.lignes.join('\n'));
   console.log(bilan(echecs, { skill: !!skill }));
   return echecs.length ? 1 : 0;
 });

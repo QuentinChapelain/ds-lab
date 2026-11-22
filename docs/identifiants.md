@@ -99,10 +99,10 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 | P1 à P4 | Proximité des marges | `fixtures/marque-demo/expected-proximite.json` |
 | R-1 à R-9 | Identifiant et titre d'une ligne, captures par version | `test/e2e-identifiants.test.js`, `test/e2e-versions.test.js` |
 | S1 à S4 | Modifications et `npm run apply` | `test/e2e-apply.test.js` |
-| SK1 à SK5 | Textes du skill : fraîcheur, règles et défauts avec leur contrôle dans le dépôt de l'équipe, comptes, consignes et techniques, `SKILL.md`, retrait des choix de ds-lab (D66) | `test/skill.test.js` |
+| SK1 à SK6 | Textes du skill : fraîcheur, règles et défauts avec leur contrôle dans le dépôt de l'équipe, comptes, consignes et techniques, `SKILL.md`, retrait des choix de ds-lab, phrase de priorité (D66, D67) | `test/skill.test.js` |
 | T0 à T5 | Rôles de couleur, paires, planche | `test/roles-statuts.test.js`, `test/roles-semantique.test.js`, `test/roles-paires.test.js`, `test/roles-planche.test.js` |
 | U1 à U14 | Fiches des composants et des modules : en-tête et blocs générés, refus, anatomie, contrastes, marques, parties écrites, exemple, index et glossaire, mots refusés et plafond, table des noms ; U14, fiches des modules (D56, D57, D61) | `test/fiches.test.js` |
-| VR1 à VR8 | `verifier` dans un dépôt fictif : tout passe, paire cassée en sombre, échelle redéfinie, valeur en dur, pannes, « À faire » de chaque ligne, dossier de lancement, copie du skill (D66) | `test/verifier.test.js` |
+| VR1 à VR11 | `verifier` dans un dépôt fictif : tout passe, paire cassée en sombre, échelle redéfinie, valeur en dur, pannes, « À faire » de chaque bloc, dossier de lancement, copie du skill, pas d'échelle cassé en un bloc, style par fichier, bilan et forme des messages (D66, D67) | `test/verifier.test.js` |
 | W1 à W9 | Fabrique commune des enveloppes et menus ; W9, CP1 : un composant sans événement refuse les attributs `on…` | `test/fabrique-enveloppes.test.js` |
 | Y1 à Y3 | Parts de la CI : chaque fichier de test dans une part et une seule, aucun fichier absent, matrice de la CI et liste d'accord (D58) | `test/parts-de-la-ci.test.js` |
 
