@@ -1,0 +1,5 @@
+{
+  "$description": "Lu par le banc d'essai de ds-lab (npm run banc), jamais copié dans le dossier d'un passage : les trois marques de l'app, chacune par le dossier de son entrée dans tokens/, et l'adresse des planches.",
+  "marques": ["ecume-et-sel", "grenat-papeterie", "maison-alberto"],
+  "page": "/annuaire"
+}

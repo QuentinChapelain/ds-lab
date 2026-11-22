@@ -1,0 +1,34 @@
+/* Styles communs de l'app. Les polices de titre de chaque marque viennent de sa charte. */
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+.marque-ecume-et-sel h1,
+.marque-ecume-et-sel h2,
+.marque-ecume-et-sel .titre-app {
+  font-family: 'Trebuchet MS', sans-serif;
+}
+.marque-grenat-papeterie h1,
+.marque-grenat-papeterie h2,
+.marque-grenat-papeterie .titre-app {
+  font-family: Palatino, serif;
+}
+.marque-maison-alberto h1,
+.marque-maison-alberto h2,
+.marque-maison-alberto .titre-app {
+  font-family: 'National Park', sans-serif;
+}
+.page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+}
+.page h1 {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+.chapo {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 32px;
+}

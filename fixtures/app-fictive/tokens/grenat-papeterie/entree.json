@@ -1,0 +1,5 @@
+{
+  "name": "Grenat Papeterie",
+  "primary": "#7a1f3d",
+  "fonts": { "heading": ["Palatino", "serif"], "body": ["Helvetica", "Arial", "sans-serif"] }
+}

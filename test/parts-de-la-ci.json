@@ -7,6 +7,7 @@
       "test/alias.test.js",
       "test/anciens-noms.test.js",
       "test/aplats.test.js",
+      "test/app-fictive.test.js",
       "test/apply-unit.test.js",
       "test/audit-properties.test.js",
       "test/canal-a-faire.test.js",

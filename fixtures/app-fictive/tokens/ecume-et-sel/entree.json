@@ -1,0 +1,6 @@
+{
+  "name": "Écume et Sel",
+  "primary": "#7fdbff",
+  "accent": "#e4572e",
+  "fonts": { "heading": ["Trebuchet MS", "sans-serif"], "body": ["Verdana", "sans-serif"] }
+}
