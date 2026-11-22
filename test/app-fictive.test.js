@@ -5,9 +5,13 @@
  *   AF1 mêmes versions que l'atelier pour Vue, Vuetify, Vite, son greffon Vue et @mdi/js, dans package.json et dans
  *       le verrou ;
  *   AF2 ni composant Ds…, ni page ni adresse d'annuaire, ni mention de ds-lab dans ce que le banc copie ;
- *   AF3 les dix personnes de l'atelier, dans le même ordre, chacune avec les champs que le brief demande, et chaque cas
- *       présent : sans photo, photo perdue, sans promo, sans groupe, sans ouverture, nom long ;
- *   AF4 chaque entrée de marque égale celle de tokens/, à l'octet ; banc.json nomme exactement ces marques.
+ *   AF3 les dix personnes de l'atelier en tête de la liste, dans le même ordre ; chaque membre avec les champs que le brief
+ *       demande, et chaque cas présent dans les 25 premiers : sans photo, photo perdue, sans promo, sans groupe, sans
+ *       ouverture, quatre ouvertures, nom long ;
+ *   AF4 chaque entrée de marque égale celle de tokens/, à l'octet ; banc.json nomme exactement ces marques ;
+ *   AF5 295 membres ; le fichier égale à l'octet ce qu'écrit fixtures/banc/fabriquer-membres.js ; noms et profils
+ *       uniques ; au moins deux membres par entreprise du script et par ville ; les trois personnes proposées sont dans
+ *       la liste, avec leur question et une raison ; la personne de l'équipe et les trois qui animent ont leurs champs.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,6 +19,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { FICHIER, texteMembres } from '../fixtures/banc/fabriquer-membres.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const APP = join(ROOT, 'fixtures', 'app-fictive');
@@ -49,11 +54,12 @@ test('AF2 ni composant Ds…, ni annuaire, ni ds-lab dans ce que le banc copie',
   assert.doesNotMatch(routes, /annuaire|membre/i);
 });
 
-test('AF3 les dix personnes de l’atelier, les champs du brief, chaque cas', async () => {
+test('AF3 les dix personnes de l’atelier en tête, les champs du brief, chaque cas dans les 25 premiers', async () => {
   const atelier = [...readFileSync(join(ROOT, 'atelier', 'stories', 'membres.js'), 'utf8').matchAll(/\bname: (['"])(.+?)\1/g)].map((m) => m[2]);
   assert.equal(atelier.length, 10);
   const { MEMBRES } = await import(pathToFileURL(join(APP, 'src', 'data', 'membres.js')).href);
-  assert.deepEqual(MEMBRES.map((/** @type {any} */ m) => m.nom), atelier);
+  assert.deepEqual(MEMBRES.slice(0, 10).map((/** @type {any} */ m) => m.nom), atelier);
+  const premiers = MEMBRES.slice(0, 25);
   for (const m of MEMBRES) {
     for (const c of ['nom', 'profil', 'poste', 'ville', 'ecrire']) assert.equal(typeof m[c], 'string', `${m.nom} : ${c}`);
     assert.equal(typeof m.entreprise?.nom, 'string', `${m.nom} : entreprise`);
@@ -63,12 +69,13 @@ test('AF3 les dix personnes de l’atelier, les champs du brief, chaque cas', as
     if (m.ouvertures) assert.ok(m.ouvertures.length > 0 && m.ouvertures.every((/** @type {any} */ o) => typeof o === 'string'), m.nom);
   }
   const cas = {
-    'sans photo': MEMBRES.some((/** @type {any} */ m) => !m.photo),
-    'photo perdue': MEMBRES.some((/** @type {any} */ m) => m.photo === 'data:image/png;base64,AAAA'),
-    'sans promo': MEMBRES.some((/** @type {any} */ m) => !m.promo),
-    'sans groupe': MEMBRES.some((/** @type {any} */ m) => !m.groupe),
-    'sans ouverture': MEMBRES.some((/** @type {any} */ m) => !m.ouvertures),
-    'nom long': MEMBRES.some((/** @type {any} */ m) => m.nom.length >= 40),
+    'sans photo': premiers.some((/** @type {any} */ m) => !m.photo),
+    'photo perdue': premiers.some((/** @type {any} */ m) => m.photo === 'data:image/png;base64,AAAA'),
+    'sans promo': premiers.some((/** @type {any} */ m) => !m.promo),
+    'sans groupe': premiers.some((/** @type {any} */ m) => !m.groupe),
+    'sans ouverture': premiers.some((/** @type {any} */ m) => !m.ouvertures),
+    'quatre ouvertures': premiers.some((/** @type {any} */ m) => m.ouvertures?.length === 4),
+    'nom long': premiers.some((/** @type {any} */ m) => m.nom.length >= 40),
   };
   assert.deepEqual(Object.entries(cas).filter(([, v]) => !v), []);
 });
@@ -78,4 +85,27 @@ test('AF4 les entrées des marques égalent celles de tokens/, banc.json les nom
   assert.equal(dossiers.length, 3);
   for (const d of dossiers) assert.equal(readFileSync(join(APP, 'tokens', d, 'entree.json'), 'utf8'), readFileSync(join(ROOT, 'tokens', d, 'entree.json'), 'utf8'), d);
   assert.deepEqual([...json(join(APP, 'banc.json')).marques].sort(), dossiers);
+});
+
+test('AF5 295 membres rejouables, des noms uniques, les personnes proposées et celles qui animent', async () => {
+  assert.equal(FICHIER, join(APP, 'src', 'data', 'membres.js'));
+  assert.equal(readFileSync(FICHIER, 'utf8'), texteMembres(), 'à réécrire : node fixtures/banc/fabriquer-membres.js');
+  const { MEMBRES, COUP_DE_MAIN, PROPOSES, ANIMATION } = await import(pathToFileURL(FICHIER).href);
+  assert.equal(MEMBRES.length, 295);
+  for (const c of ['nom', 'profil', 'ecrire']) assert.equal(new Set(MEMBRES.map((/** @type {any} */ m) => m[c])).size, 295, c);
+  /** @param {(m: any) => string} cle */
+  const comptes = (cle) => Object.entries(Object.groupBy(MEMBRES, cle)).map(([k, l]) => [k, l?.length]);
+  for (const [k, n] of [...comptes((m) => m.entreprise.nom), ...comptes((m) => m.ville)]) assert.ok(Number(n) >= 2, `${k} : ${n} membre`);
+  assert.deepEqual(Object.keys(COUP_DE_MAIN).sort(), ['demander', 'misesEnRelation', 'nom', 'photo']);
+  assert.equal(typeof COUP_DE_MAIN.misesEnRelation, 'number');
+  assert.equal(typeof PROPOSES.raison, 'string');
+  assert.match(PROPOSES.raison, /\.$/);
+  assert.equal(PROPOSES.personnes.length, 3);
+  for (const p of PROPOSES.personnes) {
+    assert.ok(MEMBRES.includes(p.membre), p.membre?.nom);
+    assert.ok(p.membre.ouvertures?.length, p.membre.nom);
+    assert.match(p.question, /\?$/);
+  }
+  assert.equal(ANIMATION.length, 3);
+  for (const a of ANIMATION) assert.deepEqual(Object.keys(a).sort(), ['nom', 'photo', 'prenom', 'role']);
 });
