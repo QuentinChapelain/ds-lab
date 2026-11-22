@@ -16,7 +16,7 @@ import { copierArbre, executer } from './outils.js';
 
 /** Ce que disent les exercices, lu dans fixtures/banc/exercices.json. @param {string} depot */
 export const exercices = (depot) =>
-  /** @type {{ caches: string[], exercices: Record<string, Exercice> }} */ (JSON.parse(readFileSync(join(depot, 'fixtures', 'banc', 'exercices.json'), 'utf8')));
+  /** @type {{ caches: string[], signaux: { plusTard: Record<string, string>, refait: string }, exercices: Record<string, Exercice> }} */ (JSON.parse(readFileSync(join(depot, 'fixtures', 'banc', 'exercices.json'), 'utf8')));
 
 /** Les marques de l'app, chacune par son dossier de tokens/. @param {string} depot */
 export const marquesDuBanc = (depot) => /** @type {string[]} */ (JSON.parse(readFileSync(join(depot, 'fixtures', 'app-fictive', 'banc.json'), 'utf8')).marques);

@@ -136,9 +136,9 @@ test('RL5 une page en faute et intouchée : le relecteur n’en dit rien', () =>
 
 test('BN2 un passage du bras B : hook, bloc du carnet et carnet.md dans « départ »', () => {
   const racine = mkdtempSync(join(tmpdir(), 'ds-lab-banc-'));
-  const r = spawnSync(process.execPath, [join(ROOT, 'src', 'cli', 'banc.js'), '--dossier', racine, '--modele', 'essai', '--sans-installation', '--bras', 'B', '--passage', '1'], { cwd: ROOT, encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [join(ROOT, 'src', 'cli', 'banc.js'), '--exercice', 'composer', '--dossier', racine, '--modele', 'essai', '--sans-installation', '--bras', 'B', '--passage', '1'], { cwd: ROOT, encoding: 'utf8' });
   assert.equal(r.status, 0, r.stderr);
-  const app = join(racine, 'B-1', 'app');
+  const app = join(racine, 'composer', 'B-1', 'app');
   assert.deepEqual(JSON.parse(readFileSync(join(app, '.claude', 'settings.json'), 'utf8')), { hooks: { PostToolUse: [{ matcher: 'Edit|Write', hooks: [{ type: 'command', command: COMMANDE }] }] } });
   assert.equal(readFileSync(join(app, 'CLAUDE.md'), 'utf8'), CARNET_BLOC);
   assert.equal(readFileSync(join(app, 'carnet.md'), 'utf8'), CARNET);

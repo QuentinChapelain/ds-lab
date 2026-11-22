@@ -11,7 +11,8 @@
  *   EX5 l'aplat des thèmes égale background.brand.strong et text.on-brand, trois marques, deux modes ; chaque exception de
  *       style de l'app est dans src/gabarit/ et égale le jeton qu'elle nomme, dans sa largeur ;
  *   EX6 rien de la référence de l'annuaire n'est dans le départ de Composer, ni dans ce que la copie de ds-lab garde : ni
- *       chemin, ni contenu, ni nom de ses pièces ;
+ *       chemin, ni contenu, ni nom de ses pièces ; la description brute non plus ;
+ *   EX7 les briefs ne nomment ni composant, ni token, ni règle, n'ont pas de mise en gras, et finissent par le skill ;
  *   EX8 chaque page des départs de Composer et d'Étendre passe par le gabarit ; hors de src/components/ds/, aucune pièce de Vuetify qui a
  *       un composant Ds…, sauf la puce d'état (DsTag ne porte pas de statut).
  */
@@ -164,7 +165,8 @@ test('EX6 la référence de l’annuaire est absente de Composer et de ce que la
     .split('\0')
     .filter((f) => f && existsSync(join(ROOT, f)) && !caches.some((c) => f === c || f.startsWith(`${c}/`)));
   assert.ok(gardes.includes('skill/ds-lab/SKILL.md') && !gardes.some((f) => f.startsWith('fixtures/banc/')));
-  const contenus = reference.map((f) => readFileSync(join(COUCHE, f)));
+  const brute = join(ROOT, 'fixtures', 'banc', 'composer', 'description-brute.txt');
+  const contenus = [...reference.map((f) => readFileSync(join(COUCHE, f))), readFileSync(brute)];
   /** @param {string} chemin @param {string} f */
   const juger = (chemin, f) => {
     const t = readFileSync(chemin);
@@ -175,6 +177,16 @@ test('EX6 la référence de l’annuaire est absente de Composer et de ce que la
   for (const f of arbre(depart('composer'))) {
     assert.ok(!reference.includes(f), f);
     juger(join(depart('composer'), f), f);
+  }
+});
+
+test('EX7 les briefs ne nomment ni composant, ni token, ni règle', () => {
+  const briefs = Object.values(exercices(ROOT).exercices).flatMap((e) => e.brief ?? []);
+  assert.deepEqual(briefs, ['installer/brief.txt', 'composer/brief.txt']);
+  for (const b of briefs) {
+    const t = lire(join(ROOT, 'fixtures', 'banc', b));
+    assert.doesNotMatch(t, /\bDs[A-Z]|--v-|\b(?:DS|NM|CP|DOC|DF|CS|D|B)\d|\b(?:background|text|border|gap|typography)\.|Vuetify|\*\*|^>/m, b);
+    assert.match(t, /\n\nPour le design system, suis le skill ds-lab\.\n$/, b);
   }
 });
 

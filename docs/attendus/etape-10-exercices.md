@@ -188,7 +188,7 @@ Les pages visées (`/membres/…`, `/entreprises/…`, `/messages/…`) n'existe
 - **D68, README et ARCHITECTURE restent dans la copie** que l'IA neuve peut lire : ils ne diront rien des choix de la section 5.
 - **Planches** : 360 et 1 280 px, clair et sombre, trois marques. `/annuaire` pour Composer et Étendre (12) ; les trois pages pour Installer (36).
 
-**Le relevé de Composer, en plus**, sur les fichiers neufs ou modifiés, dans `composer.md` et `composer.json` :
+**Le relevé de Composer, en plus**, sur les fichiers neufs ou modifiés, dans `pose.md` et `pose.json`, ainsi que pour Étendre :
 
 | Mesure | Comment |
 |---|---|
@@ -219,6 +219,18 @@ Lu avant le code [F] ; complété à l'arrêt 2 par ce que la fabrication aura m
 | R10 | Les fiches copiées citent des chemins et des décisions du clone, et `card.md` nomme `MemberCard` |
 | R11 | Rien ne compare les composants copiés à ceux du clone, alors que `--skill` compare le skill |
 | R12 | Aucun gabarit de page dans ds-lab (B6) : largeur, marges, bandeau, titres de section sont inventés (section 3) |
+
+**Ce que la fabrication a montré en plus** [F, 22/11, 11 h 35 à 12 h 00] :
+
+| # | Constat |
+|---|---|
+| R13 | Les six composants se posent sans en changer un octet : leurs imports ne demandent que `vue` et `vuetify/components`, que l'app a déjà. `verifier` à 0, app construite, aucune erreur dans la page |
+| R14 | CP3 refuse une variable CSS de l'app (`var(--gabarit-section)`) : une valeur écrite une fois puis lue trois fois n'est pas possible. Le gabarit répète `gap.section` cinq fois, en exceptions ; 16 exceptions au total pour deux fichiers |
+| R15 | Deviné : `createVuetify` reçoit `themes` tel quel ; le nom d'un thème est `<dossier>-light` ou `-dark` ; `wraps` d'une fiche est le seul lien entre une pièce de Vuetify et son composant, et celui de `DsIconButton` ne se lit pas comme les autres |
+| R16 | Une case à cocher de Vuetify en `primary` est à 1,51:1 sur la page d'Écume et Sel en clair [culori, `wcagContrast('#7fdbff', '#fbfbfb')`] : le plein d'une marque claire ne repère pas un état, et aucun rôle « coché » n'existe (B3). Rien ne le signale : `verifier` ne lit pas l'attribut `color` |
+| R17 | Le titre de la barre, la liste et le tableau de Vuetify gardent leurs styles de texte à eux (dette des thèmes Vuetify, `KNOWN_ISSUES.md`) |
+| R18 | Sous un titre sans sous-titre, le contenu d'une `DsCard` suit à 4 px : le champ de recherche colle au titre de sa carte (limite écrite de la fiche, D60) |
+| R19 | Trois `DsCard` côte à côte n'alignent pas leurs boutons : rien ne pousse les actions en bas d'une carte étirée |
 
 ## 9. Ce qui ne change pas
 
@@ -259,6 +271,19 @@ README, ARCHITECTURE et identifiants sont mis à jour dans chaque commit qui les
 **Quatre points viennent de l'outil, pas d'un choix de design** : le titre « Rechercher un membre » exigé par la carte ; le nom non cliquable dans les trois cartes ; l'aplat qui garde sa couleur claire en sombre ; « À lui demander : » devant les ouvertures. Un refus de Quentin est une ligne du tableau des améliorations, pas une retouche de ce lot.
 
 **À l'arrêt 2**, Quentin regarde les planches : les trois pages du départ de Composer (36) et l'annuaire de référence (12), plus le relevé d'Installer complété.
+
+## Écarts relevés en écrivant le code
+
+- **Une variable locale** était prévue pour l'écart de section ; CP3 la refuse (R14). Les exceptions restent toutes dans `src/gabarit/`.
+- **`SectionPage` a un `chapo`**, comme `GabaritPage` : la raison du choix des trois personnes s'y pose.
+- **À 360 px**, le nom de la marque quitte la barre : la liste des marques le dit déjà, et il y était coupé. Dans l'app d'Installer, la barre est coupée à 360 px [F, vu sur la planche] : un passage d'Installer le trouvera.
+- **`src/main.js`** perd l'import d'`app.css` ; plus aucune feuille `.css` dans les départs de Composer et d'Étendre.
+- **EX3, EX5 et EX8** jugent aussi le départ d'Étendre.
+- **RV4** en plus : la commande `--relever` entière, sur un passage posé dans un dossier temporaire, sans installation. `npm test` : **1 095**, au lieu de 1 094.
+- **Le relevé s'écrit dans `pose.md` et `pose.json`**, pour Composer et pour Étendre. Ses motifs de signaux sont dans `exercices.json` : `src/` ne peut pas nommer le bouton de Vuetify (garde de l'enveloppe).
+- **Les planches disent quand une page déborde** en largeur. Une barre fixe coupée n'allonge pas la page : elle échappe à cette note.
+- **Le nom d'une planche porte sa page** (`annuaire-ecume-et-sel-clair-360.png`), puisqu'un exercice peut en avoir plusieurs.
+- **La pose fabrique le départ avec la copie de ds-lab**, pas avec le dépôt : un passage montre ce que cette copie sait faire.
 
 ## Hors périmètre
 

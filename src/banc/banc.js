@@ -1,19 +1,18 @@
 // @ts-check
 /**
- * D67 : le banc d'essai. Il pose, hors du dépôt, le dossier d'un passage : une copie de l'arbre de ds-lab, sans la
- * référence et sans historique (une pose installée refuse un arbre qui a des changements non commités), l'app fictive en dépôt git d'un commit « départ », le skill copié, la variable DS_LAB, les deux
- * briefs et depart.txt ; dans le bras B, le relecteur et le carnet, posés par la commande de la copie. Deux poses du
- * même commit donnent les mêmes fichiers, aux chemins absolus et à l'heure près : les commits ont un auteur et une
- * date fixes. Il relève ensuite les traces d'un passage (src/cli/banc.js).
+ * D67, D68 : le banc d'essai. Il pose, hors du dépôt, le dossier d'un passage d'un exercice : une copie de l'arbre de
+ * ds-lab, sans la référence et sans historique (une pose installée refuse un arbre qui a des changements non commités) ;
+ * l'app au point de départ de l'exercice (src/banc/departs.js), en dépôt git d'un commit « départ » ; le skill copié, la
+ * variable DS_LAB, les deux briefs et depart.txt ; dans le bras B, le relecteur et le carnet, posés par la commande de la
+ * copie. Deux poses du même commit donnent les mêmes fichiers, aux chemins absolus et à l'heure près : les commits ont un
+ * auteur et une date fixes. Le relevé des traces d'un passage est dans src/cli/banc.js.
  */
 import { spawnSync } from 'node:child_process';
 import { cpSync, existsSync, readFileSync, realpathSync, symlinkSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { exercices, fabriquer } from './departs.js';
 import { copierArbre, executer } from './outils.js';
-
-/** Ce que la copie de ds-lab ne contient pas, lu dans fixtures/banc/caches.json. @param {string} depot */
-export const caches = (depot) => /** @type {string[]} */ (JSON.parse(readFileSync(join(depot, 'fixtures', 'banc', 'caches.json'), 'utf8')).caches);
 
 /** Racine par défaut des passages, hors de tout dossier qui porte un CLAUDE.md. */
 export const RACINE = join(homedir(), 'Developer', 'banc');
@@ -35,8 +34,8 @@ function commit(dossier, message) {
   executer('git', ['commit', '-q', '--allow-empty', '-m', message], { cwd: dossier, env: GIT_ENV });
 }
 
-/** Nom du dossier d'un passage. @param {string} bras @param {number} passage */
-const nomDePassage = (bras, passage) => `${bras}-${passage}`;
+/** Nom d'un passage, et son dossier sous la racine. @param {string} exercice @param {string} bras @param {number} passage */
+const nomDePassage = (exercice, bras, passage) => `${exercice}/${bras}-${passage}`;
 
 /**
  * Dossier du journal de Claude Code pour une session ouverte dans `dossier`, donné par son vrai chemin (realpath) :
@@ -57,25 +56,28 @@ function commandeDuPassage(app, modele, seul) {
 
 /**
  * Pose le dossier d'un passage.
- * @param {{ depot: string, racine: string, bras: 'A' | 'B', passage: number, modele: string, installer: boolean,
+ * @param {{ depot: string, racine: string, exercice: string, bras: 'A' | 'B', passage: number, modele: string, installer: boolean,
  *   heure: string, claude: string }} o depot : la racine de ds-lab ; installer : npm ci, sinon un lien vers les
  *   node_modules du dépôt (tests) ; heure et claude : la date de la pose et la version de claude, écrites dans depart.txt
  * @returns {{ dossier: string, app: string, copie: string, commit: string }}
  */
 export function poser(o) {
-  const dossier = join(o.racine, nomDePassage(o.bras, o.passage));
+  const { caches, exercices: tous } = exercices(o.depot);
+  const exercice = tous[o.exercice];
+  if (!exercice) throw new Error(`exercice inconnu : ${o.exercice} (${Object.keys(tous).join(', ')})`);
+  if (!exercice.brief) throw new Error(`exercice ${o.exercice} : pas encore de brief, aucun passage à poser ; écrire le brief dans fixtures/banc/${o.exercice}/ et le nommer dans fixtures/banc/exercices.json`);
+  const dossier = join(o.racine, nomDePassage(o.exercice, o.bras, o.passage));
   if (existsSync(dossier)) throw new Error(`${dossier} existe déjà : prendre un autre numéro de passage, ou supprimer ce dossier`);
   const modifie = executer('git', ['status', '--porcelain'], { cwd: o.depot }).trim() !== '';
   if (modifie && o.installer) throw new Error("l'arbre de ds-lab a des changements non commités : les commiter avant de poser un passage, pour qu'il se rejoue à l'identique");
   const copie = join(dossier, 'ds-lab');
   const app = join(dossier, 'app');
   const sha = executer('git', ['rev-parse', '--short', 'HEAD'], { cwd: o.depot }).trim();
-  const cache = caches(o.depot);
-  copierArbre(o.depot, copie, (f) => !cache.some((c) => f === c || f.startsWith(`${c}/`)));
+  copierArbre(o.depot, copie, (f) => !caches.some((c) => f === c || f.startsWith(`${c}/`)));
   commit(copie, `ds-lab ${sha}${modifie ? ', arbre modifié' : ''}`);
   if (o.installer) executer('npm', ['ci', '--no-audit', '--no-fund'], { cwd: copie });
   else symlinkSync(join(o.depot, 'node_modules'), join(copie, 'node_modules'));
-  copierArbre(join(o.depot, 'fixtures', 'app-fictive'), app, (f) => f !== 'banc.json');
+  fabriquer({ depot: o.depot, clone: copie, exercice: o.exercice, app });
   cpSync(join(copie, 'skill', 'ds-lab'), join(app, '.claude', 'skills', 'ds-lab'), { recursive: true });
   // Le Node du banc (celui de .node-version, que la garde impose) passe devant le PATH de la session et de ses hooks :
   // sous une autre version majeure, chaque commande de ds-lab sortirait en 2.
@@ -90,7 +92,7 @@ export function poser(o) {
   commit(app, 'départ');
 
   const briefs = join(o.depot, 'fixtures', 'banc');
-  const brief = readFileSync(join(briefs, 'brief.txt'), 'utf8');
+  const brief = readFileSync(join(briefs, exercice.brief), 'utf8');
   writeFileSync(join(dossier, 'brief.txt'), brief);
   writeFileSync(join(dossier, 'brief-seul.txt'), `${brief.trimEnd()}\n\n${readFileSync(join(briefs, 'sans-humain.txt'), 'utf8')}`);
   const verifier = spawnSync(process.execPath, [join(copie, 'src', 'cli', 'verifier.js'), '--marques', 'tokens', '--style', 'src/**/*.vue', '--skill', '.claude/skills/ds-lab'], {
@@ -98,7 +100,7 @@ export function poser(o) {
     encoding: 'utf8',
   });
   const depart = [
-    `passage : ${nomDePassage(o.bras, o.passage)}, bras ${o.bras}`,
+    `passage : ${nomDePassage(o.exercice, o.bras, o.passage)}, exercice ${o.exercice}, bras ${o.bras}`,
     `heure : ${o.heure}`,
     `ds-lab : ${sha}${modifie ? ', arbre modifié' : ''} (copie sans la référence ni l'historique : ${copie})`,
     `claude : ${o.claude}`,

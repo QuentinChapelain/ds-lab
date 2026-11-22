@@ -1,0 +1,5 @@
+Quai Nord est servie sous trois marques : Écume et Sel, Grenat Papeterie et Maison Alberto. L'équipe de marque nous a donné l'entrée de chacune, dans `tokens/<marque>/entree.json`.
+
+Aujourd'hui les couleurs, les polices et les espacements de l'app sont écrits à la main, page par page. Branche l'app sur ces trois entrées et sur le design system : qu'elle ne garde aucune de ces valeurs à la main, en clair comme en sombre, sans changer ce que font les pages.
+
+Pour le design system, suis le skill ds-lab.

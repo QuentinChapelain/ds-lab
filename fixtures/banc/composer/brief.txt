@@ -1,0 +1,20 @@
+Nous sommes dans le gabarit de Quai Nord, sur une nouvelle page : « Annuaire », à l'adresse `/annuaire`, à ajouter au menu.
+
+La page a deux sections.
+
+Première section, le bandeau. Un aplat aux couleurs de la marque. Dessus, le titre de la page, « Annuaire », en h1. Dessous, un formulaire de recherche, dans une carte posée sur l'aplat. On y tape un nom ou un besoin. Ce qu'on tape réduit la liste des membres à ceux qui contiennent ces mots.
+
+Deuxième section, le contenu. Quatre blocs, l'un sous l'autre.
+
+1. Une carte : la petite photo d'une personne de l'équipe, son nom, le nombre de personnes qu'elle a mises en relation, et un bouton pour lui demander un coup de main afin de contacter des gens.
+2. Une courte liste de trois cartes : trois personnes choisies d'après mon profil. Dans chaque carte : la photo de la personne, son prénom et son nom, son métier, ce à quoi elle est ouverte (relire un CV, parler de son métier, par exemple), un exemple de question qu'on pourrait lui poser, puis un bouton pour lui écrire un message.
+3. L'annuaire : la liste de tous les membres. Pour chacun : sa photo ou ses initiales, son prénom et son nom, son métier, son entreprise, sa ville, sa promo, ce à quoi il est ouvert, et un bouton pour lui écrire. Il y a 295 membres. La liste affiche les 25 premiers et dit le total.
+4. Une carte qui présente les personnes qui animent le réseau. Quai Nord en a trois. Le titre de la carte, puis pour chacune son prénom, son nom et son rôle dans l'équipe d'animation.
+
+Viendront après, ne les fais pas : la navigation locale au-dessus des blocs, la recherche avancée, le tri et le filtre de la liste, ses modes d'affichage, ses pages.
+
+Les données sont dans `src/data/membres.js`.
+
+L'app est servie sous trois marques : Écume et Sel, Grenat Papeterie et Maison Alberto. La page doit tenir dans chacune, en clair comme en sombre.
+
+Pour le design system, suis le skill ds-lab.

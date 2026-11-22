@@ -1,5 +1,5 @@
 {
-  "$description": "Exercices du banc d'essai (D68), lus par src/banc/departs.js et npm run banc, jamais copiés dans un passage. Par exercice : couches, les dossiers de fixtures/banc/ posés dans l'ordre sur fixtures/app-fictive/ ; retires, les fichiers de cette base qui partent ; copies, ce qui se copie du clone de ds-lab dans l'app ; saisir, si les marques sont saisies et leurs thèmes écrits ; brief, dans fixtures/banc/, ou null tant qu'il n'est pas écrit ; pages, les adresses des planches. caches : les chemins que la copie de ds-lab posée avec un passage ne contient pas, les mêmes pour les trois exercices : la référence de l'annuaire (modules, leurs stories, preuves et fiches), son plan et ceux des autres lots (attendus), l'annuaire de la marque de démonstration, l'app fictive, le banc, ses couches et ses briefs. Sans eux, une IA neuve ne peut pas recopier la référence ; un dépôt d'un seul commit empêche l'historique de la rendre.",
+  "$description": "Exercices du banc d'essai (D68), lus par src/banc/departs.js et npm run banc, jamais copiés dans un passage. Par exercice : couches, les dossiers de fixtures/banc/ posés dans l'ordre sur fixtures/app-fictive/ ; retires, les fichiers de cette base qui partent ; copies, ce qui se copie du clone de ds-lab dans l'app ; saisir, si les marques sont saisies et leurs thèmes écrits ; brief, dans fixtures/banc/, ou null tant qu'il n'est pas écrit ; pages, les adresses des planches. signaux : des motifs lus ligne à ligne par le relevé (src/banc/releve.js), plusTard pour chaque pièce que le brief de Composer remet à plus tard, refait pour ce qui refait le gabarit hors de lui. caches : les chemins que la copie de ds-lab posée avec un passage ne contient pas, les mêmes pour les trois exercices : la référence de l'annuaire (modules, leurs stories, preuves et fiches), son plan et ceux des autres lots (attendus), l'annuaire de la marque de démonstration, l'app fictive, le banc, ses couches et ses briefs. Sans eux, une IA neuve ne peut pas recopier la référence ; un dépôt d'un seul commit empêche l'historique de la rendre.",
   "caches": [
     "atelier/modules",
     "atelier/preuve/member-card.js",
@@ -16,8 +16,19 @@
     "src/cli/banc.js",
     "test/app-fictive.test.js",
     "test/banc.test.js",
-    "test/exercices.test.js"
+    "test/exercices.test.js",
+    "test/releve.test.js"
   ],
+  "signaux": {
+    "plusTard": {
+      "navigation locale": "<v-tabs|<VTabs|role=\"tablist\"|<nav[\\s>]|href=\"#",
+      "recherche avancée": "[Rr]echerche avancée",
+      "tri ou filtre": "<v-select|<VSelect|<select[\\s>]|<v-autocomplete|<VAutocomplete|<v-combobox|<VCombobox|\\.sort\\(|\\.toSorted\\(|\\bTrier\\b|\\bFiltrer\\b",
+      "modes d'affichage": "\\bCompact\\b|\\bDétaillée?\\b|mode d.affichage|<v-btn-toggle|<VBtnToggle",
+      "pages de la liste": "<v-pagination|<VPagination|\\b[Pp]age suivante\\b|\\bSuivante?s?\\b|\\bpagination\\b|\\b(Voir|Afficher) (plus|la suite)\\b"
+    },
+    "refait": "<v-app-bar|<VAppBar|<v-main|<VMain|<v-footer|<VFooter|<footer[\\s>]|<header[\\s>]|<h1[\\s>]"
+  },
   "exercices": {
     "installer": {
       "couches": [],

@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 // @ts-check
 /**
- * D67 : le banc d'essai (npm run banc).
- * Poser : npm run banc -- --bras A|B --passage <n> --modele <modèle> [--dossier <racine>] [--sans-installation]
- *   pose <racine>/<bras>-<n>/ (src/banc/banc.js) ; --sans-installation remplace les npm ci par un lien vers les
- *   node_modules du dépôt, pour les tests.
- * Relever : npm run banc -- --relever <bras>-<n> [--dossier <racine>] [--sortie <dossier>]
- *   écrit dans local/banc/<bras>-<n>/ : le journal de la session, la sortie de verifier et ses échecs comptés dans
- *   les fichiers neufs ou modifiés et dans les fichiers intouchés, le diff depuis « départ », le carnet, ce que la
- *   session a chargé, les heures, et les planches de la page de l'annuaire (marques de banc.json, 1 280 et 360 px,
- *   clair et sombre). Une page qui ne s'ouvre pas est notée, pas une panne.
+ * D67, D68 : le banc d'essai (npm run banc), trois exercices (fixtures/banc/exercices.json).
+ * Poser : npm run banc -- --exercice <exercice> --bras A|B --passage <n> --modele <modèle> [--dossier <racine>]
+ *   [--sans-installation] pose <racine>/<exercice>/<bras>-<n>/ (src/banc/banc.js) ; un exercice sans brief est refusé ;
+ *   --sans-installation remplace les npm ci par un lien vers les node_modules du dépôt, pour les tests.
+ * Relever : npm run banc -- --exercice <exercice> --relever <bras>-<n> [--dossier <racine>] [--sortie <dossier>]
+ *   écrit dans local/banc/<exercice>/<bras>-<n>/ : le journal de la session, la sortie de verifier et ses échecs comptés
+ *   dans les fichiers neufs ou modifiés et dans les fichiers intouchés, le diff depuis « départ », le carnet, ce que la
+ *   session a chargé, les heures, ce qu'elle a posé (pose.md et pose.json, src/banc/releve.js ; pas pour un exercice sans
+ *   composants au départ) et les planches des pages de l'exercice (marques de banc.json, 1 280 et 360 px, clair et
+ *   sombre). Une page qui ne s'ouvre pas est notée, pas une panne.
  * Sortie 0, ou 2 sur une panne (D18).
  */
 import { parseArgs } from 'node:util';
@@ -25,13 +26,15 @@ import { executer } from '../banc/outils.js';
 import { echecsDeMarque, echecsDeStyle, echecsDeSkill } from '../report/verifier.js';
 import { exercices, marquesDuBanc } from '../banc/departs.js';
 import { planches } from '../banc/planches.js';
+import { enveloppes, relever, texteDuReleve } from '../banc/releve.js';
 
 const DEPOT = fileURLToPath(new URL('../..', import.meta.url));
-const USAGE = 'npm run banc -- --bras A|B --passage <n> --modele <modèle> [--dossier <racine>], ou --relever <bras>-<n> [--dossier <racine>]';
+const USAGE = 'npm run banc -- --exercice composer|etendre|installer --bras A|B --passage <n> --modele <modèle> [--dossier <racine>], ou --exercice <exercice> --relever <bras>-<n> [--dossier <racine>]';
 
 await lancer('banc', async () => {
   const { values } = parseArgs({
     options: {
+      exercice: { type: 'string' },
       bras: { type: 'string' },
       passage: { type: 'string' },
       modele: { type: 'string' },
@@ -42,7 +45,9 @@ await lancer('banc', async () => {
     },
   });
   const racine = resolve(values.dossier ?? RACINE);
-  if (values.relever) return relever(racine, values.relever, resolve(values.sortie ?? join(DEPOT, 'local', 'banc', values.relever)));
+  const noms = Object.keys(exercices(DEPOT).exercices);
+  if (!values.exercice || !noms.includes(values.exercice)) throw new Error(`--exercice ${noms.join('|')} attendu${values.exercice ? `, reçu ${values.exercice}` : ''} ; usage : ${USAGE}`);
+  if (values.relever) return releverPassage(racine, values.exercice, values.relever, resolve(values.sortie ?? join(DEPOT, 'local', 'banc', values.exercice, values.relever)));
   if (values.bras !== 'A' && values.bras !== 'B') throw new Error(`--bras A ou --bras B attendu ; usage : ${USAGE}`);
   const passage = Number(values.passage);
   if (!Number.isInteger(passage) || passage < 1) throw new Error(`--passage <n> attendu, un entier à partir de 1 ; usage : ${USAGE}`);
@@ -51,6 +56,7 @@ await lancer('banc', async () => {
   const p = poser({
     depot: DEPOT,
     racine,
+    exercice: values.exercice,
     bras: values.bras,
     passage,
     modele: values.modele,
@@ -64,10 +70,12 @@ await lancer('banc', async () => {
 
 /**
  * Relève les traces d'un passage.
- * @param {string} racine @param {string} id @param {string} sortie
+ * @param {string} racine @param {string} exercice @param {string} id @param {string} sortie
  */
-async function relever(racine, id, sortie) {
-  const dossier = join(racine, id);
+async function releverPassage(racine, exercice, id, sortie) {
+  const { exercices: tous, signaux } = exercices(DEPOT);
+  const e = tous[exercice];
+  const dossier = join(racine, exercice, id);
   const app = join(dossier, 'app');
   const copie = join(dossier, 'ds-lab');
   if (!existsSync(app) || !existsSync(copie)) throw new Error(`${dossier} : pas de passage posé ici ; le poser d'abord (${USAGE})`);
@@ -90,7 +98,8 @@ async function relever(racine, id, sortie) {
   const env = { GIT_INDEX_FILE: index };
   executer('git', ['add', '-A'], { cwd: app, env });
   writeFileSync(join(sortie, 'diff.patch'), executer('git', ['diff', '--cached', depart], { cwd: app, env }));
-  const touches = executer('git', ['diff', '--cached', '--name-only', depart], { cwd: app, env }).split('\n').filter(Boolean);
+  const statuts = executer('git', ['diff', '--cached', '--name-status', '--no-renames', '-z', depart], { cwd: app, env }).split('\0').filter(Boolean);
+  const touches = statuts.flatMap((s, i) => (i % 2 ? [{ statut: statuts[i - 1], fichier: s }] : []));
   rmSync(index, { force: true });
 
   // verifier, tel que la copie l'écrit, puis ses échecs comptés à part : fichiers neufs ou modifiés, fichiers intouchés.
@@ -98,14 +107,26 @@ async function relever(racine, id, sortie) {
     cwd: app,
     encoding: 'utf8',
   });
-  const comptes = await compterEchecs(app, copie, touches).catch((e) => ({ panne: String(e.message ?? e) }));
+  const comptes = await compterEchecs(app, copie, touches.map((t) => t.fichier)).catch((e) => ({ panne: String(e.message ?? e) }));
   writeFileSync(join(sortie, 'verifier.txt'), `${v.stdout}${v.stderr}sortie ${v.status}\n\n${JSON.stringify(comptes, null, 2)}\n`);
 
   writeFileSync(join(sortie, 'charge.json'), `${JSON.stringify(charge(join(dossier, 'session.jsonl')), null, 2)}\n`);
+  if (e.copies.length) {
+    const r = relever({
+      app,
+      touches,
+      avant: (f) => executer('git', ['show', `${depart}:${f}`], { cwd: app }),
+      enveloppes: enveloppes(join(copie, 'docs', 'composants')),
+      page: e.pages[0],
+      signaux,
+    });
+    writeFileSync(join(sortie, 'pose.json'), `${JSON.stringify(r, null, 2)}\n`);
+    writeFileSync(join(sortie, 'pose.md'), texteDuReleve(r));
+  }
   writeFileSync(join(sortie, 'heures.md'), heures(sessions.map((f) => join(journaux, f))));
-  notes.push(...(await planches(app, join(sortie, 'planches'), { marques: marquesDuBanc(DEPOT), pages: exercices(DEPOT).exercices.composer.pages })));
+  notes.push(...(await planches(app, join(sortie, 'planches'), { marques: marquesDuBanc(DEPOT), pages: e.pages })));
   writeFileSync(join(sortie, 'notes.txt'), notes.length ? `${notes.join('\n')}\n` : 'rien à noter\n');
-  console.log(`banc : passage ${id} relevé dans ${sortie}`);
+  console.log(`banc : passage ${exercice}/${id} relevé dans ${sortie}`);
   return 0;
 }
 
