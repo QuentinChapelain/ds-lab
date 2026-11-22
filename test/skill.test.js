@@ -15,7 +15,8 @@
  *       « ds-lab » au milieu d'une phrase gardé ; une cellule qui commence par « ds-lab » est une panne qui nomme
  *       le numéro ;
  *   SK6 SKILL.md porte la phrase de priorité, mot pour mot, à la fin de « Avant de commencer » : le clone l'emporte
- *       sur le guide.
+ *       sur le guide ;
+ *   SK7 SKILL.md dit la commande qui lit DS_LAB, mot pour mot, avant la première commande qui s'en sert (D70).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -109,4 +110,11 @@ test('SK6 la phrase de priorité, à la fin de « Avant de commencer »', () => 
   const section = md.slice(md.indexOf('## Avant de commencer'), md.indexOf('## Quatre mots'));
   const phrase = "Le code fait foi sur ce guide : si une commande, un fichier ou une règle du clone contredit ce guide, suivre le clone et signaler l'écart à l'humain.";
   assert.equal(section.trimEnd().split('\n').at(-1), phrase);
+});
+
+test('SK7 la commande qui lit DS_LAB, avant celles qui s’en servent', () => {
+  const md = lire('SKILL.md');
+  const ou = md.indexOf("`printenv DS_LAB` donne le chemin du clone ; s'il ne rend rien, demander à l'humain.");
+  assert.ok(ou > 0 && ou < md.indexOf('$DS_LAB/'));
+  assert.doesNotMatch(md, /n'est pas posée/, 'une condition que le modèle croit sans la lire');
 });

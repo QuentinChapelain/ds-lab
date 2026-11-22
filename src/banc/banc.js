@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * D67, D68, D69 : le banc d'essai. Il pose, hors du dépôt, le dossier d'un passage d'un exercice : une copie de l'arbre de
+ * D67 à D70 : le banc d'essai. Il pose, hors du dépôt, le dossier d'un passage d'un exercice : une copie de l'arbre de
  * ds-lab, sans la référence et sans historique (une pose installée refuse un arbre qui a des changements non commités) ;
  * l'app au point de départ de l'exercice (src/banc/departs.js), en dépôt git d'un commit « départ » ; le skill copié, la
  * variable DS_LAB, les deux briefs et depart.txt ; dans le bras B, le relecteur et le carnet, posés par la commande de la
@@ -26,6 +26,9 @@ const GIT_ENV = {
   GIT_COMMITTER_EMAIL: 'banc@exemple.invalid',
   GIT_COMMITTER_DATE: '2026-01-01T00:00:00Z',
 };
+
+/** Les dossiers du système, seuls avec Node dans le PATH d'un passage (D70) : sans eux, ni cat ni git. */
+const SYSTEME = ['/usr/bin', '/bin', '/usr/sbin', '/sbin'];
 
 /** Fait d'un dossier un dépôt git d'un seul commit, au message donné. @param {string} dossier @param {string} message */
 function commit(dossier, message) {
@@ -79,9 +82,10 @@ export function poser(o) {
   else symlinkSync(join(o.depot, 'node_modules'), join(copie, 'node_modules'));
   fabriquer({ depot: o.depot, clone: copie, exercice: o.exercice, app });
   cpSync(join(copie, 'skill', 'ds-lab'), join(app, '.claude', 'skills', 'ds-lab'), { recursive: true });
-  // Le Node du banc (celui de .node-version, que la garde impose) passe devant le PATH de la session et de ses hooks :
-  // sous une autre version majeure, chaque commande de ds-lab sortirait en 2.
-  const reglages = { env: { DS_LAB: copie, PATH: `${dirname(process.execPath)}:${process.env.PATH ?? ''}` }, permissions: { additionalDirectories: [copie] } };
+  // Le Node du banc (celui de .node-version, que la garde impose) passe devant : sous une autre version majeure, chaque
+  // commande de ds-lab sortirait en 2. Du PATH de qui pose, rien : npm run y met node_modules/.bin du vrai dépôt, où
+  // sont les fichiers cachés.
+  const reglages = { env: { DS_LAB: copie, PATH: [dirname(process.execPath), ...SYSTEME].join(':') }, permissions: { additionalDirectories: [copie] } };
   writeFileSync(join(app, '.claude', 'settings.local.json'), `${JSON.stringify(reglages, null, 2)}\n`);
   if (o.bras === 'B') {
     const relecteur = join(copie, 'src', 'cli', 'relecteur.js');

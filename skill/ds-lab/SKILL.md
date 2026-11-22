@@ -9,7 +9,7 @@ Ce skill sert quand on saisit une marque, quand on touche à ses tokens ou à so
 
 ## Avant de commencer
 
-- Un clone de ds-lab, à l'endroit de son choix, avec `npm ci` lancé dedans. Son chemin est dans la variable `DS_LAB` ; si elle n'est pas posée, demander à l'humain le chemin du clone. Le code de ds-lab ne lit pas cette variable : elle ne sert qu'aux commandes ci-dessous.
+- Un clone de ds-lab, à l'endroit de son choix, avec `npm ci` lancé dedans. `printenv DS_LAB` donne le chemin du clone ; s'il ne rend rien, demander à l'humain. Le code de ds-lab ne lit pas cette variable : elle ne sert qu'aux commandes ci-dessous.
 - Node 24 : sous une autre version majeure, chaque commande sort en 2 sans rien lire.
 - La saisie d'une police de titre donnée par ses fichiers mesure l'encre dans Chromium, celui de `playwright-core` du clone.
 

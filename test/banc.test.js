@@ -4,7 +4,7 @@
  * (--sans-installation : un lien vers les node_modules du dépôt) ; BN1, BN3 et BN5 sur Composer, BN4 sur Installer :
  *   BN1 un passage de Composer, bras A : la copie de ds-lab sans aucun chemin caché (chacun présent dans le dépôt) et d'un seul commit, l'app d'un seul commit
  *       « départ » sans banc.json, le skill copié à l'identique, DS_LAB, le dossier de la copie et le Node de
- *       .node-version en tête du PATH dans settings.local.json, ni relecteur ni carnet, les deux briefs, depart.txt et ses deux commandes ; le même
+ *       .node-version en tête du PATH dans settings.local.json (BN7 pour le reste du PATH), ni relecteur ni carnet, les deux briefs, depart.txt et ses deux commandes ; le même
  *       passage reposé : sortie 2 qui dit quoi faire ;
  *   BN3 deux poses de Composer du même commit : mêmes fichiers à l'octet et mêmes empreintes de commit, aux chemins absolus et à
  *       l'heure près ;
@@ -12,14 +12,16 @@
  *       trois marques par la copie, sortie 1, des blocs de style seulement, aucun échec de contraste ;
  *   BN5 --exercice absent ou inconnu, et un exercice sans brief : sortie 2, un message qui dit quoi faire, rien de posé ;
  *   BN6 un passage d'Inventorier (D69) : le brief joint, le même sans humain, le départ de Composer ; son relevé, sans
- *       construction ni planche ni relevé de page ; la copie de ds-lab modifiée est notée.
+ *       construction ni planche ni relevé de page ; la copie de ds-lab modifiée est notée ;
+ *   BN7 les réglages d'un passage, bras A et B, posé depuis un PATH qui nomme le vrai dépôt (D70) : chaque chemin est dans
+ *       le passage, sauf le Node de .node-version et les dossiers du système ; les outils courants s'y trouvent.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, existsSync, lstatSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, relative } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { exercices } from '../src/banc/departs.js';
 
@@ -169,5 +171,28 @@ test('BN6 un passage d’Inventorier et son relevé', () => {
   assert.match(lire('lu.md'), /^- Gabarit : docs\/gabarit\.md$/m);
   assert.equal(lire('notes.txt').replace(/^aucun journal dans .*\n/, ''), 'copie de ds-lab modifiée par le passage : README.md\n');
   for (const f of ['pose.md', 'planches']) assert.equal(existsSync(join(sortie, f)), false, f);
+  rmSync(racine, { recursive: true, force: true });
+});
+
+test('BN7 les réglages d’un passage ne nomment rien hors de lui, sauf Node et le système', () => {
+  const racine = mkdtempSync(join(tmpdir(), 'ds-lab-banc-'));
+  const systeme = ['/usr/bin', '/bin', '/usr/sbin', '/sbin'];
+  const pollue = [join(ROOT, 'node_modules', '.bin'), join(ROOT, 'outils'), process.env.PATH].join(':');
+  /** @type {(v: unknown) => string[]} */
+  const textes = (v) => (typeof v === 'string' ? [v] : v && typeof v === 'object' ? Object.values(v).flatMap(textes) : []);
+  for (const bras of ['A', 'B']) {
+    const r = spawnSync(process.execPath, [CLI, '--exercice', 'composer', '--dossier', racine, '--modele', 'essai', '--sans-installation', '--bras', bras, '--passage', '4'], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, PATH: pollue } });
+    assert.equal(r.status, 0, r.stderr);
+    const dossier = join(racine, 'composer', `${bras}-4`);
+    const reglages = JSON.parse(readFileSync(join(dossier, 'app', '.claude', 'settings.local.json'), 'utf8'));
+    const chemins = textes(reglages).flatMap((v) => v.split(':'));
+    assert.ok(chemins.length >= 3, 'des chemins à juger');
+    const dehors = chemins.filter((c) => c !== dossier && !c.startsWith(`${dossier}/`) && c !== dirname(process.execPath) && !systeme.includes(c));
+    assert.deepEqual(dehors, [], `bras ${bras}`);
+    for (const outil of ['node', 'npm', 'npx', 'git', 'sh', 'cat', 'ls', 'sed', 'grep', 'find', 'printenv']) {
+      const ou = spawnSync('/bin/sh', ['-c', `command -v ${outil}`], { encoding: 'utf8', env: { PATH: reglages.env.PATH } }).stdout.trim();
+      assert.ok(ou.startsWith('/'), `${outil} introuvable dans le PATH du passage`);
+    }
+  }
   rmSync(racine, { recursive: true, force: true });
 });
