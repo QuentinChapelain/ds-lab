@@ -4,17 +4,20 @@
  * dans un dossier temporaire, sans npm ci :
  *   EX1 d'Installer à Composer, ne diffèrent que les fichiers annoncés : marques saisies et thème, composants et fiches,
  *       gabarit, pages, mode d'emploi ; données, dépendances, routes, entrées et construction sont les mêmes à l'octet ;
- *   EX3 verifier sort 0 sur le départ de Composer ;
+ *   EX2 de Composer à Étendre, ne diffèrent que la page de l'annuaire, ses pièces et les routes ;
+ *   EX3 verifier sort 0 sur le départ de Composer et sur celui d'Étendre ;
  *   EX4 les composants, leurs menus et leurs fiches égalent ceux du dépôt à l'octet ; ni noms.json ni module ; chaque
  *       import d'un composant se résout dans l'app ou dans ses dépendances ;
  *   EX5 l'aplat des thèmes égale background.brand.strong et text.on-brand, trois marques, deux modes ; chaque exception de
  *       style de l'app est dans src/gabarit/ et égale le jeton qu'elle nomme, dans sa largeur ;
- *   EX8 chaque page du départ de Composer passe par le gabarit ; hors de src/components/ds/, aucune pièce de Vuetify qui a
+ *   EX6 rien de la référence de l'annuaire n'est dans le départ de Composer, ni dans ce que la copie de ds-lab garde : ni
+ *       chemin, ni contenu, ni nom de ses pièces ;
+ *   EX8 chaque page des départs de Composer et d'Étendre passe par le gabarit ; hors de src/components/ds/, aucune pièce de Vuetify qui a
  *       un composant Ds…, sauf la puce d'état (DsTag ne porte pas de statut).
  */
 import { before, after, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -24,6 +27,8 @@ import { loadRoles, resolveRoles } from '../src/tokens/roles.js';
 import { largeurs } from '../src/tokens/resolver.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
+/** La couche d'Étendre : la page de référence de l'annuaire. */
+const COUCHE = join(ROOT, 'fixtures', 'banc', 'etendre', 'couche');
 /** @type {string} */
 let racine;
 const depart = (/** @type {string} */ e) => join(racine, e);
@@ -68,14 +73,23 @@ test('EX1 d’Installer à Composer, seuls diffèrent les fichiers annoncés', (
   for (const e of ['installer', 'composer']) assert.equal(existsSync(join(depart(e), 'banc.json')), false);
 });
 
-test('EX3 verifier sort 0 au départ de Composer', () => {
-  const app = depart('composer');
-  const copie = join(app, '.claude', 'skills', 'ds-lab');
-  cpSync(join(ROOT, 'skill', 'ds-lab'), copie, { recursive: true });
-  const r = spawnSync(process.execPath, [join(ROOT, 'src', 'cli', 'verifier.js'), '--marques', 'tokens', '--style', 'src/**/*.vue', '--skill', '.claude/skills/ds-lab'], { cwd: app, encoding: 'utf8' });
-  rmSync(join(app, '.claude'), { recursive: true });
-  assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.match(r.stdout, /^verifier : 0 échec/m);
+test('EX2 de Composer à Étendre, seules diffèrent la référence et les routes', () => {
+  const d = differents(depart('composer'), depart('etendre'));
+  assert.deepEqual(d, [...arbre(COUCHE)].sort());
+  assert.deepEqual(d.filter((f) => !/^src\/(pages\/Annuaire\.vue|modules\/|annuaire\/|router\.js$)/.test(f)), []);
+  assert.match(lire(join(depart('etendre'), 'src', 'router.js')), /path: '\/annuaire'/);
+});
+
+test('EX3 verifier sort 0 au départ de Composer et d’Étendre', () => {
+  for (const e of ['composer', 'etendre']) {
+    const app = depart(e);
+    const copie = join(app, '.claude', 'skills', 'ds-lab');
+    cpSync(join(ROOT, 'skill', 'ds-lab'), copie, { recursive: true });
+    const r = spawnSync(process.execPath, [join(ROOT, 'src', 'cli', 'verifier.js'), '--marques', 'tokens', '--style', 'src/**/*.vue', '--skill', '.claude/skills/ds-lab'], { cwd: app, encoding: 'utf8' });
+    rmSync(join(app, '.claude'), { recursive: true });
+    assert.equal(r.status, 0, `${e} : ${r.stdout}${r.stderr}`);
+    assert.match(r.stdout, /^verifier : 0 échec/m);
+  }
 });
 
 test('EX4 les composants et leurs fiches sont ceux du dépôt, complets, et se résolvent dans l’app', () => {
@@ -121,8 +135,9 @@ test('EX5 l’aplat et les exceptions du gabarit égalent leurs jetons', async (
   };
   const CHAMPS = /** @type {Record<string, string>} */ ({ 'font-size': 'fontSize', 'font-weight': 'fontWeight', 'line-height': 'lineHeight' });
   let comptees = 0;
-  for (const f of arbre(join(app, 'src')).filter((x) => x.endsWith('.vue') && !x.startsWith('components/ds/'))) {
-    const t = lire(join(app, 'src', f));
+  const src = join(depart('etendre'), 'src');
+  for (const f of arbre(src).filter((x) => x.endsWith('.vue') && !x.startsWith('components/ds/'))) {
+    const t = lire(join(src, f));
     const exceptions = [...t.matchAll(/\/\* stylelint-disable-next-line \S+ -- (.+?) : .+? \*\/\n\s*([\w-]+): (.+);/g)];
     assert.equal((t.match(/stylelint-disable/g) ?? []).length, exceptions.length, `${f} : une exception sans la forme « jeton : raison »`);
     if (exceptions.length) assert.match(f, /^gabarit\//, 'une exception hors du gabarit');
@@ -139,8 +154,32 @@ test('EX5 l’aplat et les exceptions du gabarit égalent leurs jetons', async (
   assert.ok(comptees >= 10, `${comptees} exceptions lues`);
 });
 
+test('EX6 la référence de l’annuaire est absente de Composer et de ce que la copie de ds-lab garde', () => {
+  const reference = arbre(COUCHE).filter((f) => f !== 'src/router.js');
+  assert.ok(reference.length >= 4, reference.join(', '));
+  const noms = reference.map((f) => f.split('/').at(-1)?.replace(/\.\w+$/, '') ?? '').filter((n) => /^Member/.test(n));
+  assert.deepEqual(noms.sort(), ['MemberRow', 'MemberTagList']);
+  const { caches } = exercices(ROOT);
+  const gardes = execFileSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], { cwd: ROOT, encoding: 'utf8', maxBuffer: 1 << 28 })
+    .split('\0')
+    .filter((f) => f && existsSync(join(ROOT, f)) && !caches.some((c) => f === c || f.startsWith(`${c}/`)));
+  assert.ok(gardes.includes('skill/ds-lab/SKILL.md') && !gardes.some((f) => f.startsWith('fixtures/banc/')));
+  const contenus = reference.map((f) => readFileSync(join(COUCHE, f)));
+  /** @param {string} chemin @param {string} f */
+  const juger = (chemin, f) => {
+    const t = readFileSync(chemin);
+    assert.ok(!contenus.some((c) => c.equals(t)), `${f} : contenu de la référence`);
+    if (/\.(md|js|mjs|json|vue|txt)$/.test(f)) for (const n of noms) assert.ok(!t.includes(n), `${f} : nomme ${n}`);
+  };
+  for (const f of gardes.filter((x) => /\.(md|js|mjs|json|vue|txt|yml)$/.test(x))) juger(join(ROOT, f), f);
+  for (const f of arbre(depart('composer'))) {
+    assert.ok(!reference.includes(f), f);
+    juger(join(depart('composer'), f), f);
+  }
+});
+
 test('EX8 chaque page passe par le gabarit, aucune pièce de Vuetify qui a un composant Ds…', () => {
-  const app = depart('composer');
+  const app = depart('etendre');
   for (const p of readdirSync(join(app, 'src', 'pages'))) assert.match(lire(join(app, 'src', 'pages', p)), /import GabaritPage from '\.\.\/gabarit\/GabaritPage\.vue';[\s\S]*<GabaritPage /, p);
   const emballees = readdirSync(join(ROOT, 'docs', 'composants'))
     .flatMap((f) => lire(join(ROOT, 'docs', 'composants', f)).match(/^wraps: (V\w+)$/m)?.[1] ?? [])

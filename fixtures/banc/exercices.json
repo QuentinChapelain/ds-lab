@@ -56,6 +56,33 @@
       "pages": [
         "/annuaire"
       ]
+    },
+    "etendre": {
+      "couches": [
+        "composer/couche",
+        "etendre/couche"
+      ],
+      "retires": [
+        "src/styles/app.css"
+      ],
+      "copies": [
+        {
+          "de": "atelier/composants",
+          "vers": "src/components/ds",
+          "sauf": [
+            "noms.json"
+          ]
+        },
+        {
+          "de": "docs/composants",
+          "vers": "docs/composants"
+        }
+      ],
+      "saisir": true,
+      "brief": null,
+      "pages": [
+        "/annuaire"
+      ]
     }
   }
 }

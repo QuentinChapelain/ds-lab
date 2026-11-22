@@ -342,11 +342,11 @@ const membre = (nom) => MEMBRES.find((m) => m.nom === nom);
 
 /** Réponse figée de GET /api/proposes : trois membres choisis d'après le profil de la personne connectée, et pourquoi. */
 export const PROPOSES = {
-  raison: 'Vous pensez à changer de métier : ces trois personnes l’ont fait et ont accepté d’en parler.',
+  raison: 'Vous pensez à changer de métier : ces trois personnes l’ont fait et ont accepté d’en parler.',
   personnes: [
-    { membre: membre('Camille Ferrand'), question: 'Qu’est-ce qui vous a fait passer du conseil à la banque ?' },
-    { membre: membre("Inès d'Aubrac"), question: 'À quoi ressemble une semaine de médecin du travail ?' },
-    { membre: membre("Marie-Amélie de Lassalle-Vernadet d'Aubrac"), question: 'Que regardez-vous d’abord chez quelqu’un qui change de secteur ?' },
+    { membre: membre('Camille Ferrand'), question: 'Qu’est-ce qui vous a fait passer du conseil à la banque ?' },
+    { membre: membre("Inès d'Aubrac"), question: 'À quoi ressemble une semaine de médecin du travail ?' },
+    { membre: membre("Marie-Amélie de Lassalle-Vernadet d'Aubrac"), question: 'Que regardez-vous d’abord chez quelqu’un qui change de secteur ?' },
   ],
 };
 
