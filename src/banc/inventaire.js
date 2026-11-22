@@ -59,7 +59,7 @@ export function releverInventaire(o) {
 export function texteDeLInventaire(r) {
   const cite = (/** @type {{ ligne: number, texte: string, question: boolean }} */ x) => `  - ligne ${x.ligne}${x.question ? ' (question)' : ''} : ${x.texte}`;
   /** @param {(typeof r.pieces)[number]} p */
-  const attendu = (p) => [p.attendu === 'a' ? `l’app a${p.avec.length ? ` ${p.avec.join(', ')}` : ''}` : 'manque', p.note].filter(Boolean).join(' ; ');
+  const attendu = (p) => [p.attendu === 'manque' ? 'manque' : p.avec.length && `l’app a ${p.avec.join(', ')}`, p.note].filter(Boolean).join(' ; ');
   const demandees = r.pieces.filter((p) => p.demande);
   const manquees = demandees.filter((p) => !p.lignes.length);
   /** @param {(typeof r.pieces)[number][]} l */
@@ -78,6 +78,8 @@ export function texteDeLInventaire(r) {
     ...bloc(demandees.filter((p) => p.lignes.length)),
     '',
     '## Manquées',
+    '',
+    'Aucune ligne ne les nomme avec les mots de la liste : lire aussi les lignes hors de la liste.',
     '',
     ...bloc(manquees),
     '',

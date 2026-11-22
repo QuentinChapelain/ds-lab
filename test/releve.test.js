@@ -15,7 +15,10 @@
  *       ligne de question est marquée ; un composant et un chemin absents du départ ; les lignes hors de la liste ; un
  *       fichier touché en dehors ; rendu ailleurs, ou absent ;
  *   RV6 ce que la session a lu : outil de lecture, commande (dossier changé, DS_LAB, chemin absolu), recherche, skill,
- *       motif et dossier à part, copie de ds-lab ; ni fichier écrit, ni document d'une commande, ni appel compté deux fois.
+ *       motif et dossier à part, copie de ds-lab ; ni fichier écrit, ni document d'une commande, ni appel compté deux fois ;
+ *   RV7 le mode libre marqué : pièces du dossier provisoire, pièces créées ailleurs (une à côté de la page, un script qui
+ *       rend, pas un script simple), pièces de Vuetify sans composant Ds… hors de ce dossier ; un rapport absent, partiel,
+ *       complet, ailleurs ; la page de référence, écrite avant les modes, a deux pièces non marquées.
  */
 import { before, after, test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -43,8 +46,8 @@ before(() => {
 });
 after(() => rmSync(racine, { recursive: true, force: true }));
 
-/** Pose un travail sur une copie du départ et le relève. @param {string} nom @param {Record<string, string | ((t: string) => string)>} travail */
-function passage(nom, travail) {
+/** Pose un travail sur une copie du départ et le relève. @param {string} nom @param {Record<string, string | ((t: string) => string)>} travail @param {{ provisoire?: string, rapport?: { attendu: string, lieu: string | null } }} [plus] */
+function passage(nom, travail, plus = {}) {
   const app = join(racine, nom);
   cpSync(depart, app, { recursive: true });
   const touches = Object.entries(travail).map(([fichier, contenu]) => {
@@ -53,7 +56,7 @@ function passage(nom, travail) {
     writeFileSync(join(app, fichier), typeof contenu === 'function' ? contenu(readFileSync(join(depart, fichier), 'utf8')) : contenu);
     return { statut: la ? 'M' : 'A', fichier };
   });
-  return relever({ app, touches, avant: (f) => readFileSync(join(depart, f), 'utf8'), enveloppes: ENVELOPPES, page: '/annuaire', signaux: exercices(ROOT).signaux });
+  return relever({ app, touches, avant: (f) => readFileSync(join(depart, f), 'utf8'), enveloppes: ENVELOPPES, page: '/annuaire', signaux: exercices(ROOT).signaux, ...plus });
 }
 const ROUTE = (/** @type {string} */ t) =>
   t.replace("import Adhesion", "import Annuaire from './pages/Annuaire.vue';\nimport Adhesion").replace('];', "  { path: '/annuaire', name: 'annuaire', component: Annuaire, meta: { titre: 'Annuaire' } },\n];");
@@ -162,6 +165,9 @@ test('RV4 --relever écrit ce que le passage a posé', () => {
   writeFileSync(join(app, 'src', 'router.js'), ROUTE(readFileSync(join(app, 'src', 'router.js'), 'utf8')));
   writeFileSync(join(app, 'src', 'pages', 'Annuaire.vue'), '<template>\n  <DsCard title="x" />\n</template>\n<style scoped>\n.é {\n  padding: 12px;\n}\n</style>\n');
   rmSync(join(app, 'src', 'data', 'evenements.js'));
+  mkdirSync(join(app, 'src', 'provisoire'));
+  writeFileSync(join(app, 'src', 'provisoire', 'LignePersonne.vue'), '<template>\n  <v-list-item />\n</template>\n');
+  writeFileSync(join(app, 'rapport.md'), '`LignePersonne`, faute de ligne de liste.\n');
   const sortie = join(racine, 'releve');
   const r = banc(['--relever', 'A-1', '--sortie', sortie]);
   assert.equal(r.status, 0, r.stderr);
@@ -169,6 +175,9 @@ test('RV4 --relever écrit ce que le passage a posé', () => {
   const pose = JSON.parse(readFileSync(join(sortie, 'pose.json'), 'utf8'));
   assert.deepEqual([pose.composants, pose.page.fichier, pose.page.passeParLeGabarit], [{ DsCard: 1 }, 'src/pages/Annuaire.vue', false]);
   assert.match(readFileSync(join(sortie, 'pose.md'), 'utf8'), /^- Composants Ds… posés : DsCard : 1$/m);
+  assert.deepEqual(pose.provisoire, { dossier: 'src/provisoire', fichiers: ['src/provisoire/LignePersonne.vue'], ailleurs: [] });
+  assert.deepEqual(pose.rapport, { attendu: 'rapport.md', lieu: 'rapport.md', nommes: ['src/provisoire/LignePersonne.vue'], tus: [] });
+  assert.equal(readFileSync(join(sortie, 'rapport.md'), 'utf8'), '`LignePersonne`, faute de ligne de liste.\n');
   const verifier = readFileSync(join(sortie, 'verifier.txt'), 'utf8');
   assert.match(verifier, /^sortie 1$/m);
   assert.deepEqual(JSON.parse(verifier.slice(verifier.indexOf('\n{'))).echecs, { style: { neufs: 1, intouches: 0 } });
@@ -277,4 +286,45 @@ test('RV6 ce que la session a lu', () => {
   });
   assert.match(texteDesLectures(l), /^- Skills appelés : ds-lab$[\s\S]*^- Fiches : docs\/composants\/card\.md$[\s\S]*^- Dossiers et motifs nommés, à lire : docs\/composants\/\*\.md, /m);
   assert.match(texteDesLectures(lectures({ journaux: [], app, copie, depart: [] })), /^Aucun appel d’outil dans le journal : rien à dire\.$/m);
+});
+
+test('RV7 le mode libre marqué : pièces marquées ou non, pièces de Vuetify, rapport', () => {
+  const plus = { provisoire: 'src/provisoire', rapport: { attendu: 'rapport.md', lieu: null } };
+  const travail = {
+    'src/router.js': ROUTE,
+    'src/pages/Annuaire.vue': '<template>\n  <v-pagination /><VSelect label="x" /><v-select />\n  <v-btn>x</v-btn>\n</template>\n',
+    'src/pages/annuaire/LigneDeMembre.vue': '<template>\n  <div>x</div>\n</template>\n',
+    'src/provisoire/Pagination.vue': '<template>\n  <v-pagination />\n</template>\n',
+    'src/provisoire/index.js': "export { default as Pagination } from './Pagination.vue';\n",
+    'src/annuaire/puce.js': "import { h } from 'vue';\nexport const Puce = () => h('span', 'x');\n",
+    'src/annuaire/recherche.js': '// un h( en commentaire\nexport const chercher = (l) => l;\n',
+  };
+  const r = passage('rv7', travail, plus);
+  assert.deepEqual(r.provisoire, {
+    dossier: 'src/provisoire',
+    fichiers: ['src/provisoire/Pagination.vue', 'src/provisoire/index.js'],
+    ailleurs: ['src/pages/annuaire/LigneDeMembre.vue', 'src/annuaire/puce.js'],
+  });
+  assert.deepEqual(r.composantsCrees, ['src/pages/annuaire/LigneDeMembre.vue', 'src/provisoire/Pagination.vue', 'src/annuaire/puce.js']);
+  assert.deepEqual([r.vuetifySansComposant, r.vuetifyAvecComposant], [{ VPagination: 1, VSelect: 2 }, { 'VBtn (DsButton)': 1 }]);
+  assert.deepEqual([r.rapport?.lieu, r.rapport?.nommes, r.rapport?.tus.length], [null, [], 5]);
+  const md = texteDuReleve(r);
+  assert.match(md, /^- Créés ailleurs, marquage manqué : src\/pages\/annuaire\/LigneDeMembre\.vue, src\/annuaire\/puce\.js$/m);
+  assert.match(md, /^- Pièces de Vuetify sans composant Ds…, hors de src\/provisoire\/, ni du catalogue ni créées : VPagination : 1 ; VSelect : 2$/m);
+  assert.match(md, /^- Rapport : aucun ; /m);
+
+  const partiel = passage('rv7-partiel', { ...travail, 'rapport.md': 'J’ai créé `Pagination` et LigneDeMembreBis, et src/annuaire/recherche.js, avec un index.\n' }, { ...plus, rapport: { attendu: 'rapport.md', lieu: 'rapport.md' } });
+  assert.deepEqual(partiel.rapport?.nommes, ['src/provisoire/Pagination.vue', 'src/annuaire/recherche.js']);
+  assert.deepEqual(partiel.rapport?.tus, ['src/pages/annuaire/LigneDeMembre.vue', 'src/provisoire/index.js', 'src/annuaire/puce.js']);
+  const complet = passage('rv7-complet', { ...travail, 'docs/rapport.md': 'Pagination, LigneDeMembre.vue, puce, recherche, src/provisoire/index.js.\n' }, { ...plus, rapport: { attendu: 'rapport.md', lieu: 'docs/rapport.md' } });
+  assert.deepEqual(complet.rapport?.tus, []);
+  assert.match(texteDuReleve(complet), /^- Rapport : docs\/rapport\.md \(attendu : rapport\.md, à la racine\) ; /m);
+
+  const couche = join(ROOT, 'fixtures', 'banc', 'etendre', 'couche');
+  const fichiers = /** @type {string[]} */ (readdirSync(couche, { recursive: true })).filter((f) => statSync(join(couche, f)).isFile());
+  const ref = passage('rv7-reference', Object.fromEntries(fichiers.map((f) => [f, readFileSync(join(couche, f), 'utf8')])), plus);
+  assert.deepEqual([ref.provisoire?.fichiers, ref.provisoire?.ailleurs.toSorted(), ref.vuetifySansComposant], [[], ['src/modules/MemberRow.vue', 'src/modules/MemberTagList.vue'], {}]);
+  const sans = passage('rv7-sans', { 'src/pages/Annuaire.vue': '<template>\n  <p>x</p>\n</template>\n' });
+  assert.deepEqual([sans.provisoire, sans.rapport], [null, null]);
+  assert.doesNotMatch(texteDuReleve(sans), /marqu|Rapport/);
 });

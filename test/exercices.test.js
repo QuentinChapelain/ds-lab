@@ -13,8 +13,8 @@
  *       style de l'app est dans src/gabarit/ et égale le jeton qu'elle nomme, dans sa largeur ;
  *   EX6 rien de la référence de l'annuaire n'est dans le départ de Composer, ni dans ce que la copie de ds-lab garde : ni
  *       chemin, ni contenu, ni nom de ses pièces ; la description brute et la liste de référence d'Inventorier non plus ;
- *   EX7 les briefs ne nomment ni composant, ni token, ni règle, n'ont pas de mise en gras ; celui d'Installer et celui de
- *       Composer finissent par le skill ;
+ *   EX7 les briefs ne nomment ni composant, ni token, ni règle, n'ont pas de mise en gras ; celui d'Installer finit par le
+ *       skill, celui de Composer par le skill, le dossier des pièces créées et le rapport, mot pour mot ;
  *   EX8 chaque page des départs de Composer et d'Étendre passe par le gabarit ; hors de src/components/ds/, aucune pièce de Vuetify qui a
  *       un composant Ds…, sauf la puce d'état (DsTag ne porte pas de statut) ;
  *   EX9 le départ d'Inventorier égale celui de Composer à l'octet ; aucun fichier que les briefs demandent n'y est ;
@@ -191,7 +191,12 @@ test('EX7 les briefs ne nomment ni composant, ni token, ni règle', () => {
   const briefs = Object.values(exercices(ROOT).exercices).flatMap((e) => e.brief);
   assert.deepEqual(briefs, ['installer/brief.txt', 'composer/brief.txt', 'composer/description-brute.txt', 'inventorier/demande.txt']);
   for (const b of briefs) assert.doesNotMatch(lire(join(ROOT, 'fixtures', 'banc', b)), /\bDs[A-Z]|--v-|\b(?:DS|NM|CP|DOC|DF|CS|D|B)\d|\b(?:background|text|border|gap|typography)\.|Vuetify|\*\*|^>/m, b);
-  for (const b of ['installer', 'composer']) assert.match(lire(join(ROOT, 'fixtures', 'banc', b, 'brief.txt')), /\n\nPour le design system, suis le skill ds-lab\.\n$/, b);
+  const fin = (/** @type {string} */ b) => lire(join(ROOT, 'fixtures', 'banc', b, 'brief.txt')).split('\n\n').at(-1);
+  assert.equal(fin('installer'), 'Pour le design system, suis le skill ds-lab.\n');
+  assert.equal(
+    fin('composer'),
+    "Pour le design system, suis le skill ds-lab. Sers-toi d'abord de ce que l'app a déjà. Si une pièce manque, crée-la dans `src/provisoire/`, avec les valeurs du thème. À la fin, écris `rapport.md` : ce que tu as employé, ce que tu as créé et pourquoi.\n",
+  );
 });
 
 test('EX8 chaque page passe par le gabarit, aucune pièce de Vuetify qui a un composant Ds…', () => {

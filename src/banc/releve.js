@@ -1,13 +1,15 @@
 // @ts-check
 /**
- * D68 : ce qu'un passage a posé, lu dans les fichiers neufs ou modifiés depuis « départ », sans rien lancer. Composants
+ * D68, D69 : ce qu'un passage a posé, lu dans les fichiers neufs ou modifiés depuis « départ », sans rien lancer. Composants
  * Ds… posés, pièces de Vuetify posées alors qu'un composant Ds… les enveloppe (la table vient de l'en-tête des fiches),
  * boutons et champs nus, composants créés, composants ou gabarit modifiés, exceptions de style, feuilles .css ; la page
  * passe-t-elle par le gabarit ; et les lignes qui ressemblent à une pièce que le brief remet à plus tard : des signaux à
- * lire, pas un verdict. Un compte est ce que le fichier a de plus qu'au départ.
+ * lire, pas un verdict. Un compte est ce que le fichier a de plus qu'au départ. Quand le brief dit où créer ce qui manque,
+ * les trois origines d'un écart au catalogue : pièce créée et marquée, pièce créée ailleurs, pièce de Vuetify posée telle
+ * quelle ; et ce que le rapport nomme de ce qui a été créé.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { join, posix } from 'node:path';
+import { basename, extname, join, posix } from 'node:path';
 
 /** @typedef {{ statut: string, fichier: string }} Touche un fichier touché : A, M ou D, et son chemin dans l'app */
 
@@ -58,6 +60,16 @@ function pageDe(app, adresse) {
   return fichier && existsSync(join(app, fichier)) ? fichier : null;
 }
 
+/** Un fichier est une pièce : un composant .vue, ou un script qui en rend un. @param {string} fichier @param {string} texte */
+const estUnePiece = (fichier, texte) => /^src\/.*\.vue$/.test(fichier) || (/^src\/.*\.js$/.test(fichier) && /\bdefineComponent\s*\(|\bh\(/.test(sansCommentaires(texte)));
+
+/** Un texte nomme un fichier : son chemin, son nom, ou celui de son composant, en mot entier. @param {string} texte @param {string} fichier */
+function nomme(texte, fichier) {
+  const nom = basename(fichier);
+  const racine = basename(nom, extname(nom));
+  return [fichier, nom, ...(racine === 'index' ? [] : [racine])].some((n) => new RegExp(`(?<![\\w-])${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`, 'u').test(texte));
+}
+
 /** @param {Record<string, number>} o @param {string} k @param {number} n */
 const ajouter = (o, k, n) => {
   if (n) o[k] = (o[k] ?? 0) + n;
@@ -66,9 +78,10 @@ const ajouter = (o, k, n) => {
 /**
  * Le relevé d'un passage.
  * @param {{ app: string, touches: Touche[], avant: (fichier: string) => string, enveloppes: Record<string, string>, page: string,
- *   signaux: { plusTard: Record<string, string>, refait: string } }} o
+ *   signaux: { plusTard: Record<string, string>, refait: string }, provisoire?: string, rapport?: { attendu: string, lieu: string | null } }} o
  *   avant : le texte d'un fichier au départ, vide s'il n'y était pas ; page : l'adresse de la page demandée ; signaux : les
- *   motifs de fixtures/banc/exercices.json
+ *   motifs de fixtures/banc/exercices.json ; provisoire : le dossier où le brief demande de créer ce qui manque ; rapport :
+ *   le fichier que le brief demande, et son chemin dans l'app, ou null
  */
 export function relever(o) {
   /** @type {Record<string, number>} */
@@ -76,7 +89,10 @@ export function relever(o) {
   /** @type {Record<string, number>} */
   const vuetify = {};
   /** @type {Record<string, number>} */
+  const vuetifySans = {};
+  /** @type {Record<string, number>} */
   const nus = {};
+  const marque = (/** @type {string} */ f) => Boolean(o.provisoire && f.startsWith(`${o.provisoire}/`));
   let boutonsLiens = 0;
   let exceptions = 0;
   /** @type {{ piece: string, fichier: string, ligne: number, texte: string }[]} */
@@ -98,6 +114,7 @@ export function relever(o) {
         const ds = enveloppe(p.nom);
         if (ds === 'DsButton' && /\s:?(to|href)=/.test(p.attributs)) boutonsLiens += signe;
         else if (ds) ajouter(vuetify, `${p.nom} (${ds})`, signe);
+        else if (/^V[A-Z]/.test(p.nom) && !marque(fichier)) ajouter(vuetifySans, p.nom, signe);
         if (p.nom === 'button' || p.nom === 'input') ajouter(nus, `<${p.nom}>`, signe);
       }
     const deja = new Set(sansCommentaires(avant).split('\n').map((l) => l.trim()));
@@ -112,12 +129,18 @@ export function relever(o) {
   }
   const fichierDeLaPage = pageDe(o.app, o.page);
   const texteDeLaPage = fichierDeLaPage ? sansCommentaires(readFileSync(join(o.app, fichierDeLaPage), 'utf8')) : '';
+  const neufs = o.touches.filter((t) => t.statut === 'A' && t.fichier.startsWith('src/') && t.fichier !== fichierDeLaPage).map((t) => t.fichier);
+  const pieces = neufs.filter((f) => estUnePiece(f, /\.js$/.test(f) ? readFileSync(join(o.app, f), 'utf8') : ''));
+  const rapport = o.rapport?.lieu ? readFileSync(join(o.app, o.rapport.lieu), 'utf8').normalize('NFC') : '';
   return {
     composants,
     vuetifyAvecComposant: vuetify,
+    vuetifySansComposant: vuetifySans,
     boutonsQuiMenentAilleurs: boutonsLiens,
     balisesNues: nus,
-    composantsCrees: o.touches.filter((t) => t.statut === 'A' && t.fichier.endsWith('.vue') && !t.fichier.startsWith('src/pages/')).map((t) => t.fichier),
+    composantsCrees: pieces,
+    provisoire: o.provisoire ? { dossier: o.provisoire, fichiers: o.touches.filter((t) => t.statut !== 'D' && marque(t.fichier)).map((t) => t.fichier), ailleurs: pieces.filter((f) => !marque(f)) } : null,
+    rapport: o.rapport ? { ...o.rapport, nommes: neufs.filter((f) => nomme(rapport, f)), tus: neufs.filter((f) => !nomme(rapport, f)) } : null,
     composantsModifies: o.touches.filter((t) => t.statut !== 'A' && COMPOSANTS.test(t.fichier)).map((t) => t.fichier),
     gabaritModifie: o.touches.filter((t) => GABARIT.test(t.fichier)).map((t) => t.fichier),
     page: {
@@ -152,8 +175,15 @@ export function texteDuReleve(r) {
     `- Composants Ds… posés : ${comptes(r.composants)}`,
     `- Pièces de Vuetify posées alors qu’un composant Ds… existe : ${comptes(r.vuetifyAvecComposant)}`,
     `- Boutons de Vuetify qui mènent ailleurs (aucun composant Ds… ne le fait) : ${r.boutonsQuiMenentAilleurs}`,
+    `- Pièces de Vuetify sans composant Ds…${r.provisoire ? `, hors de ${r.provisoire.dossier}/, ni du catalogue ni créées` : ''} : ${comptes(r.vuetifySansComposant)}`,
     `- Balises nues : ${comptes(r.balisesNues)}`,
     `- Composants créés : ${liste(r.composantsCrees)}`,
+    ...(r.provisoire ? [`- Créés et marqués, dans ${r.provisoire.dossier}/ : ${liste(r.provisoire.fichiers)}`, `- Créés ailleurs, marquage manqué : ${liste(r.provisoire.ailleurs)}`] : []),
+    ...(r.rapport
+      ? [
+          `- Rapport : ${r.rapport.lieu ?? 'aucun'}${r.rapport.lieu && r.rapport.lieu !== r.rapport.attendu ? ` (attendu : ${r.rapport.attendu}, à la racine)` : ''} ; fichiers neufs de src/ qu’il nomme : ${liste(r.rapport.nommes)} ; qu’il tait : ${liste(r.rapport.tus)}`,
+        ]
+      : []),
     `- Composants du design system ou fiches modifiés : ${liste(r.composantsModifies)}`,
     `- Gabarit modifié : ${liste(r.gabaritModifie)}`,
     `- Page ${r.page.adresse} : ${r.page.fichier ?? 'introuvable dans src/router.js'} ; passe par le gabarit : ${passe === null ? 'à lire' : passe ? 'oui' : 'non'}`,

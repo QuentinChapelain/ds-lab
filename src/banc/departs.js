@@ -11,7 +11,7 @@ import { copierArbre, executer } from './outils.js';
 
 /**
  * @typedef {{ couches: string[], retires: string[], copies: { de: string, vers: string, sauf?: string[] }[], saisir: boolean,
- *   brief: string[], sansHumain: boolean, pages: string[], rendu?: string, reference?: string }} Exercice
+ *   brief: string[], sansHumain: boolean, pages: string[], rendu?: string, provisoire?: string, reference?: string }} Exercice
  */
 
 /**

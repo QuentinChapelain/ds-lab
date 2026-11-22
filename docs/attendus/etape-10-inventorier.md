@@ -133,3 +133,13 @@ README, ARCHITECTURE et identifiants dans chaque commit qui les touche. Un résu
 ## Hors périmètre
 
 Tout passage, B-9 compris ; le marquage à l'écran des pièces provisoires (tableau des améliorations) [C] ; les modes dans le skill ; toute correction de ds-lab.
+
+## Écarts relevés en écrivant le code
+
+- **`lu.md` et `lu.json` sont écrits pour les quatre exercices**, à part du relevé de l'inventaire : le même code, et il dit si Composer ouvre les fiches et le gabarit. Les journaux des agents qu'une session lance sont copiés et lus aussi.
+- **« Inventées à tort »** s'appelle « Cités, et absents de l'app au départ » : un `Ds…` cité comme un manque n'est pas inventé. À lire.
+- **Une pièce que seule une question nomme** compte comme nommée, sa ligne marquée « (question) ».
+- **Les motifs ont été élargis** après un inventaire simulé, écrit par le même auteur : sur 18 pièces, deux étaient dites manquées à tort (« Personne qui met en relation », « Rangée d'un contact »), et « Menu local » n'était pas reconnu. 18 sur 18 ensuite, sur ce même texte : ce n'est pas une mesure des motifs.
+- **Les pièces de Vuetify sans `Ds…`** posées dans `src/provisoire/` ne sont pas comptées : la pièce qui les porte est marquée.
+- **Le rapport** est comparé à tous les fichiers neufs de `src/`, moins la page demandée, pas aux seules pièces.
+- **Une page neuve de plus que celle demandée** compte parmi les pièces créées ailleurs.

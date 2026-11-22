@@ -102,7 +102,7 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 | P1 à P4 | Proximité des marges | `fixtures/marque-demo/expected-proximite.json` |
 | R-1 à R-9 | Identifiant et titre d'une ligne, captures par version | `test/e2e-identifiants.test.js`, `test/e2e-versions.test.js` |
 | RL1 à RL5 | Relecteur : marque cassée relue, `.vue` propre ou en dur, autre fichier, pose fusionnée et sans effet relancée, sans `DS_LAB` ou entrée illisible, page intouchée tue (D67) | `test/relecteur.test.js` |
-| RV1 à RV6 | Relevé d'un passage du banc : composants, pièces de Vuetify, gabarit, signaux de ce que le brief remet à plus tard, commande entière (D68), inventaire face à sa liste, ce que la session a lu (D69) | `test/releve.test.js` |
+| RV1 à RV7 | Relevé d'un passage du banc : composants, pièces de Vuetify, gabarit, signaux de ce que le brief remet à plus tard, commande entière (D68), inventaire face à sa liste, ce que la session a lu, mode libre marqué (D69) | `test/releve.test.js` |
 | S1 à S4 | Modifications et `npm run apply` | `test/e2e-apply.test.js` |
 | SK1 à SK6 | Textes du skill : fraîcheur, règles et défauts avec leur contrôle dans le dépôt de l'équipe, comptes, consignes et techniques, `SKILL.md`, retrait des choix de ds-lab, phrase de priorité (D66, D67) | `test/skill.test.js` |
 | T0 à T5 | Rôles de couleur, paires, planche | `test/roles-statuts.test.js`, `test/roles-semantique.test.js`, `test/roles-paires.test.js`, `test/roles-planche.test.js` |

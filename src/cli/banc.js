@@ -144,6 +144,8 @@ async function releverPassage(racine, exercice, id, sortie) {
       enveloppes: enveloppes(join(copie, 'docs', 'composants')),
       page: e.pages[0],
       signaux,
+      provisoire: e.provisoire,
+      rapport: e.rendu ? { attendu: e.rendu, lieu: lieuDuRendu } : undefined,
     });
     writeFileSync(join(sortie, 'pose.json'), `${JSON.stringify(r, null, 2)}\n`);
     writeFileSync(join(sortie, 'pose.md'), texteDuReleve(r));

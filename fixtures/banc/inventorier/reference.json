@@ -61,7 +61,7 @@
       "attendu": "manque",
       "avec": [],
       "note": "aucun rôle « sélectionné » (B3)",
-      "motif": "nav(igation)? (locale|interne|secondaire|de section)|onglets?|ancres?|sous-navigation"
+      "motif": "(menu|barre) local|nav(igation)? (locale|interne|secondaire|de section)|onglets?|ancres?|sous-navigation"
     },
     {
       "id": "P7",
@@ -83,7 +83,7 @@
         "DsCard"
       ],
       "note": "",
-      "motif": "coup de main|mise[s]? en relation"
+      "motif": "coups? de main|(mise?s?|met|mettre|mettent) en relation|entraide"
     },
     {
       "id": "P9",
@@ -125,7 +125,7 @@
         "DsCard"
       ],
       "note": "la grille manque (B6), les actions ne s'alignent pas (R19)",
-      "motif": "trois (cartes|personnes|profils)|3 (cartes|personnes|profils)|short ?-?list|courte liste|recommand|sugg(éré|estion)|d'après (mon|le|son|votre) profil"
+      "motif": "trois (cartes|personnes|profils)|3 (cartes|personnes|profils)|short ?-?list|courte liste|(personnes?|profils?|membres?|contacts?|gens) (recommand|suggér|propos|choisi)|recommandations?|d'après (mon|le|son|votre) profil"
     },
     {
       "id": "P13",
@@ -163,7 +163,7 @@
       "attendu": "manque",
       "avec": [],
       "note": "R6, R21",
-      "motif": "lignes? (de (la )?liste|de membre|de contact|d'annuaire)|(élément|item)s? de (la )?liste|ligne (compacte|détaillée)|DsListItem|MemberRow|MemberCard"
+      "motif": "rangées?|lignes? (de (la )?liste|de membre|de contact|d'annuaire)|(élément|item)s? de (la )?liste|ligne (compacte|détaillée)|DsListItem|MemberRow|MemberCard"
     },
     {
       "id": "P17",

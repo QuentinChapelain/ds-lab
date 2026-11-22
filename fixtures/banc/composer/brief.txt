@@ -17,4 +17,4 @@ Les données sont dans `src/data/membres.js`.
 
 L'app est servie sous trois marques : Écume et Sel, Grenat Papeterie et Maison Alberto. La page doit tenir dans chacune, en clair comme en sombre.
 
-Pour le design system, suis le skill ds-lab.
+Pour le design system, suis le skill ds-lab. Sers-toi d'abord de ce que l'app a déjà. Si une pièce manque, crée-la dans `src/provisoire/`, avec les valeurs du thème. À la fin, écris `rapport.md` : ce que tu as employé, ce que tu as créé et pourquoi.
