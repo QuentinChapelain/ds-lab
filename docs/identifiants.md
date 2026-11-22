@@ -88,7 +88,7 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 | AD1 à AD6 | Adresse stable des couches communes : écriture, lecture dans les quatre contextes, marque copiée hors du dépôt, pannes, ancien `$ref` relatif, feuille CSS (D66) | `test/adresse-commune.test.js` |
 | AF1 à AF4 | App fictive du banc d'essai : versions de l'atelier, ni `Ds…` ni annuaire ni ds-lab, les dix membres et les champs du brief, entrées des trois marques (D67) | `test/app-fictive.test.js` |
 | B1 à B5 | Jetons du bouton dans les dix thèmes, contrastes de l'icône du bouton à icône | `test/bouton-jetons.test.js` |
-| BN1, BN3, BN4 | Banc d'essai : passage du bras A posé (copie cachée et sans historique, app de départ, skill, réglages, briefs), deux poses identiques, `verifier` depuis la copie (D67) | `test/banc.test.js` |
+| BN1 à BN4 | Banc d'essai : passage du bras A posé (copie cachée et sans historique, app de départ, skill, réglages, briefs), passage du bras B (hook, carnet), deux poses identiques, `verifier` depuis la copie (D67) | `test/banc.test.js`, BN2 dans `test/relecteur.test.js` |
 | C1 à C13 | Fenêtre des candidats, grisé des marges, bilan par usage | `test/candidats.test.js`, `test/e2e-candidats-revue.test.js`, `fixtures/marque-demo/expected-candidats.json` |
 | E1 à E12 | Gardes des enveloppes (bouton, champ de texte, carte, bouton à icône, avatar, étiquette), découpage d'un composant `.vue` | `test/enveloppe-bouton.test.js` |
 | G0 à G8 | Générateur de valise | `src/valise/generate.js`, `test/valise-generate.test.js`, `test/gris-neutre.test.js` |
@@ -100,6 +100,7 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 | MQ1 à MQ3 | Dossier des marques des trois contrôles (`--marques`) : un bloc par marque, les deux options ensemble, dossier vide ou absent (D66) | `test/dossier-des-marques.test.js` |
 | P1 à P4 | Proximité des marges | `fixtures/marque-demo/expected-proximite.json` |
 | R-1 à R-9 | Identifiant et titre d'une ligne, captures par version | `test/e2e-identifiants.test.js`, `test/e2e-versions.test.js` |
+| RL1 à RL5 | Relecteur : marque cassée relue, `.vue` propre ou en dur, autre fichier, pose fusionnée et sans effet relancée, sans `DS_LAB` ou entrée illisible, page intouchée tue (D67) | `test/relecteur.test.js` |
 | S1 à S4 | Modifications et `npm run apply` | `test/e2e-apply.test.js` |
 | SK1 à SK6 | Textes du skill : fraîcheur, règles et défauts avec leur contrôle dans le dépôt de l'équipe, comptes, consignes et techniques, `SKILL.md`, retrait des choix de ds-lab, phrase de priorité (D66, D67) | `test/skill.test.js` |
 | T0 à T5 | Rôles de couleur, paires, planche | `test/roles-statuts.test.js`, `test/roles-semantique.test.js`, `test/roles-paires.test.js`, `test/roles-planche.test.js` |

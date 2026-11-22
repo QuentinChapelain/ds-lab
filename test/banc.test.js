@@ -3,8 +3,8 @@
  * Le banc d'essai (D67, docs/attendus/etape-10-banc.md). Chaque pose se fait dans un dossier temporaire, sans npm ci
  * (--sans-installation : un lien vers les node_modules du dépôt) :
  *   BN1 un passage du bras A : la copie de ds-lab sans aucun chemin caché (chacun présent dans le dépôt) et d'un seul commit, l'app d'un seul commit
- *       « départ » sans banc.json, le skill copié à l'identique, DS_LAB et le dossier de la copie dans
- *       settings.local.json, ni relecteur ni carnet, les deux briefs, depart.txt et ses deux commandes ; le même
+ *       « départ » sans banc.json, le skill copié à l'identique, DS_LAB, le dossier de la copie et le Node de
+ *       .node-version en tête du PATH dans settings.local.json, ni relecteur ni carnet, les deux briefs, depart.txt et ses deux commandes ; le même
  *       passage reposé : sortie 2 qui dit quoi faire ;
  *   BN3 deux poses du même commit : mêmes fichiers à l'octet et mêmes empreintes de commit, aux chemins absolus et à
  *       l'heure près ;
@@ -52,7 +52,11 @@ test('BN1 un passage du bras A : copie cachée, app de départ, skill, réglages
   assert.equal(git(app, ['status', '--porcelain']), '');
   assert.equal(existsSync(join(app, 'banc.json')), false);
   for (const f of arbre(join(ROOT, 'skill', 'ds-lab'))) assert.equal(readFileSync(join(app, '.claude', 'skills', 'ds-lab', f), 'utf8'), readFileSync(join(ROOT, 'skill', 'ds-lab', f), 'utf8'), f);
-  assert.deepEqual(JSON.parse(readFileSync(join(app, '.claude', 'settings.local.json'), 'utf8')), { env: { DS_LAB: copie }, permissions: { additionalDirectories: [copie] } });
+  const reglages = JSON.parse(readFileSync(join(app, '.claude', 'settings.local.json'), 'utf8'));
+  assert.deepEqual(reglages.permissions, { additionalDirectories: [copie] });
+  assert.equal(reglages.env.DS_LAB, copie);
+  const node = spawnSync(join(reglages.env.PATH.split(':')[0], 'node'), ['-v'], { encoding: 'utf8' }).stdout.trim();
+  assert.equal(node.split('.')[0], `v${readFileSync(join(ROOT, '.node-version'), 'utf8').trim().split('.')[0]}`, 'le Node de .node-version en tête du PATH');
   for (const f of ['.claude/settings.json', 'CLAUDE.md', 'carnet.md']) assert.equal(existsSync(join(app, f)), false, f);
   const brief = readFileSync(join(ROOT, 'fixtures', 'banc', 'brief.txt'), 'utf8');
   assert.equal(readFileSync(join(dossier, 'brief.txt'), 'utf8'), brief);

@@ -28,6 +28,9 @@ import { lancerChromium } from '../browser/lancement.js';
 const DEPOT = fileURLToPath(new URL('../..', import.meta.url));
 const USAGE = 'npm run banc -- --bras A|B --passage <n> --modele <modèle> [--dossier <racine>], ou --relever <bras>-<n> [--dossier <racine>]';
 
+/** Types (déclarés avant le lancement : le module attend la commande au premier niveau) des fichiers servis par le serveur des planches. */
+const TYPES = /** @type {Record<string, string>} */ ({ '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.png': 'image/png' });
+
 await lancer('banc', async () => {
   const { values } = parseArgs({
     options: {
@@ -202,9 +205,6 @@ function heures(journaux) {
     '',
   ].join('\n');
 }
-
-/** Types des fichiers servis par le serveur des planches. */
-const TYPES = /** @type {Record<string, string>} */ ({ '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.png': 'image/png' });
 
 /**
  * Les planches de l'annuaire : la version construite de l'app, servie en local, chaque marque de banc.json en clair et

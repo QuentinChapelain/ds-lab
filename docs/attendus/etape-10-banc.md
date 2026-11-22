@@ -278,6 +278,12 @@ README, ARCHITECTURE, décisions et identifiants sont mis à jour dans chaque co
 - **BN2** (le bras B) passe de C3 à C4, avec le relecteur qu'il pose. C3 a BN1, BN3 et BN4 ; le compte total ne change pas.
 - **Les chemins cachés** sont dans `fixtures/banc/caches.json` et non dans le code. La garde des marques prend « atelier » pour le premier mot d'Atelier Lavandine, si bien que `src/` ne peut pas l'écrire.
 
+- **L'essai du hook** (22/11, 2 h 04, lancé à la demande de Quentin) tient tout l'attendu [F] : cinq appels, chacun avec son chemin ; l'agent cite A, B et C, ni D ni E ; A porte `env=vu-par-le-hook` (`local/etape-10-banc/essai-hook-*.txt`).
+- **La commande du hook** refuse elle-même un `DS_LAB` absent, code 2. Sans cette garde, `node` sortirait en 1 sur un module introuvable, et l'agent ne le verrait pas (l'essai le montre pour E).
+- **La copie de ds-lab** prend l'arbre de travail tel que git le voit, et non `HEAD` : les tests posent un bras B avant que le relecteur soit commité. Une pose installée refuse un arbre qui a des changements non commités ; `depart.txt` dit « arbre modifié » quand une pose de test en a.
+
+- **Le Node des passages** : `settings.local.json` porte aussi `env.PATH`, le Node 24 du banc en tête. Sur ce poste, le shell hors de `~/Developer/ds-lab` donne Node 25. La session et son hook y lanceraient chaque commande de ds-lab, qui sortirait en 2 : c'est un piège du poste, pas de l'outil [F, rejeu du hook posé, 22/11, 2 h 15]. Que Claude Code applique `env.PATH` aux outils et aux hooks reste [V] ; le relevé le dira.
+
 ## Hors périmètre
 
 L'essai lui-même ; la comparaison ; un lien ou un menu dans ds-lab ; la pose d'un composant depuis un inventaire (C5) ; la dette des thèmes Vuetify ; les six pistes garées ; le paquet installable ; le serveur MCP ; le préfixe réglable.

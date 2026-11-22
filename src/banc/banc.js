@@ -1,7 +1,7 @@
 // @ts-check
 /**
- * D67 : le banc d'essai. Il pose, hors du dépôt, le dossier d'un passage : une copie de ds-lab sans la référence et
- * sans historique, l'app fictive en dépôt git d'un commit « départ », le skill copié, la variable DS_LAB, les deux
+ * D67 : le banc d'essai. Il pose, hors du dépôt, le dossier d'un passage : une copie de l'arbre de ds-lab, sans la
+ * référence et sans historique (une pose installée refuse un arbre qui a des changements non commités), l'app fictive en dépôt git d'un commit « départ », le skill copié, la variable DS_LAB, les deux
  * briefs et depart.txt ; dans le bras B, le relecteur et le carnet, posés par la commande de la copie. Deux poses du
  * même commit donnent les mêmes fichiers, aux chemins absolus et à l'heure près : les commits ont un auteur et une
  * date fixes. Il relève ensuite les traces d'un passage (src/cli/banc.js).
@@ -35,6 +35,19 @@ export function executer(cmd, args, o) {
   const r = spawnSync(cmd, args, { cwd: o.cwd, env: { ...process.env, ...o.env }, input: o.input, encoding: 'buffer', maxBuffer: 1 << 28 });
   if (r.status !== 0) throw new Error(`${cmd} ${args.join(' ')} : sortie ${r.status ?? r.signal} dans ${o.cwd} ; ${String(r.stderr ?? '').trim().split('\n').at(-1) ?? ''}`);
   return String(r.stdout);
+}
+
+/**
+ * Copie les fichiers d'un dossier tels que git les voit dans l'arbre de travail (suivis, ou nouveaux et non ignorés),
+ * sauf ceux que le filtre refuse ; ni .git, ni node_modules, ni ce que .gitignore écarte.
+ * @param {string} source @param {string} cible @param {(f: string) => boolean} garder
+ */
+function copierArbre(source, cible, garder) {
+  const fichiers = executer('git', ['ls-files', '--cached', '--others', '--exclude-standard', '.'], { cwd: source }).split('\n');
+  for (const f of fichiers.filter((x) => x && garder(x) && existsSync(join(source, x)))) {
+    mkdirSync(dirname(join(cible, f)), { recursive: true });
+    cpSync(join(source, f), join(cible, f));
+  }
 }
 
 /** Fait d'un dossier un dépôt git d'un seul commit, au message donné. @param {string} dossier @param {string} message */
@@ -74,27 +87,21 @@ function commandeDuPassage(app, modele, seul) {
 export function poser(o) {
   const dossier = join(o.racine, nomDePassage(o.bras, o.passage));
   if (existsSync(dossier)) throw new Error(`${dossier} existe déjà : prendre un autre numéro de passage, ou supprimer ce dossier`);
+  const modifie = executer('git', ['status', '--porcelain'], { cwd: o.depot }).trim() !== '';
+  if (modifie && o.installer) throw new Error("l'arbre de ds-lab a des changements non commités : les commiter avant de poser un passage, pour qu'il se rejoue à l'identique");
   const copie = join(dossier, 'ds-lab');
   const app = join(dossier, 'app');
-  mkdirSync(copie, { recursive: true });
   const sha = executer('git', ['rev-parse', '--short', 'HEAD'], { cwd: o.depot }).trim();
-  const archive = spawnSync('git', ['archive', '--format=tar', 'HEAD'], { cwd: o.depot, encoding: 'buffer', maxBuffer: 1 << 28 }).stdout;
-  executer('tar', ['-x', '-f', '-'], { cwd: copie, input: archive });
-  for (const c of caches(o.depot)) rmSync(join(copie, c), { recursive: true, force: true });
-  commit(copie, `ds-lab ${sha}`);
+  const cache = caches(o.depot);
+  copierArbre(o.depot, copie, (f) => !cache.some((c) => f === c || f.startsWith(`${c}/`)));
+  commit(copie, `ds-lab ${sha}${modifie ? ', arbre modifié' : ''}`);
   if (o.installer) executer('npm', ['ci', '--no-audit', '--no-fund'], { cwd: copie });
   else symlinkSync(join(o.depot, 'node_modules'), join(copie, 'node_modules'));
-
-  const source = join(o.depot, 'fixtures', 'app-fictive');
-  const fichiers = executer('git', ['ls-files', '--cached', '--others', '--exclude-standard', '.'], { cwd: source })
-    .split('\n')
-    .filter((f) => f && f !== 'banc.json');
-  for (const f of fichiers) {
-    mkdirSync(dirname(join(app, f)), { recursive: true });
-    cpSync(join(source, f), join(app, f));
-  }
+  copierArbre(join(o.depot, 'fixtures', 'app-fictive'), app, (f) => f !== 'banc.json');
   cpSync(join(copie, 'skill', 'ds-lab'), join(app, '.claude', 'skills', 'ds-lab'), { recursive: true });
-  const reglages = { env: { DS_LAB: copie }, permissions: { additionalDirectories: [copie] } };
+  // Le Node du banc (celui de .node-version, que la garde impose) passe devant le PATH de la session et de ses hooks :
+  // sous une autre version majeure, chaque commande de ds-lab sortirait en 2.
+  const reglages = { env: { DS_LAB: copie, PATH: `${dirname(process.execPath)}:${process.env.PATH ?? ''}` }, permissions: { additionalDirectories: [copie] } };
   writeFileSync(join(app, '.claude', 'settings.local.json'), `${JSON.stringify(reglages, null, 2)}\n`);
   if (o.bras === 'B') {
     const relecteur = join(copie, 'src', 'cli', 'relecteur.js');
@@ -115,7 +122,7 @@ export function poser(o) {
   const depart = [
     `passage : ${nomDePassage(o.bras, o.passage)}, bras ${o.bras}`,
     `heure : ${o.heure}`,
-    `ds-lab : ${sha} (copie sans la référence ni l'historique : ${copie})`,
+    `ds-lab : ${sha}${modifie ? ', arbre modifié' : ''} (copie sans la référence ni l'historique : ${copie})`,
     `claude : ${o.claude}`,
     `modèle : ${o.modele}`,
     `journal : ${dossierDuJournal(realpathSync(app))}/<session>.jsonl`,

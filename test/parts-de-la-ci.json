@@ -57,6 +57,7 @@
       "test/police-lecture.test.js",
       "test/police-produit.test.js",
       "test/reduce.test.js",
+      "test/relecteur.test.js",
       "test/relecture-unit.test.js",
       "test/rendered-unit.test.js",
       "test/report-unit.test.js",
