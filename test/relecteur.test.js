@@ -1,21 +1,29 @@
 // @ts-check
 /**
- * Le relecteur (D67, docs/attendus/etape-10-banc.md) : le hook PostToolUse qui relit le seul fichier écrit. Attendus
- * écrits à la main avant le code ; chaque cas joue dans un dépôt fictif hors de ds-lab, avec des copies des marques :
- *   RL1 un fichier d'une marque cassée en sombre : code 2, « relecteur : <fichier> » puis ses blocs sur la sortie
- *       d'erreur, un « À faire » par bloc ; rien sur la sortie standard ;
- *   RL2 un .vue propre : code 0, une ligne de contexte (additionalContext) ; un fichier ni de marque ni de style : code 0,
- *       rien ; une valeur en dur dans le .vue écrit : code 2 et son bloc de style ;
- *   RL3 --poser fusionne le hook avec un settings.json qui existe, garde un CLAUDE.md et y ajoute le bloc du carnet,
- *       pose carnet.md ; relancé, il ne change aucun octet ;
+ * Le relecteur (D67, D71, docs/attendus/etape-10-banc.md et etape-10-relecteur-et-carnet.md) : trois hooks qui relisent
+ * ce qui a changé dans le périmètre, quel que soit l'outil, et le carnet. Attendus écrits à la main avant le code ; chaque
+ * cas joue dans un dépôt fictif hors de ds-lab, avec des copies des marques, et sa mémoire dans un dossier temporaire à lui :
+ *   RL1 une marque cassée par le shell : code 2, « relecteur : <fichier> » puis ses blocs sur la sortie d'erreur, un
+ *       « À faire » par bloc ; rien sur la sortie standard ;
+ *   RL2 un .vue neuf et propre : aucune sortie ; un fichier ni de marque ni de style : rien ; une valeur en dur dans un
+ *       .vue : code 2 et son bloc de style ;
+ *   RL3 --poser fusionne les trois hooks avec un settings.json qui existe, garde un CLAUDE.md et y ajoute le bloc du
+ *       carnet, pose carnet.md ; relancé, il ne change aucun octet ; sur une pose d'avant (hook sur Edit et Write, ancien
+ *       bloc), il remplace hook et section, sans doublon, et garde la section suivante et carnet.md ;
  *   RL4 la commande du hook sans DS_LAB : code 2 et ce qu'il faut poser ; une entrée qui n'est pas du JSON : code 2 ;
- *   RL5 une page en faute, intouchée, et un autre fichier propre écrit : le relecteur ne dit rien de la page.
- * Et BN2 : un passage du bras B posé par le banc porte le hook, le bloc du carnet et carnet.md, dans le commit « départ ».
+ *   RL5 une page en faute, intouchée, et un autre fichier propre écrit : le relecteur ne dit rien de la page ;
+ *   RL6 une écriture par le shell (cat >) : l'appel Bash qui suit rend le bloc ; l'appel d'après, rien d'écrit, rien ;
+ *   RL7 la fin du tour : changé depuis le départ et en échec, l'arrêt est refusé ; à la relance, laissé, et l'humain lit
+ *       les échecs ; corrigé, rien ;
+ *   RL8 la mémoire est hors du dépôt, une par session, un journal d'une ligne par appel ; sans empreintes de départ, le
+ *       seul fichier de tool_input.file_path est relu.
+ * Et BN2 : un passage du bras B posé par le banc porte les hooks, le bloc du carnet et carnet.md, dans le commit « départ » ;
+ * CN1 : le carnet, une ligne datée par la commande.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,17 +31,27 @@ import { dossiersDeMarque, RESOLVER } from '../src/tokens/resolver.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const CLI = join(ROOT, 'src', 'cli', 'relecteur.js');
+const CARNET_CLI = join(ROOT, 'src', 'cli', 'carnet.js');
 const MARQUE = dossiersDeMarque()[0];
 const BON = '<template><div class="b">x</div></template>\n<style scoped>\n.b {\n  padding: var(--v-ds-label-gap);\n}\n</style>\n';
 const EN_DUR = '<template><div class="b">x</div></template>\n<style scoped>\n.b {\n  padding: 12px;\n}\n</style>\n';
 const OPTIONS = ['--marques', 'tokens', '--style', 'src/**/*.vue'];
-const CARNET_BLOC =
+const ANCIEN_BLOC =
   "## Carnet\n\nChaque question que tu poses à l'humain, ou que tu ne peux pas lui poser, s'écrit dans `carnet.md` : une ligne du tableau, avec l'heure, la question, la réponse reçue ou ce que tu as choisi faute de réponse, et le fichier concerné. Puis continue.\n";
+const CARNET_BLOC =
+  "## Carnet\n\nChaque fois que tu dois choisir quelque chose que la demande ne dit pas, écris-le au carnet avant de l'appliquer, par cette commande, qui date la ligne :\n\n`node \"$DS_LAB/src/cli/carnet.js\" --question \"…\" --choix \"…\" --fichier <fichier>`\n\n`--question` dit ce qui n'était pas dit, `--choix` ce que tu as décidé ; si tu l'as demandé à l'humain et qu'il a répondu, `--reponse` à la place de `--choix`. N'écris pas `carnet.md` toi-même.\n";
 const CARNET = '# Carnet des questions\n\n| Heure | Question | Réponse reçue, ou choix faute de réponse | Fichier |\n|---|---|---|---|\n';
 const COMMANDE =
   'if [ -z "$DS_LAB" ]; then echo "relecteur : DS_LAB n\'est pas posée : la poser sur le chemin du clone de ds-lab (env de .claude/settings.local.json, ou le shell)" >&2; exit 2; fi; node "$DS_LAB/src/cli/relecteur.js" --marques tokens --style "src/**/*.vue"';
+const HOOKS = {
+  SessionStart: [{ hooks: [{ type: 'command', command: COMMANDE }] }],
+  PostToolUse: [{ matcher: 'Edit|Write|NotebookEdit|Bash|PowerShell', hooks: [{ type: 'command', command: COMMANDE }] }],
+  Stop: [{ hooks: [{ type: 'command', command: COMMANDE }] }],
+};
+const STYLE_EN_DUR = (/** @type {string} */ f) =>
+  `✗ style · ${f} : ligne 4 : Valeur brute « 12px » pour padding (declaration-property-value-allowed-list).\n  À faire : prendre var(--v-ds-…) ou rgb(var(--v-theme-…)) ; sinon une exception avec sa raison (CP3).\n`;
 
-/** Un dépôt fictif : une marque copiée, un composant propre, une page en faute. */
+/** Un dépôt fictif : une marque copiée, un composant propre, une page en faute ; et un dossier temporaire à lui. */
 function depot() {
   const racine = mkdtempSync(join(tmpdir(), 'ds-lab-relecteur-'));
   const cible = join(racine, 'tokens', basename(MARQUE));
@@ -44,25 +62,36 @@ function depot() {
   writeFileSync(join(racine, 'src', 'components', 'Bon.vue'), BON);
   writeFileSync(join(racine, 'src', 'pages', 'Ancienne.vue'), EN_DUR);
   writeFileSync(join(racine, 'README.md'), 'app\n');
+  mkdirSync(join(racine, '.tmp'));
   return racine;
 }
-/** Le hook, appelé comme par Claude Code après l'écriture de `fichier`. @param {string} racine @param {string} fichier */
-const relire = (racine, fichier) =>
+/**
+ * Un hook, appelé comme par Claude Code ; la mémoire dans <racine>/.tmp, par TMPDIR.
+ * @param {string} racine @param {Record<string, unknown>} entree @param {string} [session]
+ */
+const hook = (racine, entree, session = 's1') =>
   spawnSync(process.execPath, [CLI, ...OPTIONS], {
     cwd: racine,
-    input: JSON.stringify({ hook_event_name: 'PostToolUse', cwd: racine, tool_name: 'Write', tool_input: { file_path: join(racine, fichier), content: '' } }),
+    env: { ...process.env, TMPDIR: join(racine, '.tmp') },
+    input: JSON.stringify({ session_id: session, cwd: racine, ...entree }),
     encoding: 'utf8',
   });
-const contexte = (/** @type {string} */ f) => `${JSON.stringify({ hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: `relecteur : ${f}, 0 échec` } })}\n`;
+const depart = (/** @type {string} */ racine, session = 's1') => hook(racine, { hook_event_name: 'SessionStart', source: 'startup' }, session);
+const apres = (/** @type {string} */ racine, outil = 'Bash', session = 's1') => hook(racine, { hook_event_name: 'PostToolUse', tool_name: outil, tool_input: { command: 'ls' } }, session);
+const fin = (/** @type {string} */ racine, relance = false) => hook(racine, { hook_event_name: 'Stop', stop_hook_active: relance });
+/** Une écriture par le shell, comme les IA neuves la font. @param {string} racine @param {string} fichier @param {string} texte */
+const parLeShell = (racine, fichier, texte) => assert.equal(spawnSync('sh', ['-c', `cat > ${fichier} <<'FIN'\n${texte}FIN\n`], { cwd: racine }).status, 0);
+const rien = (/** @type {import('node:child_process').SpawnSyncReturns<string>} */ s) => assert.deepEqual([s.status, s.stdout, s.stderr], [0, '', '']);
 
-test('RL1 un fichier d’une marque cassée : code 2, ses blocs sur la sortie d’erreur', () => {
+test('RL1 une marque cassée par le shell : code 2, ses blocs sur la sortie d’erreur', () => {
   const racine = depot();
+  rien(depart(racine));
   const nom = basename(MARQUE);
   const resolver = join(racine, 'tokens', nom, RESOLVER);
   const r = JSON.parse(readFileSync(resolver, 'utf8'));
   r.modifiers.mode.contexts.dark.push({ text: { default: { $type: 'color', $value: '{background.app}' } } });
   writeFileSync(resolver, JSON.stringify(r, null, 2));
-  const s = relire(racine, `tokens/${nom}/${RESOLVER}`);
+  const s = apres(racine);
   assert.equal(s.status, 2);
   assert.equal(s.stdout, '');
   const l = s.stderr.trimEnd().split('\n');
@@ -72,41 +101,48 @@ test('RL1 un fichier d’une marque cassée : code 2, ses blocs sur la sortie d�
   rmSync(racine, { recursive: true, force: true });
 });
 
-test('RL2 un .vue propre : une ligne de contexte ; un autre fichier : rien ; une valeur en dur : son bloc', () => {
+test('RL2 un .vue neuf et propre : rien ; un autre fichier : rien ; une valeur en dur : son bloc', () => {
   const racine = depot();
-  const bon = relire(racine, 'src/components/Bon.vue');
-  assert.equal(bon.status, 0, bon.stderr);
-  assert.equal(bon.stdout, contexte('src/components/Bon.vue'));
-  const autre = relire(racine, 'README.md');
-  assert.deepEqual([autre.status, autre.stdout, autre.stderr], [0, '', '']);
+  rien(depart(racine));
+  writeFileSync(join(racine, 'src', 'components', 'Neuf.vue'), BON);
+  rien(apres(racine, 'Write'));
+  writeFileSync(join(racine, 'README.md'), 'app, changée\n');
+  rien(apres(racine, 'Edit'));
   writeFileSync(join(racine, 'src', 'components', 'Bon.vue'), EN_DUR);
-  const dur = relire(racine, 'src/components/Bon.vue');
+  const dur = apres(racine, 'Edit');
   assert.equal(dur.status, 2);
-  assert.equal(
-    dur.stderr,
-    'relecteur : src/components/Bon.vue\n✗ style · src/components/Bon.vue : ligne 4 : Valeur brute « 12px » pour padding (declaration-property-value-allowed-list).\n  À faire : prendre var(--v-ds-…) ou rgb(var(--v-theme-…)) ; sinon une exception avec sa raison (CP3).\n',
-  );
+  assert.equal(dur.stderr, `relecteur : src/components/Bon.vue\n${STYLE_EN_DUR('src/components/Bon.vue')}`);
   rmSync(racine, { recursive: true, force: true });
 });
 
-test('RL3 --poser fusionne, garde, ajoute ; relancé, ne change rien', () => {
+test('RL3 --poser fusionne, garde, ajoute ; relancé, ne change rien ; sur une pose d’avant, remplace', () => {
   const racine = depot();
   mkdirSync(join(racine, '.claude'));
   const autre = { matcher: 'Bash', hooks: [{ type: 'command', command: 'echo autre' }] };
   writeFileSync(join(racine, '.claude', 'settings.json'), JSON.stringify({ permissions: { allow: ['Bash(npm test)'] }, hooks: { PostToolUse: [autre] } }));
   writeFileSync(join(racine, 'CLAUDE.md'), '# App\n\nRègles de l’équipe.\n');
   const poser = () => spawnSync(process.execPath, [CLI, '--poser', ...OPTIONS], { cwd: racine, encoding: 'utf8' });
-  assert.equal(poser().status, 0);
+  const p = poser();
+  assert.equal(p.status, 0);
+  assert.equal(p.stdout, 'relecteur : posé dans .claude/settings.json (hooks SessionStart, PostToolUse sur Edit, Write, NotebookEdit, Bash, PowerShell, Stop) ; carnet dans CLAUDE.md et carnet.md\n');
   const reglages = JSON.parse(readFileSync(join(racine, '.claude', 'settings.json'), 'utf8'));
-  assert.deepEqual(reglages, {
-    permissions: { allow: ['Bash(npm test)'] },
-    hooks: { PostToolUse: [autre, { matcher: 'Edit|Write', hooks: [{ type: 'command', command: COMMANDE }] }] },
-  });
+  assert.deepEqual(reglages, { permissions: { allow: ['Bash(npm test)'] }, hooks: { ...HOOKS, PostToolUse: [autre, ...HOOKS.PostToolUse] } });
   assert.equal(readFileSync(join(racine, 'CLAUDE.md'), 'utf8'), `# App\n\nRègles de l’équipe.\n\n${CARNET_BLOC}`);
   assert.equal(readFileSync(join(racine, 'carnet.md'), 'utf8'), CARNET);
   const avant = ['.claude/settings.json', 'CLAUDE.md', 'carnet.md'].map((f) => readFileSync(join(racine, f), 'utf8'));
   assert.equal(poser().status, 0);
   assert.deepEqual(['.claude/settings.json', 'CLAUDE.md', 'carnet.md'].map((f) => readFileSync(join(racine, f), 'utf8')), avant);
+
+  // Une pose d'avant : le hook sur Edit et Write, l'ancien bloc suivi d'une autre section, un carnet rempli.
+  const ancienHook = { matcher: 'Edit|Write', hooks: [{ type: 'command', command: COMMANDE }] };
+  writeFileSync(join(racine, '.claude', 'settings.json'), JSON.stringify({ hooks: { PostToolUse: [autre, ancienHook] } }));
+  writeFileSync(join(racine, 'CLAUDE.md'), `# App\n\n${ANCIEN_BLOC}\n## Ensuite\n\nGardé.\n`);
+  const rempli = `${CARNET}| 14:00 | q | c | f |\n`;
+  writeFileSync(join(racine, 'carnet.md'), rempli);
+  assert.equal(poser().status, 0);
+  assert.deepEqual(JSON.parse(readFileSync(join(racine, '.claude', 'settings.json'), 'utf8')), { hooks: { ...HOOKS, PostToolUse: [autre, ...HOOKS.PostToolUse] } });
+  assert.equal(readFileSync(join(racine, 'CLAUDE.md'), 'utf8'), `# App\n\n${CARNET_BLOC}\n## Ensuite\n\nGardé.\n`);
+  assert.equal(readFileSync(join(racine, 'carnet.md'), 'utf8'), rempli);
   rmSync(racine, { recursive: true, force: true });
 });
 
@@ -119,27 +155,129 @@ test('RL4 sans DS_LAB, ou une entrée qui n’est pas du JSON : code 2 et quoi f
   assert.equal(sans.stderr, "relecteur : DS_LAB n'est pas posée : la poser sur le chemin du clone de ds-lab (env de .claude/settings.local.json, ou le shell)\n");
   const avec = spawnSync('sh', ['-c', COMMANDE], { cwd: racine, env: { ...env, DS_LAB: ROOT }, input: 'pas du json', encoding: 'utf8' });
   assert.equal(avec.status, 2);
-  assert.match(avec.stderr, /^relecteur : entrée de hook attendue sur l'entrée standard \(Claude Code, PostToolUse, JSON\) ; pour poser le hook : --poser ; usage : /);
+  assert.match(avec.stderr, /^relecteur : entrée de hook attendue sur l'entrée standard \(Claude Code, SessionStart, PostToolUse ou Stop, JSON\) ; pour poser les hooks : --poser ; usage : /);
   rmSync(racine, { recursive: true, force: true });
 });
 
 test('RL5 une page en faute et intouchée : le relecteur n’en dit rien', () => {
   const racine = depot();
-  const s = relire(racine, 'src/components/Bon.vue');
-  assert.equal(s.status, 0, s.stderr);
-  assert.equal(s.stdout, contexte('src/components/Bon.vue'));
-  assert.ok(!`${s.stdout}${s.stderr}`.includes('Ancienne'), 'la page intouchée');
-  const page = relire(racine, 'src/pages/Ancienne.vue');
+  rien(depart(racine));
+  writeFileSync(join(racine, 'src', 'components', 'Bon.vue'), `${BON}\n`);
+  rien(apres(racine, 'Write'));
+  rien(fin(racine));
+  writeFileSync(join(racine, 'src', 'pages', 'Ancienne.vue'), `${EN_DUR}\n`);
+  const page = apres(racine, 'Write');
   assert.equal(page.status, 2, 'la page, si on l’écrit, est relue');
+  assert.equal(page.stderr, `relecteur : src/pages/Ancienne.vue\n${STYLE_EN_DUR('src/pages/Ancienne.vue')}`);
   rmSync(racine, { recursive: true, force: true });
 });
 
-test('BN2 un passage du bras B : hook, bloc du carnet et carnet.md dans « départ »', () => {
+test('RL6 une écriture par le shell : l’appel Bash qui suit rend le bloc, le suivant rien', () => {
+  const racine = depot();
+  rien(depart(racine));
+  parLeShell(racine, 'src/components/Shell.vue', EN_DUR);
+  const s = apres(racine, 'Bash');
+  assert.equal(s.status, 2);
+  assert.equal(s.stdout, '');
+  assert.equal(s.stderr, `relecteur : src/components/Shell.vue\n${STYLE_EN_DUR('src/components/Shell.vue')}`);
+  rien(apres(racine, 'Bash'));
+  parLeShell(racine, 'src/components/Shell.vue', BON);
+  rien(apres(racine, 'PowerShell'));
+  rmSync(racine, { recursive: true, force: true });
+});
+
+test('RL7 la fin du tour : refusée sur un échec, laissée à la relance, rien une fois corrigé', () => {
+  const racine = depot();
+  rien(depart(racine));
+  rien(fin(racine));
+  parLeShell(racine, 'src/components/Shell.vue', EN_DUR);
+  assert.equal(apres(racine).status, 2);
+  const refus = fin(racine);
+  assert.equal(refus.status, 2);
+  assert.equal(refus.stdout, '');
+  assert.equal(refus.stderr, `relecteur : fin du tour, changés depuis le départ de la session : src/components/Shell.vue\n${STYLE_EN_DUR('src/components/Shell.vue')}Corrige ces échecs, puis finis.\n`);
+  const relance = fin(racine, true);
+  assert.equal(relance.status, 0);
+  assert.equal(relance.stderr, '');
+  assert.deepEqual(JSON.parse(relance.stdout), { systemMessage: `relecteur : fin du tour, 1 échec(s) restent dans src/components/Shell.vue\n${STYLE_EN_DUR('src/components/Shell.vue').trimEnd()}` });
+  parLeShell(racine, 'src/components/Shell.vue', BON);
+  rien(fin(racine));
+  rmSync(racine, { recursive: true, force: true });
+});
+
+test('RL8 la mémoire hors du dépôt, une par session, un journal ; sans empreintes, le fichier de l’outil seul', () => {
+  const racine = depot();
+  writeFileSync(join(racine, '.gitignore'), '.tmp/\n');
+  for (const a of [['init', '-q'], ['add', '-A'], ['-c', 'user.name=t', '-c', 'user.email=t@exemple.invalid', 'commit', '-q', '-m', 'départ']]) spawnSync('git', a, { cwd: racine });
+  rien(depart(racine, 'a'));
+  rien(depart(racine, 'b'));
+  parLeShell(racine, 'src/components/Shell.vue', EN_DUR);
+  assert.equal(apres(racine, 'Bash', 'a').status, 2);
+  assert.equal(apres(racine, 'Bash', 'b').status, 2, 'chaque session a ses empreintes');
+  rien(apres(racine, 'Bash', 'a'));
+  assert.equal(spawnSync('git', ['status', '--porcelain'], { cwd: racine, encoding: 'utf8' }).stdout, '?? src/components/Shell.vue\n');
+  const memoire = join(racine, '.tmp', 'ds-lab-relecteur', 'a');
+  assert.deepEqual(readdirSync(memoire).sort(), ['depart.json', 'dernier.json', 'journal.jsonl']);
+  const journal = readFileSync(join(memoire, 'journal.jsonl'), 'utf8').trimEnd().split('\n').map((l) => JSON.parse(l));
+  assert.deepEqual(
+    journal.map(({ evenement, outil, relus, echecs, code }) => ({ evenement, outil, relus, echecs, code })),
+    [
+      { evenement: 'SessionStart', outil: null, relus: [], echecs: 0, code: 0 },
+      { evenement: 'PostToolUse', outil: 'Bash', relus: ['src/components/Shell.vue'], echecs: 1, code: 2 },
+      { evenement: 'PostToolUse', outil: 'Bash', relus: [], echecs: 0, code: 0 },
+    ],
+  );
+  assert.ok(journal.every((l) => /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(l.heure)));
+
+  // Sans SessionStart : le premier appel ne connaît que le fichier nommé par l'outil.
+  writeFileSync(join(racine, 'src', 'pages', 'Ancienne.vue'), `${EN_DUR}\n`);
+  const nomme = hook(racine, { hook_event_name: 'PostToolUse', tool_name: 'Write', tool_input: { file_path: join(racine, 'src', 'components', 'Bon.vue') } }, 'c');
+  rien(nomme);
+  const ecrit = hook(racine, { hook_event_name: 'PostToolUse', tool_name: 'Write', tool_input: { file_path: join(racine, 'src', 'pages', 'Ancienne.vue') } }, 'd');
+  assert.equal(ecrit.status, 2);
+  assert.equal(ecrit.stderr, `relecteur : src/pages/Ancienne.vue\n${STYLE_EN_DUR('src/pages/Ancienne.vue')}`);
+  rmSync(racine, { recursive: true, force: true });
+});
+
+test('CN1 le carnet : une ligne datée par la commande, cellules échappées, une panne qui dit quoi faire', () => {
+  const racine = depot();
+  writeFileSync(join(racine, 'carnet.md'), CARNET);
+  const carnet = (/** @type {string[]} */ args, cwd = racine) => spawnSync(process.execPath, [CARNET_CLI, ...args], { cwd, encoding: 'utf8', env: { ...process.env, TZ: 'Europe/Paris' } });
+  const avant = Date.now();
+  const s = carnet(['--question', 'Lien ou bouton ?', '--choix', 'un lien | à l’aspect\nde bouton', '--fichier', 'src/pages/Annuaire.vue'], join(racine, 'src', 'pages'));
+  assert.equal(s.status, 0, s.stderr);
+  assert.equal(s.stdout, `carnet : ligne ajoutée à ${join(realpathSync(racine), 'carnet.md')}\n`);
+  assert.equal(carnet(['--question', 'Combien par page ?', '--reponse', 'dix']).status, 0);
+  const lignes = readFileSync(join(racine, 'carnet.md'), 'utf8').split('\n');
+  assert.equal(lignes.length, 7);
+  const m = lignes[4].match(/^\| (\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)\+0[12]:00 \| Lien ou bouton \? \| choix : un lien \\\| à l’aspect de bouton \| src\/pages\/Annuaire\.vue \|$/);
+  assert.ok(m, lignes[4]);
+  assert.ok(Math.abs(Date.parse(lignes[4].split(' | ')[0].slice(2)) - avant) < 60_000, 'l’heure est celle de la machine');
+  assert.match(lignes[5], /^\| \S+ \| Combien par page \? \| réponse : dix \| — \|$/);
+  for (const [args, motif] of /** @type {[string[], RegExp][]} */ ([
+    [['--choix', 'x'], /^carnet : --question "…" attendu/],
+    [['--question', 'q'], /^carnet : --choix "…" attendu/],
+    [['--question', 'q', '--choix', 'x', '--reponse', 'y'], /^carnet : --choix ou --reponse, pas les deux/],
+  ])) {
+    const e = carnet(args);
+    assert.equal(e.status, 2);
+    assert.match(e.stderr, motif);
+  }
+  const ailleurs = mkdtempSync(join(tmpdir(), 'ds-lab-sans-carnet-'));
+  const absent = carnet(['--question', 'q', '--choix', 'x'], ailleurs);
+  assert.equal(absent.status, 2);
+  assert.match(absent.stderr, /^carnet : carnet\.md introuvable dans .* ni ses parents : lancer depuis le dépôt de l'équipe, ou poser le carnet/);
+  assert.equal(readFileSync(join(racine, 'carnet.md'), 'utf8').split('\n').length, 7, 'une panne n’écrit rien');
+  rmSync(ailleurs, { recursive: true, force: true });
+  rmSync(racine, { recursive: true, force: true });
+});
+
+test('BN2 un passage du bras B : hooks, bloc du carnet et carnet.md dans « départ »', () => {
   const racine = mkdtempSync(join(tmpdir(), 'ds-lab-banc-'));
   const r = spawnSync(process.execPath, [join(ROOT, 'src', 'cli', 'banc.js'), '--exercice', 'composer', '--dossier', racine, '--modele', 'essai', '--sans-installation', '--bras', 'B', '--passage', '1'], { cwd: ROOT, encoding: 'utf8' });
   assert.equal(r.status, 0, r.stderr);
   const app = join(racine, 'composer', 'B-1', 'app');
-  assert.deepEqual(JSON.parse(readFileSync(join(app, '.claude', 'settings.json'), 'utf8')), { hooks: { PostToolUse: [{ matcher: 'Edit|Write', hooks: [{ type: 'command', command: COMMANDE }] }] } });
+  assert.deepEqual(JSON.parse(readFileSync(join(app, '.claude', 'settings.json'), 'utf8')), { hooks: HOOKS });
   assert.equal(readFileSync(join(app, 'CLAUDE.md'), 'utf8'), CARNET_BLOC);
   assert.equal(readFileSync(join(app, 'carnet.md'), 'utf8'), CARNET);
   const suivis = spawnSync('git', ['ls-files'], { cwd: app, encoding: 'utf8' }).stdout.split('\n');
