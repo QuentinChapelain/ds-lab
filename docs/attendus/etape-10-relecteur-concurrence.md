@@ -58,3 +58,9 @@ Un résumé du diff, écrit dans la boîte **avant** chaque commit. Pas d'arrêt
 ## Hors périmètre
 
 Rejouer B-5 (en B-7, sans humain, sur le commit du lot) ; l'écart de B-6 ; le tableau des améliorations (carnet écrit d'un seul coup, retours du relecteur non mesurés, `MemberCard`, noms des pièces provisoires) [C, fichier 81].
+
+## Écarts relevés en écrivant le code
+
+- **« Qui nomment », pas « qui lancent ».** Un appel compté pour le carnet est un appel du shell dont la commande nomme `carnet.js` : dans B-4, l'un des trois en nomme le chemin sans le lancer. Le texte dit « appels du shell qui nomment carnet.js ».
+- **`lignesJson`** n'est plus exportée : `heures` l'emploie maintenant dans `traces.js`, et knip refusait l'export resté sans usage.
+- **Le relevé corrigé, rejoué sur B-4 à B-6** [F, 23/11/2026, sorties dans le scratchpad, `local/banc/` non touché, sortie 0 pour les trois] : les lignes du carnet, 7, 10 et 7, toutes datées pendant un appel qui nomme `carnet.js`, aucune « à la main » ; B-5, une panne vue par Claude Code (`ENOENT … rename … dernier.json.tmp`, 16:40:35.508), 0 attente de l'humain et 1 notification de tâche de fond ; aucune cible `qui`, `25`, `»` ou `/,$p` dans les trois `ecritures.md`.

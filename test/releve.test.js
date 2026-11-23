@@ -28,6 +28,13 @@
  *   RV10 la commande entière sur un passage du bras B : le relecteur joué par ses hooks, le carnet par sa commande, deux
  *       sessions dans un HOME à part ; ecritures.md, heures.md, charge.md, le TMPDIR copié, sortie.txt à 0 ; un relevé
  *       en panne écrit 2 et son message.
+ * Et docs/attendus/etape-10-relecteur-concurrence.md :
+ *   RV11 les appels du carnet comptés par appel du shell : une fonction qui écrit trois lignes en un appel, aucune à la
+ *       main ; une ligne hors de tout appel, signalée ;
+ *   RV12 les pannes du relecteur : au journal du relecteur, et celles que seul Claude Code a vues ; un échec de contrôle
+ *       n'en est pas une, ni l'erreur d'un autre hook ;
+ *   RV13 la notification d'une tâche de fond n'est pas l'humain : ni début, ni attente, comptée à part ;
+ *   RV14 un > entre guillemets n'est pas une redirection ; la cible entre guillemets d'un > l'est.
  */
 import { before, after, test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -40,7 +47,7 @@ import { exercices, fabriquer } from '../src/banc/departs.js';
 import { enveloppes, relever, texteDuReleve } from '../src/banc/releve.js';
 import { releverInventaire, texteDeLInventaire } from '../src/banc/inventaire.js';
 import { lectures, texteDesLectures } from '../src/banc/lectures.js';
-import { appels, charge, ecritures, heuresDuCarnet, journalDuRelecteur, sessionsDuBrief } from '../src/banc/traces.js';
+import { appels, charge, ecritures, heures, heuresDuCarnet, journalDuRelecteur, pannesVuesParClaudeCode, sessionsDuBrief, texteDesEcritures } from '../src/banc/traces.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const ENVELOPPES = enveloppes(join(ROOT, 'docs', 'composants'));
@@ -387,11 +394,11 @@ test('RV9 les traces : session du brief, écritures, /tmp, carnet, relecteur, ch
   assert.equal(e.premiere['Annuaire.vue'], Date.parse('2026-11-23T14:32:00.000Z'));
 
   const carnet = `# Carnet\n\n| Heure | Question | Réponse | Fichier |\n|---|---|---|---|\n| 2026-11-23T15:31:40+01:00 | a \\| b | choix : c | src/pages/Annuaire.vue |\n| 2026-11-23T15:33:30+01:00 | q | choix : c | src/pages/Annuaire.vue |\n| 14:00 | q | c | f |\n| 2026-11-23T19:00:00+01:00 | q | choix : c | — |\n`;
-  assert.deepEqual(heuresDuCarnet(carnet, { debut: Date.parse('2026-11-23T14:31:00.000Z'), fin: Date.parse('2026-11-23T14:34:00.000Z') }, e.premiere), [
-    { heure: '2026-11-23T15:31:40+01:00', fichier: 'src/pages/Annuaire.vue', datee: true, dansLaSession: true, avantLaPremiereEcriture: true },
-    { heure: '2026-11-23T15:33:30+01:00', fichier: 'src/pages/Annuaire.vue', datee: true, dansLaSession: true, avantLaPremiereEcriture: false },
-    { heure: '14:00', fichier: 'f', datee: false, dansLaSession: null, avantLaPremiereEcriture: null },
-    { heure: '2026-11-23T19:00:00+01:00', fichier: '—', datee: true, dansLaSession: false, avantLaPremiereEcriture: null },
+  assert.deepEqual(heuresDuCarnet(carnet, { debut: Date.parse('2026-11-23T14:31:00.000Z'), fin: Date.parse('2026-11-23T14:34:00.000Z') }, e.premiere, e.appelsDuCarnet), [
+    { heure: '2026-11-23T15:31:40+01:00', fichier: 'src/pages/Annuaire.vue', datee: true, dansLaSession: true, dansUnAppel: true, avantLaPremiereEcriture: true },
+    { heure: '2026-11-23T15:33:30+01:00', fichier: 'src/pages/Annuaire.vue', datee: true, dansLaSession: true, dansUnAppel: true, avantLaPremiereEcriture: false },
+    { heure: '14:00', fichier: 'f', datee: false, dansLaSession: null, dansUnAppel: null, avantLaPremiereEcriture: null },
+    { heure: '2026-11-23T19:00:00+01:00', fichier: '—', datee: true, dansLaSession: false, dansUnAppel: false, avantLaPremiereEcriture: null },
   ]);
 
   const r = join(d, 'journal.jsonl');
@@ -404,7 +411,7 @@ test('RV9 les traces : session du brief, écritures, /tmp, carnet, relecteur, ch
   ]);
   assert.deepEqual(journalDuRelecteur([r]), {
     fichiers: 1,
-    parEvenement: { SessionStart: { appels: 1, echecs: 0 }, PostToolUse: { appels: 2, echecs: 1 }, Stop: { appels: 2, echecs: 1 } },
+    parEvenement: { SessionStart: { appels: 1, echecs: 0, pannes: 0 }, PostToolUse: { appels: 2, echecs: 1, pannes: 0 }, Stop: { appels: 2, echecs: 1, pannes: 0 } },
     relancesRefusees: 1,
     changes: [{ heure: 'h2', outil: 'Bash', relus: ['src/x.vue'], echecs: 1 }],
   });
@@ -435,7 +442,7 @@ test('RV10 le relevé d’un passage du bras B : relecteur, carnet, sessions, TM
   const env = { ...JSON.parse(readFileSync(join(app, '.claude', 'settings.local.json'), 'utf8')).env, TMPDIR: join(dossier, 'tmp') };
   const commande = JSON.parse(readFileSync(join(app, '.claude', 'settings.json'), 'utf8')).hooks.PostToolUse[0].hooks[0].command;
   /** Un hook du passage, tel que Claude Code le lance. @param {object} entree */
-  const hook = (entree) => spawnSync('/bin/sh', ['-c', commande], { cwd: app, encoding: 'utf8', env: { ...process.env, ...env }, input: JSON.stringify({ session_id: 's1', cwd: app, ...entree }) });
+  const hook = (entree) => spawnSync('/bin/sh', ['-c', commande], { cwd: app, encoding: 'utf8', env: { ...process.env, ...env, CLAUDE_PROJECT_DIR: app }, input: JSON.stringify({ session_id: 's1', cwd: app, ...entree }) });
   assert.equal(hook({ hook_event_name: 'SessionStart', source: 'startup' }).status, 0);
   const avant = Date.now();
   const c = spawnSync(process.execPath, [join(env.DS_LAB, 'src', 'cli', 'carnet.js'), '--question', 'Lien ou bouton ?', '--choix', 'un lien', '--fichier', 'src/components/Shell.vue'], { cwd: join(app, 'src'), encoding: 'utf8' });
@@ -465,10 +472,11 @@ test('RV10 le relevé d’un passage du bras B : relecteur, carnet, sessions, TM
   assert.match(ec, /^- Sessions prises : s1\.jsonl$/m);
   assert.match(ec, /^- Sessions écartées, sans le brief : s0\.jsonl \(/m);
   assert.match(ec, /^Journal lu dans le TMPDIR du passage \(1 session\(s\)\)\.$/m);
-  assert.match(ec, /^- SessionStart : 1 appel\(s\), 0 retour\(s\) en échec$/m);
-  assert.match(ec, /^- PostToolUse : 1 appel\(s\), 1 retour\(s\) en échec$/m);
+  assert.match(ec, /^- SessionStart : 1 appel\(s\), 0 retour\(s\) en échec, 0 panne\(s\)$/m);
+  assert.match(ec, /^- PostToolUse : 1 appel\(s\), 1 retour\(s\) en échec, 0 panne\(s\)$/m);
+  assert.match(ec, /^- Pannes vues par Claude Code \(hook en erreur sans bloc de verifier\) : 0$/m);
   assert.match(ec, /^ {2}- \S+ Bash : src\/components\/Shell\.vue \(1 échec\(s\)\)$/m);
-  assert.match(ec, /^- Lignes : 1 ; appels de carnet\.js dans le journal : 1$/m);
+  assert.match(ec, /^- Lignes : 1 ; appels du shell qui nomment carnet\.js : 1 ; lignes datées pendant l’un d’eux : 1$/m);
   assert.match(ec, /^ {2}- \S+ : dans la session ; avant la première écriture vue de src\/components\/Shell\.vue$/m);
   assert.match(ec, /^- TMPDIR du passage, ce qu’il contient : ds-lab-relecteur\/s1\/depart\.json, ds-lab-relecteur\/s1\/dernier\.json, ds-lab-relecteur\/s1\/journal\.jsonl, shot\.mjs$/m);
   assert.equal(lire('tmp/shot.mjs'), 'capture\n');
@@ -485,3 +493,92 @@ test('RV10 le relevé d’un passage du bras B : relecteur, carnet, sessions, TM
   assert.match(readFileSync(join(panne, 'sortie.txt'), 'utf8'), /^2 : .+\n$/);
 });
 
+/** Le résultat d'un appel d'outil. @param {string} t @param {string} id */
+const resultat = (t, id) => ({ type: 'user', timestamp: t, message: { content: [{ type: 'tool_result', tool_use_id: id, content: 'ok' }] } });
+/** Le texte de ecritures.md sur des écritures et un carnet donnés, sans relecteur. */
+const texteSans = (/** @type {ReturnType<typeof ecritures>} */ e, /** @type {ReturnType<typeof heuresDuCarnet> | null} */ carnet, /** @type {ReturnType<typeof pannesVuesParClaudeCode>} */ pannes = []) =>
+  texteDesEcritures({ sessions: { retenues: [], ecartees: [], note: null }, ecritures: e, carnet, relecteur: null, relecteurLieu: null, pannes, tmp: [] });
+
+test('RV11 les appels du carnet, comptés par appel du shell : une fonction, trois lignes, aucune à la main', () => {
+  const d = mkdtempSync(join(tmpdir(), 'ds-lab-carnet-'));
+  const fonction = 'c() { node "$DS_LAB/src/cli/carnet.js" "$@"; }; c --question a --choix b; c --question c --choix d; c --question e --choix f';
+  journal(join(d, 's.jsonl'), [
+    humain('2026-11-23T14:40:00.000Z', 'brief'),
+    outil('2026-11-23T14:40:09.500Z', 'Bash', { command: fonction }),
+    resultat('2026-11-23T14:40:11.200Z', 'Bash2026-11-23T14:40:09.500Z'),
+    outil('2026-11-23T14:41:00.000Z', 'Bash', { command: 'ls' }),
+    resultat('2026-11-23T14:41:01.000Z', 'Bash2026-11-23T14:41:00.000Z'),
+  ]);
+  const e = ecritures(appels([join(d, 's.jsonl')]));
+  assert.equal(e.carnet, 1);
+  assert.deepEqual(e.appelsDuCarnet, [{ debut: Date.parse('2026-11-23T14:40:09.000Z'), fin: Date.parse('2026-11-23T14:40:12.200Z') }]);
+  const carnet = `| Heure | Question | Réponse | Fichier |\n|---|---|---|---|\n${['15:40:09', '15:40:10', '15:40:11', '15:45:00'].map((h) => `| 2026-11-23T${h}+01:00 | q | choix : c | — |`).join('\n')}\n`;
+  const lignes = heuresDuCarnet(carnet, null, e.premiere, e.appelsDuCarnet);
+  assert.deepEqual(lignes.map((l) => l.dansUnAppel), [true, true, true, false]);
+  const texte = texteSans(e, lignes);
+  assert.match(texte, /^- Lignes : 4 ; appels du shell qui nomment carnet\.js : 1 ; lignes datées pendant l’un d’eux : 3 ; 1 ligne\(s\) hors de tout appel de carnet\.js, à lire$/m);
+  assert.match(texte, /^ {2}- 2026-11-23T15:45:00\+01:00 : à lire ; à lire la première écriture vue de — ; hors de tout appel de carnet\.js$/m);
+  assert.doesNotMatch(texte, /écrites à la main/);
+  rmSync(d, { recursive: true, force: true });
+});
+
+test('RV12 les pannes du relecteur : son journal, et celles que seul Claude Code a vues', () => {
+  const d = mkdtempSync(join(tmpdir(), 'ds-lab-pannes-'));
+  journal(join(d, 'journal.jsonl'), [
+    { heure: 'h1', evenement: 'PostToolUse', outil: 'Bash', panne: 'ENOENT: no such file or directory', code: 2 },
+    { heure: 'h2', evenement: 'PostToolUse', outil: 'Bash', relus: ['src/x.vue'], echecs: 1, code: 2 },
+  ]);
+  assert.deepEqual(journalDuRelecteur([join(d, 'journal.jsonl')]).parEvenement, { PostToolUse: { appels: 2, echecs: 1, pannes: 1 } });
+  const commande = 'node "$DS_LAB/src/cli/relecteur.js" --marques tokens --style "src/**/*.vue"';
+  const erreur = (/** @type {string} */ t, /** @type {string} */ cmd, /** @type {string} */ message) => ({
+    type: 'attachment',
+    timestamp: t,
+    attachment: { type: 'hook_blocking_error', hookName: 'PostToolUse:Bash', hookEvent: 'PostToolUse', blockingError: { blockingError: `[${cmd}]: ${message}`, command: cmd } },
+  });
+  journal(join(d, 's.jsonl'), [
+    erreur('2026-11-23T14:40:35.508Z', commande, "relecteur : ENOENT: no such file or directory, rename 'a.tmp' -> 'a'\n"),
+    erreur('2026-11-23T14:41:00.000Z', commande, 'relecteur : src/x.vue\n✗ style · src/x.vue : ligne 4 : Valeur brute « 12px ».\n  À faire : prendre var(--v-ds-…).\n'),
+    erreur('2026-11-23T14:42:00.000Z', 'echo autre >&2; exit 2', 'autre\n'),
+  ]);
+  const pannes = pannesVuesParClaudeCode([join(d, 's.jsonl')]);
+  assert.deepEqual(pannes, [{ heure: '2026-11-23T14:40:35.508Z', hook: 'PostToolUse:Bash', message: "relecteur : ENOENT: no such file or directory, rename 'a.tmp' -> 'a'" }]);
+  const texte = texteSans(ecritures([]), null, pannes);
+  assert.match(texte, /^- Pannes vues par Claude Code \(hook en erreur sans bloc de verifier\) : 1$/m);
+  assert.match(texte, /^ {2}- 2026-11-23T14:40:35\.508Z PostToolUse:Bash : relecteur : ENOENT: /m);
+  rmSync(d, { recursive: true, force: true });
+});
+
+test('RV13 la notification d’une tâche de fond n’est pas l’humain : ni attente, ni début', () => {
+  const d = mkdtempSync(join(tmpdir(), 'ds-lab-heures-'));
+  const agent = (/** @type {string} */ t) => ({ type: 'assistant', timestamp: t, message: { content: [{ type: 'text', text: '…' }] } });
+  journal(join(d, 's.jsonl'), [
+    { ...humain('2026-11-23T13:59:00.000Z', '<task-notification>\n<status>killed</status>\n</task-notification>'), origin: { kind: 'task-notification' } },
+    humain('2026-11-23T14:00:00.000Z', 'brief'),
+    agent('2026-11-23T14:01:00.000Z'),
+    { ...humain('2026-11-23T14:11:00.000Z', '<task-notification>\n<status>killed</status>\n</task-notification>'), origin: { kind: 'task-notification' } },
+    humain('2026-11-23T14:11:30.000Z', '<task-notification>\n<status>completed</status>\n</task-notification>'),
+    agent('2026-11-23T14:12:00.000Z'),
+  ]);
+  const h = heures([join(d, 's.jsonl')], []);
+  assert.deepEqual(h.session, { debut: Date.parse('2026-11-23T14:00:00.000Z'), fin: Date.parse('2026-11-23T14:12:00.000Z') });
+  assert.match(h.texte, /^- En tout : 12 min$/m);
+  assert.match(h.texte, /^- L'agent attend l'humain : 0 min$/m);
+  assert.match(h.texte, /^- L'agent travaille : 12 min$/m);
+  assert.match(h.texte, /^- Notifications de tâches de fond, qui ne viennent pas de l'humain : 3$/m);
+  rmSync(d, { recursive: true, force: true });
+});
+
+test('RV14 un > entre guillemets n’est pas une redirection ; la cible entre guillemets d’un > l’est', () => {
+  const d = mkdtempSync(join(tmpdir(), 'ds-lab-guillemets-'));
+  journal(join(d, 's.jsonl'), [
+    outil('2026-11-23T14:40:00.000Z', 'Bash', { command: 'node "$DS_LAB/src/cli/carnet.js" --question "a > b ?" --choix "qui > 25 »" --fichier src/a.vue' }),
+    outil('2026-11-23T14:40:01.000Z', 'Bash', { command: "sed -n '/<style>/,$p' src/x.vue" }),
+    outil('2026-11-23T14:40:02.000Z', 'Bash', { command: 'echo "a > b" > src/c.vue' }),
+    outil('2026-11-23T14:40:03.000Z', 'Bash', { command: "printf x > 'src/d.vue'" }),
+  ]);
+  assert.deepEqual(
+    ecritures(appels([join(d, 's.jsonl')])).shell.map((x) => [x.signe, x.cible]),
+    [['>', 'src/c.vue'], ['>', 'src/d.vue']],
+  );
+  rmSync(d, { recursive: true, force: true });
+});

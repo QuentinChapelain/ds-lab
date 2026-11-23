@@ -35,7 +35,7 @@ import { planches } from '../banc/planches.js';
 import { enveloppes, relever, texteDuReleve } from '../banc/releve.js';
 import { lectures, texteDesLectures } from '../banc/lectures.js';
 import { releverInventaire, texteDeLInventaire } from '../banc/inventaire.js';
-import { appels, charge, ecritures, heuresDuCarnet, journalDuRelecteur, lignesJson, sessionsDuBrief, texteDeLaCharge, texteDesEcritures } from '../banc/traces.js';
+import { appels, charge, ecritures, heures, heuresDuCarnet, journalDuRelecteur, pannesVuesParClaudeCode, sessionsDuBrief, texteDeLaCharge, texteDesEcritures } from '../banc/traces.js';
 
 const DEPOT = fileURLToPath(new URL('../..', import.meta.url));
 const USAGE = 'npm run banc -- --exercice installer|composer|etendre|inventorier --bras A|B --passage <n> --modele <modèle> [--dossier <racine>], ou --exercice <exercice> --relever <bras>-<n> [--dossier <racine>]';
@@ -193,9 +193,10 @@ async function relevePassage(racine, exercice, id, sortie) {
       : null;
   const flux = existsSync(join(dossier, 'session.jsonl')) ? [join(dossier, 'session.jsonl')] : [];
   const ec = ecritures(appels(sessionsPrises.retenues.length ? [...sessionsPrises.retenues, ...agents.map((f) => join(journaux, f))] : flux));
-  const carnet = existsSync(join(app, 'carnet.md')) ? heuresDuCarnet(readFileSync(join(app, 'carnet.md'), 'utf8'), h.session, ec.premiere) : null;
-  writeFileSync(join(sortie, 'ecritures.md'), texteDesEcritures({ sessions: sessionsPrises, ecritures: ec, carnet, relecteur: relecteur && journalDuRelecteur(relecteur.fichiers), relecteurLieu: relecteur?.lieu ?? null, tmp: dansTmp }));
-  writeFileSync(join(sortie, 'ecritures.json'), `${JSON.stringify({ ecritures: ec, carnet, relecteur: relecteur && journalDuRelecteur(relecteur.fichiers) }, null, 2)}\n`);
+  const pannes = pannesVuesParClaudeCode(sessionsPrises.retenues);
+  const carnet = existsSync(join(app, 'carnet.md')) ? heuresDuCarnet(readFileSync(join(app, 'carnet.md'), 'utf8'), h.session, ec.premiere, ec.appelsDuCarnet) : null;
+  writeFileSync(join(sortie, 'ecritures.md'), texteDesEcritures({ sessions: sessionsPrises, ecritures: ec, carnet, relecteur: relecteur && journalDuRelecteur(relecteur.fichiers), relecteurLieu: relecteur?.lieu ?? null, pannes, tmp: dansTmp }));
+  writeFileSync(join(sortie, 'ecritures.json'), `${JSON.stringify({ ecritures: ec, carnet, relecteur: relecteur && journalDuRelecteur(relecteur.fichiers), pannes }, null, 2)}\n`);
   if (e.pages.length) notes.push(...(await planches(app, join(sortie, 'planches'), { marques: marquesDuBanc(DEPOT), pages: e.pages })));
   writeFileSync(join(sortie, 'notes.txt'), notes.length ? `${notes.join('\n')}\n` : 'rien à noter\n');
 }
@@ -238,46 +239,4 @@ async function compterEchecs(app, copie, touches) {
   for (const e of echecsDeStyle(results, app)) ajouter('style', estTouche(e.tete), 1);
   for (const e of echecsDeSkill(join(app, '.claude', 'skills', 'ds-lab'), app)) ajouter('skill', estTouche('.claude/skills/ds-lab'), 1);
   return { marques: marques.length, fichiersTouches: touches.length, echecs: par };
-}
-
-/**
- * Les heures d'un passage, lues dans les sessions qui portent le brief : du brief au dernier message de l'agent ; une
- * attente va d'un message de l'agent au message suivant de l'humain (un texte, pas le résultat d'un outil). Les demandes
- * de permission ne sont ni des questions ni des attentes : elles restent dans le travail. Un message de l'humain après le
- * dernier de l'agent (/exit) n'est pas une attente. Les sessions écartées sont nommées, avec leurs heures (D71).
- * @param {string[]} journaux @param {{ fichier: string, debut: string | null, fin: string | null }[]} ecartees
- * @returns {{ texte: string, session: { debut: number, fin: number } | null }}
- */
-function heures(journaux, ecartees) {
-  /** @type {{ t: number, qui: 'humain' | 'agent' }[]} */
-  const messages = [];
-  for (const m of journaux.flatMap((j) => lignesJson(j))) {
-    if (!m.timestamp || m.isMeta) continue;
-    const contenu = m.message?.content;
-    if (m.type === 'user' && (typeof contenu === 'string' || (Array.isArray(contenu) && contenu.some((c) => c.type === 'text'))))
-      messages.push({ t: Date.parse(m.timestamp), qui: 'humain' });
-    else if (m.type === 'assistant') messages.push({ t: Date.parse(m.timestamp), qui: 'agent' });
-  }
-  messages.sort((a, b) => a.t - b.t);
-  const debut = messages.find((m) => m.qui === 'humain');
-  const fin = messages.findLast((m) => m.qui === 'agent');
-  const autres = ecartees.length ? [`- Sessions écartées, sans le brief : ${ecartees.map((s) => `${s.fichier} (${s.debut} → ${s.fin})`).join(', ')}`] : [];
-  if (!debut || !fin) return { texte: ['Heures : journal vide ou absent.', ...autres, ''].join('\n'), session: null };
-  let attente = 0;
-  for (let i = 1; i < messages.length; i++) if (messages[i].qui === 'humain' && messages[i - 1].qui === 'agent' && messages[i].t > debut.t && messages[i].t <= fin.t) attente += messages[i].t - messages[i - 1].t;
-  const min = (/** @type {number} */ ms) => `${Math.round(ms / 60000)} min`;
-  const texte = [
-    '# Heures',
-    '',
-    `- Brief : ${new Date(debut.t).toISOString()}`,
-    `- Dernier message de l'agent : ${new Date(fin.t).toISOString()}`,
-    `- En tout : ${min(fin.t - debut.t)}`,
-    `- L'agent attend l'humain : ${min(attente)}`,
-    `- L'agent travaille : ${min(fin.t - debut.t - attente)}`,
-    ...autres,
-    '',
-    'La fin du passage est le message où l’agent dit avoir fini : à vérifier dans le journal.',
-    '',
-  ].join('\n');
-  return { texte, session: { debut: debut.t, fin: fin.t } };
 }
