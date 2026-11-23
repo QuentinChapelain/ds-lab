@@ -13,9 +13,17 @@
  *   - Stop : relit ce qui a changé depuis le départ de la session ; sur un échec, l'agent ne finit pas. Une seule
  *     relance : quand l'arrêt suit déjà un Stop refusé (stop_hook_active), il laisse finir et dit les échecs à l'humain.
  * Sur un échec, la sortie d'erreur porte « relecteur : <fichiers> » et les blocs de verifier, code 2 : Claude Code la
- * montre à l'agent. Rien de changé, ou relu sans échec : aucune sortie, code 0. Une panne sort aussi en 2, avec son message.
+ * montre à l'agent. Rien de changé, ou relu sans échec : aucune sortie, code 0. Une panne sort aussi en 2, avec son
+ * message, et s'écrit au journal dès que la session est connue.
+ * Le périmètre se compte depuis la racine du projet, CLAUDE_PROJECT_DIR, que Claude Code donne au hook ; sinon depuis
+ * cwd de l'entrée, qui suit le cd de l'agent.
+ * Sans entrée (un terminal, rien reçu en deux secondes, une entrée vide), il sort en 2 tout de suite et dit que verifier
+ * est la commande à lancer à la main.
  * La mémoire vit dans <dossier temporaire>/ds-lab-relecteur/<session>/, hors du dépôt : empreintes de départ, du dernier
- * appel, et journal.jsonl, une ligne par appel (heure, événement, outil, fichiers relus, échecs, code), que le banc relève.
+ * appel, et journal.jsonl, une ligne par appel (heure, événement, outil, fichiers relus, échecs, code, panne), que le
+ * banc relève. Deux hooks lancés ensemble (deux outils d'un même message) écrivent chacun par son propre fichier
+ * temporaire, puis le renomment : aucun n'est en panne, aucune relecture n'est perdue ; au pire, les deux relisent le
+ * même fichier.
  * Usage dans les hooks : node "$DS_LAB/src/cli/relecteur.js" --marques <dossier> --style <motif> [--style <motif>…]
  * Poser : node <clone>/src/cli/relecteur.js --poser --marques <dossier> --style <motif>…, dans le dépôt de l'équipe :
  *   écrit les trois hooks dans .claude/settings.json (fusionnés, sans rien perdre ; relancé, remplace ceux du relecteur),
@@ -28,6 +36,7 @@ import { tmpdir } from 'node:os';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { lancer } from './garde.js';
+import { premiereLigne } from '../lib/fichiers.js';
 import { RESOLVER } from '../tokens/resolver.js';
 import { echecsDeMarque, echecsDeStyle, blocs } from '../report/verifier.js';
 
@@ -35,6 +44,8 @@ const CONFIG = fileURLToPath(new URL('../../stylelint.config.mjs', import.meta.u
 const USAGE = 'node "$DS_LAB/src/cli/relecteur.js" --marques <dossier> --style <motif> [--style <motif>…], ou --poser avec les mêmes options';
 /** Les outils qui peuvent écrire, d'après la documentation de Claude Code (D71). */
 const OUTILS = 'Edit|Write|NotebookEdit|Bash|PowerShell';
+/** Sans rien reçu dans ce délai, le relecteur n'est pas appelé par un hook : il sort. */
+const ATTENTE_MS = 2000;
 
 /** Le bloc du carnet, dans le CLAUDE.md du dépôt de l'équipe (texte retenu par Quentin, D71). */
 const CARNET_BLOC = [
@@ -64,6 +75,46 @@ function commandeDuHook(marques, style) {
 /** @typedef {Record<string, string>} Empreintes chemin dans le dépôt → SHA-1 du contenu */
 
 /**
+ * L'entrée du hook, ou null : un terminal, rien reçu dans le délai, une entrée vide. Une entrée commencée est lue
+ * jusqu'au bout.
+ * @returns {Promise<string | null>}
+ */
+function lireEntree() {
+  if (process.stdin.isTTY) return Promise.resolve(null);
+  return new Promise((ok, ko) => {
+    /** @type {Buffer[]} */
+    const morceaux = [];
+    const delai = setTimeout(() => {
+      process.stdin.destroy();
+      ok(null);
+    }, ATTENTE_MS);
+    process.stdin.on('data', (m) => {
+      clearTimeout(delai);
+      morceaux.push(m);
+    });
+    process.stdin.on('end', () => {
+      clearTimeout(delai);
+      const texte = Buffer.concat(morceaux).toString('utf8');
+      ok(texte.trim() ? texte : null);
+    });
+    process.stdin.on('error', ko);
+  });
+}
+
+/** L'empreinte d'un fichier, ou null s'il a disparu entre la liste et la lecture (un mv d'un autre outil). @param {string} chemin */
+function empreinte(chemin) {
+  try {
+    return createHash('sha1').update(readFileSync(chemin)).digest('hex');
+  } catch (e) {
+    if (/** @type {NodeJS.ErrnoException} */ (e).code === 'ENOENT') return null;
+    throw e;
+  }
+}
+
+/** Est-ce un fichier ? Disparu : non. @param {string} chemin */
+const estFichier = (chemin) => statSync(chemin, { throwIfNoEntry: false })?.isFile() ?? false;
+
+/**
  * Les empreintes du périmètre : chaque fichier des marques saisies, chaque fichier des motifs de style.
  * @param {string} cwd @param {string} marques @param {string[]} style
  * @returns {{ empreintes: Empreintes, marqueDe: Map<string, string>, styles: Set<string> }}
@@ -78,10 +129,13 @@ function perimetre(cwd, marques, style) {
   for (const d of dossiers)
     for (const f of readdirSync(d, { recursive: true, encoding: 'utf8' })) {
       const chemin = join(d, f);
-      if (statSync(chemin).isFile()) marqueDe.set(relative(cwd, chemin), d);
+      if (estFichier(chemin)) marqueDe.set(relative(cwd, chemin), d);
     }
   const styles = new Set(style.flatMap((m) => globSync(m, { cwd, exclude: (f) => f.includes('node_modules') })).map((f) => relative(cwd, resolve(cwd, f))));
-  for (const f of new Set([...marqueDe.keys(), ...styles])) empreintes[f] = createHash('sha1').update(readFileSync(join(cwd, f))).digest('hex');
+  for (const f of new Set([...marqueDe.keys(), ...styles])) {
+    const e = empreinte(join(cwd, f));
+    if (e) empreintes[f] = e;
+  }
   return { empreintes, marqueDe, styles };
 }
 
@@ -111,7 +165,11 @@ await lancer('relecteur', async () => {
   if (!values.marques) throw new Error(`--marques <dossier> attendu ; usage : ${USAGE}`);
   if (!values.style?.length) throw new Error(`--style <motif> attendu, par exemple --style "src/**/*.vue" ; usage : ${USAGE}`);
   if (values.poser) return poser(process.cwd(), values.marques, values.style);
-  const texte = readFileSync(0, 'utf8');
+  const texte = await lireEntree();
+  if (texte === null) {
+    const options = [`--marques ${values.marques}`, ...values.style.map((s) => `--style "${s}"`)].join(' ');
+    throw new Error(`aucune entrée : il est lancé par les hooks de Claude Code (SessionStart, PostToolUse, Stop) ; à la main, lancer verifier : node "$DS_LAB/src/cli/verifier.js" ${options}`);
+  }
   /** @type {any} */
   let entree;
   try {
@@ -119,7 +177,9 @@ await lancer('relecteur', async () => {
   } catch {
     throw new Error(`entrée de hook attendue sur l'entrée standard (Claude Code, SessionStart, PostToolUse ou Stop, JSON) ; pour poser les hooks : --poser ; usage : ${USAGE}`);
   }
-  const cwd = typeof entree?.cwd === 'string' ? entree.cwd : process.cwd();
+  // La racine du projet, pas le dossier courant de l'agent, que cwd suit après un cd.
+  const projet = process.env.CLAUDE_PROJECT_DIR;
+  const cwd = projet && existsSync(projet) ? projet : typeof entree?.cwd === 'string' ? entree.cwd : process.cwd();
   const evenement = typeof entree?.hook_event_name === 'string' ? entree.hook_event_name : 'PostToolUse';
   const session = String(entree?.session_id ?? 'sans-session').replace(/[^\w.-]/g, '-');
   const memoire = join(tmpdir(), 'ds-lab-relecteur', session);
@@ -128,13 +188,30 @@ await lancer('relecteur', async () => {
   const lire = (nom) => (existsSync(join(memoire, nom)) ? JSON.parse(readFileSync(join(memoire, nom), 'utf8')) : null);
   /** @param {string} nom @param {Empreintes} e */
   const ecrire = (nom, e) => {
-    writeFileSync(join(memoire, `${nom}.tmp`), JSON.stringify(e));
-    renameSync(join(memoire, `${nom}.tmp`), join(memoire, nom));
+    // Un fichier temporaire par processus : deux hooks lancés ensemble ne renomment pas le même.
+    const tmp = join(memoire, `${nom}.${process.pid}.tmp`);
+    writeFileSync(tmp, JSON.stringify(e));
+    renameSync(tmp, join(memoire, nom));
   };
   /** @param {Record<string, unknown>} l */
   const noter = (l) => appendFileSync(join(memoire, 'journal.jsonl'), `${JSON.stringify({ heure: new Date().toISOString(), evenement, outil: entree?.tool_name ?? null, ...l })}\n`);
 
-  const p = perimetre(cwd, values.marques, values.style);
+  try {
+    return await relire({ cwd, evenement, entree, marques: values.marques, style: values.style, lire, ecrire, noter });
+  } catch (e) {
+    // Une panne, au journal avant la sortie : le banc la relève, l'agent la lit.
+    noter({ panne: premiereLigne(e), code: 2 });
+    throw e;
+  }
+});
+
+/**
+ * Un appel de hook, la session connue : prend les empreintes, relit ce qui a changé, rend le code.
+ * @param {{ cwd: string, evenement: string, entree: any, marques: string, style: string[], lire: (nom: string) => Empreintes | null,
+ *   ecrire: (nom: string, e: Empreintes) => void, noter: (l: Record<string, unknown>) => void }} o
+ */
+async function relire({ cwd, evenement, entree, marques, style, lire, ecrire, noter }) {
+  const p = perimetre(cwd, marques, style);
   if (evenement === 'SessionStart') {
     const garder = ['resume', 'compact'].includes(entree?.source) && lire('depart.json');
     if (!garder) ecrire('depart.json', p.empreintes);
@@ -181,7 +258,7 @@ await lancer('relecteur', async () => {
   if (!echecs.length) return 0;
   console.error([`relecteur : ${relus.join(', ')}`, ...blocs(echecs).flatMap((b) => b.lignes)].join('\n'));
   return 2;
-});
+}
 
 /**
  * La section « Carnet » remplacée par le bloc, ou ajoutée à la fin : jusqu'au titre de niveau 2 suivant.

@@ -16,13 +16,17 @@
  *   RL7 la fin du tour : changé depuis le départ et en échec, l'arrêt est refusé ; à la relance, laissé, et l'humain lit
  *       les échecs ; corrigé, rien ;
  *   RL8 la mémoire est hors du dépôt, une par session, un journal d'une ligne par appel ; sans empreintes de départ, le
- *       seul fichier de tool_input.file_path est relu.
+ *       seul fichier de tool_input.file_path est relu ;
+ *   RL9 deux appels lancés ensemble, cinq fois : ni panne, ni relecture perdue, une ligne de journal par appel ;
+ *   RL10 sans entrée (vide, ou ouverte et muette) : sortie 2 tout de suite, et la commande à lancer à la main ;
+ *   RL11 le périmètre se compte depuis la racine du projet (CLAUDE_PROJECT_DIR), pas depuis le cd de l'agent ;
+ *   RL12 une panne s'écrit au journal avant la sortie.
  * Et BN2 : un passage du bras B posé par le banc porte les hooks, le bloc du carnet et carnet.md, dans le commit « départ » ;
  * CN1 : le carnet, une ligne datée par la commande.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
@@ -66,16 +70,42 @@ function depot() {
   return racine;
 }
 /**
- * Un hook, appelé comme par Claude Code ; la mémoire dans <racine>/.tmp, par TMPDIR.
- * @param {string} racine @param {Record<string, unknown>} entree @param {string} [session]
+ * Un hook, appelé comme par Claude Code ; la mémoire dans <racine>/.tmp, par TMPDIR ; la racine du projet par
+ * CLAUDE_PROJECT_DIR ; le dossier courant de l'agent, cwd.
+ * @param {string} racine @param {Record<string, unknown>} entree @param {string} [session] @param {string} [cwd]
  */
-const hook = (racine, entree, session = 's1') =>
+const hook = (racine, entree, session = 's1', cwd = racine) =>
   spawnSync(process.execPath, [CLI, ...OPTIONS], {
-    cwd: racine,
-    env: { ...process.env, TMPDIR: join(racine, '.tmp') },
-    input: JSON.stringify({ session_id: session, cwd: racine, ...entree }),
+    cwd,
+    env: { ...process.env, TMPDIR: join(racine, '.tmp'), CLAUDE_PROJECT_DIR: racine },
+    input: JSON.stringify({ session_id: session, cwd, ...entree }),
     encoding: 'utf8',
   });
+/**
+ * Un hook lancé sans attendre sa fin ; entrée null : l'entrée reste ouverte, muette. Tué au bout de 10 s.
+ * @param {string} racine @param {Record<string, unknown> | null} entree
+ * @returns {Promise<{ code: number | null, stdout: string, stderr: string, ms: number }>}
+ */
+const hookEnFond = (racine, entree) =>
+  new Promise((ok) => {
+    const debut = Date.now();
+    const p = spawn(process.execPath, [CLI, ...OPTIONS], { cwd: racine, env: { ...process.env, TMPDIR: join(racine, '.tmp'), CLAUDE_PROJECT_DIR: racine } });
+    let stdout = '';
+    let stderr = '';
+    p.stdout.on('data', (d) => (stdout += d));
+    p.stderr.on('data', (d) => (stderr += d));
+    const tuer = setTimeout(() => p.kill(), 10_000);
+    p.on('close', (code) => {
+      clearTimeout(tuer);
+      p.stdin.destroy();
+      ok({ code, stdout, stderr, ms: Date.now() - debut });
+    });
+    p.stdin.on('error', () => {});
+    if (entree) p.stdin.end(JSON.stringify({ session_id: 's1', cwd: racine, ...entree }));
+  });
+/** Les lignes du journal du relecteur d'une session. @param {string} racine @param {string} [session] */
+const journalDe = (racine, session = 's1') =>
+  readFileSync(join(racine, '.tmp', 'ds-lab-relecteur', session, 'journal.jsonl'), 'utf8').trimEnd().split('\n').map((l) => JSON.parse(l));
 const depart = (/** @type {string} */ racine, session = 's1') => hook(racine, { hook_event_name: 'SessionStart', source: 'startup' }, session);
 const apres = (/** @type {string} */ racine, outil = 'Bash', session = 's1') => hook(racine, { hook_event_name: 'PostToolUse', tool_name: outil, tool_input: { command: 'ls' } }, session);
 const fin = (/** @type {string} */ racine, relance = false) => hook(racine, { hook_event_name: 'Stop', stop_hook_active: relance });
@@ -269,6 +299,65 @@ test('CN1 le carnet : une ligne datée par la commande, cellules échappées, un
   assert.match(absent.stderr, /^carnet : carnet\.md introuvable dans .* ni ses parents : lancer depuis le dépôt de l'équipe, ou poser le carnet/);
   assert.equal(readFileSync(join(racine, 'carnet.md'), 'utf8').split('\n').length, 7, 'une panne n’écrit rien');
   rmSync(ailleurs, { recursive: true, force: true });
+  rmSync(racine, { recursive: true, force: true });
+});
+
+test('RL9 deux appels lancés ensemble : ni panne, ni relecture perdue', async () => {
+  const racine = depot();
+  rien(depart(racine));
+  for (let i = 0; i < 5; i++) {
+    const px = `${12 + i}px`;
+    parLeShell(racine, 'src/components/Shell.vue', EN_DUR.replace('12px', px));
+    const bloc = `relecteur : src/components/Shell.vue\n${STYLE_EN_DUR('src/components/Shell.vue').replace('12px', px)}`;
+    const entree = { hook_event_name: 'PostToolUse', tool_name: 'Bash', tool_input: { command: 'cat > …' } };
+    const deux = await Promise.all([hookEnFond(racine, entree), hookEnFond(racine, entree)]);
+    for (const x of deux) assert.ok((x.code === 0 && x.stderr === '') || (x.code === 2 && x.stderr === bloc), `tour ${i} : ${JSON.stringify(x)}`);
+    assert.ok(deux.some((x) => x.code === 2), `tour ${i} : la relecture est perdue`);
+  }
+  const journal = journalDe(racine);
+  assert.equal(journal.length, 11);
+  assert.ok(journal.every((l) => !('panne' in l)), JSON.stringify(journal));
+  rmSync(racine, { recursive: true, force: true });
+});
+
+test('RL10 sans entrée : sortie 2 tout de suite, et la commande à lancer à la main', async () => {
+  const racine = depot();
+  const message =
+    'relecteur : aucune entrée : il est lancé par les hooks de Claude Code (SessionStart, PostToolUse, Stop) ; à la main, lancer verifier : node "$DS_LAB/src/cli/verifier.js" --marques tokens --style "src/**/*.vue"\n';
+  const vide = spawnSync(process.execPath, [CLI, ...OPTIONS], { cwd: racine, env: { ...process.env, TMPDIR: join(racine, '.tmp') }, input: '', encoding: 'utf8' });
+  assert.deepEqual([vide.status, vide.stdout, vide.stderr], [2, '', message]);
+  const muette = await hookEnFond(racine, null);
+  assert.deepEqual([muette.code, muette.stdout, muette.stderr], [2, '', message]);
+  assert.ok(muette.ms < 5_000, `${muette.ms} ms`);
+  assert.equal(existsSync(join(racine, '.tmp', 'ds-lab-relecteur')), false, 'sans entrée, pas de session ni de journal');
+  rmSync(racine, { recursive: true, force: true });
+});
+
+test('RL11 le périmètre se compte depuis la racine du projet, pas depuis le cd de l’agent', () => {
+  const racine = depot();
+  const sous = join(racine, 'src', 'components');
+  const ici = (/** @type {string} */ cwd) => hook(racine, { hook_event_name: 'PostToolUse', tool_name: 'Bash', tool_input: { command: 'ls' } }, 's1', cwd);
+  rien(depart(racine));
+  rien(ici(sous));
+  parLeShell(racine, 'src/components/Shell.vue', EN_DUR);
+  const s = ici(sous);
+  assert.equal(s.status, 2);
+  assert.equal(s.stderr, `relecteur : src/components/Shell.vue\n${STYLE_EN_DUR('src/components/Shell.vue')}`);
+  rien(ici(racine));
+  assert.deepEqual(journalDe(racine).map((l) => l.relus), [[], [], ['src/components/Shell.vue'], []]);
+  rmSync(racine, { recursive: true, force: true });
+});
+
+test('RL12 une panne s’écrit au journal avant la sortie', () => {
+  const racine = depot();
+  rien(depart(racine));
+  writeFileSync(join(racine, '.tmp', 'ds-lab-relecteur', 's1', 'dernier.json'), '{');
+  const s = apres(racine);
+  assert.equal(s.status, 2);
+  assert.equal(s.stdout, '');
+  assert.match(s.stderr, /^relecteur : [^\n]*JSON[^\n]*\n$/);
+  const derniere = /** @type {Record<string, unknown>} */ (journalDe(racine).at(-1));
+  assert.deepEqual([derniere.evenement, derniere.outil, derniere.code, `relecteur : ${derniere.panne}\n`], ['PostToolUse', 'Bash', 2, s.stderr]);
   rmSync(racine, { recursive: true, force: true });
 });
 
