@@ -15,7 +15,8 @@
  *       construction ni planche ni relevé de page ; la copie de ds-lab modifiée est notée ;
  *   BN7 les réglages d'un passage, bras A et B, posé depuis un PATH qui nomme le vrai dépôt (D70) : chaque chemin est dans
  *       le passage, sauf le Node de .node-version et les dossiers du système ; les outils courants s'y trouvent ;
- *   BN8 le TMPDIR du passage (D71) : dans ses réglages, créé, vide ; depart.txt dit le terminal à ouvrir, avant la
+ *   BN8 le TMPDIR du passage (D71) : créé, vide, posé par les deux commandes de lancement et absent des réglages, où il
+ *       n'atteint ni les hooks ni le shell ; depart.txt dit le terminal à ouvrir, avant la
  *       commande avec humain, et les deux commandes écartent Claude in Chrome.
  */
 import { test } from 'node:test';
@@ -73,7 +74,7 @@ test('BN1 un passage du bras A : copie cachée, app de départ, skill, réglages
   assert.match(depart, /^passage : composer\/A-1, exercice composer, bras A$/m);
   assert.match(depart, /^verifier au départ \(sortie 0\) :$/m);
   assert.match(depart, /^modèle : essai$/m);
-  const base = `cd "${app}" && claude --model essai --permission-mode auto --setting-sources project,local --strict-mcp-config --no-chrome`;
+  const base = `cd "${app}" && TMPDIR="${join(dossier, 'tmp')}" claude --model essai --permission-mode auto --setting-sources project,local --strict-mcp-config --no-chrome`;
   assert.ok(depart.includes(`${base}\n`) && depart.includes(`${base} -p "$(cat ../brief-seul.txt)" --output-format stream-json --verbose > ../session.jsonl`), depart);
   const encore = banc(racine, ['--bras', 'A', '--passage', '1']);
   assert.equal(encore.status, 2);
@@ -204,15 +205,15 @@ test('BN8 le TMPDIR du passage, et ce que depart.txt dit du terminal', () => {
   assert.equal(banc(racine, ['--bras', 'A', '--passage', '1']).status, 0);
   const dossier = join(racine, 'composer', 'A-1');
   const reglages = JSON.parse(readFileSync(join(dossier, 'app', '.claude', 'settings.local.json'), 'utf8'));
-  assert.equal(reglages.env.TMPDIR, join(dossier, 'tmp'));
-  assert.deepEqual(readdirSync(reglages.env.TMPDIR), []);
+  assert.equal(reglages.env.TMPDIR, undefined, 'une seule source : la commande de lancement');
+  assert.deepEqual(readdirSync(join(dossier, 'tmp')), []);
   const depart = readFileSync(join(dossier, 'depart.txt'), 'utf8').split('\n');
   const i = depart.findIndex((l) => l.startsWith('Avec humain : '));
   assert.equal(
     depart[i],
     "Avec humain : dans le Terminal de macOS, une fenêtre neuve, à l'invite « ~ % » ; jamais un terminal d'éditeur ni un dossier de ds-lab, dont les variables (OLDPWD) nommeraient le vrai dépôt. Lancer, puis coller brief.txt en premier message.",
   );
-  assert.ok(depart[i + 1].endsWith('--strict-mcp-config --no-chrome'), depart[i + 1]);
-  assert.ok(depart.some((l) => l.includes('--no-chrome -p "$(cat ../brief-seul.txt)"')), 'sans humain aussi');
+  assert.equal(depart[i + 1], `cd "${join(dossier, 'app')}" && TMPDIR="${join(dossier, 'tmp')}" claude --model essai --permission-mode auto --setting-sources project,local --strict-mcp-config --no-chrome`);
+  assert.ok(depart.some((l) => l.startsWith(`${depart[i + 1]} -p "$(cat ../brief-seul.txt)"`)), 'sans humain, la même commande');
   rmSync(racine, { recursive: true, force: true });
 });

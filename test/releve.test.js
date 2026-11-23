@@ -431,7 +431,8 @@ test('RV10 le relevé d’un passage du bras B : relecteur, carnet, sessions, TM
   assert.equal(banc(['--bras', 'B', '--passage', '1', '--modele', 'essai', '--sans-installation']).status, 0);
   const dossier = join(passages, 'composer', 'B-1');
   const app = join(dossier, 'app');
-  const { env } = JSON.parse(readFileSync(join(app, '.claude', 'settings.local.json'), 'utf8'));
+  // L'environnement d'une session lancée par depart.txt : l'env des réglages, et TMPDIR posé par la commande.
+  const env = { ...JSON.parse(readFileSync(join(app, '.claude', 'settings.local.json'), 'utf8')).env, TMPDIR: join(dossier, 'tmp') };
   const commande = JSON.parse(readFileSync(join(app, '.claude', 'settings.json'), 'utf8')).hooks.PostToolUse[0].hooks[0].command;
   /** Un hook du passage, tel que Claude Code le lance. @param {object} entree */
   const hook = (entree) => spawnSync('/bin/sh', ['-c', commande], { cwd: app, encoding: 'utf8', env: { ...process.env, ...env }, input: JSON.stringify({ session_id: 's1', cwd: app, ...entree }) });

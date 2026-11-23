@@ -3,7 +3,7 @@
  * D67 à D71 : le banc d'essai. Il pose, hors du dépôt, le dossier d'un passage d'un exercice : une copie de l'arbre de
  * ds-lab, sans la référence et sans historique (une pose installée refuse un arbre qui a des changements non commités) ;
  * l'app au point de départ de l'exercice (src/banc/departs.js), en dépôt git d'un commit « départ » ; le skill copié, la
- * variable DS_LAB, le PATH, un TMPDIR dans le passage (D71), les deux briefs et depart.txt ; dans le bras B, le relecteur et le carnet, posés par la commande de la
+ * variable DS_LAB, le PATH, un TMPDIR dans le passage, posé par la commande de lancement (D71), les deux briefs et depart.txt ; dans le bras B, le relecteur et le carnet, posés par la commande de la
  * copie. Deux poses du même commit donnent les mêmes fichiers, aux chemins absolus et à l'heure près : les commits ont un
  * auteur et une date fixes. Le relevé des traces d'un passage est dans src/cli/banc.js.
  */
@@ -50,10 +50,12 @@ export const dossierDuJournal = (dossier) => join(homedir(), '.claude', 'project
 /**
  * La ligne de commande d'un passage, la même avec et sans humain ; sans humain, le brief part en argument et la
  * session écrit son flux dans ../session.jsonl. --no-chrome : une session avec humain chargerait Claude in Chrome (D71).
- * @param {string} app @param {string} modele @param {boolean} seul
+ * TMPDIR est posé ici, dans l'environnement de claude : celui de l'env des réglages n'atteint ni les hooks ni le shell
+ * (essai du 23/11/2026, D71) ; posé à la commande, il atteint les deux.
+ * @param {string} app @param {string} modele @param {boolean} seul @param {string} tmp le dossier temporaire du passage
  */
-function commandeDuPassage(app, modele, seul) {
-  const base = `cd "${app}" && claude --model ${modele} --permission-mode auto --setting-sources project,local --strict-mcp-config --no-chrome`;
+function commandeDuPassage(app, modele, seul, tmp) {
+  const base = `cd "${app}" && TMPDIR="${tmp}" claude --model ${modele} --permission-mode auto --setting-sources project,local --strict-mcp-config --no-chrome`;
   return seul ? `${base} -p "$(cat ../brief-seul.txt)" --output-format stream-json --verbose > ../session.jsonl` : base;
 }
 
@@ -85,11 +87,12 @@ export function poser(o) {
   // Le Node du banc (celui de .node-version, que la garde impose) passe devant : sous une autre version majeure, chaque
   // commande de ds-lab sortirait en 2. Du PATH de qui pose, rien : npm run y met node_modules/.bin du vrai dépôt, où
   // sont les fichiers cachés.
-  // TMPDIR dans le passage (D71) : ce qu'un outil y écrit ne se mêle pas aux autres passages, et le relevé le lit, la
-  // mémoire du relecteur comprise. Un chemin de /tmp écrit en toutes lettres n'y passe pas : le relevé le liste.
+  // TMPDIR dans le passage (D71), posé par la commande de lancement (commandeDuPassage) : ce qu'un outil y écrit ne se
+  // mêle pas aux autres passages, et le relevé le lit, la mémoire du relecteur comprise. Un chemin de /tmp écrit en
+  // toutes lettres n'y passe pas : le relevé le liste.
   const tmp = join(dossier, 'tmp');
   mkdirSync(tmp);
-  const reglages = { env: { DS_LAB: copie, PATH: [dirname(process.execPath), ...SYSTEME].join(':'), TMPDIR: tmp }, permissions: { additionalDirectories: [copie] } };
+  const reglages = { env: { DS_LAB: copie, PATH: [dirname(process.execPath), ...SYSTEME].join(':') }, permissions: { additionalDirectories: [copie] } };
   writeFileSync(join(app, '.claude', 'settings.local.json'), `${JSON.stringify(reglages, null, 2)}\n`);
   if (o.bras === 'B') {
     const relecteur = join(copie, 'src', 'cli', 'relecteur.js');
@@ -117,10 +120,10 @@ export function poser(o) {
     `journal : ${dossierDuJournal(realpathSync(app))}/<session>.jsonl`,
     '',
     "Avec humain : dans le Terminal de macOS, une fenêtre neuve, à l'invite « ~ % » ; jamais un terminal d'éditeur ni un dossier de ds-lab, dont les variables (OLDPWD) nommeraient le vrai dépôt. Lancer, puis coller brief.txt en premier message.",
-    commandeDuPassage(app, o.modele, false),
+    commandeDuPassage(app, o.modele, false, tmp),
     '',
     'Sans humain :',
-    commandeDuPassage(app, o.modele, true),
+    commandeDuPassage(app, o.modele, true, tmp),
     '',
     `verifier au départ (sortie ${verifier.status}) :`,
     `${verifier.stdout}${verifier.stderr}`.trimEnd(),
