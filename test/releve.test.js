@@ -19,11 +19,20 @@
  *   RV7 le mode libre marqué : pièces du dossier provisoire, pièces créées ailleurs (une à côté de la page, un script qui
  *       rend, pas un script simple), pièces de Vuetify sans composant Ds… hors de ce dossier ; un rapport absent, partiel,
  *       complet, ailleurs ; la page de référence, écrite avant les modes, a deux pièces non marquées.
+ * Et D71, docs/attendus/etape-10-relecteur-et-carnet.md :
+ *   RV8 les composants Ds… du catalogue à part des autres, les pièces créées ;
+ *   RV9 les traces : la session qui porte le brief, l'autre écartée ; les outils et les signaux d'écriture du shell, ni
+ *       un document de commande ni une sortie vers /dev/null ; les chemins de /tmp ; les appels du carnet ; les heures du
+ *       carnet face à la session et à la première écriture ; le journal du relecteur ; ce qu'une session a chargé, avec
+ *       et sans humain ;
+ *   RV10 la commande entière sur un passage du bras B : le relecteur joué par ses hooks, le carnet par sa commande, deux
+ *       sessions dans un HOME à part ; ecritures.md, heures.md, charge.md, le TMPDIR copié, sortie.txt à 0 ; un relevé
+ *       en panne écrit 2 et son message.
  */
 import { before, after, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -31,6 +40,7 @@ import { exercices, fabriquer } from '../src/banc/departs.js';
 import { enveloppes, relever, texteDuReleve } from '../src/banc/releve.js';
 import { releverInventaire, texteDeLInventaire } from '../src/banc/inventaire.js';
 import { lectures, texteDesLectures } from '../src/banc/lectures.js';
+import { appels, charge, ecritures, heuresDuCarnet, journalDuRelecteur, sessionsDuBrief } from '../src/banc/traces.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const ENVELOPPES = enveloppes(join(ROOT, 'docs', 'composants'));
@@ -46,7 +56,7 @@ before(() => {
 });
 after(() => rmSync(racine, { recursive: true, force: true }));
 
-/** Pose un travail sur une copie du départ et le relève. @param {string} nom @param {Record<string, string | ((t: string) => string)>} travail @param {{ provisoire?: string, rapport?: { attendu: string, lieu: string | null } }} [plus] */
+/** Pose un travail sur une copie du départ et le relève. @param {string} nom @param {Record<string, string | ((t: string) => string)>} travail @param {{ provisoire?: string, rapport?: { attendu: string, lieu: string | null }, catalogue?: string[] }} [plus] */
 function passage(nom, travail, plus = {}) {
   const app = join(racine, nom);
   cpSync(depart, app, { recursive: true });
@@ -98,7 +108,7 @@ const Puce = () => h(DsTag, { text: 'Lyon' });
   assert.equal(r.exceptionsDeStyle, 1);
   assert.deepEqual(r.feuillesCss, ['src/styles/annuaire.css']);
   const texte = texteDuReleve(r);
-  assert.match(texte, /^- Composants Ds… posés : DsAvatar : 1 ; DsButton : 1 ; DsCard : 3 ; DsTag : 1$/m);
+  assert.match(texte, /^- Composants Ds… du catalogue posés : DsAvatar : 1 ; DsButton : 1 ; DsCard : 3 ; DsTag : 1$/m);
   assert.match(texte, /^- Page \/annuaire : src\/pages\/Annuaire\.vue ; passe par le gabarit : non$/m);
 });
 
@@ -174,7 +184,7 @@ test('RV4 --relever écrit ce que le passage a posé', () => {
   assert.equal(r.stdout, `banc : passage composer/A-1 relevé dans ${sortie}\n`);
   const pose = JSON.parse(readFileSync(join(sortie, 'pose.json'), 'utf8'));
   assert.deepEqual([pose.composants, pose.page.fichier, pose.page.passeParLeGabarit], [{ DsCard: 1 }, 'src/pages/Annuaire.vue', false]);
-  assert.match(readFileSync(join(sortie, 'pose.md'), 'utf8'), /^- Composants Ds… posés : DsCard : 1$/m);
+  assert.match(readFileSync(join(sortie, 'pose.md'), 'utf8'), /^- Composants Ds… du catalogue posés : DsCard : 1$/m);
   assert.deepEqual(pose.provisoire, { dossier: 'src/provisoire', fichiers: ['src/provisoire/LignePersonne.vue'], ailleurs: [] });
   assert.deepEqual(pose.rapport, { attendu: 'rapport.md', lieu: 'rapport.md', nommes: ['src/provisoire/LignePersonne.vue'], tus: [] });
   assert.equal(readFileSync(join(sortie, 'rapport.md'), 'utf8'), '`LignePersonne`, faute de ligne de liste.\n');
@@ -328,3 +338,149 @@ test('RV7 le mode libre marqué : pièces marquées ou non, pièces de Vuetify, 
   assert.deepEqual([sans.provisoire, sans.rapport], [null, null]);
   assert.doesNotMatch(texteDuReleve(sans), /marqu|Rapport/);
 });
+
+test('RV8 les composants Ds… du catalogue, à part des pièces créées', () => {
+  const page = '<template>\n  <DsCard title="x">\n    <DsLinkButton href="/a" />\n    <ds-link-button href="/b" />\n  </DsCard>\n</template>\n';
+  const r = passage('rv8', { 'src/router.js': ROUTE, 'src/pages/Annuaire.vue': page, 'src/provisoire/DsLinkButton.vue': '<template>\n  <a />\n</template>\n' }, { catalogue: ['DsButton', 'DsCard'] });
+  assert.deepEqual([r.composants, r.autresDs], [{ DsCard: 1 }, { DsLinkButton: 2 }]);
+  const texte = texteDuReleve(r);
+  assert.match(texte, /^- Composants Ds… du catalogue posés : DsCard : 1$/m);
+  assert.match(texte, /^- Autres Ds… posés \(pièces créées, absentes du catalogue\) : DsLinkButton : 2$/m);
+});
+
+/** Un journal simulé, une ligne par message. @param {string} fichier @param {object[]} messages */
+const journal = (fichier, messages) => writeFileSync(fichier, `${messages.map((m) => JSON.stringify(m)).join('\n')}\n`);
+const humain = (/** @type {string} */ t, /** @type {string} */ texte) => ({ type: 'user', timestamp: t, message: { content: texte } });
+const outil = (/** @type {string} */ t, /** @type {string} */ name, /** @type {object} */ input) => ({ type: 'assistant', timestamp: t, message: { content: [{ type: 'tool_use', id: `${name}${t}`, name, input }] } });
+
+test('RV9 les traces : session du brief, écritures, /tmp, carnet, relecteur, charge', () => {
+  const d = mkdtempSync(join(tmpdir(), 'ds-lab-traces-'));
+  const brief = '\nNous sommes dans le gabarit de Quai Nord.\n\nLa suite.\n';
+  journal(join(d, 's0.jsonl'), [humain('2026-11-23T14:30:00.000Z', '/exit'), { type: 'assistant', timestamp: '2026-11-23T14:30:30.000Z', message: { content: [{ type: 'text', text: 'au revoir' }] } }]);
+  journal(join(d, 's1.jsonl'), [
+    humain('2026-11-23T14:31:00.000Z', '<pasted_content>\nNous sommes dans le gabarit de Quai Nord.\n</pasted_content>'),
+    outil('2026-11-23T14:32:00.000Z', 'Bash', { command: "cat > src/pages/Annuaire.vue <<'EOF'\n<div v-if=\"a > b\" />\nEOF\nnpm run build 2>&1 | tail -3 > /dev/null" }),
+    outil('2026-11-23T14:32:10.000Z', 'Bash', { command: "sed -i '' 's/a b/c d/' src/x.vue && grep -n x src/x.vue" }),
+    outil('2026-11-23T14:32:20.000Z', 'Bash', { command: 'cp a.vue src/provisoire/b.vue' }),
+    outil('2026-11-23T14:32:30.000Z', 'Bash', { command: "python3 -c \"open('x','w').write('y')\"" }),
+    outil('2026-11-23T14:32:40.000Z', 'Edit', { file_path: '/app/rapport.md', old_string: 'a', new_string: 'b' }),
+    outil('2026-11-23T14:32:50.000Z', 'Bash', { command: "cat > /tmp/shot.mjs <<'EOF'\nawait page.screenshot({ path: '/tmp/a.png' })\nEOF\nnode /tmp/shot.mjs" }),
+    outil('2026-11-23T14:33:00.000Z', 'Bash', { command: 'echo x | tee -a log.txt' }),
+    outil('2026-11-23T14:33:05.000Z', 'Bash', { command: "python3 - <<'PY'\nopen('src/y.vue', 'w').write('z')\nPY" }),
+    outil('2026-11-23T14:33:06.000Z', 'Bash', { command: "cat > src/z.js <<'EOF'\nfs.writeFileSync(a, b); m.then((x) => console.log(x))\nEOF" }),
+    outil('2026-11-23T14:31:30.000Z', 'Bash', { command: 'node "$DS_LAB/src/cli/carnet.js" --question q --choix c --fichier src/pages/Annuaire.vue' }),
+    { type: 'assistant', timestamp: '2026-11-23T14:34:00.000Z', message: { content: [{ type: 'text', text: 'Fini.' }] } },
+  ]);
+  const s = sessionsDuBrief([join(d, 's0.jsonl'), join(d, 's1.jsonl')], brief);
+  assert.deepEqual(s, { retenues: [join(d, 's1.jsonl')], ecartees: [{ fichier: 's0.jsonl', debut: '2026-11-23T14:30:00.000Z', fin: '2026-11-23T14:30:30.000Z' }], note: null });
+  assert.equal(sessionsDuBrief([join(d, 's0.jsonl')], brief).note, 'aucune session ne porte la première ligne du brief : toutes sont prises');
+
+  const e = ecritures(appels(s.retenues));
+  assert.deepEqual(e.parOutil, { Bash: 9, Edit: 1 });
+  assert.deepEqual(e.edition, [{ heure: '2026-11-23T14:32:40.000Z', outil: 'Edit', fichier: '/app/rapport.md' }]);
+  assert.deepEqual(
+    e.shell.map((x) => [x.signe, x.cible]),
+    [['>', 'src/pages/Annuaire.vue'], ['sed -i', 'src/x.vue'], ['cp', 'src/provisoire/b.vue'], ['script', null], ['>', '/tmp/shot.mjs'], ['tee', 'log.txt'], ['script', null], ['>', 'src/z.js']],
+  );
+  assert.deepEqual(e.tmp, ['/tmp/a.png', '/tmp/shot.mjs']);
+  assert.equal(e.carnet, 1);
+  assert.equal(e.premiere['Annuaire.vue'], Date.parse('2026-11-23T14:32:00.000Z'));
+
+  const carnet = `# Carnet\n\n| Heure | Question | Réponse | Fichier |\n|---|---|---|---|\n| 2026-11-23T15:31:40+01:00 | a \\| b | choix : c | src/pages/Annuaire.vue |\n| 2026-11-23T15:33:30+01:00 | q | choix : c | src/pages/Annuaire.vue |\n| 14:00 | q | c | f |\n| 2026-11-23T19:00:00+01:00 | q | choix : c | — |\n`;
+  assert.deepEqual(heuresDuCarnet(carnet, { debut: Date.parse('2026-11-23T14:31:00.000Z'), fin: Date.parse('2026-11-23T14:34:00.000Z') }, e.premiere), [
+    { heure: '2026-11-23T15:31:40+01:00', fichier: 'src/pages/Annuaire.vue', datee: true, dansLaSession: true, avantLaPremiereEcriture: true },
+    { heure: '2026-11-23T15:33:30+01:00', fichier: 'src/pages/Annuaire.vue', datee: true, dansLaSession: true, avantLaPremiereEcriture: false },
+    { heure: '14:00', fichier: 'f', datee: false, dansLaSession: null, avantLaPremiereEcriture: null },
+    { heure: '2026-11-23T19:00:00+01:00', fichier: '—', datee: true, dansLaSession: false, avantLaPremiereEcriture: null },
+  ]);
+
+  const r = join(d, 'journal.jsonl');
+  journal(r, [
+    { heure: 'h1', evenement: 'SessionStart', outil: null, relus: [], echecs: 0, code: 0 },
+    { heure: 'h2', evenement: 'PostToolUse', outil: 'Bash', relus: ['src/x.vue'], echecs: 1, code: 2 },
+    { heure: 'h3', evenement: 'PostToolUse', outil: 'Read', relus: [], echecs: 0, code: 0 },
+    { heure: 'h4', evenement: 'Stop', outil: null, relus: ['src/x.vue'], echecs: 1, code: 2 },
+    { heure: 'h5', evenement: 'Stop', outil: null, relus: ['src/x.vue'], echecs: 1, code: 0, relanceRefusee: true },
+  ]);
+  assert.deepEqual(journalDuRelecteur([r]), {
+    fichiers: 1,
+    parEvenement: { SessionStart: { appels: 1, echecs: 0 }, PostToolUse: { appels: 2, echecs: 1 }, Stop: { appels: 2, echecs: 1 } },
+    relancesRefusees: 1,
+    changes: [{ heure: 'h2', outil: 'Bash', relus: ['src/x.vue'], echecs: 1 }],
+  });
+
+  journal(join(d, 'avec.jsonl'), [
+    { type: 'attachment', attachment: { type: 'skill_listing', names: ['ds-lab', 'dataviz', 'claude-in-chrome'] } },
+    { type: 'attachment', attachment: { type: 'mcp_instructions_delta', addedNames: ['claude-in-chrome', 'easel'] } },
+    { type: 'attachment', attachment: { type: 'deferred_tools_delta', addedNames: ['EndConversation', 'mcp__claude-in-chrome__navigate'] } },
+    { type: 'attachment', attachment: { type: 'agent_listing_delta', addedTypes: ['Explore'] } },
+  ]);
+  const avec = charge(join(d, 'absent.jsonl'), [join(d, 'avec.jsonl')]);
+  assert.deepEqual('enPlusDeLaPose' in avec && avec.enPlusDeLaPose, { skills: ['dataviz', 'claude-in-chrome'], serveursMcp: ['claude-in-chrome', 'easel'], outilsMcp: ['mcp__claude-in-chrome__navigate'], plugins: [] });
+  journal(join(d, 'session.jsonl'), [{ type: 'system', subtype: 'init', model: 'm', tools: ['Bash', 'Read'], mcp_servers: [], skills: ['ds-lab', 'dataviz'], plugins: [{ name: 'easel', path: '/x' }], agents: ['Explore'] }]);
+  const seul = charge(join(d, 'session.jsonl'), [join(d, 'avec.jsonl')]);
+  assert.deepEqual('enPlusDeLaPose' in seul && [seul.source, seul.enPlusDeLaPose], ['session.jsonl, message d’ouverture', { skills: ['dataviz'], serveursMcp: [], outilsMcp: [], plugins: ['easel'] }]);
+  rmSync(d, { recursive: true, force: true });
+});
+
+test('RV10 le relevé d’un passage du bras B : relecteur, carnet, sessions, TMPDIR, code de sortie', () => {
+  const passages = join(racine, 'rv10');
+  const maison = join(racine, 'maison');
+  /** @param {string[]} a @param {Record<string, string>} [env] */
+  const banc = (a, env = {}) => spawnSync(process.execPath, [join(ROOT, 'src', 'cli', 'banc.js'), '--exercice', 'composer', '--dossier', passages, ...a], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, ...env } });
+  assert.equal(banc(['--bras', 'B', '--passage', '1', '--modele', 'essai', '--sans-installation']).status, 0);
+  const dossier = join(passages, 'composer', 'B-1');
+  const app = join(dossier, 'app');
+  const { env } = JSON.parse(readFileSync(join(app, '.claude', 'settings.local.json'), 'utf8'));
+  const commande = JSON.parse(readFileSync(join(app, '.claude', 'settings.json'), 'utf8')).hooks.PostToolUse[0].hooks[0].command;
+  /** Un hook du passage, tel que Claude Code le lance. @param {object} entree */
+  const hook = (entree) => spawnSync('/bin/sh', ['-c', commande], { cwd: app, encoding: 'utf8', env: { ...process.env, ...env }, input: JSON.stringify({ session_id: 's1', cwd: app, ...entree }) });
+  assert.equal(hook({ hook_event_name: 'SessionStart', source: 'startup' }).status, 0);
+  const avant = Date.now();
+  const c = spawnSync(process.execPath, [join(env.DS_LAB, 'src', 'cli', 'carnet.js'), '--question', 'Lien ou bouton ?', '--choix', 'un lien', '--fichier', 'src/components/Shell.vue'], { cwd: join(app, 'src'), encoding: 'utf8' });
+  assert.equal(c.status, 0, c.stderr);
+  mkdirSync(join(app, 'src', 'components'), { recursive: true });
+  assert.equal(spawnSync('/bin/sh', ['-c', "cat > src/components/Shell.vue <<'FIN'\n<template><div class=\"b\" /></template>\n<style scoped>\n.b {\n  padding: 12px;\n}\n</style>\nFIN\n"], { cwd: app }).status, 0);
+  assert.equal(hook({ hook_event_name: 'PostToolUse', tool_name: 'Bash', tool_input: { command: 'cat > …' } }).status, 2);
+  writeFileSync(join(env.TMPDIR, 'shot.mjs'), 'capture\n');
+
+  const iso = (/** @type {number} */ ms) => new Date(avant + ms).toISOString();
+  const journaux = join(maison, '.claude', 'projects', realpathSync(app).replace(/[^a-zA-Z0-9]/g, '-'));
+  mkdirSync(journaux, { recursive: true });
+  journal(join(journaux, 's0.jsonl'), [humain(iso(-600_000), '/exit')]);
+  journal(join(journaux, 's1.jsonl'), [
+    { type: 'attachment', attachment: { type: 'skill_listing', names: ['ds-lab', 'dataviz'] } },
+    humain(iso(-120_000), readFileSync(join(dossier, 'brief.txt'), 'utf8')),
+    outil(iso(-1_000), 'Bash', { command: 'cd src && node "$DS_LAB/src/cli/carnet.js" --question "Lien ou bouton ?" --choix "un lien" --fichier src/components/Shell.vue' }),
+    outil(iso(60_000), 'Bash', { command: "cat > src/components/Shell.vue <<'FIN'\n…\nFIN" }),
+    { type: 'assistant', timestamp: iso(120_000), message: { content: [{ type: 'text', text: 'Fini.' }] } },
+  ]);
+  const sortie = join(racine, 'releve-rv10');
+  const r = banc(['--relever', 'B-1', '--sortie', sortie], { HOME: maison });
+  assert.equal(r.status, 0, r.stderr);
+  const lire = (/** @type {string} */ f) => readFileSync(join(sortie, f), 'utf8');
+  assert.equal(lire('sortie.txt'), '0\n');
+  const ec = lire('ecritures.md');
+  assert.match(ec, /^- Sessions prises : s1\.jsonl$/m);
+  assert.match(ec, /^- Sessions écartées, sans le brief : s0\.jsonl \(/m);
+  assert.match(ec, /^Journal lu dans le TMPDIR du passage \(1 session\(s\)\)\.$/m);
+  assert.match(ec, /^- SessionStart : 1 appel\(s\), 0 retour\(s\) en échec$/m);
+  assert.match(ec, /^- PostToolUse : 1 appel\(s\), 1 retour\(s\) en échec$/m);
+  assert.match(ec, /^ {2}- \S+ Bash : src\/components\/Shell\.vue \(1 échec\(s\)\)$/m);
+  assert.match(ec, /^- Lignes : 1 ; appels de carnet\.js dans le journal : 1$/m);
+  assert.match(ec, /^ {2}- \S+ : dans la session ; avant la première écriture vue de src\/components\/Shell\.vue$/m);
+  assert.match(ec, /^- TMPDIR du passage, ce qu’il contient : ds-lab-relecteur\/s1\/depart\.json, ds-lab-relecteur\/s1\/dernier\.json, ds-lab-relecteur\/s1\/journal\.jsonl, shot\.mjs$/m);
+  assert.equal(lire('tmp/shot.mjs'), 'capture\n');
+  assert.match(lire('heures.md'), /^- Sessions écartées, sans le brief : s0\.jsonl \(/m);
+  assert.match(lire('heures.md'), /^- En tout : 4 min$/m);
+  assert.match(lire('charge.md'), /^- Skills : dataviz$/m);
+  assert.match(lire('pose.md'), /^- Composants Ds… du catalogue posés : aucun$/m);
+
+  assert.equal(banc(['--bras', 'B', '--passage', '2', '--modele', 'essai', '--sans-installation']).status, 0);
+  rmSync(join(passages, 'composer', 'B-2', 'app', '.git'), { recursive: true, force: true });
+  const panne = join(racine, 'releve-rv10-panne');
+  const p = banc(['--relever', 'B-2', '--sortie', panne], { HOME: maison });
+  assert.equal(p.status, 2);
+  assert.match(readFileSync(join(panne, 'sortie.txt'), 'utf8'), /^2 : .+\n$/);
+});
+

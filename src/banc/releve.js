@@ -1,12 +1,13 @@
 // @ts-check
 /**
- * D68, D69 : ce qu'un passage a posé, lu dans les fichiers neufs ou modifiés depuis « départ », sans rien lancer. Composants
+ * D68, D69, D71 : ce qu'un passage a posé, lu dans les fichiers neufs ou modifiés depuis « départ », sans rien lancer. Composants
  * Ds… posés, pièces de Vuetify posées alors qu'un composant Ds… les enveloppe (la table vient de l'en-tête des fiches),
  * boutons et champs nus, composants créés, composants ou gabarit modifiés, exceptions de style, feuilles .css ; la page
  * passe-t-elle par le gabarit ; et les lignes qui ressemblent à une pièce que le brief remet à plus tard : des signaux à
  * lire, pas un verdict. Un compte est ce que le fichier a de plus qu'au départ. Quand le brief dit où créer ce qui manque,
  * les trois origines d'un écart au catalogue : pièce créée et marquée, pièce créée ailleurs, pièce de Vuetify posée telle
- * quelle ; et ce que le rapport nomme de ce qui a été créé.
+ * quelle ; et ce que le rapport nomme de ce qui a été créé. Les composants Ds… du catalogue (ceux du départ) se comptent à
+ * part des autres, les pièces créées (D71).
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { basename, extname, join, posix } from 'node:path';
@@ -78,14 +79,17 @@ const ajouter = (o, k, n) => {
 /**
  * Le relevé d'un passage.
  * @param {{ app: string, touches: Touche[], avant: (fichier: string) => string, enveloppes: Record<string, string>, page: string,
- *   signaux: { plusTard: Record<string, string>, refait: string }, provisoire?: string, rapport?: { attendu: string, lieu: string | null } }} o
+ *   signaux: { plusTard: Record<string, string>, refait: string }, provisoire?: string, rapport?: { attendu: string, lieu: string | null }, catalogue?: string[] }} o
  *   avant : le texte d'un fichier au départ, vide s'il n'y était pas ; page : l'adresse de la page demandée ; signaux : les
  *   motifs de fixtures/banc/exercices.json ; provisoire : le dossier où le brief demande de créer ce qui manque ; rapport :
- *   le fichier que le brief demande, et son chemin dans l'app, ou null
+ *   le fichier que le brief demande, et son chemin dans l'app, ou null ; catalogue : les noms des composants Ds… du
+ *   départ ; sans lui, tout Ds… compte au catalogue
  */
 export function relever(o) {
   /** @type {Record<string, number>} */
   const composants = {};
+  /** @type {Record<string, number>} */
+  const autresDs = {};
   /** @type {Record<string, number>} */
   const vuetify = {};
   /** @type {Record<string, number>} */
@@ -110,7 +114,7 @@ export function relever(o) {
     if (!/^src\/.*\.(vue|js)$/.test(fichier) || COMPOSANTS.test(fichier)) continue;
     for (const [t, signe] of /** @type {[string, 1 | -1][]} */ ([[texte, 1], [avant, -1]]))
       for (const p of poses(t)) {
-        if (/^Ds[A-Z]/.test(p.nom)) ajouter(composants, p.nom, signe);
+        if (/^Ds[A-Z]/.test(p.nom)) ajouter(!o.catalogue || o.catalogue.includes(p.nom) ? composants : autresDs, p.nom, signe);
         const ds = enveloppe(p.nom);
         if (ds === 'DsButton' && /\s:?(to|href)=/.test(p.attributs)) boutonsLiens += signe;
         else if (ds) ajouter(vuetify, `${p.nom} (${ds})`, signe);
@@ -134,6 +138,7 @@ export function relever(o) {
   const rapport = o.rapport?.lieu ? readFileSync(join(o.app, o.rapport.lieu), 'utf8').normalize('NFC') : '';
   return {
     composants,
+    autresDs,
     vuetifyAvecComposant: vuetify,
     vuetifySansComposant: vuetifySans,
     boutonsQuiMenentAilleurs: boutonsLiens,
@@ -172,7 +177,8 @@ export function texteDuReleve(r) {
     '',
     'Fichiers neufs ou modifiés depuis « départ » ; un compte est ce qu’ils ont de plus qu’au départ.',
     '',
-    `- Composants Ds… posés : ${comptes(r.composants)}`,
+    `- Composants Ds… du catalogue posés : ${comptes(r.composants)}`,
+    `- Autres Ds… posés (pièces créées, absentes du catalogue) : ${comptes(r.autresDs)}`,
     `- Pièces de Vuetify posées alors qu’un composant Ds… existe : ${comptes(r.vuetifyAvecComposant)}`,
     `- Boutons de Vuetify qui mènent ailleurs (aucun composant Ds… ne le fait) : ${r.boutonsQuiMenentAilleurs}`,
     `- Pièces de Vuetify sans composant Ds…${r.provisoire ? `, hors de ${r.provisoire.dossier}/, ni du catalogue ni créées` : ''} : ${comptes(r.vuetifySansComposant)}`,

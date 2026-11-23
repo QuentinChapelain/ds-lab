@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // @ts-check
 /**
- * D67, D68, D69 : le banc d'essai (npm run banc), ses exercices (fixtures/banc/exercices.json).
+ * D67, D68, D69, D71 : le banc d'essai (npm run banc), ses exercices (fixtures/banc/exercices.json).
  * Poser : npm run banc -- --exercice <exercice> --bras A|B --passage <n> --modele <modèle> [--dossier <racine>]
  *   [--sans-installation] pose <racine>/<exercice>/<bras>-<n>/ (src/banc/banc.js) ; un exercice sans brief est refusé ;
  *   --sans-installation remplace les npm ci par un lien vers les node_modules du dépôt, pour les tests.
@@ -13,11 +13,15 @@
  *   page), l'inventaire face à sa liste (releve-inventaire.md et .json, src/banc/inventaire.js, pour un exercice qui en a
  *   une) et les planches des pages de l'exercice (marques de banc.json, 1 280 et 360 px, clair et sombre ; aucune page,
  *   aucune construction). Une page qui ne s'ouvre pas est notée, pas une panne ; une copie de ds-lab modifiée aussi.
+ *   D71 : les heures de la seule session qui porte le brief, les autres nommées ; ce que la session a écrit et comment,
+ *   le journal du relecteur, les heures du carnet, le TMPDIR du passage et les chemins de /tmp nommés (ecritures.md,
+ *   src/banc/traces.js) ; ce qu'elle a chargé, face à la pose (charge.md) ; le code de sortie du relevé (sortie.txt),
+ *   écrit en dernier, ou 2 et le message d'une panne.
  * Sortie 0, ou 2 sur une panne (D18).
  */
 import { parseArgs } from 'node:util';
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, globSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync, realpathSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, globSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync, realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -31,6 +35,7 @@ import { planches } from '../banc/planches.js';
 import { enveloppes, relever, texteDuReleve } from '../banc/releve.js';
 import { lectures, texteDesLectures } from '../banc/lectures.js';
 import { releverInventaire, texteDeLInventaire } from '../banc/inventaire.js';
+import { appels, charge, ecritures, heuresDuCarnet, journalDuRelecteur, lignesJson, sessionsDuBrief, texteDeLaCharge, texteDesEcritures } from '../banc/traces.js';
 
 const DEPOT = fileURLToPath(new URL('../..', import.meta.url));
 const USAGE = 'npm run banc -- --exercice installer|composer|etendre|inventorier --bras A|B --passage <n> --modele <modèle> [--dossier <racine>], ou --exercice <exercice> --relever <bras>-<n> [--dossier <racine>]';
@@ -77,6 +82,19 @@ await lancer('banc', async () => {
  * @param {string} racine @param {string} exercice @param {string} id @param {string} sortie
  */
 async function releverPassage(racine, exercice, id, sortie) {
+  try {
+    await relevePassage(racine, exercice, id, sortie);
+  } catch (e) {
+    if (existsSync(sortie)) writeFileSync(join(sortie, 'sortie.txt'), `2 : ${String(/** @type {any} */ (e)?.message ?? e).split('\n')[0]}\n`);
+    throw e;
+  }
+  writeFileSync(join(sortie, 'sortie.txt'), '0\n');
+  console.log(`banc : passage ${exercice}/${id} relevé dans ${sortie}`);
+  return 0;
+}
+
+/** Le relevé lui-même. @param {string} racine @param {string} exercice @param {string} id @param {string} sortie */
+async function relevePassage(racine, exercice, id, sortie) {
   const { exercices: tous, signaux } = exercices(DEPOT);
   const e = tous[exercice];
   const dossier = join(racine, exercice, id);
@@ -126,7 +144,11 @@ async function releverPassage(racine, exercice, id, sortie) {
   const comptes = await compterEchecs(app, copie, touches.map((t) => t.fichier)).catch((e) => ({ panne: String(e.message ?? e) }));
   writeFileSync(join(sortie, 'verifier.txt'), `${v.stdout}${v.stderr}sortie ${v.status}\n\n${JSON.stringify(comptes, null, 2)}\n`);
 
-  writeFileSync(join(sortie, 'charge.json'), `${JSON.stringify(charge(join(dossier, 'session.jsonl')), null, 2)}\n`);
+  const brief = existsSync(join(dossier, 'brief.txt')) ? readFileSync(join(dossier, 'brief.txt'), 'utf8') : '';
+  const sessionsPrises = sessionsDuBrief(sessions.map((f) => join(journaux, f)), brief);
+  const ch = charge(join(dossier, 'session.jsonl'), sessionsPrises.retenues);
+  writeFileSync(join(sortie, 'charge.json'), `${JSON.stringify(ch, null, 2)}\n`);
+  writeFileSync(join(sortie, 'charge.md'), texteDeLaCharge(ch));
   const lu = lectures({ journaux: sessions.length ? [...sessions, ...agents].map((f) => join(journaux, f)) : [join(dossier, 'session.jsonl')].filter(existsSync), app, copie, depart: fichiersDuDepart });
   writeFileSync(join(sortie, 'lu.json'), `${JSON.stringify(lu, null, 2)}\n`);
   writeFileSync(join(sortie, 'lu.md'), texteDesLectures(lu));
@@ -145,17 +167,39 @@ async function releverPassage(racine, exercice, id, sortie) {
       page: e.pages[0],
       signaux,
       provisoire: e.provisoire,
+      catalogue: fichiersDuDepart.flatMap((f) => f.match(/^src\/components\/ds\/(Ds\w+)\.vue$/)?.slice(1) ?? []),
       rapport: e.rendu ? { attendu: e.rendu, lieu: lieuDuRendu } : undefined,
     });
     writeFileSync(join(sortie, 'pose.json'), `${JSON.stringify(r, null, 2)}\n`);
     writeFileSync(join(sortie, 'pose.md'), texteDuReleve(r));
   }
-  writeFileSync(join(sortie, 'heures.md'), heures(sessions.map((f) => join(journaux, f))));
+  const h = heures(sessionsPrises.retenues, sessionsPrises.ecartees);
+  writeFileSync(join(sortie, 'heures.md'), h.texte);
+
+  // Ce que la session a écrit et comment, le relecteur, le carnet, le dossier temporaire (D71).
+  const tmp = join(dossier, 'tmp');
+  const dansTmp = existsSync(tmp) ? globSync('**/*', { cwd: tmp, exclude: (f) => f.includes('node_modules') }).filter((f) => statSync(join(tmp, f)).isFile()).sort() : [];
+  if (dansTmp.length) cpSync(tmp, join(sortie, 'tmp'), { recursive: true, filter: (f) => !f.includes('node_modules') });
+  const ids = sessionsPrises.retenues.map((f) => basename(f, '.jsonl'));
+  const dansLePassage = globSync('ds-lab-relecteur/*/journal.jsonl', { cwd: tmp }).map((f) => join(tmp, f));
+  // Le TMPDIR des réglages n'atteint pas le hook (essai du 23/11/2026, D71) : sa mémoire est alors dans le dossier
+  // temporaire de la session, celui du terminal qui l'a lancée, ou /tmp sans TMPDIR.
+  const temporaires = [...new Set([tmpdir(), '/tmp'].map((d) => (existsSync(d) ? realpathSync(d) : d)))];
+  const ailleurs = temporaires.flatMap((d) => ids.map((s) => join(d, 'ds-lab-relecteur', s, 'journal.jsonl'))).filter(existsSync);
+  const relecteur = dansLePassage.length
+    ? { fichiers: dansLePassage, lieu: 'le TMPDIR du passage' }
+    : ailleurs.length
+      ? { fichiers: ailleurs, lieu: `${[...new Set(ailleurs.map((f) => dirname(dirname(dirname(f)))))].join(', ')} (le TMPDIR du passage n'a pas atteint le hook)` }
+      : null;
+  const flux = existsSync(join(dossier, 'session.jsonl')) ? [join(dossier, 'session.jsonl')] : [];
+  const ec = ecritures(appels(sessionsPrises.retenues.length ? [...sessionsPrises.retenues, ...agents.map((f) => join(journaux, f))] : flux));
+  const carnet = existsSync(join(app, 'carnet.md')) ? heuresDuCarnet(readFileSync(join(app, 'carnet.md'), 'utf8'), h.session, ec.premiere) : null;
+  writeFileSync(join(sortie, 'ecritures.md'), texteDesEcritures({ sessions: sessionsPrises, ecritures: ec, carnet, relecteur: relecteur && journalDuRelecteur(relecteur.fichiers), relecteurLieu: relecteur?.lieu ?? null, tmp: dansTmp }));
+  writeFileSync(join(sortie, 'ecritures.json'), `${JSON.stringify({ ecritures: ec, carnet, relecteur: relecteur && journalDuRelecteur(relecteur.fichiers) }, null, 2)}\n`);
   if (e.pages.length) notes.push(...(await planches(app, join(sortie, 'planches'), { marques: marquesDuBanc(DEPOT), pages: e.pages })));
   writeFileSync(join(sortie, 'notes.txt'), notes.length ? `${notes.join('\n')}\n` : 'rien à noter\n');
-  console.log(`banc : passage ${exercice}/${id} relevé dans ${sortie}`);
-  return 0;
 }
+
 
 /** Les fichiers de la copie de ds-lab que le passage a changés, ajoutés ou retirés depuis sa pose. @param {string} copie */
 function changesDansLaCopie(copie) {
@@ -196,56 +240,33 @@ async function compterEchecs(app, copie, touches) {
   return { marques: marques.length, fichiersTouches: touches.length, echecs: par };
 }
 
-/** Ce que la session sans humain a chargé, lu dans le message d'ouverture de son flux. @param {string} flux */
-function charge(flux) {
-  if (!existsSync(flux)) return { note: 'session avec humain : ce qu’elle a chargé se lit dans les attachements du journal' };
-  const init = readFileSync(flux, 'utf8')
-    .split('\n')
-    .filter(Boolean)
-    .map((l) => {
-      try {
-        return JSON.parse(l);
-      } catch {
-        return null;
-      }
-    })
-    .find((m) => m?.type === 'system' && m?.subtype === 'init');
-  if (!init) return { note: 'aucun message d’ouverture dans session.jsonl' };
-  const { model, tools, mcp_servers, slash_commands, skills, plugins, agents, permissionMode, claude_code_version } = init;
-  return { model, claude_code_version, permissionMode, tools, mcp_servers, slash_commands, skills, plugins, agents };
-}
-
 /**
- * Les heures d'un passage, lues dans le journal : du brief au dernier message de l'agent ; une attente va d'un message
- * de l'agent au message suivant de l'humain (un texte, pas le résultat d'un outil). Les demandes de permission ne
- * sont ni des questions ni des attentes : elles restent dans le travail.
- * @param {string[]} journaux
+ * Les heures d'un passage, lues dans les sessions qui portent le brief : du brief au dernier message de l'agent ; une
+ * attente va d'un message de l'agent au message suivant de l'humain (un texte, pas le résultat d'un outil). Les demandes
+ * de permission ne sont ni des questions ni des attentes : elles restent dans le travail. Un message de l'humain après le
+ * dernier de l'agent (/exit) n'est pas une attente. Les sessions écartées sont nommées, avec leurs heures (D71).
+ * @param {string[]} journaux @param {{ fichier: string, debut: string | null, fin: string | null }[]} ecartees
+ * @returns {{ texte: string, session: { debut: number, fin: number } | null }}
  */
-function heures(journaux) {
+function heures(journaux, ecartees) {
   /** @type {{ t: number, qui: 'humain' | 'agent' }[]} */
   const messages = [];
-  for (const j of journaux)
-    for (const l of readFileSync(j, 'utf8').split('\n').filter(Boolean)) {
-      let m;
-      try {
-        m = JSON.parse(l);
-      } catch {
-        continue;
-      }
-      if (!m.timestamp || m.isMeta) continue;
-      const contenu = m.message?.content;
-      if (m.type === 'user' && (typeof contenu === 'string' || (Array.isArray(contenu) && contenu.some((c) => c.type === 'text'))))
-        messages.push({ t: Date.parse(m.timestamp), qui: 'humain' });
-      else if (m.type === 'assistant') messages.push({ t: Date.parse(m.timestamp), qui: 'agent' });
-    }
+  for (const m of journaux.flatMap((j) => lignesJson(j))) {
+    if (!m.timestamp || m.isMeta) continue;
+    const contenu = m.message?.content;
+    if (m.type === 'user' && (typeof contenu === 'string' || (Array.isArray(contenu) && contenu.some((c) => c.type === 'text'))))
+      messages.push({ t: Date.parse(m.timestamp), qui: 'humain' });
+    else if (m.type === 'assistant') messages.push({ t: Date.parse(m.timestamp), qui: 'agent' });
+  }
   messages.sort((a, b) => a.t - b.t);
   const debut = messages.find((m) => m.qui === 'humain');
   const fin = messages.findLast((m) => m.qui === 'agent');
-  if (!debut || !fin) return 'Heures : journal vide ou absent.\n';
+  const autres = ecartees.length ? [`- Sessions écartées, sans le brief : ${ecartees.map((s) => `${s.fichier} (${s.debut} → ${s.fin})`).join(', ')}`] : [];
+  if (!debut || !fin) return { texte: ['Heures : journal vide ou absent.', ...autres, ''].join('\n'), session: null };
   let attente = 0;
-  for (let i = 1; i < messages.length; i++) if (messages[i].qui === 'humain' && messages[i - 1].qui === 'agent' && messages[i].t > debut.t) attente += messages[i].t - messages[i - 1].t;
+  for (let i = 1; i < messages.length; i++) if (messages[i].qui === 'humain' && messages[i - 1].qui === 'agent' && messages[i].t > debut.t && messages[i].t <= fin.t) attente += messages[i].t - messages[i - 1].t;
   const min = (/** @type {number} */ ms) => `${Math.round(ms / 60000)} min`;
-  return [
+  const texte = [
     '# Heures',
     '',
     `- Brief : ${new Date(debut.t).toISOString()}`,
@@ -253,8 +274,10 @@ function heures(journaux) {
     `- En tout : ${min(fin.t - debut.t)}`,
     `- L'agent attend l'humain : ${min(attente)}`,
     `- L'agent travaille : ${min(fin.t - debut.t - attente)}`,
+    ...autres,
     '',
     'La fin du passage est le message où l’agent dit avoir fini : à vérifier dans le journal.',
     '',
   ].join('\n');
+  return { texte, session: { debut: debut.t, fin: fin.t } };
 }

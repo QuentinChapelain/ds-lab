@@ -114,3 +114,15 @@ Un résumé du diff, montré **avant** chaque commit. **Arrêt 1** : cet attendu
 ## Hors périmètre
 
 Tout passage (B-4 à B-6 viennent après, sur le commit du lot) ; le skill ; le relecteur dans le skill ; le lien-bouton du catalogue et le slot `actions` de `DsCard` ; les rapports qui déclarent plus de contrôles qu'ils n'en ont faits ou taisent une exception ; l'IA neuve qui ne pose aucune question à l'humain présent : tableau des améliorations [C].
+
+## Écarts relevés en écrivant le code
+
+- **`npm test` : 1 111, pas 1 110.** Le tableau des tests nomme huit tests neufs (RL6, RL7, RL8, CN1, BN8, RV8, RV9, RV10) ; le compte « + 7 » était faux.
+- **Une ligne du carnet sans heure datée** (le format d'avant, `14:00`) n'est ni dans ni hors de la session : « heure non datée par la commande », à lire.
+- **`ecritures.json`** est écrit à côté d'`ecritures.md`, comme `pose.json` et `lu.json`.
+- **Le journal du relecteur** est lu dans le `TMPDIR` du passage ; s'il n'y est pas, dans le dossier temporaire du relevé, pour les sessions du brief, et `ecritures.md` dit où il a été lu.
+- **Le `TMPDIR` du passage est copié** dans le relevé (`tmp/`), sans `node_modules`.
+- **La session du brief** vaut pour `heures.md`, `ecritures.md` et `charge.md`. `lu.md` lit encore toutes les sessions : l'écart 4 du fichier 64 est laissé.
+- **RV10 joue le relecteur par la commande de ses hooks**, avec l'`env` des réglages du passage. Il ne prouve pas que Claude Code transmet cet `env` au hook : c'est l'essai de l'arrêt 2.
+- **L'essai de `TMPDIR`, fait le 23/11/2026** [F] (Claude Code 2.1.330, `claude -p`, `env -i`, `--setting-sources project,local --strict-mcp-config --no-chrome`, Haiku, dans le scratchpad) : `SessionStart`, `PostToolUse` sur `Bash` et `Stop` tournent en `-p` et reçoivent `DS_LAB` de l'`env` des réglages ; `TMPDIR`, posé au même endroit, y est vide, et le shell de la session ne l'a pas (`os.tmpdir()` rend `/tmp`). Le `TMPDIR` des réglages ne fait donc rien : à trancher à l'arrêt 2, rien n'a été contourné. Le relevé cherche la mémoire du relecteur dans le `TMPDIR` du passage, puis dans son propre dossier temporaire et dans `/tmp`, et dit où il l'a trouvée.
+- **Les signaux d'écriture du shell ont été resserrés** après un relevé d'essai sur A-1 et B-3 (sorties dans le scratchpad, `local/banc/` intouché) : une flèche (`=>`) prise pour une redirection, le contenu d'un `cat <<EOF` pris pour un script, la cible d'un `sed -i` dont l'expression porte des espaces. RV9 les joue. Un message de l'humain après le dernier de l'agent (`/exit`) n'est plus compté comme une attente dans `heures.md` (A-1 : 1 min d'attente, en fait 0).
