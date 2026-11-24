@@ -30,6 +30,7 @@ npm run verify -- <adresse> [<chemin>…] --reference <dossier> [--save] [--sour
 npm run apply  -- --modifications <fichier> --racine <dossier> [--essai]   appliquer au CSS la part tranchée
 npm run ajout  -- --modifications <fichier> --sortie <dossier> [--origine <adresse>]   poser la part tranchée à côté de l'ancien code : une feuille ajoutée par feuille modifiée
 npm run demo   -- [--racine <dossier>]                       servir la marque fictive en local
+npm run parcours   -- <projet.json> [--servir] [--port <n>]  où en est le projet : étape, qui a la main, commande suivante ; écrit la page du parcours et la sert sur 127.0.0.1
 npm run saisie     -- <entree.json> [--verdict <fichier>]   saisir une marque : échelles, couche marque, mode sombre, resolver, contraste dans les deux modes ; refus avec motif ; --verdict écrit aussi le verdict
 npm run contraste   -- [--marque <dossier> | --marques <dossier>] [--paires <fichier>] [--mode light|dark] [--largeur wide|narrow]   contrôler les paires de rôles de couleur
 npm run espacements -- [--marque <dossier> | --marques <dossier>] [--semantique <fichier>] [--etroit <fichier>]   contrôler les espacements par relation
@@ -64,6 +65,21 @@ Le site audité n'est jamais modifié : les nouvelles valeurs sont posées dans 
 La preuve juge la décision du designer, pas ce que l'outil a réussi à écrire (D39). `npm run verify -- <adresse> [<chemin>…] --reference <dossier> --ajout <sortie>` rejoue sur chaque page intacte la simulation de la réduction, sans l'allumer : elle donne, pour chaque ligne décidée, les éléments, la propriété, la valeur visée et la déclaration qui tenait la valeur (écrite, non écrite, ou hors de `modifications.json`). Puis il pose les feuilles ajoutées, dans le même chargement, et lit la valeur à l'écran ; transitions et animations sont coupées le temps du relevé, sinon la valeur lue juste après la pose serait celle du départ d'une transition, l'ancienne, alors que la capture, prise animations finies, est juste (D40). Une ligne décidée est « arrivée » si toutes ses déclarations sont arrivées sur tous leurs éléments, sinon « en partie » ou « non arrivée », avec le compte en déclarations et en éléments ; pour chaque déclaration qui n'arrive pas, il dit une cause, ce qui tient la valeur (attribut style, bloc de style injecté par un script, variable, raccourci, autre règle) et ce qu'il faut faire. La cause est celle du manifeste quand il la connaît (déclaration non écrite, ligne hors de `modifications.json`), avec l'« à faire » de `pertes.md`, mot pour mot ; sinon celle qu'il mesure. La ligne de verdict finit par sa cause, ou par « causes : voir le détail » quand ses déclarations en ont plusieurs. Ce que verify pose lui-même, `tokens.css` et les feuilles ajoutées, il le reconnaît à son texte : ce n'est jamais un canal du site, une variable qu'il pose ne demande rien, et la variable du jeton n'est jamais à poser avec elle-même pour repli. Pour un bloc injecté par un script, il ne propose de poser une feuille ajoutée après lui que si elle porte une règle de l'élément pour la propriété ; pour un raccourci d'origine `!important`, il dit d'écrire la propriété longue avec `!important`, comme `pertes.md`. « Déjà en place » : la valeur visée était là avant la pose, ce n'est pas une preuve. Sans élément : « non vue » sur une page vérifiée, « hors des pages vérifiées », ou « non vérifiable (état) » pour une ligne vue seulement au survol, au focus ou à l'appui. Il donne la hauteur de la page intacte, celle de la page avec les feuilles et celle de la référence, et finit par une phrase qui compte les lignes par état. Il sort en 0 si aucune ligne n'est en partie, non arrivée, déjà en place ou non vue, en 1 sinon, en 2 sur une panne, dont un dossier tiré d'un `modifications.json` sans simulation (relancer reduce, puis ajout). Le compte de pixels contre la référence reste affiché, il ne décide pas. Sur les six réductions de fixtures, le rendu avec les feuilles ajoutées est identique au pixel à celui de la copie passée par apply, en clair comme en sombre ; la page de marque et le passage 2c sortent en 1, par leurs lignes hors de `modifications.json` (valeur en `var()`, jeton absent). `ajout` sort en 0 si chaque ligne décidée est écrite, 1 s'il en reste une non écrite ou une ligne hors de `modifications.json`, 2 sur une panne, rien d'écrit (D18).
 
 Codes de sortie de la chaîne (D18) : `npm run audit` sort en 2 si une page n'a pas pu être mesurée (l'avertissement nomme l'étape : navigation, feuilles, mesure), si sa trace est en panne ou si le script v1 y échoue ; l'audit est alors écrit, incomplet ; si aucune page n'est mesurée, rien n'est écrit. `npm run reduce` s'arrête en 2 dès qu'une page tombe, ou si une couleur de marque de la cible est illisible ; il affiche les avertissements de navigation (statut HTTP, redirection, feuilles illisibles), les sélecteurs tiers invalides et les clés de `decisions.json` qui ne visent aucune ligne ni carte, sans s'arrêter. `npm run marque` affiche aussi les avertissements de navigation. L'audit signale, sans changer son code de sortie, une feuille importée qu'il ne peut pas ranger dans l'ordre de la cascade, faute de la rattacher à son import par son adresse (redirection) : « feuille importée hors de l'ordre de la cascade » (D33). Pour toutes les commandes, une erreur d'usage tient en une ligne préfixée par la commande, sortie 2, sans l'aide ; `-h` donne l'aide.
+
+## Le parcours
+
+Le chat conduit, le panneau montre (D72). Un projet est un dossier et son fichier `projet.json` : le produit, ses sites (adresse, un échantillon de pages, une par modèle de page, l'entrée de la marque), la cible de la réduction (`target`), les sources des éléments tiers (`sources`) et la racine des sorties (`outputs`), écrit par l'IA ou à la main. `npm run parcours -- <projet.json>` en calcule l'état depuis les sorties, jamais saisi : six étapes (Site, Constat, Marques, Décisions, Livraison, Suivi), rangées en quatre temps (Mesurer, Décider, Poser, Tenir) ; il écrit `parcours.html` à côté du projet et dit au terminal l'étape en cours, qui a la main, quoi faire et la commande suivante. Avec `--servir`, la page et les écrans sont servis sur 127.0.0.1 (le panneau d'aperçu de Claude Code refuse un fichier ouvert par son chemin), et la page se recalcule à chaque rechargement. Fictifs : `fixtures/parcours/`.
+
+| Sous-dossier de `outputs` | Écrit par | Ce que l'état y lit |
+|---|---|---|
+| `composants/<id>/<hôte>/<horodatage>/` | `npm run composants -- … --out <outputs>/composants/<id>` | `constat.json`, un par site ; écran `constat.html` |
+| `saisies/<id>.json` | `npm run saisie -- <entrée> --verdict <fichier>` | Le verdict de la marque du site, et l'empreinte de son entrée |
+| `reductions/<hôte>/<horodatage>/` | `npm run reduce -- … --out <outputs>/reductions` | `table.json`, `modifications.json` ; écran `revue.html` |
+| `decisions.json` | La revue, exporté par le designer | Les décisions tranchées |
+| `ajout/<feuilles ajoutées>` | `npm run ajout -- … --sortie <outputs>/ajout` | `feuilles-ajoutees.json` |
+| `verify/<hôte>/<horodatage>/` | `npm run verify -- … --ajout <outputs>/ajout --out <outputs>/verify` | `verdict.json` |
+
+Le plus récent est le dossier d'horodatage le plus grand par son nom, jamais par la date d'un fichier : même projet, même état. Le constat se fait sur chaque site ; la réduction, la livraison et la preuve sur le premier, car l'outil réduit une origine à la fois. La page montre la barre des quatre temps, le moment en cours et lui seul (une phrase, la ligne d'action, l'écran de l'étape embarqué), et le reste replié dans « Tout le parcours ». Le dernier résultat reste à l'écran jusqu'à ce que l'étape suivante ait produit une sortie. Ses valeurs viennent toutes des rôles communs des jetons, sans marque.
 
 ## Le parcours d'une décision
 
@@ -256,6 +272,9 @@ La preuve (`atelier/preuve.js`, une partie par composant dans `atelier/preuve/`)
 | Tranche | Les pas réservés à un usage (le texte prend 11 ou 12) |
 | Plein | Un fond coloré qui porte un texte (bouton, étiquette) ; le texte posé dessus s'appelle onSolid |
 | Valise | La cible générique : 12 pas, valeurs générées par contraste visé, règles d'usage. On change de marque en changeant les valeurs derrière les noms |
+| Produit | Ce qu'on migre : le même code, les mêmes modèles de page ; un par projet du parcours |
+| Site | Une adresse où le produit tourne ; un projet en a un ou plusieurs |
+| Marque | L'identité posée sur un site : couleur, accent, police des titres ; une par site |
 | Contrat de marque | Ce qu'un client peut changer, et ce que le système garantit : [docs/contrat-de-marque.md](docs/contrat-de-marque.md) |
 
 ### La méthode
@@ -298,6 +317,8 @@ La preuve (`atelier/preuve.js`, une partie par composant dans `atelier/preuve/`)
 
 | Terme | Définition |
 |---|---|
+| Temps | L'un des quatre moments du parcours : Mesurer, Décider, Poser, Tenir ; chacun range une ou deux étapes |
+| Porte | Là où l'humain décide, sur un écran. Trois : la marque, la revue, et pour tenir la planche et la CI, sans écran aujourd'hui |
 | Lot | Un ensemble de changements avec un seul objectif |
 | Attendu | Ce qu'on doit voir, écrit et validé avant le code |
 | Passage | Le designer utilise l'outil seul ; ce qui bloque devient le lot suivant |

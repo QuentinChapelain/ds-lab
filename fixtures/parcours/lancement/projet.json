@@ -1,0 +1,14 @@
+{
+  "product": "Annuaire des cafés",
+  "sites": [
+    {
+      "id": "orbe",
+      "url": "http://127.0.0.1:4173",
+      "pages": [],
+      "brand": "marques/orbe/entree.json"
+    }
+  ],
+  "target": "../../marque-demo/cible-valise.json",
+  "sources": "../../marque-demo/sources.json",
+  "outputs": "sorties"
+}

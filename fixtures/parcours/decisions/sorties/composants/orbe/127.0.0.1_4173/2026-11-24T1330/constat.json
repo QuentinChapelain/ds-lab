@@ -1,0 +1,16 @@
+{
+  "chiffres": {
+    "elements": 30,
+    "types": 3,
+    "versions": 11,
+    "frameworks": {},
+    "autrement": 30,
+    "nonIdentifies": 39
+  },
+  "scores": {
+    "versionsAGarder": {
+      "x": 0,
+      "y": 3
+    }
+  }
+}

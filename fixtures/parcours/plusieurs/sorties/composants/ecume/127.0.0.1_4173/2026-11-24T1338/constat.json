@@ -1,0 +1,18 @@
+{
+  "chiffres": {
+    "elements": 27,
+    "types": 7,
+    "versions": 12,
+    "frameworks": {
+      "Vuetify": 17
+    },
+    "autrement": 10,
+    "nonIdentifies": 3
+  },
+  "scores": {
+    "versionsAGarder": {
+      "x": 0,
+      "y": 7
+    }
+  }
+}

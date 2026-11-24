@@ -1,0 +1,425 @@
+// @ts-check
+/**
+ * État d'un parcours (D72), calculé depuis les sorties du projet, jamais saisi : même projet, même état. Six étapes,
+ * affichées en quatre temps. Chaque étape a son propre état d'après ses sorties ; l'étape en cours est la première qui
+ * n'est pas faite, les suivantes sont à venir. « Le plus récent » est le dossier d'horodatage le plus grand, jamais la
+ * date d'un fichier. Le constat se fait par site ; la réduction, la livraison et la preuve sur le premier site, car
+ * l'outil réduit une origine à la fois.
+ */
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { join, relative } from 'node:path';
+import { lireJson } from '../lib/fichiers.js';
+import { decisionFor, rowKey } from '../reduce/propose.js';
+import { RESOLVER } from '../tokens/resolver.js';
+
+/**
+ * @typedef {import('./projet.js').Projet} Projet
+ * @typedef {import('./projet.js').Site} Site
+ * @typedef {'faite' | 'en cours' | 'à venir'} EtatEtape
+ * @typedef {'designer' | 'développeur' | 'outil'} Main
+ * @typedef {'site' | 'constat' | 'marques' | 'decisions' | 'livraison' | 'suivi'} CleEtape
+ * @typedef {{ href: string, titre: string }} Ecran
+ * @typedef {{ cle: CleEtape, nom: string, temps: string, acteurs: string, faite: boolean, etat: EtatEtape, sortie: boolean,
+ *   main: Main | null, action: string | null, commande: string | null, fait: string | null, lignes: string[],
+ *   ecran: Ecran | null, sansEcran: string | null, ouvre: string, refus?: boolean }} Etape
+ * @typedef {{ chiffres: string[], dernier: string, complet: boolean, manque: string[], humain: string[] }} Bilan
+ * @typedef {{ produit: string, sousTitre: string | null, unSite: boolean, etapes: Etape[], temps: { nom: string, etat: EtatEtape, etapes: CleEtape[] }[],
+ *   courante: Etape, moment: 'lancement' | 'ecran' | 'sans-ecran' | 'bilan', ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
+ *   phrase: string | null, bilan: Bilan | null }} Etat
+ */
+
+/** Les quatre temps et leurs étapes (présentation de l'outil, D72). */
+export const TEMPS = /** @type {const} */ ([
+  ['Mesurer', ['site', 'constat']],
+  ['Décider', ['marques', 'decisions']],
+  ['Poser', ['livraison']],
+  ['Tenir', ['suivi']],
+]);
+
+/** Une phrase par moment, ce qu'il faut en comprendre (D72). */
+export const PHRASES = {
+  lancement: 'Un geste, quatre temps, trois portes.',
+  constat: 'On mesure ce qui s’affiche vraiment, pas ce que le code contient.',
+  marque: 'Une couleur de marque devient douze pas. Le pas 9 est la couleur exacte.',
+  refus: 'Une marque illisible n’entre pas, et le message dit pourquoi.',
+  revue: 'On choisit une relation, pas une valeur.',
+  bilan: 'La couche visuelle tient ses seuils. Voici ce qui reste à faire vérifier par un humain.',
+};
+
+/** Accord en nombre : 0 et 1 au singulier. @param {number} n @param {string} un @param {string} plusieurs */
+const nombre = (n, un, plusieurs) => `${n} ${n > 1 ? plusieurs : un}`;
+
+/** Liste en français : « a, b et c ». @param {string[]} l */
+const liste = (l) => (l.length < 2 ? l.join('') : `${l.slice(0, -1).join(', ')} et ${l.at(-1)}`);
+
+/** « dans le site a », « dans les sites a et b ». @param {{ id: string }[]} l */
+const lesSites = (l) => (l.length > 1 ? `dans les sites ${liste(l.map((s) => s.id))}` : `dans le site ${l[0]?.id}`);
+
+const HORODATAGE = /^(\d{4})-(\d\d)-(\d\d)T(\d\d)(\d\d)(?:-(\d+))?$/;
+
+/**
+ * Le dossier d'horodatage le plus récent sous `dossier`, par son nom ; null s'il n'y en a pas.
+ * @param {string} dossier
+ */
+export function plusRecent(dossier) {
+  if (!existsSync(dossier)) return null;
+  const noms = readdirSync(dossier, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && HORODATAGE.test(e.name))
+    .map((e) => e.name);
+  if (!noms.length) return null;
+  const cle = (/** @type {string} */ n) => {
+    const m = /** @type {RegExpExecArray} */ (HORODATAGE.exec(n));
+    return [m.slice(1, 6).join(''), Number(m[6] ?? 1)];
+  };
+  noms.sort((a, b) => {
+    const [x, i] = cle(a);
+    const [y, j] = cle(b);
+    return x < y ? -1 : x > y ? 1 : Number(i) - Number(j);
+  });
+  return { nom: /** @type {string} */ (noms.at(-1)), chemin: join(dossier, /** @type {string} */ (noms.at(-1))) };
+}
+
+/** « 2026-11-24T1334 » → « 24/11/2026 à 13 h 34 ». @param {string} nom */
+const dateDe = (nom) => {
+  const m = /** @type {RegExpExecArray} */ (HORODATAGE.exec(nom));
+  return `${m[3]}/${m[2]}/${m[1]} à ${Number(m[4])} h ${m[5]}`;
+};
+
+/** Mot d'un argument du shell, entre apostrophes s'il le faut. @param {string} s */
+const q = (s) => (/^[\w@%+=:,./-]+$/.test(s) ? s : `'${s.replace(/'/g, `'\\''`)}'`);
+
+/** @param {Record<string, unknown>} o */
+const trie = (o) => JSON.stringify(Object.keys(o).sort().map((k) => [k, o[k]]));
+
+/**
+ * Calcule l'état du parcours.
+ * @param {Projet} projet
+ * @param {{ base?: string }} [opts]  dossier depuis lequel les commandes proposées sont lancées (défaut : le dossier courant)
+ * @returns {Etat}
+ */
+export function calculerEtat(projet, { base = process.cwd() } = {}) {
+  const { sites, sorties } = projet;
+  const unSite = sites.length === 1;
+  const premier = sites[0];
+  /** Chemin d'un fichier pour une commande. @param {string} p */
+  const c = (p) => q(relative(base, p) || '.');
+  /** Adresse d'un fichier de sortie, sous le serveur. @param {string} p */
+  const href = (p) => `/sorties/${relative(sorties, p).split(/[\\/]/).map(encodeURIComponent).join('/')}`;
+  /** Adresses d'une commande sur un site : la première page en entier, les autres en chemin. @param {Site} s */
+  const adresses = (s) => [q(s.origine + (s.pages[0] ?? '/')), ...s.pages.slice(1).map(q)].join(' ');
+  const decisionsComposants = join(sorties, 'decisions-composants.json');
+  const fichierDecisions = join(sorties, 'decisions.json');
+
+  // Site.
+  const sansPages = sites.filter((s) => !s.pages.length);
+  const comptes = sites.map((s) => s.pages.length);
+  const pages = (/** @type {number} */ n) => (n ? nombre(n, 'page', 'pages') : 'aucune page');
+  /** @type {Etape} */
+  const site = {
+    cle: 'site',
+    nom: unSite ? 'Site' : 'Sites',
+    temps: 'Mesurer',
+    acteurs: 'le designer',
+    faite: !sansPages.length,
+    etat: 'à venir',
+    sortie: false,
+    main: 'designer',
+    action: unSite
+      ? 'choisir une page par modèle de page et l’écrire dans projet.json'
+      : `choisir une page par modèle de page ${lesSites(sansPages)} et l’écrire dans projet.json`,
+    commande: null,
+    fait: unSite ? pages(comptes[0]) : comptes.every((n) => n === comptes[0]) ? `${sites.length} sites, ${pages(comptes[0])} chacun` : `${sites.length} sites : ${liste(comptes.map(String))} pages`,
+    lignes: [],
+    ecran: null,
+    sansEcran: 'Pas d’écran : les pages s’écrivent dans projet.json.',
+    ouvre: '',
+  };
+
+  // Constat, un par site.
+  const constats = sites.map((s) => {
+    const d = plusRecent(join(sorties, 'composants', s.id, s.hote));
+    const f = d && join(d.chemin, 'constat.json');
+    if (!d || !f || !existsSync(f)) return { site: s, constat: null, html: null };
+    const html = join(d.chemin, 'constat.html');
+    return { site: s, constat: lireJson(f), html: existsSync(html) ? html : null };
+  });
+  /** @param {any} k */
+  const chiffres = (k) => `${nombre(k.chiffres.elements, 'élément', 'éléments')}, ${nombre(k.chiffres.types, 'type', 'types')}, ${nombre(k.chiffres.versions, 'version', 'versions')}`;
+  /** @param {any} k */
+  const choisies = (k) => `versions choisies : ${k.scores.versionsAGarder.x} sur ${k.scores.versionsAGarder.y}`;
+  const sansConstat = constats.filter((x) => !x.constat);
+  const aConstat = constats.filter((x) => x.constat);
+  const premierEcran = constats.find((x) => x.html);
+  const aMesurer = sansConstat[0]?.site;
+  /** @type {Etape} */
+  const constat = {
+    cle: 'constat',
+    nom: 'Constat',
+    temps: 'Mesurer',
+    acteurs: 'l’outil',
+    faite: !sansConstat.length,
+    etat: 'à venir',
+    sortie: aConstat.length > 0,
+    main: 'outil',
+    action: aMesurer ? (unSite ? 'lancer le constat' : `lancer le constat du site ${aMesurer.id}`) : null,
+    commande: aMesurer
+      ? `npm run composants -- ${adresses(aMesurer)} --out ${c(join(sorties, 'composants', aMesurer.id))} --nom ${q(projet.produit)}${projet.signatures ? ` --signatures ${c(projet.signatures)}` : ''}${existsSync(decisionsComposants) ? ` --decisions ${c(decisionsComposants)}` : ''}`
+      : null,
+    fait: unSite ? (constats[0].constat ? chiffres(constats[0].constat) : null) : `${nombre(aConstat.length, 'site mesuré', 'sites mesurés')} sur ${sites.length}`,
+    lignes: constats.map((x) =>
+      x.constat ? `${unSite ? '' : `${x.site.id} : `}${chiffres(x.constat)} ; ${choisies(x.constat)}` : `${x.site.id} : pas encore de constat`,
+    ),
+    ecran: premierEcran?.html ? { href: href(premierEcran.html), titre: unSite ? 'Constat' : `Constat du site ${premierEcran.site.id}` } : null,
+    sansEcran: null,
+    ouvre: unSite ? 'S’ouvre quand le site a ses pages.' : 'S’ouvre quand chaque site a ses pages.',
+  };
+
+  // Marques, une par site.
+  const marques = sites.map((s) => {
+    if (!s.entree) return { site: s, statut: 'sans entrée', nom: s.id, motifs: [], planche: null };
+    if (!existsSync(s.entree)) return { site: s, statut: 'entrée absente', nom: s.id, motifs: [], planche: null };
+    const fv = join(sorties, 'saisies', `${s.id}.json`);
+    const v = existsSync(fv) ? lireJson(fv) : null;
+    const nom = typeof v?.name === 'string' ? v.name : s.id;
+    const planche = s.dossierMarque && existsSync(join(s.dossierMarque, 'roles.html')) ? `/marques/${s.id}/roles.html` : null;
+    if (!v) return { site: s, statut: 'à saisir', nom, motifs: [], planche: null };
+    const empreinte = createHash('sha256').update(readFileSync(s.entree)).digest('hex');
+    if (v.entree !== empreinte) return { site: s, statut: 'entrée changée', nom, motifs: [], planche: null };
+    return { site: s, statut: v.verdict === 'acceptée' ? 'acceptée' : 'refusée', nom, motifs: Array.isArray(v.motifs) ? v.motifs : [], planche: v.verdict === 'acceptée' ? planche : null };
+  });
+  /** @param {(typeof marques)[number]} m */
+  const texteMarque = (m) =>
+    m.statut === 'acceptée' ? `${m.nom}, acceptée`
+    : m.statut === 'refusée' ? `${m.nom}, refusée : ${m.motifs[0] ?? 'motif absent du verdict'}`
+    : m.statut === 'à saisir' ? `${m.nom}, à saisir`
+    : m.statut === 'entrée changée' ? `${m.nom}, entrée changée depuis la saisie`
+    : m.statut === 'entrée absente' ? `entrée absente : ${relative(projet.dossier, /** @type {string} */ (m.site.entree))}`
+    : 'pas de marque : écrire brand dans projet.json';
+  const aFaire = marques.find((m) => m.statut !== 'acceptée');
+  const statuts = ['acceptée', 'refusée', 'à saisir', 'entrée changée', 'entrée absente', 'sans entrée'];
+  const pluriels = { acceptée: 'acceptées', refusée: 'refusées', 'à saisir': 'à saisir', 'entrée changée': 'entrées changées', 'entrée absente': 'entrées absentes', 'sans entrée': 'sans entrée' };
+  const planche = marques.find((m) => m.planche);
+  /** @type {Etape} */
+  const etapeMarques = {
+    cle: 'marques',
+    nom: unSite ? 'Marque' : 'Marques',
+    temps: 'Décider',
+    acteurs: 'le designer, puis l’outil',
+    faite: !aFaire,
+    etat: 'à venir',
+    sortie: marques.some((m) => m.statut === 'acceptée' || m.statut === 'refusée' || m.statut === 'entrée changée'),
+    main: aFaire && (aFaire.statut === 'à saisir' || aFaire.statut === 'entrée changée') ? 'outil' : 'designer',
+    action: !aFaire
+      ? null
+      : aFaire.statut === 'refusée'
+        ? `corriger l’entrée de ${aFaire.nom} (${aFaire.motifs[0] ?? 'motif absent du verdict'}), puis la saisir à nouveau`
+        : aFaire.statut === 'à saisir' || aFaire.statut === 'entrée changée'
+          ? unSite ? 'saisir la marque' : `saisir la marque du site ${aFaire.site.id}`
+          : aFaire.statut === 'entrée absente'
+            ? `écrire l’entrée de la marque : ${relative(projet.dossier, /** @type {string} */ (aFaire.site.entree))}`
+            : unSite ? 'écrire l’entrée de la marque et la nommer dans projet.json (brand)' : `écrire l’entrée de la marque du site ${aFaire.site.id} et la nommer dans projet.json (brand)`,
+    commande:
+      aFaire && (aFaire.statut === 'à saisir' || aFaire.statut === 'entrée changée')
+        ? `npm run saisie -- ${c(/** @type {string} */ (aFaire.site.entree))} --verdict ${c(join(sorties, 'saisies', `${aFaire.site.id}.json`))} && node src/cli/planche.js --marque ${c(/** @type {string} */ (aFaire.site.dossierMarque))}`
+        : null,
+    fait: unSite
+      ? texteMarque(marques[0])
+      : statuts
+          .map((st) => /** @type {[string, number]} */ ([st, marques.filter((m) => m.statut === st).length]))
+          .filter(([, n]) => n)
+          .map(([st, n]) => `${n} ${n > 1 ? pluriels[/** @type {keyof typeof pluriels} */ (st)] : st}`)
+          .join(', '),
+    lignes: unSite ? [] : marques.map((m) => `${m.site.id} : ${texteMarque(m)}`),
+    ecran: planche?.planche ? { href: planche.planche, titre: unSite ? 'Planche des rôles' : `Planche des rôles : ${planche.nom}` } : null,
+    sansEcran: null,
+    ouvre: 'S’ouvre quand le constat est fait.',
+    refus: marques.some((m) => m.statut === 'refusée'),
+  };
+
+  // Décisions, sur le premier site.
+  const red = plusRecent(join(sorties, 'reductions', premier.hote));
+  const fTable = red && join(red.chemin, 'table.json');
+  const table = fTable && existsSync(fTable) ? lireJson(fTable) : null;
+  const decisions = existsSync(fichierDecisions) ? lireJson(fichierDecisions) : (table?.decisions ?? {});
+  let total = 0;
+  let enAttente = 0;
+  if (table) {
+    const pleins = table.table?.pleins ?? [];
+    const dansCarte = new Set(pleins.flatMap((/** @type {any} */ g) => (g.rows ?? []).map((/** @type {any} */ x) => x.key)));
+    for (const [famille, { rows }] of Object.entries(table.table?.families ?? {}))
+      for (const r of /** @type {any[]} */ (rows)) {
+        if (r.class !== 'décision' || dansCarte.has(rowKey(famille, r))) continue;
+        total++;
+        if (decisionFor(decisions, famille, r) === undefined) enAttente++;
+      }
+    for (const g of pleins) {
+      total++;
+      if (decisions[g.key] === undefined) enAttente++;
+    }
+  }
+  const nonLues = !!table && existsSync(fichierDecisions) && trie(table.decisions ?? {}) !== trie(decisions);
+  const sansModifs = !!red && !existsSync(join(red.chemin, 'modifications.json'));
+  const resolver = premier.dossierMarque ? join(premier.dossierMarque, RESOLVER) : null;
+  const reduire = (/** @type {boolean} */ avecDecisions) =>
+    resolver && projet.cible
+      ? `npm run reduce -- ${adresses(premier)} --target ${c(projet.cible)} --tokens ${c(resolver)}${projet.sources ? ` --sources ${c(projet.sources)}` : ''}${avecDecisions ? ` --decisions ${c(fichierDecisions)}` : ''} --references ${c(join(sorties, 'references'))} --out ${c(join(sorties, 'reductions'))}`
+      : null;
+  const revue = red && existsSync(join(red.chemin, 'revue.html')) ? join(red.chemin, 'revue.html') : null;
+  /** @type {Etape} */
+  const etapeDecisions = {
+    cle: 'decisions',
+    nom: 'Décisions',
+    temps: 'Décider',
+    acteurs: 'le designer',
+    faite: !!table && !enAttente && !nonLues && !sansModifs,
+    etat: 'à venir',
+    sortie: !!table,
+    main: !table ? (projet.cible ? 'outil' : 'designer') : enAttente ? 'designer' : 'outil',
+    action: !table
+      ? projet.cible ? 'lancer la réduction' : 'écrire la cible (target) dans projet.json'
+      : enAttente
+        ? `trancher ${nombre(enAttente, 'décision', 'décisions')} dans la revue, puis exporter decisions.json dans ${relative(projet.dossier, sorties) || '.'}`
+        : 'relancer la réduction avec les décisions',
+    commande: !table ? reduire(false) : enAttente ? null : reduire(existsSync(fichierDecisions)),
+    fait: table ? (total ? `${nombre(total - enAttente, 'décision tranchée', 'décisions tranchées')} sur ${total}` : 'aucune décision à prendre') : null,
+    lignes: [],
+    ecran: revue ? { href: href(revue), titre: 'Revue' } : null,
+    sansEcran: null,
+    ouvre: unSite ? 'S’ouvre quand la marque est acceptée.' : 'S’ouvre quand chaque marque est acceptée.',
+  };
+
+  // Livraison et suivi, sur le premier site.
+  const manifeste = join(sorties, 'ajout', 'feuilles-ajoutees.json');
+  const aManifeste = existsSync(manifeste);
+  const ver = plusRecent(join(sorties, 'verify', premier.hote));
+  const fVerdict = ver && join(ver.chemin, 'verdict.json');
+  const verdict = fVerdict && existsSync(fVerdict) ? lireJson(fVerdict) : null;
+  const lignesVerdict = /** @type {any[]} */ (verdict?.lignes ?? []);
+  const arrivees = lignesVerdict.filter((l) => l.etat === 'arrivée').length;
+  const prouver = `npm run verify -- ${adresses(premier)} --reference ${c(join(sorties, 'references'))}${projet.sources ? ` --sources ${c(projet.sources)}` : ''} --ajout ${c(join(sorties, 'ajout'))} --out ${c(join(sorties, 'verify'))}`;
+  const arriveesSur = `${nombre(arrivees, 'ligne arrivée', 'lignes arrivées')} sur ${lignesVerdict.length}`;
+  /** @type {Etape} */
+  const livraison = {
+    cle: 'livraison',
+    nom: 'Livraison',
+    temps: 'Poser',
+    acteurs: 'le développeur, puis l’outil',
+    faite: aManifeste && verdict?.sortie === 0,
+    etat: 'à venir',
+    sortie: aManifeste,
+    main: !aManifeste ? 'développeur' : !verdict ? 'outil' : 'développeur',
+    action: !aManifeste
+      ? 'poser les feuilles ajoutées'
+      : !verdict
+        ? 'prouver la livraison sur les pages'
+        : `lire pertes.md et la sortie de verify : ${nombre(lignesVerdict.length - arrivees, 'ligne n’est pas arrivée', 'lignes ne sont pas arrivées')}`,
+    commande: !aManifeste ? (red ? `npm run ajout -- --modifications ${c(join(red.chemin, 'modifications.json'))} --sortie ${c(join(sorties, 'ajout'))}` : null) : !verdict ? prouver : null,
+    fait: verdict ? `${arriveesSur}, ${nombre(verdict.pages?.length ?? 0, 'page', 'pages')}` : aManifeste ? 'feuilles ajoutées, pas encore prouvées' : null,
+    lignes: [],
+    ecran: null,
+    sansEcran: 'Pas d’écran : la livraison se lit dans pertes.md et dans la sortie de verify.',
+    ouvre: 'S’ouvre quand les décisions sont prises.',
+  };
+  /** @type {Etape} */
+  const suivi = {
+    cle: 'suivi',
+    nom: 'Suivi',
+    temps: 'Tenir',
+    acteurs: 'l’outil',
+    faite: false,
+    etat: 'à venir',
+    sortie: false,
+    main: 'outil',
+    action: 'relancer le contrôle',
+    commande: prouver,
+    fait: verdict && ver ? `dernier contrôle : ${dateDe(ver.nom)}, ${arriveesSur}` : null,
+    lignes: [],
+    ecran: null,
+    sansEcran: 'Pas d’écran : le suivi demande une CI, que le produit n’a pas encore.',
+    ouvre: 'S’ouvre quand la livraison est prouvée.',
+  };
+
+  const etapes = [site, constat, etapeMarques, etapeDecisions, livraison, suivi];
+  const i = etapes.findIndex((e) => !e.faite);
+  etapes.forEach((e, k) => (e.etat = k === i ? 'en cours' : e.faite ? 'faite' : 'à venir'));
+  const courante = etapes[i];
+  const temps = TEMPS.map(([nom, cles]) => {
+    const es = etapes.filter((e) => /** @type {readonly string[]} */ (cles).includes(e.cle));
+    return { nom, etapes: /** @type {CleEtape[]} */ ([...cles]), etat: /** @type {EtatEtape} */ (es.every((e) => e.etat === 'faite') ? 'faite' : es.some((e) => e.etat === 'en cours') ? 'en cours' : 'à venir') };
+  });
+
+  // Le moment : le dernier résultat reste à l'écran jusqu'à ce que l'étape suivante ait produit une sortie.
+  /** @type {Etat['ecran']} */
+  let ecran = null;
+  if (courante.ecran && courante.sortie) ecran = { ...courante.ecran, etape: courante.cle, precedente: false };
+  else if (!courante.sortie && i > 0 && etapes[i - 1].ecran) ecran = { .../** @type {Ecran} */ (etapes[i - 1].ecran), etape: etapes[i - 1].cle, precedente: true };
+  const lancement = etapes.every((e) => !e.sortie);
+  const moment = lancement ? 'lancement' : courante.cle === 'suivi' ? 'bilan' : ecran ? 'ecran' : 'sans-ecran';
+  const refus = etapeMarques.refus && (ecran?.etape === 'marques' || (!ecran && courante.cle === 'marques'));
+  const phrase =
+    moment === 'lancement' ? PHRASES.lancement
+    : moment === 'bilan' ? null
+    : refus ? PHRASES.refus
+    : ecran?.etape === 'constat' ? PHRASES.constat
+    : ecran?.etape === 'marques' ? PHRASES.marque
+    : ecran?.etape === 'decisions' ? PHRASES.revue
+    : null;
+
+  /** @type {Bilan | null} */
+  let bilan = null;
+  if (moment === 'bilan') {
+    const f = table?.table?.families ?? {};
+    /** @param {string} k @param {string} un @param {string} plusieurs */
+    const avantApres = (k, un, plusieurs) => (f[k]?.summary ? `${f[k].summary.before} → ${nombre(f[k].summary.after, un, plusieurs)}` : null);
+    const enEtat = lignesVerdict.filter((l) => l.etat === 'non vérifiable (état)').length;
+    const complet = marques.every((m) => m.statut === 'acceptée') && verdict?.sortie === 0;
+    bilan = {
+      chiffres: /** @type {string[]} */ ([avantApres('colors', 'couleur', 'couleurs'), avantApres('spacing', 'espacement', 'espacements'), avantApres('fontSizes', 'taille de texte', 'tailles de texte')].filter(Boolean)),
+      dernier: `Dernier contrôle : ${ver ? dateDe(ver.nom) : 'aucun'}, ${arriveesSur}.`,
+      complet,
+      manque: [
+        ...marques.filter((m) => m.statut !== 'acceptée').map((m) => `la marque du site ${m.site.id}, acceptée`),
+        ...(verdict?.sortie === 0 ? [] : ['un dernier contrôle sans ligne manquante']),
+      ],
+      humain: [
+        unSite ? 'les pages hors de l’échantillon' : 'les pages hors des échantillons',
+        ...(unSite ? [] : [`${lesSites(sites.slice(1)).replace(/^dans /, '')}, sans preuve`]),
+        ...(enEtat ? [nombre(enEtat, 'ligne vue seulement au survol, au focus ou à l’appui', 'lignes vues seulement au survol, au focus ou à l’appui')] : []),
+        'l’installation dans le code du produit',
+      ],
+    };
+  }
+
+  return {
+    produit: projet.produit,
+    sousTitre: unSite ? null : `${sites.length} sites, ${nombre(sites.length, 'marque', 'marques')}`,
+    unSite,
+    etapes,
+    temps,
+    courante,
+    moment,
+    ecran,
+    phrase,
+    bilan,
+  };
+}
+
+/** « au designer », « au développeur », « à l'outil ». @param {Main | null} m */
+export const aLaMain = (m) => (m === 'outil' ? 'à l’outil' : m === 'développeur' ? 'au développeur' : 'au designer');
+
+/**
+ * Les lignes du terminal : au plus six.
+ * @param {Etat} e @param {{ page: string, adresse?: string }} o
+ */
+export function lignesTerminal(e, o) {
+  const k = e.courante;
+  return [
+    `${e.produit}${e.sousTitre ? ` · ${e.sousTitre}` : ''}`,
+    `En cours : ${k.temps} · ${k.nom}`,
+    `La main est ${aLaMain(k.main)}.`,
+    ...(k.action ? [`À faire : ${k.action}.`] : []),
+    ...(k.commande ? [`Commande suivante : ${k.commande}`] : []),
+    o.adresse ? `Page servie sur ${o.adresse} ; écrite : ${o.page}` : `Page : ${o.page} ; à servir avec --servir`,
+  ];
+}

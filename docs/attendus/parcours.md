@@ -259,6 +259,18 @@ Un résumé du diff dans la boîte avant chaque commit.
 
 La grille de brief ; la lecture du code source ; un écran pour l'étape Site ; le choix automatique des pages d'un grand site ; un plugin ; une MCP App ; le dossier du dirigeant ; le temps gagné ; l'habillage commun des écrans ; Diapason ; reprendre les textes existants aux trois mots ; la comparaison des constats entre sites ; reprendre les présentations d'étape de Quentin pour les explications ; montrer l'outil au travail, en direct ; une image dédiée par étape [Q, fichier 90].
 
+## Écarts relevés en écrivant le code
+
+- **Une clé `sources`** s'ajoute au projet, passée à `reduce` et à `verify` (`--sources`). Sans elle, le parcours joué sur Orbe Café sortait de `verify` en 1 : 11 lignes du bandeau de cookies, élément tiers, non arrivées [F, 24/11/2026]. Avec elle, 54 lignes arrivées sur 54.
+- **Une carte de plein gardée** pour le bilan joué : la version « texte foncé » de la carte de `terre` laissait 11 lignes non arrivées, la dette connue du texte posé sur un plein (`#220000`, `KNOWN_ISSUES.md`, « À payer après l'étape 11 ») [F].
+- **Le contexte étroit n'est pas écrit** dans la page : son seuil vit dans le resolver de chaque marque, pas dans les couches communes, et la page vise le panneau, 640 px, au-dessus de lui. Limite de D72.
+- **Au bilan, la ligne d'action se réduit à sa tête** (« Tenir · Suivi · la main est à l'outil ») : avec « À faire : relancer le contrôle. », le moment faisait 61 mots. Le terminal garde la commande.
+- **Les noms d'étape s'accordent** : « Site » et « Marque » pour un site, « Sites » et « Marques » pour plusieurs. Un site se nomme par « du site <id> » (« lancer le constat du site ecume »), pour ne pas écrire « de ecume ».
+- **Marque refusée à plusieurs sites** : la phrase « Marque refusée » au-dessus de la planche d'une marque acceptée ; le motif est dans la ligne d'action, la liste par site dit seulement « refusée ».
+- **Pas de commande suivante quand l'humain agit** (corriger une entrée, trancher dans la revue, lire `pertes.md`) : relancer la commande de l'outil ne ferait rien de neuf.
+- **Le projet `decisions`** tranche 8 décisions sur 15 (copie de `decisions-valise.json` sur une table d'Orbe Café), pas « 12 sur 14 » : chiffres de l'extrait réel, comme l'annonçait l'attendu.
+- **Le chemin du projet est lu réel** (`realpathSync`) : sous macOS, un dossier temporaire se nomme `/var/…` et le dossier courant `/private/var/…`, et les commandes proposées remontaient l'arborescence.
+
 ## Preuve
 
 Lus le 24/11/2026 : les fichiers 86 à 90 de la boîte ; `README.md` (« Ce que fait l'outil », « Saisir une marque », « Constat des composants », glossaire) ; `skill/ds-lab/SKILL.md` ; `test/histoire.test.js` (motifs) ; `src/report/constat.js` (couleurs du constat : rôles neutres communs, le reste en px écrits) ; `src/cli/saisie.js` (refus : rien d'écrit) ; `src/cli/verify.js` (`verdict.json`) ; `src/cli/reduce.js` et `src/reduce/propose.js` (classes, `decisionFor`, `summary` par famille) ; `src/composants/run.js` et `src/report/json.js` (`freeOutputDir`, sorties par hôte) ; `src/report/review.js` (export par téléchargement) ; `src/banc/banc.js` (copie du skill) ; `tokens/commun/paires.json` ; une `table.json` fictive du 14/11 dans `local/reductions/` (champs `summary.before` et `.after`). Rôles résolus sans marque par `flattenTokens` et `resoudreAlias` (`src/tokens/roles.js`), script dans le scratchpad. Non vérifié : un écran existant embarqué dans une autre page, dans le panneau d'aperçu ; le panneau dans une session ouverte sur un dossier ; la maquette (artefact du compte de Quentin), connue par la description du fichier 90.
