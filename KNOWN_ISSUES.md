@@ -1,6 +1,6 @@
 # Dette connue
 
-État au 22/11/2026. Ce fichier ne porte que la dette à payer, chacune avec son moment. Les limites acceptées sont écrites à leur place, sous leur décision (puce « Limite »), dans les fiches, le README ou ARCHITECTURE (D64) ; ce qui manque au design system est dans `docs/feuille-de-route.md`.
+État au 24/11/2026. Ce fichier ne porte que la dette à payer, chacune avec son moment. Les limites acceptées sont écrites à leur place, sous leur décision (puce « Limite »), dans les fiches, le README ou ARCHITECTURE (D64) ; ce qui manque au design system est dans `docs/feuille-de-route.md`.
 
 ## À payer à l'ajout d'une marque ou d'un composant
 
@@ -19,6 +19,11 @@
 - Thèmes Vuetify (D41) : seules les couleurs de thème, les deux polices et les variables `ds-` des enveloppes (D43, D49, D50) viennent de nos jetons. Restent celles de Vuetify, lues dans le code de thème de vuetify 4.3.4 (`createTheme`) [F] : bordure (`border-color` noir ou blanc à 12 %), ombre, couleurs `kbd` et `code`, et les opacités des états. Les enveloppes n'en lisent aucune : le survol du bouton est un jeton, le voile de Vuetify est retiré ; le contour, l'opacité et l'animation du champ de Vuetify sont remplacés ; l'ombre nulle que la carte `flat` garde est retirée ; un composant Vuetify utilisé sans enveloppe les garderait.
 - Thèmes Vuetify : `surface-variant`, `surface-bright` et `surface-light` sont des hypothèses [H], à juger sur les composants. `primary-darken-1` sert de survol au bouton principal : à juger sur les planches du bouton (`local/button-captures/`). `secondary` (l'accent) n'atteint pas un bouton : l'enveloppe ne transmet aucune couleur et refuse tout attribut hors de sa liste (D43) ; un autre composant Vuetify utilisé sans enveloppe le pourrait encore.
 - Classes de texte de Vuetify 4 : `--v-font-heading` est lue par sept classes (display large, moyen, petit ; headline large, moyen, petit ; title large), à chaque largeur [F, lu dans la feuille compilée de vuetify 4.3.4] ; nos titres sont cinq (affichage grand et moyen, titres 1 à 3 ; le titre 4 prend la police du texte, D16). Correspondance des styles de texte à faire, hors des thèmes.
+
+## À payer au lot qui suit le parcours (D72)
+
+- Les écrans de l'outil ne tiennent pas encore la promesse de la page du parcours : le constat ne prend aux jetons que ses couleurs, les planches écrivent leurs propres couleurs (`--encre`, `--gris`), la revue n'a pas été relue. Les aligner sur les mêmes rôles communs, et faire du design system embarqué (Diapason, nom retenu le 21/11/2026) une marque saisie comme les autres, que tous les écrans consomment ; sa couleur reste à choisir par Quentin (boîte, fichier 87).
+- Les textes existants disent encore « client » là où le parcours dit produit, site, marque : `docs/regles.md` (DS17, DF4 : « la police du client »), le README (« une marque par client », « Ce qu'un client peut changer »). À reprendre avec l'alignement des écrans (boîte, fichier 88).
 
 ## À payer après l'étape 11
 

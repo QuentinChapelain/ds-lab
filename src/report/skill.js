@@ -7,7 +7,9 @@
  *                         npm run contraste, espacements, typo ou style, sinon « Non contrôlée ici » ;
  *   consignes.md          les consignes, sans l'endroit où ds-lab les lit ;
  *   techniques/<f>.md     une ligne par règle marquée, avec la même colonne ;
- *   SKILL.md              écrit à la main, sauf le bloc du compte, entre ses deux marques.
+ *   SKILL.md              écrit à la main, sauf le bloc du compte, entre ses deux marques ;
+ *   conduire.md           écrit à la main, recopié tel quel : le « pourquoi » de chaque étape du parcours (D72), que
+ *                         SKILL.md ne peut pas porter sans dépasser sa page.
  * Les choix de ds-lab sont retirés : une proposition qui commence par « ds-lab », entre deux « ; » ou après un « . » ;
  * le renvoi « (de XX<n>) » qui la termine reste. Une cellule qui commence par « ds-lab » ne se détache pas : panne.
  */
@@ -19,13 +21,14 @@ const RACINE = fileURLToPath(new URL('../../', import.meta.url));
 /** Dossier du skill dans le clone. */
 export const SKILL = join(RACINE, 'skill', 'ds-lab');
 
-/** Les sources du skill, lues dans le clone : docs/regles.md, docs/techniques/, skill/ds-lab/SKILL.md. */
+/** Les sources du skill, lues dans le clone : docs/regles.md, docs/techniques/, skill/ds-lab/SKILL.md et conduire.md. */
 export function sourcesDuSkill() {
   const dossier = join(RACINE, 'docs', 'techniques');
   return {
     regles: readFileSync(join(RACINE, 'docs', 'regles.md'), 'utf8'),
     techniques: Object.fromEntries(readdirSync(dossier).filter((f) => f.endsWith('.md')).sort().map((f) => [f, readFileSync(join(dossier, f), 'utf8')])),
     skill: readFileSync(join(SKILL, 'SKILL.md'), 'utf8'),
+    conduire: readFileSync(join(SKILL, 'conduire.md'), 'utf8'),
   };
 }
 
@@ -98,11 +101,11 @@ const ligne = (c) => `| ${c.join(' | ')} |`;
 
 /**
  * Les fichiers du skill.
- * @param {{ regles: string, techniques: Record<string, string>, skill: string }} sources docs/regles.md, les fichiers
- *   de docs/techniques/ par nom, le SKILL.md écrit à la main
+ * @param {{ regles: string, techniques: Record<string, string>, skill: string, conduire?: string }} sources docs/regles.md,
+ *   les fichiers de docs/techniques/ par nom, SKILL.md et conduire.md, écrits à la main
  * @returns {Record<string, string>} chemin dans skill/ds-lab/ → texte
  */
-export function fichiersDuSkill({ regles, techniques, skill }) {
+export function fichiersDuSkill({ regles, techniques, skill, conduire }) {
   const r = lireRegles(regles);
   const c = comptes(r);
   const ici = new Map([...r.sections.flatMap((s) => s.regles), ...r.defauts].map((x) => [x.numero, x.ici]));
@@ -151,5 +154,6 @@ export function fichiersDuSkill({ regles, techniques, skill }) {
   const j = skill.indexOf(FIN);
   if (i < 0 || j < i) throw new Error(`skill : SKILL.md sans le bloc du compte ; écrire ${DEBUT} puis ${FIN} à l'endroit du compte`);
   out['SKILL.md'] = `${skill.slice(0, i + DEBUT.length)}\n${phrase(c)}\n${skill.slice(j)}`;
+  if (conduire !== undefined) out['conduire.md'] = conduire;
   return out;
 }

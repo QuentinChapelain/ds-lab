@@ -37,6 +37,10 @@ Dans ce dépôt, `verifier` contrôle 16 des 43 règles et défauts ; 27 ne sont
 
 Ne jamais corriger les jetons à la main : changer l'entrée et relancer la saisie.
 
+## Conduire
+
+Seulement si l'humain donne un fichier de projet (`projet.json`). Au début de la session, lancer depuis le clone `cd "$DS_LAB" && npm run parcours -- <chemin du projet> --servir` en tâche de fond, ouvrir l'adresse dans le panneau, dire l'étape en une phrase, proposer l'action. Lancer la commande suivante qu'il donne, et seulement elle ; résumer sa sortie en trois lignes ; recharger la page. Les « pourquoi » : `conduire.md`.
+
 ## Dans la CI
 
 Une étape clone ds-lab à un commit fixé, lance `npm ci` dans le clone, puis la commande de l'étape 3. Changer ce commit change les couches communes que les marques lisent : relancer `verifier` en local avant, et recopier ce skill si `verifier` le demande.

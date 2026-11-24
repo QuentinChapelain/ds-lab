@@ -17,6 +17,9 @@
  *   SK6 SKILL.md porte la phrase de priorité, mot pour mot, à la fin de « Avant de commencer » : le clone l'emporte
  *       sur le guide ;
  *   SK7 SKILL.md dit la commande qui lit DS_LAB, mot pour mot, avant la première commande qui s'en sert (D70).
+ *   SK8 la section « Conduire » (D72) : sa première phrase dit qu'elle ne joue qu'avec un fichier de projet, dans
+ *       SKILL.md comme dans conduire.md, qu'elle cite ; un « pourquoi » par étape (Site, Constat, Versions à garder,
+ *       Marque, Décisions, Livraison, Suivi), trois phrases au plus ; jamais « conforme » dit d'un site ou d'un produit.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -117,4 +120,18 @@ test('SK7 la commande qui lit DS_LAB, avant celles qui s’en servent', () => {
   const ou = md.indexOf("`printenv DS_LAB` donne le chemin du clone ; s'il ne rend rien, demander à l'humain.");
   assert.ok(ou > 0 && ou < md.indexOf('$DS_LAB/'));
   assert.doesNotMatch(md, /n'est pas posée/, 'une condition que le modèle croit sans la lire');
+});
+
+test('SK8 la section « Conduire » : un projet donné, un pourquoi par étape, trois phrases au plus', () => {
+  const md = lire('SKILL.md');
+  const section = md.slice(md.indexOf('## Conduire'), md.indexOf('## Dans la CI'));
+  const SEUL = 'Seulement si l’humain donne un fichier de projet (`projet.json`).'.replace('’', "'");
+  assert.ok(section.split('\n')[2].startsWith(SEUL), section);
+  assert.ok(section.includes('`conduire.md`'));
+  const c = lire('conduire.md');
+  assert.ok(c.split('\n')[2].startsWith(SEUL));
+  const pourquoi = [...c.matchAll(/^- \*\*([^*]+)\*\* : (.+)$/gm)];
+  assert.deepEqual(pourquoi.map((m) => m[1]), ['Site', 'Constat', 'Versions à garder', 'Marque', 'Décisions', 'Livraison', 'Suivi']);
+  for (const [, nom, texte] of pourquoi) assert.ok(texte.split(/[.!?](?:\s|$)/).filter((x) => x.trim()).length <= 3, nom);
+  for (const t of [section, c]) assert.doesNotMatch(t, /\b(?:site|produit)s? conformes?\b|\bconformes? (?:le |la )?(?:site|produit)/i);
 });

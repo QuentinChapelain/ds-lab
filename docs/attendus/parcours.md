@@ -269,6 +269,8 @@ La grille de brief ; la lecture du code source ; un écran pour l'étape Site ; 
 - **Marque refusée à plusieurs sites** : la phrase « Marque refusée » au-dessus de la planche d'une marque acceptée ; le motif est dans la ligne d'action, la liste par site dit seulement « refusée ».
 - **Pas de commande suivante quand l'humain agit** (corriger une entrée, trancher dans la revue, lire `pertes.md`) : relancer la commande de l'outil ne ferait rien de neuf.
 - **Le projet `decisions`** tranche 8 décisions sur 15 (copie de `decisions-valise.json` sur une table d'Orbe Café), pas « 12 sur 14 » : chiffres de l'extrait réel, comme l'annonçait l'attendu.
+- **Les « pourquoi » vont dans `skill/ds-lab/conduire.md`**, écrit à la main et recopié par `npm run skill` comme `SKILL.md` : `SKILL.md` tient en 500 mots (SK4, la mesure de DOC5) et en avait 433. La section « Conduire » de `SKILL.md` garde la condition, la conduite et le renvoi : 487 mots en tout. `verifier --skill` compare aussi `conduire.md`. `test/skill.test.js` (SK8).
+- **La commande se lance depuis le clone** (`cd "$DS_LAB" && npm run parcours -- …`), dans le skill : les commandes qu'elle propose s'écrivent depuis le dossier courant, en `npm run`.
 - **Le chemin du projet est lu réel** (`realpathSync`) : sous macOS, un dossier temporaire se nomme `/var/…` et le dossier courant `/private/var/…`, et les commandes proposées remontaient l'arborescence.
 
 ## Preuve
