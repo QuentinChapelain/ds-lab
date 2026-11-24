@@ -14,9 +14,14 @@
  * D31 : les fichiers sont écrits à côté, contrôlés (contraste dans les deux modes, sur les textes
  * relus), puis remplacent les fichiers en place (remplacer, src/tokens/ecriture.js) ; un contrôle en échec (incohérence de
  * l'outil) ou une panne d'écriture sort en 2 sans rien laisser d'écrit. Plus de sous-processus.
- * Usage : npm run saisie -- <entree.json>
+ * --verdict <fichier> écrit en plus, acceptée ou refusée, le verdict et ses motifs, avec l'empreinte de l'entrée (D72) :
+ * un refus laisse ainsi une trace que la commande parcours relit ; sans l'option, rien ne change.
+ * Usage : npm run saisie -- <entree.json> [--verdict <fichier>]
  */
 import { dirname, join } from 'node:path';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { parseArgs } from 'node:util';
 import { saisir, serialiser, controlerEncre, controlerEcrits } from '../tokens/saisie.js';
 import { remplacer } from '../tokens/ecriture.js';
 import { lignesContraste } from '../report/contraste.js';
@@ -28,10 +33,20 @@ import { lireJson } from '../lib/fichiers.js';
 import { fr } from '../lib/format.js';
 
 await lancer('saisie', async () => {
-  const fichier = process.argv[2];
-  if (!fichier) throw new Error('aucun fichier d\'entrée (usage : npm run saisie -- <entree.json>)');
+  const { values, positionals } = parseArgs({ allowPositionals: true, options: { verdict: { type: 'string' } } });
+  const fichier = positionals[0];
+  const usage = '(usage : npm run saisie -- <entree.json> [--verdict <fichier>])';
+  if (!fichier) throw new Error(`aucun fichier d'entrée ${usage}`);
+  if (positionals.length > 1) throw new Error(`un seul fichier d'entrée ${usage}`);
   const dossier = dirname(fichier);
   const entree = lireJson(fichier);
+  /** Le verdict, écrit seulement si --verdict est donné. @param {'acceptée' | 'refusée'} verdict @param {string[]} motifs */
+  const ecrireVerdict = (verdict, motifs) => {
+    if (!values.verdict) return;
+    const empreinte = createHash('sha256').update(readFileSync(fichier)).digest('hex');
+    mkdirSync(dirname(values.verdict), { recursive: true });
+    writeFileSync(values.verdict, JSON.stringify({ name: nom, verdict, motifs, entree: empreinte }, null, 2) + '\n');
+  };
   const r = saisir(entree, { dossier });
   const nom = typeof entree?.name === 'string' && entree.name.trim() ? entree.name : fichier;
   /** @type {import('../polices/encre.js').LigneEncre[]} */
@@ -44,6 +59,7 @@ await lancer('saisie', async () => {
   if (r.motifs.length) {
     console.error(`marque refusée : ${nom}`);
     for (const m of r.motifs) console.error(`  ${m}`);
+    ecrireVerdict('refusée', r.motifs);
     return 1;
   }
   const echelles = join(dossier, 'echelles.tokens.json');
@@ -62,6 +78,7 @@ await lancer('saisie', async () => {
     { supprimer: r.echelles ? [] : ['echelles.tokens.json'], controler: (lus) => controlerEcrits(dossier, lus) },
   );
   console.log(`marque acceptée : ${nom}`);
+  ecrireVerdict('acceptée', []);
   // La police des titres, contrôlée si l'entrée donne ses fichiers ; « non contrôlée » n'est écrit qu'ici.
   const pt = r.policeTitre;
   if (pt) {

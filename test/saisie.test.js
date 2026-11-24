@@ -30,6 +30,10 @@
  *   S6 Commande : sans fichier → code 2 ; refusée (#00ccff, S3) → code 1, motif sur la sortie d'erreur, rien d'écrit ;
  *      acceptée → code 0, marque.tokens.json et echelles.tokens.json écrits, contrôle de contraste lancé (0 paire en échec).
  *   S7 npm run contraste -- --marque tokens/orbe-cafe/ : même sortie que sans l'option ; Que son bloc sans l'option.
+ *   S8 --verdict <fichier> (D72, docs/attendus/parcours.md) : refusée (#00ccff) → code 1, le verdict écrit dans un
+ *      dossier créé, { name, verdict: "refusée", motifs, entree: sha256 de l'entrée }, et rien d'autre ; acceptée → code 0,
+ *      verdict « acceptée », motifs vides ; l'empreinte est celle des octets du fichier d'entrée (createHash du test) ;
+ *      deux options ou deux fichiers : code 2.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -134,6 +138,32 @@ test('S6 commande saisie : codes de sortie, motif, fichiers', () => {
   assert.match(r2.stdout, /mode dark, largeur wide\n/);
   assert.equal(r2.stdout.match(new RegExp(`${N_PAIRES} paires de rôles, 0 paire en échec`, 'g'))?.length, 2, 'les deux modes');
   assert.ok(existsSync(join(ok, 'marque.tokens.json')) && existsSync(join(ok, 'echelles.tokens.json')));
+});
+
+test('S8 commande saisie --verdict : le verdict écrit, accepté ou refusé, avec l\'empreinte de l\'entrée', () => {
+  const refus = mkdtempSync(join(tmpdir(), 'ds-lab-saisie-'));
+  const entreeRefus = join(refus, 'entree.json');
+  writeFileSync(entreeRefus, JSON.stringify({ name: 'Essai', primary: '#00ccff', fonts: POLICES }));
+  const v1 = join(refus, 'sorties', 'saisies', 'essai.json');
+  const r1 = run('src/cli/saisie.js', entreeRefus, '--verdict', v1);
+  assert.equal(r1.status, 1);
+  const sha = (/** @type {string} */ f) => createHash('sha256').update(readFileSync(f)).digest('hex');
+  assert.deepEqual(JSON.parse(readFileSync(v1, 'utf8')), {
+    name: 'Essai',
+    verdict: 'refusée',
+    motifs: ['checkValise (clair) : primary : doublon, pas 7 = pas 9 (#00ccff)'],
+    entree: sha(entreeRefus),
+  });
+  assert.deepEqual(readdirSync(refus).sort(), ['entree.json', 'sorties'], 'rien d\'autre');
+  const ok = mkdtempSync(join(tmpdir(), 'ds-lab-saisie-'));
+  const entreeOk = join(ok, 'entree.json');
+  writeFileSync(entreeOk, JSON.stringify({ name: 'Essai', primary: '#2b4c7e', accent: '#c8553d', fonts: POLICES }));
+  const v2 = join(ok, 'verdict.json');
+  const r2 = run('src/cli/saisie.js', entreeOk, '--verdict', v2);
+  assert.equal(r2.status, 0, r2.stderr);
+  assert.deepEqual(JSON.parse(readFileSync(v2, 'utf8')), { name: 'Essai', verdict: 'acceptée', motifs: [], entree: sha(entreeOk) });
+  assert.equal(run('src/cli/saisie.js', entreeOk, entreeRefus).status, 2);
+  assert.equal(run('src/cli/saisie.js', entreeOk, '--verdikt', v2).status, 2);
 });
 
 test('S7 contraste --marque tokens/orbe-cafe/ : même sortie que son bloc sans l\'option (D26 : sans l\'option, toutes les marques)', () => {
