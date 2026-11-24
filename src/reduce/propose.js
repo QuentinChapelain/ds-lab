@@ -1144,6 +1144,38 @@ export function decisionFor(decisions, family, r) {
 }
 
 /**
+ * Le compte des décisions, le seul (D73), que lisent la sortie de reduce et le parcours : une décision est une ligne de
+ * classe « décision » hors de toute carte de plein, ou une carte de plein (texte sur plein). Une ligne qu'une carte a
+ * rattachée après coup reste comptée si elle a sa propre décision : elle a été tranchée ; sans décision propre, la
+ * carte la tranche et elle ne compte pas à part.
+ * @param {{ families: Record<string, { rows: Row[] }>, pleins?: { key: string, rows?: { key: string }[] }[] }} table
+ * @param {Record<string, string | false>} decisions
+ * @returns {{ total: number, enAttente: number }}
+ */
+export function compterDecisions(table, decisions) {
+  const pleins = table.pleins ?? [];
+  const dansCarte = new Set(pleins.flatMap((g) => (g.rows ?? []).map((x) => x.key)));
+  let total = 0;
+  let enAttente = 0;
+  for (const [family, { rows }] of Object.entries(table.families))
+    for (const r of rows) {
+      if (r.class !== 'décision') continue;
+      const tranchee = decisionFor(decisions, family, r) !== undefined;
+      if (dansCarte.has(rowKey(family, r))) {
+        if (tranchee) total++;
+        continue;
+      }
+      total++;
+      if (!tranchee) enAttente++;
+    }
+  for (const g of pleins) {
+    total++;
+    if (decisions[g.key] === undefined) enAttente++;
+  }
+  return { total, enAttente };
+}
+
+/**
  * Valeur retenue d'une ligne après décisions (D21) : seule définition de la règle, lue par
  * la simulation (mapping), les conflits de déclarations, le contrôle de proximité, la migration et la revue.
  * Un refus (`false`) laisse la ligne ; une décision écrite l'emporte, sauf égale à l'ancienne valeur, qui laisse la ligne ;

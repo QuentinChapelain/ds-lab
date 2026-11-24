@@ -31,7 +31,7 @@ npm run contraste        paires de rôles de couleur ; sortie 1 si une paire éc
 npm run espacements      espacements par relation ; sortie 1 si une règle échoue
 npm run typo             styles de texte ; sortie 1 si une règle échoue
 npm run verifier         tokens, style et copie du skill d'un autre dépôt (--marques, --style, --skill) ; sortie 1 sur un échec
-npm run parcours -- <projet.json> [--servir]   état d'un projet, page du parcours ; sortie 2 sur un projet illisible
+npm run parcours -- <projet.json> [--servir]   état d'un projet, texte du moment pour le chat, page du parcours ; sortie 2 sur un projet illisible
 npm run skill            réécrit les textes de skill/ds-lab/ après un changement de docs/regles.md ou de docs/techniques/
 npm run types            types JSDoc de src/ (TypeScript, non strict, sans émission) ; sortie 1 s'il reste une erreur
 npm run knip             fichiers, exports et dépendances qui ne servent plus ; sortie 1 s'il en reste

@@ -12,6 +12,7 @@
 import { parseArgs } from 'node:util';
 import { pathToFileURL } from 'node:url';
 import { runReduce } from '../reduce/run.js';
+import { compterDecisions } from '../reduce/propose.js';
 import { lancer } from './garde.js';
 
 const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cible.json> [options]
@@ -96,6 +97,9 @@ async function main() {
       const s = f.summary;
       console.log(`  ${family} : ${s.before} → ${s.after} valeurs ; ${s.decisions} décision(s), ${s.corrections} correction(s), ${s.near} proche(s), ${s.auto} d'office`);
     }
+    // Le même compte que le parcours (D73) : texte sur plein compris.
+    const c = compterDecisions(/** @type {any} */ (r.table), r.decisions);
+    console.log(`  décisions à trancher : ${c.total}, texte sur plein compris ; ${c.total - c.enAttente} tranchée(s)`);
   }
   return 0;
 }

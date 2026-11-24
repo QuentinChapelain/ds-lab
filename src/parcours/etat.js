@@ -10,7 +10,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { lireJson } from '../lib/fichiers.js';
-import { decisionFor, rowKey } from '../reduce/propose.js';
+import { compterDecisions } from '../reduce/propose.js';
 import { RESOLVER } from '../tokens/resolver.js';
 
 /**
@@ -22,11 +22,12 @@ import { RESOLVER } from '../tokens/resolver.js';
  * @typedef {{ href: string, titre: string }} Ecran
  * @typedef {{ cle: CleEtape, nom: string, temps: string, acteurs: string, faite: boolean, etat: EtatEtape, sortie: boolean,
  *   main: Main | null, action: string | null, commande: string | null, fait: string | null, lignes: string[],
- *   ecran: Ecran | null, sansEcran: string | null, ouvre: string, refus?: boolean }} Etape
+ *   ecran: Ecran | null, sansEcran: string | null, ouvre: string, refus?: boolean, reportes: number }} Etape
  * @typedef {{ chiffres: string[], dernier: string, complet: boolean, manque: string[], humain: string[] }} Bilan
+ * @typedef {{ versions: number | null, decisions: number | null, enAttente: number | null, reportes: number }} Chiffres  ce que le dialogue cite
  * @typedef {{ produit: string, sousTitre: string | null, unSite: boolean, etapes: Etape[], temps: { nom: string, etat: EtatEtape, etapes: CleEtape[] }[],
  *   courante: Etape, moment: 'lancement' | 'ecran' | 'sans-ecran' | 'bilan', ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
- *   phrase: string | null, bilan: Bilan | null }} Etat
+ *   phrase: string | null, bilan: Bilan | null, chiffres: Chiffres, voisin: string | null }} Etat
  */
 
 /** Les quatre temps et leurs étapes (présentation de l'outil, D72). */
@@ -89,6 +90,22 @@ const dateDe = (nom) => {
 /** Mot d'un argument du shell, entre apostrophes s'il le faut. @param {string} s */
 const q = (s) => (/^[\w@%+=:,./-]+$/.test(s) ? s : `'${s.replace(/'/g, `'\\''`)}'`);
 
+/** Le nom d'un fichier ramené à sa forme simple : sans espace autour, sans casse, sans « (1) » avant l'extension. @param {string} n */
+const simple = (n) => n.normalize('NFC').trim().toLowerCase().replace(/\s*\(\d+\)(?=\.[a-z]+$)/, '');
+
+/**
+ * Un fichier du dossier qui n'a pas le nom attendu, mais lui ressemble (D73) : espace autour du nom, autre casse,
+ * « (1) » d'un second enregistrement. Null s'il n'y en a pas, ou si le fichier attendu existe.
+ * @param {string} dossier @param {string} nom
+ */
+function voisin(dossier, nom) {
+  if (!existsSync(dossier) || existsSync(join(dossier, nom))) return null;
+  return readdirSync(dossier).find((f) => f !== nom && simple(f) === nom) ?? null;
+}
+
+/** « faite », ou « faite, 3 choix reportés » quand des choix restent ouverts (D73). @param {Etape} k */
+export const etatDit = (k) => (k.etat === 'faite' && k.reportes ? `faite, ${nombre(k.reportes, 'choix reporté', 'choix reportés')}` : k.etat);
+
 /** @param {Record<string, unknown>} o */
 const trie = (o) => JSON.stringify(Object.keys(o).sort().map((k) => [k, o[k]]));
 
@@ -134,6 +151,7 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     ecran: null,
     sansEcran: 'Pas d’écran : les pages s’écrivent dans projet.json.',
     ouvre: '',
+    reportes: 0,
   };
 
   // Constat, un par site.
@@ -152,6 +170,8 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
   const aConstat = constats.filter((x) => x.constat);
   const premierEcran = constats.find((x) => x.html);
   const aMesurer = sansConstat[0]?.site;
+  // Les choix que le parcours n'attend pas : les versions à garder de chaque type, choisies plus tard (D73).
+  const versionsReportees = aConstat.reduce((n, x) => n + Math.max(0, (x.constat.scores?.versionsAGarder?.y ?? 0) - (x.constat.scores?.versionsAGarder?.x ?? 0)), 0);
   /** @type {Etape} */
   const constat = {
     cle: 'constat',
@@ -173,6 +193,7 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     ecran: premierEcran?.html ? { href: href(premierEcran.html), titre: unSite ? 'Constat' : `Constat du site ${premierEcran.site.id}` } : null,
     sansEcran: null,
     ouvre: unSite ? 'S’ouvre quand le site a ses pages.' : 'S’ouvre quand chaque site a ses pages.',
+    reportes: versionsReportees,
   };
 
   // Marques, une par site.
@@ -235,6 +256,7 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     sansEcran: null,
     ouvre: 'S’ouvre quand le constat est fait.',
     refus: marques.some((m) => m.statut === 'refusée'),
+    reportes: 0,
   };
 
   // Décisions, sur le premier site.
@@ -242,22 +264,9 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
   const fTable = red && join(red.chemin, 'table.json');
   const table = fTable && existsSync(fTable) ? lireJson(fTable) : null;
   const decisions = existsSync(fichierDecisions) ? lireJson(fichierDecisions) : (table?.decisions ?? {});
-  let total = 0;
-  let enAttente = 0;
-  if (table) {
-    const pleins = table.table?.pleins ?? [];
-    const dansCarte = new Set(pleins.flatMap((/** @type {any} */ g) => (g.rows ?? []).map((/** @type {any} */ x) => x.key)));
-    for (const [famille, { rows }] of Object.entries(table.table?.families ?? {}))
-      for (const r of /** @type {any[]} */ (rows)) {
-        if (r.class !== 'décision' || dansCarte.has(rowKey(famille, r))) continue;
-        total++;
-        if (decisionFor(decisions, famille, r) === undefined) enAttente++;
-      }
-    for (const g of pleins) {
-      total++;
-      if (decisions[g.key] === undefined) enAttente++;
-    }
-  }
+  // Le même compte que la sortie de reduce (D73).
+  const { total, enAttente } = table ? compterDecisions({ families: table.table?.families ?? {}, pleins: table.table?.pleins ?? [] }, decisions) : { total: 0, enAttente: 0 };
+  const voisinDecisions = table && enAttente ? voisin(sorties, 'decisions.json') : null;
   const nonLues = !!table && existsSync(fichierDecisions) && trie(table.decisions ?? {}) !== trie(decisions);
   const sansModifs = !!red && !existsSync(join(red.chemin, 'modifications.json'));
   const resolver = premier.dossierMarque ? join(premier.dossierMarque, RESOLVER) : null;
@@ -278,15 +287,18 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     main: !table ? (projet.cible ? 'outil' : 'designer') : enAttente ? 'designer' : 'outil',
     action: !table
       ? projet.cible ? 'lancer la réduction' : 'écrire la cible (target) dans projet.json'
-      : enAttente
-        ? `trancher ${nombre(enAttente, 'décision', 'décisions')} dans la revue, puis exporter decisions.json dans ${relative(projet.dossier, sorties) || '.'}`
-        : 'relancer la réduction avec les décisions',
+      : voisinDecisions
+        ? `un fichier voisin, ${JSON.stringify(voisinDecisions)}, est dans ${sorties} : le renommer en decisions.json`
+        : enAttente
+          ? `trancher ${nombre(enAttente, 'décision', 'décisions')} dans la revue, puis exporter decisions.json dans ${sorties}`
+          : 'relancer la réduction avec les décisions',
     commande: !table ? reduire(false) : enAttente ? null : reduire(existsSync(fichierDecisions)),
     fait: table ? (total ? `${nombre(total - enAttente, 'décision tranchée', 'décisions tranchées')} sur ${total}` : 'aucune décision à prendre') : null,
     lignes: [],
     ecran: revue ? { href: href(revue), titre: 'Revue' } : null,
     sansEcran: null,
     ouvre: unSite ? 'S’ouvre quand la marque est acceptée.' : 'S’ouvre quand chaque marque est acceptée.',
+    reportes: 0,
   };
 
   // Livraison et suivi, sur le premier site.
@@ -308,7 +320,8 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     faite: aManifeste && verdict?.sortie === 0,
     etat: 'à venir',
     sortie: aManifeste,
-    main: !aManifeste ? 'développeur' : !verdict ? 'outil' : 'développeur',
+    // Poser les feuilles ajoutées n'écrit que dans les sorties : la main est à l'outil ; le développeur l'a sur l'installation (D73).
+    main: !aManifeste || !verdict ? 'outil' : 'développeur',
     action: !aManifeste
       ? 'poser les feuilles ajoutées'
       : !verdict
@@ -320,6 +333,7 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     ecran: null,
     sansEcran: 'Pas d’écran : la livraison se lit dans pertes.md et dans la sortie de verify.',
     ouvre: 'S’ouvre quand les décisions sont prises.',
+    reportes: 0,
   };
   /** @type {Etape} */
   const suivi = {
@@ -338,9 +352,11 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     ecran: null,
     sansEcran: 'Pas d’écran : le suivi demande une CI, que le produit n’a pas encore.',
     ouvre: 'S’ouvre quand la livraison est prouvée.',
+    reportes: 0,
   };
 
   const etapes = [site, constat, etapeMarques, etapeDecisions, livraison, suivi];
+  const reportes = etapes.reduce((n, e) => n + e.reportes, 0);
   const i = etapes.findIndex((e) => !e.faite);
   etapes.forEach((e, k) => (e.etat = k === i ? 'en cours' : e.faite ? 'faite' : 'à venir'));
   const courante = etapes[i];
@@ -402,6 +418,13 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     ecran,
     phrase,
     bilan,
+    chiffres: {
+      versions: aConstat.length ? aConstat.reduce((n, x) => n + (x.constat.chiffres?.versions ?? 0), 0) : null,
+      decisions: table ? total : null,
+      enAttente: table ? enAttente : null,
+      reportes,
+    },
+    voisin: voisinDecisions,
   };
 }
 

@@ -17,9 +17,12 @@
  *   SK6 SKILL.md porte la phrase de priorité, mot pour mot, à la fin de « Avant de commencer » : le clone l'emporte
  *       sur le guide ;
  *   SK7 SKILL.md dit la commande qui lit DS_LAB, mot pour mot, avant la première commande qui s'en sert (D70).
- *   SK8 la section « Conduire » (D72) : sa première phrase dit qu'elle ne joue qu'avec un fichier de projet, dans
- *       SKILL.md comme dans conduire.md, qu'elle cite ; un « pourquoi » par étape (Site, Constat, Versions à garder,
- *       Marque, Décisions, Livraison, Suivi), trois phrases au plus ; jamais « conforme » dit d'un site ou d'un produit.
+ *   SK8 la section « Conduire » (D72, D73) : sa première phrase dit quand elle joue (une adresse, un fichier de projet,
+ *       le skill appelé sans autre demande), dans SKILL.md comme dans conduire.md, qu'elle cite ; un « pourquoi » par
+ *       étape (Site, Constat, Versions à garder, Marque, Décisions, Livraison, Suivi), trois phrases au plus ; jamais
+ *       « conforme » dit d'un site ou d'un produit ;
+ *   SK9 conduire.md porte la voix en tête (la charte, les mots à éviter, trois exemples) et les ouvertures dites avant
+ *       le projet, recopiées du dialogue ; SKILL.md dit quoi faire sous un autre Node que le 24.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -122,10 +125,10 @@ test('SK7 la commande qui lit DS_LAB, avant celles qui s’en servent', () => {
   assert.doesNotMatch(md, /n'est pas posée/, 'une condition que le modèle croit sans la lire');
 });
 
-test('SK8 la section « Conduire » : un projet donné, un pourquoi par étape, trois phrases au plus', () => {
+test('SK8 la section « Conduire » : quand elle joue, un pourquoi par étape, trois phrases au plus', () => {
   const md = lire('SKILL.md');
   const section = md.slice(md.indexOf('## Conduire'), md.indexOf('## Dans la CI'));
-  const SEUL = 'Seulement si l’humain donne un fichier de projet (`projet.json`).'.replace('’', "'");
+  const SEUL = "Seulement si l'humain donne une adresse, ou plusieurs, un fichier de projet (`projet.json`), ou appelle le skill sans autre demande.";
   assert.ok(section.split('\n')[2].startsWith(SEUL), section);
   assert.ok(section.includes('`conduire.md`'));
   const c = lire('conduire.md');
@@ -134,4 +137,16 @@ test('SK8 la section « Conduire » : un projet donné, un pourquoi par étape, 
   assert.deepEqual(pourquoi.map((m) => m[1]), ['Site', 'Constat', 'Versions à garder', 'Marque', 'Décisions', 'Livraison', 'Suivi']);
   for (const [, nom, texte] of pourquoi) assert.ok(texte.split(/[.!?](?:\s|$)/).filter((x) => x.trim()).length <= 3, nom);
   for (const t of [section, c]) assert.doesNotMatch(t, /\b(?:site|produit)s? conformes?\b|\bconformes? (?:le |la )?(?:site|produit)/i);
+});
+
+test('SK9 conduire.md : la voix en tête, les ouvertures d’avant le projet ; Node dans SKILL.md', () => {
+  const c = lire('conduire.md');
+  const titres = [...c.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
+  assert.equal(titres[0], 'La voix : le compagnon d’atelier'.replace('’', "'"));
+  const voix = c.slice(c.indexOf('## La voix'), c.indexOf('## Avant le projet'));
+  for (const t of ['| Règle | Détail |', '| À éviter | Pourquoi |', '| Moment | À éviter | À suivre |']) assert.ok(voix.includes(t), t);
+  assert.equal(voix.split('\n').filter((l) => /^\| (?:Fin de la mesure|Une décision|Une limite) \|/.test(l)).length, 3);
+  for (const m of ['Lancer', 'Les pages']) assert.ok(c.includes(`**${m}** : « `), m);
+  const avant = lire('SKILL.md').slice(0, lire('SKILL.md').indexOf('## Quatre mots'));
+  assert.match(avant, /Node 24 : .*Chercher alors un Node 24 installé/);
 });

@@ -58,7 +58,7 @@ const CAPTURED = new Set(['décision', 'proche', 'auto', 'correction']);
 
 /**
  * @param {ReduceOptions} opts
- * @returns {Promise<{ host: string, dir: string, files: string[], references: string[], table: ReturnType<typeof propose>, map: Record<string, any>, first: string, migration: ReturnType<typeof buildMigration>['data'], pages: Awaited<ReturnType<typeof simulatePage>>[] }[]>}
+ * @returns {Promise<{ host: string, dir: string, files: string[], references: string[], table: ReturnType<typeof propose>, decisions: Record<string, string | false>, map: Record<string, any>, first: string, migration: ReturnType<typeof buildMigration>['data'], pages: Awaited<ReturnType<typeof simulatePage>>[] }[]>}
  */
 export async function runReduce(opts) {
   const { viewport = { width: 1366, height: 900 }, waitMs = DEFAULT_WAIT_MS, outRoot = 'local/reductions', now = new Date(), log = () => {} } = opts;
@@ -348,7 +348,7 @@ export async function runReduce(opts) {
         files.push(join(dir, 'modifications.json'));
         await writeFile(files[3], JSON.stringify(migration.modifications, null, 2) + '\n');
       }
-      results.push({ host, dir, files, references, table, map, first: hostUrls[0], migration: migration.data, pages, rendered });
+      results.push({ host, dir, files, references, table, decisions, map, first: hostUrls[0], migration: migration.data, pages, rendered });
     }
   } finally {
     await browser.close();

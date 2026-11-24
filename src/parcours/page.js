@@ -7,7 +7,7 @@
  * mots-clés, 0 et 100 %, comme un module (D61). Toute chaîne venue du projet ou des sorties est échappée.
  */
 import { esc } from '../lib/format.js';
-import { aLaMain, PHRASES, TEMPS } from './etat.js';
+import { aLaMain, etatDit, PHRASES, TEMPS } from './etat.js';
 import { variablesDeLaPage } from './jetons.js';
 
 /** @typedef {import('./etat.js').Etat} Etat @typedef {import('./etat.js').Etape} Etape */
@@ -111,7 +111,7 @@ function moment(e) {
 /** Une étape dans « Tout le parcours ». @param {Etape} k */
 function etape(k) {
   /** @type {string[]} */
-  const p = [`<p><strong>${esc(k.nom)}</strong> · ${esc(k.etat)} · ${esc(k.acteurs)}</p>`];
+  const p = [`<p><strong>${esc(k.nom)}</strong> · ${esc(etatDit(k))} · ${esc(k.acteurs)}</p>`];
   if (k.fait && !k.lignes.length) p.push(`<p>${esc(k.fait)}</p>`);
   for (const l of k.lignes) p.push(`<p>${esc(l)}</p>`);
   if (k.etat === 'à venir' && !k.faite) p.push(`<p class="doux">${esc(k.ouvre)}</p>`);
