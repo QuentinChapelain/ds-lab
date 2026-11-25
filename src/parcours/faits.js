@@ -86,6 +86,14 @@ export function faitsDuMoment(e, { sorties }) {
         );
         break;
       }
+      if (k.action?.startsWith('choisir la marque')) {
+        f.push(
+          ['Fait', 'la marque lue dans la mesure'],
+          ['Écran', 'la marque'],
+          ['Ensuite', 'une phrase : lue sur les pages, à droite, on peut la changer puis la confirmer ; ni liste ni code ; attendre le clic sur Confirmer la marque (parcours --attendre, en tâche de fond)'],
+        );
+        break;
+      }
       if (avant?.etat === 'faite' && !k.sortie) {
         f.push(['Fait', 'la mesure des pages'], ['Chiffre', e.chiffres.versions === null ? null : nombre(e.chiffres.versions, 'version de composant', 'versions de composants')], ['Écran', 'la dette']);
       }

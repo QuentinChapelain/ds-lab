@@ -6,8 +6,9 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { lireProjet, ecrirePages } from './projet.js';
-import { DETTE_VUE, PAGES_VALIDEES } from './etat.js';
+import { lireProjet, ecrirePages, ecrireMarque } from './projet.js';
+import { calculerEtat, DETTE_VUE, PAGES_VALIDEES } from './etat.js';
+import { entreeDe } from './marque.js';
 import { lancerChromium } from '../browser/lancement.js';
 
 /** Délai de la vérification d'une page ajoutée. */
@@ -97,6 +98,22 @@ export function detteVue(fichier) {
   const p = lireProjet(fichier);
   mkdirSync(p.sorties, { recursive: true });
   writeFileSync(join(p.sorties, DETTE_VUE), `${JSON.stringify({ vue: true }, null, 2)}\n`);
+}
+
+/**
+ * Confirme la marque montrée à l'écran (D80) : écrit son entrée, `marques/<id>/entree.json` à côté du projet, et la
+ * nomme dans projet.json. Une marque refusée ne se confirme pas.
+ * @param {string} fichier
+ */
+export function confirmerMarque(fichier) {
+  const p = lireProjet(fichier);
+  const m = calculerEtat(p, { base: p.dossier }).marque;
+  if (!m) throw new Error('aucune marque à confirmer');
+  if (m.apercu.motifs.length) throw new Error('une marque refusée ne se confirme pas');
+  const chemin = join('marques', m.site.id, 'entree.json');
+  mkdirSync(join(p.dossier, 'marques', m.site.id), { recursive: true });
+  writeFileSync(join(p.dossier, chemin), `${JSON.stringify(entreeDe(p.produit, m.choix), null, 2)}\n`);
+  ecrireMarque(fichier, m.site.id, chemin);
 }
 
 /** Nom de fichier d'une vignette. @param {string} chemin */

@@ -94,3 +94,15 @@ export function ecrirePages(fichier, id, pages) {
   s.pages = pages.map((x) => (x.name ? { path: x.path, name: x.name } : x.path));
   writeFileSync(fichier, `${JSON.stringify(p, null, 2)}\n`);
 }
+
+/**
+ * Nomme l'entrée de la marque d'un site dans projet.json (`brand`), sans toucher au reste du fichier (D80).
+ * @param {string} fichier @param {string} id @param {string} chemin  relatif au dossier du projet
+ */
+export function ecrireMarque(fichier, id, chemin) {
+  const p = lireJson(fichier);
+  const s = (p.sites ?? []).find((/** @type {any} */ x) => x?.id === id);
+  if (!s) throw new Error(`${fichier} : aucun site ${id}`);
+  s.brand = chemin;
+  writeFileSync(fichier, `${JSON.stringify(p, null, 2)}\n`);
+}

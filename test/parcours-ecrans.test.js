@@ -15,7 +15,13 @@
  *       phrases calculées et leurs dessins (SVG : la valeur mesurée est une donnée du dessin, jamais du style), les
  *       composants par type avec leurs captures, « À regarder aussi », les deux liens, « Passer à ta marque » ; sans
  *       audit, les composants seuls ; le mot « constat » ne se montre pas ;
- *   EC6 « Passer à ta marque » : la dette vue, l'action de la marque reprend, --attendre finit.
+ *   EC6 « Passer à ta marque » : la dette vue, l'action de la marque reprend, --attendre finit ;
+ *   EC7 la marque (D80), lue dans la mesure par la règle : la primaire colore le plus d'éléments cliquables, l'accent est
+ *       la couleur la plus employée d'une autre teinte, la troisième passe aux gris ; chaque couleur dit son code, d'où
+ *       elle vient (« lue sur n éléments »), ses douze pas, son bouton ou son aplat et le verdict ; la police des titres ;
+ *       « Confirmer la marque » ;
+ *   EC8 confirmer : l'entrée écrite et nommée dans le projet, la main à l'outil, --attendre finit ; une marque refusée
+ *       se dit sous la couleur en cause, en mots simples, et ne se confirme pas.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -28,7 +34,7 @@ import { lireProjet } from '../src/parcours/projet.js';
 import { calculerEtat } from '../src/parcours/etat.js';
 import { pageDuParcours } from '../src/parcours/page.js';
 import { ecranDeLancement, FIN_JETONS } from '../src/parcours/ecrans.js';
-import { ajouterPage, detteVue, retirerPage, validerPages } from '../src/parcours/pages.js';
+import { ajouterPage, confirmerMarque, detteVue, retirerPage, validerPages } from '../src/parcours/pages.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const FIX = join(ROOT, 'fixtures', 'parcours');
@@ -195,14 +201,14 @@ test('EC5 la dette : les valeurs comptées, dites et dessinées ; les composants
     'Rien à décider',
     '3 pages mesurées :',
     'Les valeurs',
-    '74 valeurs différentes affichées sur ces pages',
-    'Couleurs 34',
-    'Dont 22 gris, et 17 presque identiques à une autre. Le code en écrit 42. Six autres viennent du contenu (images, pictogrammes) : mises de côté.',
-    'Tailles de texte 14',
+    '68 valeurs différentes affichées sur ces pages',
+    'Couleurs 31',
+    'Dont 20 gris, et 16 presque identiques à une autre. Le code en écrit 42. Six autres viennent du contenu (images, pictogrammes) : mises de côté.',
+    'Tailles de texte 13',
     'Cinq sont des valeurs à virgule, en bleu. Le code en écrit 14.',
-    'Espacements 17',
-    'Neuf sont hors d’une grille de 4 px, en bleu. Valeurs en pixels.',
-    'Arrondis 9',
+    'Espacements 16',
+    'Huit sont hors d’une grille de 4 px, en bleu. Valeurs en pixels.',
+    'Arrondis 8',
     'Trois façons d’écrire un rond : 50 %, 999 et 9999. Le code en écrit 9.',
     '11 versions pour 3 types de composants, sur 30 éléments relevés. Aucun ne vient d’un framework.',
     'Lien 4 versions',
@@ -241,4 +247,71 @@ test('EC6 « Passer à ta marque » : la dette vue, la marque reprend son cours,
   assert.equal(await w.fin(), 0);
   const e = calculerEtat(lireProjet(f), { base: d });
   assert.deepEqual([e.moment, e.courante.action], ['ecran', 'saisir la marque']);
+});
+
+/** Une copie du projet mesuré, la dette vue, sans entrée de marque : le moment de la marque. */
+const aLaMarque = () => {
+  const d = copie('constat');
+  const f = join(d, 'projet.json');
+  const p = JSON.parse(readFileSync(f, 'utf8'));
+  delete p.sites[0].brand;
+  writeFileSync(f, JSON.stringify(p, null, 2));
+  rmSync(join(d, 'marques'), { recursive: true });
+  detteVue(f);
+  return { d, f };
+};
+
+test('EC7 la marque, lue dans la mesure : deux couleurs et la police, d’où elles viennent, ce que l’outil en fait', () => {
+  const { d, f } = aLaMarque();
+  const e = calculerEtat(lireProjet(f), { base: d });
+  assert.deepEqual([e.moment, e.courante.main, e.courante.action], ['marque', 'designer', 'choisir la marque à l’écran, puis la confirmer']);
+  assert.deepEqual(e.marque?.choix, { primary: '#2b4c7e', accent: '#f0c987', troisieme: '#d0563f', police: ['Orbe Sans', 'Arial', 'sans-serif'] });
+  const h = pageDuParcours(e);
+  const t = texte(h);
+  for (const x of [
+    'La marque de Annuaire des cafés',
+    'À toi de décider',
+    'C’est quoi Diapason ?',
+    'Couleur primaire #2b4c7e Lue sur 19 éléments de tes pages, dont 15 qui se cliquent. C’est ce qui se clique.',
+    'Ta couleur exacte est sur le bouton, avec un texte blanc. C’est le pas 9, encadré.',
+    'Accent #f0c987 Lue sur 6 éléments de tes pages. Facultatif.',
+    'Ta couleur exacte est sur les aplats, avec un texte foncé.',
+    '#d0563f, lue sur 2 éléments. Une marque garde deux couleurs : celle-ci passera aux gris.',
+    'Police des titres Orbe Sans Lue sur 17 titres de tes pages.',
+    'Marque acceptée',
+    'Confirmer la marque ›',
+  ])
+    assert.ok(t.includes(x), x);
+  assert.equal(h.match(/<ul class="echelle" aria-label="Les douze pas">/g)?.length, 2);
+  assert.match(h, /<li class="plein"><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="4" fill="#2b4c7e"\/>/);
+  assert.match(h, /<button type="submit" class="principal">Confirmer la marque ›<\/button>/);
+  assert.doesNotMatch(t, /[Cc]onstat|checkValise|entrée|\.json/);
+  assert.doesNotMatch(h, /<script|\sstyle="|http-equiv="refresh"/);
+  assert.deepEqual(enDur(h), []);
+});
+
+test('EC8 confirmer la marque : l’entrée écrite, la main à l’outil ; une marque refusée ne se confirme pas', async () => {
+  const { d, f } = aLaMarque();
+  const w = lancerParcours([f, '--attendre']);
+  await new Promise((ok) => setTimeout(ok, 1500));
+  assert.equal(w.p.exitCode, null, '--attendre attend encore');
+  confirmerMarque(f);
+  assert.equal(await w.fin(), 0);
+  assert.deepEqual(JSON.parse(readFileSync(join(d, 'marques', 'orbe', 'entree.json'), 'utf8')), {
+    name: 'Annuaire des cafés',
+    primary: '#2b4c7e',
+    accent: '#f0c987',
+    fonts: { heading: ['Orbe Sans', 'Arial', 'sans-serif'] },
+  });
+  assert.equal(JSON.parse(readFileSync(f, 'utf8')).sites[0].brand, 'marques/orbe/entree.json');
+  const e = calculerEtat(lireProjet(f), { base: d });
+  assert.deepEqual([e.courante.main, e.courante.action, e.moment], ['outil', 'saisir la marque', 'ecran']);
+  // Refusée : une primaire qui ne donne pas douze pas distincts.
+  const r = aLaMarque();
+  writeFileSync(join(r.d, 'sorties', 'marque.json'), JSON.stringify({ orbe: { primary: '#00ccff' } }));
+  const h = pageDuParcours(calculerEtat(lireProjet(r.f), { base: r.d }));
+  assert.match(texte(h), /Couleur primaire #00ccff .* Cette couleur ne donne pas douze nuances distinctes : ses tons clairs se confondent avec elle\. Essaie une couleur plus foncée\./);
+  assert.match(texte(h), /Marque refusée : change la couleur dite plus haut\./);
+  assert.match(h, /<button type="submit" class="principal" disabled>Confirmer la marque ›<\/button>/);
+  assert.throws(() => confirmerMarque(r.f), /une marque refusée ne se confirme pas/);
 });

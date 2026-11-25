@@ -6,7 +6,7 @@ Huit projets fictifs de la commande `npm run parcours` (D72), un par moment de l
 |---|---|---|
 | `lancement` | Rien de fait, aucune page : l'écran des pages, vide (D77) | Aucune |
 | `pages` | Trois pages retenues, deux avec leur nom, pas encore validées : l'écran des pages (D77) | Aucune |
-| `constat` | Mesure faite, dette pas encore vue : l'écran de la dette (D79) ; dette vue, la marque à saisir | La mesure des composants (chiffres, scores, types et versions avec leurs hauteurs, les onze captures), un extrait de l'audit (valeurs d'interface et de contenu, ce que le code écrit) et un rapport de remplacement |
+| `constat` | Mesure faite, dette pas encore vue : l'écran de la dette (D79) ; dette vue, la marque à saisir | La mesure des composants (chiffres, scores, types et versions avec leurs hauteurs, les onze captures), un extrait de l'audit, lancé avec le fichier de sources (valeurs d'interface et de contenu, ce que le code écrit, couleurs par usage et rôle d'élément, polices par rôle) et un rapport de remplacement ; sans entrée de marque, la dette vue, il donne l'écran de la marque (D80) |
 | `marque` | Marque acceptée, aucune table : la planche des rôles reste affichée | Constat, verdict de la saisie |
 | `decisions` | Décisions en attente : la revue | Constat, verdict, table sans décision lue ; `decisions.json`, copie de `fixtures/marque-demo/decisions-valise.json`, en tranche 8 sur 15 |
 | `livraison` | Feuilles ajoutées, pas encore prouvées | Constat, verdict, table qui a lu toutes les décisions, manifeste des feuilles ajoutées |

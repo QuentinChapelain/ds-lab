@@ -43,17 +43,9 @@
             "count": 9,
             "content": 0
           },
-          "#f5f5f5": {
-            "count": 9,
-            "content": 0
-          },
           "#d8d2c4": {
             "count": 8,
             "content": 8
-          },
-          "#1b1b1b": {
-            "count": 6,
-            "content": 0
           },
           "#f0c987": {
             "count": 6,
@@ -85,10 +77,6 @@
           },
           "#f6f5f6": {
             "count": 4,
-            "content": 0
-          },
-          "#00a676": {
-            "count": 3,
             "content": 0
           },
           "#2c4d7f": {
@@ -181,10 +169,6 @@
           },
           "18px": {
             "count": 10,
-            "content": 0
-          },
-          "13px": {
-            "count": 9,
             "content": 0
           },
           "24px": {
@@ -299,14 +283,6 @@
             "count": 20,
             "content": 0
           },
-          "20px": {
-            "count": 16,
-            "content": 0
-          },
-          "9px": {
-            "count": 12,
-            "content": 0
-          },
           "5px": {
             "count": 10,
             "content": 0
@@ -315,12 +291,8 @@
             "count": 8,
             "content": 0
           },
-          "18px": {
-            "count": 6,
-            "content": 0
-          },
-          "30px": {
-            "count": 6,
+          "20px": {
+            "count": 4,
             "content": 0
           },
           "27px": {
@@ -344,10 +316,6 @@
             "content": 0
           },
           "12px": {
-            "count": 6,
-            "content": 0
-          },
-          "18px": {
             "count": 6,
             "content": 0
           },
@@ -387,10 +355,6 @@
             "count": 32,
             "content": 0
           },
-          "20px": {
-            "count": 24,
-            "content": 0
-          },
           "6px": {
             "count": 16,
             "content": 0
@@ -402,6 +366,773 @@
           "8px": {
             "count": 4,
             "content": 0
+          }
+        }
+      },
+      "fontFamilies": {
+        "values": {
+          "orbe sans, arial, sans-serif": {
+            "contexts": [
+              {
+                "role": "texte",
+                "count": 116
+              },
+              {
+                "role": "lien",
+                "count": 27
+              },
+              {
+                "role": "titre",
+                "count": 17
+              },
+              {
+                "role": "bouton",
+                "count": 8
+              },
+              {
+                "role": "champ",
+                "count": 4
+              }
+            ]
+          }
+        }
+      }
+    },
+    "usages": {
+      "colors": {
+        "#faf6ef": {
+          "fond": {
+            "elements": 1,
+            "kinds": {
+              "conteneur|body|": {
+                "n": 1,
+                "first": {
+                  "role": "conteneur"
+                }
+              }
+            }
+          }
+        },
+        "#e2dccf": {
+          "bordure": {
+            "elements": 13,
+            "kinds": {
+              "conteneur|header|": {
+                "n": 3,
+                "first": {
+                  "role": "conteneur"
+                }
+              },
+              "conteneur|section|": {
+                "n": 1,
+                "first": {
+                  "role": "conteneur"
+                }
+              },
+              "conteneur|article|": {
+                "n": 9,
+                "first": {
+                  "role": "conteneur"
+                }
+              }
+            }
+          },
+          "fond": {
+            "elements": 5,
+            "kinds": {
+              "texte|span|étiquette": {
+                "n": 5,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
+          }
+        },
+        "#ffffff": {
+          "fond": {
+            "elements": 27,
+            "kinds": {
+              "conteneur|header|": {
+                "n": 3,
+                "first": {
+                  "role": "conteneur"
+                }
+              },
+              "conteneur|section|": {
+                "n": 1,
+                "first": {
+                  "role": "conteneur"
+                }
+              },
+              "conteneur|article|": {
+                "n": 9,
+                "first": {
+                  "role": "conteneur"
+                }
+              },
+              "conteneur|body|": {
+                "n": 2,
+                "first": {
+                  "role": "conteneur"
+                }
+              },
+              "champ|input|": {
+                "n": 4,
+                "first": {
+                  "role": "champ"
+                }
+              },
+              "bouton|button|": {
+                "n": 5,
+                "first": {
+                  "role": "bouton"
+                }
+              },
+              "lien|a|": {
+                "n": 3,
+                "first": {
+                  "role": "lien"
+                }
+              }
+            }
+          },
+          "texte": {
+            "elements": 17,
+            "kinds": {
+              "texte|span|étiquette": {
+                "n": 4,
+                "first": {
+                  "role": "texte"
+                }
+              },
+              "bouton|a|": {
+                "n": 1,
+                "first": {
+                  "role": "bouton"
+                }
+              },
+              "texte|p|": {
+                "n": 3,
+                "first": {
+                  "role": "texte"
+                }
+              },
+              "lien|a|": {
+                "n": 7,
+                "first": {
+                  "role": "lien"
+                }
+              },
+              "bouton|button|": {
+                "n": 2,
+                "first": {
+                  "role": "bouton"
+                }
+              }
+            }
+          }
+        },
+        "#1f2a44": {
+          "texte": {
+            "elements": 51,
+            "kinds": {
+              "lien|a|": {
+                "n": 3,
+                "first": {
+                  "role": "lien"
+                }
+              },
+              "titre|h1|": {
+                "n": 2,
+                "first": {
+                  "role": "titre"
+                }
+              },
+              "titre|h2|": {
+                "n": 5,
+                "first": {
+                  "role": "titre"
+                }
+              },
+              "titre|h3|": {
+                "n": 9,
+                "first": {
+                  "role": "titre"
+                }
+              },
+              "texte|span|": {
+                "n": 12,
+                "first": {
+                  "role": "texte"
+                }
+              },
+              "texte|span|étiquette": {
+                "n": 9,
+                "first": {
+                  "role": "texte"
+                }
+              },
+              "texte|p|": {
+                "n": 8,
+                "first": {
+                  "role": "texte"
+                }
+              },
+              "champ|input|": {
+                "n": 3,
+                "first": {
+                  "role": "champ"
+                }
+              }
+            }
+          }
+        },
+        "#2b4c7e": {
+          "texte": {
+            "elements": 13,
+            "kinds": {
+              "lien|a|": {
+                "n": 12,
+                "first": {
+                  "role": "lien"
+                }
+              },
+              "bouton|button|": {
+                "n": 1,
+                "first": {
+                  "role": "bouton"
+                }
+              }
+            }
+          },
+          "plein": {
+            "elements": 3,
+            "kinds": {
+              "bouton|a|": {
+                "n": 1,
+                "first": {
+                  "role": "bouton"
+                }
+              },
+              "bouton|button|": {
+                "n": 1,
+                "first": {
+                  "role": "bouton"
+                }
+              },
+              "lien|a|": {
+                "n": 1,
+                "first": {
+                  "role": "lien"
+                }
+              }
+            }
+          },
+          "bordure": {
+            "elements": 3,
+            "kinds": {
+              "bouton|button|": {
+                "n": 2,
+                "first": {
+                  "role": "bouton"
+                }
+              },
+              "lien|a|": {
+                "n": 1,
+                "first": {
+                  "role": "lien"
+                }
+              }
+            }
+          }
+        },
+        "#666666": {
+          "texte": {
+            "elements": 1,
+            "kinds": {
+              "texte|p|": {
+                "n": 1,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
+          }
+        },
+        "#9a9a9a": {
+          "texte": {
+            "elements": 9,
+            "kinds": {
+              "texte|p|": {
+                "n": 9,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
+          }
+        },
+        "#d0563f": {
+          "plein": {
+            "elements": 2,
+            "kinds": {
+              "texte|span|étiquette": {
+                "n": 2,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
+          }
+        },
+        "#f0c987": {
+          "fond": {
+            "elements": 4,
+            "kinds": {
+              "texte|span|étiquette": {
+                "n": 4,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
+          },
+          "texte": {
+            "elements": 2,
+            "kinds": {
+              "texte|span|": {
+                "n": 2,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
+          }
+        },
+        "#f7f3ec": {
+          "fond": {
+            "elements": 1,
+            "kinds": {
+              "conteneur|aside|": {
+                "n": 1,
+                "first": {
+                  "role": "conteneur"
+                }
+              }
+            }
+          }
+        },
+        "#757575": {
+          "texte": {
+            "elements": 5,
+            "kinds": {
+              "texte|p|": {
+                "n": 5,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
+          }
+        },
+        "#30548a": {
+          "texte": {
+            "elements": 1,
+            "kinds": {
+              "lien|a|": {
+                "n": 1,
+                "first": {
+                  "role": "lien"
+                }
+              }
+            }
+          }
+        },
+        "#2c4d7f": {
+          "plein": {
+            "elements": 3,
+            "kinds": {
+              "conteneur|footer|": {
+                "n": 3,
+                "first": {
+                  "role": "conteneur"
+                }
+              }
+            }
+          }
+        },
+        "#24426f": {
+          "plein": {
+            "elements": 1,
+            "kinds": {
+              "bouton|a|": {
+                "n": 1,
+                "first": {
+                  "role": "bouton"
+                }
+              }
+            }
+          }
+        },
+        "#e5e5e5": {
+          "bordure": {
+            "elements": 5,
+            "kinds": {
+              "conteneur|section|": {
+                "n": 2,
+                "first": {
+                  "role": "conteneur"
+                }
+              },
+              "conteneur|li|": {
+                "n": 3,
+                "first": {
+                  "role": "conteneur"
+                }
+              }
+            }
+          }
+        },
+        "#cfd8dc": {
+          "fond": {
+            "elements": 0,
+            "kinds": {}
+          }
+        },
+        "#616161": {
+          "texte": {
+            "elements": 3,
+            "kinds": {
+              "texte|label|": {
+                "n": 3,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
+          }
+        },
+        "#cccccc": {
+          "bordure": {
+            "elements": 3,
+            "kinds": {
+              "champ|input|": {
+                "n": 3,
+                "first": {
+                  "role": "champ"
+                }
+              }
+            }
+          }
+        },
+        "#ef5c56": {
+          "texte": {
+            "elements": 1,
+            "kinds": {
+              "texte|p|": {
+                "n": 1,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
+          }
+        },
+        "#999999": {
+          "texte": {
+            "elements": 1,
+            "kinds": {
+              "texte|p|": {
+                "n": 1,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
+          },
+          "bordure": {
+            "elements": 54,
+            "kinds": {
+              "texte|th|": {
+                "n": 6,
+                "first": {
+                  "role": "texte"
+                }
+              },
+              "texte|td|": {
+                "n": 40,
+                "first": {
+                  "role": "texte"
+                }
+              },
+              "conteneur|td|": {
+                "n": 8,
+                "first": {
+                  "role": "conteneur"
+                }
+              }
+            }
+          }
+        },
+        "#2196f3": {
+          "texte": {
+            "elements": 4,
+            "kinds": {
+              "lien|a|": {
+                "n": 4,
+                "first": {
+                  "role": "lien"
+                }
+              }
+            }
+          }
+        },
+        "#8e6c8a": {
+          "fond": {
+            "elements": 0,
+            "kinds": {}
+          }
+        },
+        "#c4513a": {
+          "plein": {
+            "elements": 1,
+            "kinds": {
+              "texte|span|étiquette": {
+                "n": 1,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
+          }
+        },
+        "#5b8c85": {
+          "fond": {
+            "elements": 0,
+            "kinds": {}
+          }
+        },
+        "#9e9e9e": {
+          "texte": {
+            "elements": 1,
+            "kinds": {
+              "texte|p|": {
+                "n": 1,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
+          }
+        },
+        "#333333": {
+          "texte": {
+            "elements": 10,
+            "kinds": {
+              "titre|h1|": {
+                "n": 1,
+                "first": {
+                  "role": "titre"
+                }
+              },
+              "texte|dd|": {
+                "n": 4,
+                "first": {
+                  "role": "texte"
+                }
+              },
+              "bouton|button|": {
+                "n": 4,
+                "first": {
+                  "role": "bouton"
+                }
+              },
+              "champ|input|": {
+                "n": 1,
+                "first": {
+                  "role": "champ"
+                }
+              }
+            }
+          }
+        },
+        "#808080": {
+          "texte": {
+            "elements": 1,
+            "kinds": {
+              "texte|p|": {
+                "n": 1,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
+          }
+        },
+        "#4990e2": {
+          "plein": {
+            "elements": 1,
+            "kinds": {
+              "bouton|button|": {
+                "n": 1,
+                "first": {
+                  "role": "bouton"
+                }
+              }
+            }
+          }
+        },
+        "#dadada": {
+          "bordure": {
+            "elements": 12,
+            "kinds": {
+              "conteneur|div|": {
+                "n": 4,
+                "first": {
+                  "role": "conteneur"
+                }
+              },
+              "bouton|button|": {
+                "n": 4,
+                "first": {
+                  "role": "bouton"
+                }
+              },
+              "champ|input|": {
+                "n": 1,
+                "first": {
+                  "role": "champ"
+                }
+              },
+              "lien|a|": {
+                "n": 3,
+                "first": {
+                  "role": "lien"
+                }
+              }
+            }
+          }
+        },
+        "#595959": {
+          "texte": {
+            "elements": 11,
+            "kinds": {
+              "texte|dt|": {
+                "n": 4,
+                "first": {
+                  "role": "texte"
+                }
+              },
+              "texte|span|": {
+                "n": 1,
+                "first": {
+                  "role": "texte"
+                }
+              },
+              "texte|th|": {
+                "n": 6,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
+          }
+        },
+        "#eeeeee": {
+          "fond": {
+            "elements": 1,
+            "kinds": {
+              "conteneur|div|": {
+                "n": 1,
+                "first": {
+                  "role": "conteneur"
+                }
+              }
+            }
+          }
+        },
+        "#f2f2f2": {
+          "fond": {
+            "elements": 6,
+            "kinds": {
+              "texte|th|": {
+                "n": 6,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
+          }
+        },
+        "#2d2d2d": {
+          "texte": {
+            "elements": 40,
+            "kinds": {
+              "texte|td|": {
+                "n": 40,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
+          }
+        },
+        "#c98b5e": {
+          "fond": {
+            "elements": 0,
+            "kinds": {}
+          }
+        },
+        "#d8d2c4": {
+          "fond": {
+            "elements": 0,
+            "kinds": {}
+          }
+        },
+        "#f6f5f6": {
+          "fond": {
+            "elements": 4,
+            "kinds": {
+              "conteneur|tr|": {
+                "n": 4,
+                "first": {
+                  "role": "conteneur"
+                }
+              }
+            }
+          }
+        },
+        "#6b7fa8": {
+          "fond": {
+            "elements": 0,
+            "kinds": {}
+          }
+        },
+        "#c8553d": {
+          "plein": {
+            "elements": 1,
+            "kinds": {
+              "texte|span|étiquette": {
+                "n": 1,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
+          }
+        },
+        "#777777": {
+          "texte": {
+            "elements": 1,
+            "kinds": {
+              "texte|p|": {
+                "n": 1,
+                "first": {
+                  "role": "texte"
+                }
+              }
+            }
           }
         }
       }

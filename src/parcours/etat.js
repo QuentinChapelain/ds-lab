@@ -13,6 +13,10 @@ import { lireJson } from '../lib/fichiers.js';
 import { compterDecisions } from '../reduce/propose.js';
 import { RESOLVER } from '../tokens/resolver.js';
 import { detteDe } from './dette.js';
+import { apercu, lireMarque } from './marque.js';
+
+/** Le choix de la marque à l'écran, quand l'humain l'a changé (D80) : dans les sorties. */
+const MARQUE_CHOISIE = 'marque.json';
 
 /** La dette vue : écrit au clic sur « Passer à ta marque » (D78), dans les sorties. */
 export const DETTE_VUE = 'dette.json';
@@ -45,7 +49,8 @@ function pagesValidees(sorties) {
  * @typedef {import('./dette.js').Dette & { site: Site, pages: string[], valeursHref: string | null, composantsHref: string, captures: string,
  *   autres: { id: string, nom: string, href: string }[] }} Dette  la dette du premier site mesuré, au moment de la dette
  * @typedef {{ produit: string, sites: Site[], sousTitre: string | null, unSite: boolean, etapes: Etape[], temps: { nom: string, etat: EtatEtape, etapes: CleEtape[] }[],
- *   courante: Etape, moment: 'pages' | 'mesure' | 'dette' | 'ecran' | 'sans-ecran' | 'bilan', dette: Dette | null, ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
+ *   courante: Etape, moment: 'pages' | 'mesure' | 'dette' | 'marque' | 'ecran' | 'sans-ecran' | 'bilan', dette: Dette | null,
+ *   marque: { site: Site, lecture: import('./marque.js').Lecture, choix: import('./marque.js').Choix, apercu: import('./marque.js').Apercu } | null, ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
  *   phrase: string | null, bilan: Bilan | null, chiffres: Chiffres, voisin: string | null, livraison: Livraison | null }} Etat
  * @typedef {{ pages: number, arrivees: number, total: number, manquantes: { titre: string, elements: number, cause: string | null }[] }} Livraison  la dernière vérification
  */
@@ -401,6 +406,22 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
       autres: constats.filter((x) => x.site !== s && x.html).map((x) => ({ id: x.site.id, nom: x.site.nom ?? x.site.id, href: href(/** @type {string} */ (x.html)) })),
     };
   }
+  // La marque (D80) : la dette vue, le premier site sans entrée de marque la choisit à l'écran, lue dans la mesure.
+  /** @type {Etat['marque']} */
+  let marque = null;
+  const sansEntree = marques.find((m) => m.statut === 'sans entrée' || m.statut === 'entrée absente');
+  if (constat.faite && !enDette && sansEntree) {
+    const s = sansEntree.site;
+    const a = plusRecent(join(sorties, 'audit', s.id, s.hote));
+    const fa = a && join(a.chemin, 'audit.json');
+    const lecture = fa && existsSync(fa) ? lireMarque(lireJson(fa)) : null;
+    if (lecture) {
+      const fc = join(sorties, MARQUE_CHOISIE);
+      const choix = existsSync(fc) ? { ...lecture.choix, ...(lireJson(fc)[s.id] ?? {}) } : lecture.choix;
+      marque = { site: s, lecture, choix, apercu: apercu(projet.produit, choix) };
+      Object.assign(etapeMarques, { main: 'designer', action: 'choisir la marque à l’écran, puis la confirmer', commande: null });
+    }
+  }
   const etapes = [site, constat, etapeMarques, etapeDecisions, livraison, suivi];
   const reportes = etapes.reduce((n, e) => n + e.reportes, 0);
   const i = etapes.findIndex((e) => !e.faite);
@@ -417,10 +438,10 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
   if (courante.ecran && courante.sortie) ecran = { ...courante.ecran, etape: courante.cle, precedente: false };
   else if (!courante.sortie && i > 0 && etapes[i - 1].ecran) ecran = { .../** @type {Ecran} */ (etapes[i - 1].ecran), etape: etapes[i - 1].cle, precedente: true };
   // Pendant la mesure, un écran d'attente (D77) : les pages sont validées, aucune n'est encore mesurée.
-  const moment = courante.cle === 'site' ? 'pages' : courante.cle === 'constat' && !constat.sortie ? 'mesure' : courante.cle === 'marques' && enDette ? 'dette' : courante.cle === 'suivi' ? 'bilan' : ecran ? 'ecran' : 'sans-ecran';
+  const moment = courante.cle === 'site' ? 'pages' : courante.cle === 'constat' && !constat.sortie ? 'mesure' : courante.cle === 'marques' && enDette ? 'dette' : courante.cle === 'marques' && marque ? 'marque' : courante.cle === 'suivi' ? 'bilan' : ecran ? 'ecran' : 'sans-ecran';
   const refus = etapeMarques.refus && (ecran?.etape === 'marques' || (!ecran && courante.cle === 'marques'));
   const phrase =
-    moment === 'pages' || moment === 'mesure' || moment === 'dette' || moment === 'bilan' ? null
+    moment === 'pages' || moment === 'mesure' || moment === 'dette' || moment === 'marque' || moment === 'bilan' ? null
     : refus ? PHRASES.refus
     : ecran?.etape === 'constat' ? PHRASES.constat
     : ecran?.etape === 'marques' ? PHRASES.marque
@@ -473,6 +494,7 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     },
     voisin: voisinDecisions,
     dette,
+    marque,
     livraison: verdict
       ? {
           pages: verdict.pages?.length ?? 0,

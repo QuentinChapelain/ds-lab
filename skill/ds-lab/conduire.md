@@ -34,6 +34,8 @@ Quelqu'un du métier qui travaille à côté de toi. Il a fait le tour de tes pa
 | Fin de la mesure | « Mesure terminée : 37 couleurs, 13 tailles, 16 espacements, 8 arrondis, 11 versions de composants. » | « Voilà, j'ai fait le tour de tes trois pages. Il y a du monde : 31 couleurs. Regarde à droite, puis on passe à ta marque. » |
 | Une décision | « Décision arr-06 : choisir entre radius.4 et radius.8. » | « Les boutons de filtre sont entre deux arrondis. Regarde les deux à droite, et choisis. » |
 | Une limite | « Désolé, je ne peux malheureusement pas vérifier cette police. » | « Ta police de titres, je ne peux pas la contrôler sans son fichier. Je la prends telle quelle. » |
+| Les pages | « J'ai retenu La carte, Mon compte et La gestion. On les garde ? » | « J'ai retenu 3 pages, elles sont à droite. Change-les si tu veux, puis lance la mesure. » |
+| La marque | « Primaire : bleu #2b4c7e. Accent : sable #f0c987. Police : Orbe Sans. On part là-dessus ? » | « J'ai lu ta marque sur tes pages, elle est à droite. Change ce qui ne va pas, puis confirme. » |
 
 ## Ce qui ne se montre pas
 
@@ -83,13 +85,13 @@ Sous ses lignes, `parcours` écrit les faits du moment : ce qui vient d'être fa
 
 ## La marque
 
-Quand les faits disent de lire la marque sur le site :
+Après le clic sur « Passer à ta marque », l'écran passe seul à la marque : ne rien ouvrir d'autre, ni la page des composants, ni le site.
 
-- La mesure n'a relevé aucune couleur à ce moment. L'IA regarde les pages : ce qui se clique donne la couleur principale ; l'autre couleur de la marque, l'accent ; les titres, leur police. Des valeurs lues sur le site, exactes : jamais une couleur inventée « à peu près ».
-- Une marque garde deux couleurs. Si le site en porte une troisième, l'IA le dit dans la même phrase : deux couleurs sont retenues, la troisième passe aux gris (« ton sable passe aux gris »). Les nuances proposées ensuite viennent toutes de la marque.
-- Elle les propose en une phrase, chaque couleur nommée par ce qu'elle est et montrée à droite, sur le site. L'humain dit oui, ou corrige.
-- Après son accord, l'IA écrit l'entrée elle-même, `marques/<id>/entree.json` (format : `docs/contrat-de-marque.md` du clone), la nomme dans `projet.json` (`brand`), sans le dire, puis relit `parcours`.
-- Une marque refusée se dit avec les mots de l'humain : ce qui ne va pas dans sa couleur, et la réparation que l'IA propose. Jamais le motif de l'outil, jamais un nom de fichier. Après son accord, l'IA corrige l'entrée et relance.
+- L'écran montre la marque lue dans la mesure, par une règle, la même à chaque partie : la primaire colore le plus d'éléments cliquables ; l'accent est la couleur la plus employée d'une autre teinte ; une troisième couleur passe aux gris. Il dit d'où vient chaque couleur et ce que l'outil en fait.
+- Le chat dit une phrase : la marque est lue sur les pages, elle est à droite, on peut la changer, puis la confirmer. Ni liste, ni code de couleur dans le chat : le code est sur l'écran. Ne pas demander « on part là-dessus ? » : le clic sur « Confirmer la marque » vaut accord.
+- Lancer en tâche de fond `npm run parcours -- <chemin du projet> --attendre` : il finit au clic sur « Confirmer la marque ». L'écran a alors écrit l'entrée de la marque ; l'IA enchaîne la commande que donne `parcours`, sans le dire.
+- Une marque refusée se dit sur l'écran, sous la couleur en cause, avec la réparation ; elle ne se confirme pas. Dans le chat, une phrase au plus, avec les mots de l'humain, jamais le motif de l'outil.
+- Sans écran de la marque (aucune couleur relevée par la mesure) : l'IA regarde les pages, propose en une phrase la couleur de ce qui se clique, l'accent et la police des titres, aux valeurs exactes du site, jamais une couleur inventée « à peu près », écrit l'entrée après accord (`marques/<id>/entree.json`, format : `docs/contrat-de-marque.md` du clone), la nomme dans `projet.json` (`brand`), sans le dire, puis relit `parcours`.
 
 ## Quand la main est à l'outil
 

@@ -21,7 +21,7 @@ import { pageDuParcours } from '../parcours/page.js';
 import { ecranDeLancement, dessinDeVignette } from '../parcours/ecrans.js';
 import { faitsDuMoment } from '../parcours/faits.js';
 import { servir } from '../parcours/serveur.js';
-import { ajouterPage, detteVue, retirerPage, validerPages, vignettes } from '../parcours/pages.js';
+import { ajouterPage, confirmerMarque, detteVue, retirerPage, validerPages, vignettes } from '../parcours/pages.js';
 
 const USAGE = 'npm run parcours -- <projet.json> [--servir] [--port <n>] [--attendre]';
 
@@ -89,6 +89,7 @@ await lancer('parcours', async () => {
         if (chemin === '/pages/retirer') retirerPage(fichier, c.site ?? '', c.page ?? '');
         else if (chemin === '/pages/mesurer') validerPages(fichier);
         else if (chemin === '/pages/dette') detteVue(fichier);
+        else if (chemin === '/pages/marque') confirmerMarque(fichier);
         else if (chemin === '/pages/ajouter') {
           const r = await ajouterPage(fichier, c.site ?? '', c.adresse ?? '');
           if ('raison' in r) return new URLSearchParams({ site: c.site ?? '', erreur: r.raison, saisie: c.adresse ?? '' });

@@ -521,7 +521,7 @@ test('PC17 les faits de chaque état : une ligne par fait, sans guillemets ni no
   assert.deepEqual(faits(join(FIX, 'constat')), [
     tete,
     '  Fait : la mesure des pages',
-    '  Chiffre : 74 valeurs différentes affichées',
+    '  Chiffre : 68 valeurs différentes affichées',
     '  Écran : la dette',
     '  Ensuite : une phrase et ce chiffre, renvoyer à l’écran, puis attendre le clic sur Passer à ta marque (parcours --attendre, en tâche de fond) ; ne pas proposer la marque avant',
     '  Main : l’humain ; l’accompagner, il décide',
@@ -557,6 +557,10 @@ test('PC17 les faits de chaque état : une ligne par fait, sans guillemets ni no
   const p = JSON.parse(readFileSync(join(c, 'projet.json'), 'utf8'));
   delete p.sites[0].brand;
   writeFileSync(join(c, 'projet.json'), JSON.stringify(p));
+  // La mesure a relevé des couleurs : l'écran de la marque (D80).
+  assert.ok(faits(c).includes('  Écran : la marque'));
+  // Sans audit, pas d'écran : la marque se lit sur le site, et l'IA écrit l'entrée.
+  rmSync(join(c, 'sorties', 'audit'), { recursive: true });
   assert.ok(faits(c).includes('  Ensuite : lire la marque sur le site (couleur principale, accent, police des titres), la proposer en une phrase, écrire l’entrée après son accord'));
   for (const m of MOMENTS) {
     const l = faits(join(FIX, m));
