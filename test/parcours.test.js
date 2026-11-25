@@ -164,8 +164,9 @@ test('PC2 l’état des huit projets, depuis leurs sorties', () => {
   });
   assert.equal(etat('constat').courante.commande, null);
   const v = etatDe(vue('constat'));
-  assert.deepEqual([v.courante.main, v.courante.action, v.moment, v.phrase], ['outil', 'saisir la marque', 'ecran', 'On mesure ce qui s’affiche vraiment, pas ce que le code contient.']);
-  assert.match(String(v.courante.commande), /^npm run saisie -- marques\/orbe\/entree\.json --verdict sorties\/saisies\/orbe\.json && node src\/cli\/planche\.js --marque marques\/orbe$/);
+  // La dette vue, la marque déjà écrite : la saisie, sous l'écran d'attente des fondations (D83).
+  assert.deepEqual([v.courante.main, v.courante.action, v.moment, v.phrase], ['outil', 'saisir la marque', 'jetons', null]);
+  assert.match(String(v.courante.commande), /^npm run saisie -- marques\/orbe\/entree\.json --verdict sorties\/saisies\/orbe\.json && node src\/cli\/planche\.js --marque marques\/orbe && npm run css -- --marque marques\/orbe && npm run vuetify -- --marque marques\/orbe$/);
   assert.deepEqual(etat('constat').etapes[1].lignes, ['30 éléments, 3 types, 11 versions ; versions choisies : 0 sur 3']);
   assert.deepEqual(resume('marque'), {
     temps: ['faite', 'en cours', 'à venir', 'à venir'],
@@ -321,7 +322,7 @@ test('PC5 la page : quatre temps, un moment de 60 mots au plus hors du cadre, un
   assert.match(p, /<iframe src="\/marques\/orbe\/roles\.html" title="Planche des rôles : Orbe Café"><\/iframe>/);
   assert.match(p, /<a href="\/marques\/orbe\/roles\.html">Ouvrir seul<\/a>/);
   const c = pageDuParcours(etatDe(vue('constat')));
-  assert.match(c, /Fait : Mesure\. Ensuite : Marque, saisir la marque\./);
+  assert.match(c, /<h1>Je prépare tes fondations<\/h1>/);
   const bi = pageDuParcours(etat('bilan'));
   assert.ok(bi.includes('La couche visuelle tient ses seuils. Voici ce qui reste à faire vérifier par un humain.'));
   assert.ok(bi.includes('31 → 17 couleurs ; 16 → 7 espacements ; 13 → 8 tailles de texte.'));
@@ -530,10 +531,9 @@ test('PC17 les faits de chaque état : une ligne par fait, sans guillemets ni no
   ]);
   assert.deepEqual(faits(vue('constat')), [
     tete,
-    '  Fait : la mesure des pages',
-    '  Chiffre : 11 versions de composants',
-    '  Écran : la dette',
-    '  Ensuite : poser la marque sur les fondations, puis montrer la planche',
+    '  Fait : la marque confirmée',
+    '  Écran : l’écriture des jetons, qui passe seule aux fondations',
+    '  Ensuite : saisir la marque, sans le dire, puis relire parcours',
     '  Main : l’outil ; enchaîner sans demander',
     '  Reporté : 3 choix',
     '  Durée : 0 min depuis la première mesure, pauses comprises',

@@ -8,7 +8,7 @@
  */
 import { esc } from '../lib/format.js';
 import { aLaMain, etatDit, PHRASES } from './etat.js';
-import { blocJetons, ecranDesPages, ecranDeMesure, ecranDeLaDette, ecranDeLaMarque, style, DEBUT_JETONS, FIN_JETONS } from './ecrans.js';
+import { blocJetons, ecranDesPages, ecranDeMesure, ecranDeLaDette, ecranDeLaMarque, ecranDesJetons, ecranDesFondations, style, DEBUT_JETONS, FIN_JETONS } from './ecrans.js';
 
 export { DEBUT_JETONS, FIN_JETONS };
 
@@ -128,6 +128,8 @@ export function pageDuParcours(e, { erreur = null } = {}) {
   if (e.moment === 'mesure') return ecranDeMesure(e);
   if (e.moment === 'dette' && e.dette) return ecranDeLaDette(e);
   if (e.moment === 'marque' && e.marque) return ecranDeLaMarque(e, { erreur });
+  if (e.moment === 'jetons') return ecranDesJetons(e);
+  if (e.moment === 'fondations' && e.fondations) return ecranDesFondations(e);
   return `<!doctype html>
 <html lang="fr">
 <head>

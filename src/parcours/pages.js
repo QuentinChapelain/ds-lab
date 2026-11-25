@@ -7,7 +7,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { lireProjet, ecrirePages, ecrireMarque } from './projet.js';
-import { calculerEtat, DETTE_VUE, PAGES_VALIDEES } from './etat.js';
+import { calculerEtat, DETTE_VUE, FONDATIONS_VUES, PAGES_VALIDEES } from './etat.js';
 import { entreeDe } from './marque.js';
 import { lancerChromium } from '../browser/lancement.js';
 
@@ -98,6 +98,13 @@ export function detteVue(fichier) {
   const p = lireProjet(fichier);
   mkdirSync(p.sorties, { recursive: true });
   writeFileSync(join(p.sorties, DETTE_VUE), `${JSON.stringify({ vue: true }, null, 2)}\n`);
+}
+
+/** Les fondations regardées (D83) : le clic sur « Comparer mon site » rend la main à l'outil, qui lance la réduction. @param {string} fichier */
+export function fondationsVues(fichier) {
+  const p = lireProjet(fichier);
+  mkdirSync(p.sorties, { recursive: true });
+  writeFileSync(join(p.sorties, FONDATIONS_VUES), `${JSON.stringify({ vues: true }, null, 2)}\n`);
 }
 
 /**

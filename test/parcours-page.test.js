@@ -5,8 +5,9 @@
  *       background.app du mode ; aucune requête hors de 127.0.0.1 ;
  *   PG2 quand le moment embarque un écran, le cadre prend la hauteur qui reste : plus de la moitié de la fenêtre
  *       (900 px de haut), sans nombre dans le style ;
- *   PG3 le lancement, l'écran des pages (D77), la dette (D79) et la marque (D80), servis par la commande, à 640 px, clair et sombre : aucun défilement
- *       horizontal, le fond du mode, la barre au bas de la fenêtre, chaque vignette chargée (capture ou dessin).
+ *   PG3 le lancement, l'écran des pages (D77), la dette (D79), la marque (D80) et les fondations (D83), servis par la commande, à 640 px, clair
+ *       et sombre : aucun défilement horizontal, le fond du mode, la barre au bas de la fenêtre, chaque vignette chargée (capture ou dessin) ; les
+ *       planches des fondations servies.
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -17,7 +18,8 @@ import { calculerEtat } from '../src/parcours/etat.js';
 import { pageDuParcours } from '../src/parcours/page.js';
 import { servir } from '../src/parcours/serveur.js';
 import { lancerChromium } from '../src/browser/lancement.js';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import { confirmerMarque } from '../src/parcours/pages.js';
 import { cpSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 
@@ -71,7 +73,7 @@ test('PG1 et PG2 chaque moment à 640 px, clair et sombre : aucun défilement, l
   }
 });
 
-test('PG3 le lancement, les pages, la dette et la marque à 640 px, clair et sombre : la barre au bas de la fenêtre, les vignettes chargées', async () => {
+test('PG3 le lancement, les pages, la dette, la marque et les fondations à 640 px, clair et sombre : la barre au bas de la fenêtre, les vignettes chargées', async () => {
   const d = realpathSync(mkdtempSync(join(tmpdir(), 'ds-lab-ecrans-')));
   const p = spawn(process.execPath, [join(ROOT, 'src/cli/parcours.js'), join(d, 'projet.json'), '--servir', '--port', '0'], { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] });
   let sortie = '';
@@ -85,7 +87,7 @@ test('PG3 le lancement, les pages, la dette et la marque à 640 px, clair et som
       }, 50);
       p.on('exit', () => (clearInterval(t), ko(new Error(sortie))));
     });
-    for (const ecran of ['lancement', 'pages', 'dette', 'marque']) {
+    for (const ecran of ['lancement', 'pages', 'dette', 'marque', 'fondations']) {
       if (ecran === 'pages' || ecran === 'dette') cpSync(join(ROOT, 'fixtures', 'parcours', ecran === 'pages' ? 'pages' : 'constat'), d, { recursive: true });
       if (ecran === 'marque') {
         // La dette vue, sans entrée de marque : l'écran de la marque.
@@ -93,6 +95,13 @@ test('PG3 le lancement, les pages, la dette et la marque à 640 px, clair et som
         delete p.sites[0].brand;
         writeFileSync(join(d, 'projet.json'), JSON.stringify(p));
         writeFileSync(join(d, 'sorties', 'dette.json'), '{ "vue": true }\n');
+      }
+      if (ecran === 'fondations') {
+        // La marque confirmée, puis la saisie que donne le parcours : l'écran des fondations.
+        confirmerMarque(join(d, 'projet.json'));
+        const e = calculerEtat(lireProjet(join(d, 'projet.json')), { base: ROOT });
+        const r = spawnSync('sh', ['-c', /** @type {string} */ (e.courante.commande)], { cwd: ROOT, encoding: 'utf8' });
+        assert.equal(r.status, 0, r.stdout + r.stderr);
       }
       for (const scheme of /** @type {const} */ (['light', 'dark'])) {
         const page = await browser.newPage({ viewport: { width: 640, height: 900 }, colorScheme: scheme });
@@ -104,12 +113,15 @@ test('PG3 le lancement, les pages, la dette et la marque à 640 px, clair et som
           fond: getComputedStyle(document.body).backgroundColor,
           barre: document.querySelector('.barre')?.getBoundingClientRect().bottom,
           vignettes: [...document.querySelectorAll('img')].map((i) => i.complete && i.naturalWidth > 0),
+          planches: [...document.querySelectorAll('.planches a')].map((a) => /** @type {HTMLAnchorElement} */ (a).href),
         }));
-        assert.equal(r.titre, { lancement: 'Le parcours', pages: 'Les pages à mesurer', dette: 'La dette de Annuaire des cafés', marque: 'La marque de Annuaire des cafés' }[ecran]);
+        assert.equal(r.titre, { lancement: 'Le parcours', pages: 'Les pages à mesurer', dette: 'La dette de Annuaire des cafés', marque: 'La marque de Annuaire des cafés', fondations: 'Les fondations de Annuaire des cafés' }[ecran]);
         assert.ok(r.largeur <= 640, `${ecran} ${scheme} : ${r.largeur}`);
         assert.equal(r.fond, FOND[scheme], `${ecran} ${scheme}`);
         assert.equal(r.barre, 900, `${ecran} ${scheme}`);
-        assert.deepEqual(r.vignettes, Array(/** @type {Record<string, number>} */ ({ lancement: 0, pages: 3, dette: 11, marque: 0 })[ecran]).fill(true));
+        assert.deepEqual(r.vignettes, Array(/** @type {Record<string, number>} */ ({ lancement: 0, pages: 3, dette: 11, marque: 0, fondations: 0 })[ecran]).fill(true));
+        assert.equal(r.planches.length, ecran === 'fondations' ? 3 : 0);
+        for (const h of r.planches) assert.equal((await fetch(h)).status, 200, h);
         await page.close();
       }
     }

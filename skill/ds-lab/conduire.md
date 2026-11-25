@@ -50,7 +50,7 @@ Quelqu'un du métier qui travaille à côté de toi. Il a fait le tour de tes pa
 
 - Il s'ouvre seul, toujours : l'humain n'a rien à ouvrir.
 - Dès l'adresse donnée, le site s'ouvre dans le panneau, pendant que l'IA regarde les pages.
-- Il ne montre que des pages : le site, le parcours, les écrans (la dette, la planche, la revue). Jamais un fichier.
+- Il ne montre que des pages : le site, le parcours, les écrans (la dette, la marque, les fondations, la revue). Jamais un fichier.
 - Ne jamais fermer tous ses onglets : un onglet au moins reste ouvert, et c'est lui qui charge l'écran suivant.
 - Montrer une page, c'est trois actions, dans cet ordre : l'ouvrir dans le panneau ; vérifier qu'elle y est devant (la page lue dans l'onglet, son titre ou son adresse) ; seulement alors dire « regarde à droite ». Si la vérification échoue, le dire en une phrase et donner le lien de la page. Si le volet est fermé et que l'IA ne peut pas le rouvrir, le dire une fois, en clair : « ouvre l'écran avec le bouton Ouvrir ».
 
@@ -89,9 +89,16 @@ Après le clic sur « Passer à ta marque », l'écran passe seul à la marque :
 
 - L'écran montre la marque lue dans la mesure, par une règle, la même à chaque partie : la primaire colore le plus d'éléments cliquables ; l'accent est la couleur la plus employée d'une autre teinte ; une troisième couleur passe aux gris. Il dit d'où vient chaque couleur et ce que l'outil en fait.
 - Le chat dit une phrase : la marque est lue sur les pages, elle est à droite, on peut la changer, puis la confirmer. Ni liste, ni code de couleur dans le chat : le code est sur l'écran. Ne pas demander « on part là-dessus ? » : le clic sur « Confirmer la marque » vaut accord.
-- Lancer en tâche de fond `npm run parcours -- <chemin du projet> --attendre` : il finit au clic sur « Confirmer la marque ». L'écran a alors écrit l'entrée de la marque ; l'IA enchaîne la commande que donne `parcours`, sans le dire.
+- Lancer en tâche de fond `npm run parcours -- <chemin du projet> --attendre` : il finit au clic sur « Confirmer la marque ». L'écran a alors écrit l'entrée de la marque ; l'IA enchaîne la commande que donne `parcours`, sans le dire. Pendant ce temps, l'écran d'attente se recharge seul.
 - Une marque refusée se dit sur l'écran, sous la couleur en cause, avec la réparation ; elle ne se confirme pas. Dans le chat, une phrase au plus, avec les mots de l'humain, jamais le motif de l'outil.
 - Sans écran de la marque (aucune couleur relevée par la mesure) : l'IA regarde les pages, propose en une phrase la couleur de ce qui se clique, l'accent et la police des titres, aux valeurs exactes du site, jamais une couleur inventée « à peu près », écrit l'entrée après accord (`marques/<id>/entree.json`, format : `docs/contrat-de-marque.md` du clone), la nomme dans `projet.json` (`brand`), sans le dire, puis relit `parcours`.
+
+## Les fondations
+
+Les jetons écrits, l'écran passe seul aux fondations : rien à décider, un écran à regarder.
+
+- Le chat dit une phrase : les fondations sont prêtes, à sa marque, et ne sont pas encore sur le site. Ni chiffre récité, ni liste : les chiffres sont sur l'écran.
+- Lancer en tâche de fond `npm run parcours -- <chemin du projet> --attendre` : il finit au clic sur « Comparer mon site ». L'IA enchaîne alors la commande que donne `parcours`, sans le dire. Ne pas lancer la comparaison avant ce clic.
 
 ## Quand la main est à l'outil
 

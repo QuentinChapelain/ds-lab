@@ -12,7 +12,8 @@ import { join, relative } from 'node:path';
 import { lireJson } from '../lib/fichiers.js';
 import { compterDecisions } from '../reduce/propose.js';
 import { RESOLVER } from '../tokens/resolver.js';
-import { detteDe } from './dette.js';
+import { detteDe, valeurs as valeursDe } from './dette.js';
+import { fondationsDe } from './fondations.js';
 import { apercu, lireMarque } from './marque.js';
 
 /** Le choix de la marque à l'écran, quand l'humain l'a changé (D80) : dans les sorties. */
@@ -20,6 +21,12 @@ const MARQUE_CHOISIE = 'marque.json';
 
 /** La dette vue : écrit au clic sur « Passer à ta marque » (D78), dans les sorties. */
 export const DETTE_VUE = 'dette.json';
+
+/** Les fondations vues : écrit au clic sur « Comparer mon site » (D83), dans les sorties. */
+export const FONDATIONS_VUES = 'fondations.json';
+
+/** Ce que la saisie écrit à côté des jetons de la marque, avant l'écran des fondations (D83). */
+const ECRITS_DE_LA_MARQUE = ['roles.html', 'espacements.html', 'typo.html', 'jetons.css', 'vuetify.json'];
 
 /** Les pages validées à l'écran, par site (D77) : écrit au clic sur « Mesurer », dans les sorties. */
 export const PAGES_VALIDEES = 'pages.json';
@@ -49,9 +56,11 @@ function pagesValidees(sorties) {
  * @typedef {import('./dette.js').Dette & { site: Site, pages: string[], valeursHref: string | null, composantsHref: string, captures: string,
  *   autres: { id: string, nom: string, href: string }[] }} Dette  la dette du premier site mesuré, au moment de la dette
  * @typedef {{ produit: string, sites: Site[], sousTitre: string | null, unSite: boolean, etapes: Etape[], temps: { nom: string, etat: EtatEtape, etapes: CleEtape[] }[],
- *   courante: Etape, moment: 'pages' | 'mesure' | 'dette' | 'marque' | 'ecran' | 'sans-ecran' | 'bilan', dette: Dette | null,
+ *   courante: Etape, moment: 'pages' | 'mesure' | 'dette' | 'marque' | 'jetons' | 'fondations' | 'ecran' | 'sans-ecran' | 'bilan', dette: Dette | null,
  *   marque: { site: Site, lecture: import('./marque.js').Lecture, choix: import('./marque.js').Choix, apercu: import('./marque.js').Apercu } | null, ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
- *   phrase: string | null, bilan: Bilan | null, chiffres: Chiffres, voisin: string | null, livraison: Livraison | null }} Etat
+ *   fondations: Fondations | null, phrase: string | null, bilan: Bilan | null, chiffres: Chiffres, voisin: string | null, livraison: Livraison | null }} Etat
+ * @typedef {import('./fondations.js').Fondations & { site: Site, avant: number | null, planche: string }} Fondations  au moment des fondations : la marque du
+ *   premier site, les valeurs de ses pages (avant) et l'adresse servie de ses planches
  * @typedef {{ pages: number, arrivees: number, total: number, manquantes: { titre: string, elements: number, cause: string | null }[] }} Livraison  la dernière vérification
  */
 
@@ -248,6 +257,8 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     : m.statut === 'entrée absente' ? `entrée absente : ${relative(projet.dossier, /** @type {string} */ (m.site.entree))}`
     : 'pas de marque : écrire brand dans projet.json';
   const aFaire = marques.find((m) => m.statut !== 'acceptée');
+  // Après la saisie, les planches, la feuille CSS et le thème de la marque (D83).
+  const ecrireDeLaMarque = (/** @type {string} */ d) => `node src/cli/planche.js --marque ${c(d)} && npm run css -- --marque ${c(d)} && npm run vuetify -- --marque ${c(d)}`;
   const statuts = ['acceptée', 'refusée', 'à saisir', 'entrée changée', 'entrée absente', 'sans entrée'];
   const pluriels = { acceptée: 'acceptées', refusée: 'refusées', 'à saisir': 'à saisir', 'entrée changée': 'entrées changées', 'entrée absente': 'entrées absentes', 'sans entrée': 'sans entrée' };
   const planche = marques.find((m) => m.planche);
@@ -272,7 +283,7 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
             : unSite ? 'écrire l’entrée de la marque et la nommer dans projet.json (brand)' : `écrire l’entrée de la marque du site ${aFaire.site.id} et la nommer dans projet.json (brand)`,
     commande:
       aFaire && (aFaire.statut === 'à saisir' || aFaire.statut === 'entrée changée')
-        ? `npm run saisie -- ${c(/** @type {string} */ (aFaire.site.entree))} --verdict ${c(join(sorties, 'saisies', `${aFaire.site.id}.json`))} && node src/cli/planche.js --marque ${c(/** @type {string} */ (aFaire.site.dossierMarque))}`
+        ? `npm run saisie -- ${c(/** @type {string} */ (aFaire.site.entree))} --verdict ${c(join(sorties, 'saisies', `${aFaire.site.id}.json`))} && ${ecrireDeLaMarque(/** @type {string} */ (aFaire.site.dossierMarque))}`
         : null,
     fait: unSite
       ? texteMarque(marques[0])
@@ -422,6 +433,26 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
       Object.assign(etapeMarques, { main: 'designer', action: 'choisir la marque à l’écran, puis la confirmer', commande: null });
     }
   }
+  // Les fondations (D83), sur le chemin des écrans (la dette vue) : la marque acceptée, ce qu'elle écrit à côté de ses
+  // jetons doit l'être aussi ; puis l'écran attend le clic sur « Comparer mon site » avant la réduction.
+  const parEcran = existsSync(join(sorties, DETTE_VUE));
+  const dossierPremier = premier.dossierMarque;
+  const ecrits = !!dossierPremier && ECRITS_DE_LA_MARQUE.every((f) => existsSync(join(dossierPremier, f)));
+  if (parEcran && etapeMarques.faite && !ecrits && dossierPremier)
+    Object.assign(etapeMarques, { faite: false, main: 'outil', action: 'écrire les planches, la feuille CSS et le thème de la marque', commande: ecrireDeLaMarque(dossierPremier) });
+  /** @type {Etat['fondations']} */
+  let fondations = null;
+  if (parEcran && etapeMarques.faite && ecrits && !table && !existsSync(join(sorties, FONDATIONS_VUES))) {
+    const a = plusRecent(join(sorties, 'audit', premier.id, premier.hote));
+    const fa = a && join(a.chemin, 'audit.json');
+    fondations = {
+      ...fondationsDe(/** @type {string} */ (dossierPremier)),
+      site: premier,
+      avant: fa && existsSync(fa) ? valeursDe(lireJson(fa)).total : null,
+      planche: `/marques/${encodeURIComponent(premier.id)}/`,
+    };
+    Object.assign(etapeDecisions, { main: 'designer', action: 'regarder les fondations, puis comparer ton site', commande: null });
+  }
   const etapes = [site, constat, etapeMarques, etapeDecisions, livraison, suivi];
   const reportes = etapes.reduce((n, e) => n + e.reportes, 0);
   const i = etapes.findIndex((e) => !e.faite);
@@ -438,10 +469,20 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
   if (courante.ecran && courante.sortie) ecran = { ...courante.ecran, etape: courante.cle, precedente: false };
   else if (!courante.sortie && i > 0 && etapes[i - 1].ecran) ecran = { .../** @type {Ecran} */ (etapes[i - 1].ecran), etape: etapes[i - 1].cle, precedente: true };
   // Pendant la mesure, un écran d'attente (D77) : les pages sont validées, aucune n'est encore mesurée.
-  const moment = courante.cle === 'site' ? 'pages' : courante.cle === 'constat' && !constat.sortie ? 'mesure' : courante.cle === 'marques' && enDette ? 'dette' : courante.cle === 'marques' && marque ? 'marque' : courante.cle === 'suivi' ? 'bilan' : ecran ? 'ecran' : 'sans-ecran';
+  // La saisie en cours après « Confirmer la marque » : l'écran d'attente, jusqu'aux fondations (D83).
+  const moment =
+    courante.cle === 'site' ? 'pages'
+    : courante.cle === 'constat' && !constat.sortie ? 'mesure'
+    : courante.cle === 'marques' && enDette ? 'dette'
+    : courante.cle === 'marques' && marque ? 'marque'
+    : courante.cle === 'marques' && parEcran && courante.main === 'outil' ? 'jetons'
+    : courante.cle === 'decisions' && fondations ? 'fondations'
+    : courante.cle === 'suivi' ? 'bilan'
+    : ecran ? 'ecran'
+    : 'sans-ecran';
   const refus = etapeMarques.refus && (ecran?.etape === 'marques' || (!ecran && courante.cle === 'marques'));
   const phrase =
-    moment === 'pages' || moment === 'mesure' || moment === 'dette' || moment === 'marque' || moment === 'bilan' ? null
+    moment === 'pages' || moment === 'mesure' || moment === 'dette' || moment === 'marque' || moment === 'jetons' || moment === 'fondations' || moment === 'bilan' ? null
     : refus ? PHRASES.refus
     : ecran?.etape === 'constat' ? PHRASES.constat
     : ecran?.etape === 'marques' ? PHRASES.marque
@@ -495,6 +536,7 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     voisin: voisinDecisions,
     dette,
     marque,
+    fondations,
     livraison: verdict
       ? {
           pages: verdict.pages?.length ?? 0,

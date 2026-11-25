@@ -94,6 +94,11 @@ export function faitsDuMoment(e, { sorties }) {
         );
         break;
       }
+      // Après « Confirmer la marque » (D83) : l'écran d'attente, qui passe seul aux fondations.
+      if (e.moment === 'jetons' && !k.refus) {
+        f.push(['Fait', 'la marque confirmée'], ['Écran', 'l’écriture des jetons, qui passe seule aux fondations'], ['Ensuite', `${k.action}, sans le dire, puis relire parcours`]);
+        break;
+      }
       if (avant?.etat === 'faite' && !k.sortie) {
         f.push(['Fait', 'la mesure des pages'], ['Chiffre', e.chiffres.versions === null ? null : nombre(e.chiffres.versions, 'version de composant', 'versions de composants')], ['Écran', 'la dette']);
       }
@@ -104,7 +109,13 @@ export function faitsDuMoment(e, { sorties }) {
       break;
     }
     case 'decisions':
-      if (!k.sortie) {
+      if (e.moment === 'fondations') {
+        f.push(
+          ['Fait', 'la marque saisie, ses jetons et ses contrôles écrits'],
+          ['Écran', 'les fondations'],
+          ['Ensuite', 'une phrase : les fondations sont prêtes, à sa marque, et ne sont pas encore sur le site ; ni chiffre ni liste ; attendre le clic sur Comparer mon site (parcours --attendre, en tâche de fond)'],
+        );
+      } else if (!k.sortie) {
         f.push(['Fait', 'la marque, acceptée'], ['Écran', 'la planche de la marque'], ['Ensuite', 'comparer les pages aux fondations']);
       } else if (e.voisin) {
         f.push(['Ensuite', 'le fichier des choix est arrivé sous un autre nom : le ranger, sans le dire']);

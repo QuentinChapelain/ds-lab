@@ -57,7 +57,7 @@ const ecrit = (declare, f) => (typeof declare?.[f]?.distinct === 'number' ? [`Le
  * @param {any} audit  audit.json
  * @returns {{ total: number, familles: Famille[] }}
  */
-function valeurs(audit) {
+export function valeurs(audit) {
   const rendu = audit.rendered?.families ?? {};
   const declare = audit.declared?.families ?? {};
 

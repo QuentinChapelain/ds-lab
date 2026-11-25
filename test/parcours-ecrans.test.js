@@ -23,12 +23,19 @@
  *   EC8 confirmer : l'entrée écrite et nommée dans le projet, la main à l'outil, --attendre finit ; une marque refusée
  *       se dit sous la couleur en cause, en mots simples, et ne se confirme pas ;
  *   EC9 modifier : une couleur relevée prise d'un clic, un code tapé (court ou sans #), un code refusé dit à côté du
- *       champ, la valeur de l'autre couleur échangée, l'accent échangé avec la troisième ; le bloc se recalcule.
+ *       champ, la valeur de l'autre couleur échangée, l'accent échangé avec la troisième ; le bloc se recalcule ;
+ *   EC10 après « Confirmer la marque » (D83) : l'écran d'attente, rechargé seul, tant que la saisie, les planches, la
+ *       feuille CSS et le thème ne sont pas écrits ; puis les fondations, calculées pour la marque du projet : ses douze
+ *       pas, ses valeurs, ses rôles, ses relations d'espace, ses paires dans les quatre contextes, les liens vers ses
+ *       planches, six preuves et les limites, « Pas encore », « Comparer mon site » ; rien à décider ; pour le chat, une
+ *       phrase sans chiffre ;
+ *   EC11 « Comparer mon site » : les fondations vues, la main à l'outil qui lance la réduction, --attendre finit ; une
+ *       preuve fausse pour la marque (sans feuille CSS) n'est pas rendue.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
-import { cpSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { spawn, spawnSync } from 'node:child_process';
+import { cpSync, existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -36,7 +43,9 @@ import { lireProjet } from '../src/parcours/projet.js';
 import { calculerEtat } from '../src/parcours/etat.js';
 import { pageDuParcours } from '../src/parcours/page.js';
 import { ecranDeLancement, FIN_JETONS } from '../src/parcours/ecrans.js';
-import { ajouterPage, choisirCouleur, confirmerMarque, detteVue, echangerAccent, retirerPage, validerPages } from '../src/parcours/pages.js';
+import { ajouterPage, choisirCouleur, confirmerMarque, detteVue, echangerAccent, fondationsVues, retirerPage, validerPages } from '../src/parcours/pages.js';
+import { fondationsDe } from '../src/parcours/fondations.js';
+import { faitsDuMoment } from '../src/parcours/faits.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const FIX = join(ROOT, 'fixtures', 'parcours');
@@ -248,7 +257,7 @@ test('EC6 « Passer à ta marque » : la dette vue, la marque reprend son cours,
   detteVue(f);
   assert.equal(await w.fin(), 0);
   const e = calculerEtat(lireProjet(f), { base: d });
-  assert.deepEqual([e.moment, e.courante.action], ['ecran', 'saisir la marque']);
+  assert.deepEqual([e.moment, e.courante.action], ['jetons', 'saisir la marque']);
 });
 
 /** Une copie du projet mesuré, la dette vue, sans entrée de marque : le moment de la marque. */
@@ -307,7 +316,7 @@ test('EC8 confirmer la marque : l’entrée écrite, la main à l’outil ; une 
   });
   assert.equal(JSON.parse(readFileSync(f, 'utf8')).sites[0].brand, 'marques/orbe/entree.json');
   const e = calculerEtat(lireProjet(f), { base: d });
-  assert.deepEqual([e.courante.main, e.courante.action, e.moment], ['outil', 'saisir la marque', 'ecran']);
+  assert.deepEqual([e.courante.main, e.courante.action, e.moment], ['outil', 'saisir la marque', 'jetons']);
   // Refusée : une primaire qui ne donne pas douze pas distincts.
   const r = aLaMarque();
   writeFileSync(join(r.d, 'sorties', 'marque.json'), JSON.stringify({ orbe: { primary: '#00ccff' } }));
@@ -340,4 +349,90 @@ test('EC9 modifier la marque : une couleur relevée, un code tapé, l’échange
   assert.match(r, /<details class="modifier" open><summary>Modifier<\/summary>/);
   assert.match(r, /value="bleu" aria-invalid="true" aria-describedby="erreur-accent"/);
   assert.deepEqual(enDur(r), []);
+});
+
+/** La marque confirmée, puis la commande que donne le parcours, lancée depuis la racine : le moment des fondations. */
+const auxFondations = () => {
+  const { d, f } = aLaMarque();
+  confirmerMarque(f);
+  const avant = calculerEtat(lireProjet(f), { base: ROOT });
+  const r = spawnSync('sh', ['-c', /** @type {string} */ (avant.courante.commande)], { cwd: ROOT, encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  return { d, f, avant };
+};
+
+test('EC10 après « Confirmer la marque » : l’attente, puis les fondations calculées pour la marque du projet', () => {
+  const { d, f, avant } = auxFondations();
+  assert.equal(avant.moment, 'jetons');
+  assert.match(/** @type {string} */ (avant.courante.commande), /npm run saisie -- .* && node src\/cli\/planche\.js --marque .* && npm run css -- --marque .* && npm run vuetify -- --marque /);
+  const attente = pageDuParcours(avant);
+  assert.ok(texte(attente).includes('Je prépare tes fondations'));
+  assert.match(attente, /<meta http-equiv="refresh" content="2">/);
+  assert.deepEqual(enDur(attente), []);
+  const e = calculerEtat(lireProjet(f), { base: d });
+  assert.deepEqual([e.moment, e.courante.cle, e.courante.main, e.courante.action, e.courante.commande], ['fondations', 'decisions', 'designer', 'regarder les fondations, puis comparer ton site', null]);
+  const fo = /** @type {NonNullable<typeof e.fondations>} */ (e.fondations);
+  assert.equal(fo.primaire[8], '#2b4c7e');
+  assert.equal(fo.accent?.length, 12);
+  assert.deepEqual([fo.espacements, fo.tailles, fo.rayons.map((x) => x.nom)], [[0, 4, 8, 12, 16, 24, 32, 48, 64], [12, 14, 16, 18, 20, 24, 30, 36, 48, 60], ['0', '2', '4', '8', '12', 'full']]);
+  assert.deepEqual(fo.relations.map((x) => x.px), [4, 8, 16, 24, 48]);
+  assert.deepEqual([fo.paires.echec, fo.paires.contextes, fo.avant], [0, 4, 68]);
+  assert.ok(fo.paires.controlees > 60 && fo.paires.interdites > 0 && fo.regles > 30);
+  assert.deepEqual(fo.preuves.map((x) => x.titre), ['Format standard', 'Trois couches', 'Accessibilité', 'Quatre contextes', 'Prêt pour le code', 'Règles sourcées']);
+  const h = pageDuParcours(e);
+  const t = texte(h);
+  for (const x of [
+    'Les fondations de Annuaire des cafés',
+    'Rien à décider',
+    'Ce qui vient d’être préparé à partir de ta marque. Rien n’est encore posé sur ton site.',
+    '1 · Les valeurs',
+    'Tes pages affichaient 68 valeurs différentes.',
+    'Primaire, 12 pas',
+    'Accent, 12 pas',
+    '2 · Les rôles',
+    `${fo.roles.fonds} fonds`,
+    'Cinq relations d’espace',
+    'Entre deux sections 48 px',
+    '3 · Les règles',
+    `${fo.paires.controlees} paires texte et fond contrôlées`,
+    '0 en échec',
+    'La planche des rôles · des espacements · des textes',
+    '✓ · Dans les règles de l’art',
+    'Limites connues : pas encore de jetons d’ombre ni de superposition',
+    'Pas encore · posées sur ton site au temps 3, Poser',
+    'Pas encore · les composants remplacés dans ton code au temps 4, Tenir',
+    'Comparer mon site ›',
+  ])
+    assert.ok(t.includes(x), x);
+  assert.match(h, /<a href="\/marques\/orbe\/roles\.html">La planche des rôles<\/a>/);
+  assert.match(h, /<form method="post" action="\/pages\/fondations"><button type="submit" class="principal">Comparer mon site ›<\/button><\/form>/);
+  assert.doesNotMatch(t, /[Cc]onstat|\.json|Voir les composants/);
+  // Le chat : une phrase, sans chiffre récité ; il attend le clic.
+  const fa = faitsDuMoment(e, { sorties: join(d, 'sorties') });
+  assert.ok(fa.includes('  Écran : les fondations'), fa.join('\n'));
+  assert.ok(fa.some((l) => /^ {2}Ensuite : une phrase : les fondations sont prêtes, à sa marque, et ne sont pas encore sur le site ; ni chiffre ni liste ; attendre le clic sur Comparer mon site/.test(l)));
+  assert.ok(!fa.some((l) => l.startsWith('  Chiffre')));
+  assert.doesNotMatch(h, /<script|\sstyle="|http-equiv="refresh"/);
+  assert.deepEqual(enDur(h), []);
+});
+
+test('EC11 « Comparer mon site » : la main à l’outil, --attendre finit ; une preuve fausse pour la marque n’est pas rendue', async () => {
+  const { d, f } = auxFondations();
+  const w = lancerParcours([f, '--attendre']);
+  await new Promise((ok) => setTimeout(ok, 1500));
+  assert.equal(w.p.exitCode, null, '--attendre attend encore');
+  fondationsVues(f);
+  assert.equal(await w.fin(), 0);
+  const e = calculerEtat(lireProjet(f), { base: d });
+  assert.deepEqual([e.moment, e.courante.main, e.courante.action, e.fondations], ['ecran', 'outil', 'lancer la réduction', null]);
+  assert.match(/** @type {string} */ (e.courante.commande), /^npm run reduce -- .* --brand-colors/);
+  // Sans feuille CSS, la preuve « Prêt pour le code » se retire ; dans le parcours, la marque attend son écriture.
+  const dossier = join(d, 'marques', 'orbe');
+  rmSync(join(dossier, 'jetons.css'));
+  assert.ok(!fondationsDe(dossier).preuves.some((x) => x.titre === 'Prêt pour le code'));
+  rmSync(join(d, 'sorties', 'fondations.json'));
+  const g = calculerEtat(lireProjet(f), { base: d });
+  assert.deepEqual([g.moment, g.courante.cle, g.courante.main], ['jetons', 'marques', 'outil']);
+  assert.match(/** @type {string} */ (g.courante.commande), /npm run css -- --marque/);
+  assert.ok(existsSync(join(dossier, 'vuetify.json')));
 });

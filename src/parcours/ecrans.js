@@ -2,7 +2,8 @@
 /**
  * Les écrans du parcours (D77) et leur gabarit, commun à tous les écrans à venir : les quatre temps en haut, le titre
  * et qui a la main, le contenu borné à la largeur d'une page, une barre en bas, fixée au bord de la fenêtre, avec une
- * seule action forte. Deux écrans : le lancement (avant le projet) et les pages à mesurer (un groupe par site).
+ * seule action forte. Les écrans : le lancement (avant le projet), les pages à mesurer (un groupe par site), la mesure en
+ * cours, la dette, la marque, l'écriture des jetons et les fondations.
  * Sans script : retirer, ajouter et mesurer sont des formulaires envoyés au serveur du parcours (serveur.js). Valeurs :
  * les variables des jetons communs (jetons.js) ; le style écrit ici ne porte que des variables, des mots-clés, 0 et
  * 100 %, comme un module (D61). La page n'a pas de marque : l'anneau de focus prend le texte d'information, pas
@@ -121,6 +122,12 @@ details summary { cursor: pointer; color: var(--text-info); ${style('label')} }
 .choix { display: flex; flex-wrap: wrap; gap: var(--gap-within-component); }
 .choix button { min-height: 0; padding: 0; border: 0; background: none; line-height: 0; }
 .choix button[aria-pressed="true"] rect { stroke: var(--text-default); stroke-width: var(--border-width-focus); }
+.chiffres { display: flex; flex-wrap: wrap; gap: var(--gap-between-blocks) var(--gap-between-groups); }
+.chiffres li { display: flex; flex-direction: column; color: var(--text-secondary); ${style('label')} }
+.chiffres .fort { color: var(--text-default); }
+.relations { display: flex; flex-direction: column; gap: var(--gap-between-blocks); }
+.relations li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-within-component) var(--gap-between-blocks); }
+.planches a { color: var(--text-info); ${style('label')} }
 `;
 
 /**
@@ -461,5 +468,99 @@ ${generale.map((x) => `<p class="refus">${esc(x)}</p>`).join('')}
 <p class="${refusee ? 'refus' : 'accepte'}">${refusee ? 'Marque refusée : change la couleur dite plus haut.' : 'Marque acceptée : chaque texte tient son contraste sur son fond, en clair et en sombre.'}</p>`,
     avance: ['Décider · porte 1 sur 3', refusee ? 'Change la couleur refusée, puis confirme.' : 'Confirme la marque, ou change-la.'],
     action: `<form method="post" action="/pages/marque"><button type="submit" class="principal"${refusee ? ' disabled' : ''}>Confirmer la marque ›</button></form>`,
+  });
+}
+
+/**
+ * L'écriture des jetons, après « Confirmer la marque » (D83) : l'écran d'attente du gabarit. Il se recharge seul, et
+ * passe seul aux fondations quand les jetons, les planches, la feuille CSS et le thème sont écrits.
+ * @param {Etat} e
+ */
+export function ecranDesJetons(e) {
+  return gabarit({
+    titre: 'Je prépare tes fondations',
+    onglet: `Les fondations · ${e.produit}`,
+    statut: { texte: 'Rien à décider', neutre: true },
+    phrase: 'À partir de ta marque : les douze pas de tes couleurs, les rôles, les contrôles, la feuille de variables et le thème. Rien ne touche ton site.',
+    temps: e.temps,
+    corps: '<progress aria-label="Écriture des jetons"></progress>',
+    avance: ['Décider · après la porte 1', 'L’écran passe seul aux fondations.'],
+    rafraichir: true,
+  });
+}
+
+/** Un nombre et ce qu'il compte, en grand. @param {number} n @param {string} quoi */
+const chiffre = (n, quoi) => `<li><span class="fort">${n}</span>${esc(quoi)}</li>`;
+
+/** Une échelle de douze pas, dessinée. @param {string} nom @param {string[]} pas */
+const douzePas = (nom, pas) =>
+  `<div class="carte"><h3>${esc(nom)}</h3><ul class="echelle" aria-label="${esc(`${nom}, les douze pas`)}">${pas
+    .map((h, i) => `<li><svg width="32" height="32" viewBox="0 0 32 32" role="img" aria-label="${esc(`Pas ${i + 1}, ${h}`)}"><rect x="1" y="1" width="30" height="30" rx="4" fill="${esc(h)}"/></svg><small>${i + 1}</small></li>`)
+    .join('')}</ul></div>`;
+
+/** Un écart dessiné, sa longueur en px. @param {number} l */
+const barreEcart = (l) => `<svg width="${Math.max(l, 1)}" height="24" viewBox="0 0 ${Math.max(l, 1)} 24" aria-hidden="true"><rect width="${l}" height="24" rx="2"/></svg>`;
+
+/**
+ * Les fondations (D83) : à regarder, rien à décider. Ce qui vient d'être préparé à partir de la marque, les rôles, les
+ * règles, ce que le développeur peut vérifier, et ce qui n'est pas encore fait. En bas, « Comparer mon site ».
+ * @param {Etat} e
+ */
+export function ecranDesFondations(e) {
+  const f = /** @type {NonNullable<Etat['fondations']>} */ (e.fondations);
+  const n = f.espacements.length;
+  const remplace = f.avant
+    ? `<p>${esc(`Tes pages affichaient ${f.avant} valeurs différentes. Les voici remplacées par deux couleurs de douze pas, ${n} espacements, ${f.tailles.length} tailles de texte et ${f.rayons.length} arrondis.`)}</p>`
+    : '';
+  const valeurs = `<section class="bloc" aria-labelledby="t-valeurs"><h2 id="t-valeurs">1 · Les valeurs</h2>
+<p>Tout ce qui existe. Rien d’autre ne peut être utilisé.</p>${remplace}
+<div class="cartes">
+${douzePas('Primaire, 12 pas', f.primaire)}
+${f.accent ? douzePas('Accent, 12 pas', f.accent) : ''}
+</div>
+<div class="cartes">
+<div class="carte"><h3>Espacements <span>${n}</span></h3><ul class="dessins ecarts">${f.espacements.map((l) => `<li>${barreEcart(l)}<small>${l}</small></li>`).join('')}</ul></div>
+<div class="carte"><h3>Tailles de texte <span>${f.tailles.length}</span></h3><ul class="dessins tailles">${f.tailles
+    .map((t) => `<li><svg width="${Math.ceil(t * 1.4)}" height="${Math.ceil(t * 1.2)}" viewBox="0 0 ${Math.ceil(t * 1.4)} ${Math.ceil(t * 1.2)}" aria-hidden="true"><text x="0" y="${t}" font-size="${t}" font-weight="600">Aa</text></svg><small>${t}</small></li>`)
+    .join('')}</ul></div>
+<div class="carte"><h3>Arrondis <span>${f.rayons.length}</span></h3><ul class="dessins rayons">${f.rayons
+    .map((r) => {
+      const v = Math.min(20, r.px);
+      return `<li><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><path d="M1 39 V${1 + v} A${v} ${v} 0 0 1 ${1 + v} 1 H39" stroke-width="2"/></svg><small>${esc(r.nom === 'full' ? 'rond' : String(r.px))}</small></li>`;
+    })
+    .join('')}</ul></div>
+</div></section>`;
+  const r = f.roles;
+  const roles = `<section class="bloc" aria-labelledby="t-roles"><h2 id="t-roles">2 · Les rôles</h2>
+<p>À quoi sert chaque valeur. Un composant ne connaît que le rôle, jamais la couleur.</p>
+<ul class="chiffres">${chiffre(r.fonds, 'fonds')}${chiffre(r.textes, 'textes')}${chiffre(r.bordures, 'bordures')}${chiffre(r.styles, 'styles de texte')}${chiffre(r.ecarts, 'écarts')}</ul>
+<div class="cartes"><div class="carte"><h3>Cinq relations d’espace</h3><p>On choisit un lien, pas un nombre.</p><ul class="relations ecarts">${f.relations
+    .map((x) => `<li>${barreEcart(x.px)}<span>${esc(x.nom)}</span><small>${x.px} px</small></li>`)
+    .join('')}</ul></div></div></section>`;
+  const p = f.paires;
+  const planches = f.planches.length
+    ? `<p class="planches">${f.planches.map((x) => `<a href="${esc(f.planche + x.fichier)}">${esc(x.nom)}</a>`).join(' · ')}</p>`
+    : '';
+  const regles = `<section class="bloc" aria-labelledby="t-regles"><h2 id="t-regles">3 · Les règles</h2>
+<p>Ce qui tient le tout, contrôlé par la machine.</p>
+<ul class="chiffres">${chiffre(p.controlees, 'paires texte et fond contrôlées')}${chiffre(p.echec, 'en échec')}${chiffre(p.interdites, 'paires interdites')}${chiffre(f.regles, 'règles et valeurs par défaut, les mêmes pour chaque marque')}</ul>
+${planches}</section>`;
+  const art = `<section class="bloc" aria-labelledby="t-art"><h2 id="t-art">✓ · Dans les règles de l’art</h2>
+<p>Ce que le développeur et un auditeur peuvent vérifier.</p>
+<div class="cartes">${f.preuves.map((x) => `<div class="carte"><h3>${esc(x.titre)}</h3><p>${esc(x.texte)}</p></div>`).join('\n')}</div>
+<p><small>${esc(`Limites connues : ${f.limites.join(' ; ')}.`)}</small></p></section>`;
+  const pasEncore = `<div class="cartes">
+<div class="encart"><strong>Pas encore</strong> · posées sur ton site<small>au temps 3, Poser</small></div>
+<div class="encart"><strong>Pas encore</strong> · les composants remplacés dans ton code<small>au temps 4, Tenir</small></div>
+</div>`;
+  return gabarit({
+    titre: `Les fondations de ${e.produit}`,
+    onglet: `Les fondations · ${e.produit}`,
+    statut: { texte: 'Rien à décider', neutre: true },
+    phrase: 'Ce qui vient d’être préparé à partir de ta marque. Rien n’est encore posé sur ton site.',
+    temps: e.temps,
+    corps: `<div class="blocs">\n${valeurs}\n${roles}\n${regles}\n${art}\n${pasEncore}\n</div>`,
+    avance: ['Décider · après la porte 1', 'Regarde tes fondations, puis compare ton site.'],
+    action: '<form method="post" action="/pages/fondations"><button type="submit" class="principal">Comparer mon site ›</button></form>',
   });
 }
