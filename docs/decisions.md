@@ -671,6 +671,7 @@ Soixante-dix décisions, chacune avec sa raison et sa conséquence. Aucune valeu
 - **Raison** : partie du 25/11/2026, 13 h 30 à 13 h 38 (boîte, fichier 12) : un accord demandé avant de montrer l'écran, une étape « Constat » qui ne parle pas pendant l'attente, « erreur 404 », des tâches décrites en anglais (« Serving the guided journey in the background ») et une tâche en échec sans explication, le volet resté fermé après la remise à zéro.
 - **Conséquence** : `test/parcours-ecrans.test.js` (EC3), `test/parcours.test.js` (PC2, PC5, PC13, PC17) ; `skill/ds-lab/conduire.md`, `fixtures/jeu/CLAUDE.md`.
 - **Limite** : ce qui a échoué dans le chat n'a pas été vu [V] ; l'hypothèse est une tâche relancée alors qu'elle tournait. Que fermer tous les onglets ferme le volet, et qu'ouvrir une page ensuite ne le rouvre pas, est une hypothèse [H], lue sur trois captures.
+- **Complétée par D90** (26/11/2026) : montrer une page, c'est aussi mettre le volet d'aperçu devant ; « ouvre l'écran avec le bouton Ouvrir » ne se dit qu'après un essai qui a échoué.
 
 ### D79
 - **Décision** : l'écran de la dette, à la fin de la mesure, dans le gabarit (D77). Complète D78.
@@ -792,3 +793,11 @@ Soixante-dix décisions, chacune avec sa raison et sa conséquence. Aucune valeu
 - **Raison** : règle de Quentin du 25/11/2026, 19 h 47, planches « Le chat et l'écran, ensemble » et « 2 · Les pages » (boîte, fichier 27) ; demande du 26/11/2026 (boîte, fichier 01).
 - **Conséquence** : `src/parcours/ecrans.js` (`ecranDesPages`, le gabarit sans barre), `src/cli/parcours.js`, `src/parcours/faits.js` ; `test/parcours-ecrans.test.js` (EC2 à EC4, EC18), `test/parcours.test.js` (PC17), `test/parcours-page.test.js` (PG3) ; `skill/ds-lab/conduire.md`.
 - **Limite** : l'écran ne se recharge pas seul (le champ d'ajout ne se vide pas) : après un changement par le chat, c'est l'IA qui recharge le panneau. Que le chat ne repropose pas la carte après « Pas encore » tient à la conduite, pas à un contrôle [V]. Une carte ouverte ne suit pas la liste : la phrase « n pages » peut avoir vieilli quand on lance la mesure, qui lit la liste du moment.
+
+### D90
+- **Décision** : montrer une page, c'est la mettre devant. Complète D78 (point 5).
+  1. **Quatre actions**, dès le premier message, sans attendre qu'on le demande : ouvrir la page dans l'onglet du panneau ; mettre le volet d'aperçu devant, par l'outil de l'app qui montre un volet (dans l'app de bureau, `show_pane`, volet `preview`), chargé d'abord s'il ne l'est pas ; vérifier, d'après la réponse de cet outil, que le volet affiché est l'aperçu, puis que la page est la bonne ; alors seulement dire « regarde à droite ». Lire le texte de l'onglet ne prouve pas que le volet est devant.
+  2. **« Ouvre l'écran avec le bouton Ouvrir »** ne se dit qu'une fois, après un essai de mettre le volet devant qui a échoué ; jamais par précaution, jamais au conditionnel.
+- **Raison** : partie du 26/11/2026 (transcription du dossier de jeu) : au lancement, le chat a chargé l'écran dans l'onglet et lu son texte, mais le volet est resté sur les tâches ; il a dit « ouvre l'écran avec le bouton Ouvrir » sans avoir rien tenté. À « ouvre-le toi-même », il a chargé `show_pane` et l'écran est passé devant [F].
+- **Conséquence** : `skill/ds-lab/conduire.md` (« Le panneau », « Avant le projet »), `fixtures/jeu/CLAUDE.md` (repartir de zéro).
+- **Limite** : rien ne contrôle cette consigne, hors une partie jouée. Le nom de l'outil est celui de l'app de bureau de Claude Code ; ailleurs, l'IA prend l'outil qui montre un volet, s'il en a un.

@@ -52,11 +52,16 @@ Quelqu'un du métier qui travaille à côté de toi. Il a fait le tour de tes pa
 - Dès l'adresse donnée, le site s'ouvre dans le panneau, pendant que l'IA regarde les pages.
 - Il ne montre que des pages : le site, le parcours, les écrans (la dette, la marque, les fondations, la revue, l'avant et après, la remise). Jamais un fichier.
 - Ne jamais fermer tous ses onglets : un onglet au moins reste ouvert, et c'est lui qui charge l'écran suivant.
-- Montrer une page, c'est trois actions, dans cet ordre : l'ouvrir dans le panneau ; vérifier qu'elle y est devant (la page lue dans l'onglet, son titre ou son adresse) ; seulement alors dire « regarde à droite ». Si la vérification échoue, le dire en une phrase et donner le lien de la page. Si le volet est fermé et que l'IA ne peut pas le rouvrir, le dire une fois, en clair : « ouvre l'écran avec le bouton Ouvrir ».
+- Montrer une page, c'est quatre actions, dans cet ordre, dès le premier message et sans attendre qu'on le demande :
+  1. l'ouvrir dans l'onglet du panneau ;
+  2. mettre le volet d'aperçu devant, par l'outil de l'app qui montre un volet (dans l'app de bureau, `show_pane`, volet `preview`) ; s'il n'est pas chargé, le charger d'abord. Charger la page dans l'onglet ne suffit pas : le volet peut rester sur les tâches ;
+  3. vérifier que le volet affiché est l'aperçu, d'après la réponse de cet outil, puis que la page est celle de l'onglet (son titre ou son adresse). Lire le texte de l'onglet ne prouve pas que le volet est devant : il se lit même caché ;
+  4. seulement alors dire « regarde à droite ».
+- Si la page n'est pas celle attendue, le dire en une phrase et donner son lien. « Ouvre l'écran avec le bouton Ouvrir » ne se dit qu'une fois, et seulement après avoir essayé de mettre le volet devant, sans y arriver ; jamais par précaution, jamais au conditionnel (« si l'écran ne se voit pas… »).
 
 ## Avant le projet
 
-Sans fichier de projet, lancer en tâche de fond, depuis le clone, `cd "$DS_LAB" && npm run parcours -- <dossier courant>/projet.json --servir`, avant que le projet existe : il sert le lancement, qui se recharge seul. L'ouvrir dans le panneau (ouvrir, vérifier, dire), puis dire le lancement de `contexte.md` tel quel, en deux messages au plus, et attendre l'adresse. Rien d'autre : aucune question proposée, aucun choix.
+Sans fichier de projet, lancer en tâche de fond, depuis le clone, `cd "$DS_LAB" && npm run parcours -- <dossier courant>/projet.json --servir`, avant que le projet existe : il sert le lancement, qui se recharge seul. L'ouvrir dans le panneau (ouvrir, mettre devant, vérifier, dire : « Le panneau »), puis dire le lancement de `contexte.md` tel quel, en deux messages au plus, et attendre l'adresse. Rien d'autre : aucune question proposée, aucun choix.
 
 Les pages, une fois l'adresse donnée :
 
