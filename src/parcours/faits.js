@@ -70,13 +70,13 @@ export function faitsDuMoment(e, { sorties }) {
     : k.main === 'outil' ? 'l’outil ; enchaîner sans demander' : k.main === 'développeur' ? 'le développeur ; ce qui lui revient se dit en deux lignes' : 'l’humain ; l’accompagner, il décide';
   switch (k.cle) {
     case 'site':
-      // Les pages passent par le chat (D89) : la question à choix lance la mesure, jamais une liste vide.
+      // Les pages passent par le chat (D89) : un seul bouton lance la mesure (D91), jamais sur une liste vide.
       if (k.action?.startsWith('retenir'))
-        f.push(['Ensuite', 'regarder le site, retenir les pages qui portent le plus de composants, les écrire dans le projet avec leur nom ; une liste vidée à l’écran : dire d’ajouter une page, sans question à choix']);
+        f.push(['Ensuite', 'regarder le site sans le montrer (parcours --regarder), retenir les pages qui portent le plus de composants, les écrire dans le projet avec leur nom ; une liste vidée à l’écran : dire d’ajouter une page, sans bouton']);
       else
         f.push(
           ['Écran', 'les pages à mesurer'],
-          ['Ensuite', 'dire en une phrase combien de pages sont retenues, sans les nommer, puis la question à choix La suite : Lancer la mesure, Pas encore ; la mesure se lance par parcours --valider-pages'],
+          ['Ensuite', 'l’écran devant et vérifié, la boîte de fin de tour : un seul bouton, Lancer la mesure ; sans boîte, attendre ok ; la mesure se lance par parcours --valider-pages'],
         );
       break;
     case 'constat':

@@ -526,13 +526,13 @@ test('PC17 les faits de chaque état : une ligne par fait, sans guillemets ni no
   const tete = 'Pour le chat, des faits à dire avec tes mots, sans les recopier :';
   assert.deepEqual(faits(join(FIX, 'lancement')), [
     tete,
-    '  Ensuite : regarder le site, retenir les pages qui portent le plus de composants, les écrire dans le projet avec leur nom ; une liste vidée à l’écran : dire d’ajouter une page, sans question à choix',
+    '  Ensuite : regarder le site sans le montrer (parcours --regarder), retenir les pages qui portent le plus de composants, les écrire dans le projet avec leur nom ; une liste vidée à l’écran : dire d’ajouter une page, sans bouton',
     '  Main : l’humain ; l’accompagner, il décide',
   ]);
   assert.deepEqual(faits(join(FIX, 'pages')), [
     tete,
     '  Écran : les pages à mesurer',
-    '  Ensuite : dire en une phrase combien de pages sont retenues, sans les nommer, puis la question à choix La suite : Lancer la mesure, Pas encore ; la mesure se lance par parcours --valider-pages',
+    '  Ensuite : l’écran devant et vérifié, la boîte de fin de tour : un seul bouton, Lancer la mesure ; sans boîte, attendre ok ; la mesure se lance par parcours --valider-pages',
     '  Main : l’humain ; l’accompagner, il décide',
   ]);
   assert.deepEqual(faits(join(FIX, 'constat')), [

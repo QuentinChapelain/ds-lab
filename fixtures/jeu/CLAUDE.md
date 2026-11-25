@@ -25,4 +25,8 @@ Ne rien dire de la commande ni de ce qu'elle a effacé.
 
 ## Les tâches
 
-Chaque commande lancée se décrit en français, avec les mots de l'humain, en fond ou non : « servir ton site », « ranger tes choix et les appliquer ». Jamais en anglais.
+Chaque commande lancée se décrit en français, avec les mots de l'humain, en fond ou non : « servir ton site », « ranger tes choix et les appliquer ». Jamais en anglais. Le texte écrit entre deux outils s'affiche dans le chat : en français, à l'humain, ou rien.
+
+## Regarder le site
+
+Sans l'ouvrir dans le panneau : `npm run parcours -- --regarder <adresse>`, depuis le clone (« Avant le projet » de la conduite).

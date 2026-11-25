@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * npm run parcours -- <projet.json> [--servir] [--port <n>] [--attendre] [--valider-pages] [--ajouter-page <adresse>]
- *   [--retirer-page <chemin>] [--site <id>] (D72) : lit le projet, calcule l'état du parcours
+ *   [--retirer-page <chemin>] [--site <id>] (D72) ; npm run parcours -- --regarder <adresse> (D91) : lit le projet, calcule l'état du parcours
  * depuis ses sorties, écrit parcours.html à côté de projet.json et, dans le terminal, où on en est, qui a la main, quoi
  * faire et la commande suivante ; dessous, les faits du moment, que l'IA dit avec ses mots (D74).
  * --servir sert la page et les écrans sur 127.0.0.1, au port 4311, ou à un port libre s'il est pris (D75), jusqu'à
@@ -13,6 +13,9 @@
  * Les pages passent par le chat (D89) : --valider-pages lance la mesure sur la liste de l'écran à cet instant ;
  * --ajouter-page et --retirer-page changent la liste, comme l'écran ; --site nomme le site quand le projet en a
  * plusieurs. Seulement tant que les pages attendent : une page refusée, une liste vide ou un autre moment sortent en 1.
+ * --regarder, sans projet, regarde le site sans le montrer : la page donnée et celles du même site vers lesquelles elle
+ * mène, dans le Chromium du clone, sans fenêtre ; une ligne par page, son titre et ses composants comptés ; un site qui
+ * ne répond pas sort en 1.
  * Sortie 0 ; 2 sur un projet illisible ou une sortie illisible (D18). Une sortie absente n'est pas une panne : c'est un état.
  */
 import { existsSync, writeFileSync } from 'node:fs';
@@ -29,8 +32,9 @@ import { servir } from '../parcours/serveur.js';
 import { ajouterPage, choisirCouleur, confirmerMarque, copierMessage, detteVue, echangerAccent, fondationsVues, retirerPage, rouvrirRevue, validerPages, validerRendu, vignettes } from '../parcours/pages.js';
 import { ecranAInstaller } from '../parcours/ecrans.js';
 import { aInstaller, feuillesEnDirect, pageEnDirect } from '../parcours/remise.js';
+import { lignesDuRegard, regarderSite } from '../parcours/regarder.js';
 
-const USAGE = 'npm run parcours -- <projet.json> [--servir] [--port <n>] [--attendre] [--valider-pages] [--ajouter-page <adresse>] [--retirer-page <chemin>] [--site <id>]';
+const USAGE = 'npm run parcours -- --regarder <adresse> | <projet.json> [--servir] [--port <n>] [--attendre] [--valider-pages] [--ajouter-page <adresse>] [--retirer-page <chemin>] [--site <id>]';
 
 await lancer('parcours', async () => {
   const { values, positionals } = parseArgs({
@@ -43,8 +47,20 @@ await lancer('parcours', async () => {
       'ajouter-page': { type: 'string' },
       'retirer-page': { type: 'string' },
       site: { type: 'string' },
+      regarder: { type: 'string' },
     },
   });
+  if (values.regarder !== undefined) {
+    if (positionals.length || Object.entries(values).some(([k, v]) => k !== 'regarder' && v !== undefined && v !== false))
+      throw new Error(`--regarder s'emploie seul, sans projet (usage : ${USAGE})`);
+    const r = await regarderSite(values.regarder);
+    if ('raison' in r) {
+      console.log(r.raison);
+      return 1;
+    }
+    for (const l of lignesDuRegard(r)) console.log(l);
+    return 0;
+  }
   const geste = /** @type {const} */ (['valider-pages', 'ajouter-page', 'retirer-page']).filter((k) => values[k] !== undefined && values[k] !== false);
   if (positionals.length !== 1) throw new Error(`un fichier de projet et un seul (usage : ${USAGE})`);
   if (values.port !== undefined && !/^\d+$/.test(values.port)) throw new Error(`--port : un nombre est attendu (usage : ${USAGE})`);

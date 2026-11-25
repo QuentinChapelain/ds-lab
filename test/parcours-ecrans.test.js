@@ -55,7 +55,10 @@
  *       refuse un envoi venu d'un écran revu ;
  *   EC18 les pages par le chat (D89) : --ajouter-page et --retirer-page changent la liste comme l'écran, --site nomme le
  *       site parmi plusieurs ; une page refusée, une liste vide, un autre moment : la raison en une ligne, sortie 1 ;
- *       les options mêlées : sortie 2.
+ *       les options mêlées : sortie 2 ;
+ *   EC19 regarder le site sans le montrer (D91) : la page donnée et celles du même site vers lesquelles elle mène,
+ *       rendues sans fenêtre, leur titre et leurs composants comptés, les plus riches d'abord ; un site qui ne répond
+ *       pas, sa raison en une ligne et la sortie 1 ; --regarder avec un projet : sortie 2.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -75,6 +78,8 @@ import { copierMessage } from '../src/parcours/pages.js';
 import { faitsDuMoment } from '../src/parcours/faits.js';
 import { servir } from '../src/parcours/serveur.js';
 import { deNom } from '../src/lib/format.js';
+import { lignesDuRegard, regarderSite } from '../src/parcours/regarder.js';
+import { startFixtureServers } from './helpers/serveur.js';
 import { request } from 'node:http';
 import { createHash } from 'node:crypto';
 import { readdirSync } from 'node:fs';
@@ -286,6 +291,36 @@ test('EC18 les pages par le chat : ajouter, retirer, plusieurs sites ; les refus
   assert.equal(lancer(p, ['--site', 'inconnu', '--retirer-page', '/x']).status, 1);
   // Les options mêlées sont une panne de la commande.
   for (const args of [['--valider-pages', '--retirer-page', '/x'], ['--valider-pages', '--attendre'], ['--site', b.id]]) assert.equal(lancer(p, args).status, 2, args.join(' '));
+});
+
+test('EC19 regarder le site sans le montrer : les pages du même site, leurs composants comptés, les plus riches d’abord', async () => {
+  const srv = await startFixtureServers();
+  try {
+    const r = await regarderSite(`${srv.origin}/desordre/carte.html`);
+    assert.ok(r.ok);
+    assert.equal(r.origine, srv.origin);
+    assert.deepEqual(r.pages.map((p) => [p.chemin, p.titre]), [
+      ['/desordre/gestion.html', 'Orbe Café — gestion des commandes'],
+      ['/desordre/compte.html', 'Orbe Café — mon compte'],
+      ['/desordre/carte.html', 'Orbe Café — la carte'],
+    ]);
+    for (const p of r.pages) assert.equal(p.total, Object.values(p.composants).reduce((a, b) => a + b, 0));
+    assert.ok(r.pages[0].total > r.pages[1].total && r.pages[1].total > r.pages[2].total);
+    assert.ok(r.pages[1].composants.champs > 0 && r.pages[1].composants.formulaires > 0, 'le compte a son formulaire');
+    const l = lignesDuRegard(r);
+    assert.match(l[0], /: 3 pages regardées, sans fenêtre ; les plus riches en composants d'abord\.$/);
+    assert.match(l[1], /^ {2}\/desordre\/gestion\.html {2}Orbe Café — gestion des commandes {2}\d+ composants : /);
+    // Au plus tant de pages : le reste est compté, pas regardé.
+    const un = await regarderSite(`${srv.origin}/desordre/carte.html`, { max: 1 });
+    assert.ok(un.ok);
+    assert.deepEqual([un.pages.length, un.nonVues], [1, 2]);
+  } finally {
+    await srv.close();
+  }
+  const ferme = spawnSync(process.execPath, [join(ROOT, 'src/cli/parcours.js'), '--regarder', 'http://127.0.0.1:9/'], { encoding: 'utf8' });
+  assert.deepEqual([ferme.status, ferme.stdout], [1, '127.0.0.1:9 ne répond pas.\n']);
+  const mele = spawnSync(process.execPath, [join(ROOT, 'src/cli/parcours.js'), join(FIX, 'pages', 'projet.json'), '--regarder', 'http://127.0.0.1:9/'], { encoding: 'utf8' });
+  assert.equal(mele.status, 2);
 });
 
 test('EC5 la dette : les valeurs comptées, dites et dessinées ; les composants par type ; rien à décider', () => {
