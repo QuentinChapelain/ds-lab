@@ -21,7 +21,7 @@
  *   PC4 accord au nombre et mots : aucun « (s) », « 1 sites », « client », « plateforme » ni « conforme »
  *   PC5 la page : quatre temps, un moment de 60 mots au plus hors du cadre, un seul « Tout le parcours », fermé
  *   PC6 aucune valeur visuelle en dur : hors des jetons générés, des variables, des mots-clés, 0 et 100 %
- *   PC7 déterminisme, sans script ni attribut style, bloc sombre
+ *   PC7 déterminisme, sans script ni attribut style, sombre seul, le papier en clair (D88)
  *   PC8 la commande : page écrite, terminal
  *   PC9 le serveur : page à jour, écrans montés, chemins hors racine refusés, 127.0.0.1 seulement
  *
@@ -196,7 +196,7 @@ test('PC2 l’état des huit projets, depuis leurs sorties', () => {
   assert.equal(etat('decisions').courante.commande, null);
   assert.deepEqual(resume('livraison'), {
     temps: ['faite', 'faite', 'en cours', 'à venir'],
-    courante: 'Poser · Livraison',
+    courante: 'Vérifier · Livraison',
     main: 'outil',
     action: 'prouver la livraison sur les pages, avant et après',
     moment: 'sans-ecran',
@@ -206,7 +206,7 @@ test('PC2 l’état des huit projets, depuis leurs sorties', () => {
   assert.equal(etat('livraison').courante.fait, 'feuilles ajoutées, pas encore prouvées');
   assert.match(/** @type {string} */ (etat('livraison').courante.commande), /^npm run verify -- http:\/\/127\.0\.0\.1:4173\/desordre\/carte\.html .* --ajout fixtures\/parcours\/livraison\/sorties\/ajout\/2026-11-24T1335 --out fixtures\/parcours\/livraison\/sorties\/verify$/);
   const b = etat('bilan');
-  assert.deepEqual(resume('bilan'), { temps: ['faite', 'faite', 'faite', 'en cours'], courante: 'Tenir · Suivi', main: 'outil', action: 'relancer le contrôle', moment: 'remise', ecran: null, phrase: null });
+  assert.deepEqual(resume('bilan'), { temps: ['faite', 'faite', 'faite', 'en cours'], courante: 'Remettre · Remise', main: 'outil', action: 'relancer le contrôle', moment: 'remise', ecran: null, phrase: null });
   assert.deepEqual(b.bilan, {
     // Avant : le compte de la dette (D86), lu dans l'audit ; après : celui de la table.
     chiffres: ['33 → 17 couleurs', '16 → 7 espacements', '13 → 8 tailles de texte', '8 → 5 arrondis'],
@@ -313,13 +313,17 @@ const mots = (t) => t.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length
 test('PC5 la page : quatre temps, un moment de 60 mots au plus hors du cadre, un seul « Tout le parcours », fermé', () => {
   for (const m of PAGE) {
     const html = pageDuParcours(etat(m));
-    const barre = /** @type {RegExpExecArray} */ (/<ol class="barre"[^>]*>(.*?)<\/ol>/s.exec(html))[1];
-    assert.deepEqual([...barre.matchAll(/<li [^>]*>([^<]*)<\/li>/g)].map((x) => x[1]), ['Mesurer', 'Décider', 'Poser', 'Tenir'], m);
+    const fil = /** @type {RegExpExecArray} */ (/<nav class="fil"[^>]*>.*?<ol>(.*?)<\/ol><\/nav>/s.exec(html))[1];
+    assert.deepEqual(
+      [...fil.matchAll(/<li[^>]*>(.*?)<\/li>/g)].map((x) => x[1].replace(/<small>.*?<\/small>/, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().replace(/^\d /, '')),
+      ['Mesurer', 'Décider', 'Vérifier', 'Remettre'],
+      m,
+    );
     const b = /** @type {RegExpExecArray} */ (/<section class="moment"[^>]*>(.*?)<\/section>/s.exec(html))[1];
     assert.ok(mots(texteVisible(b)) <= 60, `${m} : ${mots(texteVisible(b))} mots`);
     assert.equal(html.match(/<details/g)?.length, 1, m);
     assert.match(html, /<details class="tout"><summary>Tout le parcours<\/summary>/);
-    assert.ok(html.indexOf('class="barre"') < html.indexOf('class="moment"') && html.indexOf('class="moment"') < html.indexOf('<details'), m);
+    assert.ok(html.indexOf('class="fil"') < html.indexOf('class="moment"') && html.indexOf('class="moment"') < html.indexOf('<details'), m);
   }
   const p = pageDuParcours(etat('plusieurs'));
   assert.match(p, /<iframe src="\/marques\/orbe\/roles\.html" title="Planche des rôles : Orbe Café"><\/iframe>/);
@@ -358,10 +362,12 @@ test('PC6 aucune valeur visuelle en dur : hors des jetons générés, des variab
   // Chaque variable employée est déclarée ; chaque variable déclarée vaut son jeton, relu dans tokens/commun/.
   const css = /** @type {RegExpExecArray} */ (/<style>(.*?)<\/style>/s.exec(html))[1];
   const bloc = css.slice(css.indexOf(DEBUT_JETONS), css.indexOf(FIN_JETONS));
-  const [clair, sombre] = [/:root \{([^}]*)\}/.exec(bloc), /prefers-color-scheme: dark\) \{ :root \{([^}]*)\}/.exec(bloc)].map((m) =>
+  // La page en sombre seul (D88) ; le papier, en clair.
+  const [sombre, clair] = [/:root \{([^}]*)\}/.exec(bloc), /\.papier \{([^}]*)\}/.exec(bloc)].map((m) =>
     Object.fromEntries([...(/** @type {RegExpExecArray} */ (m))[1].matchAll(/(--[a-z0-9-]+): ([^;]+);/g)].map((x) => [x[1], x[2]])),
   );
-  for (const v of new Set([...css.slice(css.indexOf(FIN_JETONS)).matchAll(/var\((--[a-z0-9-]+)\)/g)].map((x) => x[1]))) assert.ok(v in clair, v);
+  for (const v of new Set([...css.slice(css.indexOf(FIN_JETONS)).matchAll(/var\((--[a-z0-9-]+)\)/g)].map((x) => x[1]))) assert.ok(v in sombre, v);
+  assert.deepEqual(Object.keys(clair).sort(), Object.keys(sombre).filter((n) => !/^--(gap|padding|width|border-radius|border-width|offset|height|avatar|typography)-/.test(n)).sort(), 'le papier : les couleurs seules');
   /** @param {string[]} fichiers */
   const jetons = (fichiers) => {
     /** @type {Map<string, any>} */
@@ -374,23 +380,28 @@ test('PC6 aucune valeur visuelle en dur : hors des jetons générés, des variab
   const ms = jetons([...base, 'mode.sombre.tokens.json', 'semantique.tokens.json']);
   /** @param {Map<string, any>} m @param {string} r */
   const hex = (m, r) => resoudreAlias(m, m.get(r).$value, { depuis: r, chaine: [r] }).valeur.hex;
-  for (const r of ['background.app', 'background.inverse', 'background.info.subtle', 'text.default', 'text.info', 'text.on-inverse']) {
+  for (const r of ['background.app', 'background.inverse', 'background.info.subtle', 'text.default', 'text.info', 'text.on-inverse', 'border.info']) {
     const n = `--${r.replace(/\./g, '-')}`;
     assert.equal(clair[n], hex(mc, r), `${n} clair`);
     assert.equal(sombre[n], hex(ms, r), `${n} sombre`);
   }
-  assert.equal(clair['--gap-between-components'], '16px');
-  assert.equal(clair['--width-column'], '640px');
-  assert.equal(clair['--typography-body-medium-line-height'], '1.5');
-  assert.equal(clair['--typography-heading-1-font-family'], 'system-ui, sans-serif', 'la police du produit à la place de celle de la marque');
+  // Le plein de ce qui se clique : la page n'a pas de marque, il prend l'échelle d'information (D88).
+  for (const [n, r] of [['--background-interactive-strong', 'color.info.9'], ['--background-interactive-strong-hover', 'color.info.10'], ['--text-on-interactive', 'color.info.on-solid']]) {
+    assert.equal(sombre[n], hex(ms, r), `${n} sombre`);
+    assert.equal(clair[n], hex(mc, r), `${n} clair`);
+  }
+  assert.equal(sombre['--gap-between-components'], '16px');
+  assert.equal(sombre['--width-column'], '640px');
+  assert.equal(sombre['--typography-body-medium-line-height'], '1.5');
+  assert.equal(sombre['--typography-heading-1-font-family'], 'system-ui, sans-serif', 'la police du produit à la place de celle de la marque');
 });
 
-test('PC7 déterminisme, sans script ni attribut style, bloc sombre', () => {
+test('PC7 déterminisme, sans script ni attribut style, sombre seul', () => {
   for (const m of MOMENTS) {
     const a = pageDuParcours(etat(m));
     assert.equal(a, pageDuParcours(etat(m)), m);
-    assert.doesNotMatch(a, /<script|\sstyle="|<link/, m);
-    assert.match(a, /@media \(prefers-color-scheme: dark\)/, m);
+    assert.doesNotMatch(a, /<script|\sstyle="|<link|prefers-color-scheme/, m);
+    assert.match(a, /color-scheme: dark; \}\n\.papier \{[^}]*color-scheme: light; \}/, m);
   }
 });
 

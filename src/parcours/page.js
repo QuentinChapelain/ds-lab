@@ -1,14 +1,32 @@
 // @ts-check
 /**
- * La page du parcours (D72) : le chat conduit, le panneau montre. Un fichier HTML autonome, sans script, clair et
- * sombre, lisible à 640 px. Trois parties : la barre des quatre temps ; le moment en cours, et lui seul (une phrase,
- * la ligne d'action, l'écran de l'étape embarqué s'il y en a un) ; le reste, replié dans « Tout le parcours ».
+ * La page du parcours (D72) : le chat conduit, le panneau montre. Un fichier HTML autonome, sans script, sombre (D88),
+ * lisible à 640 px. Trois parties : le fil des quatre temps, celui des écrans ; le moment en cours, et lui seul (une
+ * phrase, la ligne d'action, l'écran de l'étape embarqué s'il y en a un) ; le reste, replié dans « Tout le parcours ».
  * Valeurs : les variables des jetons communs (jetons.js) ; le style écrit ici ne porte que des variables, des
  * mots-clés, 0 et 100 %, comme un module (D61). Toute chaîne venue du projet ou des sorties est échappée.
  */
 import { esc } from '../lib/format.js';
 import { aLaMain, etatDit } from './etat.js';
-import { blocJetons, ecranDesPages, ecranDeMesure, ecranDeLaDette, ecranDeLaMarque, ecranDesJetons, ecranDesFondations, ecranAvantApres, ecranDeLaRemise, style, DEBUT_JETONS, FIN_JETONS } from './ecrans.js';
+import {
+  blocJetons,
+  ecranDeLancement,
+  ecranDesPages,
+  ecranDeMesure,
+  ecranDeLaDette,
+  ecranDeLaMarque,
+  ecranDesJetons,
+  ecranDesFondations,
+  ecranDeLaRevue,
+  ecranAvantApres,
+  ecranDeLaRemise,
+  filDe,
+  lectureDe,
+  style,
+  DEBUT_JETONS,
+  FIN_JETONS,
+  FIL_CSS,
+} from './ecrans.js';
 
 export { DEBUT_JETONS, FIN_JETONS };
 
@@ -21,13 +39,8 @@ html, body { height: 100%; margin: 0; }
 body { background: var(--background-app); color: var(--text-default); ${style('body-medium')} }
 main { display: flex; flex-direction: column; gap: var(--gap-between-components); min-height: 100%; max-width: var(--width-column); margin: 0 auto; padding: var(--padding-component); }
 h1, h2, h3, p, ul, ol { margin: 0; }
-h1 { ${style('heading-1')} }
+h1 { ${style('heading-3')} }
 .sous-titre { color: var(--text-secondary); }
-ol.barre { display: table; table-layout: fixed; width: 100%; padding: 0; list-style: none; border-spacing: var(--gap-within-component) 0; }
-ol.barre li { display: table-cell; text-align: center; padding: var(--gap-between-blocks) var(--gap-within-component); border-radius: var(--border-radius-surface); ${style('label')} }
-.faite { background: var(--background-inverse); color: var(--text-on-inverse); }
-.en-cours { background: var(--background-info-subtle); color: var(--text-info); }
-.a-venir { background: var(--background-subtle); color: var(--text-secondary); }
 .moment { display: flex; flex-direction: column; gap: var(--gap-between-blocks); flex: auto; }
 .phrase { ${style('heading-3')} }
 .moment ul { padding-left: var(--gap-between-groups); }
@@ -40,20 +53,10 @@ iframe { flex: auto; width: 100%; border: 0; border-radius: var(--border-radius-
 .tout ul { list-style: none; padding: 0; }
 .tout li { background: var(--background-surface); border-radius: var(--border-radius-surface); padding: var(--gap-between-blocks) var(--padding-component); margin-top: var(--gap-between-blocks); }
 .doux { color: var(--text-secondary); }
-`;
-
-/** Classe d'un état. @param {string} e */
-const classe = (e) => (e === 'faite' ? 'faite' : e === 'en cours' ? 'en-cours' : 'a-venir');
+${FIL_CSS}`;
 
 /** « fait » pour un temps, « faite » pour une étape. @param {string} e @param {boolean} masculin */
 const dit = (e, masculin) => (e === 'faite' && masculin ? 'fait' : e);
-
-/** @param {Etat} e */
-function barre(e) {
-  return `<ol class="barre" aria-label="Les quatre temps">${e.temps
-    .map((t) => `<li class="${classe(t.etat)}" aria-label="${esc(`${t.nom} : ${dit(t.etat, true)}`)}" title="${esc(`${t.nom} : ${dit(t.etat, true)}`)}">${esc(t.nom)}</li>`)
-    .join('')}</ol>`;
-}
 
 /** La ligne d'action du moment. @param {Etat} e */
 function action(e) {
@@ -108,12 +111,32 @@ function tout(e) {
 }
 
 /**
- * La page du parcours ; au moment des pages, l'écran des pages (D77).
- * @param {Etat} e
- * @param {{ erreur?: import('./ecrans.js').ErreurAjout | null, copie?: 'ok' | 'non' | null }} [o]  le refus d'une page ajoutée, à
- *   dire à côté du champ ; le retour de « Copier le message »
+ * Un écran fait, revu en lecture seule (D88) ; null s'il ne se revoit pas : la page reprend le moment.
+ * @param {Etat} e @param {string} voir
  */
-export function pageDuParcours(e, { erreur = null, copie = null } = {}) {
+function revu(e, voir) {
+  if (voir === 'depart') return ecranDeLancement(e);
+  if (!(/** @type {string[]} */ (e.revoir)).includes(voir)) return null;
+  const k = /** @type {import('./etat.js').Revu} */ (voir);
+  if (k === 'pages') return ecranDesPages(e, { sites: e.sites, lecture: lectureDe(e, k) });
+  if (k === 'dette' && e.dette) return ecranDeLaDette(e, { lecture: lectureDe(e, k) });
+  if (k === 'marque' && e.marque) return ecranDeLaMarque(e, { lecture: lectureDe(e, k) });
+  if (k === 'fondations' && e.fondations) return ecranDesFondations(e, { lecture: lectureDe(e, k) });
+  if (k === 'revue' && e.revue) return ecranDeLaRevue(e, e.revue);
+  if (k === 'avant-apres' && e.avantApres) return ecranAvantApres(e, { lecture: lectureDe(e, k) });
+  return null;
+}
+
+/**
+ * La page du parcours ; au moment des pages, l'écran des pages (D77) ; un écran fait à revoir (D88).
+ * @param {Etat} e
+ * @param {{ erreur?: import('./ecrans.js').ErreurAjout | null, copie?: 'ok' | 'non' | null, voir?: string | null }} [o]  le refus d'une
+ *   page ajoutée, à dire à côté du champ ; le retour de « Copier le message » ; l'écran à revoir, calculé avec le même
+ *   `voir` (calculerEtat)
+ */
+export function pageDuParcours(e, { erreur = null, copie = null, voir = null } = {}) {
+  const vu = voir ? revu(e, voir) : null;
+  if (vu) return vu;
   if (e.moment === 'pages') return ecranDesPages(e, { sites: e.sites, erreur });
   if (e.moment === 'mesure') return ecranDeMesure(e);
   if (e.moment === 'dette' && e.dette) return ecranDeLaDette(e);
@@ -133,8 +156,8 @@ ${blocJetons()}${CSS}</style>
 </head>
 <body>
 <main>
+${filDe(e)}
 <header><h1>${esc(e.produit)}</h1>${e.sousTitre ? `<p class="sous-titre">${esc(e.sousTitre)}</p>` : ''}</header>
-${barre(e)}
 ${moment(e)}
 ${tout(e)}
 </main>

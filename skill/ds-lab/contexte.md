@@ -26,7 +26,7 @@ Il mesure et règle seul ce qu'une règle sait trancher ; l'humain tranche le re
 
 ## Quatre temps, trois portes
 
-Mesurer, Décider, Poser, Tenir. Trois fois, l'humain regarde et dit oui : la marque, la revue des décisions, l'avant et après.
+Mesurer, Décider, Vérifier, Remettre. Trois fois, l'humain regarde et dit oui : la marque, la revue des décisions, l'avant et après.
 
 ## Les étapes
 
@@ -37,7 +37,7 @@ Mesurer, Décider, Poser, Tenir. Trois fois, l'humain regarde et dit oui : la ma
 | Marque | La lit dans la mesure ; en fait douze pas, ou la refuse | Confirme, ou change une couleur |
 | Décisions | Compare les pages aux fondations, range seul ce que les règles tranchent | Le designer tranche le reste, puis exporte |
 | Livraison | Écrit les feuilles à poser à côté de l'ancien code, les vérifie sur les pages | Le designer valide le rendu ; le développeur installe |
-| Suivi | Relance le contrôle après chaque changement | Dit quand le site a changé |
+| Remise | Prépare la remise, relance le contrôle | Donne la remise au développeur |
 
 ## Ce qu'il ne fait pas aujourd'hui
 

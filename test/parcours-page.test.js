@@ -1,12 +1,12 @@
 // @ts-check
 /**
  * La page du parcours dans Chromium (D72, docs/attendus/parcours.md), servie comme par parcours --servir :
- *   PG1 à 640 px de large (le panneau d'aperçu), clair et sombre : aucun défilement horizontal ; le fond de la page est
- *       background.app du mode ; aucune requête hors de 127.0.0.1 ;
+ *   PG1 à 640 px de large (le panneau d'aperçu), le système en clair et en sombre : aucun défilement horizontal ; le
+ *       fond de la page est background.app du mode sombre, seul mode de la page (D88) ; aucune requête hors de 127.0.0.1 ;
  *   PG2 quand le moment embarque un écran, le cadre prend la hauteur qui reste : plus de la moitié de la fenêtre
  *       (900 px de haut), sans nombre dans le style ;
  *   PG3 le lancement, l'écran des pages (D77), la dette (D79), la marque (D80) et les fondations (D83), servis par la commande, à 640 px, clair
- *       et sombre : aucun défilement horizontal, le fond du mode, la barre au bas de la fenêtre, chaque vignette chargée (capture ou dessin) ; les
+ *       et sombre : aucun défilement horizontal, le fond sombre, la barre au bas de la fenêtre, chaque vignette chargée (capture ou dessin) ; les
  *       planches des fondations servies ;
  *   PG4 l'avant et après (D86) à 640 px, clair et sombre, sans script : Après montré d'abord ; un clic sur Avant le
  *       montre au même endroit, sans changer la hauteur du cadre ; un clic sur un onglet montre sa page et cache les
@@ -31,7 +31,7 @@ import { tmpdir } from 'node:os';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const MOMENTS = ['constat', 'marque', 'decisions', 'livraison', 'bilan', 'plusieurs'];
-const FOND = { light: 'rgb(251, 251, 251)', dark: 'rgb(18, 18, 18)' };
+const FOND = { dark: 'rgb(18, 18, 18)' };
 
 /** @type {import('playwright-core').Browser} */
 let browser;
@@ -68,7 +68,7 @@ test('PG1 et PG2 chaque moment à 640 px, clair et sombre : aucun défilement, l
           };
         });
         assert.ok(r.largeur <= 640, `${m} ${scheme} : ${r.largeur}`);
-        assert.equal(r.fond, FOND[scheme], `${m} ${scheme}`);
+        assert.equal(r.fond, FOND.dark, `${m} ${scheme}`);
         if (r.cadre !== null) assert.ok(r.cadre > 450, `${m} ${scheme} : cadre de ${r.cadre} px`);
         assert.deepEqual(requetes.filter((u) => !u.startsWith(s.adresse)), [], m);
         await page.close();
@@ -121,9 +121,9 @@ test('PG3 le lancement, les pages, la dette, la marque et les fondations à 640 
           vignettes: [...document.querySelectorAll('img')].map((i) => i.complete && i.naturalWidth > 0),
           planches: [...document.querySelectorAll('.planches a')].map((a) => /** @type {HTMLAnchorElement} */ (a).href),
         }));
-        assert.equal(r.titre, { lancement: 'Le parcours', pages: 'Les pages à mesurer', dette: 'La dette de Annuaire des cafés', marque: 'La marque de Annuaire des cafés', fondations: 'Les fondations de Annuaire des cafés' }[ecran]);
+        assert.equal(r.titre, { lancement: 'Le parcours', pages: 'Les pages à mesurer', dette: 'La dette d’Annuaire des cafés', marque: 'La marque d’Annuaire des cafés', fondations: 'Les fondations d’Annuaire des cafés' }[ecran]);
         assert.ok(r.largeur <= 640, `${ecran} ${scheme} : ${r.largeur}`);
-        assert.equal(r.fond, FOND[scheme], `${ecran} ${scheme}`);
+        assert.equal(r.fond, FOND.dark, `${ecran} ${scheme}`);
         assert.equal(r.barre, 900, `${ecran} ${scheme}`);
         assert.deepEqual(r.vignettes, Array(/** @type {Record<string, number>} */ ({ lancement: 0, pages: 3, dette: 11, marque: 0, fondations: 0 })[ecran]).fill(true));
         assert.equal(r.planches.length, ecran === 'fondations' ? 3 : 0);

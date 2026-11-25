@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * Les écrans du parcours (D77), sans navigateur :
- *   EC1 le lancement : les quatre temps à venir, quatre étapes, trois portes, l'adresse dans le chat, aucun bouton ; il
+ *   EC1 le lancement : les quatre temps pas encore, quatre étapes, trois portes, l'adresse dans le chat, aucun bouton ; il
  *       se recharge seul ; aucune valeur visuelle en dur, aucun script ;
  *   EC2 les pages, un site : le nom de chaque page (ou son chemin), sa vignette, « Retirer », « Ajouter une page »,
  *       « Mesurer ces n pages » qui suit la liste, désactivé sans page ; jamais de rechargement seul ; le refus d'une
@@ -45,7 +45,14 @@
  *       pas touché ; l'écran : trois cartes, le dossier, le message, « Copier le message », puis « Copié. » ; une copie
  *       impossible le dit ;
  *   EC15 la page en direct : une base sur la page du site, tokens.css en tête, chaque feuille ajoutée juste après le lien
- *       de sa feuille, avec son media ; un lien vers une autre page mesurée y mène en direct, une ancre reste une ancre.
+ *       de sa feuille, avec son media ; un lien vers une autre page mesurée y mène en direct, une ancre reste une ancre ;
+ *   EC16 le fil (D88) : les temps faits, ici (le nom de l'écran sous le temps) et pas encore ; un temps fait mène à son
+ *       dernier écran à revoir, ou n'est pas un lien ; « ds-lab » mène au départ ; ni puce, ni pointillé, ni réglage du
+ *       système sur aucun moment ; le bouton plein sur le rôle de ce qui se clique ; « d' » devant une voyelle ;
+ *   EC17 revoir un écran fait (D88) : le départ, les pages, la dette, la marque, les fondations, la revue, l'avant et
+ *       après, en lecture seule : le temps revu et ses autres écrans, ni formulaire ni rechargement, « Revenir où j'en
+ *       suis » ; un écran qui ne se revoit pas rend le moment ; l'état et les fichiers ne changent pas ; le serveur
+ *       refuse un envoi venu d'un écran revu.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -63,6 +70,11 @@ import { fondationsDe } from '../src/parcours/fondations.js';
 import { aInstaller, ecrireRemise, message, pageEnDirect } from '../src/parcours/remise.js';
 import { copierMessage } from '../src/parcours/pages.js';
 import { faitsDuMoment } from '../src/parcours/faits.js';
+import { servir } from '../src/parcours/serveur.js';
+import { deNom } from '../src/lib/format.js';
+import { request } from 'node:http';
+import { createHash } from 'node:crypto';
+import { readdirSync } from 'node:fs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const FIX = join(ROOT, 'fixtures', 'parcours');
@@ -76,6 +88,11 @@ const copie = (m) => {
 };
 /** Texte visible, balises ôtées. @param {string} html */
 const texte = (html) => html.replace(/<style>.*?<\/style>/s, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+/** Les temps du fil, leur texte visible sans l'écran. @param {string} html */
+const fil = (html) =>
+  [.../** @type {RegExpExecArray} */ (/<nav class="fil"[^>]*>.*?<ol>(.*?)<\/ol><\/nav>/s.exec(html))[1].matchAll(/<li[^>]*>(.*?)<\/li>/g)].map((m) =>
+    m[1].replace(/<small>.*?<\/small>/, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
+  );
 /** Valeurs du style hors des jetons, ôtés variables, mots-clés, 0 et 100 %. @param {string} html */
 const enDur = (html) => {
   const css = /** @type {RegExpExecArray} */ (/<style>(.*?)<\/style>/s.exec(html))[1];
@@ -93,9 +110,12 @@ const faux = (pages) => /** @type {typeof fetch} */ (async (/** @type {any} */ u
 test('EC1 le lancement : quatre temps, quatre étapes, trois portes, l’adresse dans le chat ; il se recharge seul', () => {
   const h = ecranDeLancement();
   const t = texte(h);
-  for (const s of ['1 · Mesurer', '4 · Tenir', 'Le parcours', 'Rien à décider', 'Tu décides trois fois.', 'Porte 1 · la marque', 'Porte 2 · la revue', 'Porte 3 · avant, après', 'Elle se donne dans le chat, à gauche.', 'Donne l’adresse dans le chat.'])
+  for (const s of ['Le parcours', 'Tu décides trois fois.', 'Porte 1 · la marque', 'Porte 2 · la revue', 'Porte 3 · avant, après', 'Elle se donne dans le chat, à gauche.', 'Donne l’adresse dans le chat.'])
     assert.ok(t.includes(s), s);
-  assert.equal(h.match(/<li class="a-venir">/g)?.length, 4);
+  assert.deepEqual(fil(h), ['1 Mesurer', '2 Décider', '3 Vérifier', '4 Remettre']);
+  assert.equal(h.match(/<li><span class="pt">/g)?.length, 4, 'quatre temps pas encore');
+  assert.match(h, /<a class="accueil" href="\/" aria-label="ds-lab, retour au départ">/);
+  assert.doesNotMatch(t, /Tenir|Poser|Rien à décider/);
   assert.equal(h.match(/<li class="etape">/g)?.length, 4);
   assert.doesNotMatch(h, /<button|<form|<script|\sstyle="/);
   assert.match(h, /<meta http-equiv="refresh" content="2">/);
@@ -105,15 +125,16 @@ test('EC1 le lancement : quatre temps, quatre étapes, trois portes, l’adresse
 test('EC2 les pages : noms, vignettes, retirer, ajouter, le compte de la mesure ; jamais de rechargement seul', () => {
   const h = pageDuParcours(etat('pages'));
   const t = texte(h);
-  for (const s of ['Les pages à mesurer', 'À toi de décider', 'La carte', 'Mon compte', '/desordre/gestion.html', 'Ajouter une page', 'Rien hors de cette liste n’est mesuré.', 'Mesurer ces 3 pages ›'])
+  for (const s of ['Les pages à mesurer', 'La carte', 'Mon compte', '/desordre/gestion.html', 'Ajouter une page', 'Rien hors de cette liste n’est mesuré.', 'Mesurer ces 3 pages ›'])
     assert.ok(t.includes(s), s);
-  assert.equal(h.match(/<img class="vignette" src="\/vignette\/orbe\?page=%2Fdesordre%2F[a-z]+\.html" alt="">/g)?.length, 3);
+  assert.equal(h.match(/<img class="vignette papier" src="\/vignette\/orbe\?page=%2Fdesordre%2F[a-z]+\.html" alt="">/g)?.length, 3);
   assert.equal(h.match(/action="\/pages\/retirer"/g)?.length, 3);
   assert.match(h, /aria-label="Retirer La carte"/);
   assert.match(h, /<form method="post" action="\/pages\/mesurer"><button type="submit" class="principal">Mesurer ces 3 pages ›<\/button><\/form>/);
   assert.doesNotMatch(h, /http-equiv="refresh"|<script|\sstyle="/);
   assert.deepEqual(enDur(h), []);
-  assert.match(h, /<li class="en-cours">1 · Mesurer<small>en cours<\/small><\/li>/);
+  assert.match(h, /<li class="ici" aria-current="step"><span class="pt">1<\/span><span class="nomme">Mesurer<small>Les pages<\/small><\/span>/);
+  assert.doesNotMatch(t, /À toi de décider|Rien à décider/);
   // Sans page : rien à mesurer.
   assert.match(pageDuParcours(etat('lancement')), /<button type="submit" class="principal" disabled>Aucune page<\/button>/);
   // Le refus d'une page ajoutée, à côté du champ, la saisie gardée.
@@ -225,8 +246,7 @@ test('EC5 la dette : les valeurs comptées, dites et dessinées ; les composants
   const h = pageDuParcours(e);
   const t = texte(h);
   for (const x of [
-    'La dette de Annuaire des cafés',
-    'Rien à décider',
+    'La dette d’Annuaire des cafés',
     '3 pages mesurées :',
     'Les valeurs',
     '70 valeurs différentes affichées sur ces pages',
@@ -251,7 +271,7 @@ test('EC5 la dette : les valeurs comptées, dites et dessinées ; les composants
     assert.ok(t.includes(x), x);
   assert.match(h, /<a href="\/sorties\/audit\/orbe\/127\.0\.0\.1_4173\/2026-11-24T1330\/rapport\.html">Voir toutes les valeurs<\/a>/);
   assert.match(h, /<a href="\/sorties\/composants\/orbe\/127\.0\.0\.1_4173\/2026-11-24T1330\/constat\.html">Voir tous les composants<\/a>/);
-  assert.equal(h.match(/<img src="\/sorties\/composants\/orbe\/127\.0\.0\.1_4173\/2026-11-24T1330\/captures\/p\d-e\d+\.png"/g)?.length, 11);
+  assert.equal(h.match(/<img class="papier" src="\/sorties\/composants\/orbe\/127\.0\.0\.1_4173\/2026-11-24T1330\/captures\/p\d-e\d+\.png"/g)?.length, 11);
   assert.match(h, /<rect x="0\.5" y="0\.5" width="23" height="23" rx="4" fill="#999999"\/>/);
   assert.match(h, /<li class="hors"><svg [^>]*><title>10\.5px, 1 fois<\/title><text x="0" y="10\.5" font-size="10\.5"/);
   assert.match(h, /<form method="post" action="\/pages\/dette"><button type="submit" class="principal">Passer à ta marque ›<\/button><\/form>/);
@@ -298,8 +318,7 @@ test('EC7 la marque, lue dans la mesure : deux couleurs et la police, d’où el
   const h = pageDuParcours(e);
   const t = texte(h);
   for (const x of [
-    'La marque de Annuaire des cafés',
-    'À toi de décider',
+    'La marque d’Annuaire des cafés',
     'C’est quoi Diapason ?',
     'Couleur primaire #2b4c7e Lue sur 19 éléments de tes pages, dont 15 qui se cliquent. C’est ce qui se clique.',
     'Ta couleur exacte est sur le bouton, avec un texte blanc. C’est le pas 9, encadré.',
@@ -400,8 +419,7 @@ test('EC10 après « Confirmer la marque » : l’attente, puis les fondations c
   const h = pageDuParcours(e);
   const t = texte(h);
   for (const x of [
-    'Les fondations de Annuaire des cafés',
-    'Rien à décider',
+    'Les fondations d’Annuaire des cafés',
     'Ce qui vient d’être préparé à partir de ta marque. Rien n’est encore posé sur ton site.',
     '1 · Les valeurs',
     'Tes pages affichaient 70 valeurs différentes.',
@@ -417,8 +435,8 @@ test('EC10 après « Confirmer la marque » : l’attente, puis les fondations c
     'La planche des rôles · des espacements · des textes',
     '✓ · Dans les règles de l’art',
     'Limites connues : pas encore de tokens d’ombre ni de superposition',
-    'Pas encore · posées sur ton site au temps 3, Poser',
-    'Pas encore · les composants remplacés dans ton code au temps 4, Tenir',
+    'Pas encore · posées sur ton site au temps 3, Vérifier',
+    'Pas encore · les composants remplacés dans ton code au temps 4, Remettre',
     'Comparer mon site ›',
   ])
     assert.ok(t.includes(x), x);
@@ -470,7 +488,6 @@ test('EC12 l’avant et après : un onglet par page, la bascule sans script, le 
   const t = texte(h);
   for (const x of [
     'Avant, après',
-    'À toi de décider',
     'Tes 15 décisions et les réglages de l’outil, ensemble, sur les 3 pages mesurées. C’est un aperçu : rien n’est encore installé sur ton site.',
     // Le verdict : 55 lignes, 54 arrivées, une seulement au survol.
     '55 changements, 54 arrivés',
@@ -599,4 +616,110 @@ test('EC15 la page en direct : base, tokens en tête, chaque feuille ajoutée ap
   assert.ok(p.startsWith('<!doctype html><html><head><base href="http://127.0.0.1:4173/p/1.html"><style data-ds-lab-ajout>:root{--x:1px}</style><title>'), p);
   assert.ok(p.includes('<link rel="stylesheet" href="/s/a.css" media="screen"><style data-ds-lab-ajout media="screen">b{c:d}</style><link rel="stylesheet" href="https://ailleurs.example/s/a.css"><link rel="icon"'), p);
   assert.ok(p.includes('<a href="http://127.0.0.1:9/direct/orbe?page=%2Fp%2F2.html#haut">2</a><a href="#bas">bas</a><a href="https://ailleurs.example/p/2.html">'), p);
+});
+
+/** Chaque fichier d'un dossier et l'empreinte de son contenu. @param {string} d @returns {Record<string, string>} */
+const instantane = (d) =>
+  Object.fromEntries(
+    /** @type {string[]} */ (readdirSync(d, { recursive: true, encoding: 'utf8' }))
+      .filter((x) => {
+        try {
+          return readFileSync(join(d, x)) && true;
+        } catch {
+          return false;
+        }
+      })
+      .sort()
+      .map((x) => [x, createHash('sha256').update(readFileSync(join(d, x))).digest('hex')]),
+  );
+
+test('EC16 le fil : fait, ici, pas encore ; un temps fait mène à son dernier écran ; « ds-lab » au départ ; ni puce ni pointillé ; l’élision', () => {
+  const b = pageDuParcours(etat('bilan'));
+  assert.deepEqual(fil(b), ['Mesurer', 'Décider', 'Vérifier', '4 Remettre']);
+  for (const [nom, k] of [['Mesurer', 'pages'], ['Décider', 'revue'], ['Vérifier', 'avant-apres']]) assert.ok(b.includes(`<li class="fait"><a href="/?voir=${k}" aria-label="${nom}, fait, revoir">`), nom);
+  assert.match(b, /<li class="ici" aria-current="step"><span class="pt">4<\/span><span class="nomme">Remettre<small>La remise<\/small><\/span><\/li>/);
+  assert.match(b, /<a class="accueil" href="\/\?voir=depart" aria-label="ds-lab, retour au départ">/);
+  const d = pageDuParcours(etat('constat'));
+  assert.deepEqual(fil(d), ['Mesurer', '2 Décider', '3 Vérifier', '4 Remettre']);
+  assert.match(d, /<span class="nomme">Décider<small>La dette<\/small>/);
+  // Un temps fait sans écran à revoir : la pastille pleine, sans lien.
+  const e = etat('constat');
+  e.revoir = [];
+  assert.match(pageDuParcours(e), /<li class="fait"><span class="pt" role="img" aria-label="fait">/);
+  for (const m of ['lancement', 'pages', 'constat', 'marque', 'decisions', 'livraison', 'bilan', 'plusieurs']) {
+    const h = pageDuParcours(etat(m));
+    assert.doesNotMatch(texte(h), /À toi de décider|Rien à décider|Poser ·|temps 3, Poser|Tenir/, m);
+    assert.doesNotMatch(h, /dashed|class="statut|prefers-color-scheme/, m);
+    assert.equal(h.match(/<nav class="fil"/g)?.length, 1, m);
+  }
+  // Le bouton plein : ce qui se clique.
+  assert.match(b, /button\.principal \{ background: var\(--background-interactive-strong\); border-color: var\(--background-interactive-strong\); color: var\(--text-on-interactive\); \}/);
+  assert.deepEqual(['Orbe Café', 'Écume', 'Diapason', 'Hôtel du Nord'].map(deNom), ['d’Orbe Café', 'd’Écume', 'de Diapason', 'de Hôtel du Nord']);
+});
+
+/** Un envoi de formulaire au serveur, avec son adresse d'origine. @param {string} adresse @param {string} referer */
+const envoyer = (adresse, referer) =>
+  new Promise((ok, ko) => {
+    const u = new URL('/pages/marque/echanger', adresse);
+    const r = request({ host: u.hostname, port: u.port, path: u.pathname, method: 'POST', headers: { referer, 'content-type': 'application/x-www-form-urlencoded', 'content-length': 0 } }, (res) => {
+      res.resume();
+      ok(res.statusCode);
+    });
+    r.on('error', ko);
+    r.end();
+  });
+
+test('EC17 revoir un écran fait : en lecture seule, sans formulaire ni rechargement, rien d’écrit ; un envoi depuis un écran revu est refusé', async () => {
+  const p = copie('bilan');
+  const f = join(p, 'projet.json');
+  const avant = instantane(p);
+  const voir = (/** @type {string} */ v, /** @type {string} */ dossier = p, /** @type {string} */ fichier = f) =>
+    pageDuParcours(calculerEtat(lireProjet(fichier), { base: dossier, voir: v }), { voir: v });
+  for (const [v, titre, revois] of [
+    ['pages', 'Les pages mesurées', 'Tu revois Mesurer.'],
+    ['revue', 'La revue', 'Tu revois Décider.'],
+    ['avant-apres', 'Avant, après', 'Tu revois Vérifier.'],
+    ['depart', 'Le parcours', 'Tu revois le départ.'],
+  ]) {
+    const h = voir(v);
+    assert.ok(h.includes(`<h1>${titre}</h1>`), v);
+    assert.ok(texte(h).includes(revois), v);
+    assert.doesNotMatch(h, /<form|http-equiv="refresh"/, v);
+    assert.match(h, /<a class="retour" href="\/">Revenir où j’en suis ›<\/a>/, v);
+    assert.deepEqual(enDur(h), [], v);
+  }
+  assert.match(voir('revue'), /<iframe class="revue" src="\/sorties\/reductions\/[^"]+\/revue\.html" title="La revue"><\/iframe>/);
+  assert.match(voir('avant-apres'), /<div class="cadre papier">/);
+  // Un écran qui ne se revoit pas : le moment, tel quel.
+  assert.match(voir('dette'), /<h1>La remise<\/h1>/);
+  assert.deepEqual(instantane(p), avant, 'aucun fichier ne change');
+
+  // Par les écrans : la dette, la marque et les fondations, revues ; l'état ne change pas.
+  const { d, f: g } = auxFondations();
+  fondationsVues(g);
+  const e = calculerEtat(lireProjet(g), { base: d });
+  assert.deepEqual(e.revoir, ['pages', 'dette', 'marque', 'fondations']);
+  for (const [v, titre] of [['dette', 'La dette d’Annuaire des cafés'], ['marque', 'La marque d’Annuaire des cafés'], ['fondations', 'Les fondations d’Annuaire des cafés']]) {
+    const vu = calculerEtat(lireProjet(g), { base: d, voir: v });
+    assert.deepEqual([vu.moment, vu.courante], [e.moment, e.courante], v);
+    const h = voir(v, d, g);
+    assert.ok(h.includes(`<h1>${titre}</h1>`), v);
+    assert.doesNotMatch(h, /<form|<details class="modifier"|Pas encore/, v);
+    const autres = ['dette', 'marque', 'fondations'].filter((x) => x !== v);
+    for (const x of autres) assert.ok(h.includes(`<a href="/?voir=${x}">`), `${v} → ${x}`);
+    assert.match(h, /<span aria-current="page">/, v);
+    assert.deepEqual(enDur(h), [], v);
+  }
+
+  // Le serveur : un envoi depuis un écran revu ne passe pas.
+  let appels = 0;
+  const s = await servir({ page: () => '', sorties: () => p, marques: () => ({}), poster: async () => (appels++, null) }, { port: 0 });
+  try {
+    assert.equal(await envoyer(s.adresse, `${s.adresse}?voir=marque`), 409);
+    assert.equal(appels, 0);
+    assert.equal(await envoyer(s.adresse, s.adresse), 303);
+    assert.equal(appels, 1);
+  } finally {
+    await s.fermer();
+  }
 });

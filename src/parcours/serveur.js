@@ -6,7 +6,8 @@
  * `/sorties/…` (les sorties du projet) et `/marques/<id>/…` (le dossier de l'entrée de la marque d'un site).
  * L'écran des pages (D77) : `/vignette/<site>?page=<chemin>` rend la capture d'une page, ou son dessin ; un formulaire
  * envoyé (POST, `/pages/…`) passe à `poster`, puis le navigateur revient sur `/` (303), avec le refus d'une page ajoutée
- * dans l'adresse, pour le dire à côté du champ. Rien d'autre ; un chemin qui sort d'une racine est un 404.
+ * dans l'adresse, pour le dire à côté du champ ; un formulaire envoyé depuis un écran revu (`/?voir=…`, D88) est refusé
+ * (409). Rien d'autre ; un chemin qui sort d'une racine est un 404.
  */
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -65,6 +66,8 @@ export function servir(sources, { port = 4311, libre = false } = {}) {
       const chemin = decodeURIComponent(adresse.pathname);
       if (req.method === 'POST') {
         if (!sources.poster || !chemin.startsWith('/pages/')) return absent();
+        // Un écran revu est en lecture seule (D88) : rien de ce qui en vient ne s'enregistre.
+        if (/[?&]voir=/.test(req.headers.referer ?? '')) return res.writeHead(409, { 'content-type': 'text/plain; charset=utf-8' }).end('écran revu : rien ne s’enregistre');
         const q = await sources.poster(chemin, await champs(req));
         res.writeHead(303, { location: q && [...q].length ? `/?${q}` : '/' }).end();
         return;

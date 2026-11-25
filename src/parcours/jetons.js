@@ -4,7 +4,8 @@
  * variable CSS par rôle, nommée d'après son jeton comme dans jetons.css (`--background-app`), en clair et en sombre.
  * La page n'écrit aucune autre valeur : hors de ces blocs, seulement des variables, des mots-clés, 0 et 100 %.
  * La page n'a pas de marque : la police des titres de la marque (`brand.font.heading`) y prend celle du produit, comme
- * `brand.font.body` dans les couches communes.
+ * `brand.font.body` dans les couches communes ; le plein du primaire (`brand.primary.solid`, son survol, son texte), ce
+ * qui se clique, y prend l'échelle d'information, le bleu de l'outil (D88).
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -26,6 +27,10 @@ const COULEURS = [
   'text.error',
   'border.subtle',
   'border.default',
+  'border.info',
+  'background.interactive.strong',
+  'background.interactive.strong.hover',
+  'text.on-interactive',
 ];
 /** Rôles de dimension de la page. */
 const DIMENSIONS = [
@@ -77,6 +82,9 @@ function jetons(fichiers) {
   const m = new Map();
   for (const f of fichiers) flattenTokens(JSON.parse(readFileSync(join(COMMUN, f), 'utf8')), [], m);
   m.set('brand.font.heading', { $value: '{font.product}' });
+  m.set('brand.primary.solid', { $value: '{color.info.9}' });
+  m.set('brand.primary.solid-hover', { $value: '{color.info.10}' });
+  m.set('brand.primary.on-solid', { $value: '{color.info.on-solid}' });
   return m;
 }
 

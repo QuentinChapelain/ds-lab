@@ -10,6 +10,7 @@ import { createHash } from 'node:crypto';
 import { closeSync, existsSync, openSync, readFileSync, readSync, readdirSync } from 'node:fs';
 import { basename, join, relative } from 'node:path';
 import { lireJson } from '../lib/fichiers.js';
+import { deNom } from '../lib/format.js';
 import { compterDecisions } from '../reduce/propose.js';
 import { RESOLVER } from '../tokens/resolver.js';
 import { pageName } from '../verify/reference.js';
@@ -88,7 +89,8 @@ function pagesValidees(sorties) {
  * @typedef {{ produit: string, sites: Site[], sousTitre: string | null, unSite: boolean, etapes: Etape[], temps: { nom: string, etat: EtatEtape, etapes: CleEtape[] }[],
  *   courante: Etape, moment: 'pages' | 'mesure' | 'dette' | 'marque' | 'jetons' | 'fondations' | 'avant-apres' | 'ecran' | 'sans-ecran' | 'remise', dette: Dette | null,
  *   marque: { site: Site, lecture: import('./marque.js').Lecture, choix: import('./marque.js').Choix, apercu: import('./marque.js').Apercu } | null, ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
- *   fondations: Fondations | null, avantApres: AvantApres | null, remise: import('./remise.js').Remise | null, phrase: string | null, bilan: Bilan | null, chiffres: Chiffres, voisin: string | null, livraison: Livraison | null }} Etat
+ *   fondations: Fondations | null, avantApres: AvantApres | null, remise: import('./remise.js').Remise | null, phrase: string | null, bilan: Bilan | null, chiffres: Chiffres, voisin: string | null, livraison: Livraison | null,
+ *   revoir: Revu[], revue: string | null }} Etat  revoir : les écrans faits qui se revoient ; revue : l'adresse de la revue
  * @typedef {import('./fondations.js').Fondations & { site: Site, avant: number | null, planche: string }} Fondations  au moment des fondations : la marque du
  *   premier site, les valeurs de ses pages (avant) et l'adresse servie de ses planches
  * @typedef {{ pages: number, arrivees: number, total: number, manquantes: { titre: string, elements: number, cause: string | null }[] }} Livraison  la dernière vérification
@@ -98,13 +100,18 @@ function pagesValidees(sorties) {
  *   l'avant et après : les images de chaque page, et ce qui a changé ; chaque vue a l'adresse de sa page en direct
  */
 
-/** Les quatre temps et leurs étapes (présentation de l'outil, D72). */
+/** Les quatre temps et leurs étapes (présentation de l'outil, D72, D88) : la livraison se vérifie, avant et après ; le suivi est la remise. */
 const TEMPS = /** @type {const} */ ([
   ['Mesurer', ['site', 'constat']],
   ['Décider', ['marques', 'decisions']],
-  ['Poser', ['livraison']],
-  ['Tenir', ['suivi']],
+  ['Vérifier', ['livraison']],
+  ['Remettre', ['suivi']],
 ]);
+
+/**
+ * Les écrans qui se revoient (D88), dans l'ordre du parcours.
+ * @typedef {'pages' | 'dette' | 'marque' | 'fondations' | 'revue' | 'avant-apres'} Revu
+ */
 
 /** Une phrase par moment, ce qu'il faut en comprendre (D72). */
 const PHRASES = {
@@ -178,10 +185,12 @@ const trie = (o) => JSON.stringify(Object.keys(o).sort().map((k) => [k, o[k]]));
 /**
  * Calcule l'état du parcours.
  * @param {Projet} projet
- * @param {{ base?: string }} [opts]  dossier depuis lequel les commandes proposées sont lancées (défaut : le dossier courant)
+ * @param {{ base?: string, voir?: string | null }} [opts]  base : dossier depuis lequel les commandes proposées sont lancées
+ *   (défaut : le dossier courant) ; voir : un écran fait à revoir (D88), dont les données sont calculées même hors de
+ *   son moment, sans rien changer d'autre à l'état
  * @returns {Etat}
  */
-export function calculerEtat(projet, { base = process.cwd() } = {}) {
+export function calculerEtat(projet, { base = process.cwd(), voir = null } = {}) {
   const { sites, sorties } = projet;
   const unSite = sites.length === 1;
   const premier = sites[0];
@@ -308,7 +317,7 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     action: !aFaire
       ? null
       : aFaire.statut === 'refusée'
-        ? `corriger l’entrée de ${aFaire.nom} (${aFaire.motifs[0] ?? 'motif absent du verdict'}), puis la saisir à nouveau`
+        ? `corriger l’entrée ${deNom(aFaire.nom)} (${aFaire.motifs[0] ?? 'motif absent du verdict'}), puis la saisir à nouveau`
         : aFaire.statut === 'à saisir' || aFaire.statut === 'entrée changée'
           ? unSite ? 'saisir la marque' : `saisir la marque du site ${aFaire.site.id}`
           : aFaire.statut === 'entrée absente'
@@ -417,7 +426,7 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
   const livraison = {
     cle: 'livraison',
     nom: 'Livraison',
-    temps: 'Poser',
+    temps: 'Vérifier',
     acteurs: 'le designer, puis le développeur',
     faite: aManifeste && verdict?.sortie === 0 && valide,
     etat: 'à venir',
@@ -443,8 +452,8 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
   /** @type {Etape} */
   const suivi = {
     cle: 'suivi',
-    nom: 'Suivi',
-    temps: 'Tenir',
+    nom: 'Remise',
+    temps: 'Remettre',
     acteurs: 'l’outil',
     faite: false,
     etat: 'à venir',
@@ -455,23 +464,23 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     fait: verdict && ver ? `dernier contrôle : ${dateDe(ver.nom)}, ${arriveesSur}` : null,
     lignes: [],
     ecran: null,
-    sansEcran: 'Pas d’écran : le suivi demande une CI, que le produit n’a pas encore.',
-    ouvre: 'S’ouvre quand la livraison est prouvée.',
+    sansEcran: null,
+    ouvre: 'S’ouvre quand le rendu est validé.',
     reportes: 0,
   };
 
   // La dette (D78) : la mesure faite, l'écran attend le clic sur « Passer à ta marque » avant la marque.
   const enDette = constat.faite && !etapeMarques.sortie && !existsSync(join(sorties, DETTE_VUE));
   if (enDette) Object.assign(etapeMarques, { main: 'designer', action: 'regarder la dette, puis passer à la marque', commande: null });
-  /** @type {Etat['dette']} */
-  let dette = null;
-  if (enDette && premierEcran?.constat) {
+  /** La dette du premier site mesuré. @returns {Etat['dette']} */
+  const detteDuSite = () => {
+    if (!premierEcran?.constat) return null;
     const s = premierEcran.site;
     const a = plusRecent(join(sorties, 'audit', s.id, s.hote));
     const fa = a && join(a.chemin, 'audit.json');
     const rapport = a && join(a.chemin, 'rapport.html');
     const dossier = /** @type {string} */ (premierEcran.html).replace(/[\\/][^\\/]+$/, '');
-    dette = {
+    return {
       site: s,
       pages: s.pages.map((p) => s.noms[p] ?? p),
       ...detteDe({ constat: premierEcran.constat, audit: fa && existsSync(fa) ? lireJson(fa) : null, pages: s.pages.length }),
@@ -480,22 +489,25 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
       captures: href(dossier),
       autres: constats.filter((x) => x.site !== s && x.html).map((x) => ({ id: x.site.id, nom: x.site.nom ?? x.site.id, href: href(/** @type {string} */ (x.html)) })),
     };
-  }
+  };
+  let dette = enDette ? detteDuSite() : null;
   // La marque (D80) : la dette vue, le premier site sans entrée de marque la choisit à l'écran, lue dans la mesure.
+  /** La marque d'un site, lue dans sa mesure, avec le choix fait à l'écran. @param {Site} s @returns {Etat['marque']} */
+  const marqueDu = (s) => {
+    const a = plusRecent(join(sorties, 'audit', s.id, s.hote));
+    const fa = a && join(a.chemin, 'audit.json');
+    const lecture = fa && existsSync(fa) ? lireMarque(lireJson(fa)) : null;
+    if (!lecture) return null;
+    const fc = join(sorties, MARQUE_CHOISIE);
+    const choix = existsSync(fc) ? { ...lecture.choix, ...(lireJson(fc)[s.id] ?? {}) } : lecture.choix;
+    return { site: s, lecture, choix, apercu: apercu(projet.produit, choix) };
+  };
   /** @type {Etat['marque']} */
   let marque = null;
   const sansEntree = marques.find((m) => m.statut === 'sans entrée' || m.statut === 'entrée absente');
   if (constat.faite && !enDette && sansEntree) {
-    const s = sansEntree.site;
-    const a = plusRecent(join(sorties, 'audit', s.id, s.hote));
-    const fa = a && join(a.chemin, 'audit.json');
-    const lecture = fa && existsSync(fa) ? lireMarque(lireJson(fa)) : null;
-    if (lecture) {
-      const fc = join(sorties, MARQUE_CHOISIE);
-      const choix = existsSync(fc) ? { ...lecture.choix, ...(lireJson(fc)[s.id] ?? {}) } : lecture.choix;
-      marque = { site: s, lecture, choix, apercu: apercu(projet.produit, choix) };
-      Object.assign(etapeMarques, { main: 'designer', action: 'choisir la marque à l’écran, puis la confirmer', commande: null });
-    }
+    marque = marqueDu(sansEntree.site);
+    if (marque) Object.assign(etapeMarques, { main: 'designer', action: 'choisir la marque à l’écran, puis la confirmer', commande: null });
   }
   // Les fondations (D83), sur le chemin des écrans (la dette vue) : la marque acceptée, ce qu'elle écrit à côté de ses
   // jetons doit l'être aussi ; puis l'écran attend le clic sur « Comparer mon site » avant la réduction.
@@ -504,17 +516,21 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
   const ecrits = !!dossierPremier && ECRITS_DE_LA_MARQUE.every((f) => existsSync(join(dossierPremier, f)));
   if (parEcran && etapeMarques.faite && !ecrits && dossierPremier)
     Object.assign(etapeMarques, { faite: false, main: 'outil', action: 'écrire les planches, la feuille CSS et le thème de la marque', commande: ecrireDeLaMarque(dossierPremier) });
-  /** @type {Etat['fondations']} */
-  let fondations = null;
-  if (parEcran && etapeMarques.faite && ecrits && !table && !existsSync(join(sorties, FONDATIONS_VUES))) {
+  /** Les fondations de la marque du premier site. @returns {Etat['fondations']} */
+  const fondationsDuSite = () => {
     const a = plusRecent(join(sorties, 'audit', premier.id, premier.hote));
     const fa = a && join(a.chemin, 'audit.json');
-    fondations = {
+    return {
       ...fondationsDe(/** @type {string} */ (dossierPremier)),
       site: premier,
       avant: fa && existsSync(fa) ? valeursDe(lireJson(fa)).total : null,
       planche: `/marques/${encodeURIComponent(premier.id)}/`,
     };
+  };
+  /** @type {Etat['fondations']} */
+  let fondations = null;
+  if (parEcran && etapeMarques.faite && ecrits && !table && !existsSync(join(sorties, FONDATIONS_VUES))) {
+    fondations = fondationsDuSite();
     Object.assign(etapeDecisions, { main: 'designer', action: 'regarder les fondations, puis comparer ton site', commande: null });
   }
   const etapes = [site, constat, etapeMarques, etapeDecisions, livraison, suivi];
@@ -588,7 +604,7 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
   // L'avant et après (D86) : les pages vérifiées, et ce qui a changé, compté par famille sur les lignes du verdict.
   /** @type {AvantApres | null} */
   let avantApres = null;
-  if (moment === 'avant-apres' && verdict && ver) {
+  if ((moment === 'avant-apres' || (voir === 'avant-apres' && valide)) && verdict && ver) {
     const parId = new Map(/** @type {any[]} */ (lireJson(join(dossierAjout, 'feuilles-ajoutees.json')).lignes ?? []).map((l) => [l.id, l]));
     const changements = lignesVerdict.filter((l) => l.etat !== 'hors des pages vérifiées');
     /** Ce que la ligne touche : son titre, sans la famille. @param {any} l */
@@ -618,9 +634,30 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     };
   }
 
+  // Les écrans faits qui se revoient (D88), et, pour l'écran à revoir, ses données hors de son moment.
+  const vueMarque = parEcran && etapeMarques.faite && marques[0].statut === 'acceptée' ? marqueDu(premier) : null;
+  /** @type {Revu[]} */
+  const revoir = /** @type {Revu[]} */ (
+    /** @type {[Revu, boolean][]} */ ([
+      ['pages', site.faite],
+      ['dette', parEcran && !!premierEcran?.constat],
+      ['marque', !!vueMarque],
+      ['fondations', parEcran && ecrits && existsSync(join(sorties, FONDATIONS_VUES))],
+      ['revue', !!revue && !!table],
+      ['avant-apres', valide],
+    ])
+      .filter(([, oui]) => oui)
+      .map(([k]) => k)
+  );
+  if (voir === 'dette' && !dette && revoir.includes('dette')) dette = detteDuSite();
+  if (voir === 'marque' && !marque && vueMarque) marque = vueMarque;
+  if (voir === 'fondations' && !fondations && revoir.includes('fondations')) fondations = fondationsDuSite();
+
   return {
     produit: projet.produit,
     sites,
+    revoir,
+    revue: revue ? href(revue) : null,
     sousTitre: unSite ? null : `${sites.length} sites, ${nombre(sites.length, 'marque', 'marques')}`,
     unSite,
     etapes,

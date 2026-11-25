@@ -141,7 +141,7 @@ test('SK8 la section « Conduire » : quand elle joue, la fiche puis la conduite
   assert.ok(c.split('\n')[2].startsWith(SEUL));
   const x = lire('contexte.md');
   const etapes = x.slice(x.indexOf('## Les étapes')).split('\n').filter((l) => /^\| [^-|]/.test(l)).slice(1).map((l) => l.split('|').slice(1, -1).map((y) => y.trim()));
-  assert.deepEqual(etapes.map((e) => e[0]), ['Site', 'Mesure', 'Marque', 'Décisions', 'Livraison', 'Suivi']);
+  assert.deepEqual(etapes.map((e) => e[0]), ['Site', 'Mesure', 'Marque', 'Décisions', 'Livraison', 'Remise']);
   for (const e of etapes) assert.ok(e.length === 3 && e[1] && e[2], e[0]);
   for (const t of [section, c, x]) assert.doesNotMatch(t, /\b(?:site|produit)s? conformes?\b|\bconformes? (?:le |la )?(?:site|produit)/i);
 });

@@ -45,16 +45,18 @@ await lancer('parcours', async () => {
   };
   /**
    * Relit le projet, recalcule l'état, écrit la page ; rend l'état et la page.
-   * @param {URLSearchParams} [q]  le refus d'une page ajoutée : site, erreur, saisie
+   * @param {URLSearchParams} [q]  le refus d'une page ajoutée : site, erreur, saisie ; un écran fait à revoir (voir, D88),
+   *   qui n'écrit pas la page
    */
   const ecrire = (q) => {
     const projet = lireProjet(fichier);
     const etat = calculerEtat(projet);
     const erreur = q?.get('erreur') ? { site: q.get('site') ?? '', message: q.get('erreur') ?? '', saisie: q.get('saisie') ?? '' } : null;
     const copie = q?.get('copie') === 'ok' ? 'ok' : q?.get('copie') === 'non' ? 'non' : null;
-    const html = pageDuParcours(etat, { erreur, copie });
+    const voir = q?.get('voir') ?? null;
+    const html = voir ? pageDuParcours(calculerEtat(projet, { voir }), { voir }) : pageDuParcours(etat, { erreur, copie });
     const page = join(projet.dossier, 'parcours.html');
-    if (!erreur && !copie) writeFileSync(page, html);
+    if (!erreur && !copie && !voir) writeFileSync(page, html);
     return { projet, etat, html, page: relative(process.cwd(), page) };
   };
 

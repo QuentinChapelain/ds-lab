@@ -48,6 +48,13 @@ export const esc = (s) =>
     .replace(/"/g, '&quot;');
 
 /**
+ * « de » devant un nom, élidé devant une voyelle : « d’Orbe Café », « de Diapason ». Le h n'est pas élidé : muet ou
+ * aspiré, le nom ne le dit pas.
+ * @param {string} nom
+ */
+export const deNom = (nom) => (/^[aeiouyàâäéèêëîïôöùûüœæ]/i.test(nom) ? `d’${nom}` : `de ${nom}`);
+
+/**
  * Liste de polices DTCG → valeur CSS font-family : un nom qui contient une espace ou un guillemet est mis entre
  * guillemets, les autres sont écrits tels quels.
  * @param {string | string[]} v
