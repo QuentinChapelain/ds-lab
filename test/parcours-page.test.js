@@ -5,7 +5,7 @@
  *       background.app du mode ; aucune requête hors de 127.0.0.1 ;
  *   PG2 quand le moment embarque un écran, le cadre prend la hauteur qui reste : plus de la moitié de la fenêtre
  *       (900 px de haut), sans nombre dans le style ;
- *   PG3 le lancement et l'écran des pages (D77), servis par la commande, à 640 px, clair et sombre : aucun défilement
+ *   PG3 le lancement, l'écran des pages (D77) et la dette (D78), servis par la commande, à 640 px, clair et sombre : aucun défilement
  *       horizontal, le fond du mode, la barre au bas de la fenêtre, chaque vignette chargée (capture ou dessin).
  */
 import { test, before, after } from 'node:test';
@@ -71,7 +71,7 @@ test('PG1 et PG2 chaque moment à 640 px, clair et sombre : aucun défilement, l
   }
 });
 
-test('PG3 le lancement et les pages à 640 px, clair et sombre : la barre au bas de la fenêtre, les vignettes chargées', async () => {
+test('PG3 le lancement, les pages et la dette à 640 px, clair et sombre : la barre au bas de la fenêtre, les vignettes chargées', async () => {
   const d = realpathSync(mkdtempSync(join(tmpdir(), 'ds-lab-ecrans-')));
   const p = spawn(process.execPath, [join(ROOT, 'src/cli/parcours.js'), join(d, 'projet.json'), '--servir', '--port', '0'], { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] });
   let sortie = '';
@@ -85,8 +85,8 @@ test('PG3 le lancement et les pages à 640 px, clair et sombre : la barre au bas
       }, 50);
       p.on('exit', () => (clearInterval(t), ko(new Error(sortie))));
     });
-    for (const ecran of ['lancement', 'pages']) {
-      if (ecran === 'pages') cpSync(join(ROOT, 'fixtures', 'parcours', 'pages'), d, { recursive: true });
+    for (const ecran of ['lancement', 'pages', 'dette']) {
+      if (ecran !== 'lancement') cpSync(join(ROOT, 'fixtures', 'parcours', ecran === 'pages' ? 'pages' : 'constat'), d, { recursive: true });
       for (const scheme of /** @type {const} */ (['light', 'dark'])) {
         const page = await browser.newPage({ viewport: { width: 640, height: 900 }, colorScheme: scheme });
         await page.goto(adresse);
@@ -98,11 +98,11 @@ test('PG3 le lancement et les pages à 640 px, clair et sombre : la barre au bas
           barre: document.querySelector('.barre')?.getBoundingClientRect().bottom,
           vignettes: [...document.querySelectorAll('img')].map((i) => i.complete && i.naturalWidth > 0),
         }));
-        assert.equal(r.titre, ecran === 'pages' ? 'Les pages à mesurer' : 'Le parcours');
+        assert.equal(r.titre, { lancement: 'Le parcours', pages: 'Les pages à mesurer', dette: 'La dette de Annuaire des cafés' }[ecran]);
         assert.ok(r.largeur <= 640, `${ecran} ${scheme} : ${r.largeur}`);
         assert.equal(r.fond, FOND[scheme], `${ecran} ${scheme}`);
         assert.equal(r.barre, 900, `${ecran} ${scheme}`);
-        assert.deepEqual(r.vignettes, ecran === 'pages' ? [true, true, true] : []);
+        assert.deepEqual(r.vignettes, Array(/** @type {Record<string, number>} */ ({ lancement: 0, pages: 3, dette: 11 })[ecran]).fill(true));
         await page.close();
       }
     }

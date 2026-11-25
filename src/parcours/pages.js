@@ -7,7 +7,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { lireProjet, ecrirePages } from './projet.js';
-import { PAGES_VALIDEES } from './etat.js';
+import { DETTE_VUE, PAGES_VALIDEES } from './etat.js';
 import { lancerChromium } from '../browser/lancement.js';
 
 /** Délai de la vérification d'une page ajoutée. */
@@ -87,6 +87,16 @@ export function validerPages(fichier) {
   if (p.sites.some((s) => !s.pages.length)) throw new Error('un site sans page ne se mesure pas');
   mkdirSync(p.sorties, { recursive: true });
   writeFileSync(join(p.sorties, PAGES_VALIDEES), `${JSON.stringify(Object.fromEntries(p.sites.map((s) => [s.id, s.pages])), null, 2)}\n`);
+}
+
+/**
+ * La dette vue : le clic sur « Passer à ta marque » (D78). `parcours --attendre` voit l'action changer.
+ * @param {string} fichier
+ */
+export function detteVue(fichier) {
+  const p = lireProjet(fichier);
+  mkdirSync(p.sorties, { recursive: true });
+  writeFileSync(join(p.sorties, DETTE_VUE), `${JSON.stringify({ vue: true }, null, 2)}\n`);
 }
 
 /** Nom de fichier d'une vignette. @param {string} chemin */

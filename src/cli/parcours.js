@@ -21,7 +21,7 @@ import { pageDuParcours } from '../parcours/page.js';
 import { ecranDeLancement, dessinDeVignette } from '../parcours/ecrans.js';
 import { faitsDuMoment } from '../parcours/faits.js';
 import { servir } from '../parcours/serveur.js';
-import { ajouterPage, retirerPage, validerPages, vignettes } from '../parcours/pages.js';
+import { ajouterPage, detteVue, retirerPage, validerPages, vignettes } from '../parcours/pages.js';
 
 const USAGE = 'npm run parcours -- <projet.json> [--servir] [--port <n>] [--attendre]';
 
@@ -55,10 +55,11 @@ await lancer('parcours', async () => {
   };
 
   if (values.attendre) {
-    // La main est à l'humain tant que l'étape et sa main ne changent pas.
-    const depart = ecrire().etat.courante;
+    // La main est à l'humain tant que l'étape, sa main et son action ne changent pas.
+    const signe = (/** @type {import('../parcours/etat.js').Etape} */ k) => `${k.cle}|${k.main}|${k.action}`;
+    const depart = signe(ecrire().etat.courante);
     let r = ecrire();
-    while (r.etat.courante.cle === depart.cle && r.etat.courante.main === 'designer') {
+    while (signe(r.etat.courante) === depart && r.etat.courante.main === 'designer') {
       await attendre(1000);
       r = ecrire();
     }
@@ -87,6 +88,7 @@ await lancer('parcours', async () => {
       poster: async (chemin, c) => {
         if (chemin === '/pages/retirer') retirerPage(fichier, c.site ?? '', c.page ?? '');
         else if (chemin === '/pages/mesurer') validerPages(fichier);
+        else if (chemin === '/pages/dette') detteVue(fichier);
         else if (chemin === '/pages/ajouter') {
           const r = await ajouterPage(fichier, c.site ?? '', c.adresse ?? '');
           if ('raison' in r) return new URLSearchParams({ site: c.site ?? '', erreur: r.raison, saisie: c.adresse ?? '' });

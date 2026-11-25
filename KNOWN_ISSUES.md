@@ -30,6 +30,8 @@
 - La revue montre les noms de jetons (`primary-11`), les codes de couleur et « ΔE » : « le bleu se nomme primary, c'est la couleur de marque ? » (Quentin, 25/11/2026). À payer : elle dit « ton bleu, plus foncé », le détail technique sous « Détail ». Écran de la revue.
 - L'accent retenu pour une même marque change d'une partie à l'autre : pour Orbe Café, le terracotta le matin du 25/11/2026, le sable à midi (boîte, fichier 10). Rien ne dit à l'IA laquelle des couleurs du site est l'accent quand il y en a plus d'une. À payer à l'écran de la marque.
 - Une page ajoutée à la main prend le titre brut de la page (« Orbe Café — accueil »), quand les pages retenues par l'IA ont un nom court (« La carte ») : relevé par Quentin le 25/11/2026 (boîte, fichier 12). À payer à l'écran des pages, au prochain passage : un nom court, sans le nom du site.
+- L'écran de la dette ne montre que le premier site (D79) : à plusieurs sites, les autres ne sont que nommés, en lien vers la mesure de leurs composants. À payer quand un projet à plusieurs sites sera joué : une dette par site, ou leur comparaison (environ une demi-journée [H]).
+- La dette compte 34 couleurs sur Orbe Café (l'audit, interface seule), la réduction en range 31 (D79, limite) ; la page de la mesure des composants dit encore « constat ». À aligner à l'écran des fondations.
 - Les textes existants disent encore « client » là où le parcours dit produit, site, marque : `docs/regles.md` (DS17, DF4 : « la police du client »), le README (« une marque par client », « Ce qu'un client peut changer »). À reprendre avec l'alignement des écrans (boîte, fichier 88).
 
 ## À payer après l'étape 11

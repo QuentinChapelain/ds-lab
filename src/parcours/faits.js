@@ -71,12 +71,21 @@ export function faitsDuMoment(e, { sorties }) {
   switch (k.cle) {
     case 'site':
       if (k.action?.startsWith('retenir')) f.push(['Ensuite', 'regarder le site, retenir les pages qui portent le plus de composants, les écrire dans le projet avec leur nom']);
-      else f.push(['Écran', 'les pages à mesurer'], ['Ensuite', 'dire en une phrase les pages retenues, puis attendre le clic sur Mesurer (parcours --attendre, en tâche de fond)']);
+      else f.push(['Écran', 'les pages à mesurer'], ['Ensuite', 'dire en une phrase combien de pages sont retenues, sans les nommer, puis attendre le clic sur Mesurer (parcours --attendre, en tâche de fond)']);
       break;
     case 'constat':
       f.push(['Écran', 'la mesure en cours, qui passe seule à la suite'], ['Ensuite', 'mesurer les pages']);
       break;
     case 'marques': {
+      if (k.action?.startsWith('regarder la dette')) {
+        f.push(
+          ['Fait', 'la mesure des pages'],
+          ['Chiffre', e.chiffres.valeurs !== null ? nombre(e.chiffres.valeurs, 'valeur différente affichée', 'valeurs différentes affichées') : e.chiffres.versions === null ? null : nombre(e.chiffres.versions, 'version de composant', 'versions de composants')],
+          ['Écran', 'la dette'],
+          ['Ensuite', 'une phrase et ce chiffre, renvoyer à l’écran, puis attendre le clic sur Passer à ta marque (parcours --attendre, en tâche de fond) ; ne pas proposer la marque avant'],
+        );
+        break;
+      }
       if (avant?.etat === 'faite' && !k.sortie) {
         f.push(['Fait', 'la mesure des pages'], ['Chiffre', e.chiffres.versions === null ? null : nombre(e.chiffres.versions, 'version de composant', 'versions de composants')], ['Écran', 'la dette']);
       }

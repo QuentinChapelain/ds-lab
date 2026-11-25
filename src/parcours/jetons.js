@@ -33,6 +33,7 @@ const DIMENSIONS = [
   'gap.between-blocks',
   'gap.between-components',
   'gap.between-groups',
+  'gap.section',
   'padding.component',
   'width.column',
   'width.page',
@@ -49,7 +50,7 @@ const DIMENSIONS = [
   'padding.tag',
 ];
 /** Styles de texte de la page. */
-const STYLES = ['typography.heading.1', 'typography.heading.3', 'typography.body.medium', 'typography.body.small', 'typography.label'];
+const STYLES = ['typography.display.medium', 'typography.heading.1', 'typography.heading.3', 'typography.body.medium', 'typography.body.small', 'typography.label'];
 
 /** Champ d'un style de texte → suffixe de sa variable, comme jetons.css. */
 const CHAMPS = /** @type {const} */ ([

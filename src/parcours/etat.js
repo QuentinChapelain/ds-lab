@@ -12,6 +12,10 @@ import { join, relative } from 'node:path';
 import { lireJson } from '../lib/fichiers.js';
 import { compterDecisions } from '../reduce/propose.js';
 import { RESOLVER } from '../tokens/resolver.js';
+import { detteDe } from './dette.js';
+
+/** La dette vue : écrit au clic sur « Passer à ta marque » (D78), dans les sorties. */
+export const DETTE_VUE = 'dette.json';
 
 /** Les pages validées à l'écran, par site (D77) : écrit au clic sur « Mesurer », dans les sorties. */
 export const PAGES_VALIDEES = 'pages.json';
@@ -37,9 +41,11 @@ function pagesValidees(sorties) {
  *   main: Main | null, action: string | null, commande: string | null, fait: string | null, lignes: string[],
  *   ecran: Ecran | null, sansEcran: string | null, ouvre: string, refus?: boolean, reportes: number }} Etape
  * @typedef {{ chiffres: string[], dernier: string, complet: boolean, manque: string[], humain: string[] }} Bilan
- * @typedef {{ versions: number | null, decisions: number | null, enAttente: number | null, reportes: number }} Chiffres  ce que citent les faits du moment
+ * @typedef {{ versions: number | null, valeurs: number | null, decisions: number | null, enAttente: number | null, reportes: number }} Chiffres  ce que citent les faits du moment
+ * @typedef {import('./dette.js').Dette & { site: Site, pages: string[], valeursHref: string | null, composantsHref: string, captures: string,
+ *   autres: { id: string, nom: string, href: string }[] }} Dette  la dette du premier site mesuré, au moment de la dette
  * @typedef {{ produit: string, sites: Site[], sousTitre: string | null, unSite: boolean, etapes: Etape[], temps: { nom: string, etat: EtatEtape, etapes: CleEtape[] }[],
- *   courante: Etape, moment: 'pages' | 'mesure' | 'ecran' | 'sans-ecran' | 'bilan', ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
+ *   courante: Etape, moment: 'pages' | 'mesure' | 'dette' | 'ecran' | 'sans-ecran' | 'bilan', dette: Dette | null, ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
  *   phrase: string | null, bilan: Bilan | null, chiffres: Chiffres, voisin: string | null, livraison: Livraison | null }} Etat
  * @typedef {{ pages: number, arrivees: number, total: number, manquantes: { titre: string, elements: number, cause: string | null }[] }} Livraison  la dernière vérification
  */
@@ -203,7 +209,7 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     main: 'outil',
     action: aMesurer ? (unSite ? 'lancer la mesure' : `lancer la mesure du site ${aMesurer.id}`) : null,
     commande: aMesurer
-      ? `npm run composants -- ${adresses(aMesurer)} --out ${c(join(sorties, 'composants', aMesurer.id))} --nom ${q(projet.produit)}${projet.signatures ? ` --signatures ${c(projet.signatures)}` : ''}${existsSync(decisionsComposants) ? ` --decisions ${c(decisionsComposants)}` : ''}`
+      ? `npm run composants -- ${adresses(aMesurer)} --out ${c(join(sorties, 'composants', aMesurer.id))} --nom ${q(projet.produit)}${projet.signatures ? ` --signatures ${c(projet.signatures)}` : ''}${existsSync(decisionsComposants) ? ` --decisions ${c(decisionsComposants)}` : ''} && npm run audit -- ${adresses(aMesurer)}${projet.sources ? ` --sources ${c(projet.sources)}` : ''} --out ${c(join(sorties, 'audit', aMesurer.id))}`
       : null,
     fait: unSite ? (constats[0].constat ? chiffres(constats[0].constat) : null) : `${nombre(aConstat.length, 'site mesuré', 'sites mesurés')} sur ${sites.length}`,
     lignes: constats.map((x) =>
@@ -374,6 +380,27 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     reportes: 0,
   };
 
+  // La dette (D78) : la mesure faite, l'écran attend le clic sur « Passer à ta marque » avant la marque.
+  const enDette = constat.faite && !etapeMarques.sortie && !existsSync(join(sorties, DETTE_VUE));
+  if (enDette) Object.assign(etapeMarques, { main: 'designer', action: 'regarder la dette, puis passer à la marque', commande: null });
+  /** @type {Etat['dette']} */
+  let dette = null;
+  if (enDette && premierEcran?.constat) {
+    const s = premierEcran.site;
+    const a = plusRecent(join(sorties, 'audit', s.id, s.hote));
+    const fa = a && join(a.chemin, 'audit.json');
+    const rapport = a && join(a.chemin, 'rapport.html');
+    const dossier = /** @type {string} */ (premierEcran.html).replace(/[\\/][^\\/]+$/, '');
+    dette = {
+      site: s,
+      pages: s.pages.map((p) => s.noms[p] ?? p),
+      ...detteDe({ constat: premierEcran.constat, audit: fa && existsSync(fa) ? lireJson(fa) : null, pages: s.pages.length }),
+      valeursHref: rapport && existsSync(rapport) ? href(rapport) : null,
+      composantsHref: href(/** @type {string} */ (premierEcran.html)),
+      captures: href(dossier),
+      autres: constats.filter((x) => x.site !== s && x.html).map((x) => ({ id: x.site.id, nom: x.site.nom ?? x.site.id, href: href(/** @type {string} */ (x.html)) })),
+    };
+  }
   const etapes = [site, constat, etapeMarques, etapeDecisions, livraison, suivi];
   const reportes = etapes.reduce((n, e) => n + e.reportes, 0);
   const i = etapes.findIndex((e) => !e.faite);
@@ -390,10 +417,10 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
   if (courante.ecran && courante.sortie) ecran = { ...courante.ecran, etape: courante.cle, precedente: false };
   else if (!courante.sortie && i > 0 && etapes[i - 1].ecran) ecran = { .../** @type {Ecran} */ (etapes[i - 1].ecran), etape: etapes[i - 1].cle, precedente: true };
   // Pendant la mesure, un écran d'attente (D77) : les pages sont validées, aucune n'est encore mesurée.
-  const moment = courante.cle === 'site' ? 'pages' : courante.cle === 'constat' && !constat.sortie ? 'mesure' : courante.cle === 'suivi' ? 'bilan' : ecran ? 'ecran' : 'sans-ecran';
+  const moment = courante.cle === 'site' ? 'pages' : courante.cle === 'constat' && !constat.sortie ? 'mesure' : courante.cle === 'marques' && enDette ? 'dette' : courante.cle === 'suivi' ? 'bilan' : ecran ? 'ecran' : 'sans-ecran';
   const refus = etapeMarques.refus && (ecran?.etape === 'marques' || (!ecran && courante.cle === 'marques'));
   const phrase =
-    moment === 'pages' || moment === 'mesure' || moment === 'bilan' ? null
+    moment === 'pages' || moment === 'mesure' || moment === 'dette' || moment === 'bilan' ? null
     : refus ? PHRASES.refus
     : ecran?.etape === 'constat' ? PHRASES.constat
     : ecran?.etape === 'marques' ? PHRASES.marque
@@ -439,11 +466,13 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     bilan,
     chiffres: {
       versions: aConstat.length ? aConstat.reduce((n, x) => n + (x.constat.chiffres?.versions ?? 0), 0) : null,
+      valeurs: dette?.valeurs?.total ?? null,
       decisions: table ? total : null,
       enAttente: table ? enAttente : null,
       reportes,
     },
     voisin: voisinDecisions,
+    dette,
     livraison: verdict
       ? {
           pages: verdict.pages?.length ?? 0,

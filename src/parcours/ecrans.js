@@ -8,7 +8,7 @@
  * 100 %, comme un module (D61). La page n'a pas de marque : l'anneau de focus prend le texte d'information, pas
  * border.focus, qui pointe sur la marque. Toute chaîne venue du projet ou de la saisie est échappée.
  */
-import { esc } from '../lib/format.js';
+import { esc, fr } from '../lib/format.js';
 import { variablesDeLaPage } from './jetons.js';
 
 /** @typedef {import('./etat.js').Etat} Etat @typedef {import('./etat.js').EtatEtape} EtatEtape */
@@ -80,11 +80,37 @@ button:focus-visible, input:focus-visible { outline: var(--border-width-focus) s
 .barre > div { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gap-between-blocks) var(--gap-between-components); max-width: var(--width-page); min-height: var(--height-control-medium); margin: 0 auto; padding: var(--gap-between-blocks) var(--padding-component); }
 .avance { display: flex; flex-direction: column; }
 progress { width: 100%; }
+.pastilles { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-blocks); }
+.pastilles li { padding: 0 var(--padding-tag); border: var(--border-width-default) solid var(--border-subtle); border-radius: var(--border-radius-full); background: var(--background-surface); ${style('body-small')} }
+.blocs { display: flex; flex-direction: column; gap: var(--gap-section); }
+.bloc { display: flex; flex-direction: column; gap: var(--gap-between-components); }
+.titre-bloc { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--gap-between-blocks) var(--gap-between-components); }
+.titre-bloc a, .autres a { color: var(--text-info); ${style('label')} }
+.fort { display: block; ${style('display-medium')} }
+.cartes { display: flex; flex-wrap: wrap; gap: var(--gap-between-components); }
+.carte { display: flex; flex: auto; flex-basis: var(--width-column); flex-direction: column; gap: var(--gap-between-blocks); min-width: 0; padding: var(--padding-component); border: var(--border-width-default) solid var(--border-subtle); border-radius: var(--border-radius-surface); background: var(--background-surface); }
+.carte h3 { display: flex; align-items: baseline; justify-content: space-between; gap: var(--gap-between-blocks); margin: 0; ${style('label')} }
+.carte h3 span { ${style('heading-3')} }
+.dessins { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--gap-between-blocks) var(--padding-tag); }
+.dessins li { display: flex; flex-direction: column; align-items: center; gap: var(--gap-within-component); }
+.dessins small { color: var(--text-secondary); }
+.dessins .hors small { color: var(--text-info); ${style('label')} }
+.nuancier { display: flex; flex-wrap: wrap; gap: var(--gap-within-component); }
+.nuancier rect { stroke: var(--border-subtle); }
+.tailles text { fill: var(--text-default); }
+.tailles .hors text { fill: var(--text-info); }
+.ecarts rect { fill: var(--background-inverse); }
+.ecarts .hors rect { fill: var(--text-info); }
+.rayons path { fill: var(--background-subtle); stroke: var(--text-default); }
+.versions { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--gap-between-components); }
+.versions li { display: flex; flex-direction: column; align-items: flex-start; gap: var(--gap-within-component); max-width: 100%; }
+.versions img { max-width: 100%; max-height: var(--avatar-size-large); width: auto; border: var(--border-width-default) solid var(--border-subtle); border-radius: var(--border-radius-control); background: var(--background-subtle); }
+.aussi { display: flex; flex-direction: column; gap: var(--gap-within-component); padding-left: var(--gap-between-groups); list-style: disc; }
 `;
 
 /**
  * Le gabarit d'un écran.
- * @param {{ titre: string, onglet: string, statut: { texte: string, neutre?: boolean }, phrase: string,
+ * @param {{ titre: string, onglet: string, statut: { texte: string, neutre?: boolean }, phrase: string, sousTete?: string,
  *   temps: { nom: string, etat: EtatEtape }[], corps: string, avance: [string, string], action?: string, rafraichir?: boolean }} o
  */
 function gabarit(o) {
@@ -103,7 +129,7 @@ ${blocJetons()}${CSS}</style>
 <body>
 <main>
 <ul class="temps" aria-label="Les quatre temps">${temps}</ul>
-<div class="tete"><div class="ligne"><h1>${esc(o.titre)}</h1><span class="statut${o.statut.neutre ? ' neutre' : ''}">${esc(o.statut.texte)}</span></div><p>${esc(o.phrase)}</p></div>
+<div class="tete"><div class="ligne"><h1>${esc(o.titre)}</h1><span class="statut${o.statut.neutre ? ' neutre' : ''}">${esc(o.statut.texte)}</span></div><p>${esc(o.phrase)}</p>${o.sousTete ?? ''}</div>
 ${o.corps}
 </main>
 <footer class="barre"><div><div class="avance"><strong>${esc(o.avance[0])}</strong><small>${esc(o.avance[1])}</small></div>${o.action ?? ''}</div></footer>
@@ -218,5 +244,107 @@ export function ecranDesPages(e, { sites, erreur = null }) {
 <div class="encart"><strong>Rien hors de cette liste n’est mesuré.</strong><small>Une page oubliée garde sa dette, sans que personne la voie.</small></div>`,
     avance: ['Mesurer · les pages', unSite ? 'Garde ou change la liste, puis lance la mesure.' : 'Garde ou change les listes, puis lance la mesure.'],
     action: `<form method="post" action="/pages/mesurer"><button type="submit" class="principal"${vide ? ' disabled' : ''}>${esc(libelle)}</button></form>`,
+  });
+}
+
+/** La valeur en px d'une longueur, ou null. @param {string} v */
+const px = (v) => (/^-?[\d.]+px$/.test(v) ? Number.parseFloat(v) : null);
+
+
+/** « 3 fois ». @param {number} n */
+const fois = (n) => `${n} fois`;
+
+/**
+ * Le dessin des valeurs d'une famille, en SVG : la valeur mesurée est une donnée du dessin (couleur, taille, largeur,
+ * rayon), jamais une valeur de style ; les couleurs du dessin viennent des jetons, par les classes.
+ * @param {import('./dette.js').Famille} f
+ */
+function dessin(f) {
+  const titre = (/** @type {import('./dette.js').Valeur} */ v) => `<title>${esc(`${v.valeur}, ${fois(v.fois)}`)}</title>`;
+  if (f.cle === 'colors') {
+    /** @param {typeof f.valeurs} l @param {string} nom */
+    const rang = (l, nom) =>
+      l.length
+        ? `<ul class="nuancier" aria-label="${esc(nom)}">${l.map((v) => `<li><svg width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="${esc(`${v.valeur}, ${fois(v.fois)}`)}">${titre(v)}<rect x="0.5" y="0.5" width="23" height="23" rx="4" fill="${esc(v.valeur)}"/></svg></li>`).join('')}</ul>`
+        : '';
+    const gris = f.valeurs.filter((v) => v.gris);
+    const autres = f.valeurs.filter((v) => !v.gris);
+    return rang(gris, `Les ${gris.length} gris`) + rang(autres, `Les ${autres.length} autres couleurs`);
+  }
+  /** @param {string} classe @param {(v: typeof f.valeurs[number]) => string} figure @param {(v: typeof f.valeurs[number]) => string} legende */
+  const liste = (classe, figure, legende) =>
+    `<ul class="dessins ${classe}">${f.valeurs.map((v) => `<li${v.hors ? ' class="hors"' : ''}>${figure(v)}<small>${esc(legende(v))}</small></li>`).join('')}</ul>`;
+  if (f.cle === 'fontSizes')
+    return liste(
+      'tailles',
+      (v) => {
+        const t = /** @type {number} */ (px(v.valeur));
+        return `<svg width="${Math.ceil(t * 1.4)}" height="${Math.ceil(t * 1.2)}" viewBox="0 0 ${Math.ceil(t * 1.4)} ${Math.ceil(t * 1.2)}" aria-hidden="true">${titre(v)}<text x="0" y="${t}" font-size="${t}" font-weight="600">Aa</text></svg>`;
+      },
+      (v) => fr(/** @type {number} */ (px(v.valeur)), { decimales: 2 }),
+    );
+  if (f.cle === 'spacing')
+    return liste(
+      'ecarts',
+      (v) => {
+        const l = /** @type {number} */ (px(v.valeur));
+        return `<svg width="${l}" height="24" viewBox="0 0 ${l} 24" aria-hidden="true">${titre(v)}<rect width="${l}" height="24" rx="2"/></svg>`;
+      },
+      (v) => fr(/** @type {number} */ (px(v.valeur)), { decimales: 2 }),
+    );
+  return liste(
+    'rayons',
+    (v) => {
+      // Un coin de 40 px : le rayon y est borné à la moitié, comme le ferait le navigateur.
+      const n = px(v.valeur);
+      const r = Math.min(20, n ?? (Number.parseFloat(v.valeur) / 100) * 40);
+      return `<svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">${titre(v)}<path d="M1 39 V${1 + r} A${r} ${r} 0 0 1 ${1 + r} 1 H39" stroke-width="2"/></svg>`;
+    },
+    (v) => (px(v.valeur) !== null ? fr(/** @type {number} */ (px(v.valeur)), { decimales: 2 }) : v.valeur.replace('%', ' %')),
+  );
+}
+
+/**
+ * La dette (D78) : à regarder, rien à décider. Les valeurs, puis les composants ; en bas, « Passer à ta marque ».
+ * @param {Etat} e
+ */
+export function ecranDeLaDette(e) {
+  const d = /** @type {NonNullable<Etat['dette']>} */ (e.dette);
+  const v = d.valeurs;
+  const valeurs = v
+    ? `<section class="bloc" aria-labelledby="t-valeurs"><div class="titre-bloc"><h2 id="t-valeurs">Les valeurs</h2>${d.valeursHref ? `<a href="${esc(d.valeursHref)}">Voir toutes les valeurs</a>` : ''}</div>
+<p><span class="fort">${v.total}</span>valeurs différentes affichées sur ces pages : couleurs, tailles de texte, espacements, arrondis.</p>
+<div class="cartes">
+${v.familles.map((f) => `<div class="carte"><h3>${esc(f.titre)} <span>${f.compte}</span></h3>${f.phrases.length ? `<p>${esc(f.phrases.join(' '))}</p>` : ''}${dessin(f)}</div>`).join('\n')}
+</div></section>`
+    : '';
+  const c = d.composants;
+  const composants = `<section class="bloc" aria-labelledby="t-composants"><div class="titre-bloc"><h2 id="t-composants">Les composants</h2><a href="${esc(d.composantsHref)}">Voir tous les composants</a></div>
+<p>${esc(c.phrase)}</p>
+<div class="cartes">
+${c.types
+  .map(
+    (t) =>
+      `<div class="carte"><h3>${esc(t.nom)} <span>${t.versions.length > 1 ? `${t.versions.length} versions` : '1 version'}</span></h3><p>${esc(t.phrases.join(' '))}</p><ul class="versions">${t.versions
+        .map((x) => `<li>${x.capture ? `<img src="${esc(`${d.captures}/${x.capture}`)}" alt="${esc(`${t.nom}, ${x.nom}`)}">` : ''}<small>${esc(`${x.nom}, ${fois(x.fois)}${x.sansStyle ? ', sans style' : ''}`)}</small></li>`)
+        .join('')}</ul></div>`,
+  )
+  .join('\n')}
+${c.aussi.length ? `<div class="carte"><h3>À regarder aussi</h3><ul class="aussi">${c.aussi.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
+</div></section>`;
+  const autres = d.autres.length
+    ? `<p class="autres">Les autres sites, à part pour l’instant : ${d.autres.map((x) => `<a href="${esc(x.href)}">${esc(x.nom)}</a>`).join(', ')}.</p>`
+    : '';
+  const n = d.pages.length;
+  return gabarit({
+    titre: `La dette de ${e.produit}`,
+    onglet: `La dette · ${e.produit}`,
+    statut: { texte: 'Rien à décider', neutre: true },
+    phrase: `${n > 1 ? `${n} pages mesurées` : '1 page mesurée'}${e.unSite ? '' : `, sur ${d.site.nom ?? d.site.id}`} :`,
+    sousTete: `<ul class="pastilles">${d.pages.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>`,
+    temps: e.temps,
+    corps: `<div class="blocs">\n${valeurs}\n${composants}\n${autres}</div>`,
+    avance: ['Mesurer · fait', 'Regarde la dette, puis passe à ta marque.'],
+    action: '<form method="post" action="/pages/dette"><button type="submit" class="principal">Passer à ta marque ›</button></form>',
   });
 }

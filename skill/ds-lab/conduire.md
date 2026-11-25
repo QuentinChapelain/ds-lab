@@ -75,6 +75,12 @@ Lancer depuis le clone `cd "$DS_LAB" && npm run parcours -- <chemin du projet> -
 
 Sous ses lignes, `parcours` écrit les faits du moment : ce qui vient d'être fait, le chiffre du moment, l'écran, ce qui vient ensuite, qui a la main, ce qui n'est pas arrivé, ce qui revient au développeur, les choix reportés, le temps écoulé. Ce sont des faits, pas des messages : l'IA les dit avec ses mots, dans la voix, sans les recopier. Sans fait nouveau, rien à dire : enchaîner.
 
+## La mesure et la dette
+
+- Au clic sur « Mesurer », l'écran de la mesure en cours paraît seul : lancer la mesure que donne `parcours`, sans rien dire de plus qu'une phrase (« je mesure tes pages »).
+- La mesure faite, l'écran passe seul à la dette. Une phrase et un chiffre, celui des faits, puis renvoyer à l'écran ; ne rien redire de ce qu'il montre.
+- Lancer en tâche de fond `npm run parcours -- <chemin du projet> --attendre` : il finit quand l'humain clique sur « Passer à ta marque ». Ne pas proposer la marque avant ce clic.
+
 ## La marque
 
 Quand les faits disent de lire la marque sur le site :

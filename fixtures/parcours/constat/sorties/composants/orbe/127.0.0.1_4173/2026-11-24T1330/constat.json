@@ -8,9 +8,221 @@
     "nonIdentifies": 39
   },
   "scores": {
+    "sourceUnique": {
+      "x": 19,
+      "y": 30
+    },
+    "accessibilite": {
+      "x": 25,
+      "y": 30,
+      "echecs": {
+        "nom": 0,
+        "clavier": 0,
+        "zone": 5
+      }
+    },
     "versionsAGarder": {
       "x": 0,
       "y": 3
+    },
+    "fiabilite": {
+      "x": 30,
+      "y": 69
+    },
+    "effort": 11
+  },
+  "types": [
+    {
+      "nom": "lien",
+      "fois": 18,
+      "versions": [
+        {
+          "nom": "lien / Sans style / a",
+          "nomCode": "a",
+          "origineCle": "nu",
+          "fois": 12,
+          "capture": "captures/p1-e1.png",
+          "apparences": [
+            {
+              "mesures": {
+                "hauteur": 24
+              }
+            },
+            {
+              "mesures": {
+                "hauteur": 24
+              }
+            },
+            {
+              "mesures": {
+                "hauteur": 31
+              }
+            }
+          ]
+        },
+        {
+          "nom": "lien / Fait maison / lien",
+          "nomCode": "lien",
+          "origineCle": "equipe",
+          "fois": 4,
+          "capture": "captures/p2-e9.png",
+          "apparences": [
+            {
+              "mesures": {
+                "hauteur": 21
+              }
+            }
+          ]
+        },
+        {
+          "nom": "lien / Fait maison / courante",
+          "nomCode": "courante",
+          "origineCle": "equipe",
+          "fois": 1,
+          "capture": "captures/p3-e10.png",
+          "apparences": [
+            {
+              "mesures": {
+                "hauteur": 31
+              }
+            }
+          ]
+        },
+        {
+          "nom": "lien / Fait maison / lien-discret",
+          "nomCode": "lien-discret",
+          "origineCle": "equipe",
+          "fois": 1,
+          "capture": "captures/p1-e4.png",
+          "apparences": [
+            {
+              "mesures": {
+                "hauteur": 16
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nom": "bouton avec texte",
+      "fois": 8,
+      "versions": [
+        {
+          "nom": "bouton avec texte / Fait maison / filtre",
+          "nomCode": "filtre",
+          "origineCle": "equipe",
+          "fois": 4,
+          "capture": "captures/p3-e5.png",
+          "apparences": [
+            {
+              "mesures": {
+                "hauteur": 33
+              }
+            },
+            {
+              "mesures": {
+                "hauteur": 33
+              }
+            }
+          ]
+        },
+        {
+          "nom": "bouton avec texte / Fait maison / action",
+          "nomCode": "action",
+          "origineCle": "equipe",
+          "fois": 1,
+          "capture": "captures/p3-e4.png",
+          "apparences": [
+            {
+              "mesures": {
+                "hauteur": 37
+              }
+            }
+          ]
+        },
+        {
+          "nom": "bouton avec texte / Fait maison / bouton",
+          "nomCode": "bouton",
+          "origineCle": "equipe",
+          "fois": 1,
+          "capture": "captures/p1-e5.png",
+          "apparences": [
+            {
+              "mesures": {
+                "hauteur": 48
+              }
+            }
+          ]
+        },
+        {
+          "nom": "bouton avec texte / Fait maison / bouton-principal",
+          "nomCode": "bouton-principal",
+          "origineCle": "equipe",
+          "fois": 1,
+          "capture": "captures/p2-e7.png",
+          "apparences": [
+            {
+              "mesures": {
+                "hauteur": 39
+              }
+            }
+          ]
+        },
+        {
+          "nom": "bouton avec texte / Fait maison / bouton-secondaire",
+          "nomCode": "bouton-secondaire",
+          "origineCle": "equipe",
+          "fois": 1,
+          "capture": "captures/p2-e8.png",
+          "apparences": [
+            {
+              "mesures": {
+                "hauteur": 39
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nom": "champ de texte",
+      "fois": 4,
+      "versions": [
+        {
+          "nom": "champ de texte / Fait maison / champ",
+          "nomCode": "champ",
+          "origineCle": "equipe",
+          "fois": 3,
+          "capture": "captures/p2-e4.png",
+          "apparences": [
+            {
+              "mesures": {
+                "hauteur": 39
+              }
+            }
+          ]
+        },
+        {
+          "nom": "champ de texte / Fait maison / recherche",
+          "nomCode": "recherche",
+          "origineCle": "equipe",
+          "fois": 1,
+          "capture": "captures/p3-e9.png",
+          "apparences": [
+            {
+              "mesures": {
+                "hauteur": 33
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nom": "fenêtre",
+      "fois": 0,
+      "versions": []
     }
-  }
+  ]
 }

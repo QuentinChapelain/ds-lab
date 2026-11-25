@@ -10,12 +10,17 @@
  *       sinon la raison en une phrase ; le reste du fichier intact ; la validation au clic sur « Mesurer » fait l'étape,
  *       et l'écran de la mesure en cours paraît (ce qui se passe, une barre de progression, rechargé seul) ;
  *   EC4 la commande : avant le projet, --servir sert le lancement ; les formulaires reviennent sur l'écran (303) ;
- *       --attendre finit quand l'humain lance la mesure.
+ *       --attendre finit quand l'humain lance la mesure ;
+ *   EC5 la dette (D78) : les pages mesurées nommées, le grand chiffre, quatre cartes de valeurs avec leur compte, leurs
+ *       phrases calculées et leurs dessins (SVG : la valeur mesurée est une donnée du dessin, jamais du style), les
+ *       composants par type avec leurs captures, « À regarder aussi », les deux liens, « Passer à ta marque » ; sans
+ *       audit, les composants seuls ; le mot « constat » ne se montre pas ;
+ *   EC6 « Passer à ta marque » : la dette vue, l'action de la marque reprend, --attendre finit.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { cpSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,7 +28,7 @@ import { lireProjet } from '../src/parcours/projet.js';
 import { calculerEtat } from '../src/parcours/etat.js';
 import { pageDuParcours } from '../src/parcours/page.js';
 import { ecranDeLancement, FIN_JETONS } from '../src/parcours/ecrans.js';
-import { ajouterPage, retirerPage, validerPages } from '../src/parcours/pages.js';
+import { ajouterPage, detteVue, retirerPage, validerPages } from '../src/parcours/pages.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const FIX = join(ROOT, 'fixtures', 'parcours');
@@ -178,4 +183,62 @@ test('EC4 la commande : le lancement avant le projet, les formulaires, --attendr
   } finally {
     s.p.kill();
   }
+});
+
+test('EC5 la dette : les valeurs comptées, dites et dessinées ; les composants par type ; rien à décider', () => {
+  const e = etat('constat');
+  assert.equal(e.moment, 'dette');
+  const h = pageDuParcours(e);
+  const t = texte(h);
+  for (const x of [
+    'La dette de Annuaire des cafés',
+    'Rien à décider',
+    '3 pages mesurées :',
+    'Les valeurs',
+    '74 valeurs différentes affichées sur ces pages',
+    'Couleurs 34',
+    'Dont 22 gris, et 17 presque identiques à une autre. Le code en écrit 42. Six autres viennent du contenu (images, pictogrammes) : mises de côté.',
+    'Tailles de texte 14',
+    'Cinq sont des valeurs à virgule, en bleu. Le code en écrit 14.',
+    'Espacements 17',
+    'Neuf sont hors d’une grille de 4 px, en bleu. Valeurs en pixels.',
+    'Arrondis 9',
+    'Trois façons d’écrire un rond : 50 %, 999 et 9999. Le code en écrit 9.',
+    '11 versions pour 3 types de composants, sur 30 éléments relevés. Aucun ne vient d’un framework.',
+    'Lien 4 versions',
+    '18 emplois sur 3 pages. Quatre hauteurs : 16, 21, 24 et 31 px. 12 n’ont aucun style.',
+    'Bouton avec texte 5 versions',
+    'À regarder aussi',
+    '39 blocs répétés que l’outil ne sait pas nommer : à trier plus tard.',
+    '5 éléments sur 30 ont une zone de clic de moins de 24 px.',
+    'Passer à ta marque ›',
+  ])
+    assert.ok(t.includes(x), x);
+  assert.match(h, /<a href="\/sorties\/audit\/orbe\/127\.0\.0\.1_4173\/2026-11-24T1330\/rapport\.html">Voir toutes les valeurs<\/a>/);
+  assert.match(h, /<a href="\/sorties\/composants\/orbe\/127\.0\.0\.1_4173\/2026-11-24T1330\/constat\.html">Voir tous les composants<\/a>/);
+  assert.equal(h.match(/<img src="\/sorties\/composants\/orbe\/127\.0\.0\.1_4173\/2026-11-24T1330\/captures\/p\d-e\d+\.png"/g)?.length, 11);
+  assert.match(h, /<rect x="0\.5" y="0\.5" width="23" height="23" rx="4" fill="#999999"\/>/);
+  assert.match(h, /<li class="hors"><svg [^>]*><title>10\.5px, 1 fois<\/title><text x="0" y="10\.5" font-size="10\.5"/);
+  assert.match(h, /<form method="post" action="\/pages\/dette"><button type="submit" class="principal">Passer à ta marque ›<\/button><\/form>/);
+  assert.doesNotMatch(t, /[Cc]onstat/);
+  assert.doesNotMatch(h, /<script|\sstyle="|http-equiv="refresh"/);
+  assert.deepEqual(enDur(h), []);
+  // Sans audit : les composants seuls, sans phrase ni chiffre inventés.
+  const d = copie('constat');
+  rmSync(join(d, 'sorties', 'audit'), { recursive: true });
+  const sans = pageDuParcours(calculerEtat(lireProjet(join(d, 'projet.json')), { base: d }));
+  assert.doesNotMatch(sans, /Les valeurs|Voir toutes les valeurs/);
+  assert.match(texte(sans), /Les composants/);
+});
+
+test('EC6 « Passer à ta marque » : la dette vue, la marque reprend son cours, --attendre finit', async () => {
+  const d = copie('constat');
+  const f = join(d, 'projet.json');
+  const w = lancerParcours([f, '--attendre']);
+  await new Promise((ok) => setTimeout(ok, 1500));
+  assert.equal(w.p.exitCode, null, '--attendre attend encore');
+  detteVue(f);
+  assert.equal(await w.fin(), 0);
+  const e = calculerEtat(lireProjet(f), { base: d });
+  assert.deepEqual([e.moment, e.courante.action], ['ecran', 'saisir la marque']);
 });

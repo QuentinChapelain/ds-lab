@@ -64,7 +64,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const FIX = join(ROOT, 'fixtures', 'parcours');
 const MOMENTS = ['lancement', 'pages', 'constat', 'marque', 'decisions', 'livraison', 'bilan', 'plusieurs'];
 /** Les moments de la page d'avant les écrans (D77) : tous, sauf les pages. */
-const PAGE = MOMENTS.filter((m) => m !== 'lancement' && m !== 'pages');
+const PAGE = MOMENTS.filter((m) => m !== 'lancement' && m !== 'pages' && m !== 'constat');
 /** @param {string} m */
 const etat = (m) => calculerEtat(lireProjet(join(FIX, m, 'projet.json')), { base: ROOT });
 /** @param {string} m */
@@ -81,6 +81,14 @@ const projetEcrit = (contenu) => {
   writeFileSync(join(d, 'projet.json'), typeof contenu === 'string' ? contenu : JSON.stringify(contenu));
   return join(d, 'projet.json');
 };
+/** Une copie où la dette a été vue (D78) : l'étape de la marque reprend son cours. @param {string} m */
+const vue = (m) => {
+  const d = copie(m);
+  writeFileSync(join(d, 'sorties', 'dette.json'), '{ "vue": true }\n');
+  return d;
+};
+/** L'état d'un dossier copié, commandes écrites depuis la racine. @param {string} d */
+const etatDe = (d) => calculerEtat(lireProjet(join(d, 'projet.json')), { base: d });
 const SITE = { id: 'orbe', url: 'http://127.0.0.1:4173', pages: ['/a.html'] };
 
 test('PC1 projet illisible : un message d’une ligne qui nomme la cause, sortie 2', () => {
@@ -144,19 +152,20 @@ test('PC2 l’état des huit projets, depuis leurs sorties', () => {
     ecran: null,
     phrase: null,
   });
+  // La mesure faite : la dette, à regarder ; la marque attend le clic sur « Passer à ta marque » (D78).
   assert.deepEqual(resume('constat'), {
     temps: ['faite', 'en cours', 'à venir', 'à venir'],
     courante: 'Décider · Marque',
-    main: 'outil',
-    action: 'saisir la marque',
-    moment: 'ecran',
+    main: 'designer',
+    action: 'regarder la dette, puis passer à la marque',
+    moment: 'dette',
     ecran: { href: '/sorties/composants/orbe/127.0.0.1_4173/2026-11-24T1330/constat.html', precedente: true },
-    phrase: 'On mesure ce qui s’affiche vraiment, pas ce que le code contient.',
+    phrase: null,
   });
-  assert.equal(
-    etat('constat').courante.commande,
-    'npm run saisie -- fixtures/parcours/constat/marques/orbe/entree.json --verdict fixtures/parcours/constat/sorties/saisies/orbe.json && node src/cli/planche.js --marque fixtures/parcours/constat/marques/orbe',
-  );
+  assert.equal(etat('constat').courante.commande, null);
+  const v = etatDe(vue('constat'));
+  assert.deepEqual([v.courante.main, v.courante.action, v.moment, v.phrase], ['outil', 'saisir la marque', 'ecran', 'On mesure ce qui s’affiche vraiment, pas ce que le code contient.']);
+  assert.match(String(v.courante.commande), /^npm run saisie -- marques\/orbe\/entree\.json --verdict sorties\/saisies\/orbe\.json && node src\/cli\/planche\.js --marque marques\/orbe$/);
   assert.deepEqual(etat('constat').etapes[1].lignes, ['30 éléments, 3 types, 11 versions ; versions choisies : 0 sur 3']);
   assert.deepEqual(resume('marque'), {
     temps: ['faite', 'en cours', 'à venir', 'à venir'],
@@ -311,7 +320,7 @@ test('PC5 la page : quatre temps, un moment de 60 mots au plus hors du cadre, un
   const p = pageDuParcours(etat('plusieurs'));
   assert.match(p, /<iframe src="\/marques\/orbe\/roles\.html" title="Planche des rôles : Orbe Café"><\/iframe>/);
   assert.match(p, /<a href="\/marques\/orbe\/roles\.html">Ouvrir seul<\/a>/);
-  const c = pageDuParcours(etat('constat'));
+  const c = pageDuParcours(etatDe(vue('constat')));
   assert.match(c, /Fait : Mesure\. Ensuite : Marque, saisir la marque\./);
   const bi = pageDuParcours(etat('bilan'));
   assert.ok(bi.includes('La couche visuelle tient ses seuils. Voici ce qui reste à faire vérifier par un humain.'));
@@ -506,10 +515,20 @@ test('PC17 les faits de chaque état : une ligne par fait, sans guillemets ni no
   assert.deepEqual(faits(join(FIX, 'pages')), [
     tete,
     '  Écran : les pages à mesurer',
-    '  Ensuite : dire en une phrase les pages retenues, puis attendre le clic sur Mesurer (parcours --attendre, en tâche de fond)',
+    '  Ensuite : dire en une phrase combien de pages sont retenues, sans les nommer, puis attendre le clic sur Mesurer (parcours --attendre, en tâche de fond)',
     '  Main : l’humain ; l’accompagner, il décide',
   ]);
   assert.deepEqual(faits(join(FIX, 'constat')), [
+    tete,
+    '  Fait : la mesure des pages',
+    '  Chiffre : 74 valeurs différentes affichées',
+    '  Écran : la dette',
+    '  Ensuite : une phrase et ce chiffre, renvoyer à l’écran, puis attendre le clic sur Passer à ta marque (parcours --attendre, en tâche de fond) ; ne pas proposer la marque avant',
+    '  Main : l’humain ; l’accompagner, il décide',
+    '  Reporté : 3 choix',
+    '  Durée : 0 min depuis la première mesure, pauses comprises',
+  ]);
+  assert.deepEqual(faits(vue('constat')), [
     tete,
     '  Fait : la mesure des pages',
     '  Chiffre : 11 versions de composants',
@@ -534,7 +553,7 @@ test('PC17 les faits de chaque état : une ligne par fait, sans guillemets ni no
     '  Ensuite : dire ce qui ne va pas avec les mots de l’humain, proposer une réparation, corriger l’entrée après son accord',
   ]);
   // Sans entrée de marque : la marque se lit sur le site, et l'IA écrit l'entrée.
-  const c = copie('constat');
+  const c = vue('constat');
   const p = JSON.parse(readFileSync(join(c, 'projet.json'), 'utf8'));
   delete p.sites[0].brand;
   writeFileSync(join(c, 'projet.json'), JSON.stringify(p));
