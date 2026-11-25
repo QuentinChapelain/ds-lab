@@ -17,7 +17,7 @@
  *       audit, les composants seuls ; le mot « constat » ne se montre pas ;
  *   EC6 « Passer à ta marque » : la dette vue, l'action de la marque reprend, --attendre finit ;
  *   EC7 la marque (D80), lue dans la mesure par la règle : la primaire colore le plus d'éléments cliquables, l'accent est
- *       la couleur la plus employée d'une autre teinte, la troisième passe aux gris ; chaque couleur dit son code, d'où
+ *       la couleur la plus employée d'une autre teinte, la troisième va sur l'échelle de la palette qui a sa teinte ; chaque couleur dit son code, d'où
  *       elle vient (« lue sur n éléments »), ses douze pas, son bouton ou son aplat et le verdict ; la police des titres ;
  *       « Confirmer la marque » ;
  *   EC8 confirmer : l'entrée écrite et nommée dans le projet, la main à l'outil, --attendre finit ; une marque refusée
@@ -287,7 +287,7 @@ test('EC7 la marque, lue dans la mesure : deux couleurs et la police, d’où el
     'Ta couleur exacte est sur le bouton, avec un texte blanc. C’est le pas 9, encadré.',
     'Accent #f0c987 Lue sur 6 éléments de tes pages. Facultatif.',
     'Ta couleur exacte est sur les aplats, avec un texte foncé.',
-    '#d0563f, lue sur 2 éléments. Une marque garde deux couleurs : celle-ci passera aux gris.',
+    '#d0563f, lue sur 2 éléments. Une marque garde deux couleurs : celle-ci ira sur red, l’échelle de la palette qui a sa teinte.',
     'Police des titres Orbe Sans Lue sur 17 titres de tes pages.',
     'Marque acceptée',
     'Confirmer la marque ›',

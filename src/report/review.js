@@ -7,6 +7,7 @@
  * Toute chaîne venue de la page auditée est échappée.
  */
 import { fr, esc } from '../lib/format.js';
+import { nomAffiche } from '../lib/echelles.js';
 import { ALL_CLASSES, OUT, rowKey, isOut, decisionFor, retenue, APPLIED, WHERE_TO_FIX, marginRow, M_REASONS, nearestOf, tieOf } from '../reduce/propose.js';
 
 /** @param {string} v */
@@ -72,7 +73,7 @@ const D2 = { decimales: 2 };
 /** Nom de jeton d'un pas de dimension (les couleurs gardent le nom de la valise). */
 const TOKEN_PREFIX = /** @type {Record<string, string>} */ ({ spacing: 'space', radii: 'radius', fontSizes: 'font-size' });
 /** Nom du pas d'une version, « terre-9 » ou « space.8 ». @param {string} family @param {{ value: string, name?: string }} c */
-const stepName = (family, c) => c.name ?? (num(c.value) !== null && TOKEN_PREFIX[family] ? `${TOKEN_PREFIX[family]}.${num(c.value)}` : '');
+const stepName = (family, c) => (c.name ? nomAffiche(c.name) : null) ?? (num(c.value) !== null && TOKEN_PREFIX[family] ? `${TOKEN_PREFIX[family]}.${num(c.value)}` : '');
 /** @param {number} n @param {number} d */
 const pct = (n, d) => `${((100 * n) / d).toFixed(3)}%`;
 /** Plus petit cadre affiché sans agrandissement (R-8) : en deçà, l'image est montrée à 2×. */
@@ -196,7 +197,12 @@ function portee(r) {
  * @param {string} family @param {any} r
  */
 function decisionCard(family, r) {
-  const versions = r.capture?.versions ?? [{ label: 'actuelle', value: r.old }, ...r.candidates.map((/** @type {any} */ c, /** @type {number} */ i) => ({ label: `candidat ${i + 1}`, value: c.value, name: c.name }))];
+  // J1 : un candidat sous le seuil de contraste n'est pas proposé ; les vignettes des autres éléments suivent les versions gardées.
+  const sousLeSeuil = new Set((r.candidates ?? []).filter((/** @type {any} */ c) => c.fails).map((/** @type {any} */ c) => c.value));
+  /** @param {any} v @param {number} i */
+  const gardee = (v, i) => i === 0 || !sousLeSeuil.has(v.value);
+  const toutes = r.capture?.versions ?? [{ label: 'actuelle', value: r.old }, ...r.candidates.map((/** @type {any} */ c, /** @type {number} */ i) => ({ label: `candidat ${i + 1}`, value: c.value, name: c.name }))];
+  const versions = toutes.filter(gardee);
   const nearest = nearestOf(r);
   /** @param {{ delta: number }} c */
   const gapOf = (c) => (family === 'colors' ? `écart ΔE ${fr(c.delta, D2)}` : `écart ${fr(c.delta, D2)} px`);
@@ -219,12 +225,10 @@ function decisionCard(family, r) {
               ? `<small class="ecart">${esc(gapOf(partnerC))}</small>`
               : '';
       const ctr = v.contrast ? contrastLine(r.usage, v.contrast) : '';
-      // J1 : candidat qui échoue au contraste alors que l'actuelle passe : grisé, avec sa raison,
-      // toujours cliquable ; le grisé des marges (C7 à C10) ne le touche pas (data-contraste). J2 : pas hors tranche.
+      // J2 : pas hors tranche.
       const c = i === 0 ? null : (r.candidates ?? []).find((/** @type {any} */ x) => x.value === v.value);
-      const fails = c?.fails ? `<small class="raison-contraste">${fr(c.fails.ratio, D2)} sous le seuil de ${fr(c.fails.threshold, D2)}, alors que l’actuelle passe</small>` : '';
       const out = c?.outOfSlice ? '<small>hors tranche</small>' : '';
-      return `<button type="button" class="v${c?.fails ? ' grise' : ''}" data-v="${i}" data-value="${esc(v.value)}" data-court="${esc(short(family, v.value))}"${c?.fails ? ' data-contraste' : ''} aria-pressed="${i === 0}">${glyph(family, v.value)}<span class="nom"><span>${esc(name)}</span>${note}${out}${ctr}${fails}</span></button>`;
+      return `<button type="button" class="v" data-v="${i}" data-value="${esc(v.value)}" data-court="${esc(short(family, v.value))}" aria-pressed="${i === 0}">${glyph(family, v.value)}<span class="nom"><span>${esc(name)}</span>${note}${out}${ctr}</span></button>`;
     })
     .join('');
   const shot0 = versions[0].shot;
@@ -244,13 +248,15 @@ function decisionCard(family, r) {
         .map(
           (/** @type {any} */ o) =>
             `<figure class="vig-bloc" style="width:${Math.min(o.clip.width, THUMB_MAX)}px"><div class="vig" style="width:${Math.min(o.clip.width, THUMB_MAX)}px;aspect-ratio:${o.clip.width} / ${o.clip.height}">${o.versions
+              .filter((/** @type {any} */ _v, /** @type {number} */ i) => gardee(toutes[i] ?? {}, i))
               .map((/** @type {any} */ v, /** @type {number} */ i) => `<div class="ver" data-v="${i}"${i ? ' hidden' : ''}>${img(v.shot.png)}${zones(v.shot, v.space ?? [], { end: true })}</div>`)
               .join('')}</div>${absorbedNotes(o.versions)}</figure>`,
         )
         .join('')}${more > 0 ? `<span class="encore">et ${more} ${more === 1 ? 'autre' : 'autres'}</span>` : ''}</div>`
     : '';
   // J2 : aucun pas de la tranche ne garde le contraste.
-  const hole = r.hole ? `<p class="trou">la cible ne couvre pas ce cas : aucun pas ${esc(r.hole.slice)} de ${esc(r.hole.scale)} ne garde le contraste de l’actuelle ; les pas de ${esc(r.hole.scale)} hors tranche qui passent sont proposés</p>` : '';
+  const echelle = r.hole ? nomAffiche(r.hole.scale) : '';
+  const hole = r.hole ? `<p class="trou">la cible ne couvre pas ce cas : aucun pas ${esc(r.hole.slice)} de ${esc(echelle)} n’atteint le seuil de contraste ; les pas de ${esc(echelle)} hors tranche qui l’atteignent sont proposés</p>` : '';
   return `${hole}<div class="versions" role="group" aria-label="Versions">${buttons}</div>
   ${view}${notes}${thumbs}
   <div class="trancher"><button type="button" class="retenir">Choisir cette version</button></div>`;
@@ -265,10 +271,12 @@ export function plainReason(reason) {
   const rule = /\(([RM]\d+)\)\s*$/.exec(reason)?.[1] ?? null;
   /** @type {[RegExp, (m: RegExpExecArray) => string][]} */
   const RULES = [
-    [/^ΔE ([\d.]+) à la valeur la plus proche de la valise \((.+)\) : aucune échelle/, (m) => `aucune couleur de la valise n’en est assez proche (la plus proche, ${m[2]}, est à ΔE ${fr(Number(m[1]))}) : la valeur est laissée telle quelle`],
+    [/^ΔE ([\d.]+) à la valeur la plus proche de la valise \((.+)\) : aucune échelle/, (m) => `aucune couleur de la valise n’en est assez proche (la plus proche, ${nomAffiche(m[2])}, est à ΔE ${fr(Number(m[1]))}) : la valeur est laissée telle quelle`],
+    [/^aucune échelle de la marque n’a cette teinte : l’échelle (\S+) de la palette l’a/, (m) => `aucune couleur de ta marque n’a cette teinte : elle va sur ${nomAffiche(m[1])}, l’échelle de la palette qui l’a`],
+    [/^aucune échelle de la palette n’a cette teinte/, () => `aucune échelle de la palette n’a cette teinte : elle va sur ${nomAffiche('neutre')}`],
     [/^fond plus sombre que le pas 10/, () => 'ce fond est plus sombre que tous les fonds de la valise : il est laissé tel quel'],
     [/^texte posé sur un fond sombre/, () => 'ce texte est posé sur un fond sombre que la valise ne couvre pas : sa couleur est à choisir à l’œil'],
-    [/^à égale distance de (\S+) et (\S+)/, (m) => `cette valeur est à égale distance de ${m[1]} et de ${m[2]} : l’outil ne choisit pas, à toi de trancher`],
+    [/^à égale distance de (\S+) et (\S+)/, (m) => `cette valeur est à égale distance de ${nomAffiche(m[1])} et de ${nomAffiche(m[2])} : l’outil ne choisit pas, à toi de trancher`],
     [/^la paire passe avant et échoue après/, () => 'le contraste suffit aujourd’hui, mais ne suffirait plus avec la valeur la plus proche'],
     // Le seuil est celui que cite le motif (R9), quel qu'il soit.
     [/^texte sous ([\d,]+):1 avant, au seuil après/, (m) => `ce texte n’était pas assez lisible (contraste sous ${m[1]}:1) ; la valeur proposée le rend lisible`],
@@ -295,16 +303,16 @@ export function plainReason(reason) {
 function brandNote(r) {
   /** @type {string[]} */
   const lines = [];
-  if (r.reason === M_REASONS.M5) lines.push(`Couleur de marque : la valeur la plus proche lisible sur tous ses fonds (${r.name}, ${r.new}) s’en écarte de ΔE ${fr(r.delta, D2)}. À choisir.`);
-  if (r.reason === M_REASONS.M4) lines.push(`Échelle de statut réservée aux vrais états : ${r.name ? `${r.name.replace(/-\d+$/, '')} ` : ''}ne vaut ici pour aucun champ invalide, alerte ou message relié. À choisir.`);
+  if (r.reason === M_REASONS.M5) lines.push(`Couleur de marque : la valeur la plus proche lisible sur tous ses fonds (${nomAffiche(r.name)}, ${r.new}) s’en écarte de ΔE ${fr(r.delta, D2)}. À choisir.`);
+  if (r.reason === M_REASONS.M4) lines.push(`Échelle de statut réservée aux vrais états : ${r.name ? `${nomAffiche(r.name.replace(/-\d+$/, ''))} ` : ''}ne vaut ici pour aucun champ invalide, alerte ou message relié. À choisir.`);
   for (const a of r.alternatives ?? []) {
-    const moves = a.backgrounds.map((/** @type {any} */ b) => `le fond ${b.from} passe à ${b.name} (${b.to})`).join(' et ');
+    const moves = a.backgrounds.map((/** @type {any} */ b) => `le fond ${b.from} passe à ${nomAffiche(b.name)} (${b.to})`).join(' et ');
     const n = a.exceptions.reduce((/** @type {number} */ t, /** @type {any} */ x) => t + x.elements, 0);
     const where = a.exceptions
       .map((/** @type {any} */ x) => `${a.exceptions.length > 1 ? `${x.elements} ` : ''}sur le fond ${x.background}, page ${x.pages.join(', ')} (${x.selectors.join(', ')})`)
       .join(' ; ');
     lines.push(
-      `Seconde version : ${a.name} (${a.new}), plus proche de la couleur d’origine, lisible${moves ? ` si ${moves}` : ''}${n ? `${moves ? ',' : ''} partout sauf ${n} ${n === 1 ? 'élément' : 'éléments'} en exception : ${where}. Aucun fond proche (ΔE ≤ 5) ne les rend lisibles : ils gardent ${r.name} (${r.new}), et la consigne les met à part` : ''}.`,
+      `Seconde version : ${nomAffiche(a.name)} (${a.new}), plus proche de la couleur d’origine, lisible${moves ? ` si ${moves}` : ''}${n ? `${moves ? ',' : ''} partout sauf ${n} ${n === 1 ? 'élément' : 'éléments'} en exception : ${where}. Aucun fond proche (ΔE ≤ 5) ne les rend lisibles : ils gardent ${nomAffiche(r.name)} (${r.new}), et la consigne les met à part` : ''}.`,
     );
   }
   return lines.length ? `<p class="marque">${lines.map((l) => `<span>${esc(l)}</span>`).join('')}</p>` : '';
@@ -469,7 +477,7 @@ function pleinCard(g, pageIndex = /** @type {Map<string, number>} */ (new Map())
       // « Garder le texte actuel » : le fond, lui, passe au pas 9 quand un fond du plein n'y est pas déjà.
       const keep = v.choice === 'garder';
       const name = keep ? 'Garder le texte actuel' : v.label;
-      const moves = keep && g.rows.some((/** @type {any} */ r) => r.old !== v.bg) ? ` ; le fond passe au pas 9 (${g.scale}-9)` : '';
+      const moves = keep && g.rows.some((/** @type {any} */ r) => r.old !== v.bg) ? ` ; le fond passe au pas 9 (${nomAffiche(g.scale)}-9)` : '';
       return `<button type="button" class="v" data-v="${i}" data-value="${esc(v.choice)}" data-court="${esc(name)}" aria-pressed="${i === 0}">${sw}<span class="nom"><span>${esc(name)}</span><small>${esc(v.text)} sur ${esc(v.bg)}${esc(moves)}</small><small>${fr(v.ratio)} · ${pass}</small></span></button>`;
     })
     .join('');
@@ -484,8 +492,8 @@ function pleinCard(g, pageIndex = /** @type {Map<string, number>} */ (new Map())
   const rows = g.rows.map((/** @type {any} */ r) => `${r.id} (${r.old})`).join(', ');
   const els = g.elements.map((/** @type {any} */ e) => `<li><code>${esc(e.selector)}</code> ${esc(e.text)} <i>fond ${esc(e.bg)}, ${esc(e.page)}</i></li>`).join('');
   return `<article class="row decision a-trancher plein" data-key="${esc(g.key)}" tabindex="0"${anchorOf(g.capture, pageIndex)}>
-  <p class="titre"><b class="id">${esc(g.id)}</b> ${esc(g.title)}<span class="choix">Pas encore choisie</span></p>
-  <p class="portee">Ce choix s’applique à ${n} ${n === 1 ? 'élément' : 'éléments'} : tous les textes posés sur un plein ${esc(g.scale)}, y compris ceux dont le fond est déjà sur la cible. Les lignes de fond ${esc(rows)} suivent ce choix.</p>
+  <p class="titre"><b class="id">${esc(g.id)}</b> ${esc(g.title === `Texte sur plein ${g.scale}` ? `Texte sur plein ${nomAffiche(g.scale)}` : g.title)}<span class="choix">Pas encore choisie</span></p>
+  <p class="portee">Ce choix s’applique à ${n} ${n === 1 ? 'élément' : 'éléments'} : tous les textes posés sur un plein ${esc(nomAffiche(g.scale))}, y compris ceux dont le fond est déjà sur la cible. Les lignes de fond ${esc(rows)} suivent ce choix.</p>
   <div class="versions" role="group" aria-label="Versions">${buttons}</div>
   ${view}${captureNotes(g.capture, shots)}
   <div class="trancher"><button type="button" class="retenir">Choisir cette version</button></div>
@@ -576,7 +584,7 @@ export function renderReview(table, pages, meta) {
             // D21 : une décision écrite sur une ligne qui n'est pas à trancher est la valeur montrée et exportée.
             const w = ecrite(meta.decisions, family, r);
             const vers = w !== undefined ? w : r.new;
-            const nom = vers === r.new ? r.name : null;
+            const nom = vers === r.new && r.name ? nomAffiche(r.name) : null;
             const arrow = cls === 'décision' ? '' : vers && vers !== r.old ? `<b class="arrow">→</b>${glyph(family, vers)}<code>${esc(vers)}</code>${nom ? ` <i>${esc(nom)}</i>` : ''}` : nom ? ` <i>${esc(nom)}</i>` : '';
             const d = decisionFor(meta.decisions, family, r);
             const decidee = w !== undefined && typeof d === 'string' ? ` data-decidee="${esc(d)}"` : '';
@@ -713,7 +721,6 @@ ${pleinCards}${byClass}
   .encore { font-size:13px; color:var(--soft); padding-bottom:4px; }
   .vig-bloc { margin:0; max-width:100%; display:flex; flex-direction:column; gap:4px; }
   .absorbe { margin:4px 0 0; font-size:12px; line-height:1.35; color:#7a3a00; } .absorbe[hidden] { display:none; }
-  .raison-contraste { color:#7a3a00; }
   .trou { margin:6px 0; font-size:13px; line-height:1.35; color:#7a3a00; }
   .sans-capture, .sans-effet { margin:6px 0 0; font-size:12px; line-height:1.35; color:#4a4f59; font-style:italic; }
   .trancher { display:flex; align-items:center; gap:10px; margin-top:10px; }
@@ -891,7 +898,6 @@ ${full || '<p class="lede">Aucune capture de page.</p>'}
       if (!row.classList.contains('decision')) return;
       var m = marks[row.getAttribute('data-key')] || {};
       versionsOf(row).forEach(function (b) {
-        if (b.hasAttribute('data-contraste')) return; // J1 : grisé de contraste, fixe
         var why = m[b.getAttribute('data-value')];
         var old = b.querySelector('.raison'); if (old) old.remove();
         b.classList.toggle('grise', !!why && b.getAttribute('data-v') !== '0');

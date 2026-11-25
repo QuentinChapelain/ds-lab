@@ -87,7 +87,7 @@ Sous ses lignes, `parcours` écrit les faits du moment : ce qui vient d'être fa
 
 Après le clic sur « Passer à ta marque », l'écran passe seul à la marque : ne rien ouvrir d'autre, ni la page des composants, ni le site.
 
-- L'écran montre la marque lue dans la mesure, par une règle, la même à chaque partie : la primaire colore le plus d'éléments cliquables ; l'accent est la couleur la plus employée d'une autre teinte ; une troisième couleur passe aux gris. Il dit d'où vient chaque couleur et ce que l'outil en fait.
+- L'écran montre la marque lue dans la mesure, par une règle, la même à chaque partie : la primaire colore le plus d'éléments cliquables ; l'accent est la couleur la plus employée d'une autre teinte ; une troisième couleur va sur l'échelle de la palette qui a sa teinte (red, green), sinon aux gris. Il dit d'où vient chaque couleur et ce que l'outil en fait.
 - Le chat dit une phrase : la marque est lue sur les pages, elle est à droite, on peut la changer, puis la confirmer. Ni liste, ni code de couleur dans le chat : le code est sur l'écran. Ne pas demander « on part là-dessus ? » : le clic sur « Confirmer la marque » vaut accord.
 - Lancer en tâche de fond `npm run parcours -- <chemin du projet> --attendre` : il finit au clic sur « Confirmer la marque ». L'écran a alors écrit l'entrée de la marque ; l'IA enchaîne la commande que donne `parcours`, sans le dire. Pendant ce temps, l'écran d'attente se recharge seul.
 - Une marque refusée se dit sur l'écran, sous la couleur en cause, avec la réparation ; elle ne se confirme pas. Dans le chat, une phrase au plus, avec les mots de l'humain, jamais le motif de l'outil.

@@ -3,14 +3,18 @@
  * La marque d'un site, lue dans la mesure et montrée avant d'être confirmée (D80). Une règle, la même à chaque partie :
  *   la primaire est la couleur non grise qui colore le plus d'éléments cliquables (fonds de bouton, textes de lien) ;
  *   l'accent, la couleur non grise la plus employée, d'une autre teinte que la primaire ;
- *   la troisième, la suivante, d'une teinte encore différente : une marque garde deux couleurs, elle passera aux gris ;
+ *   la troisième, la suivante, d'une teinte encore différente : une marque garde deux couleurs ; elle ira sur l'échelle
+ *   de la palette qui a sa teinte (le rouge, le vert), sinon aux gris (M8) ;
  *   la police des titres, la famille la plus portée par les titres.
  * À égalité, la valeur la plus petite dans l'ordre du code. L'aperçu passe par la saisie, sans rien écrire : les douze
  * pas, le bouton, l'aplat et le verdict sont ceux que la saisie écrira.
  */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { converter } from 'culori';
 import { isGrey } from '../brand/brand.js';
 import { saisir } from '../tokens/saisie.js';
+import { COMMUN } from '../tokens/resolver.js';
 
 const toOklch = converter('oklch');
 
@@ -22,6 +26,18 @@ const memeTeinte = (a, b) => {
   const d = Math.abs((toOklch(a)?.h ?? 0) - (toOklch(b)?.h ?? 0)) % 360;
   return Math.min(d, 360 - d) <= AUTRE_TEINTE_DEG;
 };
+
+/** Les échelles de la palette commune qu'une couleur du site peut rejoindre, chacune par son pas 9 (M8, `src/tokens/cible.js`). */
+const PALETTE = (() => {
+  const color = JSON.parse(readFileSync(join(COMMUN, 'primitives.tokens.json'), 'utf8')).color;
+  return ['error', 'success'].map((nom) => ({ nom, hex: String(color[nom]['9'].$value.hex).toLowerCase() }));
+})();
+
+/**
+ * L'échelle de la palette où ira une troisième couleur, celle qui a sa teinte ; null : elle ira aux gris (M8).
+ * @param {string} hex
+ */
+export const echelleDeLaTroisieme = (hex) => PALETTE.find((p) => memeTeinte(hex, p.hex))?.nom ?? null;
 
 /**
  * @typedef {{ hex: string, elements: number, cliquables: number }} Relevee  une couleur relevée sur les pages

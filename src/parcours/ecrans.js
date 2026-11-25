@@ -11,6 +11,8 @@
  */
 import { esc, fr } from '../lib/format.js';
 import { variablesDeLaPage } from './jetons.js';
+import { echelleDeLaTroisieme } from './marque.js';
+import { nomAffiche } from '../lib/echelles.js';
 
 /** @typedef {import('./etat.js').Etat} Etat @typedef {import('./etat.js').EtatEtape} EtatEtape */
 /** @typedef {{ site: string, message: string, saisie: string }} ErreurAjout  le refus d'une page ajoutée */
@@ -441,8 +443,9 @@ export function ecranDeLaMarque(e, { erreur = null } = {}) {
   const { choix, lecture, apercu } = m;
   const relevee = (/** @type {string | null} */ h) => lecture.relevees.find((r) => r.hex === h);
   const motifs = (/** @type {string} */ b) => apercu.motifs.filter((x) => x.bloc === b).map((x) => x.texte);
+  const ira = choix.troisieme ? echelleDeLaTroisieme(choix.troisieme) : null;
   const troisieme = choix.troisieme
-    ? `<div class="couleur">${pastille(choix.troisieme, 24)}<small>${esc(`${choix.troisieme}, lue sur ${relevee(choix.troisieme)?.elements ?? 0} éléments. Une marque garde deux couleurs : celle-ci passera aux gris.`)}</small><form method="post" action="/pages/marque/echanger"><button type="submit" class="retirer">Échanger avec l’accent</button></form></div>`
+    ? `<div class="couleur">${pastille(choix.troisieme, 24)}<small>${esc(`${choix.troisieme}, lue sur ${relevee(choix.troisieme)?.elements ?? 0} éléments. Une marque garde deux couleurs : ${ira ? `celle-ci ira sur ${nomAffiche(ira)}, l’échelle de la palette qui a sa teinte.` : 'celle-ci passera aux gris.'}`)}</small><form method="post" action="/pages/marque/echanger"><button type="submit" class="retirer">Échanger avec l’accent</button></form></div>`
     : '';
   const police = choix.police
     ? `<div class="carte"><h3>Police des titres</h3><div class="couleur"><code>${esc(choix.police[0])}</code><small>${esc(`Lue sur ${lecture.titres} titres de tes pages.`)}</small></div>

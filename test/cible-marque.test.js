@@ -6,8 +6,8 @@
  *       cible donnée ; les autres teintes vont au neutre ;
  *   CB2 chaque couleur de la cible est un jeton de la marque ;
  *   CB3 --brand-colors se lit, et demande --tokens : sans lui, une panne avant le navigateur ;
- *   CB4 M8 ne compare qu'aux échelles de la marque : une couleur qui a la teinte de l'erreur, sans échelle de la marque
- *       à sa teinte, va au neutre.
+ *   CB4 M8 : une couleur qui a la teinte de l'erreur, sans échelle de la marque à sa teinte, va sur l'échelle de la
+ *       palette qui l'a (le rouge de l'erreur) ; une couleur sans teinte dans la palette va au neutre.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -48,10 +48,13 @@ test('CB3 --brand-colors se lit et demande --tokens', async () => {
   await assert.rejects(runReduce({ addresses: ['http://127.0.0.1:9/'], targetPath: BASE_CHEMIN, brandColors: true }), /--brand-colors demande --tokens/);
 });
 
-test('CB4 M8 ne compare qu’aux échelles de la marque : la teinte de l’erreur va au neutre', async () => {
-  const rouge = '#d0563f';
-  const rendered = { usages: { colors: { [rouge]: { fond: { count: 2, elements: 2, properties: ['background-color'], selectors: ['.etiquette'] } } }, pairs: [], radii: {}, spacing: {} } };
+test('CB4 M8 : la teinte de l’erreur va sur son échelle de la palette, une teinte absente de la palette au neutre', async () => {
+  // #d0563f, rouge (teinte OKLCH 33°, l'erreur à 25°) ; #1a9aa0, bleu-vert (200°) : ni la primaire (300°), ni l'accent,
+  // ni l'erreur, ni le succès (159°).
+  const [rouge, autre] = ['#d0563f', '#1a9aa0'];
+  const fond = { fond: { count: 2, elements: 2, properties: ['background-color'], selectors: ['.etiquette'] } };
+  const rendered = { usages: { colors: { [rouge]: fond, [autre]: fond }, pairs: [], radii: {}, spacing: {} } };
   const t = propose(rendered, { colors: cible.colors, onSolid: cible.onSolid, otherHues: cible.otherHues, brandScales: cible.brandScales });
-  const lignes = t.families.colors.rows.filter((/** @type {any} */ r) => r.old === rouge);
-  assert.deepEqual(lignes.map((/** @type {any} */ r) => [r.name?.replace(/-\d+$/, ''), /M8/.test(r.reason ?? '')]), [['neutre', true]]);
+  const lignes = t.families.colors.rows.filter((/** @type {any} */ r) => [rouge, autre].includes(r.old));
+  assert.deepEqual(lignes.map((/** @type {any} */ r) => [r.old, r.name?.replace(/-\d+$/, ''), /M8/.test(r.reason ?? '')]).sort(), [[autre, 'neutre', true], [rouge, 'error', true]]);
 });

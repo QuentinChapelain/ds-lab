@@ -42,8 +42,8 @@ export function cibleDeLaMarque(base, jetons, { marque } = {}) {
   return {
     $comment: `Cible prise dans la marque${marque ? ` ${marque}` : ''} : couleurs lues dans ses jetons, en clair ; dimensions de la cible donnée.`,
     ...dimensions,
-    // M8 : une couleur du site qui n'a la teinte d'aucune échelle de la marque va au neutre, même si elle a celle d'un
-    // statut : l'erreur et le succès disent un sens, ils n'accueillent pas une couleur du site.
+    // M8 : une couleur du site qui n'a la teinte d'aucune échelle de la marque va sur l'échelle de la palette qui a sa
+    // teinte (le rouge de l'erreur, le vert du succès), et au neutre quand aucune ne l'a.
     otherHues: nomDans('neutral'),
     brandScales: [...new Set(v.colors.map((/** @type {{ name: string }} */ c) => c.name.replace(/-\d+$/, '')))].filter((n) => !COMMUNES.has(n)),
     onSolid,

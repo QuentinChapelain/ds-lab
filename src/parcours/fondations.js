@@ -117,7 +117,7 @@ export function fondationsDe(dossier) {
     preuves,
     limites: [
       'pas encore de jetons d’ombre ni de superposition',
-      'deux couleurs de marque : une troisième couleur de ton site passe aux gris',
+      'deux couleurs de marque : une troisième couleur de ton site va sur l’échelle de la palette qui a sa teinte (red, green), sinon aux gris',
       'une seule sortie, le web',
       'aucun test avec un vrai lecteur d’écran',
     ],

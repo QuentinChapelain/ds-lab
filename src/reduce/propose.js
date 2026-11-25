@@ -72,8 +72,10 @@ export const THRESHOLDS = { autoPx: 1, nearRatio: 0.15, nearTextPx: 2, autoDelta
 
 /** Seuils des règles R4 et R7. */
 const RULES = { noScaleDeltaE: 10, layoutMaxPx: 64 };
-/** M8 : motif d'une couleur qui n'a la teinte d'aucune échelle de la marque. */
-const M8 = 'aucune échelle de la marque n’a cette teinte : neutre (M8)';
+/** M8 : motif d'une couleur qui n'a la teinte d'aucune échelle de la palette. */
+const M8 = 'aucune échelle de la palette n’a cette teinte : neutre (M8)';
+/** M8 : motif d'une couleur rangée sur l'échelle de la palette qui a sa teinte, hors de la marque. @param {string} scale */
+const M8_PALETTE = (scale) => `aucune échelle de la marque n’a cette teinte : l’échelle ${scale} de la palette l’a (M8)`;
 
 /** R1 : tranches de pas par usage. */
 export const SLICES = /** @type {Record<string, [number, number]>} */ ({ texte: [11, 12], bordure: [6, 8], fond: [1, 5], plein: [9, 10] });
@@ -523,8 +525,10 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
     return { name: t.name, value, lab: toLab(value), lum: relativeLuminance(value), scale: m ? m[1] : t.name ?? value, step: m ? Number(m[2]) : null };
   });
   const hasScales = T.some((t) => t.step !== null);
-  // M8 : la couleur de chaque échelle de la marque (son pas 9) ; ni l'échelle qui reçoit les autres teintes, ni un statut.
-  const teintes = otherHues ? T.filter((t) => t.step === 9 && t.scale !== otherHues && (!brandScales || brandScales.includes(t.scale))) : [];
+  // M8 : la couleur de chaque échelle de la palette (son pas 9), hors l'échelle qui reçoit les autres teintes.
+  const teintes = otherHues ? T.filter((t) => t.step === 9 && t.scale !== otherHues) : [];
+  /** @param {string} scale */
+  const deLaMarque = (scale) => !brandScales || brandScales.includes(scale);
   const tens = T.filter((t) => t.step === 10);
   const darkLum = hasScales && tens.length ? Math.min(...tens.map((t) => t.lum)) : null;
   /** @param {[number, number, number]} lab @param {typeof T} list */
@@ -553,7 +557,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
     return scale && worst ? { scale, ratio: r4(worst.ratio), threshold: worst.threshold } : null;
   };
 
-  /** @type {(Row & { _cands?: any[], _nearest?: any, _fixed?: boolean, _exact?: any, _m8?: boolean })[]} */
+  /** @type {(Row & { _cands?: any[], _nearest?: any, _fixed?: boolean, _exact?: any, _m8?: string })[]} */
   const rows = [];
   for (const [old, byUsage] of Object.entries(usages.colors ?? {})) {
     let entries = usageEntries(byUsage);
@@ -585,12 +589,16 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
     const declared = B?.byValue.get(old);
     // G8 : un gris (chroma OKLCH < 0,02) ne se range que sur neutre, jamais sur une échelle de marque ou de statut.
     const greyHome = !declared && isGrey(old) ? all.find((c) => c.t.scale === 'neutre') : undefined;
-    // M8 : avec les couleurs de la marque, une couleur qui n'a la teinte d'aucune de ses échelles va sur l'échelle des
-    // autres teintes (le neutre), à toute distance : une troisième couleur du site n'a pas d'échelle dans la marque.
-    const otherHome =
-      !declared && !greyHome && otherHues && teintes.length && !teintes.some((t) => sameHue(old, t.value)) ? all.find((c) => c.t.scale === otherHues) : undefined;
-    const nearest = (declared && all.find((c) => c.t.scale === declared.scale)) || greyHome || otherHome || all[0];
-    if (!declared && !otherHome && nearest.delta > RULES.noScaleDeltaE) {
+    // M8 : avec les couleurs de la marque, une couleur qui n'a la teinte d'aucune de ses échelles va, à toute distance,
+    // sur l'échelle de la palette qui a sa teinte (un rouge du site sur le rouge, même s'il sert aussi l'erreur), et sur
+    // l'échelle des autres teintes (le neutre) quand aucune ne l'a : une troisième couleur n'a pas d'échelle dans la marque.
+    const memeTeinte = !declared && !greyHome && otherHues && teintes.length ? teintes.filter((t) => sameHue(old, t.value)) : null;
+    const horsMarque = memeTeinte && !memeTeinte.some((t) => deLaMarque(t.scale));
+    const paletteHome = horsMarque && memeTeinte.length ? all.find((c) => memeTeinte.some((t) => t.scale === c.t.scale)) : undefined;
+    const otherHome = horsMarque && !memeTeinte.length ? all.find((c) => c.t.scale === otherHues) : undefined;
+    const m8 = paletteHome ? M8_PALETTE(paletteHome.t.scale) : otherHome ? M8 : undefined;
+    const nearest = (declared && all.find((c) => c.t.scale === declared.scale)) || greyHome || paletteHome || otherHome || all[0];
+    if (!declared && !m8 && nearest.delta > RULES.noScaleDeltaE) {
       rows.push({
         old, count, properties, selectors, usages: labels, kinds, new: null, class: OUT.scale, delta: nearest.delta, candidates: candidatesOf(all),
         reason: `ΔE ${nearest.delta} à la valeur la plus proche de la valise (${nearest.t.name}) : aucune échelle (R4)`,
@@ -608,7 +616,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
       // D19 : une valeur vue seulement à un état forcé porte cet état.
       if (e.enEtat && e.enEtat === n) row.etats = Object.keys(e.etats ?? {}).sort();
       if (declared) row.slot = declared.slot;
-      if (otherHome) Object.assign(row, { reason: M8, _m8: true });
+      if (m8) Object.assign(row, { reason: m8, _m8: m8 });
       if (range) row.slice = usage;
       if (e.field) row.field = e.field;
       if (darkLum !== null && (usage === 'fond' || usage === 'plein') && relativeLuminance(old) < darkLum) {
@@ -732,7 +740,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
     const changed = r.new !== c.t.value || r.class !== cls;
     Object.assign(r, { new: c.t.value, name: c.t.name, delta: c.delta, class: cls });
     if (reason) r.reason = reason;
-    else if (r._m8) r.reason = M8;
+    else if (r._m8) r.reason = r._m8;
     else delete r.reason;
     return changed;
   };
@@ -828,8 +836,9 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
       const m = c.t && B.status.has(c.t.scale) && r._states < r.count ? ['décision', M_REASONS.M4] : null;
       if (m) Object.assign(r, { class: m[0], reason: m[1] });
     }
-  // J1 : un candidat qui échoue au contraste (paire la plus défavorable après la table) alors
-  // que l'actuelle passe porte `fails` ; il n'est ni le défaut ni « le plus proche » (nearestOf).
+  // J1 : un candidat qui échoue au contraste (paire la plus défavorable après la table) porte `fails` ; il n'est ni le
+  // défaut ni « le plus proche » (nearestOf), et la revue ne le propose pas. Une ligne dont l'actuelle échoue n'est
+  // relue que si elle est à trancher, et son défaut ne change pas ici.
   // J2 : aucun candidat de la tranche ne passe : la ligne est un trou de la cible (`hole`), et les pas
   // de la même échelle hors tranche qui passent (3 au plus, du plus proche au plus loin) s'ajoutent.
   /** @type {Record<string, string>} */
@@ -838,7 +847,9 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
   for (const r of rows) {
     if (!r.usage || !r._cands || r._exact || isOut(r.class) || !r.candidates?.length) continue;
     const today = worstContrast(usages, r, r.old, afterTable);
-    if (!today || today.ratio < today.threshold - 1e-9) continue;
+    if (!today) continue;
+    const passe = today.ratio >= today.threshold - 1e-9;
+    if (!passe && r.class !== 'décision') continue;
     /** @param {string} v */
     const failOf = (v) => {
       const w = worstContrast(usages, r, v, afterTable);
@@ -865,6 +876,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
     const sameHome = (v) => (hasScales ? T.find((t) => t.value === v)?.scale === homeScale : sameHue(v, home.value));
     const now = r.candidates.find((/** @type {any} */ c) => c.value === r.new);
     const ok = r.candidates.find((/** @type {any} */ c) => !c.fails && sameHome(c.value));
+    if (!passe) continue;
     if (now?.fails && ok) {
       Object.assign(r, { new: ok.value, name: ok.name, delta: ok.delta });
       if (r.class !== 'décision') Object.assign(r, { class: 'décision', reason: 'la paire passe avant et échoue après (R2)' });

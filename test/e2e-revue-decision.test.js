@@ -96,6 +96,8 @@ const lineOf = (family, old, usage, scope) => {
   assert.ok(x, `${family} ${old} ${usage} ${scope ?? ''} absente`);
   return /** @type {any} */ (x);
 };
+/** Les versions que la revue propose : l'actuelle et chaque candidat qui atteint le seuil de contraste (J1). @param {any} row */
+const proposees = (row) => row.capture.versions.filter((/** @type {any} */ v, /** @type {number} */ i) => i === 0 || !(row.candidates ?? []).some((/** @type {any} */ c) => c.fails && c.value === v.value));
 /** La marge basse de 10 px entre composants (input#nom, p.erreur, p.aide) : une décision, entre 8 et 12 px. */
 const MARGE_10 = () => lineOf('spacing', '10px', 'marge', 'entre composants');
 
@@ -113,7 +115,7 @@ test('revue : chaque décision est « Pas encore choisie », une image affichée
       const more = n - 1 - row.capture.others.length;
       assert.equal(await c.locator('.encore').count(), more > 0 ? 1 : 0, `${row.id} : « et n autres »`);
       assert.equal(await c.locator('.versions .v[data-v="0"] .nom').textContent().then((t) => t?.includes('la choisir garde la valeur')), true, `${row.id} : aide de l’actuelle`);
-      assert.equal(await c.locator('.versions .v').count(), row.capture.versions.length, `${row.id} : versions`);
+      assert.equal(await c.locator('.versions .v').count(), proposees(row).length, `${row.id} : versions`);
       assert.equal(await c.locator('.vue .ver:not([hidden])').count(), 1, `${row.id} : une seule image affichée`);
       assert.equal(await c.locator('.versions .v.retenue').count(), 0, `${row.id} : rien de retenu`);
       // Taille CSS du cadre, 2× sous 200 px de large, dans la largeur de la carte.
@@ -135,7 +137,7 @@ test('revue : parcourir les versions sans choisir laisse l’export vide', async
   try {
     for (const { row } of [...byId.values()].filter((x) => x.row.class === 'décision' && !x.row.plein)) {
       const c = card(page, row.id);
-      const n = row.capture.versions.length;
+      const n = proposees(row).length;
       for (let i = n - 1; i >= 0; i--) await c.locator(`.versions .v[data-v="${i}"]`).click();
       await c.focus();
       for (let i = 0; i < n; i++) await page.keyboard.press('ArrowRight');
@@ -196,7 +198,7 @@ test('revue : sous chaque version de couleur, le contraste le plus faible et son
     assert.ok(colors.length > 0);
     for (const { row } of colors) {
       const c = card(page, row.id);
-      for (const [i, v] of row.capture.versions.entries()) {
+      for (const [i, v] of proposees(row).entries()) {
         assert.ok(v.contrast, `${row.id} ${v.label} : contraste`);
         assert.ok(Math.abs(wcagContrast(v.contrast.text, v.contrast.bg) - v.contrast.ratio) < 5e-4, `${row.id} ${v.label} : ${v.contrast.ratio}`);
         const smalls = await c.locator(`.versions .v[data-v="${i}"] small`).allTextContents();
