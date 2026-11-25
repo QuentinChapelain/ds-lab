@@ -52,20 +52,22 @@ Quelqu'un du métier qui travaille à côté de toi. Il a fait le tour de tes pa
 
 ## Avant le projet
 
-Sans fichier de projet, dire le lancement de `contexte.md` tel quel, en deux messages au plus, puis attendre l'adresse. Rien d'autre : aucune question proposée, aucun choix.
+Sans fichier de projet, lancer en tâche de fond, depuis le clone, `cd "$DS_LAB" && npm run parcours -- <dossier courant>/projet.json --servir`, avant que le projet existe : il sert le lancement, qui se recharge seul. L'ouvrir dans le panneau (ouvrir, vérifier, dire), puis dire le lancement de `contexte.md` tel quel, en deux messages au plus, et attendre l'adresse. Rien d'autre : aucune question proposée, aucun choix.
 
 Les pages, une fois l'adresse donnée :
 
 - L'IA regarde le site elle-même : avec le navigateur dont elle dispose (celui de l'app, ou Chrome piloté), qui rend le script ; à défaut, le HTML de la page (`curl`), en disant qu'une page rendue par le script ne se lit pas ainsi. Ni script d'exploration, ni le Chromium du clone.
-- Une règle, dite en une phrase : les pages qui portent le plus de composants. Aucune raison page par page.
-- La sélection arrive déjà retenue, dans un seul message, avec le nom du produit lu sur le site. L'humain la garde, ou la change, en le tapant.
+- Une règle : les pages qui portent le plus de composants. Aucune raison page par page.
 - Plusieurs sites : une sélection par site. Quand les sites partagent les mêmes modèles de page, les mêmes sont retenus, pour comparer. Ce n'est pas toujours le cas.
 - Si le site ne répond pas (connexion refusée, statut d'erreur, page de connexion), le dire en une phrase, avec l'adresse, puis demander une autre adresse ou les pages. Ne pas écrire le projet.
-- La sélection gardée, écrire `projet.json` dans le dossier courant, sans le dire : `product` (le nom lu sur le site), `sites` (`id`, `url`, `pages`), `outputs` (`"sorties"`) ; `brand` si `marques/<id>/entree.json` existe ; `target` si `cible.json` existe, `sources` si `sources.json` existe. Une clé absente se lit ensuite dans l'action de `parcours`.
+- La sélection retenue, écrire `projet.json` dans le dossier courant, sans le dire : `product` (le nom lu sur le site), `sites` (`id`, `url`, `pages`), `outputs` (`"sorties"`) ; chaque page avec son nom, ce qu'elle est (`{ "path": "/carte", "name": "La carte" }`) ; `brand` si `marques/<id>/entree.json` existe ; `target` si `cible.json` existe, `sources` si `sources.json` existe. Une clé absente se lit ensuite dans l'action de `parcours`.
+- Le panneau passe seul du lancement à l'écran des pages. Le dire en une phrase, les pages nommées par ce qu'elles sont, avec le nom du produit ; ne pas redire la liste : l'écran la montre. L'humain retire, ajoute et lance la mesure à l'écran.
+- Puis lancer en tâche de fond `npm run parcours -- <chemin du projet> --attendre` : il finit quand l'humain clique sur « Mesurer », et sa fin prévient l'IA. Relire alors ses lignes et enchaîner, sans rien demander.
+- Si l'humain change la liste dans le chat, l'IA change `projet.json`, puis recharge l'écran.
 
 ## Au début, avec un projet
 
-Lancer depuis le clone `cd "$DS_LAB" && npm run parcours -- <chemin du projet> --servir`, en tâche de fond, et ouvrir dans le panneau l'adresse qu'il écrit : il prend lui-même un port libre. Ensuite, relire l'état par `npm run parcours -- <chemin du projet>`, sans `--servir`. Le parcours garde son onglet ; les écrans s'ouvrent dans un autre.
+Lancer depuis le clone `cd "$DS_LAB" && npm run parcours -- <chemin du projet> --servir`, en tâche de fond, et ouvrir dans le panneau l'adresse qu'il écrit : il prend lui-même un port libre. Ensuite, relire l'état par `npm run parcours -- <chemin du projet>`, sans `--servir`. Quand la main est à l'humain sur un écran qui l'attend (les pages), `--attendre` en tâche de fond. Le parcours garde son onglet ; les écrans s'ouvrent dans un autre.
 
 ## Les faits du moment
 

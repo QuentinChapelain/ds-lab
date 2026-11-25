@@ -7,17 +7,13 @@
  * mots-clés, 0 et 100 %, comme un module (D61). Toute chaîne venue du projet ou des sorties est échappée.
  */
 import { esc } from '../lib/format.js';
-import { aLaMain, etatDit, PHRASES, TEMPS } from './etat.js';
-import { variablesDeLaPage } from './jetons.js';
+import { aLaMain, etatDit, PHRASES } from './etat.js';
+import { blocJetons, ecranDesPages, style, DEBUT_JETONS, FIN_JETONS } from './ecrans.js';
+
+export { DEBUT_JETONS, FIN_JETONS };
 
 /** @typedef {import('./etat.js').Etat} Etat @typedef {import('./etat.js').Etape} Etape */
 
-export const DEBUT_JETONS = '/* jetons : écrits depuis tokens/commun/ */';
-export const FIN_JETONS = '/* fin des jetons */';
-
-/** Les cinq propriétés d'un style de texte. @param {string} s */
-const style = (s) =>
-  ['font-family', 'font-size', 'font-weight', 'letter-spacing', 'line-height'].map((p) => `${p}: var(--typography-${s}-${p});`).join(' ');
 
 const CSS = `
 * { box-sizing: border-box; }
@@ -83,12 +79,7 @@ function moment(e) {
   /** @type {string[]} */
   const b = [];
   if (e.phrase) b.push(`<p class="phrase">${esc(e.phrase)}</p>`);
-  if (e.moment === 'lancement') {
-    b.push(`<p>${TEMPS.map(([t]) => t).join(', ')}.</p>`);
-    b.push('<ul><li>Le site n’est jamais modifié.</li><li>Vous décidez sur image.</li><li>Chaque changement est prouvé.</li></ul>');
-    b.push(`<p>${e.unSite ? 'On prend un échantillon de pages, une par modèle de page.' : 'On prend un échantillon de pages dans chaque site, une par modèle de page.'}</p>`);
-    b.push(action(e));
-  } else if (e.moment === 'bilan' && e.bilan) {
+  if (e.moment === 'bilan' && e.bilan) {
     const x = e.bilan;
     // La phrase du bilan ne s'écrit que si chaque marque est acceptée et le dernier verdict en 0 ; sinon, ce qui manque.
     b.push(`<p class="phrase">${esc(x.complet ? PHRASES.bilan : `Il manque : ${x.manque.join(' ; ')}.`)}</p>`);
@@ -128,13 +119,12 @@ function tout(e) {
 }
 
 /**
- * La page du parcours.
+ * La page du parcours ; au moment des pages, l'écran des pages (D77).
  * @param {Etat} e
+ * @param {{ erreur?: import('./ecrans.js').ErreurAjout | null }} [o]  le refus d'une page ajoutée, à dire à côté du champ
  */
-export function pageDuParcours(e) {
-  const v = variablesDeLaPage();
-  /** @param {[string, string][]} l */
-  const decl = (l) => l.map(([n, x]) => `${n}: ${x};`).join(' ');
+export function pageDuParcours(e, { erreur = null } = {}) {
+  if (e.moment === 'pages') return ecranDesPages(e, { sites: e.sites, erreur });
   return `<!doctype html>
 <html lang="fr">
 <head>
@@ -142,10 +132,7 @@ export function pageDuParcours(e) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(`Parcours · ${e.produit}`)}</title>
 <style>
-${DEBUT_JETONS}
-:root { ${decl(v.clair)} color-scheme: light dark; }
-@media (prefers-color-scheme: dark) { :root { ${decl(v.sombre)} } }
-${FIN_JETONS}${CSS}</style>
+${blocJetons()}${CSS}</style>
 </head>
 <body>
 <main>

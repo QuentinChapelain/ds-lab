@@ -93,6 +93,7 @@
       "test/fond-sous-image.test.js",
       "test/histoire.test.js",
       "test/pannes-migration-chromium.test.js",
+      "test/parcours-ecrans.test.js",
       "test/parcours-page.test.js",
       "test/parcours.test.js",
       "test/police-garde-fous.test.js",

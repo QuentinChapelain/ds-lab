@@ -738,8 +738,14 @@
         "unit": "px"
       }
     },
+    "960": {
+      "$value": {
+        "value": 960,
+        "unit": "px"
+      }
+    },
     "$type": "dimension",
-    "$description": "Tailles de contrôle, d'icône, d'avatar et d'étiquette (hauteur d'un bouton, côté d'une icône ou d'un avatar), et largeur d'une colonne de contenu, en px."
+    "$description": "Tailles de contrôle, d'icône, d'avatar et d'étiquette (hauteur d'un bouton, côté d'une icône ou d'un avatar), et largeurs d'une colonne de contenu et d'une page, en px."
   },
   "stroke": {
     "1": {

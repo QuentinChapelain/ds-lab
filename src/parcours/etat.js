@@ -13,6 +13,19 @@ import { lireJson } from '../lib/fichiers.js';
 import { compterDecisions } from '../reduce/propose.js';
 import { RESOLVER } from '../tokens/resolver.js';
 
+/** Les pages validées à l'écran, par site (D77) : écrit au clic sur « Mesurer », dans les sorties. */
+export const PAGES_VALIDEES = 'pages.json';
+
+/**
+ * Les pages validées, ou null si l'humain n'a pas encore lancé la mesure depuis l'écran.
+ * @param {string} sorties
+ * @returns {Record<string, string[]> | null}
+ */
+function pagesValidees(sorties) {
+  const f = join(sorties, PAGES_VALIDEES);
+  return existsSync(f) ? lireJson(f) : null;
+}
+
 /**
  * @typedef {import('./projet.js').Projet} Projet
  * @typedef {import('./projet.js').Site} Site
@@ -25,14 +38,14 @@ import { RESOLVER } from '../tokens/resolver.js';
  *   ecran: Ecran | null, sansEcran: string | null, ouvre: string, refus?: boolean, reportes: number }} Etape
  * @typedef {{ chiffres: string[], dernier: string, complet: boolean, manque: string[], humain: string[] }} Bilan
  * @typedef {{ versions: number | null, decisions: number | null, enAttente: number | null, reportes: number }} Chiffres  ce que citent les faits du moment
- * @typedef {{ produit: string, sousTitre: string | null, unSite: boolean, etapes: Etape[], temps: { nom: string, etat: EtatEtape, etapes: CleEtape[] }[],
- *   courante: Etape, moment: 'lancement' | 'ecran' | 'sans-ecran' | 'bilan', ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
+ * @typedef {{ produit: string, sites: Site[], sousTitre: string | null, unSite: boolean, etapes: Etape[], temps: { nom: string, etat: EtatEtape, etapes: CleEtape[] }[],
+ *   courante: Etape, moment: 'pages' | 'ecran' | 'sans-ecran' | 'bilan', ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
  *   phrase: string | null, bilan: Bilan | null, chiffres: Chiffres, voisin: string | null, livraison: Livraison | null }} Etat
  * @typedef {{ pages: number, arrivees: number, total: number, manquantes: { titre: string, elements: number, cause: string | null }[] }} Livraison  la dernière vérification
  */
 
 /** Les quatre temps et leurs étapes (présentation de l'outil, D72). */
-export const TEMPS = /** @type {const} */ ([
+const TEMPS = /** @type {const} */ ([
   ['Mesurer', ['site', 'constat']],
   ['Décider', ['marques', 'decisions']],
   ['Poser', ['livraison']],
@@ -41,7 +54,6 @@ export const TEMPS = /** @type {const} */ ([
 
 /** Une phrase par moment, ce qu'il faut en comprendre (D72). */
 export const PHRASES = {
-  lancement: 'Un geste, quatre temps, trois portes.',
   constat: 'On mesure ce qui s’affiche vraiment, pas ce que le code contient.',
   marque: 'Une couleur de marque devient douze pas. Le pas 9 est la couleur exacte.',
   refus: 'Une marque illisible n’entre pas, et le message dit pourquoi.',
@@ -129,8 +141,12 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
   const decisionsComposants = join(sorties, 'decisions-composants.json');
   const fichierDecisions = join(sorties, 'decisions.json');
 
-  // Site.
+  // Site : les pages sont retenues par l'IA, puis validées à l'écran par le clic sur « Mesurer » (D77). Une mesure déjà
+  // faite vaut validation.
   const sansPages = sites.filter((s) => !s.pages.length);
+  const validees = pagesValidees(sorties);
+  const memes = !!validees && sites.every((s) => JSON.stringify(validees[s.id] ?? []) === JSON.stringify(s.pages));
+  const dejaMesure = sites.some((s) => plusRecent(join(sorties, 'composants', s.id, s.hote)));
   const comptes = sites.map((s) => s.pages.length);
   const pages = (/** @type {number} */ n) => (n ? nombre(n, 'page', 'pages') : 'aucune page');
   /** @type {Etape} */
@@ -139,18 +155,20 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     nom: unSite ? 'Site' : 'Sites',
     temps: 'Mesurer',
     acteurs: 'le designer',
-    faite: !sansPages.length,
+    faite: !sansPages.length && (memes || dejaMesure),
     etat: 'à venir',
     sortie: false,
     main: 'designer',
-    action: unSite
-      ? 'choisir une page par modèle de page et l’écrire dans projet.json'
-      : `choisir une page par modèle de page ${lesSites(sansPages)} et l’écrire dans projet.json`,
+    action: sansPages.length
+      ? unSite
+        ? 'retenir les pages qui portent le plus de composants'
+        : `retenir les pages qui portent le plus de composants ${lesSites(sansPages)}`
+      : 'garder ou changer les pages à l’écran, puis lancer la mesure',
     commande: null,
     fait: unSite ? pages(comptes[0]) : comptes.every((n) => n === comptes[0]) ? `${sites.length} sites, ${pages(comptes[0])} chacun` : `${sites.length} sites : ${liste(comptes.map(String))} pages`,
     lignes: [],
     ecran: null,
-    sansEcran: 'Pas d’écran : les pages s’écrivent dans projet.json.',
+    sansEcran: null,
     ouvre: '',
     reportes: 0,
   };
@@ -371,12 +389,10 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
   let ecran = null;
   if (courante.ecran && courante.sortie) ecran = { ...courante.ecran, etape: courante.cle, precedente: false };
   else if (!courante.sortie && i > 0 && etapes[i - 1].ecran) ecran = { .../** @type {Ecran} */ (etapes[i - 1].ecran), etape: etapes[i - 1].cle, precedente: true };
-  const lancement = etapes.every((e) => !e.sortie);
-  const moment = lancement ? 'lancement' : courante.cle === 'suivi' ? 'bilan' : ecran ? 'ecran' : 'sans-ecran';
+  const moment = courante.cle === 'site' ? 'pages' : courante.cle === 'suivi' ? 'bilan' : ecran ? 'ecran' : 'sans-ecran';
   const refus = etapeMarques.refus && (ecran?.etape === 'marques' || (!ecran && courante.cle === 'marques'));
   const phrase =
-    moment === 'lancement' ? PHRASES.lancement
-    : moment === 'bilan' ? null
+    moment === 'pages' || moment === 'bilan' ? null
     : refus ? PHRASES.refus
     : ecran?.etape === 'constat' ? PHRASES.constat
     : ecran?.etape === 'marques' ? PHRASES.marque
@@ -410,6 +426,7 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
 
   return {
     produit: projet.produit,
+    sites,
     sousTitre: unSite ? null : `${sites.length} sites, ${nombre(sites.length, 'marque', 'marques')}`,
     unSite,
     etapes,

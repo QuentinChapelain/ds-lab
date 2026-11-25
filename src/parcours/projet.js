@@ -4,19 +4,22 @@
  * échantillon de pages, entrée de la marque), la cible de la réduction et la racine des sorties. Chemins relatifs au
  * fichier. Toute faute de forme est une panne qui nomme la clé (D18) : la commande sort en 2.
  */
-import { realpathSync } from 'node:fs';
+import { realpathSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { lireJson } from '../lib/fichiers.js';
 import { hostDirName } from '../lib/addresses.js';
 
 /**
- * @typedef {{ id: string, url: string, origine: string, hote: string, pages: string[], entree: string | null, dossierMarque: string | null }} Site
+ * @typedef {{ id: string, nom: string | null, url: string, origine: string, hote: string, pages: string[], noms: Record<string, string>,
+ *   entree: string | null, dossierMarque: string | null }} Site
+ * Une page s'écrit par son chemin (`"/carte"`) ou avec son nom (`{ "path": "/carte", "name": "La carte" }`, D77) ;
+ * `noms` garde le nom de chaque page qui en a un.
  * @typedef {{ fichier: string, dossier: string, produit: string, sites: Site[], cible: string | null, sources: string | null,
  *   signatures: string | null, sorties: string }} Projet
  */
 
 const CLES = ['product', 'sites', 'target', 'sources', 'signatures', 'outputs'];
-const CLES_SITE = ['id', 'url', 'pages', 'brand'];
+const CLES_SITE = ['id', 'name', 'url', 'pages', 'brand'];
 
 /**
  * Lit et contrôle projet.json.
@@ -54,11 +57,22 @@ export function lireProjet(fichier) {
       throw faute(`${ou}.url : adresse http ou https attendue`);
     }
     if (!/^https?:$/.test(adresse.protocol)) throw faute(`${ou}.url : adresse http ou https attendue`);
-    const pages = s.pages ?? [];
-    if (!Array.isArray(pages) || pages.some((x) => typeof x !== 'string' || !x.startsWith('/'))) throw faute(`${ou}.pages : une liste de chemins qui commencent par / est attendue`);
+    const brutes = s.pages ?? [];
+    const chemin = (/** @type {any} */ x) => (typeof x === 'string' ? x : x && typeof x === 'object' && !Array.isArray(x) ? x.path : null);
+    const valide = (/** @type {any} */ x) =>
+      typeof chemin(x) === 'string' &&
+      chemin(x).startsWith('/') &&
+      (typeof x === 'string' || (Object.keys(x).every((k) => k === 'path' || k === 'name') && (x.name === undefined || (typeof x.name === 'string' && x.name.trim()))));
+    if (!Array.isArray(brutes) || !brutes.every(valide))
+      throw faute(`${ou}.pages : une liste est attendue, chaque page un chemin qui commence par /, ou { path, name }`);
+    /** @type {string[]} */
+    const pages = brutes.map(chemin);
+    /** @type {Record<string, string>} */
+    const noms = Object.fromEntries(brutes.filter((/** @type {any} */ x) => typeof x === 'object' && x.name).map((/** @type {any} */ x) => [x.path, x.name.trim()]));
+    if (s.name !== undefined && (typeof s.name !== 'string' || !s.name.trim())) throw faute(`${ou}.name : un nom est attendu`);
     if (s.brand !== undefined && (typeof s.brand !== 'string' || !s.brand.trim())) throw faute(`${ou}.brand : chemin de l'entrée de la marque attendu`);
     const entree = s.brand === undefined ? null : resolve(dossier, s.brand);
-    return { id: s.id, url: s.url, origine: adresse.origin, hote: hostDirName(adresse.host), pages, entree, dossierMarque: entree && dirname(entree) };
+    return { id: s.id, nom: s.name ?? null, url: s.url, origine: adresse.origin, hote: hostDirName(adresse.host), pages, noms, entree, dossierMarque: entree && dirname(entree) };
   });
   const vus = new Set();
   for (const s of sites) {
@@ -66,4 +80,17 @@ export function lireProjet(fichier) {
     vus.add(s.id);
   }
   return { fichier: resolve(dossier, resolve(fichier).split(/[\\/]/).at(-1) ?? ''), dossier, produit, sites, cible: chemin('target'), sources: chemin('sources'), signatures: chemin('signatures'), sorties };
+}
+
+/**
+ * Réécrit les pages d'un site dans projet.json, sans toucher au reste du fichier (D77) : l'écran des pages retire et
+ * ajoute. Chaque page garde son nom.
+ * @param {string} fichier @param {string} id @param {{ path: string, name?: string }[]} pages
+ */
+export function ecrirePages(fichier, id, pages) {
+  const p = lireJson(fichier);
+  const s = (p.sites ?? []).find((/** @type {any} */ x) => x?.id === id);
+  if (!s) throw new Error(`${fichier} : aucun site ${id}`);
+  s.pages = pages.map((x) => (x.name ? { path: x.path, name: x.name } : x.path));
+  writeFileSync(fichier, `${JSON.stringify(p, null, 2)}\n`);
 }

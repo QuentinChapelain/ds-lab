@@ -23,6 +23,9 @@ const COULEURS = [
   'text.secondary',
   'text.info',
   'text.on-inverse',
+  'text.error',
+  'border.subtle',
+  'border.default',
 ];
 /** Rôles de dimension de la page. */
 const DIMENSIONS = [
@@ -32,7 +35,18 @@ const DIMENSIONS = [
   'gap.between-groups',
   'padding.component',
   'width.column',
+  'width.page',
   'border-radius.surface',
+  'border-radius.control',
+  'border-radius.full',
+  'border-width.default',
+  'border-width.focus',
+  'offset.focus',
+  'height.control.medium',
+  'height.control.small',
+  'avatar-size.medium',
+  'avatar-size.large',
+  'padding.tag',
 ];
 /** Styles de texte de la page. */
 const STYLES = ['typography.heading.1', 'typography.heading.3', 'typography.body.medium', 'typography.body.small', 'typography.label'];

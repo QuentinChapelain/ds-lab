@@ -1,10 +1,11 @@
 # Projets du parcours
 
-Sept projets fictifs de la commande `npm run parcours` (D72), un par moment de la page et un à trois sites. Construits le 24/11/2026 en jouant le parcours de bout en bout sur Orbe Café, servi par `npm run demo` ; l'adresse réelle du serveur de démonstration y est remplacée par `http://127.0.0.1:4173`, et son dossier d'hôte par `127.0.0.1_4173`.
+Huit projets fictifs de la commande `npm run parcours` (D72), un par moment de la page et un à trois sites. Construits le 24/11/2026 en jouant le parcours de bout en bout sur Orbe Café, servi par `npm run demo` ; l'adresse réelle du serveur de démonstration y est remplacée par `http://127.0.0.1:4173`, et son dossier d'hôte par `127.0.0.1_4173`.
 
 | Projet | Moment | Sorties |
 |---|---|---|
-| `lancement` | Rien de fait, aucune page | Aucune |
+| `lancement` | Rien de fait, aucune page : l'écran des pages, vide (D77) | Aucune |
+| `pages` | Trois pages retenues, deux avec leur nom, pas encore validées : l'écran des pages (D77) | Aucune |
 | `constat` | Constat fait, marque à saisir : l'écran du constat reste affiché | Le constat |
 | `marque` | Marque acceptée, aucune table : la planche des rôles reste affichée | Constat, verdict de la saisie |
 | `decisions` | Décisions en attente : la revue | Constat, verdict, table sans décision lue ; `decisions.json`, copie de `fixtures/marque-demo/decisions-valise.json`, en tranche 8 sur 15 |

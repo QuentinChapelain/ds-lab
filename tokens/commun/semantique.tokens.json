@@ -1,5 +1,5 @@
 {
-  "$description": "Rôles de couleur (14/11/2026), d'espacement par relation et styles de texte (15/11/2026) communs à toutes les marques. Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json, statuts.tokens.json et marque.tokens.json pour les couleurs, vers space.* de primitives.tokens.json pour les espacements, vers font-size.*, font-weight.*, brand.font.* et font.product (libellé, D44) pour les styles de texte (typo, composites DTCG typography, interligne sans unité) ; les couleurs de marque et tous les pleins, statuts compris, passent par brand.<emplacement>.* (Orbe Café : primaire = bleu, accent = terre). Arrondis, hauteurs, épaisseurs, décalages et tailles d'icône des contrôles (18/11/2026), arrondi des surfaces (19/11/2026), largeur de colonne (20/11/2026), vers radius.*, size.* et stroke.* de primitives.tokens.json ; aucun groupe de rôles ne porte le nom d'un groupe de primitives. Paires de contraste déclarées dans paires.json.",
+  "$description": "Rôles de couleur (14/11/2026), d'espacement par relation et styles de texte (15/11/2026) communs à toutes les marques. Format DTCG 2025.10. Alias seulement, vers primitives.tokens.json, statuts.tokens.json et marque.tokens.json pour les couleurs, vers space.* de primitives.tokens.json pour les espacements, vers font-size.*, font-weight.*, brand.font.* et font.product (libellé, D44) pour les styles de texte (typo, composites DTCG typography, interligne sans unité) ; les couleurs de marque et tous les pleins, statuts compris, passent par brand.<emplacement>.* (Orbe Café : primaire = bleu, accent = terre). Arrondis, hauteurs, épaisseurs, décalages et tailles d'icône des contrôles (18/11/2026), arrondi des surfaces (19/11/2026), largeur de colonne (20/11/2026), largeur de page (25/11/2026), vers radius.*, size.* et stroke.* de primitives.tokens.json ; aucun groupe de rôles ne porte le nom d'un groupe de primitives. Paires de contraste déclarées dans paires.json.",
   "background": {
     "$type": "color",
     "$description": "Surfaces sur lesquelles se posent texte et bordures.",
@@ -357,6 +357,13 @@
       "$description": "Largeur maximale d'une colonne de contenu, comme une liste d'annuaire ; sur un écran plus étroit, la colonne prend toute la largeur de son parent.",
       "$extensions": {
         "ds-lab.note": "640 px [H], à juger sur les planches de MemberList ; la grille reste à faire (B6, docs/feuille-de-route.md)."
+      }
+    },
+    "page": {
+      "$value": "{size.960}",
+      "$description": "Largeur maximale du contenu d'un écran de l'outil, barre du bas comprise ; sur un écran plus étroit, le contenu prend toute la largeur.",
+      "$extensions": {
+        "ds-lab.note": "960 px, demandé pour les écrans du parcours (D77) ; la grille reste à faire (B6, docs/feuille-de-route.md)."
       }
     }
   },

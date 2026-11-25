@@ -1,0 +1,173 @@
+// @ts-check
+/**
+ * Les écrans du parcours (D77), sans navigateur :
+ *   EC1 le lancement : les quatre temps à venir, quatre étapes, trois portes, l'adresse dans le chat, aucun bouton ; il
+ *       se recharge seul ; aucune valeur visuelle en dur, aucun script ;
+ *   EC2 les pages, un site : le nom de chaque page (ou son chemin), sa vignette, « Retirer », « Ajouter une page »,
+ *       « Mesurer ces n pages » qui suit la liste, désactivé sans page ; jamais de rechargement seul ; le refus d'une
+ *       page ajoutée, à côté du champ, avec la saisie gardée ; plusieurs sites : un groupe par site ;
+ *   EC3 projet.json : une page avec son nom, retirer, ajouter après vérification (même site, elle répond, pas déjà là),
+ *       sinon la raison en une phrase ; le reste du fichier intact ; la validation au clic sur « Mesurer » fait l'étape ;
+ *   EC4 la commande : avant le projet, --servir sert le lancement ; les formulaires reviennent sur l'écran (303) ;
+ *       --attendre finit quand l'humain lance la mesure.
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
+import { cpSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { lireProjet } from '../src/parcours/projet.js';
+import { calculerEtat } from '../src/parcours/etat.js';
+import { pageDuParcours } from '../src/parcours/page.js';
+import { ecranDeLancement, FIN_JETONS } from '../src/parcours/ecrans.js';
+import { ajouterPage, retirerPage, validerPages } from '../src/parcours/pages.js';
+
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
+const FIX = join(ROOT, 'fixtures', 'parcours');
+/** @param {string} m */
+const etat = (m) => calculerEtat(lireProjet(join(FIX, m, 'projet.json')), { base: ROOT });
+/** @param {string} m */
+const copie = (m) => {
+  const d = realpathSync(mkdtempSync(join(tmpdir(), 'ds-lab-ecrans-')));
+  cpSync(join(FIX, m), d, { recursive: true });
+  return d;
+};
+/** Texte visible, balises ôtées. @param {string} html */
+const texte = (html) => html.replace(/<style>.*?<\/style>/s, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+/** Valeurs du style hors des jetons, ôtés variables, mots-clés, 0 et 100 %. @param {string} html */
+const enDur = (html) => {
+  const css = /** @type {RegExpExecArray} */ (/<style>(.*?)<\/style>/s.exec(html))[1];
+  const reste = css.slice(css.indexOf(FIN_JETONS) + FIN_JETONS.length);
+  return [...reste.matchAll(/([a-z-]+)\s*:\s*([^;{}]+);/g)]
+    .map((m) => [m[1], m[2].replace(/var\(--[a-z0-9-]+\)/g, '').replace(/\b(?:0|100%)(?![\w.%])/g, '').replace(/\b[a-z]+(?:-[a-z]+)*\b/g, '').trim()])
+    .filter(([, v]) => v);
+};
+/** Un faux fetch : chaque chemin, son statut et son type. @param {Record<string, [number, string, string]>} pages */
+const faux = (pages) => /** @type {typeof fetch} */ (async (/** @type {any} */ u) => {
+  const p = pages[new URL(String(u)).pathname] ?? [404, 'text/html', ''];
+  return new Response(p[2], { status: p[0], headers: { 'content-type': p[1] } });
+});
+
+test('EC1 le lancement : quatre temps, quatre étapes, trois portes, l’adresse dans le chat ; il se recharge seul', () => {
+  const h = ecranDeLancement();
+  const t = texte(h);
+  for (const s of ['1 · Mesurer', '4 · Tenir', 'Le parcours', 'Rien à décider', 'Tu décides trois fois.', 'Porte 1 · la marque', 'Porte 2 · la revue', 'Porte 3 · avant, après', 'Elle se donne dans le chat, à gauche.', 'Donne l’adresse dans le chat.'])
+    assert.ok(t.includes(s), s);
+  assert.equal(h.match(/<li class="a-venir">/g)?.length, 4);
+  assert.equal(h.match(/<li class="etape">/g)?.length, 4);
+  assert.doesNotMatch(h, /<button|<form|<script|\sstyle="/);
+  assert.match(h, /<meta http-equiv="refresh" content="2">/);
+  assert.deepEqual(enDur(h), []);
+});
+
+test('EC2 les pages : noms, vignettes, retirer, ajouter, le compte de la mesure ; jamais de rechargement seul', () => {
+  const h = pageDuParcours(etat('pages'));
+  const t = texte(h);
+  for (const s of ['Les pages à mesurer', 'À toi de décider', 'La carte', 'Mon compte', '/desordre/gestion.html', 'Ajouter une page', 'Rien hors de cette liste n’est mesuré.', 'Mesurer ces 3 pages ›'])
+    assert.ok(t.includes(s), s);
+  assert.equal(h.match(/<img class="vignette" src="\/vignette\/orbe\?page=%2Fdesordre%2F[a-z]+\.html" alt="">/g)?.length, 3);
+  assert.equal(h.match(/action="\/pages\/retirer"/g)?.length, 3);
+  assert.match(h, /aria-label="Retirer La carte"/);
+  assert.match(h, /<form method="post" action="\/pages\/mesurer"><button type="submit" class="principal">Mesurer ces 3 pages ›<\/button><\/form>/);
+  assert.doesNotMatch(h, /http-equiv="refresh"|<script|\sstyle="/);
+  assert.deepEqual(enDur(h), []);
+  assert.match(h, /<li class="en-cours">1 · Mesurer<small>en cours<\/small><\/li>/);
+  // Sans page : rien à mesurer.
+  assert.match(pageDuParcours(etat('lancement')), /<button type="submit" class="principal" disabled>Aucune page<\/button>/);
+  // Le refus d'une page ajoutée, à côté du champ, la saisie gardée.
+  const r = pageDuParcours(etat('pages'), { erreur: { site: 'orbe', message: 'Cette page ne répond pas (erreur 404).', saisie: '/perdue<b>' } });
+  assert.match(r, /value="\/perdue&lt;b&gt;" aria-invalid="true" aria-describedby="erreur-orbe"/);
+  assert.match(r, /<span class="erreur" id="erreur-orbe" role="status">Cette page ne répond pas \(erreur 404\)\.<\/span>/);
+  // Plusieurs sites : un groupe par site, avec son nom et son hôte.
+  const p = copie('plusieurs');
+  const projet = JSON.parse(readFileSync(join(p, 'projet.json'), 'utf8'));
+  projet.sites[0].name = 'Orbe Café';
+  writeFileSync(join(p, 'projet.json'), JSON.stringify(projet));
+  const e = calculerEtat(lireProjet(join(p, 'projet.json')), { base: p });
+  e.moment = 'pages';
+  const m = pageDuParcours(e);
+  assert.equal(m.match(/<section class="site"/g)?.length, 3);
+  assert.match(m, /<header><h2>Orbe Café<\/h2><small>127\.0\.0\.1:4173<\/small><\/header>/);
+  assert.match(texte(m), /3 sites, un même produit\./);
+});
+
+test('EC3 projet.json : retirer, ajouter après vérification, valider ; le reste du fichier intact', async () => {
+  const d = copie('pages');
+  const f = join(d, 'projet.json');
+  const avant = JSON.parse(readFileSync(f, 'utf8'));
+  assert.deepEqual(lireProjet(f).sites[0].noms, { '/desordre/carte.html': 'La carte', '/desordre/compte.html': 'Mon compte' });
+  retirerPage(f, 'orbe', '/desordre/compte.html');
+  assert.deepEqual(JSON.parse(readFileSync(f, 'utf8')).sites[0].pages, [{ path: '/desordre/carte.html', name: 'La carte' }, '/desordre/gestion.html']);
+  const chercher = faux({ '/index.html': [200, 'text/html; charset=utf-8', '<title> Accueil\n du café </title>'], '/image.png': [200, 'image/png', ''], '/perdue.html': [404, 'text/html', ''] });
+  /** @param {string} s */
+  const ajout = (s) => ajouterPage(f, 'orbe', s, { chercher });
+  assert.deepEqual(await ajout(''), { ok: false, raison: 'Tape l’adresse d’une page de ce site.' });
+  assert.deepEqual(await ajout('https://ailleurs.example/index.html'), { ok: false, raison: 'Cette page n’est pas sur 127.0.0.1:4173.' });
+  assert.deepEqual(await ajout('/desordre/carte.html'), { ok: false, raison: 'Cette page est déjà dans la liste.' });
+  assert.deepEqual(await ajout('perdue.html'), { ok: false, raison: 'Cette page ne répond pas (erreur 404).' });
+  assert.deepEqual(await ajout('/image.png'), { ok: false, raison: 'Cette adresse n’est pas une page.' });
+  assert.deepEqual(await ajout('http://127.0.0.1:4173/index.html'), { ok: true, chemin: '/index.html' });
+  const apres = JSON.parse(readFileSync(f, 'utf8'));
+  assert.deepEqual(apres.sites[0].pages.at(-1), { path: '/index.html', name: 'Accueil du café' });
+  assert.deepEqual({ ...apres, sites: [{ ...apres.sites[0], pages: avant.sites[0].pages }] }, avant);
+  // Tant que la liste n'est pas validée, l'étape attend l'humain ; validée, la main passe à l'outil.
+  assert.equal(calculerEtat(lireProjet(f), { base: d }).courante.cle, 'site');
+  validerPages(f);
+  const e = calculerEtat(lireProjet(f), { base: d });
+  assert.deepEqual([e.etapes[0].etat, e.courante.cle, e.courante.main], ['faite', 'constat', 'outil']);
+  // Une page retirée après la validation la défait.
+  retirerPage(f, 'orbe', '/index.html');
+  assert.equal(calculerEtat(lireProjet(f), { base: d }).courante.cle, 'site');
+});
+
+/**
+ * Lance la commande parcours, et rend son premier texte en sortie avec le processus.
+ * @param {string[]} args
+ */
+function lancerParcours(args) {
+  const p = spawn(process.execPath, [join(ROOT, 'src/cli/parcours.js'), ...args], { cwd: ROOT });
+  let sortie = '';
+  p.stdout.on('data', (c) => (sortie += c));
+  return {
+    p,
+    /** @param {RegExp} motif */
+    attendre: (motif) =>
+      new Promise((ok, ko) => {
+        const t = setInterval(() => {
+          const m = motif.exec(sortie);
+          if (m) clearInterval(t), ok(m);
+        }, 50);
+        p.on('exit', (code) => (clearInterval(t), motif.test(sortie) ? ok(motif.exec(sortie)) : ko(new Error(`sortie ${code} : ${sortie}`))));
+      }),
+    fin: () => new Promise((ok) => (p.exitCode !== null ? ok(p.exitCode) : p.on('exit', ok))),
+  };
+}
+
+test('EC4 la commande : le lancement avant le projet, les formulaires, --attendre', async () => {
+  const d = realpathSync(mkdtempSync(join(tmpdir(), 'ds-lab-ecrans-')));
+  const f = join(d, 'projet.json');
+  const s = lancerParcours([f, '--servir', '--port', '0']);
+  try {
+    const [, adresse] = /** @type {RegExpExecArray} */ (await s.attendre(/Lancement servi sur (http:\/\/127\.0\.0\.1:\d+\/)/));
+    assert.match(await (await fetch(adresse)).text(), /<h1>Le parcours<\/h1>/);
+    cpSync(join(FIX, 'pages'), d, { recursive: true });
+    assert.match(await (await fetch(adresse)).text(), /<h1>Les pages à mesurer<\/h1>/);
+    const w = lancerParcours([f, '--attendre']);
+    /** @param {string} chemin @param {Record<string, string>} c */
+    const poster = (chemin, c) => fetch(adresse + chemin.slice(1), { method: 'POST', body: new URLSearchParams(c), redirect: 'manual' });
+    const r1 = await poster('/pages/retirer', { site: 'orbe', page: '/desordre/gestion.html' });
+    assert.deepEqual([r1.status, r1.headers.get('location')], [303, '/']);
+    assert.match(await (await fetch(adresse)).text(), /Mesurer ces 2 pages ›/);
+    const r2 = await poster('/pages/ajouter', { site: 'orbe', adresse: 'https://ailleurs.example/' });
+    assert.equal(r2.status, 303);
+    assert.match(await (await fetch(adresse + String(r2.headers.get('location')).slice(1))).text(), /Cette page n’est pas sur 127\.0\.0\.1:4173\./);
+    assert.equal(w.p.exitCode, null, '--attendre attend encore');
+    assert.equal((await poster('/pages/mesurer', {})).status, 303);
+    assert.equal(await w.fin(), 0);
+    assert.match(String(readFileSync(join(d, 'sorties', 'pages.json'))), /"orbe": \[/);
+  } finally {
+    s.p.kill();
+  }
+});

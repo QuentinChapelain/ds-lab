@@ -133,8 +133,9 @@ test('primitives communes et échelles d\'Orbe Café réunies = primitives d\'av
   delete apres.color.tint;
   // Groupes ajoutés pour le bouton (docs/attendus/bouton.md) : tailles de contrôle et d'icône, trait ; puis, dans le
   // même groupe taille, 24 et 56 pour la hauteur de l'étiquette et le côté du grand avatar
-  // (docs/attendus/avatar-etiquette.md) ; puis 640 pour la largeur de colonne (docs/attendus/carte-membre-liste.md).
-  assert.deepEqual(Object.keys(apres.size).filter((k) => !k.startsWith('$')), ['16', '20', '24', '32', '40', '56', '640']);
+  // (docs/attendus/avatar-etiquette.md) ; puis 640 pour la largeur de colonne (docs/attendus/carte-membre-liste.md) ;
+  // puis 960 pour la largeur de page (D77).
+  assert.deepEqual(Object.keys(apres.size).filter((k) => !k.startsWith('$')), ['16', '20', '24', '32', '40', '56', '640', '960']);
   assert.deepEqual(Object.keys(apres.stroke).filter((k) => !k.startsWith('$')), ['1', '2']);
   delete apres.size;
   delete apres.stroke;

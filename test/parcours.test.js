@@ -14,7 +14,7 @@
  *   saisie de Brume (#00ccff) : refusée, « checkValise (clair) : primary : doublon, pas 7 = pas 9 (#00ccff) ».
  *
  *   PC1 projet illisible : un message d'une ligne qui nomme la cause, sortie 2
- *   PC2 l'état des sept projets : temps, étape en cours, main, action, commande, faits, moment, écran, phrase
+ *   PC2 l'état des huit projets : temps, étape en cours, main, action, commande, faits, moment, écran, phrase
  *   PC3 règles d'étape construites en mémoire : décisions lues ou non, verdict en 1, entrée changée, le plus récent
  *   PC4 accord au nombre et mots : aucun « (s) », « 1 sites », « client », « plateforme » ni « conforme »
  *   PC5 la page : quatre temps, un moment de 60 mots au plus hors du cadre, un seul « Tout le parcours », fermé
@@ -62,7 +62,9 @@ import { flattenTokens, resoudreAlias } from '../src/tokens/roles.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const FIX = join(ROOT, 'fixtures', 'parcours');
-const MOMENTS = ['lancement', 'constat', 'marque', 'decisions', 'livraison', 'bilan', 'plusieurs'];
+const MOMENTS = ['lancement', 'pages', 'constat', 'marque', 'decisions', 'livraison', 'bilan', 'plusieurs'];
+/** Les moments de la page d'avant les écrans (D77) : tous, sauf les pages. */
+const PAGE = MOMENTS.filter((m) => m !== 'lancement' && m !== 'pages');
 /** @param {string} m */
 const etat = (m) => calculerEtat(lireProjet(join(FIX, m, 'projet.json')), { base: ROOT });
 /** @param {string} m */
@@ -110,7 +112,7 @@ test('PC1 projet illisible : un message d’une ligne qui nomme la cause, sortie
   assert.match(r2.stderr, /constat\.json : JSON illisible/);
 });
 
-test('PC2 l’état des sept projets, depuis leurs sorties', () => {
+test('PC2 l’état des huit projets, depuis leurs sorties', () => {
   /** @param {string} m */
   const resume = (m) => {
     const e = etat(m);
@@ -128,10 +130,19 @@ test('PC2 l’état des sept projets, depuis leurs sorties', () => {
     temps: ['en cours', 'à venir', 'à venir', 'à venir'],
     courante: 'Mesurer · Site',
     main: 'designer',
-    action: 'choisir une page par modèle de page et l’écrire dans projet.json',
-    moment: 'lancement',
+    action: 'retenir les pages qui portent le plus de composants',
+    moment: 'pages',
     ecran: null,
-    phrase: 'Un geste, quatre temps, trois portes.',
+    phrase: null,
+  });
+  assert.deepEqual(resume('pages'), {
+    temps: ['en cours', 'à venir', 'à venir', 'à venir'],
+    courante: 'Mesurer · Site',
+    main: 'designer',
+    action: 'garder ou changer les pages à l’écran, puis lancer la mesure',
+    moment: 'pages',
+    ecran: null,
+    phrase: null,
   });
   assert.deepEqual(resume('constat'), {
     temps: ['faite', 'en cours', 'à venir', 'à venir'],
@@ -287,7 +298,7 @@ const texteVisible = (html) => html.replace(/<iframe[^>]*><\/iframe>/g, '').repl
 const mots = (t) => t.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
 
 test('PC5 la page : quatre temps, un moment de 60 mots au plus hors du cadre, un seul « Tout le parcours », fermé', () => {
-  for (const m of MOMENTS) {
+  for (const m of PAGE) {
     const html = pageDuParcours(etat(m));
     const barre = /** @type {RegExpExecArray} */ (/<ol class="barre"[^>]*>(.*?)<\/ol>/s.exec(html))[1];
     assert.deepEqual([...barre.matchAll(/<li [^>]*>([^<]*)<\/li>/g)].map((x) => x[1]), ['Mesurer', 'Décider', 'Poser', 'Tenir'], m);
@@ -302,8 +313,6 @@ test('PC5 la page : quatre temps, un moment de 60 mots au plus hors du cadre, un
   assert.match(p, /<a href="\/marques\/orbe\/roles\.html">Ouvrir seul<\/a>/);
   const c = pageDuParcours(etat('constat'));
   assert.match(c, /Fait : Constat\. Ensuite : Marque, saisir la marque\./);
-  const l = pageDuParcours(etat('lancement'));
-  for (const s of ['Un geste, quatre temps, trois portes.', 'Mesurer, Décider, Poser, Tenir.', 'Le site n’est jamais modifié.', 'Vous décidez sur image.', 'Chaque changement est prouvé.', 'On prend un échantillon de pages, une par modèle de page.']) assert.ok(l.includes(s), s);
   const bi = pageDuParcours(etat('bilan'));
   assert.ok(bi.includes('La couche visuelle tient ses seuils. Voici ce qui reste à faire vérifier par un humain.'));
   assert.ok(bi.includes('31 → 17 couleurs ; 16 → 7 espacements ; 13 → 8 tailles de texte.'));
@@ -491,7 +500,13 @@ test('PC17 les faits de chaque état : une ligne par fait, sans guillemets ni no
   const tete = 'Pour le chat, des faits à dire avec tes mots, sans les recopier :';
   assert.deepEqual(faits(join(FIX, 'lancement')), [
     tete,
-    '  Ensuite : regarder le site, retenir les pages qui portent le plus de composants, les proposer',
+    '  Ensuite : regarder le site, retenir les pages qui portent le plus de composants, les écrire dans le projet avec leur nom',
+    '  Main : l’humain ; l’accompagner, il décide',
+  ]);
+  assert.deepEqual(faits(join(FIX, 'pages')), [
+    tete,
+    '  Écran : les pages à mesurer',
+    '  Ensuite : dire en une phrase les pages retenues, puis attendre le clic sur Mesurer (parcours --attendre, en tâche de fond)',
     '  Main : l’humain ; l’accompagner, il décide',
   ]);
   assert.deepEqual(faits(join(FIX, 'constat')), [

@@ -70,7 +70,8 @@ export function faitsDuMoment(e, { sorties }) {
     : k.main === 'outil' ? 'l’outil ; enchaîner sans demander' : k.main === 'développeur' ? 'le développeur ; ce qui lui revient se dit en deux lignes' : 'l’humain ; l’accompagner, il décide';
   switch (k.cle) {
     case 'site':
-      f.push(['Ensuite', 'regarder le site, retenir les pages qui portent le plus de composants, les proposer']);
+      if (k.action?.startsWith('retenir')) f.push(['Ensuite', 'regarder le site, retenir les pages qui portent le plus de composants, les écrire dans le projet avec leur nom']);
+      else f.push(['Écran', 'les pages à mesurer'], ['Ensuite', 'dire en une phrase les pages retenues, puis attendre le clic sur Mesurer (parcours --attendre, en tâche de fond)']);
       break;
     case 'constat':
       f.push(['Ensuite', 'mesurer les pages']);

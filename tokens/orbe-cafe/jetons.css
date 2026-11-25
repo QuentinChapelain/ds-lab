@@ -465,6 +465,7 @@
   --size-40: 40px;
   --size-56: 56px;
   --size-640: 640px;
+  --size-960: 960px;
   --space-0: 0px;
   --space-4: 4px;
   --space-8: 8px;
@@ -650,6 +651,8 @@
   --typography-supporting-text-line-height: 1.3333;
   /* Largeur maximale d'une colonne de contenu, comme une liste d'annuaire ; sur un écran plus étroit, la colonne prend toute la largeur de son parent. */
   --width-column: var(--size-640);
+  /* Largeur maximale du contenu d'un écran de l'outil, barre du bas comprise ; sur un écran plus étroit, le contenu prend toute la largeur. */
+  --width-page: var(--size-960);
 }
 
 @media (prefers-color-scheme: dark) {
