@@ -25,6 +25,7 @@ import { identityMapping, declarationsOnPage, attachDeclarations, reperesDe } fr
 import { pleinGroups, applyPleins, pleinVersionMap, couplingsOf, simulationCouplings } from './pleins.js';
 import { lireJson } from '../lib/fichiers.js';
 import { jetonsDe } from '../tokens/resolver.js';
+import { cibleDeLaMarque } from '../tokens/cible.js';
 
 /**
  * @typedef {object} ReduceOptions
@@ -32,6 +33,7 @@ import { jetonsDe } from '../tokens/resolver.js';
  * @property {string} targetPath
  * @property {string} [decisionsPath]
  * @property {string} [tokensPath]     jetons DTCG de la cible (fichier de jetons ou resolver), pour migration.md
+ * @property {boolean} [brandColors]   couleurs de la cible prises dans les jetons de --tokens (D76) : seules ses nuances sont proposées
  * @property {string} [storageState]
  * @property {string} [sourcesPath]
  * @property {string} [referencesPath]  Dossier des références de npm run verify
@@ -62,7 +64,7 @@ const CAPTURED = new Set(['décision', 'proche', 'auto', 'correction']);
  */
 export async function runReduce(opts) {
   const { viewport = { width: 1366, height: 900 }, waitMs = DEFAULT_WAIT_MS, outRoot = 'local/reductions', now = new Date(), log = () => {} } = opts;
-  const target = JSON.parse(await readFile(opts.targetPath, 'utf8'));
+  const donnee = JSON.parse(await readFile(opts.targetPath, 'utf8'));
   /** @type {Record<string, string | false>} */
   const decisions = opts.decisionsPath ? JSON.parse(await readFile(opts.decisionsPath, 'utf8')) : {};
   // --tokens lit un fichier de jetons ou un resolver ; un fichier qui ne donne aucun jeton est une
@@ -70,6 +72,9 @@ export async function runReduce(opts) {
   const tokens = opts.tokensPath ? jetonsDe(lireJson(opts.tokensPath), opts.tokensPath) : null;
   if (tokens && !indexTokens(tokens).size)
     throw new Error(`--tokens ${opts.tokensPath} : aucun jeton lu (couleur en hex, dimension en px) ; un fichier .tokens.json ou un resolver DTCG 2025.10 attendu`);
+  if (opts.brandColors && !tokens) throw new Error('--brand-colors demande --tokens : les couleurs de la cible viennent des jetons de la marque');
+  // D76 : les couleurs de la cible sont celles de la marque ; ses dimensions restent celles de la cible donnée.
+  const target = opts.brandColors && tokens ? cibleDeLaMarque(donnee, tokens, { marque: lireJson(/** @type {string} */ (opts.tokensPath)).name }) : donnee;
   // D18 : une couleur de marque illisible dans la cible lève avant de lancer Chromium.
   if (target.brand) brandOf(target);
   const { sources } = await loadSources({ path: opts.sourcesPath });
@@ -334,6 +339,7 @@ export async function runReduce(opts) {
             ...hostUrls.slice(1).map((u) => q(new URL(u).pathname)),
             `--target ${q(opts.targetPath)}`,
             opts.tokensPath ? `--tokens ${q(opts.tokensPath)}` : '',
+            opts.brandColors ? '--brand-colors' : '',
             opts.sourcesPath ? `--sources ${q(opts.sourcesPath)}` : '',
             opts.decisionsPath ? `--decisions ${q(opts.decisionsPath)}` : '',
             `--viewport ${viewport.width}x${viewport.height}`,

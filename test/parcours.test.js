@@ -158,7 +158,7 @@ test('PC2 l’état des sept projets, depuis leurs sorties', () => {
   });
   assert.equal(
     etat('marque').courante.commande,
-    'npm run reduce -- http://127.0.0.1:4173/desordre/carte.html /desordre/compte.html /desordre/gestion.html --target fixtures/marque-demo/cible-valise.json --tokens fixtures/parcours/marque/marques/orbe/marque.resolver.json --sources fixtures/marque-demo/sources.json --references fixtures/parcours/marque/sorties/references --out fixtures/parcours/marque/sorties/reductions',
+    'npm run reduce -- http://127.0.0.1:4173/desordre/carte.html /desordre/compte.html /desordre/gestion.html --target fixtures/marque-demo/cible-valise.json --tokens fixtures/parcours/marque/marques/orbe/marque.resolver.json --brand-colors --sources fixtures/marque-demo/sources.json --references fixtures/parcours/marque/sorties/references --out fixtures/parcours/marque/sorties/reductions',
   );
   assert.deepEqual(resume('decisions'), {
     temps: ['faite', 'en cours', 'à venir', 'à venir'],

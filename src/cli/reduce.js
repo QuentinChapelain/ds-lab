@@ -21,6 +21,8 @@ const USAGE = `Usage : npm run reduce -- <adresse> [<chemins…>] --target <cibl
   --decisions <fichier>      decisions.json exporté depuis revue.html (tour suivant)
   --tokens <fichier>         jetons DTCG de la cible (.tokens.json, ou resolver de la marque, marque.resolver.json) :
                              leurs chemins nomment les lignes de migration.md
+  --brand-colors             couleurs de la cible prises dans les jetons de --tokens : la revue ne propose que
+                             des nuances de la marque ; rayons, espacements et tailles restent ceux de --target
   --storage-state <fichier>  session enregistrée par npm run login
   --sources <fichier>        fichier de sources (pour thirdParty ; sans lui : aucun fichier lu)
   --viewport <LxH>           fenêtre (défaut : 1366x900)
@@ -50,6 +52,7 @@ export function parseReduceArgs(argv) {
       target: { type: 'string' },
       decisions: { type: 'string' },
       tokens: { type: 'string' },
+      'brand-colors': { type: 'boolean', default: false },
       'storage-state': { type: 'string' },
       sources: { type: 'string' },
       references: { type: 'string' },
@@ -72,6 +75,7 @@ export function parseReduceArgs(argv) {
       targetPath: String(values.target),
       decisionsPath: values.decisions,
       tokensPath: values.tokens,
+      brandColors: !!values['brand-colors'],
       storageState: values['storage-state'],
       sourcesPath: values.sources,
       referencesPath: values.references,

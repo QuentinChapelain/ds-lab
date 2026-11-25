@@ -273,7 +273,7 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
   const resolver = premier.dossierMarque ? join(premier.dossierMarque, RESOLVER) : null;
   const reduire = (/** @type {boolean} */ avecDecisions) =>
     resolver && projet.cible
-      ? `npm run reduce -- ${adresses(premier)} --target ${c(projet.cible)} --tokens ${c(resolver)}${projet.sources ? ` --sources ${c(projet.sources)}` : ''}${avecDecisions ? ` --decisions ${c(fichierDecisions)}` : ''} --references ${c(join(sorties, 'references'))} --out ${c(join(sorties, 'reductions'))}`
+      ? `npm run reduce -- ${adresses(premier)} --target ${c(projet.cible)} --tokens ${c(resolver)} --brand-colors${projet.sources ? ` --sources ${c(projet.sources)}` : ''}${avecDecisions ? ` --decisions ${c(fichierDecisions)}` : ''} --references ${c(join(sorties, 'references'))} --out ${c(join(sorties, 'reductions'))}`
       : null;
   const revue = red && existsSync(join(red.chemin, 'revue.html')) ? join(red.chemin, 'revue.html') : null;
   /** @type {Etape} */

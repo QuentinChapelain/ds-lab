@@ -72,6 +72,8 @@ export const THRESHOLDS = { autoPx: 1, nearRatio: 0.15, nearTextPx: 2, autoDelta
 
 /** Seuils des règles R4 et R7. */
 const RULES = { noScaleDeltaE: 10, layoutMaxPx: 64 };
+/** M8 : motif d'une couleur qui n'a la teinte d'aucune échelle de la marque. */
+const M8 = 'aucune échelle de la marque n’a cette teinte : neutre (M8)';
 
 /** R1 : tranches de pas par usage. */
 export const SLICES = /** @type {Record<string, [number, number]>} */ ({ texte: [11, 12], bordure: [6, 8], fond: [1, 5], plein: [9, 10] });
@@ -84,7 +86,7 @@ export const isOut = (cls) => cls.startsWith('hors table');
 
 /**
  * @typedef {{ name?: string, value: string }} TargetColor
- * @typedef {{ radii?: number[], spacing?: number[], fontSizes?: number[], colors?: TargetColor[], onSolid?: Record<string, string | Record<string, string>>, brand?: any }} Target
+ * @typedef {{ radii?: number[], spacing?: number[], fontSizes?: number[], colors?: TargetColor[], onSolid?: Record<string, string | Record<string, string>>, brand?: any, otherHues?: string }} Target
  * @typedef {object} Row
  * @property {string} old
  * @property {number} count          occurrences d'interface dans le rendu
@@ -514,13 +516,15 @@ const byDelta = (d) => (d <= THRESHOLDS.autoDeltaE ? 'auto' : d <= THRESHOLDS.ne
  * @param {import('../brand/brand.js').Brand | null} [B]  marque résolue
  * @returns {Row[]}
  */
-function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {any[]} */ ([]), onSolidMap = /** @type {Record<string, any> | undefined} */ (undefined)) {
+function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {any[]} */ ([]), onSolidMap = /** @type {Record<string, any> | undefined} */ (undefined), otherHues = /** @type {string | undefined} */ (undefined)) {
   const T = targets.map((t) => {
     const value = t.value.toLowerCase();
     const m = /^(.+)-(\d+)$/.exec(t.name ?? '');
     return { name: t.name, value, lab: toLab(value), lum: relativeLuminance(value), scale: m ? m[1] : t.name ?? value, step: m ? Number(m[2]) : null };
   });
   const hasScales = T.some((t) => t.step !== null);
+  // M8 : la couleur de chaque échelle (son pas 9), hors de l'échelle qui reçoit les autres teintes.
+  const teintes = otherHues ? T.filter((t) => t.step === 9 && t.scale !== otherHues) : [];
   const tens = T.filter((t) => t.step === 10);
   const darkLum = hasScales && tens.length ? Math.min(...tens.map((t) => t.lum)) : null;
   /** @param {[number, number, number]} lab @param {typeof T} list */
@@ -549,7 +553,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
     return scale && worst ? { scale, ratio: r4(worst.ratio), threshold: worst.threshold } : null;
   };
 
-  /** @type {(Row & { _cands?: any[], _nearest?: any, _fixed?: boolean, _exact?: any })[]} */
+  /** @type {(Row & { _cands?: any[], _nearest?: any, _fixed?: boolean, _exact?: any, _m8?: boolean })[]} */
   const rows = [];
   for (const [old, byUsage] of Object.entries(usages.colors ?? {})) {
     let entries = usageEntries(byUsage);
@@ -581,8 +585,12 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
     const declared = B?.byValue.get(old);
     // G8 : un gris (chroma OKLCH < 0,02) ne se range que sur neutre, jamais sur une échelle de marque ou de statut.
     const greyHome = !declared && isGrey(old) ? all.find((c) => c.t.scale === 'neutre') : undefined;
-    const nearest = (declared && all.find((c) => c.t.scale === declared.scale)) || greyHome || all[0];
-    if (!declared && nearest.delta > RULES.noScaleDeltaE) {
+    // M8 : avec les couleurs de la marque, une couleur qui n'a la teinte d'aucune de ses échelles va sur l'échelle des
+    // autres teintes (le neutre), à toute distance : une troisième couleur du site n'a pas d'échelle dans la marque.
+    const otherHome =
+      !declared && !greyHome && otherHues && teintes.length && !teintes.some((t) => sameHue(old, t.value)) ? all.find((c) => c.t.scale === otherHues) : undefined;
+    const nearest = (declared && all.find((c) => c.t.scale === declared.scale)) || greyHome || otherHome || all[0];
+    if (!declared && !otherHome && nearest.delta > RULES.noScaleDeltaE) {
       rows.push({
         old, count, properties, selectors, usages: labels, kinds, new: null, class: OUT.scale, delta: nearest.delta, candidates: candidatesOf(all),
         reason: `ΔE ${nearest.delta} à la valeur la plus proche de la valise (${nearest.t.name}) : aucune échelle (R4)`,
@@ -600,6 +608,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
       // D19 : une valeur vue seulement à un état forcé porte cet état.
       if (e.enEtat && e.enEtat === n) row.etats = Object.keys(e.etats ?? {}).sort();
       if (declared) row.slot = declared.slot;
+      if (otherHome) Object.assign(row, { reason: M8, _m8: true });
       if (range) row.slice = usage;
       if (e.field) row.field = e.field;
       if (darkLum !== null && (usage === 'fond' || usage === 'plein') && relativeLuminance(old) < darkLum) {
@@ -723,6 +732,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
     const changed = r.new !== c.t.value || r.class !== cls;
     Object.assign(r, { new: c.t.value, name: c.t.name, delta: c.delta, class: cls });
     if (reason) r.reason = reason;
+    else if (r._m8) r.reason = M8;
     else delete r.reason;
     return changed;
   };
@@ -871,6 +881,7 @@ function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {an
     delete r._fixed;
     delete r._exact;
     delete r._states;
+    delete r._m8;
   }
   return ordered(rows);
 }
@@ -1044,7 +1055,7 @@ export function propose(rendered, target, { contradictions = /** @type {any[]} *
   if (target.spacing) put('spacing', u ? spacingUsageRows(u.spacing, target.spacing, u.proximity) : dimensionRows(gather(rendered, ['margins', 'paddings', 'gaps']), target.spacing));
   if (target.fontSizes) put('fontSizes', dimensionRows(gather(rendered, ['fontSizes']), target.fontSizes, { nearPx: THRESHOLDS.nearTextPx }));
   const B = target.brand && target.colors ? brandOf(target) : null;
-  if (target.colors) put('colors', u ? colorUsageRows(u, target.colors, B, rendered.contrast?.pairs ?? [], target.onSolid) : colorRows(gather(rendered, ['colors']), target.colors));
+  if (target.colors) put('colors', u ? colorUsageRows(u, target.colors, B, rendered.contrast?.pairs ?? [], target.onSolid, target.otherHues) : colorRows(gather(rendered, ['colors']), target.colors));
   return {
     thresholds: THRESHOLDS,
     rules: RULES,
