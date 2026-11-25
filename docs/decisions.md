@@ -703,3 +703,9 @@ Soixante-dix décisions, chacune avec sa raison et sa conséquence. Aucune valeu
 - **Raison** : demande du 25/11/2026 (boîte, fichier 15), seconde partie du pas.
 - **Conséquence** : `test/parcours-ecrans.test.js` (EC9).
 - **Limite** : une marque sans accent n'en reçoit pas à l'écran ; une couleur grise ne se prend que par son code.
+
+### D82
+- **Décision** : M8 ne compare une couleur du site qu'aux échelles de la marque (primaire, accent), jamais au neutre ni aux statuts. Une couleur qui n'a la teinte d'aucune d'elles va au neutre, même si elle a la teinte de l'erreur ou du succès : un statut dit un sens, il n'accueille pas une couleur du site. La cible prise dans la marque nomme ses échelles (`brandScales`, `src/tokens/cible.js`). Complète D76.
+- **Raison** : relevé par Quentin le 25/11/2026 (boîte, fichier 10) : l'étiquette « Nouveau » en terracotta partait sur le rouge d'erreur, « le rouge sert à l'erreur, ici ce n'est pas une erreur ». Cause mesurée : avec le sable en accent, M8 comparait le terracotta à toutes les échelles de la cible, et l'erreur a sa teinte. Mesuré le 25/11/2026 sur les trois pages en désordre, marque `#2b4c7e` et `#f0c987` : les trois terracottas (`#d0563f`, `#c4513a`, `#c8553d`) vont sur `neutre-9` à `neutre-11`.
+- **Conséquence** : `test/cible-marque.test.js` (CB4), `test/e2e-cible-marque.test.js` (CM4).
+- **Limite** : une couleur d'erreur du site (un message en rouge) va elle aussi au neutre quand la marque n'a pas sa teinte ; la reconnaître comme erreur demanderait de lire son rôle, ce que la réduction ne fait pas.

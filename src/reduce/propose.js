@@ -86,7 +86,7 @@ export const isOut = (cls) => cls.startsWith('hors table');
 
 /**
  * @typedef {{ name?: string, value: string }} TargetColor
- * @typedef {{ radii?: number[], spacing?: number[], fontSizes?: number[], colors?: TargetColor[], onSolid?: Record<string, string | Record<string, string>>, brand?: any, otherHues?: string }} Target
+ * @typedef {{ radii?: number[], spacing?: number[], fontSizes?: number[], colors?: TargetColor[], onSolid?: Record<string, string | Record<string, string>>, brand?: any, otherHues?: string, brandScales?: string[] }} Target
  * @typedef {object} Row
  * @property {string} old
  * @property {number} count          occurrences d'interface dans le rendu
@@ -516,15 +516,15 @@ const byDelta = (d) => (d <= THRESHOLDS.autoDeltaE ? 'auto' : d <= THRESHOLDS.ne
  * @param {import('../brand/brand.js').Brand | null} [B]  marque résolue
  * @returns {Row[]}
  */
-function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {any[]} */ ([]), onSolidMap = /** @type {Record<string, any> | undefined} */ (undefined), otherHues = /** @type {string | undefined} */ (undefined)) {
+function colorUsageRows(usages, targets, B = null, contrastPairs = /** @type {any[]} */ ([]), onSolidMap = /** @type {Record<string, any> | undefined} */ (undefined), otherHues = /** @type {string | undefined} */ (undefined), brandScales = /** @type {string[] | undefined} */ (undefined)) {
   const T = targets.map((t) => {
     const value = t.value.toLowerCase();
     const m = /^(.+)-(\d+)$/.exec(t.name ?? '');
     return { name: t.name, value, lab: toLab(value), lum: relativeLuminance(value), scale: m ? m[1] : t.name ?? value, step: m ? Number(m[2]) : null };
   });
   const hasScales = T.some((t) => t.step !== null);
-  // M8 : la couleur de chaque échelle (son pas 9), hors de l'échelle qui reçoit les autres teintes.
-  const teintes = otherHues ? T.filter((t) => t.step === 9 && t.scale !== otherHues) : [];
+  // M8 : la couleur de chaque échelle de la marque (son pas 9) ; ni l'échelle qui reçoit les autres teintes, ni un statut.
+  const teintes = otherHues ? T.filter((t) => t.step === 9 && t.scale !== otherHues && (!brandScales || brandScales.includes(t.scale))) : [];
   const tens = T.filter((t) => t.step === 10);
   const darkLum = hasScales && tens.length ? Math.min(...tens.map((t) => t.lum)) : null;
   /** @param {[number, number, number]} lab @param {typeof T} list */
@@ -1055,7 +1055,7 @@ export function propose(rendered, target, { contradictions = /** @type {any[]} *
   if (target.spacing) put('spacing', u ? spacingUsageRows(u.spacing, target.spacing, u.proximity) : dimensionRows(gather(rendered, ['margins', 'paddings', 'gaps']), target.spacing));
   if (target.fontSizes) put('fontSizes', dimensionRows(gather(rendered, ['fontSizes']), target.fontSizes, { nearPx: THRESHOLDS.nearTextPx }));
   const B = target.brand && target.colors ? brandOf(target) : null;
-  if (target.colors) put('colors', u ? colorUsageRows(u, target.colors, B, rendered.contrast?.pairs ?? [], target.onSolid, target.otherHues) : colorRows(gather(rendered, ['colors']), target.colors));
+  if (target.colors) put('colors', u ? colorUsageRows(u, target.colors, B, rendered.contrast?.pairs ?? [], target.onSolid, target.otherHues, target.brandScales) : colorRows(gather(rendered, ['colors']), target.colors));
   return {
     thresholds: THRESHOLDS,
     rules: RULES,

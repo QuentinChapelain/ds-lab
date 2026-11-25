@@ -13,6 +13,9 @@ const NOMS = /** @type {Record<string, string>} */ ({ neutral: 'neutre' });
 /** Statuts hors de la cible : ils disent un sens (attention, information), jamais une couleur du site à ranger. */
 const HORS = new Set(['warning', 'info']);
 
+/** Échelles communes : le neutre et les statuts. Les autres échelles sont celles de la marque. */
+const COMMUNES = new Set(['neutral', 'error', 'success', 'warning', 'info']);
+
 /** @param {string} n */
 const nomDans = (n) => NOMS[n] ?? n;
 
@@ -39,8 +42,10 @@ export function cibleDeLaMarque(base, jetons, { marque } = {}) {
   return {
     $comment: `Cible prise dans la marque${marque ? ` ${marque}` : ''} : couleurs lues dans ses jetons, en clair ; dimensions de la cible donnée.`,
     ...dimensions,
-    // M8 : une couleur du site qui n'a la teinte d'aucune échelle de la marque va au neutre.
+    // M8 : une couleur du site qui n'a la teinte d'aucune échelle de la marque va au neutre, même si elle a celle d'un
+    // statut : l'erreur et le succès disent un sens, ils n'accueillent pas une couleur du site.
     otherHues: nomDans('neutral'),
+    brandScales: [...new Set(v.colors.map((/** @type {{ name: string }} */ c) => c.name.replace(/-\d+$/, '')))].filter((n) => !COMMUNES.has(n)),
     onSolid,
     colors,
   };

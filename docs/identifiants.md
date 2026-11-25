@@ -47,7 +47,7 @@ Dans le code, `D2` et `D4` sont aussi des noms de constantes de mise en forme (`
 | M5 | Une correction de couleur de marque à plus de ΔE 10 devient une décision | `src/reduce/propose.js` | motif : `revue.html`, `table.json` |
 | M6 | Une décision propose aussi le pas proche, avec le fond de la paire en échec déplacé | `src/reduce/propose.js`, `src/report/consigne.js` | consigne de `migration.md` |
 | M7 | Quand le back-office et la feuille du client se contredisent, c'est signalé et la cible tranche | `src/brand/brand.js`, `src/report/migration.js` | `migration.md` |
-| M8 | Avec les couleurs de la marque (`--brand-colors`), une couleur qui n'a la teinte d'aucune échelle de la marque va au neutre, à toute distance (D76) | `src/reduce/propose.js`, `src/tokens/cible.js` | motif : `revue.html`, `table.json` |
+| M8 | Avec les couleurs de la marque (`--brand-colors`), une couleur qui n'a la teinte d'aucune échelle de la marque (primaire, accent ; ni neutre ni statut) va au neutre, à toute distance (D76, D82) | `src/reduce/propose.js`, `src/tokens/cible.js` | motif : `revue.html`, `table.json` |
 
 Les règles M0 à M7 ne s'affichent qu'avec une marque déclarée (bloc `brand` de la cible) ; M8, qu'avec les couleurs de la marque (`--brand-colors`). Définitions d'origine : R1 à R9 dans l'en-tête de `src/reduce/propose.js`, `fixtures/marque-demo/expected-desordre-valise.json` et `fixtures/marque-demo/expected-pieges.json` ; M0 à M7 (il n'y a pas de M2) dans `fixtures/marque-demo/expected-marque.json`.
 
@@ -90,9 +90,9 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 | AF1 à AF5 | App fictive du banc d'essai : versions de l'atelier, ni `Ds…` ni annuaire ni ds-lab, les dix membres en tête et les champs du brief, entrées des trois marques, 295 membres rejouables (D67, D68) | `test/app-fictive.test.js` |
 | B1 à B5 | Jetons du bouton dans les dix thèmes, contrastes de l'icône du bouton à icône | `test/bouton-jetons.test.js` |
 | BN1 à BN8 | Banc d'essai : exercice demandé, passage du bras A posé (copie cachée et sans historique, app de départ, skill, réglages, briefs), passage du bras B (hook, carnet), deux poses identiques, `verifier` depuis la copie (D67), passage d'Inventorier posé et relevé (D69), réglages sans chemin hors du passage (D70), `TMPDIR` du passage et consigne du terminal (D71) | `test/banc.test.js`, BN2 dans `test/relecteur.test.js` |
-| CB1 à CB3 | Cible prise dans la marque : couleurs, dimensions, jetons, option `--brand-colors` (D76) | `test/cible-marque.test.js` |
+| CB1 à CB4 | Cible prise dans la marque : couleurs, dimensions, jetons, option `--brand-colors`, M8 comparé aux seules échelles de la marque (D76, D82) | `test/cible-marque.test.js` |
 | C1 à C13 | Fenêtre des candidats, grisé des marges, bilan par usage | `test/candidats.test.js`, `test/e2e-candidats-revue.test.js`, `fixtures/marque-demo/expected-candidats.json` |
-| CM1 à CM3 | Cible prise dans la marque, sur les pages en désordre : aucune ligne non arrivée, nuances proposées toutes dans la cible, troisième couleur au neutre (D76) | `test/e2e-cible-marque.test.js` |
+| CM1 à CM4 | Cible prise dans la marque, sur les pages en désordre : aucune ligne non arrivée, nuances proposées toutes dans la cible, troisième couleur au neutre, terracottas au neutre avec le sable en accent (D76, D82) | `test/e2e-cible-marque.test.js` |
 | CN1 | Carnet : ligne datée par la commande, cellules échappées, choix ou réponse, carnet cherché dans les parents, pannes (D71) | `test/relecteur.test.js` |
 | EC1 à EC9 | Écrans du parcours : le lancement, l'écran des pages (un site, plusieurs, refus à côté du champ), retirer, ajouter après vérification, valider, la mesure en cours (D78), la commande avant le projet, les formulaires, `--attendre` (D77) ; la dette, ses valeurs et ses composants, « Passer à ta marque » (D79) ; la marque lue par la règle, montrée, confirmée ou refusée (D80), modifiée (D81) | `test/parcours-ecrans.test.js` |
 | E1 à E12 | Gardes des enveloppes (bouton, champ de texte, carte, bouton à icône, avatar, étiquette), découpage d'un composant `.vue` | `test/enveloppe-bouton.test.js` |

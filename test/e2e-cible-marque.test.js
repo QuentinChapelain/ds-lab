@@ -8,7 +8,9 @@
  *       du texte sur plein) existe dans la cible écrite dans table.json, et chaque couleur de cette cible est un jeton
  *       de la marque ;
  *   CM3 la troisième couleur du site (le sable, #f0c987) n'a la teinte d'aucune échelle de la marque : elle va au
- *       neutre (M8), en fond comme en texte.
+ *       neutre (M8), en fond comme en texte ;
+ *   CM4 le sable en accent : les terracottas du site n'ont la teinte d'aucune échelle de la marque, ils vont au neutre
+ *       (M8), jamais sur l'erreur, qui a leur teinte mais dit un sens ; CB4 le vérifie aussi sans navigateur.
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -37,6 +39,8 @@ let partie;
 let lavandine;
 /** @type {any} */
 let premiere;
+/** @type {any} */
+let sable;
 
 /** @param {string} tokensPath @param {string} [decisionsPath] */
 const reduire = async (tokensPath, decisionsPath) =>
@@ -54,15 +58,20 @@ const reduire = async (tokensPath, decisionsPath) =>
     })
   )[0];
 
-before(async () => {
-  servers = await startFixtureServers();
-  // La marque lue sur le site : ses deux couleurs, saisies comme le fait le parcours.
+/** La marque saisie comme le fait le parcours ; son resolver. @param {string} accent */
+const saisir = async (accent) => {
   const dossier = await mkdtemp(join(tmpdir(), 'ds-lab-cible-marque-saisie-'));
   const entree = join(dossier, 'entree.json');
-  await writeFile(entree, JSON.stringify({ name: 'Essai', primary: '#2b4c7e', accent: '#c8553d', fonts: { heading: ['Georgia', 'serif'] } }));
+  await writeFile(entree, JSON.stringify({ name: 'Essai', primary: '#2b4c7e', accent, fonts: { heading: ['Georgia', 'serif'] } }));
   const s = spawnSync(process.execPath, [SAISIE, entree], { encoding: 'utf8' });
   assert.equal(s.status, 0, s.stdout + s.stderr);
-  const tokensPath = join(dossier, 'marque.resolver.json');
+  return { dossier, tokensPath: join(dossier, 'marque.resolver.json') };
+};
+
+before(async () => {
+  servers = await startFixtureServers();
+  // La marque lue sur le site : ses deux couleurs.
+  const { dossier, tokensPath } = await saisir('#c8553d');
   premiere = await reduire(tokensPath);
   /** @type {Record<string, string>} */
   const decisions = {};
@@ -73,6 +82,7 @@ before(async () => {
   await writeFile(fichier, JSON.stringify(decisions));
   partie = await preuve(servers, { addresses: [servers.origin + PAGES[0], ...PAGES.slice(1)], targetPath: CIBLE, tokensPath, brandColors: true, decisionsPath: fichier });
   lavandine = await reduire(LAVANDINE);
+  sable = await reduire((await saisir('#f0c987')).tokensPath);
 });
 
 after(async () => servers?.close());
@@ -112,4 +122,14 @@ test('CM3 la troisième couleur du site va au neutre (M8), en fond comme en text
     ].filter(([u]) => sable.some((/** @type {any} */ r) => r.usage === u)),
   );
   assert.ok(sable.length >= 2);
+});
+
+test('CM4 le sable en accent : les terracottas vont au neutre (M8), jamais sur l’erreur', () => {
+  const terracottas = sable.table.families.colors.rows.filter((/** @type {any} */ r) => ['#d0563f', '#c4513a', '#c8553d'].includes(r.old));
+  assert.ok(terracottas.length >= 2, `${terracottas.length} lignes`);
+  assert.deepEqual(
+    terracottas.filter((/** @type {any} */ r) => !r.name?.startsWith('neutre-') || r.candidates.some((/** @type {any} */ c) => !c.name.startsWith('neutre-'))).map((/** @type {any} */ r) => `${r.old} ${r.usage} ${r.name}`),
+    [],
+  );
+  assert.ok(terracottas.some((/** @type {any} */ r) => /M8/.test(r.reason ?? '')));
 });
