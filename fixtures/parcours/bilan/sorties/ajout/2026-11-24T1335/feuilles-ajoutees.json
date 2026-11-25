@@ -1,0 +1,334 @@
+{
+  "lignes": [
+    {
+      "id": "arr-01",
+      "famille": "radii",
+      "ancienne": "3px",
+      "nouvelle": "2px"
+    },
+    {
+      "id": "arr-06",
+      "famille": "radii",
+      "ancienne": "6px",
+      "nouvelle": "4px"
+    },
+    {
+      "id": "arr-02",
+      "famille": "radii",
+      "ancienne": "50%",
+      "nouvelle": "9999px"
+    },
+    {
+      "id": "arr-05",
+      "famille": "radii",
+      "ancienne": "999px",
+      "nouvelle": "9999px"
+    },
+    {
+      "id": "esp-19",
+      "famille": "spacing",
+      "ancienne": "20px",
+      "nouvelle": "16px"
+    },
+    {
+      "id": "esp-18",
+      "famille": "spacing",
+      "ancienne": "6px",
+      "nouvelle": "8px"
+    },
+    {
+      "id": "esp-22",
+      "famille": "spacing",
+      "ancienne": "10px",
+      "nouvelle": "12px"
+    },
+    {
+      "id": "esp-24",
+      "famille": "spacing",
+      "ancienne": "10px",
+      "nouvelle": "8px"
+    },
+    {
+      "id": "esp-26",
+      "famille": "spacing",
+      "ancienne": "14px",
+      "nouvelle": "16px"
+    },
+    {
+      "id": "esp-15",
+      "famille": "spacing",
+      "ancienne": "36px",
+      "nouvelle": "32px"
+    },
+    {
+      "id": "esp-27",
+      "famille": "spacing",
+      "ancienne": "27px",
+      "nouvelle": "24px"
+    },
+    {
+      "id": "esp-29",
+      "famille": "spacing",
+      "ancienne": "18px",
+      "nouvelle": "16px"
+    },
+    {
+      "id": "esp-30",
+      "famille": "spacing",
+      "ancienne": "30px",
+      "nouvelle": "32px"
+    },
+    {
+      "id": "esp-11",
+      "famille": "spacing",
+      "ancienne": "5px",
+      "nouvelle": "4px"
+    },
+    {
+      "id": "esp-12",
+      "famille": "spacing",
+      "ancienne": "15px",
+      "nouvelle": "16px"
+    },
+    {
+      "id": "tail-13",
+      "famille": "fontSizes",
+      "ancienne": "40px",
+      "nouvelle": "30px"
+    },
+    {
+      "id": "tail-09",
+      "famille": "fontSizes",
+      "ancienne": "10.5px",
+      "nouvelle": "12px"
+    },
+    {
+      "id": "tail-12",
+      "famille": "fontSizes",
+      "ancienne": "32px",
+      "nouvelle": "30px"
+    },
+    {
+      "id": "tail-06",
+      "famille": "fontSizes",
+      "ancienne": "11.9px",
+      "nouvelle": "12px"
+    },
+    {
+      "id": "tail-08",
+      "famille": "fontSizes",
+      "ancienne": "18.62px",
+      "nouvelle": "18px"
+    },
+    {
+      "id": "tail-10",
+      "famille": "fontSizes",
+      "ancienne": "13.5px",
+      "nouvelle": "14px"
+    },
+    {
+      "id": "tail-11",
+      "famille": "fontSizes",
+      "ancienne": "16.8px",
+      "nouvelle": "16px"
+    },
+    {
+      "id": "coul-09",
+      "famille": "colors",
+      "ancienne": "#595959",
+      "nouvelle": "#363026"
+    },
+    {
+      "id": "coul-27",
+      "famille": "colors",
+      "ancienne": "#30548a",
+      "nouvelle": "#0c274f"
+    },
+    {
+      "id": "coul-34",
+      "famille": "colors",
+      "ancienne": "#c4513a",
+      "nouvelle": "#c8292e"
+    },
+    {
+      "id": "coul-11",
+      "famille": "colors",
+      "ancienne": "#9a9a9a",
+      "nouvelle": "#6d675b"
+    },
+    {
+      "id": "coul-13",
+      "famille": "colors",
+      "ancienne": "#757575",
+      "nouvelle": "#6d675b"
+    },
+    {
+      "id": "coul-16",
+      "famille": "colors",
+      "ancienne": "#2196f3",
+      "nouvelle": "#0c274f"
+    },
+    {
+      "id": "coul-23",
+      "famille": "colors",
+      "ancienne": "#cccccc",
+      "nouvelle": "#958f84"
+    },
+    {
+      "id": "coul-24",
+      "famille": "colors",
+      "ancienne": "#d0563f",
+      "nouvelle": "#d93036"
+    },
+    {
+      "id": "coul-25",
+      "famille": "colors",
+      "ancienne": "#f0c987",
+      "nouvelle": "#80632f"
+    },
+    {
+      "id": "coul-28",
+      "famille": "colors",
+      "ancienne": "#4990e2",
+      "nouvelle": "#2b4c7e"
+    },
+    {
+      "id": "coul-30",
+      "famille": "colors",
+      "ancienne": "#777777",
+      "nouvelle": "#6d675b"
+    },
+    {
+      "id": "coul-31",
+      "famille": "colors",
+      "ancienne": "#808080",
+      "nouvelle": "#6d675b"
+    },
+    {
+      "id": "coul-32",
+      "famille": "colors",
+      "ancienne": "#999999",
+      "nouvelle": "#6d675b"
+    },
+    {
+      "id": "coul-33",
+      "famille": "colors",
+      "ancienne": "#9e9e9e",
+      "nouvelle": "#6d675b"
+    },
+    {
+      "id": "coul-35",
+      "famille": "colors",
+      "ancienne": "#c8553d",
+      "nouvelle": "#d93036"
+    },
+    {
+      "id": "coul-37",
+      "famille": "colors",
+      "ancienne": "#ef5c56",
+      "nouvelle": "#cb1d2a"
+    },
+    {
+      "id": "coul-01",
+      "famille": "colors",
+      "ancienne": "#999999",
+      "nouvelle": "#958f84"
+    },
+    {
+      "id": "coul-02",
+      "famille": "colors",
+      "ancienne": "#1f2a44",
+      "nouvelle": "#0c274f"
+    },
+    {
+      "id": "coul-03",
+      "famille": "colors",
+      "ancienne": "#2d2d2d",
+      "nouvelle": "#363026"
+    },
+    {
+      "id": "coul-07",
+      "famille": "colors",
+      "ancienne": "#e2dccf",
+      "nouvelle": "#d8d6d2"
+    },
+    {
+      "id": "coul-10",
+      "famille": "colors",
+      "ancienne": "#333333",
+      "nouvelle": "#363026"
+    },
+    {
+      "id": "coul-14",
+      "famille": "colors",
+      "ancienne": "#e2dccf",
+      "nouvelle": "#e3e2df"
+    },
+    {
+      "id": "coul-15",
+      "famille": "colors",
+      "ancienne": "#e5e5e5",
+      "nouvelle": "#d8d6d2"
+    },
+    {
+      "id": "coul-22",
+      "famille": "colors",
+      "ancienne": "#616161",
+      "nouvelle": "#6d675b"
+    },
+    {
+      "id": "coul-26",
+      "famille": "colors",
+      "ancienne": "#24426f",
+      "nouvelle": "#193866"
+    },
+    {
+      "id": "coul-29",
+      "famille": "colors",
+      "ancienne": "#666666",
+      "nouvelle": "#6d675b"
+    },
+    {
+      "id": "coul-08",
+      "famille": "colors",
+      "ancienne": "#dadada",
+      "nouvelle": "#d8d6d2"
+    },
+    {
+      "id": "coul-12",
+      "famille": "colors",
+      "ancienne": "#f2f2f2",
+      "nouvelle": "#f3f2f1"
+    },
+    {
+      "id": "coul-18",
+      "famille": "colors",
+      "ancienne": "#f6f5f6",
+      "nouvelle": "#f8f8f7"
+    },
+    {
+      "id": "coul-21",
+      "famille": "colors",
+      "ancienne": "#2c4d7f",
+      "nouvelle": "#2b4c7e"
+    },
+    {
+      "id": "coul-36",
+      "famille": "colors",
+      "ancienne": "#eeeeee",
+      "nouvelle": "#ecebe9"
+    },
+    {
+      "id": "coul-38",
+      "famille": "colors",
+      "ancienne": "#f7f3ec",
+      "nouvelle": "#f3f2f1"
+    },
+    {
+      "id": "coul-39",
+      "famille": "colors",
+      "ancienne": "#faf6ef",
+      "nouvelle": "#f8f8f7"
+    }
+  ]
+}

@@ -46,6 +46,28 @@ function valeursDe(rendu, familles) {
   return { interface: [...m].map(([valeur, fois]) => ({ valeur, fois })).sort((a, b) => b.fois - a.fois || (a.valeur < b.valeur ? -1 : 1)), contenu: contenu.size };
 }
 
+/**
+ * Les couleurs affichées (D86) : celles que la réduction range, lues dans les usages de l'audit. Le relevé de l'audit
+ * (ses familles) commence sous body, comme le script v1 (R1) : le fond de la page n'y est pas, ni une couleur vue
+ * seulement au survol, au focus ou à l'appui. Les usages les portent ; le contenu (images, pictogrammes) reste à part.
+ * Un audit sans usages : son relevé.
+ * @param {any} audit  audit.json
+ * @returns {{ interface: Valeur[], contenu: number }}
+ */
+function couleursDe(audit) {
+  const usages = audit.rendered?.usages?.colors;
+  if (!usages) return valeursDe(audit.rendered?.families ?? {}, ['colors']);
+  /** @type {Valeur[]} */
+  const vues = [];
+  let contenu = 0;
+  for (const [valeur, parUsage] of Object.entries(usages)) {
+    const fois = Object.values(/** @type {Record<string, any>} */ (parUsage)).reduce((n, u) => n + u.count - (u.content ?? 0), 0);
+    if (fois > 0) vues.push({ valeur, fois });
+    else contenu++;
+  }
+  return { interface: vues.sort((a, b) => b.fois - a.fois || (a.valeur < b.valeur ? -1 : 1)), contenu };
+}
+
 /** La valeur en px d'une longueur, ou null. @param {string} v */
 const px = (v) => (/^-?[\d.]+px$/.test(v) ? Number.parseFloat(v) : null);
 
@@ -61,14 +83,16 @@ export function valeurs(audit) {
   const rendu = audit.rendered?.families ?? {};
   const declare = audit.declared?.families ?? {};
 
-  const c = valeursDe(rendu, ['colors']);
+  const c = couleursDe(audit);
   const couleurs = c.interface.filter((x) => /^#[0-9a-f]{6}$/.test(x.valeur));
+  const etats = couleurs.filter((x) => (audit.rendered?.states?.onlyInStates ?? []).includes(x.valeur));
   const gris = couleurs.filter((x) => isGrey(x.valeur));
   const labs = couleurs.map((x) => toLab(x.valeur));
   // Presque identiques : une autre couleur du site à un écart invisible à l'œil (le seuil d'office de la réduction).
   const proches = couleurs.filter((_, i) => labs.some((l, j) => j !== i && deltaE(labs[i], l) <= THRESHOLDS.autoDeltaE)).length;
   const phrasesCouleurs = [
     `Dont ${nombre(gris.length, 'gris', 'gris')}${proches ? `, et ${proches} presque identiques à une autre` : ''}.`,
+    ...(etats.length ? [`${etats.length > 1 ? `${enLettres(etats.length)} ne se voient` : 'L’une ne se voit'} qu’au survol, au focus ou à l’appui.`] : []),
     ...ecrit(declare, 'colors'),
     ...(c.contenu ? [`${enLettres(c.contenu)} autre${c.contenu > 1 ? 's' : ''} ${c.contenu > 1 ? 'viennent' : 'vient'} du contenu (images, pictogrammes) : mise${c.contenu > 1 ? 's' : ''} de côté.`] : []),
   ];

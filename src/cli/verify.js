@@ -13,7 +13,8 @@
  * la hauteur de la page intacte (lue avant la pose, dans le même chargement), avec les feuilles et de la référence ;
  * puis le verdict par ligne décidée, sur les pages vérifiées : arrivée, en partie, non arrivée (chaque déclaration, ce
  * qui tient la valeur, ce qu'il faut faire), déjà en place, non vue, hors des pages vérifiées, non vérifiable (état),
- * et une phrase qui compte chaque état. Le compte de pixels reste donné, il ne décide pas.
+ * et une phrase qui compte chaque état. Le compte de pixels reste donné, il ne décide pas. La page intacte est capturée
+ * dans le même chargement, avant la pose (avant.png, à côté de actuel.png : l'avant et après du parcours, D86).
  * D18 : sans --ajout, sort en 0, même quand des pixels diffèrent (la commande compare, elle ne juge pas) ; avec
  * --ajout, en 0 si aucune ligne décidée n'est en partie, non arrivée, déjà en place ou non vue, en 1 sinon
  * (src/verify/arrivee.js, juger) ; en 2 sur une panne (option inconnue, référence absente, manifeste sans
@@ -114,6 +115,7 @@ async function main() {
     const dir = urls.length > 1 ? join(racine, pageName(url)) : racine;
     await mkdir(dir, { recursive: true });
     await writeFile(join(dir, 'actuel.png'), shot.png);
+    if (shot.avant) await writeFile(join(dir, 'avant.png'), shot.avant);
     await writeFile(join(dir, 'differences.png'), pixels.diffPng);
     await writeFile(join(dir, 'actuel.aria.yml'), shot.aria + '\n');
     if (!aria.identical) await writeFile(join(dir, 'aria.diff'), aria.diff + '\n');

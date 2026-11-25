@@ -130,12 +130,28 @@ details summary { cursor: pointer; color: var(--text-info); ${style('label')} }
 .relations { display: flex; flex-direction: column; gap: var(--gap-between-blocks); }
 .relations li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-within-component) var(--gap-between-blocks); }
 .planches a { color: var(--text-info); ${style('label')} }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-blocks); }
+button.discret { border-color: transparent; background: none; color: var(--text-info); }
+.comparer { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-blocks); }
+.comparer input { position: absolute; opacity: 0; pointer-events: none; }
+.comparer label { display: inline-flex; align-items: center; min-height: var(--height-control-medium); padding: 0 var(--padding-component); border: var(--border-width-default) solid var(--border-default); border-radius: var(--border-radius-control); background: var(--background-surface); cursor: pointer; ${style('label')} }
+.comparer input:checked + label { background: var(--background-inverse); border-color: var(--background-inverse); color: var(--text-on-inverse); }
+.comparer input:focus-visible + label { outline: var(--border-width-focus) solid var(--text-info); outline-offset: var(--offset-focus); }
+.vues { flex-basis: 100%; }
+.vue { display: none; flex-wrap: wrap; align-items: center; gap: var(--gap-between-blocks); }
+.cadre { position: relative; flex-basis: 100%; overflow: hidden; border: var(--border-width-default) solid var(--border-subtle); border-radius: var(--border-radius-surface); background: var(--background-subtle); }
+.cadre img { display: block; width: 100%; height: auto; }
+.cadre .dessus { position: absolute; top: 0; left: 0; }
+.voir-avant:checked ~ .cadre .apres, .voir-apres:checked ~ .cadre .avant { visibility: hidden; }
+.exemple { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-within-component) var(--gap-between-blocks); }
+.manque { display: flex; flex-direction: column; gap: var(--gap-within-component); padding-left: var(--gap-between-groups); list-style: disc; }
 `;
 
 /**
  * Le gabarit d'un écran.
  * @param {{ titre: string, onglet: string, statut: { texte: string, neutre?: boolean }, phrase: string, sousTete?: string,
- *   temps: { nom: string, etat: EtatEtape }[], corps: string, avance: [string, string], action?: string, rafraichir?: boolean }} o
+ *   temps: { nom: string, etat: EtatEtape }[], corps: string, avance: [string, string], action?: string, rafraichir?: boolean, regles?: string }} o
+ *   regles : des règles de style propres à l'écran, aux mêmes valeurs que le reste (variables, mots-clés)
  */
 function gabarit(o) {
   const temps = o.temps
@@ -148,7 +164,7 @@ function gabarit(o) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 ${o.rafraichir ? '<meta http-equiv="refresh" content="2">\n' : ''}<title>${esc(o.onglet)}</title>
 <style>
-${blocJetons()}${CSS}</style>
+${blocJetons()}${CSS}${o.regles ?? ''}</style>
 </head>
 <body>
 <main>
@@ -274,6 +290,9 @@ export function ecranDesPages(e, { sites, erreur = null }) {
 /** La valeur en px d'une longueur, ou null. @param {string} v */
 const px = (v) => (/^-?[\d.]+px$/.test(v) ? Number.parseFloat(v) : null);
 
+
+/** Accord en nombre : 0 et 1 au singulier. @param {number} n @param {string} un @param {string} plusieurs */
+const nombre = (n, un, plusieurs) => `${n} ${n > 1 ? plusieurs : un}`;
 
 /** « 3 fois ». @param {number} n */
 const fois = (n) => `${n} fois`;
@@ -565,5 +584,102 @@ ${planches}</section>`;
     corps: `<div class="blocs">\n${valeurs}\n${roles}\n${regles}\n${art}\n${pasEncore}\n</div>`,
     avance: ['Décider · après la porte 1', 'Regarde tes fondations, puis compare ton site.'],
     action: '<form method="post" action="/pages/fondations"><button type="submit" class="principal">Comparer mon site ›</button></form>',
+  });
+}
+
+/** Une valeur dite : « 3 px », « 50 % », une couleur telle quelle. @param {string} v */
+const valeurDite = (v) => (px(v) !== null ? `${fr(/** @type {number} */ (px(v)), { decimales: 2 })} px` : v.replace('%', ' %'));
+
+/**
+ * L'avant et après (D86), la troisième porte : chaque page mesurée, telle qu'elle était et telle que les feuilles
+ * ajoutées la rendent, au même endroit ; ce qui a changé, compté par famille, avec un exemple. Sans script : un onglet
+ * par page et la bascule sont des boutons radio, l'image cachée garde sa place. La plus haute des deux images tient le
+ * cadre, l'autre se pose dessus : rien ne saute. En bas, « Valider le rendu » ; à côté, « Revenir sur une décision ».
+ * @param {Etat} e
+ */
+export function ecranAvantApres(e) {
+  const a = /** @type {NonNullable<Etat['avantApres']>} */ (e.avantApres);
+  const onglets = a.vues.map((v, i) => `<input type="radio" name="page" id="page-${i}" class="choix-page"${i === 0 ? ' checked' : ''}><label for="page-${i}">${esc(v.nom)}</label>`).join('\n');
+  const vues = a.vues
+    .map((v, i) => {
+      const image = (/** @type {'avant' | 'apres'} */ q, /** @type {string} */ src, /** @type {string} */ dit) =>
+        `<img class="${q} ${v.plusHaute === q ? 'fond' : 'dessus'}" src="${esc(src)}" alt="${esc(`${v.nom}, ${dit}`)}">`;
+      return `<div class="vue vue-${i}" role="group" aria-label="${esc(v.nom)}">
+<input type="radio" name="bascule-${i}" id="avant-${i}" class="voir-avant"><label for="avant-${i}">Avant</label>
+<input type="radio" name="bascule-${i}" id="apres-${i}" class="voir-apres" checked><label for="apres-${i}">Après</label>
+<div class="cadre">${image('avant', v.avant, 'avant')}${image('apres', v.apres, 'après')}</div>
+</div>`;
+    })
+    .join('\n');
+  // Une règle par page : son onglet coché montre sa vue.
+  const regles = a.vues.map((_, i) => `#page-${i}:checked ~ .vues > .vue-${i} { display: flex; }`).join('\n');
+  const tous = a.arrivees === a.changements;
+  const titre = `${nombre(a.changements, 'changement', 'changements')}, ${tous ? (a.changements > 1 ? 'tous arrivés' : 'arrivé') : `${a.arrivees} ${a.arrivees > 1 ? 'arrivés' : 'arrivé'}`}`;
+  const manque = [
+    ...(a.manquantes.length ? [`<p>Pas arrivé :</p><ul class="manque">${a.manquantes.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`] : []),
+    ...(a.enEtat.length ? [`<p>Visible seulement au survol, au focus ou à l’appui, à regarder à la main :</p><ul class="manque">${a.enEtat.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`] : []),
+  ].join('\n');
+  const cartes = a.familles
+    .filter((f) => f.compte)
+    .map((f) => {
+      const x = f.exemple;
+      const exemple = !x
+        ? ''
+        : f.cle === 'colors'
+          ? `<p class="exemple">${pastille(x.ancienne, 24)}<code>${esc(x.ancienne)}</code><span aria-hidden="true">→</span>${pastille(x.nouvelle, 24)}<code>${esc(x.nouvelle)}</code></p>`
+          : `<p class="exemple"><code>${esc(valeurDite(x.ancienne))}</code><span aria-hidden="true">→</span><code>${esc(valeurDite(x.nouvelle))}</code></p>`;
+      return `<div class="carte"><h3>${esc(f.titre.charAt(0).toUpperCase() + f.titre.slice(1))} <span>${f.compte}</span></h3>${exemple}${x ? `<small>${esc(`dont ${x.ou}`)}</small>` : ''}</div>`;
+    })
+    .join('\n');
+  const decisions = a.decisions ? `Tes ${nombre(a.decisions, 'décision', 'décisions')} et les réglages de l’outil, ensemble,` : 'Les réglages de l’outil,';
+  return gabarit({
+    titre: 'Avant, après',
+    onglet: `Avant, après · ${e.produit}`,
+    statut: { texte: 'À toi de décider' },
+    phrase: `${decisions} sur ${a.pages > 1 ? `les ${a.pages} pages mesurées` : 'la page mesurée'}. C’est un aperçu : rien n’est encore installé sur ton site.`,
+    temps: e.temps,
+    corps: `<section class="comparer" aria-label="Comparer">
+${onglets}
+<div class="vues">
+${vues}
+</div>
+</section>
+<section class="bloc" aria-labelledby="t-changements"><h2 id="t-changements">${esc(titre)}</h2>
+${manque}
+<div class="cartes">
+${cartes}
+</div></section>`,
+    avance: ['Poser · porte 3 sur 3', 'Regarde chaque page, puis valide le rendu.'],
+    action: `<div class="actions"><form method="post" action="/pages/revue"><button type="submit" class="discret">Revenir sur une décision</button></form><form method="post" action="/pages/rendu"><button type="submit" class="principal">Valider le rendu ›</button></form></div>`,
+    regles,
+  });
+}
+
+/**
+ * Le rendu validé (D86) : ce qui a changé, ce qui reste à regarder par un humain, le dernier contrôle. La remise au
+ * développeur n'a pas encore d'écran : rien à décider ici.
+ * @param {Etat} e
+ */
+export function ecranDuRendu(e) {
+  const b = /** @type {NonNullable<Etat['bilan']>} */ (e.bilan);
+  const chiffres = b.chiffres.length
+    ? `<section class="bloc" aria-labelledby="t-change"><h2 id="t-change">Ce qui a changé</h2><ul class="chiffres">${b.chiffres
+        .map((c) => {
+          const m = /^(\d+ → \d+) (.+)$/.exec(c);
+          return m ? `<li><span class="fort">${esc(m[1])}</span>${esc(m[2])}</li>` : `<li>${esc(c)}</li>`;
+        })
+        .join('')}</ul></section>`
+    : '';
+  const reste = b.complet
+    ? `<section class="bloc" aria-labelledby="t-reste"><h2 id="t-reste">À regarder par un humain</h2><ul class="manque">${b.humain.map((h) => `<li>${esc(h)}</li>`).join('')}</ul></section>`
+    : `<section class="bloc" aria-labelledby="t-reste"><h2 id="t-reste">Il manque</h2><ul class="manque">${b.manque.map((h) => `<li>${esc(h)}</li>`).join('')}</ul></section>`;
+  return gabarit({
+    titre: 'Ton rendu est validé',
+    onglet: `Le rendu · ${e.produit}`,
+    statut: { texte: 'Rien à décider', neutre: true },
+    phrase: 'Tes choix sont posés à côté de l’ancien code, et vérifiés sur tes pages. La remise au développeur viendra ensuite.',
+    temps: e.temps,
+    corps: `<div class="blocs">\n${chiffres}\n${reste}\n<p><small>${esc(b.dernier)}</small></p>\n</div>`,
+    avance: ['Poser · porte 3 franchie', 'La remise au développeur viendra ensuite.'],
   });
 }

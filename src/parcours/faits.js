@@ -117,6 +117,8 @@ export function faitsDuMoment(e, { sorties }) {
         );
       } else if (!k.sortie) {
         f.push(['Fait', 'la marque, acceptée'], ['Écran', 'la planche de la marque'], ['Ensuite', 'comparer les pages aux fondations']);
+      } else if (k.action?.startsWith('revenir sur une décision')) {
+        f.push(['Fait', 'la revue rouverte, à la demande de l’humain'], ['Écran', 'la revue'], ['Ensuite', 'revenir sur la décision dans la revue ; une fois fini, exporter, puis glisser le fichier dans le chat, que l’IA range ; l’avant et après revient ensuite, avec des images refaites']);
       } else if (e.voisin) {
         f.push(['Ensuite', 'le fichier des choix est arrivé sous un autre nom : le ranger, sans le dire']);
       } else if (e.chiffres.enAttente) {
@@ -134,15 +136,24 @@ export function faitsDuMoment(e, { sorties }) {
     case 'suivi': {
       const l = e.livraison;
       if (!l) {
-        if (k.sortie) f.push(['Fait', 'les feuilles posées à côté de l’ancien code'], ['Ensuite', 'les vérifier sur les pages']);
+        if (k.sortie) f.push(['Fait', 'les feuilles posées à côté de l’ancien code'], ['Ensuite', 'les vérifier sur les pages, avant et après']);
         else f.push(['Fait', 'toutes les décisions prises'], ['Ensuite', 'poser les feuilles à côté de l’ancien code, puis les vérifier sur les pages']);
         break;
       }
-      f.push(['Fait', `la vérification sur ${nombre(l.pages, 'page', 'pages')}`], ['Chiffre', `${nombre(l.arrivees, 'ligne arrivée', 'lignes arrivées')} sur ${l.total}`]);
+      // L'avant et après (D86) : une phrase, ni compte ni liste, rien sur le développeur avant la validation.
+      if (e.moment === 'avant-apres') {
+        f.push(
+          ['Fait', 'les feuilles posées à côté de l’ancien code et vérifiées sur les pages'],
+          ['Écran', 'l’avant et après'],
+          ['Ensuite', 'une phrase : ses choix sont posés à côté de l’ancien code et vérifiés, le résultat est à droite, il regarde, puis valide ; ni compte ni liste, rien sur le développeur ; attendre le clic sur Valider le rendu (parcours --attendre, en tâche de fond)'],
+        );
+        break;
+      }
+      f.push(['Fait', `le rendu validé ; la vérification sur ${nombre(l.pages, 'page', 'pages')}`], ['Chiffre', `${nombre(l.arrivees, 'changement arrivé', 'changements arrivés')} sur ${l.total}`], ['Écran', 'le rendu validé']);
       for (const x of l.manquantes.slice(0, NOMMEES)) f.push(['Pas arrivé', `${sansGuillemets(x.titre)} ; ${nombre(x.elements, 'élément', 'éléments')}${x.cause ? ` ; cause : ${x.cause}` : ''}`]);
-      if (l.manquantes.length > NOMMEES) f.push(['Pas arrivé', `et ${nombre(l.manquantes.length - NOMMEES, 'autre ligne', 'autres lignes')}`]);
+      if (l.manquantes.length > NOMMEES) f.push(['Pas arrivé', `et ${nombre(l.manquantes.length - NOMMEES, 'autre changement', 'autres changements')}`]);
       f.push(['Au développeur', 'installer les feuilles ajoutées dans le code du produit ; vérifier les pages hors de l’échantillon']);
-      if (k.cle === 'suivi') f.push(['Ensuite', 'relancer le contrôle après chaque changement du site']);
+      f.push(['Ensuite', `dire en deux lignes ce qui se remet au développeur, sans rien ouvrir${k.cle === 'suivi' ? ' ; puis relancer le contrôle après chaque changement du site' : ''}`]);
       break;
     }
   }

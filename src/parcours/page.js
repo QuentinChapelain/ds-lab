@@ -7,8 +7,8 @@
  * mots-clés, 0 et 100 %, comme un module (D61). Toute chaîne venue du projet ou des sorties est échappée.
  */
 import { esc } from '../lib/format.js';
-import { aLaMain, etatDit, PHRASES } from './etat.js';
-import { blocJetons, ecranDesPages, ecranDeMesure, ecranDeLaDette, ecranDeLaMarque, ecranDesJetons, ecranDesFondations, style, DEBUT_JETONS, FIN_JETONS } from './ecrans.js';
+import { aLaMain, etatDit } from './etat.js';
+import { blocJetons, ecranDesPages, ecranDeMesure, ecranDeLaDette, ecranDeLaMarque, ecranDesJetons, ecranDesFondations, ecranAvantApres, ecranDuRendu, style, DEBUT_JETONS, FIN_JETONS } from './ecrans.js';
 
 export { DEBUT_JETONS, FIN_JETONS };
 
@@ -79,23 +79,12 @@ function moment(e) {
   /** @type {string[]} */
   const b = [];
   if (e.phrase) b.push(`<p class="phrase">${esc(e.phrase)}</p>`);
-  if (e.moment === 'bilan' && e.bilan) {
-    const x = e.bilan;
-    // La phrase du bilan ne s'écrit que si chaque marque est acceptée et le dernier verdict en 0 ; sinon, ce qui manque.
-    b.push(`<p class="phrase">${esc(x.complet ? PHRASES.bilan : `Il manque : ${x.manque.join(' ; ')}.`)}</p>`);
-    if (x.complet) b.push(`<ul>${x.humain.map((h) => `<li>${esc(h)}</li>`).join('')}</ul>`);
-    if (x.chiffres.length) b.push(`<p>${esc(`${x.chiffres.join(' ; ')}.`)}</p>`);
-    b.push(`<p>${esc(x.dernier)}</p>`);
-    // Au bilan, la ligne d'action se réduit à sa tête : le contrôle à relancer est dans le terminal et dans le chat.
-    b.push(action(e).split('\n')[0]);
-  } else {
-    b.push(lignesDuMoment(e));
-    b.push(action(e));
-    if (e.ecran) {
-      b.push(`<p><a href="${esc(e.ecran.href)}">Ouvrir seul</a></p>`);
-      b.push(`<iframe src="${esc(e.ecran.href)}" title="${esc(e.ecran.titre)}"></iframe>`);
-    } else if (e.courante.fait && e.courante.cle !== 'marques') b.push(`<p>${esc(e.courante.fait)}</p>`);
-  }
+  b.push(lignesDuMoment(e));
+  b.push(action(e));
+  if (e.ecran) {
+    b.push(`<p><a href="${esc(e.ecran.href)}">Ouvrir seul</a></p>`);
+    b.push(`<iframe src="${esc(e.ecran.href)}" title="${esc(e.ecran.titre)}"></iframe>`);
+  } else if (e.courante.fait && e.courante.cle !== 'marques') b.push(`<p>${esc(e.courante.fait)}</p>`);
   return `<section class="moment" aria-label="Le moment en cours">\n${b.filter(Boolean).join('\n')}\n</section>`;
 }
 
@@ -130,6 +119,8 @@ export function pageDuParcours(e, { erreur = null } = {}) {
   if (e.moment === 'marque' && e.marque) return ecranDeLaMarque(e, { erreur });
   if (e.moment === 'jetons') return ecranDesJetons(e);
   if (e.moment === 'fondations' && e.fondations) return ecranDesFondations(e);
+  if (e.moment === 'avant-apres' && e.avantApres) return ecranAvantApres(e);
+  if (e.moment === 'bilan' && e.bilan) return ecranDuRendu(e);
   return `<!doctype html>
 <html lang="fr">
 <head>

@@ -7,7 +7,10 @@
  *       (900 px de haut), sans nombre dans le style ;
  *   PG3 le lancement, l'écran des pages (D77), la dette (D79), la marque (D80) et les fondations (D83), servis par la commande, à 640 px, clair
  *       et sombre : aucun défilement horizontal, le fond du mode, la barre au bas de la fenêtre, chaque vignette chargée (capture ou dessin) ; les
- *       planches des fondations servies.
+ *       planches des fondations servies ;
+ *   PG4 l'avant et après (D86) à 640 px, clair et sombre, sans script : Après montré d'abord ; un clic sur Avant le
+ *       montre au même endroit, sans changer la hauteur du cadre ; un clic sur un onglet montre sa page et cache les
+ *       autres ; la barre au bas de la fenêtre, aucun défilement horizontal, chaque image chargée.
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -20,7 +23,7 @@ import { servir } from '../src/parcours/serveur.js';
 import { lancerChromium } from '../src/browser/lancement.js';
 import { spawn, spawnSync } from 'node:child_process';
 import { confirmerMarque } from '../src/parcours/pages.js';
-import { cpSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -128,5 +131,45 @@ test('PG3 le lancement, les pages, la dette, la marque et les fondations à 640 
   } finally {
     p.kill();
     await new Promise((ok) => (p.exitCode !== null ? ok(null) : p.on('exit', ok)));
+  }
+});
+
+test('PG4 l’avant et après à 640 px : la bascule et les onglets, sans script', async () => {
+  const d = realpathSync(mkdtempSync(join(tmpdir(), 'ds-lab-ecrans-')));
+  cpSync(join(ROOT, 'fixtures', 'parcours', 'bilan'), d, { recursive: true });
+  rmSync(join(d, 'sorties', 'avant-apres.json'));
+  const f = join(d, 'projet.json');
+  const s = await servir({ page: () => pageDuParcours(calculerEtat(lireProjet(f), { base: d })), sorties: () => lireProjet(f).sorties, marques: () => ({}) }, { port: 0 });
+  try {
+    for (const scheme of /** @type {const} */ (['light', 'dark'])) {
+      const page = await browser.newPage({ viewport: { width: 640, height: 900 }, colorScheme: scheme, javaScriptEnabled: false });
+      await page.goto(s.adresse);
+      await page.waitForLoadState('load');
+      /** Ce qui se voit : la vue montrée, l'image visible, la hauteur du cadre. */
+      const vu = () =>
+        page.evaluate(() => {
+          const vue = [...document.querySelectorAll('.vue')].findIndex((v) => getComputedStyle(v).display !== 'none');
+          const cadre = document.querySelectorAll('.cadre')[vue];
+          const visible = [...cadre.querySelectorAll('img')].filter((i) => getComputedStyle(i).visibility === 'visible').map((i) => i.className.split(' ')[0]);
+          return { vue, visible, hauteur: Math.round(cadre.getBoundingClientRect().height) };
+        });
+      const r = await page.evaluate(() => ({
+        titre: document.querySelector('h1')?.textContent,
+        largeur: document.documentElement.scrollWidth,
+        barre: document.querySelector('.barre')?.getBoundingClientRect().bottom,
+        images: [...document.querySelectorAll('img')].map((i) => i.complete && i.naturalWidth > 0),
+      }));
+      assert.deepEqual(r, { titre: 'Avant, après', largeur: 640, barre: 900, images: Array(6).fill(true) }, scheme);
+      const a = await vu();
+      assert.deepEqual([a.vue, a.visible], [0, ['apres']], scheme);
+      await page.click('label[for="avant-0"]');
+      const b = await vu();
+      assert.deepEqual([b.vue, b.visible, b.hauteur], [0, ['avant'], a.hauteur], scheme);
+      await page.click('label[for="page-2"]');
+      assert.deepEqual((await vu()).vue, 2, scheme);
+      await page.close();
+    }
+  } finally {
+    await s.fermer();
   }
 });

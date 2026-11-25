@@ -19,7 +19,7 @@
  *   SK7 SKILL.md dit la commande qui lit DS_LAB, mot pour mot, avant la première commande qui s'en sert (D70).
  *   SK8 la section « Conduire » (D72, D74) : sa première phrase dit quand elle joue (une adresse, un fichier de projet,
  *       le skill appelé sans autre demande), dans SKILL.md comme dans conduire.md ; elle cite contexte.md puis
- *       conduire.md ; contexte.md dit, pour chaque étape (Site, Constat, Marque, Décisions, Livraison, Suivi), ce que
+ *       conduire.md ; contexte.md dit, pour chaque étape (Site, Mesure, Marque, Décisions, Livraison, Suivi), ce que
  *       font l'outil et l'humain ; jamais « conforme » dit d'un site ou d'un produit ;
  *   SK9 conduire.md porte la voix en tête (la charte, les mots à éviter, trois exemples), sans rien à réciter : ni
  *       « mot pour mot », ni bloc recopié ; SKILL.md dit quoi faire sous un autre Node que le 24 ;
@@ -141,7 +141,7 @@ test('SK8 la section « Conduire » : quand elle joue, la fiche puis la conduite
   assert.ok(c.split('\n')[2].startsWith(SEUL));
   const x = lire('contexte.md');
   const etapes = x.slice(x.indexOf('## Les étapes')).split('\n').filter((l) => /^\| [^-|]/.test(l)).slice(1).map((l) => l.split('|').slice(1, -1).map((y) => y.trim()));
-  assert.deepEqual(etapes.map((e) => e[0]), ['Site', 'Constat', 'Marque', 'Décisions', 'Livraison', 'Suivi']);
+  assert.deepEqual(etapes.map((e) => e[0]), ['Site', 'Mesure', 'Marque', 'Décisions', 'Livraison', 'Suivi']);
   for (const e of etapes) assert.ok(e.length === 3 && e[1] && e[2], e[0]);
   for (const t of [section, c, x]) assert.doesNotMatch(t, /\b(?:site|produit)s? conformes?\b|\bconformes? (?:le |la )?(?:site|produit)/i);
 });

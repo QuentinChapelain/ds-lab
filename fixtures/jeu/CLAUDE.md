@@ -22,3 +22,7 @@ Quand l'humain dit « on repart de zéro », ou le demande autrement :
 4. Faire comme au premier message, chaque fois : relancer le site et le parcours servi, avant le projet (« Avant le projet » de la conduite), charger le lancement dans l'onglet gardé, vérifier qu'il est devant, puis dire le lancement. Si l'écran ne se voit pas, le dire une fois : « ouvre l'écran avec le bouton Ouvrir ».
 
 Ne rien dire de la commande ni de ce qu'elle a effacé.
+
+## Les tâches
+
+Chaque commande lancée se décrit en français, avec les mots de l'humain, en fond ou non : « servir ton site », « ranger tes choix et les appliquer ». Jamais en anglais.

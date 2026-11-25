@@ -7,219 +7,443 @@
   "lignes": [
     {
       "id": "arr-01",
-      "etat": "arrivée"
+      "titre": "Arrondi · bloc « Commandes du jour » et 18 autres (blocs, liens, bouton)",
+      "etat": "arrivée",
+      "elements": {
+        "total": 19
+      }
     },
     {
       "id": "arr-06",
-      "etat": "arrivée"
+      "titre": "Arrondi · bouton « Toutes » et 3 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 4
+      }
     },
     {
       "id": "arr-02",
-      "etat": "arrivée"
+      "titre": "Arrondi · bloc et 10 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 11
+      }
     },
     {
       "id": "arr-05",
-      "etat": "arrivée"
+      "titre": "Arrondi · étiquette « Payée » et 7 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 8
+      }
     },
     {
       "id": "esp-19",
-      "etat": "arrivée"
+      "titre": "Retrait intérieur · bloc « Commandes »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
     },
     {
       "id": "esp-18",
-      "etat": "arrivée"
+      "titre": "Marge gauche · étiquette « Nouveau » et 3 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 4
+      }
     },
     {
       "id": "esp-22",
-      "etat": "arrivée"
+      "titre": "Marge basse · entre champs",
+      "etat": "arrivée",
+      "elements": {
+        "total": 2
+      }
     },
     {
       "id": "esp-24",
-      "etat": "arrivée"
-    },
-    {
-      "id": "esp-25",
-      "etat": "arrivée"
+      "titre": "Espace entre éléments · 2 boutons « Enregistrer », « Annuler »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
     },
     {
       "id": "esp-26",
-      "etat": "arrivée"
+      "titre": "Marge basse · titre « Profil » et 1 autre",
+      "etat": "arrivée",
+      "elements": {
+        "total": 2
+      }
     },
     {
       "id": "esp-15",
-      "etat": "arrivée"
+      "titre": "Retrait intérieur · bloc « Profil » et 1 autre",
+      "etat": "arrivée",
+      "elements": {
+        "total": 2
+      }
     },
     {
       "id": "esp-27",
-      "etat": "arrivée"
+      "titre": "Retrait intérieur · bloc « La carte »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
     },
     {
       "id": "esp-29",
-      "etat": "arrivée"
+      "titre": "Marge basse · titre « La carte »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
     },
     {
       "id": "esp-30",
-      "etat": "arrivée"
+      "titre": "Marge basse · bloc « Commandes »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
     },
     {
       "id": "esp-11",
-      "etat": "arrivée"
+      "titre": "Retrait intérieur · bouton « Toutes » et 4 autres (boutons, champ)",
+      "etat": "arrivée",
+      "elements": {
+        "total": 5
+      }
     },
     {
       "id": "esp-12",
-      "etat": "arrivée"
+      "titre": "Marge basse · texte « Mélange maison Orbe, notes de… » et 8 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 9
+      }
     },
     {
       "id": "tail-13",
-      "etat": "arrivée"
+      "titre": "Taille du texte · titre « Mon compte »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
     },
     {
       "id": "tail-09",
-      "etat": "arrivée"
+      "titre": "Taille du texte · texte « Les données de votre compte se… »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
     },
     {
       "id": "tail-12",
-      "etat": "arrivée"
+      "titre": "Taille du texte · titre « La carte »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
     },
     {
       "id": "tail-06",
-      "etat": "arrivée"
+      "titre": "Taille du texte · texte « Mardi 10 novembre, 8 h 42 · pr… » et 2 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 3
+      }
     },
     {
       "id": "tail-08",
-      "etat": "arrivée"
+      "titre": "Taille du texte · titre « Profil » et 1 autre",
+      "etat": "arrivée",
+      "elements": {
+        "total": 2
+      }
     },
     {
       "id": "tail-10",
-      "etat": "arrivée"
+      "titre": "Taille du texte · texte « Utilisé seulement pour vous pr… »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
     },
     {
       "id": "tail-11",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-02",
-      "etat": "arrivée"
+      "titre": "Taille du texte · texte « Bonjour Ada, ravis de vous rev… »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
     },
     {
       "id": "coul-09",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-24",
-      "etat": "arrivée"
+      "titre": "Couleur du texte · texte « Commandes du jour » et 10 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 11
+      }
     },
     {
       "id": "coul-27",
-      "etat": "arrivée"
+      "titre": "Couleur du texte · lien « Voir le tableau des allergènes »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
     },
     {
       "id": "coul-34",
-      "etat": "arrivée"
+      "titre": "Fond · étiquette « Nouveau »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
     },
     {
       "id": "coul-11",
-      "etat": "arrivée"
+      "titre": "Couleur du texte · texte « Mélange maison Orbe, notes de… » et 8 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 9
+      }
     },
     {
       "id": "coul-13",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-23",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-25",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-28",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-30",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-31",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-32",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-33",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-37",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-01",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-03",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-07",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-10",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-14",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-15",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-22",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-29",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-08",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-12",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-18",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-21",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-36",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-38",
-      "etat": "arrivée"
-    },
-    {
-      "id": "coul-39",
-      "etat": "arrivée"
+      "titre": "Couleur du texte · texte « ※ Nos produits peuvent conteni… » et 4 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 5
+      }
     },
     {
       "id": "coul-16",
-      "etat": "arrivée"
+      "titre": "Couleur du texte · lien « Modifier mon mot de passe » et 3 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 4
+      }
+    },
+    {
+      "id": "coul-23",
+      "titre": "Couleur de bordure · champ « Nom » et 2 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 3
+      }
+    },
+    {
+      "id": "coul-24",
+      "titre": "Fond · étiquette « Nouveau » et 1 autre",
+      "etat": "arrivée",
+      "elements": {
+        "total": 2
+      }
+    },
+    {
+      "id": "coul-25",
+      "titre": "Couleur du texte · texte « 3,90 € » et 1 autre",
+      "etat": "arrivée",
+      "elements": {
+        "total": 2
+      }
+    },
+    {
+      "id": "coul-28",
+      "titre": "Fond · bouton « Exporter en CSV »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
+    },
+    {
+      "id": "coul-30",
+      "titre": "Couleur du texte · texte « Montants TTC, en euros. Les co… »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
+    },
+    {
+      "id": "coul-31",
+      "titre": "Couleur du texte · texte « Mis à jour il y a 5 minutes ·… »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
+    },
+    {
+      "id": "coul-32",
+      "titre": "Couleur du texte · texte « Utilisé seulement pour vous pr… »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
+    },
+    {
+      "id": "coul-33",
+      "titre": "Couleur du texte · texte « Les commandes de plus de six m… »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
+    },
+    {
+      "id": "coul-35",
+      "titre": "Fond · étiquette « Annulée »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
+    },
+    {
+      "id": "coul-37",
+      "titre": "Couleur du texte · texte « Adresse incomplète : il manque… »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
+    },
+    {
+      "id": "coul-01",
+      "titre": "Couleur de bordure · texte « N° » et 53 autres (textes, blocs)",
+      "etat": "arrivée",
+      "elements": {
+        "total": 54
+      }
+    },
+    {
+      "id": "coul-02",
+      "titre": "Couleur du texte · texte « 2,20 € » et 50 autres (textes, titres, étiquettes)",
+      "etat": "arrivée",
+      "elements": {
+        "total": 51
+      }
+    },
+    {
+      "id": "coul-03",
+      "titre": "Couleur du texte · texte « 1051 » et 39 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 40
+      }
+    },
+    {
+      "id": "coul-07",
+      "titre": "Couleur de bordure · bloc « Orbe Café » et 12 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 13
+      }
+    },
+    {
+      "id": "coul-10",
+      "titre": "Couleur du texte · texte « 128 » et 9 autres (textes, boutons, titre)",
+      "etat": "arrivée",
+      "elements": {
+        "total": 10
+      }
+    },
+    {
+      "id": "coul-14",
+      "titre": "Fond · étiquette « Payée » et 4 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 5
+      }
+    },
+    {
+      "id": "coul-15",
+      "titre": "Couleur de bordure · bloc « Profil » et 4 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 5
+      }
+    },
+    {
+      "id": "coul-22",
+      "titre": "Couleur du texte · texte « Nom » et 2 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 3
+      }
+    },
+    {
+      "id": "coul-26",
+      "titre": "Fond · bouton « Commander à emporter » (au survol)",
+      "etat": "non vérifiable (état)",
+      "elements": {
+        "total": 0
+      }
+    },
+    {
+      "id": "coul-29",
+      "titre": "Couleur du texte · texte « Cafés de spécialité torréfiés… »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
+    },
+    {
+      "id": "coul-08",
+      "titre": "Couleur de bordure · bloc « Commandes du jour » et 11 autres (blocs, boutons, liens)",
+      "etat": "arrivée",
+      "elements": {
+        "total": 12
+      }
+    },
+    {
+      "id": "coul-12",
+      "titre": "Fond · texte « N° » et 5 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 6
+      }
+    },
+    {
+      "id": "coul-18",
+      "titre": "Fond · bloc « 1050 » et 3 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 4
+      }
+    },
+    {
+      "id": "coul-21",
+      "titre": "Fond · bloc « © 2026 Orbe Café, torréfacteur… » et 2 autres",
+      "etat": "arrivée",
+      "elements": {
+        "total": 3
+      }
+    },
+    {
+      "id": "coul-36",
+      "titre": "Fond · bloc « Statut »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
+    },
+    {
+      "id": "coul-38",
+      "titre": "Fond · bloc « Horaires »",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
+    },
+    {
+      "id": "coul-39",
+      "titre": "Fond · page",
+      "etat": "arrivée",
+      "elements": {
+        "total": 1
+      }
     }
   ],
   "sortie": 0

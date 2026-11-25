@@ -30,7 +30,15 @@
  *       planches, six preuves et les limites, « Pas encore », « Comparer mon site » ; rien à décider ; pour le chat, une
  *       phrase sans chiffre ;
  *   EC11 « Comparer mon site » : les fondations vues, la main à l'outil qui lance la réduction, --attendre finit ; une
- *       preuve fausse pour la marque (sans feuille CSS) n'est pas rendue.
+ *       preuve fausse pour la marque (sans feuille CSS) n'est pas rendue ;
+ *   EC12 l'avant et après (D86), dès les feuilles vérifiées, avant la validation : un onglet par page nommée, la bascule
+ *       Avant, Après sans script, la plus haute des deux images tient le cadre ; le compte des changements, ce qui n'est
+ *       visible qu'au survol, quatre cartes et leur exemple (la couleur changée la plus employée, deux pastilles et leurs
+ *       codes) ; « Valider le rendu », « Revenir sur une décision » ; une vérification d'avant ces feuilles, ou sans
+ *       l'image d'avant, se refait ;
+ *   EC13 « Valider le rendu » : le rendu validé, --attendre finit ; « Revenir sur une décision » : le rendu n'est plus
+ *       validé, la revue rouverte au designer jusqu'à un nouvel export, puis la réduction, les feuilles et la
+ *       vérification se refont, et l'avant et après revient.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -43,7 +51,7 @@ import { lireProjet } from '../src/parcours/projet.js';
 import { calculerEtat } from '../src/parcours/etat.js';
 import { pageDuParcours } from '../src/parcours/page.js';
 import { ecranDeLancement, FIN_JETONS } from '../src/parcours/ecrans.js';
-import { ajouterPage, choisirCouleur, confirmerMarque, detteVue, echangerAccent, fondationsVues, retirerPage, validerPages } from '../src/parcours/pages.js';
+import { ajouterPage, choisirCouleur, confirmerMarque, detteVue, echangerAccent, fondationsVues, retirerPage, rouvrirRevue, validerPages, validerRendu } from '../src/parcours/pages.js';
 import { fondationsDe } from '../src/parcours/fondations.js';
 import { faitsDuMoment } from '../src/parcours/faits.js';
 
@@ -212,9 +220,10 @@ test('EC5 la dette : les valeurs comptées, dites et dessinées ; les composants
     'Rien à décider',
     '3 pages mesurées :',
     'Les valeurs',
-    '68 valeurs différentes affichées sur ces pages',
-    'Couleurs 31',
-    'Dont 20 gris, et 16 presque identiques à une autre. Le code en écrit 42. Six autres viennent du contenu (images, pictogrammes) : mises de côté.',
+    '70 valeurs différentes affichées sur ces pages',
+    // 33, comme la réduction (D86) : les 31 du relevé, le fond de la page (#faf6ef, body) et #24426f, vu seulement au survol.
+    'Couleurs 33',
+    'Dont 21 gris, et 17 presque identiques à une autre. L’une ne se voit qu’au survol, au focus ou à l’appui. Le code en écrit 42. Six autres viennent du contenu (images, pictogrammes) : mises de côté.',
     'Tailles de texte 13',
     'Cinq sont des valeurs à virgule, en bleu. Le code en écrit 14.',
     'Espacements 16',
@@ -376,7 +385,7 @@ test('EC10 après « Confirmer la marque » : l’attente, puis les fondations c
   assert.equal(fo.accent?.length, 12);
   assert.deepEqual([fo.espacements, fo.tailles, fo.rayons.map((x) => x.nom)], [[0, 4, 8, 12, 16, 24, 32, 48, 64], [12, 14, 16, 18, 20, 24, 30, 36, 48, 60], ['0', '2', '4', '8', '12', 'full']]);
   assert.deepEqual(fo.relations.map((x) => x.px), [4, 8, 16, 24, 48]);
-  assert.deepEqual([fo.paires.echec, fo.paires.contextes, fo.avant], [0, 4, 68]);
+  assert.deepEqual([fo.paires.echec, fo.paires.contextes, fo.avant], [0, 4, 70]);
   assert.ok(fo.paires.controlees > 60 && fo.paires.interdites > 0 && fo.regles > 30);
   assert.deepEqual(fo.preuves.map((x) => x.titre), ['Format standard', 'Trois couches', 'Accessibilité', 'Quatre contextes', 'Prêt pour le code', 'Règles sourcées']);
   const h = pageDuParcours(e);
@@ -386,7 +395,7 @@ test('EC10 après « Confirmer la marque » : l’attente, puis les fondations c
     'Rien à décider',
     'Ce qui vient d’être préparé à partir de ta marque. Rien n’est encore posé sur ton site.',
     '1 · Les valeurs',
-    'Tes pages affichaient 68 valeurs différentes.',
+    'Tes pages affichaient 70 valeurs différentes.',
     'Primaire, 12 pas',
     'Accent, 12 pas',
     '2 · Les rôles',
@@ -435,4 +444,96 @@ test('EC11 « Comparer mon site » : la main à l’outil, --attendre finit ; un
   assert.deepEqual([g.moment, g.courante.cle, g.courante.main], ['jetons', 'marques', 'outil']);
   assert.match(/** @type {string} */ (g.courante.commande), /npm run css -- --marque/);
   assert.ok(existsSync(join(dossier, 'vuetify.json')));
+});
+
+/** Une copie du bilan dont le rendu n'est pas encore validé : l'avant et après. */
+const avantApres = () => {
+  const d = copie('bilan');
+  rmSync(join(d, 'sorties', 'avant-apres.json'));
+  return { d, f: join(d, 'projet.json') };
+};
+
+test('EC12 l’avant et après : un onglet par page, la bascule sans script, le compte et quatre cartes', () => {
+  const { d, f } = avantApres();
+  const e = calculerEtat(lireProjet(f), { base: d });
+  assert.deepEqual([e.moment, e.courante.cle, e.courante.main, e.courante.action, e.courante.commande], ['avant-apres', 'livraison', 'designer', 'regarder l’avant et après, puis valider le rendu', null]);
+  const h = pageDuParcours(e);
+  const t = texte(h);
+  for (const x of [
+    'Avant, après',
+    'À toi de décider',
+    'Tes 15 décisions et les réglages de l’outil, ensemble, sur les 3 pages mesurées. C’est un aperçu : rien n’est encore installé sur ton site.',
+    // Le verdict : 55 lignes, 54 arrivées, une seulement au survol.
+    '55 changements, 54 arrivés',
+    'Visible seulement au survol, au focus ou à l’appui, à regarder à la main : Fond · bouton « Commander à emporter » (au survol)',
+    // Par famille, les lignes du manifeste : 33 couleurs, 11 espacements, 7 tailles, 4 arrondis.
+    'Couleurs 33', 'Espacements 11', 'Tailles de texte 7', 'Arrondis 4',
+    // L'exemple : la ligne qui touche le plus d'éléments (54 pour #999999 → #958f84).
+    '#999999 → #958f84', 'dont texte « N° » et 53 autres (textes, blocs)',
+    '15 px → 16 px',
+    'Valider le rendu ›', 'Revenir sur une décision',
+  ])
+    assert.ok(t.includes(x), x);
+  // Les pages sans nom : leur chemin ; un onglet, une vue et une règle par page ; la première cochée.
+  assert.equal(h.match(/<input type="radio" name="page" id="page-\d" class="choix-page"/g)?.length, 3);
+  assert.match(h, /<input type="radio" name="page" id="page-0" class="choix-page" checked><label for="page-0">\/desordre\/carte\.html<\/label>/);
+  assert.match(h, /#page-2:checked ~ \.vues > \.vue-2 \{ display: flex; \}/);
+  // Après, coché par défaut ; la plus haute tient le cadre (carte : avant 12 px, après 10 ; gestion : 9 et 11).
+  assert.match(h, /<input type="radio" name="bascule-0" id="apres-0" class="voir-apres" checked>/);
+  assert.match(h, /<img class="avant fond" src="\/sorties\/verify\/127\.0\.0\.1_4173\/2026-11-24T1336\/carte\/avant\.png" alt="\/desordre\/carte\.html, avant"><img class="apres dessus" src="\/sorties\/verify\/127\.0\.0\.1_4173\/2026-11-24T1336\/carte\/actuel\.png"/);
+  assert.match(h, /<img class="avant dessus" src="[^"]*gestion\/avant\.png"[^>]*><img class="apres fond"/);
+  assert.match(h, /<rect x="0\.5" y="0\.5" width="23" height="23" rx="6" fill="#999999"/);
+  assert.match(h, /<form method="post" action="\/pages\/rendu"><button type="submit" class="principal">Valider le rendu ›<\/button><\/form>/);
+  assert.match(h, /<form method="post" action="\/pages\/revue"><button type="submit" class="discret">Revenir sur une décision<\/button><\/form>/);
+  assert.doesNotMatch(t, /[Ll]ignes?\b|seuils/);
+  assert.doesNotMatch(h, /<script|\sstyle="|http-equiv="refresh"/);
+  assert.deepEqual(enDur(h), []);
+  // Pour le chat : une phrase, sans chiffre ni développeur.
+  const l = faitsDuMoment(e, { sorties: join(d, 'sorties') });
+  assert.ok(l.includes('  Écran : l’avant et après'));
+  assert.ok(!l.some((x) => /^  (Chiffre|Au développeur|Pas arrivé) :/.test(x)), l.join('\n'));
+  // Sans l'image d'avant, ou pour d'autres feuilles que celles de la réduction : la vérification se refait.
+  const v = join(d, 'sorties/verify/127.0.0.1_4173/2026-11-24T1336');
+  rmSync(join(v, 'compte', 'avant.png'));
+  let g = calculerEtat(lireProjet(f), { base: d });
+  assert.deepEqual([g.moment, g.courante.main, g.courante.action], ['sans-ecran', 'outil', 'prouver la livraison sur les pages, avant et après']);
+  assert.match(/** @type {string} */ (g.courante.commande), / --ajout sorties\/ajout\/2026-11-24T1335 --out sorties\/verify$/);
+  cpSync(join(v, 'carte', 'avant.png'), join(v, 'compte', 'avant.png'));
+  writeFileSync(join(v, 'carte', 'verification.json'), JSON.stringify({ ajout: 'sorties/ajout' }));
+  g = calculerEtat(lireProjet(f), { base: d });
+  assert.equal(g.courante.action, 'prouver la livraison sur les pages, avant et après');
+});
+
+test('EC13 « Valider le rendu » et « Revenir sur une décision »', async () => {
+  const { d, f } = avantApres();
+  const w = lancerParcours([f, '--attendre']);
+  await new Promise((ok) => setTimeout(ok, 1500));
+  assert.equal(w.p.exitCode, null, '--attendre attend encore');
+  validerRendu(f);
+  assert.equal(await w.fin(), 0);
+  assert.deepEqual(JSON.parse(readFileSync(join(d, 'sorties', 'avant-apres.json'), 'utf8')), { verification: '2026-11-24T1336' });
+  let e = calculerEtat(lireProjet(f), { base: d });
+  assert.deepEqual([e.moment, e.courante.cle], ['bilan', 'suivi']);
+  assert.match(pageDuParcours(e), /<h1>Ton rendu est validé<\/h1>/);
+  // Revenir : la revue rouverte au designer, le rendu plus validé.
+  rouvrirRevue(f);
+  assert.ok(!existsSync(join(d, 'sorties', 'avant-apres.json')));
+  e = calculerEtat(lireProjet(f), { base: d });
+  assert.deepEqual([e.moment, e.courante.cle, e.courante.main, e.ecran?.href], ['ecran', 'decisions', 'designer', '/sorties/reductions/127.0.0.1_4173/2026-11-24T1335/revue.html']);
+  assert.match(String(e.courante.action), /^revenir sur une décision dans la revue, puis exporter/);
+  assert.ok(faitsDuMoment(e, { sorties: join(d, 'sorties') }).includes('  Écran : la revue'));
+  // Un nouvel export : l'outil relance la réduction avec lui.
+  const choix = JSON.parse(readFileSync(join(d, 'sorties', 'decisions.json'), 'utf8'));
+  writeFileSync(join(d, 'sorties', 'decisions.json'), JSON.stringify({ ...choix, 'plein|terre': 'remplacer' }));
+  e = calculerEtat(lireProjet(f), { base: d });
+  assert.deepEqual([e.courante.cle, e.courante.main, e.courante.action], ['decisions', 'outil', 'relancer la réduction avec les décisions']);
+  // La réduction refaite : ses feuilles à poser, rangées sous son nom ; la vérification d'avant ne vaut plus.
+  const r = join(d, 'sorties/reductions/127.0.0.1_4173');
+  cpSync(join(r, '2026-11-24T1335'), join(r, '2026-11-24T1340'), { recursive: true });
+  const t = JSON.parse(readFileSync(join(r, '2026-11-24T1340', 'table.json'), 'utf8'));
+  t.decisions = JSON.parse(readFileSync(join(d, 'sorties', 'decisions.json'), 'utf8'));
+  writeFileSync(join(r, '2026-11-24T1340', 'table.json'), JSON.stringify(t));
+  e = calculerEtat(lireProjet(f), { base: d });
+  assert.deepEqual([e.courante.cle, e.courante.action], ['livraison', 'poser les feuilles ajoutées']);
+  assert.match(/** @type {string} */ (e.courante.commande), / --sortie sorties\/ajout\/2026-11-24T1340$/);
 });

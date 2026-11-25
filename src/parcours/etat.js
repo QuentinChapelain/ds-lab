@@ -7,11 +7,12 @@
  * l'outil réduit une origine à la fois.
  */
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { closeSync, existsSync, openSync, readFileSync, readSync, readdirSync } from 'node:fs';
+import { basename, join, relative } from 'node:path';
 import { lireJson } from '../lib/fichiers.js';
 import { compterDecisions } from '../reduce/propose.js';
 import { RESOLVER } from '../tokens/resolver.js';
+import { pageName } from '../verify/reference.js';
 import { detteDe, valeurs as valeursDe } from './dette.js';
 import { fondationsDe } from './fondations.js';
 import { apercu, lireMarque } from './marque.js';
@@ -30,6 +31,34 @@ const ECRITS_DE_LA_MARQUE = ['roles.html', 'espacements.html', 'typo.html', 'jet
 
 /** Les pages validées à l'écran, par site (D77) : écrit au clic sur « Mesurer », dans les sorties. */
 export const PAGES_VALIDEES = 'pages.json';
+
+/** Le rendu validé (D86) : écrit au clic sur « Valider le rendu », avec la vérification regardée, dans les sorties. */
+export const RENDU_VALIDE = 'avant-apres.json';
+
+/** La revue rouverte (D86) : écrite au clic sur « Revenir sur une décision », avec l'empreinte des choix d'alors. */
+export const REVUE_ROUVERTE = 'revue.json';
+
+/**
+ * L'empreinte des choix exportés (decisions.json), ou null s'il n'y en a pas : la revue rouverte le reste tant
+ * qu'un nouvel export ne l'a pas changée.
+ * @param {string} sorties
+ */
+export function empreinteDesChoix(sorties) {
+  const f = join(sorties, 'decisions.json');
+  return existsSync(f) ? createHash('sha256').update(readFileSync(f)).digest('hex') : null;
+}
+
+/** La hauteur d'une image PNG, lue dans son en-tête (IHDR, octets 20 à 23). @param {string} f */
+function hauteurPng(f) {
+  const b = Buffer.alloc(24);
+  const d = openSync(f, 'r');
+  try {
+    readSync(d, b, 0, 24, 0);
+  } finally {
+    closeSync(d);
+  }
+  return b.readUInt32BE(20);
+}
 
 /**
  * Les pages validées, ou null si l'humain n'a pas encore lancé la mesure depuis l'écran.
@@ -56,12 +85,16 @@ function pagesValidees(sorties) {
  * @typedef {import('./dette.js').Dette & { site: Site, pages: string[], valeursHref: string | null, composantsHref: string, captures: string,
  *   autres: { id: string, nom: string, href: string }[] }} Dette  la dette du premier site mesuré, au moment de la dette
  * @typedef {{ produit: string, sites: Site[], sousTitre: string | null, unSite: boolean, etapes: Etape[], temps: { nom: string, etat: EtatEtape, etapes: CleEtape[] }[],
- *   courante: Etape, moment: 'pages' | 'mesure' | 'dette' | 'marque' | 'jetons' | 'fondations' | 'ecran' | 'sans-ecran' | 'bilan', dette: Dette | null,
+ *   courante: Etape, moment: 'pages' | 'mesure' | 'dette' | 'marque' | 'jetons' | 'fondations' | 'avant-apres' | 'ecran' | 'sans-ecran' | 'bilan', dette: Dette | null,
  *   marque: { site: Site, lecture: import('./marque.js').Lecture, choix: import('./marque.js').Choix, apercu: import('./marque.js').Apercu } | null, ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
- *   fondations: Fondations | null, phrase: string | null, bilan: Bilan | null, chiffres: Chiffres, voisin: string | null, livraison: Livraison | null }} Etat
+ *   fondations: Fondations | null, avantApres: AvantApres | null, phrase: string | null, bilan: Bilan | null, chiffres: Chiffres, voisin: string | null, livraison: Livraison | null }} Etat
  * @typedef {import('./fondations.js').Fondations & { site: Site, avant: number | null, planche: string }} Fondations  au moment des fondations : la marque du
  *   premier site, les valeurs de ses pages (avant) et l'adresse servie de ses planches
  * @typedef {{ pages: number, arrivees: number, total: number, manquantes: { titre: string, elements: number, cause: string | null }[] }} Livraison  la dernière vérification
+ * @typedef {{ verification: string, vues: { nom: string, avant: string, apres: string, plusHaute: 'avant' | 'apres' }[], pages: number, decisions: number,
+ *   changements: number, arrivees: number, manquantes: string[], enEtat: string[],
+ *   familles: { cle: string, titre: string, compte: number, exemple: { ancienne: string, nouvelle: string, ou: string } | null }[] }} AvantApres  au moment de
+ *   l'avant et après : les images de chaque page, et ce qui a changé
  */
 
 /** Les quatre temps et leurs étapes (présentation de l'outil, D72). */
@@ -73,12 +106,11 @@ const TEMPS = /** @type {const} */ ([
 ]);
 
 /** Une phrase par moment, ce qu'il faut en comprendre (D72). */
-export const PHRASES = {
+const PHRASES = {
   constat: 'On mesure ce qui s’affiche vraiment, pas ce que le code contient.',
   marque: 'Une couleur de marque devient douze pas. Le pas 9 est la couleur exacte.',
   refus: 'Une marque illisible n’entre pas, et le message dit pourquoi.',
   revue: 'On choisit une relation, pas une valeur.',
-  bilan: 'La couche visuelle tient ses seuils. Voici ce qui reste à faire vérifier par un humain.',
 };
 
 /** Accord en nombre : 0 et 1 au singulier. @param {number} n @param {string} un @param {string} plusieurs */
@@ -342,37 +374,68 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     reportes: 0,
   };
 
-  // Livraison et suivi, sur le premier site.
-  const manifeste = join(sorties, 'ajout', 'feuilles-ajoutees.json');
-  const aManifeste = existsSync(manifeste);
+  // La revue rouverte (D86) : « Revenir sur une décision » rend la revue au designer, jusqu'à un nouvel export.
+  const fRevue = join(sorties, REVUE_ROUVERTE);
+  const rouverte = !!table && existsSync(fRevue) && lireJson(fRevue).decisions === empreinteDesChoix(sorties);
+  if (rouverte)
+    Object.assign(etapeDecisions, {
+      faite: false,
+      main: 'designer',
+      action: `revenir sur une décision dans la revue, puis exporter ; le fichier glissé dans le chat se range sous decisions.json dans ${sorties}`,
+      commande: null,
+    });
+
+  // Livraison et suivi, sur le premier site. Les feuilles ajoutées sont rangées sous le nom de la réduction dont elles
+  // viennent ; une vérification ne vaut que pour ces feuilles-là, avec l'avant et l'après de chaque page (D86).
+  const dossierAjout = join(sorties, 'ajout', ...(red ? [red.nom] : []));
+  const aManifeste = !!red && existsSync(join(dossierAjout, 'feuilles-ajoutees.json'));
   const ver = plusRecent(join(sorties, 'verify', premier.hote));
   const fVerdict = ver && join(ver.chemin, 'verdict.json');
-  const verdict = fVerdict && existsSync(fVerdict) ? lireJson(fVerdict) : null;
+  /** Le dossier d'une page vérifiée : un par page, sauf pour une page seule. @param {string} p */
+  const dossierDePage = (p) => (premier.pages.length > 1 ? join(/** @type {{ chemin: string }} */ (ver).chemin, pageName(new URL(p, premier.origine).href)) : /** @type {{ chemin: string }} */ (ver).chemin);
+  const vues = ver && aManifeste
+    ? premier.pages.map((p) => {
+        const d = dossierDePage(p);
+        const fv = join(d, 'verification.json');
+        const ajout = existsSync(fv) ? lireJson(fv).ajout : null;
+        const [avant, apres] = [join(d, 'avant.png'), join(d, 'actuel.png')];
+        return existsSync(avant) && existsSync(apres) && typeof ajout === 'string' && basename(ajout) === red?.nom
+          ? { nom: premier.noms[p] ?? p, avant: href(avant), apres: href(apres), plusHaute: /** @type {'avant' | 'apres'} */ (hauteurPng(avant) >= hauteurPng(apres) ? 'avant' : 'apres') }
+          : null;
+      })
+    : [];
+  const verifie = !!fVerdict && existsSync(fVerdict) && vues.length > 0 && vues.every(Boolean);
+  const verdict = verifie ? lireJson(/** @type {string} */ (fVerdict)) : null;
+  const fValide = join(sorties, RENDU_VALIDE);
+  const valide = !!verdict && existsSync(fValide) && lireJson(fValide).verification === ver?.nom;
   const lignesVerdict = /** @type {any[]} */ (verdict?.lignes ?? []);
   const arrivees = lignesVerdict.filter((l) => l.etat === 'arrivée').length;
-  const prouver = `npm run verify -- ${adresses(premier)} --reference ${c(join(sorties, 'references'))}${projet.sources ? ` --sources ${c(projet.sources)}` : ''} --ajout ${c(join(sorties, 'ajout'))} --out ${c(join(sorties, 'verify'))}`;
-  const arriveesSur = `${nombre(arrivees, 'ligne arrivée', 'lignes arrivées')} sur ${lignesVerdict.length}`;
+  const prouver = `npm run verify -- ${adresses(premier)} --reference ${c(join(sorties, 'references'))}${projet.sources ? ` --sources ${c(projet.sources)}` : ''} --ajout ${c(dossierAjout)} --out ${c(join(sorties, 'verify'))}`;
+  const arriveesSur = `${nombre(arrivees, 'changement arrivé', 'changements arrivés')} sur ${lignesVerdict.length}`;
   /** @type {Etape} */
   const livraison = {
     cle: 'livraison',
     nom: 'Livraison',
     temps: 'Poser',
-    acteurs: 'le développeur, puis l’outil',
-    faite: aManifeste && verdict?.sortie === 0,
+    acteurs: 'le designer, puis le développeur',
+    faite: aManifeste && verdict?.sortie === 0 && valide,
     etat: 'à venir',
     sortie: aManifeste,
-    // Poser les feuilles ajoutées n'écrit que dans les sorties : la main est à l'outil ; le développeur l'a sur l'installation (D73).
-    main: !aManifeste || !verdict ? 'outil' : 'développeur',
+    // Poser les feuilles ajoutées n'écrit que dans les sorties : la main est à l'outil ; le designer regarde l'avant et
+    // après ; le développeur a la main sur l'installation (D73, D86).
+    main: !aManifeste || !verdict ? 'outil' : !valide ? 'designer' : 'développeur',
     action: !aManifeste
       ? 'poser les feuilles ajoutées'
       : !verdict
-        ? 'prouver la livraison sur les pages'
-        : `dire ce qui est vérifié et ce qui n’est pas arrivé, sans rien ouvrir : ${nombre(lignesVerdict.length - arrivees, 'ligne n’est pas arrivée', 'lignes ne sont pas arrivées')}`,
-    commande: !aManifeste ? (red ? `npm run ajout -- --modifications ${c(join(red.chemin, 'modifications.json'))} --sortie ${c(join(sorties, 'ajout'))}` : null) : !verdict ? prouver : null,
+        ? 'prouver la livraison sur les pages, avant et après'
+        : !valide
+          ? 'regarder l’avant et après, puis valider le rendu'
+          : `dire ce qui est vérifié et ce qui n’est pas arrivé, sans rien ouvrir : ${nombre(lignesVerdict.length - arrivees, 'changement n’est pas arrivé', 'changements ne sont pas arrivés')}`,
+    commande: !aManifeste ? (red ? `npm run ajout -- --modifications ${c(join(red.chemin, 'modifications.json'))} --sortie ${c(dossierAjout)}` : null) : !verdict ? prouver : null,
     fait: verdict ? `${arriveesSur}, ${nombre(verdict.pages?.length ?? 0, 'page', 'pages')}` : aManifeste ? 'feuilles ajoutées, pas encore prouvées' : null,
     lignes: [],
     ecran: null,
-    sansEcran: 'Pas encore d’écran d’avant et après.',
+    sansEcran: null,
     ouvre: 'S’ouvre quand les décisions sont prises.',
     reportes: 0,
   };
@@ -477,12 +540,13 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     : courante.cle === 'marques' && marque ? 'marque'
     : courante.cle === 'marques' && parEcran && courante.main === 'outil' ? 'jetons'
     : courante.cle === 'decisions' && fondations ? 'fondations'
-    : courante.cle === 'suivi' ? 'bilan'
+    : courante.cle === 'livraison' && verdict && !valide ? 'avant-apres'
+    : (courante.cle === 'livraison' || courante.cle === 'suivi') && valide ? 'bilan'
     : ecran ? 'ecran'
     : 'sans-ecran';
   const refus = etapeMarques.refus && (ecran?.etape === 'marques' || (!ecran && courante.cle === 'marques'));
   const phrase =
-    moment === 'pages' || moment === 'mesure' || moment === 'dette' || moment === 'marque' || moment === 'jetons' || moment === 'fondations' || moment === 'bilan' ? null
+    moment === 'pages' || moment === 'mesure' || moment === 'dette' || moment === 'marque' || moment === 'jetons' || moment === 'fondations' || moment === 'avant-apres' || moment === 'bilan' ? null
     : refus ? PHRASES.refus
     : ecran?.etape === 'constat' ? PHRASES.constat
     : ecran?.etape === 'marques' ? PHRASES.marque
@@ -493,12 +557,19 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
   let bilan = null;
   if (moment === 'bilan') {
     const f = table?.table?.families ?? {};
+    // Avant : le compte de la dette, le même calcul (D86) ; après : celui de la réduction.
+    const a = plusRecent(join(sorties, 'audit', premier.id, premier.hote));
+    const fa = a && join(a.chemin, 'audit.json');
+    const comptes = fa && existsSync(fa) ? valeursDe(lireJson(fa)).familles : [];
     /** @param {string} k @param {string} un @param {string} plusieurs */
-    const avantApres = (k, un, plusieurs) => (f[k]?.summary ? `${f[k].summary.before} → ${nombre(f[k].summary.after, un, plusieurs)}` : null);
+    const deVersA = (k, un, plusieurs) => {
+      const avant = comptes.find((x) => x.cle === k)?.compte;
+      return avant !== undefined && f[k]?.summary ? `${avant} → ${nombre(f[k].summary.after, un, plusieurs)}` : null;
+    };
     const enEtat = lignesVerdict.filter((l) => l.etat === 'non vérifiable (état)').length;
     const complet = marques.every((m) => m.statut === 'acceptée') && verdict?.sortie === 0;
     bilan = {
-      chiffres: /** @type {string[]} */ ([avantApres('colors', 'couleur', 'couleurs'), avantApres('spacing', 'espacement', 'espacements'), avantApres('fontSizes', 'taille de texte', 'tailles de texte')].filter(Boolean)),
+      chiffres: /** @type {string[]} */ ([deVersA('colors', 'couleur', 'couleurs'), deVersA('spacing', 'espacement', 'espacements'), deVersA('fontSizes', 'taille de texte', 'tailles de texte'), deVersA('radii', 'arrondi', 'arrondis')].filter(Boolean)),
       dernier: `Dernier contrôle : ${ver ? dateDe(ver.nom) : 'aucun'}, ${arriveesSur}.`,
       complet,
       manque: [
@@ -508,9 +579,41 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
       humain: [
         unSite ? 'les pages hors de l’échantillon' : 'les pages hors des échantillons',
         ...(unSite ? [] : [`${lesSites(sites.slice(1)).replace(/^dans /, '')}, sans preuve`]),
-        ...(enEtat ? [nombre(enEtat, 'ligne vue seulement au survol, au focus ou à l’appui', 'lignes vues seulement au survol, au focus ou à l’appui')] : []),
+        ...(enEtat ? [nombre(enEtat, 'changement visible seulement au survol, au focus ou à l’appui', 'changements visibles seulement au survol, au focus ou à l’appui')] : []),
         'l’installation dans le code du produit',
       ],
+    };
+  }
+
+  // L'avant et après (D86) : les pages vérifiées, et ce qui a changé, compté par famille sur les lignes du verdict.
+  /** @type {AvantApres | null} */
+  let avantApres = null;
+  if (moment === 'avant-apres' && verdict && ver) {
+    const parId = new Map(/** @type {any[]} */ (lireJson(join(dossierAjout, 'feuilles-ajoutees.json')).lignes ?? []).map((l) => [l.id, l]));
+    const changements = lignesVerdict.filter((l) => l.etat !== 'hors des pages vérifiées');
+    /** Ce que la ligne touche : son titre, sans la famille. @param {any} l */
+    const ou = (l) => String(l.titre ?? l.id).replace(/^[^·]*·\s*/, '');
+    avantApres = {
+      verification: ver.nom,
+      vues: /** @type {AvantApres['vues']} */ (vues),
+      pages: premier.pages.length,
+      decisions: total,
+      changements: changements.length,
+      arrivees,
+      manquantes: changements.filter((l) => ['non arrivée', 'en partie', 'non vue', 'déjà en place'].includes(l.etat)).map((l) => String(l.titre ?? l.id)),
+      enEtat: changements.filter((l) => l.etat === 'non vérifiable (état)').map((l) => String(l.titre ?? l.id)),
+      familles: /** @type {const} */ ([
+        ['colors', 'couleurs'],
+        ['spacing', 'espacements'],
+        ['fontSizes', 'tailles de texte'],
+        ['radii', 'arrondis'],
+      ]).map(([cle, titre]) => {
+        const ls = changements.filter((l) => parId.get(l.id)?.famille === cle);
+        // L'exemple : le changement qui touche le plus d'éléments.
+        const ex = [...ls].sort((x, y) => (y.elements?.total ?? 0) - (x.elements?.total ?? 0))[0];
+        const m = ex && parId.get(ex.id);
+        return { cle, titre, compte: ls.length, exemple: m ? { ancienne: String(m.ancienne), nouvelle: String(m.nouvelle), ou: ou(ex) } : null };
+      }),
     };
   }
 
@@ -537,6 +640,7 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     dette,
     marque,
     fondations,
+    avantApres,
     livraison: verdict
       ? {
           pages: verdict.pages?.length ?? 0,

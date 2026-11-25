@@ -1,13 +1,14 @@
 // @ts-check
 /**
- * L'écran des pages (D77), côté serveur : retirer une page, en ajouter une après l'avoir vérifiée, valider la liste au
- * clic sur « Mesurer », et la vignette de chaque page. Toute écriture passe par projet.json (les pages) ou par les
+ * Les écrans, côté serveur : retirer une page, en ajouter une après l'avoir vérifiée, valider la liste au clic sur
+ * « Mesurer », et la vignette de chaque page (D77) ; la dette vue, la marque, les fondations vues ; le rendu validé et la
+ * revue rouverte (D86). Toute écriture passe par projet.json (les pages) ou par les
  * sorties (la validation, les vignettes) ; le site n'est jamais modifié.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { lireProjet, ecrirePages, ecrireMarque } from './projet.js';
-import { calculerEtat, DETTE_VUE, FONDATIONS_VUES, PAGES_VALIDEES } from './etat.js';
+import { calculerEtat, empreinteDesChoix, DETTE_VUE, FONDATIONS_VUES, PAGES_VALIDEES, RENDU_VALIDE, REVUE_ROUVERTE } from './etat.js';
 import { entreeDe } from './marque.js';
 import { lancerChromium } from '../browser/lancement.js';
 
@@ -105,6 +106,30 @@ export function fondationsVues(fichier) {
   const p = lireProjet(fichier);
   mkdirSync(p.sorties, { recursive: true });
   writeFileSync(join(p.sorties, FONDATIONS_VUES), `${JSON.stringify({ vues: true }, null, 2)}\n`);
+}
+
+/**
+ * Le rendu validé : le clic sur « Valider le rendu » (D86), pour la vérification regardée. Une vérification plus
+ * récente rouvre l'avant et après.
+ * @param {string} fichier
+ */
+export function validerRendu(fichier) {
+  const p = lireProjet(fichier);
+  const a = calculerEtat(p, { base: p.dossier }).avantApres;
+  if (!a) throw new Error('aucun rendu à valider');
+  writeFileSync(join(p.sorties, RENDU_VALIDE), `${JSON.stringify({ verification: a.verification }, null, 2)}\n`);
+}
+
+/**
+ * Revenir sur une décision (D86) : le rendu n'est plus validé, et la revue rouverte au designer jusqu'à un nouvel
+ * export des choix ; la réduction, les feuilles et la vérification se refont ensuite, et l'avant et après revient.
+ * @param {string} fichier
+ */
+export function rouvrirRevue(fichier) {
+  const p = lireProjet(fichier);
+  rmSync(join(p.sorties, RENDU_VALIDE), { force: true });
+  mkdirSync(p.sorties, { recursive: true });
+  writeFileSync(join(p.sorties, REVUE_ROUVERTE), `${JSON.stringify({ decisions: empreinteDesChoix(p.sorties) }, null, 2)}\n`);
 }
 
 /**

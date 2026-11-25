@@ -8,6 +8,7 @@
  * fenêtre est celle du manifeste (la réduction) ; avant puis après la pose, dans le même chargement, chaque opération
  * de la simulation de la réduction est relevée, avec la hauteur de la page (src/verify/arrivee.js), transitions et
  * animations coupées le temps du relevé ; tokens.css et les feuilles ajoutées y sont reconnus comme posés par verify.
+ * Avec `ajout`, la page intacte est aussi capturée avant la pose, dans le même chargement (l'avant de D86).
  */
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -84,7 +85,8 @@ export async function poserAjouts(page, dossier) {
  *   les opérations de la simulation avant et après la pose (oui par défaut) ; colorScheme : préférence du système (sans
  *   elle, celle de Playwright : clair)
  * @returns {Promise<{ png: Buffer, aria: string, status: number | null, finalUrl: string, viewport: { width: number, height: number },
- *   releve?: import('./arrivee.js').Releve }>}  releve : avec ajout, les opérations de la page et ses hauteurs
+ *   releve?: import('./arrivee.js').Releve, avant?: Buffer }>}  releve : avec ajout, les opérations de la page et ses hauteurs ; avant :
+ *   avec ajout, la capture de la page intacte, prise avant la pose dans le même chargement
  */
 export async function capturePage({ url, viewport, waitMs = DEFAULT_WAIT_MS, storageState, thirdParty = [], ajout, juger = true, colorScheme }) {
   const ajouts = ajout ? await lireAjouts(ajout) : null;
@@ -98,6 +100,14 @@ export async function capturePage({ url, viewport, waitMs = DEFAULT_WAIT_MS, sto
     const nav = await gotoAndSettle(page, url, { waitMs });
     /** @type {import('./arrivee.js').Releve | undefined} */
     let releve;
+    /** @type {Buffer | undefined} */
+    let avant;
+    // L'avant (D86) : la page intacte, dans le même chargement, éléments tiers masqués comme l'après.
+    if (ajouts) {
+      await hideThirdParty(page, thirdParty, true);
+      avant = await page.screenshot({ fullPage: true, animations: 'disabled' });
+      await hideThirdParty(page, thirdParty, false);
+    }
     if (ajouts && !juger) await poserAjouts(page, ajouts);
     else if (ajouts) {
       // HTML brut de la page : un bloc <style> absent est inséré par un script.
@@ -115,7 +125,7 @@ export async function capturePage({ url, viewport, waitMs = DEFAULT_WAIT_MS, sto
     const aria = await page.ariaSnapshot();
     await hideThirdParty(page, thirdParty, true);
     const png = await page.screenshot({ fullPage: true, animations: 'disabled' });
-    return { png, aria, status: nav.status, finalUrl: nav.finalUrl, viewport: fenetre, ...(releve ? { releve } : {}) };
+    return { png, aria, status: nav.status, finalUrl: nav.finalUrl, viewport: fenetre, ...(releve ? { releve } : {}), ...(avant ? { avant } : {}) };
   } finally {
     await browser.close();
   }

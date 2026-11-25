@@ -23,7 +23,8 @@
  *      variable (posée par l'attribut style de l'élément, ou nulle part : valeur de repli) ;
  *   K5 hauteurs de la page intacte (lue avant la pose, dans le même chargement) et avec les feuilles ;
  *   K6 commande verify --ajout : chaque ligne, la phrase finale qui compte chaque état, les hauteurs ; sortie 1 ;
- *      jamais « chaque ligne écrite est arrivée ».
+ *      jamais « chaque ligne écrite est arrivée » ; l'image de la page intacte (avant.png), de la largeur de l'après,
+ *      à côté de actuel.png (D86).
  * Revus pour docs/attendus/verify-se-reconnait.md (décisions de Quentin du 17/11/2026), avant le code :
  *   K4 une cause par déclaration, celle du manifeste d'abord : esp-03 a pour cause « attribut style » et pour « à faire »
  *      celui du fichier des pertes ; l'attribut style reste nommé dans ce qui la tient ; la ligne coul-03 finit par
@@ -196,6 +197,11 @@ test('K6 commande verify --ajout : chaque ligne, phrase finale, hauteurs ; sorti
   assert.ok(stdout.includes(`${verdict.resume}\n`), stdout);
   assert.match(stdout, /Hauteur : page intacte \d+ px, avec les feuilles \d+ px, référence \d+ px/);
   assert.ok(!/écrite est arrivée/.test(stdout), stdout);
+  // L'avant (D86), pris dans le même chargement : une image pleine page, de la largeur de l'après.
+  const dossier = /Sorties : (.+)\n/.exec(stdout)?.[1] ?? '';
+  const [avant, apres] = await Promise.all(['avant.png', 'actuel.png'].map((n) => readFile(join(dossier, n))));
+  assert.equal(avant.readUInt32BE(16), apres.readUInt32BE(16));
+  assert.ok(avant.readUInt32BE(20) > 0);
 });
 
 test('K7 transitions coupées le temps du relevé : coul-01 et .bouton-feuille arrivent', () => {

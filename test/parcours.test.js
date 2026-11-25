@@ -9,8 +9,10 @@
  *   table de « decisions » : 14 lignes de classe décision (2 + 6 + 1 + 5, comptées dans table.json), dont aucune dans la
  *   carte de plein, et une carte (plein|terre) : 15 ; tranchées par decisions.json (copie de decisions-valise.json) :
  *   8, comptées par les clés famille|valeur|usage, famille|valeur|usage sans relation et famille|valeur ;
- *   table du bilan, summary : couleurs 31 → 17, espacements 16 → 7, tailles de texte 13 → 8 ;
- *   verdict du bilan : 54 lignes, toutes « arrivée », 3 pages, sortie 0, dossier 2026-11-24T1336 ;
+ *   table du bilan, summary (après) : couleurs 17, espacements 7, tailles de texte 8, arrondis 5 ; avant, le compte
+ *   de la dette sur l'audit du constat (D86) : 33, 16, 13, 8 ;
+ *   verdict du bilan : 55 lignes, 54 « arrivée », 1 « non vérifiable (état) », 3 pages, sortie 0, dossier 2026-11-24T1336,
+ *   rendu validé ;
  *   saisie de Brume (#00ccff) : refusée, « checkValise (clair) : primary : doublon, pas 7 = pas 9 (#00ccff) ».
  *
  *   PC1 projet illisible : un message d'une ligne qui nomme la cause, sortie 2
@@ -38,7 +40,7 @@
  *
  * Les faits du moment (D74) et le serveur (D75). Valeurs écrites à la main d'après les mêmes sorties :
  *   durée : premier constat 2026-11-24T1330 ; dernière sortie horodatée de « decisions » 2026-11-24T1337 : 7 min ;
- *   un dossier de vérification au 2026-11-25T1535 : 26 h 05 après le premier constat, 1 565 min, dit « 1 j 2 h » ; verdict de « bilan » : 54 lignes, 3 pages.
+ *   un dossier de vérification au 2026-11-25T1535 : 26 h 05 après le premier constat, 1 565 min, dit « 1 j 2 h » ; verdict de « bilan » : 55 lignes, 3 pages.
  *
  *   PC17 les faits de chaque état : une ligne par fait, sans guillemets ni nom de fichier, un seul chiffre
  *   PC18 ce qui n'est pas arrivé, nommé par son titre, et le temps écoulé
@@ -63,8 +65,8 @@ import { flattenTokens, resoudreAlias } from '../src/tokens/roles.js';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const FIX = join(ROOT, 'fixtures', 'parcours');
 const MOMENTS = ['lancement', 'pages', 'constat', 'marque', 'decisions', 'livraison', 'bilan', 'plusieurs'];
-/** Les moments de la page d'avant les écrans (D77) : tous, sauf les pages. */
-const PAGE = MOMENTS.filter((m) => m !== 'lancement' && m !== 'pages' && m !== 'constat');
+/** Les moments de la page d'avant les écrans (D77) : tous, sauf ceux qui ont leur écran (les pages, la dette, le bilan). */
+const PAGE = MOMENTS.filter((m) => m !== 'lancement' && m !== 'pages' && m !== 'constat' && m !== 'bilan');
 /** @param {string} m */
 const etat = (m) => calculerEtat(lireProjet(join(FIX, m, 'projet.json')), { base: ROOT });
 /** @param {string} m */
@@ -196,23 +198,24 @@ test('PC2 l’état des huit projets, depuis leurs sorties', () => {
     temps: ['faite', 'faite', 'en cours', 'à venir'],
     courante: 'Poser · Livraison',
     main: 'outil',
-    action: 'prouver la livraison sur les pages',
+    action: 'prouver la livraison sur les pages, avant et après',
     moment: 'sans-ecran',
     ecran: null,
     phrase: null,
   });
   assert.equal(etat('livraison').courante.fait, 'feuilles ajoutées, pas encore prouvées');
-  assert.match(/** @type {string} */ (etat('livraison').courante.commande), /^npm run verify -- http:\/\/127\.0\.0\.1:4173\/desordre\/carte\.html .* --ajout fixtures\/parcours\/livraison\/sorties\/ajout --out fixtures\/parcours\/livraison\/sorties\/verify$/);
+  assert.match(/** @type {string} */ (etat('livraison').courante.commande), /^npm run verify -- http:\/\/127\.0\.0\.1:4173\/desordre\/carte\.html .* --ajout fixtures\/parcours\/livraison\/sorties\/ajout\/2026-11-24T1335 --out fixtures\/parcours\/livraison\/sorties\/verify$/);
   const b = etat('bilan');
   assert.deepEqual(resume('bilan'), { temps: ['faite', 'faite', 'faite', 'en cours'], courante: 'Tenir · Suivi', main: 'outil', action: 'relancer le contrôle', moment: 'bilan', ecran: null, phrase: null });
   assert.deepEqual(b.bilan, {
-    chiffres: ['31 → 17 couleurs', '16 → 7 espacements', '13 → 8 tailles de texte'],
-    dernier: 'Dernier contrôle : 24/11/2026 à 13 h 36, 54 lignes arrivées sur 54.',
+    // Avant : le compte de la dette (D86), lu dans l'audit ; après : celui de la table.
+    chiffres: ['33 → 17 couleurs', '16 → 7 espacements', '13 → 8 tailles de texte', '8 → 5 arrondis'],
+    dernier: 'Dernier contrôle : 24/11/2026 à 13 h 36, 54 changements arrivés sur 55.',
     complet: true,
     manque: [],
-    humain: ['les pages hors de l’échantillon', 'l’installation dans le code du produit'],
+    humain: ['les pages hors de l’échantillon', '1 changement visible seulement au survol, au focus ou à l’appui', 'l’installation dans le code du produit'],
   });
-  assert.equal(b.etapes[4].fait, '54 lignes arrivées sur 54, 3 pages');
+  assert.equal(b.etapes[4].fait, '54 changements arrivés sur 55, 3 pages');
   const p = etat('plusieurs');
   assert.deepEqual(resume('plusieurs'), {
     temps: ['faite', 'en cours', 'à venir', 'à venir'],
@@ -261,8 +264,8 @@ test('PC3 règles d’étape : décisions non lues, verdict en 1, entrée chang�
   e = calculerEtat(lireProjet(join(l, 'projet.json')), { base: l });
   assert.equal(e.courante.cle, 'livraison');
   assert.equal(e.courante.main, 'développeur');
-  assert.equal(e.courante.action, 'dire ce qui est vérifié et ce qui n’est pas arrivé, sans rien ouvrir : 2 lignes ne sont pas arrivées');
-  assert.equal(e.courante.fait, '52 lignes arrivées sur 54, 3 pages');
+  assert.equal(e.courante.action, 'dire ce qui est vérifié et ce qui n’est pas arrivé, sans rien ouvrir : 3 changements ne sont pas arrivés');
+  assert.equal(e.courante.fait, '52 changements arrivés sur 55, 3 pages');
   // Un dossier plus récent par son nom l'emporte, suffixe compris ; un dossier qui n'est pas un horodatage est ignoré.
   const racine = mkdtempSync(join(tmpdir(), 'ds-lab-parcours-'));
   for (const n of ['2026-11-24T1336', '2026-11-24T1336-2', '2026-11-24T1336-10', '2026-11-23T2359', 'zz']) mkdirSync(join(racine, n));
@@ -323,14 +326,17 @@ test('PC5 la page : quatre temps, un moment de 60 mots au plus hors du cadre, un
   assert.match(p, /<a href="\/marques\/orbe\/roles\.html">Ouvrir seul<\/a>/);
   const c = pageDuParcours(etatDe(vue('constat')));
   assert.match(c, /<h1>Je prépare tes fondations<\/h1>/);
+  // Le rendu validé (D86) : un écran du gabarit, ce qui a changé, ce qui reste à regarder ; aucun mot de l'outil.
   const bi = pageDuParcours(etat('bilan'));
-  assert.ok(bi.includes('La couche visuelle tient ses seuils. Voici ce qui reste à faire vérifier par un humain.'));
-  assert.ok(bi.includes('31 → 17 couleurs ; 16 → 7 espacements ; 13 → 8 tailles de texte.'));
-  // Sans verdict en 0, le bilan dit ce qui manque, jamais sa phrase.
+  assert.match(bi, /<h1>Ton rendu est validé<\/h1>/);
+  assert.match(bi, /<li><span class="fort">33 → 17<\/span>couleurs<\/li>/);
+  assert.ok(bi.includes('<li>1 changement visible seulement au survol, au focus ou à l’appui</li>'));
+  assert.doesNotMatch(bi, /seuils|couche visuelle|lignes? arrivée/);
+  // Sans verdict en 0, le rendu dit ce qui manque.
   const e = etat('bilan');
   if (e.bilan) e.bilan.complet = false;
   if (e.bilan) e.bilan.manque = ['un dernier contrôle sans ligne manquante'];
-  assert.ok(!pageDuParcours(e).includes('tient ses seuils'));
+  assert.match(pageDuParcours(e), /<h2 id="t-reste">Il manque<\/h2>/);
 });
 
 /** Déclarations hors des jetons générés : [propriété, valeur]. @param {string} html */
@@ -522,7 +528,7 @@ test('PC17 les faits de chaque état : une ligne par fait, sans guillemets ni no
   assert.deepEqual(faits(join(FIX, 'constat')), [
     tete,
     '  Fait : la mesure des pages',
-    '  Chiffre : 68 valeurs différentes affichées',
+    '  Chiffre : 70 valeurs différentes affichées',
     '  Écran : la dette',
     '  Ensuite : une phrase et ce chiffre, renvoyer à l’écran, puis attendre le clic sur Passer à ta marque (parcours --attendre, en tâche de fond) ; ne pas proposer la marque avant',
     '  Main : l’humain ; l’accompagner, il décide',
@@ -582,10 +588,11 @@ test('PC17 les faits de chaque état : une ligne par fait, sans guillemets ni no
 test('PC18 ce qui n’est pas arrivé, nommé par son titre, et le temps écoulé', () => {
   const b = copie('bilan');
   assert.deepEqual(faits(b).slice(1, 4), [
-    '  Fait : la vérification sur 3 pages',
-    '  Chiffre : 54 lignes arrivées sur 54',
-    '  Au développeur : installer les feuilles ajoutées dans le code du produit ; vérifier les pages hors de l’échantillon',
+    '  Fait : le rendu validé ; la vérification sur 3 pages',
+    '  Chiffre : 54 changements arrivés sur 55',
+    '  Écran : le rendu validé',
   ]);
+  assert.ok(faits(b).includes('  Ensuite : dire en deux lignes ce qui se remet au développeur, sans rien ouvrir ; puis relancer le contrôle après chaque changement du site'));
   const fv = join(b, 'sorties/verify/127.0.0.1_4173/2026-11-24T1336/verdict.json');
   const v = JSON.parse(readFileSync(fv, 'utf8'));
   v.lignes[0] = { ...v.lignes[0], titre: 'Fond · pied de page « Contact »', etat: 'non arrivée', elements: { arrivees: 0, total: 2 }, texte: 'x : non arrivée ; cause : jeton absent' };
