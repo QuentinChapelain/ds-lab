@@ -118,6 +118,7 @@
       "test/css-jetons.test.js",
       "test/decisions-unit.test.js",
       "test/declarations-conflits.test.js",
+      "test/description-crochet.test.js",
       "test/determinisme.test.js",
       "test/dossier-des-marques.test.js",
       "test/e2e-apply.test.js",

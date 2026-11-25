@@ -3,7 +3,8 @@
  * Le dossier de jeu (D75) : un dossier permanent, branché sur le clone, où l'on joue le parcours. Le skill y est un lien
  * vers skill/ds-lab/ du clone et DS_LAB pointe sur le clone : on joue toujours la dernière version, sans copie à refaire.
  * Poser le dossier, c'est aussi repartir de zéro : tout ce qu'il contient est effacé, sauf les permissions déjà accordées
- * dans les réglages de Claude Code. Un dossier non vide qui n'a pas la marque d'un dossier de jeu n'est jamais touché.
+ * dans les réglages de Claude Code. Ses réglages posent aussi un crochet qui refuse une commande décrite en anglais
+ * (D87). Un dossier non vide qui n'a pas la marque d'un dossier de jeu n'est jamais touché.
  */
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -43,6 +44,11 @@ export function poserJeu(dossier, { depot, node = dirname(process.execPath) }) {
     ...anciens,
     env: { ...(anciens.env ?? {}), DS_LAB: clone, PATH: [node, ...SYSTEME].join(':') },
     permissions: { ...(anciens.permissions ?? {}), additionalDirectories: [clone] },
+    // La description de chaque commande, en français (D87) : un crochet refuse celle qui commence en anglais.
+    hooks: {
+      ...(anciens.hooks ?? {}),
+      PreToolUse: [{ matcher: 'Bash', hooks: [{ type: 'command', command: `"${join(node, 'node')}" "${join(clone, 'src', 'cli', 'description.js')}"` }] }],
+    },
   };
   writeFileSync(fReglages, `${JSON.stringify(reglages, null, 2)}\n`);
   writeFileSync(join(d, MARQUE_JEU), 'Dossier de jeu de ds-lab : npm run jeu -- <ce dossier> le remet à son départ, en effaçant tout ce qu’il contient.\n');

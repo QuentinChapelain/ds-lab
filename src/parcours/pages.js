@@ -11,6 +11,8 @@ import { lireProjet, ecrirePages, ecrireMarque } from './projet.js';
 import { calculerEtat, empreinteDesChoix, DETTE_VUE, FONDATIONS_VUES, PAGES_VALIDEES, RENDU_VALIDE, REVUE_ROUVERTE } from './etat.js';
 import { entreeDe } from './marque.js';
 import { lancerChromium } from '../browser/lancement.js';
+import { ecrireRemise, message } from './remise.js';
+import { execFileSync } from 'node:child_process';
 
 /** Délai de la vérification d'une page ajoutée. */
 const DELAI_MS = 10_000;
@@ -118,6 +120,32 @@ export function validerRendu(fichier) {
   const a = calculerEtat(p, { base: p.dossier }).avantApres;
   if (!a) throw new Error('aucun rendu à valider');
   writeFileSync(join(p.sorties, RENDU_VALIDE), `${JSON.stringify({ verification: a.verification }, null, 2)}\n`);
+  // La remise (D87) : le dossier à donner au développeur, écrit pour le rendu validé.
+  const r = calculerEtat(p, { base: p.dossier }).remise;
+  if (r) ecrireRemise(r, { dossierAjout: a.dossierAjout, verification: a.verification });
+}
+
+/** Le presse-papiers du Mac ; ailleurs, une panne. @param {string} texte */
+function presse(texte) {
+  if (process.platform !== 'darwin') throw new Error('presse-papiers : macOS seulement');
+  execFileSync('pbcopy', { input: texte });
+}
+
+/**
+ * « Copier le message » (D87) : le serveur, sur le Mac de l'humain, met le message de la remise dans le
+ * presse-papiers (pbcopy). Rend vrai si la copie est faite ; ailleurs que sur macOS, faux.
+ * @param {string} fichier @param {{ copier?: (texte: string) => void }} [o]
+ */
+export function copierMessage(fichier, { copier = presse } = {}) {
+  const p = lireProjet(fichier);
+  const r = calculerEtat(p, { base: p.dossier }).remise;
+  if (!r) throw new Error('aucune remise à copier');
+  try {
+    copier(message(r));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**

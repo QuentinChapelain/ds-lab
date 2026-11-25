@@ -26,7 +26,7 @@
  *   SK10 contexte.md (D74) : 400 mots au plus, la mesure de SK4 ; ses parties dans l'ordre ; le lancement, seul texte
  *       dit tel quel, entre ses deux marques, deux messages au plus, le dernier demande l'adresse ; aucun texte entre
  *       guillemets ; aucun mot à éviter (mots de l'outil, « Bienvenue », « conforme » dit d'un site, l'interface).
- *   SK11 conduire.md (D75) : ses sections « Le panneau », « La marque » et « La fin » ; aucune question proposée ; le
+ *   SK11 conduire.md (D75) : ses sections « Le panneau », « La marque » et « La remise » (D87) ; aucune question proposée ; le
  *       fichier glissé dans le chat ; les tournures retirées (« une par modèle », « Dis-le ici ») ne paraissent que
  *       dans les mots à éviter, et nulle part dans contexte.md.
  */
@@ -175,10 +175,10 @@ test('SK10 contexte.md : une page, ses parties, le lancement seul texte fixe, au
   assert.doesNotMatch(x, /\b(?:réduction|proches?|d'office|rattachement|resolver|manifeste|verdict|bienvenue|other|formulaire)\b|Autre »/i, 'un mot à éviter');
 });
 
-test('SK11 conduire.md : le panneau, la marque lue sur le site, la fin ; aucune question proposée ; les tournures retirées', () => {
+test('SK11 conduire.md : le panneau, la marque lue sur le site, la remise ; aucune question proposée ; les tournures retirées', () => {
   const c = lire('conduire.md');
   const titres = [...c.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
-  for (const t of ['Le panneau', 'La marque', 'La fin']) assert.ok(titres.includes(t), t);
+  for (const t of ['Le panneau', 'La marque', 'La remise']) assert.ok(titres.includes(t), t);
   assert.match(c, /\*\*Aucune question proposée\.\*\*/);
   assert.match(c, /« exporte, puis glisse le fichier ici »/);
   assert.match(c, /jamais une couleur inventée « à peu près »/);

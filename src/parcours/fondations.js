@@ -100,7 +100,7 @@ export function fondationsDe(dossier) {
       ? [{ titre: 'Accessibilité', texte: `${paires.controlees} paires contrôlées aux seuils WCAG 2.1 AA : 4,5 pour un texte, 3 pour une bordure ou un focus.` }]
       : []),
     ...(quatre && echec === 0 ? [{ titre: 'Quatre contextes', texte: 'Clair et sombre, large et étroit : mêmes rôles, mêmes contrôles.' }] : []),
-    ...(code ? [{ titre: 'Prêt pour le code', texte: 'Une feuille de variables CSS et un thème Vuetify, écrits depuis tes jetons.' }] : []),
+    ...(code ? [{ titre: 'Prêt pour le code', texte: 'Une feuille de variables CSS et un thème Vuetify, écrits depuis tes tokens.' }] : []),
     { titre: 'Règles sourcées', texte: 'Chaque règle dit sa raison, la source de son seuil et son contrôle.' },
   ];
   return {
@@ -116,7 +116,7 @@ export function fondationsDe(dossier) {
     planches,
     preuves,
     limites: [
-      'pas encore de jetons d’ombre ni de superposition',
+      'pas encore de tokens d’ombre ni de superposition',
       'deux couleurs de marque : une troisième couleur de ton site va sur l’échelle de la palette qui a sa teinte (red, green), sinon aux gris',
       'une seule sortie, le web',
       'aucun test avec un vrai lecteur d’écran',

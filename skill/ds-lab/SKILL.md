@@ -35,7 +35,7 @@ Dans ce dépôt, `verifier` contrôle 16 des 43 règles et défauts ; 27 ne sont
 3. **Vérifier** : `node "$DS_LAB/src/cli/verifier.js" --marques tokens --style "src/**/*.vue" --skill .claude/skills/ds-lab`. Sortie 0 : rien ne bloque. Sortie 1 : chaque ligne dit ce qui échoue, la règle, et ce qu'il faut faire. Sortie 2 : une panne, son message dit quoi passer.
 4. **Écrire les composants** : lire `regles.md`, `consignes.md` et `techniques/vuetify.md`. Une valeur visuelle vient d'une variable du thème, `var(--v-ds-…)` ou `rgb(var(--v-theme-…))` ; une exception s'écrit sur place, avec sa règle et sa raison. Les composants `Ds…` du clone (`atelier/composants/`) sont un exemple et un gabarit, pas un produit.
 
-Ne jamais corriger les jetons à la main : changer l'entrée et relancer la saisie.
+Ne jamais corriger les tokens à la main : changer l'entrée et relancer la saisie.
 
 ## Conduire
 

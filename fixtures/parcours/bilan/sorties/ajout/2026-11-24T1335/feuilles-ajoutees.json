@@ -330,5 +330,1446 @@
       "ancienne": "#faf6ef",
       "nouvelle": "#f8f8f7"
     }
+  ],
+  "tokensCss": "/desordre/styles/tokens.css",
+  "feuilles": [
+    {
+      "feuille": "/desordre/styles/ancienne.css",
+      "ajout": "/desordre/styles/ancienne.ajout.css",
+      "injectee": false
+    },
+    {
+      "feuille": "/desordre/styles/bibliotheque.css",
+      "ajout": "/desordre/styles/bibliotheque.ajout.css",
+      "injectee": false
+    },
+    {
+      "feuille": "/desordre/styles/commun.css",
+      "ajout": "/desordre/styles/commun.ajout.css",
+      "injectee": false
+    },
+    {
+      "feuille": "/desordre/styles/recente.css",
+      "ajout": "/desordre/styles/recente.ajout.css",
+      "injectee": false
+    }
+  ],
+  "declarations": [
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 9,
+      "selector": "body",
+      "property": "color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 15,
+      "selector": ".panneau",
+      "property": "padding-bottom",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 15,
+      "selector": ".panneau",
+      "property": "padding-left",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 15,
+      "selector": ".panneau",
+      "property": "padding-right",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 15,
+      "selector": ".panneau",
+      "property": "padding-top",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 19,
+      "selector": ".entete-page",
+      "property": "margin-bottom",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 31,
+      "selector": ".meta",
+      "property": "color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 35,
+      "selector": ".action",
+      "property": "background-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 35,
+      "selector": ".action",
+      "property": "border-bottom-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 35,
+      "selector": ".action",
+      "property": "border-bottom-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 35,
+      "selector": ".action",
+      "property": "border-top-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 35,
+      "selector": ".action",
+      "property": "border-top-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 53,
+      "selector": ".resume-bloc",
+      "property": "border-bottom-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 53,
+      "selector": ".resume-bloc",
+      "property": "border-bottom-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 53,
+      "selector": ".resume-bloc",
+      "property": "border-bottom-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 53,
+      "selector": ".resume-bloc",
+      "property": "border-left-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 53,
+      "selector": ".resume-bloc",
+      "property": "border-right-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 53,
+      "selector": ".resume-bloc",
+      "property": "border-top-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 53,
+      "selector": ".resume-bloc",
+      "property": "border-top-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 53,
+      "selector": ".resume-bloc",
+      "property": "border-top-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 59,
+      "selector": ".resume dt",
+      "property": "color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 69,
+      "selector": ".filtres",
+      "property": "background-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 69,
+      "selector": ".filtres",
+      "property": "border-bottom-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 69,
+      "selector": ".filtres",
+      "property": "border-bottom-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 69,
+      "selector": ".filtres",
+      "property": "border-top-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 69,
+      "selector": ".filtres",
+      "property": "border-top-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 79,
+      "selector": ".filtres-libelle",
+      "property": "color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 84,
+      "selector": ".filtre",
+      "property": "border-bottom-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 84,
+      "selector": ".filtre",
+      "property": "border-bottom-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 84,
+      "selector": ".filtre",
+      "property": "border-bottom-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 84,
+      "selector": ".filtre",
+      "property": "border-left-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 84,
+      "selector": ".filtre",
+      "property": "border-right-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 84,
+      "selector": ".filtre",
+      "property": "border-top-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 84,
+      "selector": ".filtre",
+      "property": "border-top-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 84,
+      "selector": ".filtre",
+      "property": "border-top-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 84,
+      "selector": ".filtre",
+      "property": "color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 84,
+      "selector": ".filtre",
+      "property": "padding-bottom",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 84,
+      "selector": ".filtre",
+      "property": "padding-top",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 98,
+      "selector": ".recherche",
+      "property": "border-bottom-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 98,
+      "selector": ".recherche",
+      "property": "border-bottom-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 98,
+      "selector": ".recherche",
+      "property": "border-bottom-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 98,
+      "selector": ".recherche",
+      "property": "border-left-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 98,
+      "selector": ".recherche",
+      "property": "border-right-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 98,
+      "selector": ".recherche",
+      "property": "border-top-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 98,
+      "selector": ".recherche",
+      "property": "border-top-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 98,
+      "selector": ".recherche",
+      "property": "border-top-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 98,
+      "selector": ".recherche",
+      "property": "color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 98,
+      "selector": ".recherche",
+      "property": "padding-bottom",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 98,
+      "selector": ".recherche",
+      "property": "padding-top",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 115,
+      "selector": ".tableau th, .tableau td",
+      "property": "border-bottom-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 121,
+      "selector": ".tableau th",
+      "property": "background-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 121,
+      "selector": ".tableau th",
+      "property": "color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 126,
+      "selector": ".tableau td",
+      "property": "color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 134,
+      "selector": ".ligne:nth-child(2n)",
+      "property": "background-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 138,
+      "selector": ".avatar",
+      "property": "border-bottom-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 138,
+      "selector": ".avatar",
+      "property": "border-bottom-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 138,
+      "selector": ".avatar",
+      "property": "border-top-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 138,
+      "selector": ".avatar",
+      "property": "border-top-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 162,
+      "selector": ".vignette",
+      "property": "border-bottom-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 162,
+      "selector": ".vignette",
+      "property": "border-bottom-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 162,
+      "selector": ".vignette",
+      "property": "border-top-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 162,
+      "selector": ".vignette",
+      "property": "border-top-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 172,
+      "selector": ".pastille",
+      "property": "border-bottom-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 172,
+      "selector": ".pastille",
+      "property": "border-bottom-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 172,
+      "selector": ".pastille",
+      "property": "border-top-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 172,
+      "selector": ".pastille",
+      "property": "border-top-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 180,
+      "selector": ".pastille--payee",
+      "property": "background-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 180,
+      "selector": ".pastille--payee",
+      "property": "color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 185,
+      "selector": ".pastille--attente",
+      "property": "color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 190,
+      "selector": ".pastille--annulee",
+      "property": "background-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 202,
+      "selector": ".legende",
+      "property": "color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 211,
+      "selector": ".pagination a",
+      "property": "border-bottom-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 211,
+      "selector": ".pagination a",
+      "property": "border-bottom-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 211,
+      "selector": ".pagination a",
+      "property": "border-bottom-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 211,
+      "selector": ".pagination a",
+      "property": "border-left-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 211,
+      "selector": ".pagination a",
+      "property": "border-right-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 211,
+      "selector": ".pagination a",
+      "property": "border-top-color",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 211,
+      "selector": ".pagination a",
+      "property": "border-top-left-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/ancienne.css",
+      "line": 211,
+      "selector": ".pagination a",
+      "property": "border-top-right-radius",
+      "pages": [
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 9,
+      "selector": "body",
+      "property": "color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 19,
+      "selector": ".titre-page",
+      "property": "font-size",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 25,
+      "selector": ".salutation",
+      "property": "font-size",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 37,
+      "selector": ".bloc",
+      "property": "border-bottom-color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 37,
+      "selector": ".bloc",
+      "property": "border-left-color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 37,
+      "selector": ".bloc",
+      "property": "border-right-color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 37,
+      "selector": ".bloc",
+      "property": "border-top-color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 37,
+      "selector": ".bloc",
+      "property": "padding-bottom",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 37,
+      "selector": ".bloc",
+      "property": "padding-left",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 37,
+      "selector": ".bloc",
+      "property": "padding-right",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 37,
+      "selector": ".bloc",
+      "property": "padding-top",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 43,
+      "selector": ".titre-bloc",
+      "property": "font-size",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 43,
+      "selector": ".titre-bloc",
+      "property": "margin-bottom",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 68,
+      "selector": ".libelle",
+      "property": "color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 74,
+      "selector": ".champ",
+      "property": "border-bottom-color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 74,
+      "selector": ".champ",
+      "property": "border-left-color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 74,
+      "selector": ".champ",
+      "property": "border-right-color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 74,
+      "selector": ".champ",
+      "property": "border-top-color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 74,
+      "selector": ".champ",
+      "property": "color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 86,
+      "selector": ".erreur",
+      "property": "color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 86,
+      "selector": ".erreur",
+      "property": "margin-bottom",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 91,
+      "selector": ".aide",
+      "property": "color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 91,
+      "selector": ".aide",
+      "property": "font-size",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 91,
+      "selector": ".aide",
+      "property": "margin-bottom",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 97,
+      "selector": ".actions",
+      "property": "column-gap",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 97,
+      "selector": ".actions",
+      "property": "row-gap",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 123,
+      "selector": ".lien",
+      "property": "color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 136,
+      "selector": ".commande",
+      "property": "border-bottom-color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 148,
+      "selector": ".avatar",
+      "property": "border-bottom-left-radius",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 148,
+      "selector": ".avatar",
+      "property": "border-bottom-right-radius",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 148,
+      "selector": ".avatar",
+      "property": "border-top-left-radius",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 148,
+      "selector": ".avatar",
+      "property": "border-top-right-radius",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 169,
+      "selector": ".date",
+      "property": "color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 169,
+      "selector": ".date",
+      "property": "font-size",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 174,
+      "selector": ".etiquette-nouveau",
+      "property": "background-color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 186,
+      "selector": ".secondaire",
+      "property": "color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 191,
+      "selector": ".mentions",
+      "property": "color",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/bibliotheque.css",
+      "line": 191,
+      "selector": ".mentions",
+      "property": "font-size",
+      "pages": [
+        "/desordre/compte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/commun.css",
+      "line": 31,
+      "selector": ".entete",
+      "property": "border-bottom-color",
+      "pages": [
+        "/desordre/carte.html",
+        "/desordre/compte.html",
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/commun.css",
+      "line": 40,
+      "selector": ".logo",
+      "property": "color",
+      "pages": [
+        "/desordre/carte.html",
+        "/desordre/compte.html",
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/commun.css",
+      "line": 64,
+      "selector": ".pied",
+      "property": "background-color",
+      "pages": [
+        "/desordre/carte.html",
+        "/desordre/compte.html",
+        "/desordre/gestion.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 4,
+      "selector": "body",
+      "property": "background-color",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 4,
+      "selector": "body",
+      "property": "color",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 17,
+      "selector": ".bandeau",
+      "property": "border-bottom-color",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 17,
+      "selector": ".bandeau",
+      "property": "padding-bottom",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 17,
+      "selector": ".bandeau",
+      "property": "padding-top",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 23,
+      "selector": ".bandeau h1",
+      "property": "font-size",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 23,
+      "selector": ".bandeau h1",
+      "property": "margin-bottom",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 29,
+      "selector": ".chapo",
+      "property": "color",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 59,
+      "selector": ".produit",
+      "property": "border-bottom-color",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 59,
+      "selector": ".produit",
+      "property": "border-left-color",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 59,
+      "selector": ".produit",
+      "property": "border-right-color",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 59,
+      "selector": ".produit",
+      "property": "border-top-color",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 90,
+      "selector": ".prix-promo",
+      "property": "color",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 96,
+      "selector": ".produit-desc",
+      "property": "color",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 96,
+      "selector": ".produit-desc",
+      "property": "margin-bottom",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 103,
+      "selector": ".etiquette-nouveau, .etiquette-promo",
+      "property": "margin-left",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 114,
+      "selector": ".etiquette-nouveau",
+      "property": "background-color",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 119,
+      "selector": ".etiquette-promo",
+      "property": "color",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 124,
+      "selector": ".horaires",
+      "property": "background-color",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 142,
+      "selector": ".note-allergenes",
+      "property": "color",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    },
+    {
+      "sheet": "/desordre/styles/recente.css",
+      "line": 148,
+      "selector": ".lien-discret",
+      "property": "color",
+      "pages": [
+        "/desordre/carte.html"
+      ],
+      "ecrite": true
+    }
   ]
 }

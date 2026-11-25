@@ -1,0 +1,38 @@
+/* ds-lab : jetons utilisés par les feuilles migrées, valeurs tirées de marque.resolver.json. À charger avant toutes les autres feuilles. */
+:root {
+  --color-accent-9: #f0c987;
+  --color-accent-11: #80632f;
+  --color-error-9: #d93036;
+  --color-error-10: #c8292e;
+  --color-error-11: #cb1d2a;
+  --color-error-on-solid: #ffffff;
+  --color-neutral-2: #f8f8f7;
+  --color-neutral-3: #f3f2f1;
+  --color-neutral-4: #ecebe9;
+  --color-neutral-5: #e3e2df;
+  --color-neutral-6: #d8d6d2;
+  --color-neutral-8: #958f84;
+  --color-neutral-11: #6d675b;
+  --color-neutral-12: #363026;
+  --color-primary-9: #2b4c7e;
+  --color-primary-11: #0c274f;
+  --color-white: #ffffff;
+  --font-size-12: 12px;
+  --font-size-14: 14px;
+  --font-size-16: 16px;
+  --font-size-18: 18px;
+  --font-size-20: 20px;
+  --font-size-24: 24px;
+  --font-size-30: 30px;
+  --radius-2: 2px;
+  --radius-4: 4px;
+  --radius-8: 8px;
+  --radius-12: 12px;
+  --radius-full: 9999px;
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+}

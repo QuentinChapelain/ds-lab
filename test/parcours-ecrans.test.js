@@ -38,7 +38,14 @@
  *       l'image d'avant, se refait ;
  *   EC13 « Valider le rendu » : le rendu validé, --attendre finit ; « Revenir sur une décision » : le rendu n'est plus
  *       validé, la revue rouverte au designer jusqu'à un nouvel export, puis la réduction, les feuilles et la
- *       vérification se refont, et l'avant et après revient.
+ *       vérification se refont, et l'avant et après revient ;
+ *   EC14 la remise (D87), tirée des sorties sans nouvelle mesure : trois étapes et leurs comptes (feuilles, lignes à
+ *       coller par page, valeurs à reprendre par fichier, regroupées par sélecteur, les côtés réunis en raccourci),
+ *       « À installer » sans mot de l'outil ni identifiant de ligne, le message ; un dossier `remise/` étranger n'est
+ *       pas touché ; l'écran : trois cartes, le dossier, le message, « Copier le message », puis « Copié. » ; une copie
+ *       impossible le dit ;
+ *   EC15 la page en direct : une base sur la page du site, tokens.css en tête, chaque feuille ajoutée juste après le lien
+ *       de sa feuille, avec son media ; un lien vers une autre page mesurée y mène en direct, une ancre reste une ancre.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -53,6 +60,8 @@ import { pageDuParcours } from '../src/parcours/page.js';
 import { ecranDeLancement, FIN_JETONS } from '../src/parcours/ecrans.js';
 import { ajouterPage, choisirCouleur, confirmerMarque, detteVue, echangerAccent, fondationsVues, retirerPage, rouvrirRevue, validerPages, validerRendu } from '../src/parcours/pages.js';
 import { fondationsDe } from '../src/parcours/fondations.js';
+import { aInstaller, ecrireRemise, message, pageEnDirect } from '../src/parcours/remise.js';
+import { copierMessage } from '../src/parcours/pages.js';
 import { faitsDuMoment } from '../src/parcours/faits.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -407,7 +416,7 @@ test('EC10 après « Confirmer la marque » : l’attente, puis les fondations c
     '0 en échec',
     'La planche des rôles · des espacements · des textes',
     '✓ · Dans les règles de l’art',
-    'Limites connues : pas encore de jetons d’ombre ni de superposition',
+    'Limites connues : pas encore de tokens d’ombre ni de superposition',
     'Pas encore · posées sur ton site au temps 3, Poser',
     'Pas encore · les composants remplacés dans ton code au temps 4, Tenir',
     'Comparer mon site ›',
@@ -513,8 +522,11 @@ test('EC13 « Valider le rendu » et « Revenir sur une décision »', async () 
   assert.equal(await w.fin(), 0);
   assert.deepEqual(JSON.parse(readFileSync(join(d, 'sorties', 'avant-apres.json'), 'utf8')), { verification: '2026-11-24T1336' });
   let e = calculerEtat(lireProjet(f), { base: d });
-  assert.deepEqual([e.moment, e.courante.cle], ['bilan', 'suivi']);
-  assert.match(pageDuParcours(e), /<h1>Ton rendu est validé<\/h1>/);
+  assert.deepEqual([e.moment, e.courante.cle], ['remise', 'suivi']);
+  assert.match(pageDuParcours(e), /<h1>La remise<\/h1>/);
+  // La remise écrite à côté du projet (D87) : les feuilles, « À installer », le message.
+  for (const x of ['remise/a-installer.md', 'remise/message.txt', 'remise/remise.json', 'remise/feuilles/desordre/styles/tokens.css', 'remise/feuilles/desordre/styles/recente.ajout.css'])
+    assert.ok(existsSync(join(d, x)), x);
   // Revenir : la revue rouverte au designer, le rendu plus validé.
   rouvrirRevue(f);
   assert.ok(!existsSync(join(d, 'sorties', 'avant-apres.json')));
@@ -536,4 +548,55 @@ test('EC13 « Valider le rendu » et « Revenir sur une décision »', async () 
   e = calculerEtat(lireProjet(f), { base: d });
   assert.deepEqual([e.courante.cle, e.courante.action], ['livraison', 'poser les feuilles ajoutées']);
   assert.match(/** @type {string} */ (e.courante.commande), / --sortie sorties\/ajout\/2026-11-24T1340$/);
+});
+
+test('EC14 la remise : trois étapes et leurs comptes, « À installer », le message ; l’écran et « Copier le message »', () => {
+  const d = copie('bilan');
+  const f = join(d, 'projet.json');
+  const e = calculerEtat(lireProjet(f), { base: d });
+  const r = /** @type {NonNullable<typeof e.remise>} */ (e.remise);
+  // Le manifeste de la partie du 25/11 : 4 feuilles ajoutées ; la carte en charge 2, le compte 2, la gestion 2.
+  assert.deepEqual([r.ajouts.length, r.pages.map((p) => p.apres.length), r.lignes, r.fichiers.length], [4, [2, 2, 2], 9, 4]);
+  assert.equal(r.dossier, join(d, 'remise'));
+  const md = aInstaller(r);
+  for (const x of ['# À installer : Annuaire des cafés', '## 1. Installer le système', '## 2. Poser les décisions', '## 3. Reprendre l’ancien code', '<link rel="stylesheet" href="/desordre/styles/tokens.css">', '### `/desordre/carte.html`', 'Juste après `<link rel="stylesheet" href="/desordre/styles/recente.css">` :', '<link rel="stylesheet" href="/desordre/styles/recente.ajout.css">'])
+    assert.ok(md.includes(x), x);
+  // Une case par fichier, les valeurs regroupées par sélecteur ; les quatre côtés réunis en raccourci.
+  assert.equal(md.match(/^- \[ \] `\/desordre\/styles\/[a-z]+\.css` \(\d+ valeurs\)$/gm)?.length, 4);
+  assert.match(md, /^ {2}- `\.bouton-principal, \.bouton-secondaire`, ligne 104 : .*`padding: 8px 16px` → `var\(--space-8, 8px\) var\(--space-16, 16px\)`/m);
+  // Deux côtés seulement (haut et bas) restent en propriétés longues.
+  assert.match(md, /`\.commande`, ligne 136 : .*`padding-bottom: 12px` → `var\(--space-12, 12px\)` ; `padding-top: 12px`/);
+  assert.doesNotMatch(md, /border-top-left-radius/);
+  assert.doesNotMatch(md, /rattach|perte|\bgarde\b|^\s*-? ?`?(coul|esp|tail|arr)-\d/im);
+  assert.match(message(r), /^Voici la remise de ds-lab pour Annuaire des cafés, dans le dossier .*\/remise\. Ouvre a-installer\.md/);
+  // Un dossier remise/ que l'outil n'a pas écrit n'est pas touché.
+  writeFileSync(join(d, 'remise'), '');
+  rmSync(join(d, 'remise'));
+  cpSync(join(FIX, 'pages'), join(d, 'remise'), { recursive: true });
+  assert.throws(() => ecrireRemise(r, { dossierAjout: join(d, 'sorties/ajout/2026-11-24T1335'), verification: 'x' }), /n’a pas été écrit par l’outil/);
+  rmSync(join(d, 'remise'), { recursive: true });
+  // L'écran : trois cartes et leurs comptes, le dossier, le message, la copie.
+  const h = pageDuParcours(e);
+  const t = texte(h);
+  for (const x of ['La remise', 'Trois étapes', '1 · Installer le système', '3 lignes à coller, une par page', '4 feuilles ajoutées', '6 lignes à coller', `dans 4 fichiers`, 'Ouvrir « À installer »', 'Copier le message', '3 choix restent reportés'])
+    assert.ok(t.includes(x), x);
+  assert.match(h, /<textarea class="message" readonly rows="6" aria-labelledby="t-message">Voici la remise/);
+  assert.match(h, /<form method="post" action="\/pages\/copier"><button type="submit" class="principal">Copier le message<\/button><\/form>/);
+  assert.doesNotMatch(h, /Copié\./);
+  assert.match(pageDuParcours(e, { copie: 'ok' }), /<span class="accepte" role="status">Copié\.<\/span>/);
+  assert.match(pageDuParcours(e, { copie: 'non' }), /Copie impossible ici : sélectionne le message\./);
+  assert.deepEqual(enDur(h), []);
+  /** @type {string[]} */
+  const copies = [];
+  assert.equal(copierMessage(f, { copier: (x) => void copies.push(x) }), true);
+  assert.equal(copies[0], message(r));
+  assert.equal(copierMessage(f, { copier: () => { throw new Error('pas de presse-papiers'); } }), false);
+});
+
+test('EC15 la page en direct : base, tokens en tête, chaque feuille ajoutée après la sienne ; les liens restent en direct', () => {
+  const html = '<!doctype html><html><head><title>x</title><link rel="stylesheet" href="/s/a.css" media="screen"><link rel="stylesheet" href="https://ailleurs.example/s/a.css"><link rel="icon" href="/i.png"></head><body><a href="/p/2.html#haut">2</a><a href="#bas">bas</a><a href="https://ailleurs.example/p/2.html">x</a></body></html>';
+  const p = pageEnDirect(html, 'http://127.0.0.1:4173/p/1.html', { tokens: ':root{--x:1px}', ajouts: [{ feuille: '/s/a.css', texte: 'b{c:d}' }], liens: (c) => (c === '/p/2.html' ? 'http://127.0.0.1:9/direct/orbe?page=%2Fp%2F2.html' : null) });
+  assert.ok(p.startsWith('<!doctype html><html><head><base href="http://127.0.0.1:4173/p/1.html"><style data-ds-lab-ajout>:root{--x:1px}</style><title>'), p);
+  assert.ok(p.includes('<link rel="stylesheet" href="/s/a.css" media="screen"><style data-ds-lab-ajout media="screen">b{c:d}</style><link rel="stylesheet" href="https://ailleurs.example/s/a.css"><link rel="icon"'), p);
+  assert.ok(p.includes('<a href="http://127.0.0.1:9/direct/orbe?page=%2Fp%2F2.html#haut">2</a><a href="#bas">bas</a><a href="https://ailleurs.example/p/2.html">'), p);
 });

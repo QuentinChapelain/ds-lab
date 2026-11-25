@@ -4,7 +4,7 @@
  * d'autre que lui.
  *
  *   JE1 posé : le guide du dossier, le site, la cible et les sources ; le skill, un lien vers celui du clone ; DS_LAB
- *       et le Node du clone dans les réglages ; aucune entrée de marque
+ *       et le Node du clone dans les réglages, le crochet de la description (D87) ; aucune entrée de marque
  *   JE2 remis à son départ : le projet et les sorties effacés, les permissions déjà accordées gardées
  *   JE3 refus : un dossier non vide sans la marque d'un dossier de jeu, ou un dossier dans le clone, n'est pas touché ;
  *       la commande sort en 2
@@ -34,6 +34,15 @@ test('JE1 posé : guide, site, cible, sources, skill en lien, réglages, aucune 
   assert.equal(r.env.DS_LAB, ROOT.replace(/\/$/, ''));
   assert.equal(r.env.PATH.split(':')[0], dirname(process.execPath));
   assert.deepEqual(r.permissions.additionalDirectories, [ROOT.replace(/\/$/, '')]);
+  // Le crochet de la description (D87) : la commande qu'il lance refuse une description anglaise, en 2, et laisse passer
+  // une description française, en 0.
+  const crochet = r.hooks.PreToolUse[0];
+  assert.equal(crochet.matcher, 'Bash');
+  for (const [description, code] of /** @type {const} */ ([['Write the added sheets and read the next step', 2], ['poser les feuilles et lire la suite', 0]])) {
+    const x = spawnSync('sh', ['-c', crochet.hooks[0].command], { input: JSON.stringify({ tool_name: 'Bash', tool_input: { command: 'true', description } }), encoding: 'utf8' });
+    assert.equal(x.status, code, description + x.stderr);
+    if (code) assert.match(x.stderr, /^Décris cette commande en français/);
+  }
   assert.ok(!existsSync(join(d, 'marques')));
   assert.match(readFileSync(join(d, 'CLAUDE.md'), 'utf8'), /## Repartir de zéro/);
 });

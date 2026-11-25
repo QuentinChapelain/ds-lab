@@ -1,0 +1,172 @@
+/* ds-lab : feuille ajoutée de /desordre/styles/ancienne.css, à charger juste après elle. Tirée de modifications.json (marque.resolver.json, 2026-11-25T1743). */
+
+/* coul-10 ; /desordre/styles/ancienne.css:9 */
+body {
+  color: var(--color-neutral-12, #333333); /* coul-10 */
+}
+
+/* esp-19 ; /desordre/styles/ancienne.css:15 */
+.panneau {
+  padding-bottom: var(--space-16, 20px); /* esp-19 */
+  padding-left: var(--space-16, 20px); /* esp-19 */
+  padding-right: var(--space-16, 20px); /* esp-19 */
+  padding-top: var(--space-16, 20px); /* esp-19 */
+}
+
+/* esp-30 ; /desordre/styles/ancienne.css:19 */
+.entete-page {
+  margin-bottom: var(--space-32, 30px); /* esp-30 */
+}
+
+/* coul-31 ; /desordre/styles/ancienne.css:31 */
+.meta {
+  color: var(--color-neutral-11, #808080); /* coul-31 */
+}
+
+/* coul-28, arr-01 ; /desordre/styles/ancienne.css:35 */
+.action {
+  background-color: var(--color-primary-9, #4990e2); /* coul-28 */
+  border-bottom-left-radius: var(--radius-2, 3px); /* arr-01 */
+  border-bottom-right-radius: var(--radius-2, 3px); /* arr-01 */
+  border-top-left-radius: var(--radius-2, 3px); /* arr-01 */
+  border-top-right-radius: var(--radius-2, 3px); /* arr-01 */
+}
+
+/* coul-08, arr-01 ; /desordre/styles/ancienne.css:53 */
+.resume-bloc {
+  border-bottom-color: var(--color-neutral-6, #dadada); /* coul-08 */
+  border-bottom-left-radius: var(--radius-2, 3px); /* arr-01 */
+  border-bottom-right-radius: var(--radius-2, 3px); /* arr-01 */
+  border-left-color: var(--color-neutral-6, #dadada); /* coul-08 */
+  border-right-color: var(--color-neutral-6, #dadada); /* coul-08 */
+  border-top-color: var(--color-neutral-6, #dadada); /* coul-08 */
+  border-top-left-radius: var(--radius-2, 3px); /* arr-01 */
+  border-top-right-radius: var(--radius-2, 3px); /* arr-01 */
+}
+
+/* coul-09 ; /desordre/styles/ancienne.css:59 */
+.resume dt {
+  color: var(--color-neutral-12, #595959); /* coul-09 */
+}
+
+/* coul-36, arr-01 ; /desordre/styles/ancienne.css:69 */
+.filtres {
+  background-color: var(--color-neutral-4, #eeeeee); /* coul-36 */
+  border-bottom-left-radius: var(--radius-2, 3px); /* arr-01 */
+  border-bottom-right-radius: var(--radius-2, 3px); /* arr-01 */
+  border-top-left-radius: var(--radius-2, 3px); /* arr-01 */
+  border-top-right-radius: var(--radius-2, 3px); /* arr-01 */
+}
+
+/* coul-09 ; /desordre/styles/ancienne.css:79 */
+.filtres-libelle {
+  color: var(--color-neutral-12, #595959); /* coul-09 */
+}
+
+/* coul-08, arr-06, coul-10, esp-11 ; /desordre/styles/ancienne.css:84 */
+.filtre {
+  border-bottom-color: var(--color-neutral-6, #dadada); /* coul-08 */
+  border-bottom-left-radius: var(--radius-4, 6px); /* arr-06 */
+  border-bottom-right-radius: var(--radius-4, 6px); /* arr-06 */
+  border-left-color: var(--color-neutral-6, #dadada); /* coul-08 */
+  border-right-color: var(--color-neutral-6, #dadada); /* coul-08 */
+  border-top-color: var(--color-neutral-6, #dadada); /* coul-08 */
+  border-top-left-radius: var(--radius-4, 6px); /* arr-06 */
+  border-top-right-radius: var(--radius-4, 6px); /* arr-06 */
+  color: var(--color-neutral-12, #333333); /* coul-10 */
+  padding-bottom: var(--space-4, 5px); /* esp-11 */
+  padding-top: var(--space-4, 5px); /* esp-11 */
+}
+
+/* coul-08, arr-01, coul-10, esp-11 ; /desordre/styles/ancienne.css:98 */
+.recherche {
+  border-bottom-color: var(--color-neutral-6, #dadada); /* coul-08 */
+  border-bottom-left-radius: var(--radius-2, 3px); /* arr-01 */
+  border-bottom-right-radius: var(--radius-2, 3px); /* arr-01 */
+  border-left-color: var(--color-neutral-6, #dadada); /* coul-08 */
+  border-right-color: var(--color-neutral-6, #dadada); /* coul-08 */
+  border-top-color: var(--color-neutral-6, #dadada); /* coul-08 */
+  border-top-left-radius: var(--radius-2, 3px); /* arr-01 */
+  border-top-right-radius: var(--radius-2, 3px); /* arr-01 */
+  color: var(--color-neutral-12, #333333); /* coul-10 */
+  padding-bottom: var(--space-4, 5px); /* esp-11 */
+  padding-top: var(--space-4, 5px); /* esp-11 */
+}
+
+/* coul-01 ; /desordre/styles/ancienne.css:115 */
+.tableau th, .tableau td {
+  border-bottom-color: var(--color-neutral-8, #999999); /* coul-01 */
+}
+
+/* coul-12, coul-09 ; /desordre/styles/ancienne.css:121 */
+.tableau th {
+  background-color: var(--color-neutral-3, #f2f2f2); /* coul-12 */
+  color: var(--color-neutral-12, #595959); /* coul-09 */
+}
+
+/* coul-03 ; /desordre/styles/ancienne.css:126 */
+.tableau td {
+  color: var(--color-neutral-12, #2d2d2d); /* coul-03 */
+}
+
+/* coul-18 ; /desordre/styles/ancienne.css:134 */
+.ligne:nth-child(even) {
+  background-color: var(--color-neutral-2, #f6f5f6); /* coul-18 */
+}
+
+/* arr-02 ; /desordre/styles/ancienne.css:138 */
+.avatar {
+  border-bottom-left-radius: var(--radius-full, 50%); /* arr-02 */
+  border-bottom-right-radius: var(--radius-full, 50%); /* arr-02 */
+  border-top-left-radius: var(--radius-full, 50%); /* arr-02 */
+  border-top-right-radius: var(--radius-full, 50%); /* arr-02 */
+}
+
+/* arr-01 ; /desordre/styles/ancienne.css:162 */
+.vignette {
+  border-bottom-left-radius: var(--radius-2, 3px); /* arr-01 */
+  border-bottom-right-radius: var(--radius-2, 3px); /* arr-01 */
+  border-top-left-radius: var(--radius-2, 3px); /* arr-01 */
+  border-top-right-radius: var(--radius-2, 3px); /* arr-01 */
+}
+
+/* arr-05 ; /desordre/styles/ancienne.css:172 */
+.pastille {
+  border-bottom-left-radius: var(--radius-full, 999px); /* arr-05 */
+  border-bottom-right-radius: var(--radius-full, 999px); /* arr-05 */
+  border-top-left-radius: var(--radius-full, 999px); /* arr-05 */
+  border-top-right-radius: var(--radius-full, 999px); /* arr-05 */
+}
+
+/* coul-14, coul-02 ; /desordre/styles/ancienne.css:180 */
+.pastille--payee {
+  background-color: var(--color-neutral-5, #e2dccf); /* coul-14 */
+  color: var(--color-primary-11, #1f2a44); /* coul-02 */
+}
+
+/* coul-02 ; /desordre/styles/ancienne.css:185 */
+.pastille--attente {
+  color: var(--color-primary-11, #1f2a44); /* coul-02 */
+}
+
+/* coul-35 ; /desordre/styles/ancienne.css:190 */
+.pastille--annulee {
+  background-color: var(--color-error-9, #c8553d); /* coul-35 */
+}
+
+/* coul-30 ; /desordre/styles/ancienne.css:202 */
+.legende {
+  color: var(--color-neutral-11, #777777); /* coul-30 */
+}
+
+/* coul-08, arr-01 ; /desordre/styles/ancienne.css:211 */
+.pagination a {
+  border-bottom-color: var(--color-neutral-6, #dadada); /* coul-08 */
+  border-bottom-left-radius: var(--radius-2, 3px); /* arr-01 */
+  border-bottom-right-radius: var(--radius-2, 3px); /* arr-01 */
+  border-left-color: var(--color-neutral-6, #dadada); /* coul-08 */
+  border-right-color: var(--color-neutral-6, #dadada); /* coul-08 */
+  border-top-color: var(--color-neutral-6, #dadada); /* coul-08 */
+  border-top-left-radius: var(--radius-2, 3px); /* arr-01 */
+  border-top-right-radius: var(--radius-2, 3px); /* arr-01 */
+}

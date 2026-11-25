@@ -42,9 +42,9 @@ Mesurer, Décider, Poser, Tenir. Trois fois, l'humain regarde et dit oui : la ma
 ## Ce qu'il ne fait pas aujourd'hui
 
 - Un seul site est trié et livré ; les autres sont mesurés.
-- La remise au développeur n'a pas encore d'écran.
+- Rien ne vérifie seul l'installation chez le développeur.
 - L'avant et après ne situe pas chaque changement sur la page.
-- Pas de composant de lien, pas de jetons d'ombre.
+- Pas de composant de lien, pas de tokens d'ombre.
 - Le site n'est jamais modifié.
 
 ## Les mots

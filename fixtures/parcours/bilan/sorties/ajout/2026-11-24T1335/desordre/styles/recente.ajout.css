@@ -1,0 +1,74 @@
+/* ds-lab : feuille ajoutée de /desordre/styles/recente.css, à charger juste après elle. Tirée de modifications.json (marque.resolver.json, 2026-11-25T1743). */
+
+/* coul-39, coul-02 ; /desordre/styles/recente.css:4 */
+body {
+  background-color: var(--color-neutral-2, #faf6ef); /* coul-39 */
+  color: var(--color-primary-11, #1f2a44); /* coul-02 */
+}
+
+/* coul-07, esp-27 ; /desordre/styles/recente.css:17 */
+.bandeau {
+  border-bottom-color: var(--color-neutral-6, #e2dccf); /* coul-07 */
+  padding-bottom: var(--space-24, 27px); /* esp-27 */
+  padding-top: var(--space-24, 27px); /* esp-27 */
+}
+
+/* tail-12, esp-29 ; /desordre/styles/recente.css:23 */
+.bandeau h1 {
+  font-size: var(--font-size-30, 32px); /* tail-12 */
+  margin-bottom: var(--space-16, 18px); /* esp-29 */
+}
+
+/* coul-29 ; /desordre/styles/recente.css:29 */
+.chapo {
+  color: var(--color-neutral-11, #666666); /* coul-29 */
+}
+
+/* coul-07 ; /desordre/styles/recente.css:59 */
+.produit {
+  border-bottom-color: var(--color-neutral-6, #e2dccf); /* coul-07 */
+  border-left-color: var(--color-neutral-6, #e2dccf); /* coul-07 */
+  border-right-color: var(--color-neutral-6, #e2dccf); /* coul-07 */
+  border-top-color: var(--color-neutral-6, #e2dccf); /* coul-07 */
+}
+
+/* coul-25 ; /desordre/styles/recente.css:90 */
+.prix-promo {
+  color: var(--color-accent-11, #f0c987); /* coul-25 */
+}
+
+/* coul-11, esp-12 ; /desordre/styles/recente.css:96 */
+.produit-desc {
+  color: var(--color-neutral-11, #9a9a9a); /* coul-11 */
+  margin-bottom: var(--space-16, 15px); /* esp-12 */
+}
+
+/* esp-18 ; /desordre/styles/recente.css:103 */
+.etiquette-nouveau, .etiquette-promo {
+  margin-left: var(--space-8, 6px); /* esp-18 */
+}
+
+/* coul-24 ; /desordre/styles/recente.css:114 */
+.etiquette-nouveau {
+  background-color: var(--color-error-9, #d0563f); /* coul-24 */
+}
+
+/* coul-02 ; /desordre/styles/recente.css:119 */
+.etiquette-promo {
+  color: var(--color-primary-11, #1f2a44); /* coul-02 */
+}
+
+/* coul-38 ; /desordre/styles/recente.css:124 */
+.horaires {
+  background-color: var(--color-neutral-3, #f7f3ec); /* coul-38 */
+}
+
+/* coul-13 ; /desordre/styles/recente.css:142 */
+.note-allergenes {
+  color: var(--color-neutral-11, #757575); /* coul-13 */
+}
+
+/* coul-27 ; /desordre/styles/recente.css:148 */
+.lien-discret {
+  color: var(--color-primary-11, #30548a); /* coul-27 */
+}

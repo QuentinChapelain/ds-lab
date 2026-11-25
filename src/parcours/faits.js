@@ -66,7 +66,7 @@ export function faitsDuMoment(e, { sorties }) {
   /** @type {[string, string | null][]} */
   const f = [];
   const main =
-    k.cle === 'suivi' ? 'personne : dire le bilan, puis attendre un changement du site'
+    e.moment === 'remise' ? 'l’humain ; il remet le dossier au développeur'
     : k.main === 'outil' ? 'l’outil ; enchaîner sans demander' : k.main === 'développeur' ? 'le développeur ; ce qui lui revient se dit en deux lignes' : 'l’humain ; l’accompagner, il décide';
   switch (k.cle) {
     case 'site':
@@ -96,7 +96,7 @@ export function faitsDuMoment(e, { sorties }) {
       }
       // Après « Confirmer la marque » (D83) : l'écran d'attente, qui passe seul aux fondations.
       if (e.moment === 'jetons' && !k.refus) {
-        f.push(['Fait', 'la marque confirmée'], ['Écran', 'l’écriture des jetons, qui passe seule aux fondations'], ['Ensuite', `${k.action}, sans le dire, puis relire parcours`]);
+        f.push(['Fait', 'la marque confirmée'], ['Écran', 'l’écriture des tokens, qui passe seule aux fondations'], ['Ensuite', `${k.action}, sans le dire, puis relire parcours`]);
         break;
       }
       if (avant?.etat === 'faite' && !k.sortie) {
@@ -111,7 +111,7 @@ export function faitsDuMoment(e, { sorties }) {
     case 'decisions':
       if (e.moment === 'fondations') {
         f.push(
-          ['Fait', 'la marque saisie, ses jetons et ses contrôles écrits'],
+          ['Fait', 'la marque saisie, ses tokens et ses contrôles écrits'],
           ['Écran', 'les fondations'],
           ['Ensuite', 'une phrase : les fondations sont prêtes, à sa marque, et ne sont pas encore sur le site ; ni chiffre ni liste ; attendre le clic sur Comparer mon site (parcours --attendre, en tâche de fond)'],
         );
@@ -149,16 +149,16 @@ export function faitsDuMoment(e, { sorties }) {
         );
         break;
       }
-      f.push(['Fait', `le rendu validé ; la vérification sur ${nombre(l.pages, 'page', 'pages')}`], ['Chiffre', `${nombre(l.arrivees, 'changement arrivé', 'changements arrivés')} sur ${l.total}`], ['Écran', 'le rendu validé']);
+      // La remise (D87) : une seule chose à dire, ce qu'il remet ; les choix reportés et le contrôle sont sur l'écran.
+      f.push(['Fait', 'le rendu validé ; la remise écrite, un dossier et un message'], ['Écran', 'la remise']);
       for (const x of l.manquantes.slice(0, NOMMEES)) f.push(['Pas arrivé', `${sansGuillemets(x.titre)} ; ${nombre(x.elements, 'élément', 'éléments')}${x.cause ? ` ; cause : ${x.cause}` : ''}`]);
       if (l.manquantes.length > NOMMEES) f.push(['Pas arrivé', `et ${nombre(l.manquantes.length - NOMMEES, 'autre changement', 'autres changements')}`]);
-      f.push(['Au développeur', 'installer les feuilles ajoutées dans le code du produit ; vérifier les pages hors de l’échantillon']);
-      f.push(['Ensuite', `dire en deux lignes ce qui se remet au développeur, sans rien ouvrir${k.cle === 'suivi' ? ' ; puis relancer le contrôle après chaque changement du site' : ''}`]);
+      f.push(['Ensuite', 'une phrase : voici ce qu’il remet au développeur, un dossier et un message, à droite ; il copie le message et le lui donne ; ni les choix reportés ni le contrôle : l’écran les porte ; ne rien ouvrir']);
       break;
     }
   }
   f.push(['Main', main]);
-  if (e.chiffres.reportes) f.push(['Reporté', nombre(e.chiffres.reportes, 'choix', 'choix')]);
+  if (e.chiffres.reportes && e.moment !== 'remise') f.push(['Reporté', nombre(e.chiffres.reportes, 'choix', 'choix')]);
   const duree = dureeEcoulee(sorties);
   if (duree !== null) f.push(['Durée', `${dureeDite(duree)} depuis la première mesure, pauses comprises`]);
   const lignes = f.filter(([, v]) => v).map(([cle, v]) => `  ${cle} : ${v}`);

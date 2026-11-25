@@ -3,7 +3,7 @@
  * Les écrans du parcours (D77) et leur gabarit, commun à tous les écrans à venir : les quatre temps en haut, le titre
  * et qui a la main, le contenu borné à la largeur d'une page, une barre en bas, fixée au bord de la fenêtre, avec une
  * seule action forte. Les écrans : le lancement (avant le projet), les pages à mesurer (un groupe par site), la mesure en
- * cours, la dette, la marque, l'écriture des jetons et les fondations.
+ * cours, la dette, la marque, l'écriture des tokens, les fondations, l'avant et après et la remise.
  * Sans script : retirer, ajouter et mesurer sont des formulaires envoyés au serveur du parcours (serveur.js). Valeurs :
  * les variables des jetons communs (jetons.js) ; le style écrit ici ne porte que des variables, des mots-clés, 0 et
  * 100 %, comme un module (D61). La page n'a pas de marque : l'anneau de focus prend le texte d'information, pas
@@ -13,6 +13,7 @@ import { esc, fr } from '../lib/format.js';
 import { variablesDeLaPage } from './jetons.js';
 import { echelleDeLaTroisieme } from './marque.js';
 import { nomAffiche } from '../lib/echelles.js';
+import { message } from './remise.js';
 
 /** @typedef {import('./etat.js').Etat} Etat @typedef {import('./etat.js').EtatEtape} EtatEtape */
 /** @typedef {{ site: string, message: string, saisie: string }} ErreurAjout  le refus d'une page ajoutée */
@@ -144,6 +145,16 @@ button.discret { border-color: transparent; background: none; color: var(--text-
 .cadre .dessus { position: absolute; top: 0; left: 0; }
 .voir-avant:checked ~ .cadre .apres, .voir-apres:checked ~ .cadre .avant { visibility: hidden; }
 .exemple { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-within-component) var(--gap-between-blocks); }
+.document { display: flex; flex-direction: column; gap: var(--gap-between-blocks); }
+.document h2 { margin-top: var(--gap-between-components); }
+.document h3 { margin: 0; ${style('label')} }
+.document ul { display: flex; flex-direction: column; gap: var(--gap-within-component); padding-left: var(--gap-between-groups); list-style: disc; }
+.document li, .document p { overflow-wrap: anywhere; }
+.document pre { margin: 0; padding: var(--gap-between-blocks) var(--padding-tag); overflow-x: auto; border-radius: var(--border-radius-control); background: var(--background-subtle); }
+.retour { color: var(--text-info); ${style('label')} }
+.direct { margin-left: auto; color: var(--text-info); ${style('label')} }
+.message { width: 100%; padding: var(--gap-between-blocks) var(--padding-tag); border: var(--border-width-default) solid var(--border-default); border-radius: var(--border-radius-control); background: var(--background-surface); color: var(--text-default); resize: vertical; ${style('body-medium')} }
+.message:focus-visible { outline: var(--border-width-focus) solid var(--text-info); outline-offset: var(--offset-focus); }
 .manque { display: flex; flex-direction: column; gap: var(--gap-within-component); padding-left: var(--gap-between-groups); list-style: disc; }
 `;
 
@@ -505,7 +516,7 @@ export function ecranDesJetons(e) {
     statut: { texte: 'Rien à décider', neutre: true },
     phrase: 'À partir de ta marque : les douze pas de tes couleurs, les rôles, les contrôles, la feuille de variables et le thème. Rien ne touche ton site.',
     temps: e.temps,
-    corps: '<progress aria-label="Écriture des jetons"></progress>',
+    corps: '<progress aria-label="Écriture des tokens"></progress>',
     avance: ['Décider · après la porte 1', 'L’écran passe seul aux fondations.'],
     rafraichir: true,
   });
@@ -607,6 +618,7 @@ export function ecranAvantApres(e) {
       return `<div class="vue vue-${i}" role="group" aria-label="${esc(v.nom)}">
 <input type="radio" name="bascule-${i}" id="avant-${i}" class="voir-avant"><label for="avant-${i}">Avant</label>
 <input type="radio" name="bascule-${i}" id="apres-${i}" class="voir-apres" checked><label for="apres-${i}">Après</label>
+<a class="direct" href="${esc(v.direct)}">Ouvrir la page en direct</a>
 <div class="cadre">${image('avant', v.avant, 'avant')}${image('apres', v.apres, 'après')}</div>
 </div>`;
     })
@@ -656,30 +668,92 @@ ${cartes}
 }
 
 /**
- * Le rendu validé (D86) : ce qui a changé, ce qui reste à regarder par un humain, le dernier contrôle. La remise au
- * développeur n'a pas encore d'écran : rien à décider ici.
+ * La remise (D87) : ce que le designer donne au développeur, en trois étapes numérotées avec leurs comptes, le
+ * dossier et « À installer », le message à copier ; ce qui reste à regarder. « Copier le message » est un formulaire :
+ * le serveur copie le message dans le presse-papiers du Mac, et l'écran dit « Copié. ».
  * @param {Etat} e
+ * @param {{ copie?: 'ok' | 'non' | null }} [o]  le retour de « Copier le message »
  */
-export function ecranDuRendu(e) {
-  const b = /** @type {NonNullable<Etat['bilan']>} */ (e.bilan);
-  const chiffres = b.chiffres.length
-    ? `<section class="bloc" aria-labelledby="t-change"><h2 id="t-change">Ce qui a changé</h2><ul class="chiffres">${b.chiffres
-        .map((c) => {
-          const m = /^(\d+ → \d+) (.+)$/.exec(c);
-          return m ? `<li><span class="fort">${esc(m[1])}</span>${esc(m[2])}</li>` : `<li>${esc(c)}</li>`;
-        })
-        .join('')}</ul></section>`
-    : '';
-  const reste = b.complet
-    ? `<section class="bloc" aria-labelledby="t-reste"><h2 id="t-reste">À regarder par un humain</h2><ul class="manque">${b.humain.map((h) => `<li>${esc(h)}</li>`).join('')}</ul></section>`
-    : `<section class="bloc" aria-labelledby="t-reste"><h2 id="t-reste">Il manque</h2><ul class="manque">${b.manque.map((h) => `<li>${esc(h)}</li>`).join('')}</ul></section>`;
+export function ecranDeLaRemise(e, { copie = null } = {}) {
+  const r = /** @type {NonNullable<Etat['remise']>} */ (e.remise);
+  const b = e.bilan;
+  const etape = (/** @type {number} */ n, /** @type {string} */ titre, /** @type {string} */ fait, /** @type {string} */ ecran, /** @type {string} */ annuler) =>
+    `<div class="carte"><h3>${n} · ${esc(titre)}</h3><p>${esc(fait)}</p><small>${esc(`À l’écran : ${ecran}. Pour annuler : ${annuler}.`)}</small></div>`;
+  const etapes = `<div class="cartes">
+${etape(1, 'Installer le système', `Charger tokens.css avant les autres feuilles : ${nombre(r.pages.length, 'ligne', 'lignes')} à coller, une par page.`, 'rien ne change', 'retirer la ligne')}
+${etape(2, 'Poser les décisions', `Charger ${nombre(r.ajouts.length, 'feuille ajoutée', 'feuilles ajoutées')}, chacune juste après sa feuille d’origine : ${nombre(r.lignes - r.pages.length, 'ligne', 'lignes')} à coller.`, 'le site devient l’« Après » validé', 'retirer les lignes')}
+${etape(3, 'Reprendre l’ancien code', `Remplacer ${nombre(r.valeurs, 'valeur écrite en dur', 'valeurs écrites en dur')} par leur variable, dans ${nombre(r.fichiers.length, 'fichier', 'fichiers')}, fichier par fichier.`, 'rien ne change', 'un commit par fichier')}
+</div>`;
+  const reste = [
+    ...(r.nonEcrites.length ? [`${nombre(r.nonEcrites.length, 'valeur n’a', 'valeurs n’ont')} pas pu s’écrire dans les feuilles ajoutées : elles se changent dans le code, en reprenant l’ancien code.`] : []),
+    ...(b ? (b.complet ? b.humain : b.manque.map((x) => `Il manque : ${x}.`)) : []),
+    ...(e.chiffres.reportes ? [`${nombre(e.chiffres.reportes, 'choix reste reporté', 'choix restent reportés')} : les versions de composants à garder, pour plus tard.`] : []),
+  ];
+  const texte = message(r);
+  const dit = copie === 'ok' ? '<span class="accepte" role="status">Copié.</span>' : copie === 'non' ? '<span class="refus" role="status">Copie impossible ici : sélectionne le message.</span>' : '';
   return gabarit({
-    titre: 'Ton rendu est validé',
-    onglet: `Le rendu · ${e.produit}`,
+    titre: 'La remise',
+    onglet: `La remise · ${e.produit}`,
     statut: { texte: 'Rien à décider', neutre: true },
-    phrase: 'Tes choix sont posés à côté de l’ancien code, et vérifiés sur tes pages. La remise au développeur viendra ensuite.',
+    phrase: 'Ce que tu donnes au développeur : un dossier et un message. Il s’en sert dans l’ordre des trois étapes.',
     temps: e.temps,
-    corps: `<div class="blocs">\n${chiffres}\n${reste}\n<p><small>${esc(b.dernier)}</small></p>\n</div>`,
-    avance: ['Poser · porte 3 franchie', 'La remise au développeur viendra ensuite.'],
+    corps: `<div class="blocs">
+<section class="bloc" aria-labelledby="t-etapes"><h2 id="t-etapes">Trois étapes</h2>
+${etapes}</section>
+<section class="bloc" aria-labelledby="t-dossier"><div class="titre-bloc"><h2 id="t-dossier">Le dossier</h2><a href="/a-installer">Ouvrir « À installer »</a></div>
+<p><code>${esc(r.dossier)}</code></p><small>Les feuilles, rangées comme sur le site, « À installer » et le message.</small></section>
+<section class="bloc" aria-labelledby="t-message"><h2 id="t-message">Le message</h2>
+<textarea class="message" readonly rows="6" aria-labelledby="t-message">${esc(texte)}</textarea></section>
+${reste.length ? `<section class="bloc" aria-labelledby="t-reste"><h2 id="t-reste">À regarder par un humain</h2><ul class="manque">${reste.map((h) => `<li>${esc(h)}</li>`).join('')}</ul></section>` : ''}
+${b ? `<p><small>${esc(b.dernier)}</small></p>` : ''}
+</div>`,
+    avance: ['Poser · la remise', 'Copie le message, puis donne le dossier au développeur.'],
+    action: `<div class="actions">${dit}<form method="post" action="/pages/copier"><button type="submit" class="principal">Copier le message</button></form></div>`,
+  });
+}
+
+/** Le code d'une ligne de « À installer », entre accents graves. @param {string} t */
+const enLigne = (t) => esc(t).replace(/`([^`]+)`/g, '<code>$1</code>');
+
+/**
+ * « À installer » (D87), lisible à l'écran : le Markdown de la remise, rendu par l'outil, qui sait ce qu'il écrit
+ * (titres, paragraphes, blocs de code, listes à deux niveaux, code en ligne).
+ * @param {Etat} e @param {string} md
+ */
+export function ecranAInstaller(e, md) {
+  /** @type {string[]} */
+  const h = [];
+  let code = /** @type {string[] | null} */ (null);
+  let liste = 0;
+  const fermer = (/** @type {number} */ n) => {
+    while (liste > n) (h.push('</ul>'), liste--);
+  };
+  for (const l of md.split('\n')) {
+    if (code) {
+      if (l === '```') (h.push(`<pre><code>${esc(code.join('\n'))}</code></pre>`), (code = null));
+      else code.push(l);
+      continue;
+    }
+    if (l.startsWith('```')) (fermer(0), (code = []));
+    else if (l.startsWith('# ') || !l.trim()) fermer(0);
+    else if (l.startsWith('### ')) (fermer(0), h.push(`<h3>${enLigne(l.slice(4))}</h3>`));
+    else if (l.startsWith('## ')) (fermer(0), h.push(`<h2>${enLigne(l.slice(3))}</h2>`));
+    else if (/^ {0,2}- /.test(l)) {
+      const n = l.startsWith('  ') ? 2 : 1;
+      if (liste < n) (h.push('<ul>'), liste++);
+      fermer(n);
+      h.push(`<li>${enLigne(l.replace(/^ *- (\[ \] )?/, ''))}</li>`);
+    } else (fermer(0), h.push(`<p>${enLigne(l)}</p>`));
+  }
+  fermer(0);
+  return gabarit({
+    titre: 'À installer',
+    onglet: `À installer · ${e.produit}`,
+    statut: { texte: 'Pour le développeur', neutre: true },
+    phrase: 'Les trois étapes de la remise, telles que le développeur les lit.',
+    temps: e.temps,
+    corps: `<div class="document">\n${h.join('\n')}\n</div>`,
+    avance: ['Poser · la remise', 'Ce fichier est dans le dossier de la remise.'],
+    action: '<a class="retour" href="/">‹ La remise</a>',
   });
 }

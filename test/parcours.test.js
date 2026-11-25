@@ -206,14 +206,14 @@ test('PC2 l’état des huit projets, depuis leurs sorties', () => {
   assert.equal(etat('livraison').courante.fait, 'feuilles ajoutées, pas encore prouvées');
   assert.match(/** @type {string} */ (etat('livraison').courante.commande), /^npm run verify -- http:\/\/127\.0\.0\.1:4173\/desordre\/carte\.html .* --ajout fixtures\/parcours\/livraison\/sorties\/ajout\/2026-11-24T1335 --out fixtures\/parcours\/livraison\/sorties\/verify$/);
   const b = etat('bilan');
-  assert.deepEqual(resume('bilan'), { temps: ['faite', 'faite', 'faite', 'en cours'], courante: 'Tenir · Suivi', main: 'outil', action: 'relancer le contrôle', moment: 'bilan', ecran: null, phrase: null });
+  assert.deepEqual(resume('bilan'), { temps: ['faite', 'faite', 'faite', 'en cours'], courante: 'Tenir · Suivi', main: 'outil', action: 'relancer le contrôle', moment: 'remise', ecran: null, phrase: null });
   assert.deepEqual(b.bilan, {
     // Avant : le compte de la dette (D86), lu dans l'audit ; après : celui de la table.
     chiffres: ['33 → 17 couleurs', '16 → 7 espacements', '13 → 8 tailles de texte', '8 → 5 arrondis'],
     dernier: 'Dernier contrôle : 24/11/2026 à 13 h 36, 54 changements arrivés sur 55.',
     complet: true,
     manque: [],
-    humain: ['les pages hors de l’échantillon', '1 changement visible seulement au survol, au focus ou à l’appui', 'l’installation dans le code du produit'],
+    humain: ['les pages hors de l’échantillon', '1 changement visible seulement au survol, au focus ou à l’appui'],
   });
   assert.equal(b.etapes[4].fait, '54 changements arrivés sur 55, 3 pages');
   const p = etat('plusieurs');
@@ -326,17 +326,16 @@ test('PC5 la page : quatre temps, un moment de 60 mots au plus hors du cadre, un
   assert.match(p, /<a href="\/marques\/orbe\/roles\.html">Ouvrir seul<\/a>/);
   const c = pageDuParcours(etatDe(vue('constat')));
   assert.match(c, /<h1>Je prépare tes fondations<\/h1>/);
-  // Le rendu validé (D86) : un écran du gabarit, ce qui a changé, ce qui reste à regarder ; aucun mot de l'outil.
+  // Le rendu validé : la remise (D87), ce qui reste à regarder ; aucun mot de l'outil.
   const bi = pageDuParcours(etat('bilan'));
-  assert.match(bi, /<h1>Ton rendu est validé<\/h1>/);
-  assert.match(bi, /<li><span class="fort">33 → 17<\/span>couleurs<\/li>/);
+  assert.match(bi, /<h1>La remise<\/h1>/);
   assert.ok(bi.includes('<li>1 changement visible seulement au survol, au focus ou à l’appui</li>'));
-  assert.doesNotMatch(bi, /seuils|couche visuelle|lignes? arrivée/);
-  // Sans verdict en 0, le rendu dit ce qui manque.
+  assert.doesNotMatch(texteVisible(bi.replace(/<style>.*?<\/style>/s, '')), /seuils|couche visuelle|lignes? arrivée|rattachement|\bpertes?\b|\bgarde\b|coul-\d/);
+  // Sans verdict en 0, la remise dit ce qui manque.
   const e = etat('bilan');
   if (e.bilan) e.bilan.complet = false;
   if (e.bilan) e.bilan.manque = ['un dernier contrôle sans ligne manquante'];
-  assert.match(pageDuParcours(e), /<h2 id="t-reste">Il manque<\/h2>/);
+  assert.ok(pageDuParcours(e).includes('<li>Il manque : un dernier contrôle sans ligne manquante.</li>'));
 });
 
 /** Déclarations hors des jetons générés : [propriété, valeur]. @param {string} html */
@@ -538,7 +537,7 @@ test('PC17 les faits de chaque état : une ligne par fait, sans guillemets ni no
   assert.deepEqual(faits(vue('constat')), [
     tete,
     '  Fait : la marque confirmée',
-    '  Écran : l’écriture des jetons, qui passe seule aux fondations',
+    '  Écran : l’écriture des tokens, qui passe seule aux fondations',
     '  Ensuite : saisir la marque, sans le dire, puis relire parcours',
     '  Main : l’outil ; enchaîner sans demander',
     '  Reporté : 3 choix',
@@ -587,12 +586,14 @@ test('PC17 les faits de chaque état : une ligne par fait, sans guillemets ni no
 
 test('PC18 ce qui n’est pas arrivé, nommé par son titre, et le temps écoulé', () => {
   const b = copie('bilan');
-  assert.deepEqual(faits(b).slice(1, 4), [
-    '  Fait : le rendu validé ; la vérification sur 3 pages',
-    '  Chiffre : 54 changements arrivés sur 55',
-    '  Écran : le rendu validé',
+  // La remise (D87) : une chose à dire, ce qui se remet ; ni les choix reportés ni le contrôle.
+  assert.deepEqual(faits(b).slice(1), [
+    '  Fait : le rendu validé ; la remise écrite, un dossier et un message',
+    '  Écran : la remise',
+    '  Ensuite : une phrase : voici ce qu’il remet au développeur, un dossier et un message, à droite ; il copie le message et le lui donne ; ni les choix reportés ni le contrôle : l’écran les porte ; ne rien ouvrir',
+    '  Main : l’humain ; il remet le dossier au développeur',
+    '  Durée : 6 min depuis la première mesure, pauses comprises',
   ]);
-  assert.ok(faits(b).includes('  Ensuite : dire en deux lignes ce qui se remet au développeur, sans rien ouvrir ; puis relancer le contrôle après chaque changement du site'));
   const fv = join(b, 'sorties/verify/127.0.0.1_4173/2026-11-24T1336/verdict.json');
   const v = JSON.parse(readFileSync(fv, 'utf8'));
   v.lignes[0] = { ...v.lignes[0], titre: 'Fond · pied de page « Contact »', etat: 'non arrivée', elements: { arrivees: 0, total: 2 }, texte: 'x : non arrivée ; cause : jeton absent' };
@@ -600,7 +601,7 @@ test('PC18 ce qui n’est pas arrivé, nommé par son titre, et le temps écoul�
   writeFileSync(fv, JSON.stringify(v));
   const l = faits(b);
   assert.ok(l.includes('  Pas arrivé : Fond · pied de page Contact ; 2 éléments ; cause : jeton absent'), l.join('\n'));
-  assert.ok(l.includes('  Main : le développeur ; ce qui lui revient se dit en deux lignes'), l.join('\n'));
+  assert.ok(l.includes('  Main : l’humain ; il remet le dossier au développeur'), l.join('\n'));
   // Le temps écoulé : du premier constat à la dernière sortie horodatée, par les noms des dossiers.
   assert.equal(dureeEcoulee(join(FIX, 'decisions', 'sorties')), 7);
   assert.equal(dureeEcoulee(join(FIX, 'lancement', 'sorties')), null);

@@ -50,7 +50,7 @@ Quelqu'un du métier qui travaille à côté de toi. Il a fait le tour de tes pa
 
 - Il s'ouvre seul, toujours : l'humain n'a rien à ouvrir.
 - Dès l'adresse donnée, le site s'ouvre dans le panneau, pendant que l'IA regarde les pages.
-- Il ne montre que des pages : le site, le parcours, les écrans (la dette, la marque, les fondations, la revue, l'avant et après). Jamais un fichier.
+- Il ne montre que des pages : le site, le parcours, les écrans (la dette, la marque, les fondations, la revue, l'avant et après, la remise). Jamais un fichier.
 - Ne jamais fermer tous ses onglets : un onglet au moins reste ouvert, et c'est lui qui charge l'écran suivant.
 - Montrer une page, c'est trois actions, dans cet ordre : l'ouvrir dans le panneau ; vérifier qu'elle y est devant (la page lue dans l'onglet, son titre ou son adresse) ; seulement alors dire « regarde à droite ». Si la vérification échoue, le dire en une phrase et donner le lien de la page. Si le volet est fermé et que l'IA ne peut pas le rouvrir, le dire une fois, en clair : « ouvre l'écran avec le bouton Ouvrir ».
 
@@ -95,7 +95,7 @@ Après le clic sur « Passer à ta marque », l'écran passe seul à la marque :
 
 ## Les fondations
 
-Les jetons écrits, l'écran passe seul aux fondations : rien à décider, un écran à regarder.
+Les tokens écrits, l'écran passe seul aux fondations : rien à décider, un écran à regarder.
 
 - Le chat dit une phrase : les fondations sont prêtes, à sa marque, et ne sont pas encore sur le site. Ni chiffre récité, ni liste : les chiffres sont sur l'écran.
 - Lancer en tâche de fond `npm run parcours -- <chemin du projet> --attendre` : il finit au clic sur « Comparer mon site ». L'IA enchaîne alors la commande que donne `parcours`, sans le dire. Ne pas lancer la comparaison avant ce clic.
@@ -125,7 +125,7 @@ Accompagner, ne pas attendre.
 
 ## Ce qui est reporté
 
-`parcours` écrit « faite, n choix reportés » pour une étape faite dont des choix restent ouverts, jamais « faite » tout court. Redire les reports en une ligne à chaque changement de temps.
+`parcours` écrit « faite, n choix reportés » pour une étape faite dont des choix restent ouverts, jamais « faite » tout court. Redire les reports en une ligne à chaque changement de temps, sauf à la remise : l'écran les porte.
 
 ## L'avant et après
 
@@ -134,12 +134,16 @@ Les feuilles posées et vérifiées, l'écran passe seul à l'avant et après : 
 - Le chat dit une phrase : ses choix sont posés à côté de l'ancien code et vérifiés, le résultat est à droite ; il regarde, puis valide. Ni compte, ni liste : l'écran les montre. Rien sur le développeur avant la validation.
 - Lancer en tâche de fond `npm run parcours -- <chemin du projet> --attendre` : il finit au clic sur « Valider le rendu », ou sur « Revenir sur une décision ».
 - « Revenir sur une décision » rouvre la revue : l'accompagner comme à la revue ; le fichier exporté et rangé, l'IA enchaîne la réduction, les feuilles et la vérification que donne `parcours`, sans le dire, et l'écran revient.
+- Chaque page a « Ouvrir la page en direct » : la page du site, les feuilles posées ; c'est là qu'on regarde un survol.
 
-## La fin
+## La remise
 
-Le rendu validé, l'écran le dit, avec ce qui a changé et ce qui reste à regarder.
+Le rendu validé, l'écran passe seul à la remise : un dossier (`remise/`, à côté du projet) et un message, pour le développeur ou son agent de code.
 
-- Dire en deux lignes ce qui se remet au développeur : les feuilles à poser à côté de l'ancien code, et ce qu'il doit encore vérifier (les pages hors de l'échantillon). Ne rien ouvrir : ni fichier, ni sortie.
-- Nommer ce qui n'est pas arrivé par ce que c'est (« le fond du pied de page »), d'après les faits ; dire si c'est grave et ce qu'on fait. C'est un défaut de l'outil, jamais un choix de l'humain : ne proposer de refaire des choix que si cela change le résultat.
+- Le chat dit une seule chose : voici ce qu'il remet, à droite ; il copie le message et le donne au développeur. Ni les choix reportés, ni le contrôle à relancer, ni « le parcours n'est pas fini » : l'écran les porte.
+- Ne rien ouvrir : ni fichier, ni sortie. Ne citer ni `pertes.md` ni `migration.md` : ils restent pour l'outil, et pour une question précise.
+- Nommer ce qui n'est pas arrivé par ce que c'est (« le fond du pied de page »), d'après les faits, si l'humain le demande ; c'est un défaut de l'outil, jamais un choix de l'humain.
 
-Le parcours n'a pas de dernière étape : le suivi reste en cours. Ne dire « terminé » que si la liste des reports est vide. Proposer ensuite d'arrêter les tâches de fond.
+## Revoir un écran passé
+
+Ne jamais effacer ni changer un fichier des sorties pour remontrer un écran (ni `avant-apres.json`, ni `dette.json`) : c'est défaire ce que l'humain a fait. Ouvrir l'écran par son adresse s'il en a une ; sinon, dire qu'on ne sait pas encore le remontrer.

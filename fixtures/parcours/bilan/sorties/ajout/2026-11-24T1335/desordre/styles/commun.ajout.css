@@ -1,0 +1,16 @@
+/* ds-lab : feuille ajoutée de /desordre/styles/commun.css, à charger juste après elle. Tirée de modifications.json (marque.resolver.json, 2026-11-25T1743). */
+
+/* coul-07 ; /desordre/styles/commun.css:31 */
+.entete {
+  border-bottom-color: var(--color-neutral-6, #e2dccf); /* coul-07 */
+}
+
+/* coul-02 ; /desordre/styles/commun.css:40 */
+.logo {
+  color: var(--color-primary-11, #1f2a44); /* coul-02 */
+}
+
+/* coul-21 ; /desordre/styles/commun.css:64 */
+.pied {
+  background-color: var(--color-primary-9, #2c4d7f); /* coul-21 */
+}

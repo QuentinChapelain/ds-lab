@@ -1,0 +1,107 @@
+/* ds-lab : feuille ajoutée de /desordre/styles/bibliotheque.css, à charger juste après elle. Tirée de modifications.json (marque.resolver.json, 2026-11-25T1743). */
+
+/* coul-02 ; /desordre/styles/bibliotheque.css:9 */
+body {
+  color: var(--color-primary-11, #1f2a44); /* coul-02 */
+}
+
+/* tail-13 ; /desordre/styles/bibliotheque.css:19 */
+.titre-page {
+  font-size: var(--font-size-30, 40px); /* tail-13 */
+}
+
+/* tail-11 ; /desordre/styles/bibliotheque.css:25 */
+.salutation {
+  font-size: var(--font-size-16, 1.2rem); /* tail-11 */
+}
+
+/* coul-15, esp-15 ; /desordre/styles/bibliotheque.css:37 */
+.bloc {
+  border-bottom-color: var(--color-neutral-6, #e5e5e5); /* coul-15 */
+  border-left-color: var(--color-neutral-6, #e5e5e5); /* coul-15 */
+  border-right-color: var(--color-neutral-6, #e5e5e5); /* coul-15 */
+  border-top-color: var(--color-neutral-6, #e5e5e5); /* coul-15 */
+  padding-bottom: var(--space-32, 36px); /* esp-15 */
+  padding-left: var(--space-32, 36px); /* esp-15 */
+  padding-right: var(--space-32, 36px); /* esp-15 */
+  padding-top: var(--space-32, 36px); /* esp-15 */
+}
+
+/* tail-08, esp-26 ; /desordre/styles/bibliotheque.css:43 */
+.titre-bloc {
+  font-size: var(--font-size-18, 1.33rem); /* tail-08 */
+  margin-bottom: var(--space-16, 1rem); /* esp-26 */
+}
+
+/* coul-22 ; /desordre/styles/bibliotheque.css:68 */
+.libelle {
+  color: var(--color-neutral-11, #616161); /* coul-22 */
+}
+
+/* coul-23, coul-02 ; /desordre/styles/bibliotheque.css:74 */
+.champ {
+  border-bottom-color: var(--color-neutral-8, #cccccc); /* coul-23 */
+  border-left-color: var(--color-neutral-8, #cccccc); /* coul-23 */
+  border-right-color: var(--color-neutral-8, #cccccc); /* coul-23 */
+  border-top-color: var(--color-neutral-8, #cccccc); /* coul-23 */
+  color: var(--color-primary-11, #1f2a44); /* coul-02 */
+}
+
+/* coul-37, esp-22 ; /desordre/styles/bibliotheque.css:86 */
+.erreur {
+  color: var(--color-error-11, #ef5c56); /* coul-37 */
+  margin-bottom: var(--space-12, 10px); /* esp-22 */
+}
+
+/* coul-32, tail-10, esp-22 ; /desordre/styles/bibliotheque.css:91 */
+.aide {
+  color: var(--color-neutral-11, #999999); /* coul-32 */
+  font-size: var(--font-size-14, .964rem); /* tail-10 */
+  margin-bottom: var(--space-12, 10px); /* esp-22 */
+}
+
+/* esp-24 ; /desordre/styles/bibliotheque.css:97 */
+.actions {
+  column-gap: var(--space-8, 10px); /* esp-24 */
+  row-gap: var(--space-8, 10px); /* esp-24 */
+}
+
+/* coul-16 ; /desordre/styles/bibliotheque.css:123 */
+.lien {
+  color: var(--color-primary-11, #2196f3); /* coul-16 */
+}
+
+/* coul-15 ; /desordre/styles/bibliotheque.css:136 */
+.commande {
+  border-bottom-color: var(--color-neutral-6, #e5e5e5); /* coul-15 */
+}
+
+/* arr-02 ; /desordre/styles/bibliotheque.css:148 */
+.avatar {
+  border-bottom-left-radius: var(--radius-full, 50%); /* arr-02 */
+  border-bottom-right-radius: var(--radius-full, 50%); /* arr-02 */
+  border-top-left-radius: var(--radius-full, 50%); /* arr-02 */
+  border-top-right-radius: var(--radius-full, 50%); /* arr-02 */
+}
+
+/* coul-13, tail-06 ; /desordre/styles/bibliotheque.css:169 */
+.date {
+  color: var(--color-neutral-11, #757575); /* coul-13 */
+  font-size: var(--font-size-12, .85rem); /* tail-06 */
+}
+
+/* coul-34 ; /desordre/styles/bibliotheque.css:174 */
+.etiquette-nouveau {
+  background-color: var(--color-error-10, #c4513a); /* coul-34 */
+}
+
+/* coul-33 ; /desordre/styles/bibliotheque.css:186 */
+.secondaire {
+  color: var(--color-neutral-11, #9e9e9e); /* coul-33 */
+}
+
+/* coul-13, tail-09 ; /desordre/styles/bibliotheque.css:191 */
+.mentions {
+  color: var(--color-neutral-11, #757575); /* coul-13 */
+  font-size: var(--font-size-12, .75rem); /* tail-09 */
+}

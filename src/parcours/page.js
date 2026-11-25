@@ -8,7 +8,7 @@
  */
 import { esc } from '../lib/format.js';
 import { aLaMain, etatDit } from './etat.js';
-import { blocJetons, ecranDesPages, ecranDeMesure, ecranDeLaDette, ecranDeLaMarque, ecranDesJetons, ecranDesFondations, ecranAvantApres, ecranDuRendu, style, DEBUT_JETONS, FIN_JETONS } from './ecrans.js';
+import { blocJetons, ecranDesPages, ecranDeMesure, ecranDeLaDette, ecranDeLaMarque, ecranDesJetons, ecranDesFondations, ecranAvantApres, ecranDeLaRemise, style, DEBUT_JETONS, FIN_JETONS } from './ecrans.js';
 
 export { DEBUT_JETONS, FIN_JETONS };
 
@@ -110,9 +110,10 @@ function tout(e) {
 /**
  * La page du parcours ; au moment des pages, l'écran des pages (D77).
  * @param {Etat} e
- * @param {{ erreur?: import('./ecrans.js').ErreurAjout | null }} [o]  le refus d'une page ajoutée, à dire à côté du champ
+ * @param {{ erreur?: import('./ecrans.js').ErreurAjout | null, copie?: 'ok' | 'non' | null }} [o]  le refus d'une page ajoutée, à
+ *   dire à côté du champ ; le retour de « Copier le message »
  */
-export function pageDuParcours(e, { erreur = null } = {}) {
+export function pageDuParcours(e, { erreur = null, copie = null } = {}) {
   if (e.moment === 'pages') return ecranDesPages(e, { sites: e.sites, erreur });
   if (e.moment === 'mesure') return ecranDeMesure(e);
   if (e.moment === 'dette' && e.dette) return ecranDeLaDette(e);
@@ -120,7 +121,7 @@ export function pageDuParcours(e, { erreur = null } = {}) {
   if (e.moment === 'jetons') return ecranDesJetons(e);
   if (e.moment === 'fondations' && e.fondations) return ecranDesFondations(e);
   if (e.moment === 'avant-apres' && e.avantApres) return ecranAvantApres(e);
-  if (e.moment === 'bilan' && e.bilan) return ecranDuRendu(e);
+  if (e.moment === 'remise' && e.remise) return ecranDeLaRemise(e, { copie });
   return `<!doctype html>
 <html lang="fr">
 <head>

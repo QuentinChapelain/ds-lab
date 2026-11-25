@@ -10,7 +10,9 @@
  *       planches des fondations servies ;
  *   PG4 l'avant et après (D86) à 640 px, clair et sombre, sans script : Après montré d'abord ; un clic sur Avant le
  *       montre au même endroit, sans changer la hauteur du cadre ; un clic sur un onglet montre sa page et cache les
- *       autres ; la barre au bas de la fenêtre, aucun défilement horizontal, chaque image chargée.
+ *       autres ; la barre au bas de la fenêtre, aucun défilement horizontal, chaque image chargée ;
+ *   PG5 la page en direct (D87), servie par la commande : ses feuilles ajoutées posées, chaque image chargée, aucune
+ *       requête en échec ; « Mon compte » y mène en direct.
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -21,9 +23,10 @@ import { calculerEtat } from '../src/parcours/etat.js';
 import { pageDuParcours } from '../src/parcours/page.js';
 import { servir } from '../src/parcours/serveur.js';
 import { lancerChromium } from '../src/browser/lancement.js';
+import { startFixtureServers } from './helpers/serveur.js';
 import { spawn, spawnSync } from 'node:child_process';
 import { confirmerMarque } from '../src/parcours/pages.js';
-import { cpSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -171,5 +174,56 @@ test('PG4 l’avant et après à 640 px : la bascule et les onglets, sans script
     }
   } finally {
     await s.fermer();
+  }
+});
+
+test('PG5 la page en direct : feuilles posées, images chargées, liens en direct', async () => {
+  const servers = await startFixtureServers();
+  const d = realpathSync(mkdtempSync(join(tmpdir(), 'ds-lab-direct-')));
+  cpSync(join(ROOT, 'fixtures', 'parcours', 'bilan'), d, { recursive: true });
+  rmSync(join(d, 'sorties', 'avant-apres.json'));
+  const f = join(d, 'projet.json');
+  const projet = JSON.parse(readFileSync(f, 'utf8'));
+  projet.sites[0].url = servers.origin;
+  writeFileSync(f, JSON.stringify(projet));
+  // Les sorties sont rangées par hôte : celui du serveur de fixtures.
+  const hote = new URL(servers.origin).host.replace(':', '_');
+  for (const r of ['reductions', 'verify', 'composants/orbe', 'audit/orbe']) renameSync(join(d, 'sorties', r, '127.0.0.1_4173'), join(d, 'sorties', r, hote));
+  const p = spawn(process.execPath, [join(ROOT, 'src/cli/parcours.js'), f, '--servir', '--port', '0'], { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] });
+  let sortie = '';
+  p.stdout.on('data', (c) => (sortie += c));
+  try {
+    /** @type {string} */
+    const adresse = await new Promise((ok, ko) => {
+      const t = setInterval(() => {
+        const m = /servie? sur (http:\/\/127\.0\.0\.1:\d+\/)/.exec(sortie);
+        if (m) clearInterval(t), ok(m[1]);
+      }, 50);
+      p.on('exit', () => (clearInterval(t), ko(new Error(sortie))));
+    });
+    const page = await browser.newPage({ viewport: { width: 1366, height: 900 } });
+    /** @type {string[]} */
+    const echecs = [];
+    page.on('response', (r) => void (r.status() >= 400 && echecs.push(`${r.status()} ${r.url()}`)));
+    page.on('requestfailed', (r) => void echecs.push(`échec ${r.url()}`));
+    await page.goto(`${adresse}direct/orbe?page=${encodeURIComponent('/desordre/gestion.html')}`);
+    await page.waitForLoadState('networkidle');
+    const r = await page.evaluate(() => ({
+      feuilles: document.querySelectorAll('style[data-ds-lab-ajout]').length,
+      images: [...document.images].map((i) => i.complete && i.naturalWidth > 0),
+    }));
+    // tokens.css, commun et ancienne : les deux feuilles de la gestion.
+    assert.equal(r.feuilles, 3);
+    assert.ok(r.images.length > 0 && r.images.every(Boolean), JSON.stringify(r.images));
+    assert.deepEqual(echecs, []);
+    await page.click('a[href*="compte.html"]');
+    await page.waitForLoadState('networkidle');
+    assert.ok(page.url().startsWith(`${adresse}direct/orbe?page=%2Fdesordre%2Fcompte.html`), page.url());
+    assert.equal(await page.evaluate(() => document.querySelectorAll('style[data-ds-lab-ajout]').length), 3);
+    await page.close();
+  } finally {
+    p.kill();
+    await new Promise((ok) => (p.exitCode !== null ? ok(null) : p.on('exit', ok)));
+    await servers.close();
   }
 });
