@@ -94,7 +94,7 @@ Les autres identifiants ne sortent pas de l'outil ; ils nomment des cas de test 
 | C1 à C13 | Fenêtre des candidats, grisé des marges, bilan par usage | `test/candidats.test.js`, `test/e2e-candidats-revue.test.js`, `fixtures/marque-demo/expected-candidats.json` |
 | CM1 à CM3 | Cible prise dans la marque, sur les pages en désordre : aucune ligne non arrivée, nuances proposées toutes dans la cible, troisième couleur au neutre (D76) | `test/e2e-cible-marque.test.js` |
 | CN1 | Carnet : ligne datée par la commande, cellules échappées, choix ou réponse, carnet cherché dans les parents, pannes (D71) | `test/relecteur.test.js` |
-| EC1 à EC4 | Écrans du parcours : le lancement, l'écran des pages (un site, plusieurs, refus à côté du champ), retirer, ajouter après vérification, valider, la commande avant le projet, les formulaires, `--attendre` (D77) | `test/parcours-ecrans.test.js` |
+| EC1 à EC4 | Écrans du parcours : le lancement, l'écran des pages (un site, plusieurs, refus à côté du champ), retirer, ajouter après vérification, valider, la mesure en cours (D78), la commande avant le projet, les formulaires, `--attendre` (D77) | `test/parcours-ecrans.test.js` |
 | E1 à E12 | Gardes des enveloppes (bouton, champ de texte, carte, bouton à icône, avatar, étiquette), découpage d'un composant `.vue` | `test/enveloppe-bouton.test.js` |
 | EX1 à EX10 | Points de départ des exercices du banc : fichiers qui diffèrent d'un départ à l'autre, `verifier` à 0, composants et fiches copiés, aplat et exceptions du gabarit égaux aux jetons, pages dans le gabarit (D68), départ, brief et liste de référence d'Inventorier (D69) | `test/exercices.test.js` |
 | G0 à G8 | Générateur de valise | `src/valise/generate.js`, `test/valise-generate.test.js`, `test/gris-neutre.test.js` |

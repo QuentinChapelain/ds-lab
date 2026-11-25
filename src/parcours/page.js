@@ -8,7 +8,7 @@
  */
 import { esc } from '../lib/format.js';
 import { aLaMain, etatDit, PHRASES } from './etat.js';
-import { blocJetons, ecranDesPages, style, DEBUT_JETONS, FIN_JETONS } from './ecrans.js';
+import { blocJetons, ecranDesPages, ecranDeMesure, style, DEBUT_JETONS, FIN_JETONS } from './ecrans.js';
 
 export { DEBUT_JETONS, FIN_JETONS };
 
@@ -125,6 +125,7 @@ function tout(e) {
  */
 export function pageDuParcours(e, { erreur = null } = {}) {
   if (e.moment === 'pages') return ecranDesPages(e, { sites: e.sites, erreur });
+  if (e.moment === 'mesure') return ecranDeMesure(e);
   return `<!doctype html>
 <html lang="fr">
 <head>

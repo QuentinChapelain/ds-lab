@@ -312,7 +312,7 @@ test('PC5 la page : quatre temps, un moment de 60 mots au plus hors du cadre, un
   assert.match(p, /<iframe src="\/marques\/orbe\/roles\.html" title="Planche des rôles : Orbe Café"><\/iframe>/);
   assert.match(p, /<a href="\/marques\/orbe\/roles\.html">Ouvrir seul<\/a>/);
   const c = pageDuParcours(etat('constat'));
-  assert.match(c, /Fait : Constat\. Ensuite : Marque, saisir la marque\./);
+  assert.match(c, /Fait : Mesure\. Ensuite : Marque, saisir la marque\./);
   const bi = pageDuParcours(etat('bilan'));
   assert.ok(bi.includes('La couche visuelle tient ses seuils. Voici ce qui reste à faire vérifier par un humain.'));
   assert.ok(bi.includes('31 → 17 couleurs ; 16 → 7 espacements ; 13 → 8 tailles de texte.'));
@@ -446,7 +446,7 @@ test('PC13 un état honnête : « faite, n choix reportés »', () => {
   assert.equal(l.etapes[1].etat, 'faite');
   assert.equal(etatDit(l.etapes[1]), 'faite, 3 choix reportés');
   assert.equal(etatDit(l.etapes[0]), 'faite');
-  assert.match(pageDuParcours(l), /<strong>Constat<\/strong> · faite, 3 choix reportés · /);
+  assert.match(pageDuParcours(l), /<strong>Mesure<\/strong> · faite, 3 choix reportés · /);
   assert.equal(l.chiffres.reportes, 3);
   assert.equal(etat('plusieurs').chiffres.reportes, 13);
 });
@@ -513,7 +513,7 @@ test('PC17 les faits de chaque état : une ligne par fait, sans guillemets ni no
     tete,
     '  Fait : la mesure des pages',
     '  Chiffre : 11 versions de composants',
-    '  Écran : le constat',
+    '  Écran : la dette',
     '  Ensuite : poser la marque sur les fondations, puis montrer la planche',
     '  Main : l’outil ; enchaîner sans demander',
     '  Reporté : 3 choix',

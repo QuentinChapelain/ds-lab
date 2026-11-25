@@ -71,7 +71,7 @@ export async function ajouterPage(fichier, id, saisie, { chercher = fetch } = {}
   } catch {
     return { ok: false, raison: 'Cette page ne répond pas.' };
   }
-  if (!r.ok) return { ok: false, raison: `Cette page ne répond pas (erreur ${r.status}).` };
+  if (!r.ok) return { ok: false, raison: 'Cette page n’existe pas sur ce site.' };
   if (!/text\/html/i.test(r.headers.get('content-type') ?? '')) return { ok: false, raison: 'Cette adresse n’est pas une page.' };
   const nom = titreDe(await r.text());
   ecrirePages(fichier, id, [...pagesDe(s), { path: chemin, ...(nom ? { name: nom } : {}) }]);

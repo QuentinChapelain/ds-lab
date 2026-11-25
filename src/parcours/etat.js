@@ -39,7 +39,7 @@ function pagesValidees(sorties) {
  * @typedef {{ chiffres: string[], dernier: string, complet: boolean, manque: string[], humain: string[] }} Bilan
  * @typedef {{ versions: number | null, decisions: number | null, enAttente: number | null, reportes: number }} Chiffres  ce que citent les faits du moment
  * @typedef {{ produit: string, sites: Site[], sousTitre: string | null, unSite: boolean, etapes: Etape[], temps: { nom: string, etat: EtatEtape, etapes: CleEtape[] }[],
- *   courante: Etape, moment: 'pages' | 'ecran' | 'sans-ecran' | 'bilan', ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
+ *   courante: Etape, moment: 'pages' | 'mesure' | 'ecran' | 'sans-ecran' | 'bilan', ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
  *   phrase: string | null, bilan: Bilan | null, chiffres: Chiffres, voisin: string | null, livraison: Livraison | null }} Etat
  * @typedef {{ pages: number, arrivees: number, total: number, manquantes: { titre: string, elements: number, cause: string | null }[] }} Livraison  la dernière vérification
  */
@@ -194,22 +194,22 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
   /** @type {Etape} */
   const constat = {
     cle: 'constat',
-    nom: 'Constat',
+    nom: 'Mesure',
     temps: 'Mesurer',
     acteurs: 'l’outil',
     faite: !sansConstat.length,
     etat: 'à venir',
     sortie: aConstat.length > 0,
     main: 'outil',
-    action: aMesurer ? (unSite ? 'lancer le constat' : `lancer le constat du site ${aMesurer.id}`) : null,
+    action: aMesurer ? (unSite ? 'lancer la mesure' : `lancer la mesure du site ${aMesurer.id}`) : null,
     commande: aMesurer
       ? `npm run composants -- ${adresses(aMesurer)} --out ${c(join(sorties, 'composants', aMesurer.id))} --nom ${q(projet.produit)}${projet.signatures ? ` --signatures ${c(projet.signatures)}` : ''}${existsSync(decisionsComposants) ? ` --decisions ${c(decisionsComposants)}` : ''}`
       : null,
     fait: unSite ? (constats[0].constat ? chiffres(constats[0].constat) : null) : `${nombre(aConstat.length, 'site mesuré', 'sites mesurés')} sur ${sites.length}`,
     lignes: constats.map((x) =>
-      x.constat ? `${unSite ? '' : `${x.site.id} : `}${chiffres(x.constat)} ; ${choisies(x.constat)}` : `${x.site.id} : pas encore de constat`,
+      x.constat ? `${unSite ? '' : `${x.site.id} : `}${chiffres(x.constat)} ; ${choisies(x.constat)}` : `${x.site.id} : pas encore mesuré`,
     ),
-    ecran: premierEcran?.html ? { href: href(premierEcran.html), titre: unSite ? 'Constat' : `Constat du site ${premierEcran.site.id}` } : null,
+    ecran: premierEcran?.html ? { href: href(premierEcran.html), titre: unSite ? 'La dette' : `La dette du site ${premierEcran.site.id}` } : null,
     sansEcran: null,
     ouvre: unSite ? 'S’ouvre quand le site a ses pages.' : 'S’ouvre quand chaque site a ses pages.',
     reportes: versionsReportees,
@@ -273,7 +273,7 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
     lignes: unSite ? [] : marques.map((m) => `${m.site.id} : ${texteMarque(m)}`),
     ecran: planche?.planche ? { href: planche.planche, titre: unSite ? 'Planche des rôles' : `Planche des rôles : ${planche.nom}` } : null,
     sansEcran: null,
-    ouvre: 'S’ouvre quand le constat est fait.',
+    ouvre: 'S’ouvre quand la mesure est faite.',
     refus: marques.some((m) => m.statut === 'refusée'),
     reportes: 0,
   };
@@ -389,10 +389,11 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
   let ecran = null;
   if (courante.ecran && courante.sortie) ecran = { ...courante.ecran, etape: courante.cle, precedente: false };
   else if (!courante.sortie && i > 0 && etapes[i - 1].ecran) ecran = { .../** @type {Ecran} */ (etapes[i - 1].ecran), etape: etapes[i - 1].cle, precedente: true };
-  const moment = courante.cle === 'site' ? 'pages' : courante.cle === 'suivi' ? 'bilan' : ecran ? 'ecran' : 'sans-ecran';
+  // Pendant la mesure, un écran d'attente (D77) : les pages sont validées, aucune n'est encore mesurée.
+  const moment = courante.cle === 'site' ? 'pages' : courante.cle === 'constat' && !constat.sortie ? 'mesure' : courante.cle === 'suivi' ? 'bilan' : ecran ? 'ecran' : 'sans-ecran';
   const refus = etapeMarques.refus && (ecran?.etape === 'marques' || (!ecran && courante.cle === 'marques'));
   const phrase =
-    moment === 'pages' || moment === 'bilan' ? null
+    moment === 'pages' || moment === 'mesure' || moment === 'bilan' ? null
     : refus ? PHRASES.refus
     : ecran?.etape === 'constat' ? PHRASES.constat
     : ecran?.etape === 'marques' ? PHRASES.marque

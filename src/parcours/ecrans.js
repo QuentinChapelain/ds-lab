@@ -79,6 +79,7 @@ button:focus-visible, input:focus-visible { outline: var(--border-width-focus) s
 .barre { position: sticky; bottom: 0; border-top: var(--border-width-default) solid var(--border-subtle); background: var(--background-surface); }
 .barre > div { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gap-between-blocks) var(--gap-between-components); max-width: var(--width-page); min-height: var(--height-control-medium); margin: 0 auto; padding: var(--gap-between-blocks) var(--padding-component); }
 .avance { display: flex; flex-direction: column; }
+progress { width: 100%; }
 `;
 
 /**
@@ -153,6 +154,27 @@ export function dessinDeVignette() {
   const v = Object.fromEntries(variablesDeLaPage().clair);
   const [fond, trait, titre] = [v['--background-subtle'], v['--border-subtle'], v['--text-secondary']];
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 48"><rect width="72" height="48" fill="${fond}"/><rect x="6" y="6" width="30" height="5" rx="2" fill="${titre}"/><rect x="6" y="15" width="60" height="5" rx="2" fill="${trait}"/><rect x="6" y="24" width="18" height="18" rx="2" fill="${trait}"/><rect x="27" y="24" width="18" height="18" rx="2" fill="${trait}"/><rect x="48" y="24" width="18" height="18" rx="2" fill="${trait}"/></svg>`;
+}
+
+/**
+ * La mesure en cours (D77) : ce qui se passe, à quoi ça sert, et un signe que ça tourne. Il se recharge seul, et passe
+ * seul à l'écran suivant quand la mesure est faite. La barre de progression est celle du navigateur : aucun jeton de
+ * mouvement n'existe encore (B2).
+ * @param {Etat} e
+ */
+export function ecranDeMesure(e) {
+  const n = e.sites.reduce((t, s) => t + s.pages.length, 0);
+  const pages = n > 1 ? `tes ${n} pages` : 'ta page';
+  return gabarit({
+    titre: `Je mesure ${pages}`,
+    onglet: `La mesure · ${e.produit}`,
+    statut: { texte: 'Rien à décider', neutre: true },
+    phrase: 'Ce que tes pages affichent vraiment : les couleurs, les tailles de texte, les espacements, les arrondis et les composants. C’est la dette de départ, ce qu’on va ranger ensemble.',
+    temps: e.temps,
+    corps: '<progress aria-label="Mesure en cours"></progress>',
+    avance: ['Mesurer · en cours', 'L’écran passe seul à la suite.'],
+    rafraichir: true,
+  });
 }
 
 /** L'adresse d'une vignette. @param {string} id @param {string} chemin */

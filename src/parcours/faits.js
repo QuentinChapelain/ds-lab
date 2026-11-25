@@ -74,11 +74,11 @@ export function faitsDuMoment(e, { sorties }) {
       else f.push(['Écran', 'les pages à mesurer'], ['Ensuite', 'dire en une phrase les pages retenues, puis attendre le clic sur Mesurer (parcours --attendre, en tâche de fond)']);
       break;
     case 'constat':
-      f.push(['Ensuite', 'mesurer les pages']);
+      f.push(['Écran', 'la mesure en cours, qui passe seule à la suite'], ['Ensuite', 'mesurer les pages']);
       break;
     case 'marques': {
       if (avant?.etat === 'faite' && !k.sortie) {
-        f.push(['Fait', 'la mesure des pages'], ['Chiffre', e.chiffres.versions === null ? null : nombre(e.chiffres.versions, 'version de composant', 'versions de composants')], ['Écran', 'le constat']);
+        f.push(['Fait', 'la mesure des pages'], ['Chiffre', e.chiffres.versions === null ? null : nombre(e.chiffres.versions, 'version de composant', 'versions de composants')], ['Écran', 'la dette']);
       }
       const marque = /** @type {string} */ (k.action);
       if (k.refus) f.push(['Refus', k.lignes.find((l) => /refusée/.test(l)) ?? k.fait], ['Ensuite', 'dire ce qui ne va pas avec les mots de l’humain, proposer une réparation, corriger l’entrée après son accord']);

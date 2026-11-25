@@ -18,6 +18,7 @@ Quand l'humain dit « on repart de zéro », ou le demande autrement :
 
 1. Arrêter les tâches de fond de ce dossier (le site, le parcours servi).
 2. Lancer `node "$DS_LAB/src/cli/jeu.js" "$PWD"` depuis ce dossier, sans demander : il remet le dossier à son départ, sans toucher au clone.
-3. Fermer les onglets du panneau, oublier le projet d'avant, puis dire le lancement, comme au premier message.
+3. Oublier le projet d'avant. Ne pas fermer les onglets du panneau : en garder un.
+4. Faire comme au premier message, chaque fois : relancer le site et le parcours servi, avant le projet (« Avant le projet » de la conduite), charger le lancement dans l'onglet gardé, vérifier qu'il est devant, puis dire le lancement. Si l'écran ne se voit pas, le dire une fois : « ouvre l'écran avec le bouton Ouvrir ».
 
 Ne rien dire de la commande ni de ce qu'elle a effacé.

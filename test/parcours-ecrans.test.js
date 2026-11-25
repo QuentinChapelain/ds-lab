@@ -7,7 +7,8 @@
  *       « Mesurer ces n pages » qui suit la liste, désactivé sans page ; jamais de rechargement seul ; le refus d'une
  *       page ajoutée, à côté du champ, avec la saisie gardée ; plusieurs sites : un groupe par site ;
  *   EC3 projet.json : une page avec son nom, retirer, ajouter après vérification (même site, elle répond, pas déjà là),
- *       sinon la raison en une phrase ; le reste du fichier intact ; la validation au clic sur « Mesurer » fait l'étape ;
+ *       sinon la raison en une phrase ; le reste du fichier intact ; la validation au clic sur « Mesurer » fait l'étape,
+ *       et l'écran de la mesure en cours paraît (ce qui se passe, une barre de progression, rechargé seul) ;
  *   EC4 la commande : avant le projet, --servir sert le lancement ; les formulaires reviennent sur l'écran (303) ;
  *       --attendre finit quand l'humain lance la mesure.
  */
@@ -106,7 +107,7 @@ test('EC3 projet.json : retirer, ajouter après vérification, valider ; le rest
   assert.deepEqual(await ajout(''), { ok: false, raison: 'Tape l’adresse d’une page de ce site.' });
   assert.deepEqual(await ajout('https://ailleurs.example/index.html'), { ok: false, raison: 'Cette page n’est pas sur 127.0.0.1:4173.' });
   assert.deepEqual(await ajout('/desordre/carte.html'), { ok: false, raison: 'Cette page est déjà dans la liste.' });
-  assert.deepEqual(await ajout('perdue.html'), { ok: false, raison: 'Cette page ne répond pas (erreur 404).' });
+  assert.deepEqual(await ajout('perdue.html'), { ok: false, raison: 'Cette page n’existe pas sur ce site.' });
   assert.deepEqual(await ajout('/image.png'), { ok: false, raison: 'Cette adresse n’est pas une page.' });
   assert.deepEqual(await ajout('http://127.0.0.1:4173/index.html'), { ok: true, chemin: '/index.html' });
   const apres = JSON.parse(readFileSync(f, 'utf8'));
@@ -116,7 +117,14 @@ test('EC3 projet.json : retirer, ajouter après vérification, valider ; le rest
   assert.equal(calculerEtat(lireProjet(f), { base: d }).courante.cle, 'site');
   validerPages(f);
   const e = calculerEtat(lireProjet(f), { base: d });
-  assert.deepEqual([e.etapes[0].etat, e.courante.cle, e.courante.main], ['faite', 'constat', 'outil']);
+  assert.deepEqual([e.etapes[0].etat, e.courante.cle, e.courante.main, e.moment], ['faite', 'constat', 'outil', 'mesure']);
+  // Pendant la mesure : ce qui se passe, à quoi ça sert, un signe que ça tourne ; il se recharge seul.
+  const m = pageDuParcours(e);
+  assert.match(m, /<h1>Je mesure tes 3 pages<\/h1>/);
+  assert.match(m, /<progress aria-label="Mesure en cours"><\/progress>/);
+  assert.match(m, /<meta http-equiv="refresh" content="2">/);
+  assert.doesNotMatch(texte(m), /[Cc]onstat/);
+  assert.deepEqual(enDur(m), []);
   // Une page retirée après la validation la défait.
   retirerPage(f, 'orbe', '/index.html');
   assert.equal(calculerEtat(lireProjet(f), { base: d }).courante.cle, 'site');
