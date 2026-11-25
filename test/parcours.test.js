@@ -30,13 +30,19 @@
  *   décisions de « livraison » : 12 lignes hors carte, 2 lignes que la carte a rattachées et qui ont leur propre
  *   décision, une carte, 15, toutes tranchées (le parcours en disait 13).
  *
- *   PC10 le dialogue : treize moments dans l'ordre, ce qui joue, deux questions chacun ; pannes qui nomment le moment
- *   PC11 la voix : chaque texte servi et chaque réponse, trois phrases au plus, un chiffre au plus, aucun mot à éviter
- *   PC12 les moments servis par chaque état, mot pour mot, chiffres remplis, variantes à plusieurs sites
+ *   PC10 à PC12 retirés avec le dialogue (D74) : numéros jamais repris
  *   PC13 un état honnête : « faite, n choix reportés »
  *   PC14 le fichier presque bon, nommé ; le chemin des sorties en entier
  *   PC15 un seul compte de décisions, cartes de plein comprises
  *   PC16 poser les feuilles ajoutées : la main à l'outil
+ *
+ * Les faits du moment (D74) et le serveur (D75). Valeurs écrites à la main d'après les mêmes sorties :
+ *   durée : premier constat 2026-11-24T1330 ; dernière sortie horodatée de « decisions » 2026-11-24T1337 : 7 min ;
+ *   un dossier de vérification au 2026-11-25T1535 : 26 h 05 après le premier constat, 1 565 min, dit « 1 j 2 h » ; verdict de « bilan » : 54 lignes, 3 pages.
+ *
+ *   PC17 les faits de chaque état : une ligne par fait, sans guillemets ni nom de fichier, un seul chiffre
+ *   PC18 ce qui n'est pas arrivé, nommé par son titre, et le temps écoulé
+ *   PC19 le port du serveur pris : un port libre, sauf s'il est demandé
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -48,7 +54,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { lireProjet } from '../src/parcours/projet.js';
 import { calculerEtat, etatDit, lignesTerminal, plusRecent } from '../src/parcours/etat.js';
-import { lignesDuChat, lireDialogue, momentsDeLEtat, MOMENTS as LES_MOMENTS, servir as servirMoment } from '../src/parcours/dialogue.js';
+import { dureeDite, dureeEcoulee, faitsDuMoment } from '../src/parcours/faits.js';
 import { compterDecisions } from '../src/reduce/propose.js';
 import { pageDuParcours, DEBUT_JETONS, FIN_JETONS } from '../src/parcours/page.js';
 import { servir } from '../src/parcours/serveur.js';
@@ -158,7 +164,7 @@ test('PC2 l’état des sept projets, depuis leurs sorties', () => {
     temps: ['faite', 'en cours', 'à venir', 'à venir'],
     courante: 'Décider · Décisions',
     main: 'designer',
-    action: `trancher 7 décisions dans la revue, puis exporter decisions.json dans ${join(FIX, 'decisions', 'sorties')}`,
+    action: `trancher 7 décisions dans la revue, puis exporter ; le fichier glissé dans le chat se range sous decisions.json dans ${join(FIX, 'decisions', 'sorties')}`,
     moment: 'ecran',
     ecran: { href: '/sorties/reductions/127.0.0.1_4173/2026-11-24T1337/revue.html', precedente: false },
     phrase: 'On choisit une relation, pas une valeur.',
@@ -234,7 +240,7 @@ test('PC3 règles d’étape : décisions non lues, verdict en 1, entrée chang�
   e = calculerEtat(lireProjet(join(l, 'projet.json')), { base: l });
   assert.equal(e.courante.cle, 'livraison');
   assert.equal(e.courante.main, 'développeur');
-  assert.equal(e.courante.action, 'lire pertes.md et la sortie de verify : 2 lignes ne sont pas arrivées');
+  assert.equal(e.courante.action, 'dire ce qui est vérifié et ce qui n’est pas arrivé, sans rien ouvrir : 2 lignes ne sont pas arrivées');
   assert.equal(e.courante.fait, '52 lignes arrivées sur 54, 3 pages');
   // Un dossier plus récent par son nom l'emporte, suffixe compris ; un dossier qui n'est pas un horodatage est ignoré.
   const racine = mkdtempSync(join(tmpdir(), 'ds-lab-parcours-'));
@@ -375,6 +381,13 @@ test('PC8 la commande parcours : page écrite à côté du projet, terminal', ()
     'À faire : corriger l’entrée de Brume (checkValise (clair) : primary : doublon, pas 7 = pas 9 (#00ccff)), puis la saisir à nouveau.',
     'Page : parcours.html ; à servir avec --servir',
     '',
+    'Pour le chat, des faits à dire avec tes mots, sans les recopier :',
+    '  Refus : brume : Brume, refusée : checkValise (clair) : primary : doublon, pas 7 = pas 9 (#00ccff)',
+    '  Ensuite : dire ce qui ne va pas avec les mots de l’humain, proposer une réparation, corriger l’entrée après son accord',
+    '  Main : l’humain ; l’accompagner, il décide',
+    '  Reporté : 13 choix',
+    '  Durée : 8 min depuis la première mesure, pauses comprises',
+    '',
   ]);
   assert.ok(existsSync(join(d, 'parcours.html')));
   const l = copie('livraison');
@@ -419,121 +432,6 @@ test('PC9 le serveur : page à jour, écrans montés, chemins hors racine refus�
   }
 });
 
-const DIALOGUE = readFileSync(join(ROOT, 'docs', 'dialogue-du-parcours.md'), 'utf8');
-
-test('PC10 le dialogue : treize moments dans l’ordre, ce qui joue, deux questions chacun', () => {
-  const d = lireDialogue();
-  assert.deepEqual(
-    d.map((m) => [m.nom, m.joue]),
-    [
-      ['Lancer', 'oui'],
-      ['Les pages', 'oui'],
-      ['La dette', 'oui'],
-      ['La marque', 'en attendant'],
-      ['Les fondations', 'en attendant'],
-      ['Les composants à ta marque', 'non'],
-      ['Le tri', 'en attendant'],
-      ['La revue', 'oui'],
-      ['Avant, après', 'en attendant'],
-      ['La remise', 'non'],
-      ['Les composants à garder', 'non'],
-      ['Le bilan', 'en attendant'],
-      ['Remplacer et tenir', 'non'],
-    ],
-  );
-  assert.deepEqual(d.map((m) => m.nom), [...LES_MOMENTS]);
-  for (const m of d) assert.equal(m.questions.length, 2, m.nom);
-  // Pannes : elles nomment le moment.
-  /** @type {[string, string, RegExp][]} */
-  const pannes = [
-    ['- Joue : oui', '- Joue : peut-être', /^Error: dialogue : Lancer : Joue/],
-    ['- Bouton : « On garde ces pages »', '- Bouton : « On garde ces pages »\n- Sortie : « x »', /^Error: dialogue : Les pages : ligne inconnue « Sortie »/],
-    ['{versions} versions de composants. Rien à décider ici, regarde à droite, puis on passe à ta marque', '{couleurs} couleurs. Rien à décider ici, regarde à droite, puis on passe à ta marque', /^Error: dialogue : La dette : Ouverture : chiffre inconnu \{couleurs\}/],
-    ['| Que reste-t-il à faire ? |', '| Une de trop ? | Non. |\n| Que reste-t-il à faire ? |', /^Error: dialogue : Le bilan : deux questions sont attendues/],
-    ['## La remise\n', '## La remise bis\n', /^Error: dialogue : les treize moments sont attendus dans l'ordre/],
-  ];
-  for (const [de, vers, motif] of pannes) {
-    assert.ok(DIALOGUE.includes(de), de);
-    assert.throws(() => lireDialogue(DIALOGUE.replace(de, vers)), motif);
-  }
-});
-
-/** Les textes qu'un moment peut servir : ses ouvertures et boutons, et toutes ses réponses. @param {import('../src/parcours/dialogue.js').Moment} m */
-const servables = (m) => {
-  const base = m.joue === 'oui' ? ['Ouverture'] : m.joue === 'en attendant' ? ['En attendant son écran', 'Sans report'] : [];
-  const cles = [...base, 'Bouton'].flatMap((c) => [c, `${c}, plusieurs sites`]).filter((c) => m.textes[c]);
-  return [...cles.flatMap((c) => m.textes[c].map((t) => [c, t])), ...m.questions.flatMap((q) => [['Question', q.question], ['Réponse', q.reponse]])];
-};
-const A_EVITER = [/!/, /\p{Extended_Pictographic}/u, /\b(?:super|bravo|parfait)\b/i, /n[’']hésite pas/i, /je me permets/i, /\b(?:vous|votre|vos)\b/i, /\b(?:réduction|proches?|d[’']office|rattachements?|resolver|manifeste|verdict|client|plateforme)\b/i, /\|/, /^\s*[-*] /m];
-
-test('PC11 la voix : chaque texte servi et chaque réponse, trois phrases au plus, un chiffre au plus, aucun mot à éviter', () => {
-  let vus = 0;
-  for (const m of lireDialogue())
-    for (const [cle, t] of servables(m)) {
-      const ou = `${m.nom}, ${cle} : ${t}`;
-      vus++;
-      assert.ok(t.split(/[.?](?:\s|$)/).filter((x) => x.trim()).length <= 3, `${ou} : plus de trois phrases`);
-      assert.ok((t.match(/\d+(?:[.,]\d+)?|\{[a-z]+\}/g) ?? []).length <= 1, `${ou} : plus d'un chiffre`);
-      for (const r of A_EVITER) assert.doesNotMatch(t, r, ou);
-    }
-  assert.ok(vus >= 40, `${vus} textes lus`);
-  // Le bloc du terminal, à chaque état des fixtures.
-  for (const m of MOMENTS) for (const l of lignesDuChat(etat(m))) for (const r of A_EVITER.slice(0, 7)) assert.doesNotMatch(l, r, `${m} : ${l}`);
-});
-
-test('PC12 les moments servis par chaque état, mot pour mot, chiffres remplis', () => {
-  assert.deepEqual(
-    Object.fromEntries(MOMENTS.map((m) => [m, momentsDeLEtat(etat(m))])),
-    { lancement: ['Les pages'], constat: ['La dette', 'La marque'], marque: ['Les fondations'], decisions: ['La revue'], livraison: [], bilan: ['Le bilan'], plusieurs: [] },
-  );
-  const d = lireDialogue();
-  const dit = (/** @type {string} */ n, /** @type {any} */ e) => servirMoment(/** @type {any} */ (d.find((m) => m.nom === n)), e);
-  assert.deepEqual(dit('La dette', etat('constat')), {
-    nom: 'La dette',
-    messages: ['Voilà, j’ai fait le tour de tes pages. Il y a du monde : 11 versions de composants. Rien à décider ici, regarde à droite, puis on passe à ta marque.'],
-    bouton: 'On passe à la marque',
-    questions: d[2].questions,
-  });
-  assert.deepEqual(dit('La marque', etat('constat')).messages, ['Ta marque, je la prends dans ton fichier : je ne sais pas encore la relever sur tes pages. Je la pose sur les fondations, puis je te montre.']);
-  assert.deepEqual(dit('Les fondations', etat('marque')).messages, ['Les fondations sont prêtes, à ta marque : les valeurs, les rôles, les règles. Elles ne sont pas encore sur ton site. On y compare tes pages.']);
-  assert.deepEqual(dit('La revue', etat('decisions')).messages, ['On les prend une par une. Tu regardes à droite, tu choisis. Si tu veux mon avis sur l’une d’elles, demande.']);
-  assert.deepEqual(dit('Le bilan', etat('bilan')).messages, ['La livraison tient sur les pages qu’on a regardées, pas encore sur ton site. Il reste 3 choix mis de côté, on les reprend quand tu veux. Le reste revient au développeur, et je refais le tour après chaque changement.']);
-  // Aucune décision tranchée : le tri, puis la revue.
-  const t = copie('decisions');
-  writeFileSync(join(t, 'sorties/decisions.json'), '{}');
-  const et = calculerEtat(lireProjet(join(t, 'projet.json')), { base: t });
-  assert.deepEqual(momentsDeLEtat(et), ['Le tri', 'La revue']);
-  assert.deepEqual(dit('Le tri', et).messages, ['J’ai comparé tes pages aux fondations. La plupart des valeurs, je les ai rangées seul. Il reste 15 décisions où il faut ton œil.']);
-  // Feuilles pas encore posées : l'avant et après, en attendant son écran.
-  const l = copie('livraison');
-  rmSync(join(l, 'sorties/ajout'), { recursive: true });
-  const el = calculerEtat(lireProjet(join(l, 'projet.json')), { base: l });
-  assert.deepEqual(momentsDeLEtat(el), ['Avant, après']);
-  assert.deepEqual(dit('Avant, après', el).messages, ['Je pose tes décisions à côté de l’ancien code, puis je les vérifie sur chaque page. Rien n’est installé sur ton site.']);
-  // Aucun choix reporté : la variante sans report, la seule qui dise « terminé ».
-  const b = copie('bilan');
-  const fk = join(b, 'sorties/composants/orbe/127.0.0.1_4173/2026-11-24T1330/constat.json');
-  const k = JSON.parse(readFileSync(fk, 'utf8'));
-  k.scores.versionsAGarder.x = 3;
-  writeFileSync(fk, JSON.stringify(k));
-  assert.deepEqual(dit('Le bilan', calculerEtat(lireProjet(join(b, 'projet.json')), { base: b })).messages, ['La livraison tient sur les pages qu’on a regardées, pas encore sur ton site. Rien n’est mis de côté : de mon côté, c’est terminé. Le reste revient au développeur, et je refais le tour après chaque changement.']);
-  for (const m of d) for (const [cle, x] of servables(m)) if (/terminé/.test(x)) assert.match(cle, /^Sans report/, `${m.nom} : « terminé » hors de la variante sans report`);
-  // À plusieurs sites : la variante, chiffres additionnés.
-  const p = etat('plusieurs');
-  assert.equal(p.chiffres.versions, 28);
-  assert.deepEqual(dit('La dette', p).messages, ['Voilà, j’ai fait le tour de tes pages. Il y a du monde : 28 versions de composants. Rien à décider ici, regarde à droite, puis on passe à tes marques.']);
-  assert.equal(dit('La dette', p).bouton, 'On passe aux marques');
-  // La commande : le bloc sous les lignes, après une ligne vide.
-  const c = copie('constat');
-  const r = run([join(c, 'projet.json')], c);
-  assert.equal(r.status, 0, r.stderr);
-  const sortie = r.stdout.split('\n');
-  const i = sortie.indexOf('');
-  assert.equal(sortie[i + 1], 'Pour le chat : La dette, puis La marque. Dire chaque message mot pour mot ; proposer les questions et le bouton en boutons.');
-  assert.equal(sortie[i + 3], '  Message : « Voilà, j’ai fait le tour de tes pages. Il y a du monde : 11 versions de composants. Rien à décider ici, regarde à droite, puis on passe à ta marque. »');
-  assert.ok(sortie.includes('  Bouton : « On passe à la marque »'));
-});
-
 test('PC13 un état honnête : « faite, n choix reportés »', () => {
   const l = etat('livraison');
   assert.equal(l.etapes[1].etat, 'faite');
@@ -551,12 +449,12 @@ test('PC14 le fichier presque bon, nommé ; le chemin des sorties en entier', ()
     const e = calculerEtat(lireProjet(join(d, 'projet.json')), { base: d });
     assert.equal(e.courante.action, `un fichier voisin, ${JSON.stringify(nom)}, est dans ${join(d, 'sorties')} : le renommer en decisions.json`, nom);
     assert.equal(e.voisin, nom);
-    assert.deepEqual(momentsDeLEtat(e), [], 'rien à dire avant le renommage');
+    assert.ok(faitsDuMoment(e, { sorties: join(d, 'sorties') }).some((l) => /sous un autre nom : le ranger, sans le dire/.test(l)), nom);
   }
   const d = copie('decisions');
   rmSync(join(d, 'sorties/decisions.json'));
   const e = calculerEtat(lireProjet(join(d, 'projet.json')), { base: d });
-  assert.equal(e.courante.action, `trancher 15 décisions dans la revue, puis exporter decisions.json dans ${join(d, 'sorties')}`);
+  assert.equal(e.courante.action, `trancher 15 décisions dans la revue, puis exporter ; le fichier glissé dans le chat se range sous decisions.json dans ${join(d, 'sorties')}`);
   assert.equal(e.voisin, null);
 });
 
@@ -584,4 +482,98 @@ test('PC16 poser les feuilles ajoutées : la main à l’outil', () => {
   assert.equal(e.courante.main, 'outil');
   assert.equal(e.courante.action, 'poser les feuilles ajoutées');
   assert.match(/** @type {string} */ (e.courante.commande), /^npm run ajout -- --modifications /);
+});
+
+/** Les faits d'un projet de fixtures, ou d'une copie. @param {string} d */
+const faits = (d) => faitsDuMoment(calculerEtat(lireProjet(join(d, 'projet.json')), { base: d }), { sorties: join(d, 'sorties') });
+
+test('PC17 les faits de chaque état : une ligne par fait, sans guillemets ni nom de fichier, un seul chiffre', () => {
+  const tete = 'Pour le chat, des faits à dire avec tes mots, sans les recopier :';
+  assert.deepEqual(faits(join(FIX, 'lancement')), [
+    tete,
+    '  Ensuite : regarder le site, retenir les pages qui portent le plus de composants, les proposer',
+    '  Main : l’humain ; l’accompagner, il décide',
+  ]);
+  assert.deepEqual(faits(join(FIX, 'constat')), [
+    tete,
+    '  Fait : la mesure des pages',
+    '  Chiffre : 11 versions de composants',
+    '  Écran : le constat',
+    '  Ensuite : poser la marque sur les fondations, puis montrer la planche',
+    '  Main : l’outil ; enchaîner sans demander',
+    '  Reporté : 3 choix',
+    '  Durée : 0 min depuis la première mesure, pauses comprises',
+  ]);
+  assert.deepEqual(faits(join(FIX, 'decisions')), [
+    tete,
+    '  Fait : les pages comparées aux fondations ; le reste rangé seul',
+    '  Chiffre : 7 décisions à prendre',
+    '  Écran : la revue',
+    '  Ensuite : trancher dans la revue ; une fois fini, exporter, puis glisser le fichier dans le chat, que l’IA range',
+    '  Main : l’humain ; l’accompagner, il décide',
+    '  Reporté : 3 choix',
+    '  Durée : 7 min depuis la première mesure, pauses comprises',
+  ]);
+  assert.deepEqual(faits(join(FIX, 'plusieurs')).slice(1, 3), [
+    '  Refus : brume : Brume, refusée : checkValise (clair) : primary : doublon, pas 7 = pas 9 (#00ccff)',
+    '  Ensuite : dire ce qui ne va pas avec les mots de l’humain, proposer une réparation, corriger l’entrée après son accord',
+  ]);
+  // Sans entrée de marque : la marque se lit sur le site, et l'IA écrit l'entrée.
+  const c = copie('constat');
+  const p = JSON.parse(readFileSync(join(c, 'projet.json'), 'utf8'));
+  delete p.sites[0].brand;
+  writeFileSync(join(c, 'projet.json'), JSON.stringify(p));
+  assert.ok(faits(c).includes('  Ensuite : lire la marque sur le site (couleur principale, accent, police des titres), la proposer en une phrase, écrire l’entrée après son accord'));
+  for (const m of MOMENTS) {
+    const l = faits(join(FIX, m));
+    assert.equal(l[0], tete, m);
+    assert.ok(l.filter((x) => x.startsWith('  Chiffre : ')).length <= 1, `${m} : plus d'un chiffre`);
+    for (const x of l.slice(1)) {
+      assert.match(x, /^  [A-ZÉ][\p{L} ]+ : \S/u, `${m} : ${x}`);
+      assert.doesNotMatch(x, /[«»"]|\.json|\.md|\.html|mot pour mot|Message|Bouton/, `${m} : ${x}`);
+    }
+  }
+  // La commande : les faits sous les lignes, après une ligne vide.
+  const dd = copie('decisions');
+  const r = run([join(dd, 'projet.json')], dd);
+  assert.equal(r.status, 0, r.stderr);
+  const sortie = r.stdout.split('\n');
+  assert.equal(sortie[sortie.indexOf('') + 1], tete);
+});
+
+test('PC18 ce qui n’est pas arrivé, nommé par son titre, et le temps écoulé', () => {
+  const b = copie('bilan');
+  assert.deepEqual(faits(b).slice(1, 4), [
+    '  Fait : la vérification sur 3 pages',
+    '  Chiffre : 54 lignes arrivées sur 54',
+    '  Au développeur : installer les feuilles ajoutées dans le code du produit ; vérifier les pages hors de l’échantillon',
+  ]);
+  const fv = join(b, 'sorties/verify/127.0.0.1_4173/2026-11-24T1336/verdict.json');
+  const v = JSON.parse(readFileSync(fv, 'utf8'));
+  v.lignes[0] = { ...v.lignes[0], titre: 'Fond · pied de page « Contact »', etat: 'non arrivée', elements: { arrivees: 0, total: 2 }, texte: 'x : non arrivée ; cause : jeton absent' };
+  v.sortie = 1;
+  writeFileSync(fv, JSON.stringify(v));
+  const l = faits(b);
+  assert.ok(l.includes('  Pas arrivé : Fond · pied de page Contact ; 2 éléments ; cause : jeton absent'), l.join('\n'));
+  assert.ok(l.includes('  Main : le développeur ; ce qui lui revient se dit en deux lignes'), l.join('\n'));
+  // Le temps écoulé : du premier constat à la dernière sortie horodatée, par les noms des dossiers.
+  assert.equal(dureeEcoulee(join(FIX, 'decisions', 'sorties')), 7);
+  assert.equal(dureeEcoulee(join(FIX, 'lancement', 'sorties')), null);
+  mkdirSync(join(b, 'sorties/verify/127.0.0.1_4173/2026-11-25T1535'));
+  assert.equal(dureeEcoulee(join(b, 'sorties')), 1565);
+  assert.deepEqual([dureeDite(0), dureeDite(59), dureeDite(65), dureeDite(1565)], ['0 min', '59 min', '1 h 05', '1 j 2 h']);
+});
+
+test('PC19 le port du serveur pris : un port libre, sauf s’il est demandé', async () => {
+  const sources = { page: () => 'p', sorties: () => tmpdir(), marques: () => ({}) };
+  const premier = await servir(sources, { port: 0 });
+  const port = Number(new URL(premier.adresse).port);
+  try {
+    const second = await servir(sources, { port, libre: true });
+    assert.notEqual(second.adresse, premier.adresse);
+    await second.fermer();
+    await assert.rejects(servir(sources, { port }), new RegExp(`port ${port} pris : passer un autre --port, ou aucun`));
+  } finally {
+    await premier.fermer();
+  }
 });

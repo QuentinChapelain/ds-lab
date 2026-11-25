@@ -24,10 +24,11 @@ import { RESOLVER } from '../tokens/resolver.js';
  *   main: Main | null, action: string | null, commande: string | null, fait: string | null, lignes: string[],
  *   ecran: Ecran | null, sansEcran: string | null, ouvre: string, refus?: boolean, reportes: number }} Etape
  * @typedef {{ chiffres: string[], dernier: string, complet: boolean, manque: string[], humain: string[] }} Bilan
- * @typedef {{ versions: number | null, decisions: number | null, enAttente: number | null, reportes: number }} Chiffres  ce que le dialogue cite
+ * @typedef {{ versions: number | null, decisions: number | null, enAttente: number | null, reportes: number }} Chiffres  ce que citent les faits du moment
  * @typedef {{ produit: string, sousTitre: string | null, unSite: boolean, etapes: Etape[], temps: { nom: string, etat: EtatEtape, etapes: CleEtape[] }[],
  *   courante: Etape, moment: 'lancement' | 'ecran' | 'sans-ecran' | 'bilan', ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
- *   phrase: string | null, bilan: Bilan | null, chiffres: Chiffres, voisin: string | null }} Etat
+ *   phrase: string | null, bilan: Bilan | null, chiffres: Chiffres, voisin: string | null, livraison: Livraison | null }} Etat
+ * @typedef {{ pages: number, arrivees: number, total: number, manquantes: { titre: string, elements: number, cause: string | null }[] }} Livraison  la dernière vérification
  */
 
 /** Les quatre temps et leurs étapes (présentation de l'outil, D72). */
@@ -290,7 +291,7 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
       : voisinDecisions
         ? `un fichier voisin, ${JSON.stringify(voisinDecisions)}, est dans ${sorties} : le renommer en decisions.json`
         : enAttente
-          ? `trancher ${nombre(enAttente, 'décision', 'décisions')} dans la revue, puis exporter decisions.json dans ${sorties}`
+          ? `trancher ${nombre(enAttente, 'décision', 'décisions')} dans la revue, puis exporter ; le fichier glissé dans le chat se range sous decisions.json dans ${sorties}`
           : 'relancer la réduction avec les décisions',
     commande: !table ? reduire(false) : enAttente ? null : reduire(existsSync(fichierDecisions)),
     fait: table ? (total ? `${nombre(total - enAttente, 'décision tranchée', 'décisions tranchées')} sur ${total}` : 'aucune décision à prendre') : null,
@@ -326,12 +327,12 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
       ? 'poser les feuilles ajoutées'
       : !verdict
         ? 'prouver la livraison sur les pages'
-        : `lire pertes.md et la sortie de verify : ${nombre(lignesVerdict.length - arrivees, 'ligne n’est pas arrivée', 'lignes ne sont pas arrivées')}`,
+        : `dire ce qui est vérifié et ce qui n’est pas arrivé, sans rien ouvrir : ${nombre(lignesVerdict.length - arrivees, 'ligne n’est pas arrivée', 'lignes ne sont pas arrivées')}`,
     commande: !aManifeste ? (red ? `npm run ajout -- --modifications ${c(join(red.chemin, 'modifications.json'))} --sortie ${c(join(sorties, 'ajout'))}` : null) : !verdict ? prouver : null,
     fait: verdict ? `${arriveesSur}, ${nombre(verdict.pages?.length ?? 0, 'page', 'pages')}` : aManifeste ? 'feuilles ajoutées, pas encore prouvées' : null,
     lignes: [],
     ecran: null,
-    sansEcran: 'Pas d’écran : la livraison se lit dans pertes.md et dans la sortie de verify.',
+    sansEcran: 'Pas encore d’écran d’avant et après.',
     ouvre: 'S’ouvre quand les décisions sont prises.',
     reportes: 0,
   };
@@ -425,6 +426,16 @@ export function calculerEtat(projet, { base = process.cwd() } = {}) {
       reportes,
     },
     voisin: voisinDecisions,
+    livraison: verdict
+      ? {
+          pages: verdict.pages?.length ?? 0,
+          arrivees,
+          total: lignesVerdict.length,
+          manquantes: lignesVerdict
+            .filter((l) => l.etat === 'non arrivée' || l.etat === 'en partie' || l.etat === 'non vue')
+            .map((l) => ({ titre: String(l.titre ?? l.id ?? ''), elements: l.elements?.total ?? 0, cause: /cause : ([^;]+)/.exec(String(l.texte ?? ''))?.[1].trim() ?? null })),
+        }
+      : null,
   };
 }
 

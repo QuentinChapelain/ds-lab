@@ -1,6 +1,6 @@
 # Dette connue
 
-État au 24/11/2026. Ce fichier ne porte que la dette à payer, chacune avec son moment. Les limites acceptées sont écrites à leur place, sous leur décision (puce « Limite »), dans les fiches, le README ou ARCHITECTURE (D64) ; ce qui manque au design system est dans `docs/feuille-de-route.md`.
+État au 25/11/2026. Ce fichier ne porte que la dette à payer, chacune avec son moment. Les limites acceptées sont écrites à leur place, sous leur décision (puce « Limite »), dans les fiches, le README ou ARCHITECTURE (D64) ; ce qui manque au design system est dans `docs/feuille-de-route.md`.
 
 ## À payer à l'ajout d'une marque ou d'un composant
 
@@ -24,6 +24,7 @@
 
 - La page du parcours ne fait pas son travail, jugée sur pièce par Quentin le 24/11/2026 (boîte, fichier 94) : « Tout le parcours » tombe tout en bas de la page ; la revue embarquée ne se lit pas (boutons du bas, export impossible, un défilement dans le défilement) ; au moment de la marque, rien ne dit quoi faire, et l'on attendait d'y poser les couleurs ; le bilan est pauvre ; la page à trois sites ne dit ni comment ni à quoi elle sert. À refaire moment par moment, sur maquette validée avant le code. L'écran embarqué dans un cadre est à retirer, pour la revue au moins. Le motif de refus d'une marque est à dire en clair : la page l'écrit tel que la saisie le donne (« checkValise (clair) : primary : doublon, pas 7 = pas 9 »), sous une phrase qui promet que le message dit pourquoi.
 - Les écrans de l'outil ne tiennent pas encore la promesse de la page du parcours : le constat ne prend aux jetons que ses couleurs, les planches écrivent leurs propres couleurs (`--encre`, `--gris`), la revue n'a pas été relue. Les aligner sur les mêmes rôles communs, et faire du design system embarqué (Diapason, nom retenu le 21/11/2026) une marque saisie comme les autres, que tous les écrans consomment ; sa couleur reste à choisir par Quentin (boîte, fichier 87).
+- La cible ne suit pas la marque (D75), à payer à l'écran des fondations : les couleurs que propose la revue, et qu'appliquent les classes d'office, viennent des échelles de la cible (`cible.json`), pas de la marque saisie. Une marque lue sur le site et saisie par sa couleur n'a pas ces échelles : mesuré le 25/11/2026 sur les décisions de J-3, 6 lignes sur 53 ne sont pas arrivées avec les couleurs exactes du site (`#2b4c7e`, `#c8553d`), cause « jeton absent », et 0 avec les échelles écrites à la main. Le dossier de jeu finit donc sur des lignes non arrivées. Prendre les échelles de couleur de la cible dans la marque saisie (environ une demi-journée [H]).
 - Les textes existants disent encore « client » là où le parcours dit produit, site, marque : `docs/regles.md` (DS17, DF4 : « la police du client »), le README (« une marque par client », « Ce qu'un client peut changer »). À reprendre avec l'alignement des écrans (boîte, fichier 88).
 
 ## À payer après l'étape 11

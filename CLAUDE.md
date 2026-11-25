@@ -11,9 +11,10 @@ Laboratoire de design system multi-marque, de l'audit à la génération par IA.
 - Étiqueter chaque affirmation des rapports : [F] mesuré, [H] hypothèse, [V] à vérifier.
 - Un design system ne se réduit pas à la couleur : audits et tokens couvrent aussi tailles, espacements, rayons, ombres, graisses, interlignages et durées.
 - Tokens au format DTCG 2025.10.
-- Proposer un plan avant tout code ; signaler chaque dépendance ajoutée.
-- Lis l'attendu nommé dans le message (`docs/attendus/<fichier>`) avant de proposer un plan ; si le message contient lui-même l'attendu, c'est lui : ne le cherche pas.
-- Un lot n'est fini que si README, ARCHITECTURE et docs sont à jour.
+- On avance par pas (D75) : une demande courte dans la boîte ; la réponse dans le terminal, dix lignes au plus (ce qu'on va faire, dans quel ordre, les questions), rien dans la boîte ; le « go » de Quentin ; le code, les contrôles, le commit poussé sur `main` ; une note courte dans la boîte (ce qui a changé, ce qu'il faut jouer) ; Quentin joue deux minutes, son verdict donne le pas suivant. Ni attendu écrit, ni arrêt, ni résumé de diff à valider, ni nouveau dossier de jeu.
+- Aucun code avant le « go » ; signaler chaque dépendance ajoutée.
+- Chaque écran s'arrête à « satisfaisant pour un POC » : on ne polit pas, on avance jusqu'au bout du parcours, puis on revient.
+- Un pas n'est fini que si README, ARCHITECTURE et docs sont à jour.
 - Aucun nom de marque dans le code de `src/`, chaînes comprises, commentaires exclus (`test/marque-en-dur.test.js`, D26).
 - Aucun numéro de lot, d'étape ou de séance dans les commentaires, les titres de tests, les noms de fichiers de test ni les textes que l'outil écrit (`test/histoire.test.js`).
 - Aucun module de `src/` hors de `src/cli/` n'importe de `src/cli/` (`test/couches.test.js`).
@@ -31,7 +32,8 @@ npm run contraste        paires de rôles de couleur ; sortie 1 si une paire éc
 npm run espacements      espacements par relation ; sortie 1 si une règle échoue
 npm run typo             styles de texte ; sortie 1 si une règle échoue
 npm run verifier         tokens, style et copie du skill d'un autre dépôt (--marques, --style, --skill) ; sortie 1 sur un échec
-npm run parcours -- <projet.json> [--servir]   état d'un projet, texte du moment pour le chat, page du parcours ; sortie 2 sur un projet illisible
+npm run parcours -- <projet.json> [--servir]   état d'un projet, faits du moment pour le chat, page du parcours ; sortie 2 sur un projet illisible
+npm run jeu -- <dossier>   pose le dossier de jeu, branché sur ce clone, ou le remet à son départ ; le dossier de Quentin : ~/Developer/banc/parcours/jeu
 npm run skill            réécrit les textes de skill/ds-lab/ après un changement de docs/regles.md ou de docs/techniques/
 npm run types            types JSDoc de src/ (TypeScript, non strict, sans émission) ; sortie 1 s'il reste une erreur
 npm run knip             fichiers, exports et dépendances qui ne servent plus ; sortie 1 s'il en reste
@@ -42,13 +44,13 @@ npm --prefix atelier run fiches -- --verifier   fiches des composants et des mod
 
 `npm run contraste` se lance aussi avec `--mode dark`, `--largeur narrow` et les deux : la CI juge les quatre contextes (D65). Les trois contrôles de la cible (contraste, espacements, typo) prennent `--marque <dossier>` ; sans l'option, ils jugent chaque marque de `tokens/` et sortent en 1 si une seule échoue (D26) ; `--marques <dossier>` juge chaque marque d'un autre dossier (D66). Aucune commande n'a de marque par défaut.
 
-Les trois contrôles de la cible, npm run types, npm run knip, npm run dependances, npm run style et le contrôle des fiches restent à 0 échec, et npm test ne perd aucun vert, avant chaque commit et à la fin de chaque lot. La CI (`.github/workflows/ci.yml`) rejoue ces commandes à chaque push ; elle ne remplace pas le lancement local.
+Les trois contrôles de la cible, npm run types, npm run knip, npm run dependances, npm run style et le contrôle des fiches restent à 0 échec, et npm test ne perd aucun vert, avant chaque commit. La CI (`.github/workflows/ci.yml`) rejoue ces commandes à chaque push ; elle ne remplace pas le lancement local.
 
 Avant chaque commit qui touche `atelier/`, la table `tokens/commun/vuetify.json` ou la sortie thème Vuetify : `npm --prefix atelier run build`, puis `npm --prefix atelier run preuve` à 0 échec ; la CI la rejoue à chaque push, un job par composant (`npm --prefix atelier run preuve -- <composant>`, D53).
 
-main n'accepte qu'un push en avance rapide d'un commit dont le check `controles` est vert (ruleset « main protégée », D35) : pousser la branche, attendre sa CI, pousser le même commit sur main, supprimer la branche. La CI de main, rejouée sur ce même commit, n'est pas attendue pour clore le lot : elle reste une trace, et un rouge y est lu au contrôle de départ du lot suivant (D53).
+On travaille sur `main`. main n'accepte qu'un push en avance rapide d'un commit dont le check `controles` est vert (ruleset « main protégée », D35) : pousser le commit sur une branche jetable, attendre sa CI, pousser le même commit sur main, supprimer la branche, sans arrêt ni annonce : c'est la cuisine de Claude. Quentin joue dès que c'est codé, sans attendre la CI. La CI de main, rejouée sur ce même commit, n'est pas attendue pour clore le pas : elle reste une trace, et un rouge y est lu au départ du pas suivant (D53).
 
-`npm audit` à la racine et dans l'atelier à chaque lot ; un avis ouvert entre dans `KNOWN_ISSUES.md`.
+`npm audit` à la racine et dans l'atelier à chaque pas ; un avis ouvert entre dans `KNOWN_ISSUES.md`.
 
 Node : la version de `.node-version` (Node 24 LTS), seule source pour le poste, la CI et la garde des commandes (D40). Une commande de l'outil lancée sous une autre version majeure sort en 2 avant de lire son entrée : vérifier `node -v` avant les commandes.
 
@@ -63,9 +65,9 @@ Node : la version de `.node-version` (Node 24 LTS), seule source pour le poste, 
 - `docs/anciens-noms.json` : pour lire un nom de token cité par une décision ou un attendu d'avant le 21/11/2026 (D62).
 - `docs/identifiants.md` : avant de citer ou de créer un identifiant de règle.
 - `docs/contrat-de-marque.md` : avant de toucher à la saisie ou à un motif de refus.
-- `KNOWN_ISSUES.md` : la dette à payer, avec son moment ; avant de proposer un lot, et pour y ajouter toute dette laissée en sortant. Une limite acceptée s'écrit à sa place (puce « Limite » de sa décision, fiche, README, ARCHITECTURE), pas dans ce fichier (D64).
+- `KNOWN_ISSUES.md` : la dette à payer, avec son moment ; avant de proposer un pas, et pour y ajouter toute dette laissée en sortant. Une limite acceptée s'écrit à sa place (puce « Limite » de sa décision, fiche, README, ARCHITECTURE), pas dans ce fichier (D64).
 - `docs/feuille-de-route.md` : ce qui manque au design system ; avant de proposer un composant ou un token.
-- `docs/attendus/` : l'attendu nommé dans le message, avant le plan.
+- `docs/attendus/` : les attendus d'avant le 25/11/2026, en archive ; on n'en écrit plus (D75).
 - `README.md` : avant de changer ce que l'outil fait ou ses commandes.
 - `docs/regles.md` : avant de nommer un composant, une prop ou un token, d'écrire une fiche (NM, CP, DOC), ou d'écrire ou de changer une règle (ses huit règles d'écriture, D65).
 - `docs/techniques/` : le comment d'une règle dans un framework, une ligne par règle ; avant de toucher à une enveloppe ou d'ajouter un framework.

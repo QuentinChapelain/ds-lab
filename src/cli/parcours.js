@@ -2,8 +2,8 @@
 /**
  * npm run parcours -- <projet.json> [--servir] [--port <n>] (D72) : lit le projet, calcule l'état du parcours depuis
  * ses sorties, écrit parcours.html à côté de projet.json et, dans le terminal, où on en est, qui a la main, quoi faire
- * et la commande suivante ; dessous, le bloc « Pour le chat » : le texte du moment, tiré du dialogue (D73). --servir sert la
- * page et les écrans sur 127.0.0.1 (port 4311 par défaut), jusqu'à Ctrl+C.
+ * et la commande suivante ; dessous, les faits du moment, que l'IA dit avec ses mots (D74). --servir sert la page et les
+ * écrans sur 127.0.0.1, au port 4311, ou à un port libre s'il est pris (D75), jusqu'à Ctrl+C.
  * Sortie 0 ; 2 sur un projet illisible ou une sortie illisible (D18). Une sortie absente n'est pas une panne : c'est un état.
  */
 import { writeFileSync } from 'node:fs';
@@ -13,7 +13,7 @@ import { lancer } from './garde.js';
 import { lireProjet } from '../parcours/projet.js';
 import { calculerEtat, lignesTerminal } from '../parcours/etat.js';
 import { pageDuParcours } from '../parcours/page.js';
-import { lignesDuChat, lireDialogue } from '../parcours/dialogue.js';
+import { faitsDuMoment } from '../parcours/faits.js';
 import { servir } from '../parcours/serveur.js';
 
 const USAGE = 'npm run parcours -- <projet.json> [--servir] [--port <n>]';
@@ -24,10 +24,9 @@ await lancer('parcours', async () => {
   if (values.port !== undefined && !/^\d+$/.test(values.port)) throw new Error(`--port : un nombre est attendu (usage : ${USAGE})`);
   if (values.port !== undefined && !values.servir) throw new Error(`--port ne s'emploie qu'avec --servir (usage : ${USAGE})`);
   const fichier = positionals[0];
-  const dialogue = lireDialogue();
-  /** Le bloc « Pour le chat », précédé d'une ligne vide s'il n'est pas vide. @param {import('../parcours/etat.js').Etat} e */
-  const chat = (e) => {
-    const l = lignesDuChat(e, dialogue);
+  /** Les faits du moment, précédés d'une ligne vide. @param {{ etat: import('../parcours/etat.js').Etat, projet: { sorties: string } }} r */
+  const chat = (r) => {
+    const l = faitsDuMoment(r.etat, { sorties: r.projet.sorties });
     return l.length ? ['', ...l] : [];
   };
   /** Relit le projet, recalcule l'état, écrit la page ; rend l'état et la page. */
@@ -41,7 +40,7 @@ await lancer('parcours', async () => {
   };
   const premier = ecrire();
   if (!values.servir) {
-    for (const l of [...lignesTerminal(premier.etat, { page: premier.page }), ...chat(premier.etat)]) console.log(l);
+    for (const l of [...lignesTerminal(premier.etat, { page: premier.page }), ...chat(premier)]) console.log(l);
     return 0;
   }
   const s = await servir(
@@ -50,9 +49,9 @@ await lancer('parcours', async () => {
       sorties: () => lireProjet(fichier).sorties,
       marques: () => Object.fromEntries(lireProjet(fichier).sites.filter((x) => x.dossierMarque).map((x) => [x.id, /** @type {string} */ (x.dossierMarque)])),
     },
-    { port: values.port === undefined ? 4311 : Number(values.port) },
+    values.port === undefined ? { port: 4311, libre: true } : { port: Number(values.port) },
   );
-  for (const l of [...lignesTerminal(premier.etat, { page: premier.page, adresse: s.adresse }), ...chat(premier.etat)]) console.log(l);
+  for (const l of [...lignesTerminal(premier.etat, { page: premier.page, adresse: s.adresse }), ...chat(premier)]) console.log(l);
   console.log('Ctrl+C pour arrêter.');
   process.on('SIGINT', () => s.fermer().then(() => process.exit(0)));
   return 0;

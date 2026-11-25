@@ -10,7 +10,7 @@ Ce skill sert quand on saisit une marque, quand on touche à ses tokens ou à so
 ## Avant de commencer
 
 - Un clone de ds-lab, à l'endroit de son choix, avec `npm ci` lancé dedans. `printenv DS_LAB` donne le chemin du clone ; s'il ne rend rien, demander à l'humain. Le code de ds-lab ne lit pas cette variable : elle ne sert qu'aux commandes ci-dessous.
-- Node 24 : sous une autre version majeure, chaque commande sort en 2 sans rien lire. Chercher alors un Node 24 installé (`fnm`, `nvm`), lancer chaque commande avec lui et le dire une fois ; sinon, s'arrêter et demander à l'humain de l'installer.
+- Node 24 : sous une autre version majeure (`node -v`), chaque commande sort en 2 sans rien lire. Chercher alors un Node 24 installé, par le gestionnaire présent (`command -v fnm nvm`), jamais un absent ; sinon, demander à l'humain de l'installer.
 - La saisie d'une police de titre donnée par ses fichiers mesure l'encre dans Chromium, celui de `playwright-core` du clone.
 
 Le code fait foi sur ce guide : si une commande, un fichier ou une règle du clone contredit ce guide, suivre le clone et signaler l'écart à l'humain.

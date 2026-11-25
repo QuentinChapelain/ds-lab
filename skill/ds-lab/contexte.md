@@ -32,17 +32,17 @@ Mesurer, Décider, Poser, Tenir. Trois fois, l'humain regarde et dit oui : la ma
 
 | Étape | L'outil | L'humain |
 |---|---|---|
-| Site | L'IA retient une page par modèle, la plus riche en composants | Garde ou change |
+| Site | L'IA retient les pages qui portent le plus de composants | Garde ou change |
 | Constat | Mesure ce qui s'affiche vraiment ; compte les versions de chaque pièce | Rien ; les versions à garder sont reportées |
-| Marque | Fait de la couleur de marque douze pas ; refuse une marque illisible, avec son motif | Change le fichier refusé |
-| Décisions | Compare les pages aux fondations, range seul ce que les règles tranchent | Le designer tranche le reste |
+| Marque | L'IA la lit sur le site ; l'outil en fait douze pas, ou la refuse | Dit oui, ou corrige |
+| Décisions | Compare les pages aux fondations, range seul ce que les règles tranchent | Le designer tranche le reste, puis exporte |
 | Livraison | Écrit les feuilles à poser à côté de l'ancien code, les vérifie sur les pages | Le développeur installe |
 | Suivi | Relance le contrôle après chaque changement | Dit quand le site a changé |
 
 ## Ce qu'il ne fait pas aujourd'hui
 
 - Un seul site est trié et livré ; les autres sont mesurés.
-- La marque se lit dans un fichier, pas sur les pages.
+- La marque se lit à l'œil, pas par la mesure.
 - L'avant et après n'a pas encore d'écran.
 - Pas de composant de lien, pas de jetons d'ombre.
 - Le site n'est jamais modifié.

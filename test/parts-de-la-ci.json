@@ -44,6 +44,7 @@
       "test/feuilles-cascade.test.js",
       "test/fixture.test.js",
       "test/gris-neutre.test.js",
+      "test/jeu.test.js",
       "test/jsdoc-orphelins.test.js",
       "test/marque-en-dur.test.js",
       "test/marques-fictives.test.js",
