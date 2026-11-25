@@ -21,7 +21,9 @@
  *       elle vient (« lue sur n éléments »), ses douze pas, son bouton ou son aplat et le verdict ; la police des titres ;
  *       « Confirmer la marque » ;
  *   EC8 confirmer : l'entrée écrite et nommée dans le projet, la main à l'outil, --attendre finit ; une marque refusée
- *       se dit sous la couleur en cause, en mots simples, et ne se confirme pas.
+ *       se dit sous la couleur en cause, en mots simples, et ne se confirme pas ;
+ *   EC9 modifier : une couleur relevée prise d'un clic, un code tapé (court ou sans #), un code refusé dit à côté du
+ *       champ, la valeur de l'autre couleur échangée, l'accent échangé avec la troisième ; le bloc se recalcule.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -34,7 +36,7 @@ import { lireProjet } from '../src/parcours/projet.js';
 import { calculerEtat } from '../src/parcours/etat.js';
 import { pageDuParcours } from '../src/parcours/page.js';
 import { ecranDeLancement, FIN_JETONS } from '../src/parcours/ecrans.js';
-import { ajouterPage, confirmerMarque, detteVue, retirerPage, validerPages } from '../src/parcours/pages.js';
+import { ajouterPage, choisirCouleur, confirmerMarque, detteVue, echangerAccent, retirerPage, validerPages } from '../src/parcours/pages.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const FIX = join(ROOT, 'fixtures', 'parcours');
@@ -314,4 +316,28 @@ test('EC8 confirmer la marque : l’entrée écrite, la main à l’outil ; une 
   assert.match(texte(h), /Marque refusée : change la couleur dite plus haut\./);
   assert.match(h, /<button type="submit" class="principal" disabled>Confirmer la marque ›<\/button>/);
   assert.throws(() => confirmerMarque(r.f), /une marque refusée ne se confirme pas/);
+});
+
+test('EC9 modifier la marque : une couleur relevée, un code tapé, l’échange avec la troisième ; le bloc se recalcule', () => {
+  const { d, f } = aLaMarque();
+  const choix = () => calculerEtat(lireProjet(f), { base: d }).marque?.choix;
+  const h0 = pageDuParcours(calculerEtat(lireProjet(f), { base: d }));
+  assert.match(h0, /<button type="submit" name="hex" value="#2b4c7e" aria-pressed="true" aria-label="Prendre #2b4c7e, lue sur 19 éléments"/);
+  assert.match(h0, /<form method="post" action="\/pages\/marque\/echanger"><button type="submit" class="retirer">Échanger avec l’accent<\/button><\/form>/);
+  echangerAccent(f);
+  assert.deepEqual([choix()?.accent, choix()?.troisieme], ['#d0563f', '#f0c987']);
+  // Le terracotta en accent : l'aplat prend un pas plus foncé, dit sous le bloc.
+  assert.match(texte(pageDuParcours(calculerEtat(lireProjet(f), { base: d }))), /Accent #d0563f Lue sur 2 éléments de tes pages\..* Adaptée pour les aplats : ils prennent le pas 11, encadré\./);
+  assert.equal(choisirCouleur(f, 'primary', 'F0C987'), null);
+  assert.deepEqual(choix(), { primary: '#f0c987', accent: '#d0563f', troisieme: '#2b4c7e', police: ['Orbe Sans', 'Arial', 'sans-serif'] });
+  // La valeur que porte déjà l'autre couleur s'échange avec elle.
+  assert.equal(choisirCouleur(f, 'accent', '#f0c987'), null);
+  assert.deepEqual([choix()?.primary, choix()?.accent], ['#d0563f', '#f0c987']);
+  assert.equal(choisirCouleur(f, 'primary', '#abc'), null);
+  assert.equal(choix()?.primary, '#aabbcc');
+  assert.equal(choisirCouleur(f, 'accent', 'bleu'), 'Tape un code de couleur à six chiffres, comme #2b4c7e.');
+  const r = pageDuParcours(calculerEtat(lireProjet(f), { base: d }), { erreur: { site: 'accent', message: 'Tape un code de couleur à six chiffres, comme #2b4c7e.', saisie: 'bleu' } });
+  assert.match(r, /<details class="modifier" open><summary>Modifier<\/summary>/);
+  assert.match(r, /value="bleu" aria-invalid="true" aria-describedby="erreur-accent"/);
+  assert.deepEqual(enDur(r), []);
 });

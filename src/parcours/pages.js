@@ -116,6 +116,53 @@ export function confirmerMarque(fichier) {
   ecrireMarque(fichier, m.site.id, chemin);
 }
 
+/** Le choix de la marque changé à l'écran (D80), par site, dans les sorties. */
+const MARQUE_CHOISIE = 'marque.json';
+
+/**
+ * Change une couleur de la marque à l'écran (D80) : une couleur relevée, ou un code tapé. La valeur que porte déjà
+ * l'autre couleur de la marque s'échange avec elle. Rend le refus en une phrase, ou null.
+ * @param {string} fichier @param {'primary' | 'accent'} role @param {string} saisie
+ * @returns {string | null}
+ */
+export function choisirCouleur(fichier, role, saisie) {
+  const p = lireProjet(fichier);
+  const m = calculerEtat(p, { base: p.dossier }).marque;
+  if (!m) throw new Error('aucune marque à changer');
+  if (role !== 'primary' && role !== 'accent') throw new Error(`couleur inconnue : ${role}`);
+  const v = saisie.trim().toLowerCase().replace(/^#?/, '#');
+  const hex = /^#[0-9a-f]{3}$/.test(v) ? `#${[...v.slice(1)].map((x) => x + x).join('')}` : v;
+  if (!/^#[0-9a-f]{6}$/.test(hex)) return 'Tape un code de couleur à six chiffres, comme #2b4c7e.';
+  const autre = role === 'primary' ? 'accent' : 'primary';
+  /** @type {Record<string, string | null>} */
+  const c = { primary: m.choix.primary, accent: m.choix.accent, troisieme: m.choix.troisieme };
+  if (c[autre] === hex) c[autre] = c[role];
+  if (c.troisieme === hex) c.troisieme = c[role];
+  c[role] = hex;
+  ecrireChoix(p.sorties, m.site.id, c);
+  return null;
+}
+
+/**
+ * Échange l'accent et la troisième couleur (D80).
+ * @param {string} fichier
+ */
+export function echangerAccent(fichier) {
+  const p = lireProjet(fichier);
+  const m = calculerEtat(p, { base: p.dossier }).marque;
+  if (!m || !m.choix.troisieme) throw new Error('aucune troisième couleur à échanger');
+  ecrireChoix(p.sorties, m.site.id, { primary: m.choix.primary, accent: m.choix.troisieme, troisieme: m.choix.accent });
+}
+
+/** @param {string} sorties @param {string} id @param {Record<string, string | null>} choix */
+function ecrireChoix(sorties, id, choix) {
+  const f = join(sorties, MARQUE_CHOISIE);
+  const tout = existsSync(f) ? JSON.parse(readFileSync(f, 'utf8')) : {};
+  tout[id] = choix;
+  mkdirSync(sorties, { recursive: true });
+  writeFileSync(f, `${JSON.stringify(tout, null, 2)}\n`);
+}
+
 /** Nom de fichier d'une vignette. @param {string} chemin */
 const fichierVignette = (chemin) => `${chemin.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'accueil'}.png`;
 

@@ -21,7 +21,7 @@ import { pageDuParcours } from '../parcours/page.js';
 import { ecranDeLancement, dessinDeVignette } from '../parcours/ecrans.js';
 import { faitsDuMoment } from '../parcours/faits.js';
 import { servir } from '../parcours/serveur.js';
-import { ajouterPage, confirmerMarque, detteVue, retirerPage, validerPages, vignettes } from '../parcours/pages.js';
+import { ajouterPage, choisirCouleur, confirmerMarque, detteVue, echangerAccent, retirerPage, validerPages, vignettes } from '../parcours/pages.js';
 
 const USAGE = 'npm run parcours -- <projet.json> [--servir] [--port <n>] [--attendre]';
 
@@ -90,6 +90,11 @@ await lancer('parcours', async () => {
         else if (chemin === '/pages/mesurer') validerPages(fichier);
         else if (chemin === '/pages/dette') detteVue(fichier);
         else if (chemin === '/pages/marque') confirmerMarque(fichier);
+        else if (chemin === '/pages/marque/echanger') echangerAccent(fichier);
+        else if (chemin === '/pages/marque/couleur') {
+          const raison = choisirCouleur(fichier, /** @type {any} */ (c.role), c.hex ?? '');
+          if (raison) return new URLSearchParams({ site: c.role ?? '', erreur: raison, saisie: c.hex ?? '' });
+        }
         else if (chemin === '/pages/ajouter') {
           const r = await ajouterPage(fichier, c.site ?? '', c.adresse ?? '');
           if ('raison' in r) return new URLSearchParams({ site: c.site ?? '', erreur: r.raison, saisie: c.adresse ?? '' });

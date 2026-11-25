@@ -117,6 +117,10 @@ progress { width: 100%; }
 .accepte { color: var(--text-info); ${style('label')} }
 details summary { cursor: pointer; color: var(--text-info); ${style('label')} }
 .police text { fill: var(--text-default); }
+.modifier { display: flex; flex-direction: column; gap: var(--gap-between-blocks); }
+.choix { display: flex; flex-wrap: wrap; gap: var(--gap-within-component); }
+.choix button { min-height: 0; padding: 0; border: 0; background: none; line-height: 0; }
+.choix button[aria-pressed="true"] rect { stroke: var(--text-default); stroke-width: var(--border-width-focus); }
 `;
 
 /**
@@ -369,9 +373,28 @@ const echantillon = (fond, texte, libelle) =>
   `<svg width="200" height="44" viewBox="0 0 200 44" role="img" aria-label="${esc(libelle)}"><rect width="200" height="44" rx="8" fill="${esc(fond)}"/><text x="100" y="28" text-anchor="middle" font-size="16" font-weight="600" fill="${esc(texte)}">${esc(libelle)}</text></svg>`;
 
 /**
+ * « Modifier » une couleur (D80), sans script : une couleur relevée sur les pages, d'un clic, ou un code tapé. Ouvert
+ * quand le code tapé est refusé, la saisie gardée et la raison à côté du champ.
+ * @param {'primary' | 'accent'} role @param {string} hex @param {import('./marque.js').Relevee[]} relevees @param {ErreurAjout | null} erreur
+ */
+function modifier(role, hex, relevees, erreur) {
+  const err = erreur?.site === role ? erreur : null;
+  const choix = relevees
+    .map(
+      (r) =>
+        `<li><button type="submit" name="hex" value="${esc(r.hex)}" aria-pressed="${r.hex === hex}" aria-label="${esc(`Prendre ${r.hex}, lue sur ${r.elements} élément${r.elements > 1 ? 's' : ''}`)}" title="${esc(`${r.hex}, lue sur ${r.elements} élément${r.elements > 1 ? 's' : ''}`)}">${pastille(r.hex, 32)}</button></li>`,
+    )
+    .join('');
+  return `<details class="modifier"${err ? ' open' : ''}><summary>Modifier</summary>
+<form method="post" action="/pages/marque/couleur"><input type="hidden" name="role" value="${role}"><small>Les couleurs lues sur tes pages :</small><ul class="choix">${choix}</ul></form>
+<form class="ajout" method="post" action="/pages/marque/couleur"><input type="hidden" name="role" value="${role}"><label>Ou un code<input type="text" name="hex" autocomplete="off" placeholder="#2b4c7e" value="${esc(err?.saisie ?? '')}"${err ? ` aria-invalid="true" aria-describedby="erreur-${role}"` : ''}></label><button type="submit">Appliquer</button><span class="erreur" id="erreur-${role}" role="status">${esc(err?.message ?? '')}</span></form>
+</details>`;
+}
+
+/**
  * Le bloc d'une couleur de la marque : sa pastille, son code, d'où elle vient, ce que l'outil en fait.
  * @param {{ titre: string, hex: string, relevee: import('./marque.js').Relevee | undefined, aide: string, echelle: import('./marque.js').Echelle | null,
- *   role: 'primary' | 'accent', motifs: string[], suite?: string }} o
+ *   role: 'primary' | 'accent', motifs: string[], suite?: string, modifier: string }} o
  */
 function blocCouleur(o) {
   const d = o.relevee;
@@ -397,21 +420,22 @@ function blocCouleur(o) {
   return `<div class="carte"><h3>${esc(o.titre)}</h3>
 <div class="couleur">${pastille(o.hex)}<code>${esc(o.hex)}</code><small>${esc(lue)} ${esc(o.aide)}</small></div>
 ${pas}${e ? `<div class="echantillons">${echantillon(e.plein.fond, e.plein.texte, o.role === 'primary' ? 'Bouton' : 'Aplat')}</div><p>${esc(verdict)}</p>` : ''}
-${o.motifs.map((m) => `<p class="refus">${esc(m)}</p>`).join('')}${o.suite ?? ''}</div>`;
+${o.motifs.map((m) => `<p class="refus">${esc(m)}</p>`).join('')}${o.modifier}${o.suite ?? ''}</div>`;
 }
 
 /**
  * La marque (D80) : la première des trois portes. Deux couleurs et la police des titres, lues sur les pages, avec ce
  * que l'outil en fait ; en bas, « Confirmer la marque », impossible si la marque est refusée.
  * @param {Etat} e
+ * @param {{ erreur?: ErreurAjout | null }} [o]  le code tapé refusé : la couleur (site), la raison, la saisie
  */
-export function ecranDeLaMarque(e) {
+export function ecranDeLaMarque(e, { erreur = null } = {}) {
   const m = /** @type {NonNullable<Etat['marque']>} */ (e.marque);
   const { choix, lecture, apercu } = m;
   const relevee = (/** @type {string | null} */ h) => lecture.relevees.find((r) => r.hex === h);
   const motifs = (/** @type {string} */ b) => apercu.motifs.filter((x) => x.bloc === b).map((x) => x.texte);
   const troisieme = choix.troisieme
-    ? `<div class="couleur">${pastille(choix.troisieme, 24)}<small>${esc(`${choix.troisieme}, lue sur ${relevee(choix.troisieme)?.elements ?? 0} éléments. Une marque garde deux couleurs : celle-ci passera aux gris.`)}</small></div>`
+    ? `<div class="couleur">${pastille(choix.troisieme, 24)}<small>${esc(`${choix.troisieme}, lue sur ${relevee(choix.troisieme)?.elements ?? 0} éléments. Une marque garde deux couleurs : celle-ci passera aux gris.`)}</small><form method="post" action="/pages/marque/echanger"><button type="submit" class="retirer">Échanger avec l’accent</button></form></div>`
     : '';
   const police = choix.police
     ? `<div class="carte"><h3>Police des titres</h3><div class="couleur"><code>${esc(choix.police[0])}</code><small>${esc(`Lue sur ${lecture.titres} titres de tes pages.`)}</small></div>
@@ -429,8 +453,8 @@ export function ecranDeLaMarque(e) {
       '<details><summary>C’est quoi Diapason ?</summary><p>Diapason est le design system que ds-lab t’apporte. Tu donnes ta couleur, ton accent et ta police de titres. Il fournit les espacements, les tailles de texte, les rôles et les règles, les mêmes pour chaque marque.</p></details>',
     temps: e.temps,
     corps: `<div class="cartes">
-${blocCouleur({ titre: 'Couleur primaire', hex: choix.primary, relevee: relevee(choix.primary), aide: 'C’est ce qui se clique.', echelle: apercu.primary, role: 'primary', motifs: motifs('primary') })}
-${choix.accent ? blocCouleur({ titre: 'Accent', hex: choix.accent, relevee: relevee(choix.accent), aide: 'Facultatif. Sans accent, le système prend un neutre.', echelle: apercu.accent, role: 'accent', motifs: motifs('accent'), suite: troisieme }) : ''}
+${blocCouleur({ titre: 'Couleur primaire', hex: choix.primary, relevee: relevee(choix.primary), aide: 'C’est ce qui se clique.', echelle: apercu.primary, role: 'primary', motifs: motifs('primary'), modifier: modifier('primary', choix.primary, lecture.relevees, erreur) })}
+${choix.accent ? blocCouleur({ titre: 'Accent', hex: choix.accent, relevee: relevee(choix.accent), aide: 'Facultatif. Sans accent, le système prend un neutre.', echelle: apercu.accent, role: 'accent', motifs: motifs('accent'), suite: troisieme, modifier: modifier('accent', choix.accent, lecture.relevees, erreur) }) : ''}
 ${police}
 </div>
 ${generale.map((x) => `<p class="refus">${esc(x)}</p>`).join('')}

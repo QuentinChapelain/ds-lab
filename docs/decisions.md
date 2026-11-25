@@ -692,4 +692,14 @@ Soixante-dix décisions, chacune avec sa raison et sa conséquence. Aucune valeu
   6. **Le chat** : une phrase, ni liste ni code de couleur ; le clic vaut accord.
 - **Raison** : partie du 25/11/2026, 14 h 14 (boîte, fichier 15) : la marque proposée en liste dans le chat, « très vague », sans code ni moyen de la changer ; l'accent retenu à l'œil, terracotta le matin, sable à midi ; après « Passer à ta marque », la page des composants puis le site passaient devant.
 - **Conséquence** : `test/parcours-ecrans.test.js` (EC7, EC8), `test/parcours-page.test.js` (PG3), `test/parcours.test.js` (PC17) ; l'extrait d'audit de `fixtures/parcours/constat/` porte les couleurs par usage et rôle et les polices, pris d'un audit avec le fichier de sources ; `skill/ds-lab/conduire.md` (la marque, deux exemples de la voix).
-- **Limite** : « Modifier » (une couleur relevée, un code tapé, l'échange de l'accent et de la troisième) vient dans un second temps ; le choix changé se lira dans `sorties/marque.json`, déjà relu par l'écran. La police des titres ne se change pas à l'écran. Un seul site : à plusieurs, le premier sans entrée de marque.
+- **Limite** : « Modifier » vient avec D81. La police des titres ne se change pas à l'écran. Un seul site : à plusieurs, le premier sans entrée de marque.
+
+### D81
+- **Décision** : la marque se change sur son écran, sans script. Complète D80.
+  1. **« Modifier »**, sous chaque couleur, replié : les couleurs non grises relevées sur les pages, en pastilles, la couleur en place marquée, chacune avec son compte (« lue sur n éléments ») ; un clic la prend. Ou un code tapé : six chiffres, avec ou sans « # », ou trois chiffres développés. Un code refusé se dit à côté du champ, la saisie gardée, le bloc ouvert.
+  2. **Pas de doublon** : la valeur que porte déjà l'autre couleur de la marque, ou la troisième, s'échange avec la couleur remplacée.
+  3. **« Échanger avec l'accent »**, sous la troisième couleur : elle devient l'accent, l'accent passe aux gris.
+  4. **Le choix** s'écrit dans les sorties (`marque.json`, par site) ; l'écran le relit et recalcule les douze pas, le bouton ou l'aplat et le verdict. « Confirmer la marque » écrit l'entrée du choix en place.
+- **Raison** : demande du 25/11/2026 (boîte, fichier 15), seconde partie du pas.
+- **Conséquence** : `test/parcours-ecrans.test.js` (EC9).
+- **Limite** : une marque sans accent n'en reçoit pas à l'écran ; une couleur grise ne se prend que par son code.

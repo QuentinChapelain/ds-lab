@@ -127,7 +127,7 @@ export function pageDuParcours(e, { erreur = null } = {}) {
   if (e.moment === 'pages') return ecranDesPages(e, { sites: e.sites, erreur });
   if (e.moment === 'mesure') return ecranDeMesure(e);
   if (e.moment === 'dette' && e.dette) return ecranDeLaDette(e);
-  if (e.moment === 'marque' && e.marque) return ecranDeLaMarque(e);
+  if (e.moment === 'marque' && e.marque) return ecranDeLaMarque(e, { erreur });
   return `<!doctype html>
 <html lang="fr">
 <head>
