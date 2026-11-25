@@ -169,8 +169,3 @@ export function lignesDuChat(e, dialogue = lireDialogue()) {
     ]),
   ];
 }
-
-/** Les ouvertures dites avant qu'un projet existe (Lancer, Les pages), pour conduire.md. @param {Moment[]} [dialogue] */
-export function avantLeProjet(dialogue = lireDialogue()) {
-  return dialogue.filter((m) => m.nom === 'Lancer' || m.nom === 'Les pages');
-}

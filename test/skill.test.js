@@ -17,12 +17,15 @@
  *   SK6 SKILL.md porte la phrase de priorité, mot pour mot, à la fin de « Avant de commencer » : le clone l'emporte
  *       sur le guide ;
  *   SK7 SKILL.md dit la commande qui lit DS_LAB, mot pour mot, avant la première commande qui s'en sert (D70).
- *   SK8 la section « Conduire » (D72, D73) : sa première phrase dit quand elle joue (une adresse, un fichier de projet,
- *       le skill appelé sans autre demande), dans SKILL.md comme dans conduire.md, qu'elle cite ; un « pourquoi » par
- *       étape (Site, Constat, Versions à garder, Marque, Décisions, Livraison, Suivi), trois phrases au plus ; jamais
- *       « conforme » dit d'un site ou d'un produit ;
- *   SK9 conduire.md porte la voix en tête (la charte, les mots à éviter, trois exemples) et les ouvertures dites avant
- *       le projet, recopiées du dialogue ; SKILL.md dit quoi faire sous un autre Node que le 24.
+ *   SK8 la section « Conduire » (D72, D74) : sa première phrase dit quand elle joue (une adresse, un fichier de projet,
+ *       le skill appelé sans autre demande), dans SKILL.md comme dans conduire.md ; elle cite contexte.md puis
+ *       conduire.md ; contexte.md dit, pour chaque étape (Site, Constat, Marque, Décisions, Livraison, Suivi), ce que
+ *       font l'outil et l'humain ; jamais « conforme » dit d'un site ou d'un produit ;
+ *   SK9 conduire.md porte la voix en tête (la charte, les mots à éviter, trois exemples), sans rien à réciter : ni
+ *       « mot pour mot », ni bloc recopié ; SKILL.md dit quoi faire sous un autre Node que le 24 ;
+ *   SK10 contexte.md (D74) : 400 mots au plus, la mesure de SK4 ; ses parties dans l'ordre ; le lancement, seul texte
+ *       dit tel quel, entre ses deux marques, deux messages au plus, le dernier demande l'adresse ; aucun texte entre
+ *       guillemets ; aucun mot à éviter (mots de l'outil, « Bienvenue », « conforme » dit d'un site, l'interface).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -125,28 +128,46 @@ test('SK7 la commande qui lit DS_LAB, avant celles qui s’en servent', () => {
   assert.doesNotMatch(md, /n'est pas posée/, 'une condition que le modèle croit sans la lire');
 });
 
-test('SK8 la section « Conduire » : quand elle joue, un pourquoi par étape, trois phrases au plus', () => {
+test('SK8 la section « Conduire » : quand elle joue, la fiche puis la conduite, ce que fait chaque étape', () => {
   const md = lire('SKILL.md');
   const section = md.slice(md.indexOf('## Conduire'), md.indexOf('## Dans la CI'));
   const SEUL = "Seulement si l'humain donne une adresse, ou plusieurs, un fichier de projet (`projet.json`), ou appelle le skill sans autre demande.";
   assert.ok(section.split('\n')[2].startsWith(SEUL), section);
-  assert.ok(section.includes('`conduire.md`'));
+  assert.ok(section.indexOf('`contexte.md`') > 0 && section.indexOf('`contexte.md`') < section.indexOf('`conduire.md`'), 'contexte.md, puis conduire.md');
   const c = lire('conduire.md');
   assert.ok(c.split('\n')[2].startsWith(SEUL));
-  const pourquoi = [...c.matchAll(/^- \*\*([^*]+)\*\* : (.+)$/gm)];
-  assert.deepEqual(pourquoi.map((m) => m[1]), ['Site', 'Constat', 'Versions à garder', 'Marque', 'Décisions', 'Livraison', 'Suivi']);
-  for (const [, nom, texte] of pourquoi) assert.ok(texte.split(/[.!?](?:\s|$)/).filter((x) => x.trim()).length <= 3, nom);
-  for (const t of [section, c]) assert.doesNotMatch(t, /\b(?:site|produit)s? conformes?\b|\bconformes? (?:le |la )?(?:site|produit)/i);
+  const x = lire('contexte.md');
+  const etapes = x.slice(x.indexOf('## Les étapes')).split('\n').filter((l) => /^\| [^-|]/.test(l)).slice(1).map((l) => l.split('|').slice(1, -1).map((y) => y.trim()));
+  assert.deepEqual(etapes.map((e) => e[0]), ['Site', 'Constat', 'Marque', 'Décisions', 'Livraison', 'Suivi']);
+  for (const e of etapes) assert.ok(e.length === 3 && e[1] && e[2], e[0]);
+  for (const t of [section, c, x]) assert.doesNotMatch(t, /\b(?:site|produit)s? conformes?\b|\bconformes? (?:le |la )?(?:site|produit)/i);
 });
 
-test('SK9 conduire.md : la voix en tête, les ouvertures d’avant le projet ; Node dans SKILL.md', () => {
+test('SK9 conduire.md : la voix en tête, rien à réciter ; Node dans SKILL.md', () => {
   const c = lire('conduire.md');
   const titres = [...c.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
-  assert.equal(titres[0], 'La voix : le compagnon d’atelier'.replace('’', "'"));
-  const voix = c.slice(c.indexOf('## La voix'), c.indexOf('## Avant le projet'));
+  assert.equal(titres[0], 'La voix');
+  const voix = c.slice(c.indexOf('## La voix'), c.indexOf(`## ${titres[1]}`));
   for (const t of ['| Règle | Détail |', '| À éviter | Pourquoi |', '| Moment | À éviter | À suivre |']) assert.ok(voix.includes(t), t);
   assert.equal(voix.split('\n').filter((l) => /^\| (?:Fin de la mesure|Une décision|Une limite) \|/.test(l)).length, 3);
-  for (const m of ['Lancer', 'Les pages']) assert.ok(c.includes(`**${m}** : « `), m);
+  assert.doesNotMatch(c, /mot pour mot|<!--|verbes d'atelier/i, 'un texte à réciter, ou le décor retiré');
   const avant = lire('SKILL.md').slice(0, lire('SKILL.md').indexOf('## Quatre mots'));
   assert.match(avant, /Node 24 : .*Chercher alors un Node 24 installé/);
+});
+
+test('SK10 contexte.md : une page, ses parties, le lancement seul texte fixe, aucun mot à éviter', () => {
+  const x = lire('contexte.md');
+  const corps = x.replace(/`[^`]*`/g, '');
+  assert.ok(corps.split(/\s+/).filter((m) => /\p{L}/u.test(m)).length <= 400, 'plus de 400 mots');
+  const titres = [...x.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
+  assert.deepEqual(titres, ['Le lancement', "Ce qu'est ds-lab", "L'objectif", "Comment il s'y prend", 'Quatre temps, trois portes', 'Les étapes', "Ce qu'il ne fait pas aujourd'hui", 'Les mots']);
+  const m = /<!-- lancement -->\n([\s\S]*?)\n<!-- \/lancement -->/.exec(x);
+  assert.ok(m, 'le lancement entre ses deux marques');
+  const messages = m[1].split(/\n\s*\n/).map((y) => y.trim()).filter(Boolean);
+  assert.ok(messages.length >= 1 && messages.length <= 2, 'deux messages au plus');
+  assert.match(messages.at(-1), /adresse/, "le dernier message demande l'adresse");
+  assert.match(messages[0], /^ds-lab /);
+  assert.equal((x.match(/<!--/g) ?? []).length, 2, 'un seul bloc');
+  assert.doesNotMatch(x, /[«»]/, 'un texte entre guillemets');
+  assert.doesNotMatch(x, /\b(?:réduction|proches?|d'office|rattachement|resolver|manifeste|verdict|bienvenue|other|formulaire)\b|Autre »/i, 'un mot à éviter');
 });

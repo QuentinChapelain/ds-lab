@@ -39,7 +39,7 @@ Ne jamais corriger les jetons à la main : changer l'entrée et relancer la sais
 
 ## Conduire
 
-Seulement si l'humain donne une adresse, ou plusieurs, un fichier de projet (`projet.json`), ou appelle le skill sans autre demande. Lire alors `conduire.md` en entier avant le premier message, et le suivre : la voix, les moments que donne `npm run parcours`, ce qui s'enchaîne sans demander.
+Seulement si l'humain donne une adresse, ou plusieurs, un fichier de projet (`projet.json`), ou appelle le skill sans autre demande. Lire alors `contexte.md` puis `conduire.md` en entier avant le premier message, et les suivre : le lancement, la voix, les faits de `npm run parcours`, ce qui s'enchaîne sans demander.
 
 ## Dans la CI
 

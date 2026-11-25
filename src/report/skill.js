@@ -8,22 +8,22 @@
  *   consignes.md          les consignes, sans l'endroit où ds-lab les lit ;
  *   techniques/<f>.md     une ligne par règle marquée, avec la même colonne ;
  *   SKILL.md              écrit à la main, sauf le bloc du compte, entre ses deux marques ;
- *   conduire.md           écrit à la main : la conduite d'un projet, la voix et le « pourquoi » de chaque étape (D72,
- *                         D73), que SKILL.md ne peut pas porter sans dépasser sa page ; sauf le bloc des ouvertures, entre
- *                         ses deux marques, recopié de docs/dialogue-du-parcours.md (Lancer, Les pages).
+ *   conduire.md           écrit à la main : la conduite d'un projet et la voix (D72, D74), que SKILL.md ne peut pas
+ *                         porter sans dépasser sa page ;
+ *   contexte.md           écrit à la main : ce que l'IA sait de ds-lab avant son premier message, le lancement, seul
+ *                         texte dit tel quel, et ce que fait chaque étape (D74).
  * Les choix de ds-lab sont retirés : une proposition qui commence par « ds-lab », entre deux « ; » ou après un « . » ;
  * le renvoi « (de XX<n>) » qui la termine reste. Une cellule qui commence par « ds-lab » ne se détache pas : panne.
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { avantLeProjet, lireDialogue } from '../parcours/dialogue.js';
 
 const RACINE = fileURLToPath(new URL('../../', import.meta.url));
 /** Dossier du skill dans le clone. */
 export const SKILL = join(RACINE, 'skill', 'ds-lab');
 
-/** Les sources du skill, lues dans le clone : docs/regles.md, docs/techniques/, skill/ds-lab/SKILL.md, conduire.md et docs/dialogue-du-parcours.md. */
+/** Les sources du skill, lues dans le clone : docs/regles.md, docs/techniques/, skill/ds-lab/SKILL.md, conduire.md et contexte.md. */
 export function sourcesDuSkill() {
   const dossier = join(RACINE, 'docs', 'techniques');
   return {
@@ -31,7 +31,7 @@ export function sourcesDuSkill() {
     techniques: Object.fromEntries(readdirSync(dossier).filter((f) => f.endsWith('.md')).sort().map((f) => [f, readFileSync(join(dossier, f), 'utf8')])),
     skill: readFileSync(join(SKILL, 'SKILL.md'), 'utf8'),
     conduire: readFileSync(join(SKILL, 'conduire.md'), 'utf8'),
-    dialogue: readFileSync(join(RACINE, 'docs', 'dialogue-du-parcours.md'), 'utf8'),
+    contexte: readFileSync(join(SKILL, 'contexte.md'), 'utf8'),
   };
 }
 
@@ -39,8 +39,6 @@ const CONTROLES = ['contraste', 'espacements', 'typo', 'style'];
 const NON = 'Non contrôlée ici';
 const DEBUT = '<!-- compte : écrit par npm run skill, depuis docs/regles.md -->';
 const FIN = '<!-- /compte -->';
-const DEBUT_OUVERTURES = '<!-- ouvertures : écrites par npm run skill, depuis docs/dialogue-du-parcours.md -->';
-const FIN_OUVERTURES = '<!-- /ouvertures -->';
 const SOURCE = 'Généré par `npm run skill` depuis `docs/regles.md` du clone de ds-lab : ne pas le modifier à la main, le recopier quand le clone avance.';
 
 /** @param {string} l */
@@ -106,11 +104,11 @@ const ligne = (c) => `| ${c.join(' | ')} |`;
 
 /**
  * Les fichiers du skill.
- * @param {{ regles: string, techniques: Record<string, string>, skill: string, conduire?: string, dialogue?: string }} sources
- *   docs/regles.md, les fichiers de docs/techniques/ par nom, SKILL.md et conduire.md, écrits à la main, et le dialogue
+ * @param {{ regles: string, techniques: Record<string, string>, skill: string, conduire?: string, contexte?: string }} sources
+ *   docs/regles.md, les fichiers de docs/techniques/ par nom, SKILL.md, conduire.md et contexte.md, écrits à la main
  * @returns {Record<string, string>} chemin dans skill/ds-lab/ → texte
  */
-export function fichiersDuSkill({ regles, techniques, skill, conduire, dialogue }) {
+export function fichiersDuSkill({ regles, techniques, skill, conduire, contexte }) {
   const r = lireRegles(regles);
   const c = comptes(r);
   const ici = new Map([...r.sections.flatMap((s) => s.regles), ...r.defauts].map((x) => [x.numero, x.ici]));
@@ -159,26 +157,7 @@ export function fichiersDuSkill({ regles, techniques, skill, conduire, dialogue 
   const j = skill.indexOf(FIN);
   if (i < 0 || j < i) throw new Error(`skill : SKILL.md sans le bloc du compte ; écrire ${DEBUT} puis ${FIN} à l'endroit du compte`);
   out['SKILL.md'] = `${skill.slice(0, i + DEBUT.length)}\n${phrase(c)}\n${skill.slice(j)}`;
-  if (conduire !== undefined) out['conduire.md'] = dialogue === undefined ? conduire : avecOuvertures(conduire, dialogue);
+  if (conduire !== undefined) out['conduire.md'] = conduire;
+  if (contexte !== undefined) out['contexte.md'] = contexte;
   return out;
-}
-
-/**
- * conduire.md, son bloc des ouvertures rempli depuis le dialogue : pour Lancer et Les pages, les messages, la variante
- * à plusieurs sites, le bouton, les deux questions et leur réponse, mot pour mot.
- * @param {string} conduire @param {string} dialogue
- */
-function avecOuvertures(conduire, dialogue) {
-  const i = conduire.indexOf(DEBUT_OUVERTURES);
-  const j = conduire.indexOf(FIN_OUVERTURES);
-  if (i < 0 || j < i) throw new Error(`skill : conduire.md sans le bloc des ouvertures ; écrire ${DEBUT_OUVERTURES} puis ${FIN_OUVERTURES} à l'endroit des ouvertures`);
-  const g = (/** @type {string[]} */ ms) => ms.map((x) => `« ${x} »`).join(' ');
-  const b = avantLeProjet(lireDialogue(dialogue)).flatMap((m) => [
-    `**${m.nom}** : ${g(m.textes.Ouverture)}`,
-    ...(m.textes['Ouverture, plusieurs sites'] ? [`À plusieurs sites : ${g(m.textes['Ouverture, plusieurs sites'])}`] : []),
-    ...(m.textes.Bouton ? [`Bouton : ${g(m.textes.Bouton)}`] : []),
-    ...m.questions.map((q) => `- Question : « ${q.question} » Réponse : « ${q.reponse} »`),
-    '',
-  ]);
-  return `${conduire.slice(0, i + DEBUT_OUVERTURES.length)}\n${b.join('\n')}${conduire.slice(j)}`;
 }
