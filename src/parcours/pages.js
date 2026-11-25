@@ -1,7 +1,7 @@
 // @ts-check
 /**
- * Les écrans, côté serveur : retirer une page, en ajouter une après l'avoir vérifiée, valider la liste au clic sur
- * « Mesurer », et la vignette de chaque page (D77) ; la dette vue, la marque, les fondations vues ; le rendu validé et la
+ * Les écrans, côté serveur : retirer une page, en ajouter une après l'avoir vérifiée, valider la liste quand la mesure
+ * est lancée dans le chat (D89), et la vignette de chaque page (D77) ; la dette vue, la marque, les fondations vues ; le rendu validé et la
  * revue rouverte (D86). Toute écriture passe par projet.json (les pages) ou par les
  * sorties (la validation, les vignettes) ; le site n'est jamais modifié.
  */
@@ -83,7 +83,7 @@ export async function ajouterPage(fichier, id, saisie, { chercher = fetch } = {}
 }
 
 /**
- * Valide les pages de chaque site : le clic sur « Mesurer » (D77). `parcours --attendre` voit la main passer à l'outil.
+ * Valide les pages de chaque site : la mesure lancée dans le chat, par `parcours --valider-pages` (D77, D89).
  * @param {string} fichier
  */
 export function validerPages(fichier) {

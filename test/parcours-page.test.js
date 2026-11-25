@@ -6,7 +6,7 @@
  *   PG2 quand le moment embarque un écran, le cadre prend la hauteur qui reste : plus de la moitié de la fenêtre
  *       (900 px de haut), sans nombre dans le style ;
  *   PG3 le lancement, l'écran des pages (D77), la dette (D79), la marque (D80) et les fondations (D83), servis par la commande, à 640 px, clair
- *       et sombre : aucun défilement horizontal, le fond sombre, la barre au bas de la fenêtre, chaque vignette chargée (capture ou dessin) ; les
+ *       et sombre : aucun défilement horizontal, le fond sombre, la barre au bas de la fenêtre (aucune aux pages, D89), chaque vignette chargée (capture ou dessin) ; les
  *       planches des fondations servies ;
  *   PG4 l'avant et après (D86) à 640 px, clair et sombre, sans script : Après montré d'abord ; un clic sur Avant le
  *       montre au même endroit, sans changer la hauteur du cadre ; un clic sur un onglet montre sa page et cache les
@@ -79,7 +79,7 @@ test('PG1 et PG2 chaque moment à 640 px, clair et sombre : aucun défilement, l
   }
 });
 
-test('PG3 le lancement, les pages, la dette, la marque et les fondations à 640 px, clair et sombre : la barre au bas de la fenêtre, les vignettes chargées', async () => {
+test('PG3 le lancement, les pages, la dette, la marque et les fondations à 640 px, clair et sombre : la barre au bas de la fenêtre, sauf aux pages, les vignettes chargées', async () => {
   const d = realpathSync(mkdtempSync(join(tmpdir(), 'ds-lab-ecrans-')));
   const p = spawn(process.execPath, [join(ROOT, 'src/cli/parcours.js'), join(d, 'projet.json'), '--servir', '--port', '0'], { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] });
   let sortie = '';
@@ -124,7 +124,8 @@ test('PG3 le lancement, les pages, la dette, la marque et les fondations à 640 
         assert.equal(r.titre, { lancement: 'Le parcours', pages: 'Les pages à mesurer', dette: 'La dette d’Annuaire des cafés', marque: 'La marque d’Annuaire des cafés', fondations: 'Les fondations d’Annuaire des cafés' }[ecran]);
         assert.ok(r.largeur <= 640, `${ecran} ${scheme} : ${r.largeur}`);
         assert.equal(r.fond, FOND.dark, `${ecran} ${scheme}`);
-        assert.equal(r.barre, 900, `${ecran} ${scheme}`);
+        // Les pages n'ont pas de barre : la mesure se lance dans le chat (D89).
+        assert.equal(r.barre, ecran === 'pages' ? undefined : 900, `${ecran} ${scheme}`);
         assert.deepEqual(r.vignettes, Array(/** @type {Record<string, number>} */ ({ lancement: 0, pages: 3, dette: 11, marque: 0, fondations: 0 })[ecran]).fill(true));
         assert.equal(r.planches.length, ecran === 'fondations' ? 3 : 0);
         for (const h of r.planches) assert.equal((await fetch(h)).status, 200, h);

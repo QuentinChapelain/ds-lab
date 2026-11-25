@@ -31,7 +31,7 @@ export const FONDATIONS_VUES = 'fondations.json';
 /** Ce que la saisie écrit à côté des jetons de la marque, avant l'écran des fondations (D83). */
 const ECRITS_DE_LA_MARQUE = ['roles.html', 'espacements.html', 'typo.html', 'jetons.css', 'vuetify.json'];
 
-/** Les pages validées à l'écran, par site (D77) : écrit au clic sur « Mesurer », dans les sorties. */
+/** Les pages validées, par site (D77) : écrit quand la mesure est lancée dans le chat (D89), dans les sorties. */
 export const PAGES_VALIDEES = 'pages.json';
 
 /** Le rendu validé (D86) : écrit au clic sur « Valider le rendu », avec la vérification regardée, dans les sorties. */
@@ -63,7 +63,7 @@ function hauteurPng(f) {
 }
 
 /**
- * Les pages validées, ou null si l'humain n'a pas encore lancé la mesure depuis l'écran.
+ * Les pages validées, ou null si l'humain n'a pas encore lancé la mesure.
  * @param {string} sorties
  * @returns {Record<string, string[]> | null}
  */
@@ -203,7 +203,7 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
   const decisionsComposants = join(sorties, 'decisions-composants.json');
   const fichierDecisions = join(sorties, 'decisions.json');
 
-  // Site : les pages sont retenues par l'IA, puis validées à l'écran par le clic sur « Mesurer » (D77). Une mesure déjà
+  // Site : les pages sont retenues par l’IA, puis validées quand la mesure est lancée dans le chat (D89). Une mesure déjà
   // faite vaut validation.
   const sansPages = sites.filter((s) => !s.pages.length);
   const validees = pagesValidees(sorties);

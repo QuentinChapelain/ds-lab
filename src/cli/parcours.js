@@ -1,14 +1,18 @@
 // @ts-check
 /**
- * npm run parcours -- <projet.json> [--servir] [--port <n>] [--attendre] (D72) : lit le projet, calcule l'état du parcours
+ * npm run parcours -- <projet.json> [--servir] [--port <n>] [--attendre] [--valider-pages] [--ajouter-page <adresse>]
+ *   [--retirer-page <chemin>] [--site <id>] (D72) : lit le projet, calcule l'état du parcours
  * depuis ses sorties, écrit parcours.html à côté de projet.json et, dans le terminal, où on en est, qui a la main, quoi
  * faire et la commande suivante ; dessous, les faits du moment, que l'IA dit avec ses mots (D74).
  * --servir sert la page et les écrans sur 127.0.0.1, au port 4311, ou à un port libre s'il est pris (D75), jusqu'à
  * Ctrl+C. Avant le projet, il sert le lancement, qui se recharge seul jusqu'à ce que projet.json existe (D77) ; l'écran
- * des pages retire, ajoute et valide par des formulaires, et sert la vignette de chaque page ; « À installer » et chaque
+ * des pages retire et ajoute par des formulaires, et sert la vignette de chaque page ; « À installer » et chaque
  * page du site en direct, ses feuilles ajoutées posées (D87).
- * --attendre attend que la main quitte l'humain à l'étape en cours (le clic sur « Mesurer », par exemple), puis écrit
- * l'état et sort en 0 : lancé en tâche de fond, sa fin prévient l'IA (D77).
+ * --attendre attend que la main quitte l'humain à l'étape en cours (le clic sur « Passer à ta marque », par exemple),
+ * puis écrit l'état et sort en 0 : lancé en tâche de fond, sa fin prévient l'IA (D77).
+ * Les pages passent par le chat (D89) : --valider-pages lance la mesure sur la liste de l'écran à cet instant ;
+ * --ajouter-page et --retirer-page changent la liste, comme l'écran ; --site nomme le site quand le projet en a
+ * plusieurs. Seulement tant que les pages attendent : une page refusée, une liste vide ou un autre moment sortent en 1.
  * Sortie 0 ; 2 sur un projet illisible ou une sortie illisible (D18). Une sortie absente n'est pas une panne : c'est un état.
  */
 import { existsSync, writeFileSync } from 'node:fs';
@@ -26,17 +30,29 @@ import { ajouterPage, choisirCouleur, confirmerMarque, copierMessage, detteVue, 
 import { ecranAInstaller } from '../parcours/ecrans.js';
 import { aInstaller, feuillesEnDirect, pageEnDirect } from '../parcours/remise.js';
 
-const USAGE = 'npm run parcours -- <projet.json> [--servir] [--port <n>] [--attendre]';
+const USAGE = 'npm run parcours -- <projet.json> [--servir] [--port <n>] [--attendre] [--valider-pages] [--ajouter-page <adresse>] [--retirer-page <chemin>] [--site <id>]';
 
 await lancer('parcours', async () => {
   const { values, positionals } = parseArgs({
     allowPositionals: true,
-    options: { servir: { type: 'boolean', default: false }, port: { type: 'string' }, attendre: { type: 'boolean', default: false } },
+    options: {
+      servir: { type: 'boolean', default: false },
+      port: { type: 'string' },
+      attendre: { type: 'boolean', default: false },
+      'valider-pages': { type: 'boolean', default: false },
+      'ajouter-page': { type: 'string' },
+      'retirer-page': { type: 'string' },
+      site: { type: 'string' },
+    },
   });
+  const geste = /** @type {const} */ (['valider-pages', 'ajouter-page', 'retirer-page']).filter((k) => values[k] !== undefined && values[k] !== false);
   if (positionals.length !== 1) throw new Error(`un fichier de projet et un seul (usage : ${USAGE})`);
   if (values.port !== undefined && !/^\d+$/.test(values.port)) throw new Error(`--port : un nombre est attendu (usage : ${USAGE})`);
   if (values.port !== undefined && !values.servir) throw new Error(`--port ne s'emploie qu'avec --servir (usage : ${USAGE})`);
   if (values.attendre && values.servir) throw new Error(`--attendre ne s'emploie pas avec --servir (usage : ${USAGE})`);
+  if (geste.length > 1 || (geste.length && (values.servir || values.attendre)))
+    throw new Error(`--valider-pages, --ajouter-page et --retirer-page s'emploient seuls, un à la fois (usage : ${USAGE})`);
+  if (values.site !== undefined && !values['ajouter-page'] && !values['retirer-page']) throw new Error(`--site ne s'emploie qu'avec --ajouter-page ou --retirer-page (usage : ${USAGE})`);
   const fichier = positionals[0];
   /** Les faits du moment, précédés d'une ligne vide. @param {{ etat: import('../parcours/etat.js').Etat, projet: { sorties: string } }} r */
   const chat = (r) => {
@@ -59,6 +75,17 @@ await lancer('parcours', async () => {
     if (!erreur && !copie && !voir) writeFileSync(page, html);
     return { projet, etat, html, page: relative(process.cwd(), page) };
   };
+
+  if (geste.length) {
+    const raison = await changerLesPages(fichier, values);
+    if (raison) {
+      console.log(raison);
+      return 1;
+    }
+    const r = ecrire();
+    for (const l of [...lignesTerminal(r.etat, { page: r.page }), ...chat(r)]) console.log(l);
+    return 0;
+  }
 
   if (values.attendre) {
     // La main est à l'humain tant que l'étape, sa main et son action ne changent pas.
@@ -113,7 +140,6 @@ await lancer('parcours', async () => {
       },
       poster: async (chemin, c) => {
         if (chemin === '/pages/retirer') retirerPage(fichier, c.site ?? '', c.page ?? '');
-        else if (chemin === '/pages/mesurer') validerPages(fichier);
         else if (chemin === '/pages/dette') detteVue(fichier);
         else if (chemin === '/pages/fondations') fondationsVues(fichier);
         else if (chemin === '/pages/rendu') validerRendu(fichier);
@@ -141,3 +167,34 @@ await lancer('parcours', async () => {
   for (const signal of /** @type {const} */ (['SIGINT', 'SIGTERM'])) process.on(signal, () => Promise.all([s.fermer(), v.fermer()]).then(() => process.exit(0)));
   return 0;
 });
+
+/**
+ * Les pages par le chat (D89) : valider la liste, en ajouter une, en retirer une. Rend la raison d'un refus en une
+ * phrase, ou null.
+ * @param {string} fichier
+ * @param {{ 'valider-pages'?: boolean, 'ajouter-page'?: string, 'retirer-page'?: string, site?: string }} v
+ * @returns {Promise<string | null>}
+ */
+async function changerLesPages(fichier, v) {
+  const projet = lireProjet(fichier);
+  if (calculerEtat(projet).moment !== 'pages') return 'Les pages ne changent plus : la mesure est lancée ou faite.';
+  if (v['valider-pages']) {
+    if (projet.sites.some((s) => !s.pages.length)) return projet.sites.length > 1 ? 'Il faut une page au moins par site.' : 'Il faut une page au moins.';
+    validerPages(fichier);
+    return null;
+  }
+  if (v.site === undefined && projet.sites.length > 1) return `Plusieurs sites : nomme le site par --site (${projet.sites.map((s) => s.id).join(', ')}).`;
+  const id = v.site ?? projet.sites[0].id;
+  const s = projet.sites.find((x) => x.id === id);
+  if (!s) return `Aucun site ${id} dans le projet (${projet.sites.map((x) => x.id).join(', ')}).`;
+  if (v['ajouter-page'] !== undefined) {
+    const r = await ajouterPage(fichier, id, v['ajouter-page']);
+    return 'raison' in r ? r.raison : null;
+  }
+  // Une adresse entière se ramène à son chemin, comme la liste du projet.
+  const saisie = /** @type {string} */ (v['retirer-page']).trim();
+  const chemin = /^[a-z]+:\/\//i.test(saisie) ? ((u) => `${u.pathname}${u.search}`)(new URL(saisie)) : saisie;
+  if (!s.pages.includes(chemin)) return 'Cette page n’est pas dans la liste.';
+  retirerPage(fichier, id, chemin);
+  return null;
+}

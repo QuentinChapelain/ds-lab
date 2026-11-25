@@ -103,7 +103,7 @@ button.principal { background: var(--background-interactive-strong); border-colo
 button.principal:hover:enabled { background: var(--background-interactive-strong-hover); border-color: var(--background-interactive-strong-hover); }
 button:disabled { background: var(--background-subtle); border-color: var(--border-subtle); color: var(--text-secondary); cursor: default; }
 button:focus-visible, input:focus-visible { outline: var(--border-width-focus) solid var(--text-info); outline-offset: var(--offset-focus); }
-.ajout { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--gap-between-blocks); }
+.ajout { display: flex; flex: auto; flex-wrap: wrap; align-items: flex-end; gap: var(--gap-between-blocks); }
 .ajout label { display: flex; flex: auto; flex-direction: column; gap: var(--gap-within-component); min-width: 0; ${style('label')} }
 .ajout input { width: 100%; min-height: var(--height-control-medium); padding: 0 var(--padding-tag); border: var(--border-width-default) solid var(--border-default); border-radius: var(--border-radius-control); background: var(--background-surface); color: var(--text-default); ${style('body-medium')} }
 .erreur { flex-basis: 100%; color: var(--text-error); ${style('label')} }
@@ -270,9 +270,10 @@ export function lectureDe(e, cle) {
 /**
  * Le gabarit d'un écran (D88) : le fil, un titre, une phrase ; en lecture seule, les écrans du temps revu, et
  * « Revenir où j'en suis » à la place de l'action.
- * @param {{ titre: string, onglet: string, phrase: string, sousTete?: string, fil: string, corps: string, avance: [string, string],
+ * @param {{ titre: string, onglet: string, phrase: string, sousTete?: string, fil: string, corps: string, avance?: [string, string],
  *   action?: string, rafraichir?: boolean, regles?: string, lecture?: Lecture | null }} o
- *   regles : des règles de style propres à l'écran, aux mêmes valeurs que le reste (variables, mots-clés)
+ *   regles : des règles de style propres à l'écran, aux mêmes valeurs que le reste (variables, mots-clés) ; sans avance,
+ *   pas de barre en bas, hors lecture seule (les pages, D89 : ce qui change d'écran passe par le chat)
  */
 function gabarit(o) {
   const l = o.lecture;
@@ -296,8 +297,7 @@ ${o.fil}
 <div class="tete">${revoir}<h1>${esc(o.titre)}</h1><p>${esc(o.phrase)}</p>${o.sousTete ?? ''}</div>
 ${o.corps}
 </main>
-<footer class="barre"><div><div class="avance"><strong>${esc(avance[0])}</strong><small>${esc(avance[1])}</small></div>${action ?? ''}</div></footer>
-</body>
+${avance ? `<footer class="barre"><div><div class="avance"><strong>${esc(avance[0])}</strong><small>${esc(avance[1])}</small></div>${action ?? ''}</div></footer>\n` : ''}</body>
 </html>
 `;
 }
@@ -369,15 +369,14 @@ export function ecranDeMesure(e) {
 const hrefVignette = (id, chemin) => `/vignette/${encodeURIComponent(id)}?page=${encodeURIComponent(chemin)}`;
 
 /**
- * Les pages à mesurer : un groupe par site, les pages retenues, retirer, ajouter, puis « Mesurer ces n pages ». Revues,
- * les pages mesurées, sans retirer ni ajouter.
+ * Les pages à mesurer : un groupe par site, les pages retenues en lignes, retirer, et « Ajouter une page » en dernière
+ * ligne. Ni barre ni bouton de mesure : la mesure se lance dans le chat (D89). Revues, les pages mesurées, sans retirer
+ * ni ajouter.
  * @param {Etat} e
  * @param {{ sites: import('./projet.js').Site[], erreur?: ErreurAjout | null, lecture?: Lecture | null }} o
  */
 export function ecranDesPages(e, { sites, erreur = null, lecture = null }) {
   const unSite = sites.length === 1;
-  const total = sites.reduce((n, s) => n + s.pages.length, 0);
-  const vide = sites.some((s) => !s.pages.length);
   const hote = (/** @type {import('./projet.js').Site} */ s) => new URL(s.origine).host;
   const groupes = sites
     .map((s) => {
@@ -392,26 +391,22 @@ export function ecranDesPages(e, { sites, erreur = null, lecture = null }) {
         .join('\n');
       const err = erreur?.site === s.id ? erreur : null;
       return `<section class="site" aria-label="${esc(s.nom ?? s.id)}">${unSite ? '' : `<header><h2>${esc(s.nom ?? s.id)}</h2><small>${esc(hote(s))}</small></header>`}
-<ul class="pages">\n${pages}\n</ul>
-${lecture ? '' : `<form class="ajout" method="post" action="/pages/ajouter"><input type="hidden" name="site" value="${esc(s.id)}"><label>Ajouter une page<input type="text" name="adresse" inputmode="url" autocomplete="off" placeholder="${esc(`${hote(s)}/…`)}" value="${esc(err?.saisie ?? '')}"${err ? ' aria-invalid="true" aria-describedby="erreur-' + esc(s.id) + '"' : ''}></label><button type="submit">Ajouter</button><span class="erreur" id="erreur-${esc(s.id)}" role="status">${esc(err?.message ?? '')}</span></form>`}
+<ul class="pages">\n${pages}${lecture ? '' : `\n<li class="page"><form class="ajout" method="post" action="/pages/ajouter"><input type="hidden" name="site" value="${esc(s.id)}"><label>Ajouter une page<input type="text" name="adresse" inputmode="url" autocomplete="off" placeholder="${esc(`${hote(s)}/…`)}" value="${esc(err?.saisie ?? '')}"${err ? ' aria-invalid="true" aria-describedby="erreur-' + esc(s.id) + '"' : ''}></label><button type="submit">Ajouter</button><span class="erreur" id="erreur-${esc(s.id)}" role="status">${esc(err?.message ?? '')}</span></form></li>`}\n</ul>
 </section>`;
     })
     .join('\n');
-  const libelle = vide ? (unSite ? 'Aucune page' : 'Une page au moins par site') : `Mesurer ${total > 1 ? `ces ${total} pages` : 'cette page'} ›`;
   return gabarit({
     titre: lecture ? 'Les pages mesurées' : 'Les pages à mesurer',
     onglet: `Les pages à mesurer · ${e.produit}`,
     phrase: lecture
       ? 'Les pages que la mesure a lues. Rien hors de cette liste n’a été mesuré.'
       : unSite
-      ? 'Les pages les plus représentatives de ton site, celles qui portent le plus de composants. Tu peux les changer.'
-      : `${sites.length} sites, un même produit. Pour chacun, ses pages les plus représentatives. Quand deux sites ont les mêmes modèles de page, ce sont les mêmes qui sont retenus, pour comparer. Tu peux les changer.`,
+      ? 'Les pages les plus représentatives de ton site, celles qui portent le plus de composants. Tu peux les changer ; la mesure se lance dans le chat.'
+      : `${sites.length} sites, un même produit. Pour chacun, ses pages les plus représentatives. Quand deux sites ont les mêmes modèles de page, ce sont les mêmes qui sont retenus, pour comparer. Tu peux les changer ; la mesure se lance dans le chat.`,
     fil: filDe(e),
     lecture,
     corps: `<div class="groupes">\n${groupes}\n</div>
 ${lecture ? '' : `<div class="encart"><strong>Rien hors de cette liste n’est mesuré.</strong><small>Une page oubliée garde sa dette, sans que personne la voie.</small></div>`}`,
-    avance: ['Mesurer · les pages', unSite ? 'Garde ou change la liste, puis lance la mesure.' : 'Garde ou change les listes, puis lance la mesure.'],
-    action: `<form method="post" action="/pages/mesurer"><button type="submit" class="principal"${vide ? ' disabled' : ''}>${esc(libelle)}</button></form>`,
   });
 }
 

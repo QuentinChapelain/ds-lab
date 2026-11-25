@@ -3,14 +3,14 @@
  * Les écrans du parcours (D77), sans navigateur :
  *   EC1 le lancement : les quatre temps pas encore, quatre étapes, trois portes, l'adresse dans le chat, aucun bouton ; il
  *       se recharge seul ; aucune valeur visuelle en dur, aucun script ;
- *   EC2 les pages, un site : le nom de chaque page (ou son chemin), sa vignette, « Retirer », « Ajouter une page »,
- *       « Mesurer ces n pages » qui suit la liste, désactivé sans page ; jamais de rechargement seul ; le refus d'une
- *       page ajoutée, à côté du champ, avec la saisie gardée ; plusieurs sites : un groupe par site ;
+ *   EC2 les pages, un site : le nom de chaque page (ou son chemin), sa vignette, « Retirer », « Ajouter une page » en
+ *       dernière ligne ; ni barre ni bouton de mesure (D89) ; jamais de rechargement seul ; le refus d'une page ajoutée,
+ *       à côté du champ, avec la saisie gardée ; plusieurs sites : un groupe par site ;
  *   EC3 projet.json : une page avec son nom, retirer, ajouter après vérification (même site, elle répond, pas déjà là),
- *       sinon la raison en une phrase ; le reste du fichier intact ; la validation au clic sur « Mesurer » fait l'étape,
+ *       sinon la raison en une phrase ; le reste du fichier intact ; la validation fait l'étape,
  *       et l'écran de la mesure en cours paraît (ce qui se passe, une barre de progression, rechargé seul) ;
- *   EC4 la commande : avant le projet, --servir sert le lancement ; les formulaires reviennent sur l'écran (303) ;
- *       --attendre finit quand l'humain lance la mesure ;
+ *   EC4 la commande : avant le projet, --servir sert le lancement ; les formulaires reviennent sur l'écran (303) ; le
+ *       serveur n'a plus de mesure à recevoir ; --valider-pages lance la mesure sur la liste de l'écran à cet instant ;
  *   EC5 la dette (D78) : les pages mesurées nommées, le grand chiffre, quatre cartes de valeurs avec leur compte, leurs
  *       phrases calculées et leurs dessins (SVG : la valeur mesurée est une donnée du dessin, jamais du style), les
  *       composants par type avec leurs captures, « À regarder aussi », les deux liens, « Passer à ta marque » ; sans
@@ -52,7 +52,10 @@
  *   EC17 revoir un écran fait (D88) : le départ, les pages, la dette, la marque, les fondations, la revue, l'avant et
  *       après, en lecture seule : le temps revu et ses autres écrans, ni formulaire ni rechargement, « Revenir où j'en
  *       suis » ; un écran qui ne se revoit pas rend le moment ; l'état et les fichiers ne changent pas ; le serveur
- *       refuse un envoi venu d'un écran revu.
+ *       refuse un envoi venu d'un écran revu ;
+ *   EC18 les pages par le chat (D89) : --ajouter-page et --retirer-page changent la liste comme l'écran, --site nomme le
+ *       site parmi plusieurs ; une page refusée, une liste vide, un autre moment : la raison en une ligne, sortie 1 ;
+ *       les options mêlées : sortie 2.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -122,21 +125,23 @@ test('EC1 le lancement : quatre temps, quatre étapes, trois portes, l’adresse
   assert.deepEqual(enDur(h), []);
 });
 
-test('EC2 les pages : noms, vignettes, retirer, ajouter, le compte de la mesure ; jamais de rechargement seul', () => {
+test('EC2 les pages : noms, vignettes, retirer, ajouter en dernière ligne ; ni barre ni mesure ; jamais de rechargement seul', () => {
   const h = pageDuParcours(etat('pages'));
   const t = texte(h);
-  for (const s of ['Les pages à mesurer', 'La carte', 'Mon compte', '/desordre/gestion.html', 'Ajouter une page', 'Rien hors de cette liste n’est mesuré.', 'Mesurer ces 3 pages ›'])
+  for (const s of ['Les pages à mesurer', 'La carte', 'Mon compte', '/desordre/gestion.html', 'Ajouter une page', 'Rien hors de cette liste n’est mesuré.', 'la mesure se lance dans le chat'])
     assert.ok(t.includes(s), s);
   assert.equal(h.match(/<img class="vignette papier" src="\/vignette\/orbe\?page=%2Fdesordre%2F[a-z]+\.html" alt="">/g)?.length, 3);
   assert.equal(h.match(/action="\/pages\/retirer"/g)?.length, 3);
   assert.match(h, /aria-label="Retirer La carte"/);
-  assert.match(h, /<form method="post" action="\/pages\/mesurer"><button type="submit" class="principal">Mesurer ces 3 pages ›<\/button><\/form>/);
+  // L'ajout est la dernière ligne de la liste ; ni barre, ni bouton de mesure.
+  assert.match(h, /<li class="page"><form class="ajout" method="post" action="\/pages\/ajouter">.*<\/form><\/li>\n<\/ul>/);
+  assert.doesNotMatch(h, /class="barre"|\/pages\/mesurer|class="principal"|Mesurer ces/);
   assert.doesNotMatch(h, /http-equiv="refresh"|<script|\sstyle="/);
   assert.deepEqual(enDur(h), []);
   assert.match(h, /<li class="ici" aria-current="step"><span class="pt">1<\/span><span class="nomme">Mesurer<small>Les pages<\/small><\/span>/);
   assert.doesNotMatch(t, /À toi de décider|Rien à décider/);
-  // Sans page : rien à mesurer.
-  assert.match(pageDuParcours(etat('lancement')), /<button type="submit" class="principal" disabled>Aucune page<\/button>/);
+  // Sans page : la liste ne porte que l'ajout.
+  assert.match(pageDuParcours(etat('lancement')), /<ul class="pages">\n\n<li class="page"><form class="ajout"/);
   // Le refus d'une page ajoutée, à côté du champ, la saisie gardée.
   const r = pageDuParcours(etat('pages'), { erreur: { site: 'orbe', message: 'Cette page ne répond pas (erreur 404).', saisie: '/perdue<b>' } });
   assert.match(r, /value="\/perdue&lt;b&gt;" aria-invalid="true" aria-describedby="erreur-orbe"/);
@@ -213,7 +218,7 @@ function lancerParcours(args) {
   };
 }
 
-test('EC4 la commande : le lancement avant le projet, les formulaires, --attendre', async () => {
+test('EC4 la commande : le lancement avant le projet, les formulaires, --valider-pages', async () => {
   const d = realpathSync(mkdtempSync(join(tmpdir(), 'ds-lab-ecrans-')));
   const f = join(d, 'projet.json');
   const s = lancerParcours([f, '--servir', '--port', '0']);
@@ -222,22 +227,65 @@ test('EC4 la commande : le lancement avant le projet, les formulaires, --attendr
     assert.match(await (await fetch(adresse)).text(), /<h1>Le parcours<\/h1>/);
     cpSync(join(FIX, 'pages'), d, { recursive: true });
     assert.match(await (await fetch(adresse)).text(), /<h1>Les pages à mesurer<\/h1>/);
-    const w = lancerParcours([f, '--attendre']);
     /** @param {string} chemin @param {Record<string, string>} c */
     const poster = (chemin, c) => fetch(adresse + chemin.slice(1), { method: 'POST', body: new URLSearchParams(c), redirect: 'manual' });
     const r1 = await poster('/pages/retirer', { site: 'orbe', page: '/desordre/gestion.html' });
     assert.deepEqual([r1.status, r1.headers.get('location')], [303, '/']);
-    assert.match(await (await fetch(adresse)).text(), /Mesurer ces 2 pages ›/);
+    assert.doesNotMatch(await (await fetch(adresse)).text(), /gestion\.html/);
     const r2 = await poster('/pages/ajouter', { site: 'orbe', adresse: 'https://ailleurs.example/' });
     assert.equal(r2.status, 303);
     assert.match(await (await fetch(adresse + String(r2.headers.get('location')).slice(1))).text(), /Cette page n’est pas sur 127\.0\.0\.1:4173\./);
-    assert.equal(w.p.exitCode, null, '--attendre attend encore');
-    assert.equal((await poster('/pages/mesurer', {})).status, 303);
-    assert.equal(await w.fin(), 0);
-    assert.match(String(readFileSync(join(d, 'sorties', 'pages.json'))), /"orbe": \[/);
+    // La mesure ne se lance plus depuis l'écran : l'ancien envoi ne valide rien.
+    await poster('/pages/mesurer', {});
+    assert.ok(!existsSync(join(d, 'sorties', 'pages.json')));
+    const v = spawnSync(process.execPath, [join(ROOT, 'src/cli/parcours.js'), f, '--valider-pages'], { encoding: 'utf8' });
+    assert.equal(v.status, 0, v.stderr);
+    assert.match(v.stdout, /Écran : la mesure en cours/);
+    assert.deepEqual(JSON.parse(readFileSync(join(d, 'sorties', 'pages.json'), 'utf8')), { orbe: ['/desordre/carte.html', '/desordre/compte.html'] });
+    assert.match(await (await fetch(adresse)).text(), /<h1>Je mesure tes 2 pages<\/h1>/);
   } finally {
     s.p.kill();
   }
+});
+
+test('EC18 les pages par le chat : ajouter, retirer, plusieurs sites ; les refus en une ligne, sortie 1', async () => {
+  /** @param {string} dossier @param {string[]} args */
+  const lancer = (dossier, args) => spawnSync(process.execPath, [join(ROOT, 'src/cli/parcours.js'), join(dossier, 'projet.json'), ...args], { encoding: 'utf8' });
+  const d = copie('pages');
+  const pages = () => lireProjet(join(d, 'projet.json')).sites[0].pages;
+  // Retirer : un chemin, ou l'adresse entière ; une page absente de la liste est refusée.
+  assert.equal(lancer(d, ['--retirer-page', 'http://127.0.0.1:4173/desordre/gestion.html']).status, 0);
+  assert.deepEqual(pages(), ['/desordre/carte.html', '/desordre/compte.html']);
+  const absente = lancer(d, ['--retirer-page', '/desordre/gestion.html']);
+  assert.deepEqual([absente.status, absente.stdout], [1, 'Cette page n’est pas dans la liste.\n']);
+  // Ajouter : les vérifications de l'écran ; une page d'un autre site est refusée, sans rien changer.
+  const ailleurs = lancer(d, ['--ajouter-page', 'https://ailleurs.example/']);
+  assert.deepEqual([ailleurs.status, ailleurs.stdout], [1, 'Cette page n’est pas sur 127.0.0.1:4173.\n']);
+  assert.deepEqual(pages(), ['/desordre/carte.html', '/desordre/compte.html']);
+  // Liste vide : la mesure est refusée.
+  lancer(d, ['--retirer-page', '/desordre/carte.html']);
+  lancer(d, ['--retirer-page', '/desordre/compte.html']);
+  const vide = lancer(d, ['--valider-pages']);
+  assert.deepEqual([vide.status, vide.stdout], [1, 'Il faut une page au moins.\n']);
+  assert.ok(!existsSync(join(d, 'sorties', 'pages.json')));
+  // Hors du moment des pages : rien ne change.
+  const m = copie('constat');
+  const tard = lancer(m, ['--retirer-page', lireProjet(join(m, 'projet.json')).sites[0].pages[0]]);
+  assert.deepEqual([tard.status, tard.stdout], [1, 'Les pages ne changent plus : la mesure est lancée ou faite.\n']);
+  // Plusieurs sites : --site nomme le site.
+  const p = copie('pages');
+  const brut = JSON.parse(readFileSync(join(p, 'projet.json'), 'utf8'));
+  brut.sites.push({ id: 'ecume', url: 'http://127.0.0.1:4173', pages: ['/annuaire/liste.html', '/annuaire/fiche.html'] });
+  writeFileSync(join(p, 'projet.json'), JSON.stringify(brut));
+  const [a, b] = lireProjet(join(p, 'projet.json')).sites;
+  const sans = lancer(p, ['--retirer-page', b.pages[0]]);
+  assert.equal(sans.status, 1);
+  assert.match(sans.stdout, new RegExp(`^Plusieurs sites : nomme le site par --site \\(${a.id}, ${b.id}`));
+  assert.equal(lancer(p, ['--site', b.id, '--retirer-page', b.pages[0]]).status, 0, 'le site nommé');
+  assert.deepEqual(lireProjet(join(p, 'projet.json')).sites.find((x) => x.id === b.id)?.pages, b.pages.slice(1));
+  assert.equal(lancer(p, ['--site', 'inconnu', '--retirer-page', '/x']).status, 1);
+  // Les options mêlées sont une panne de la commande.
+  for (const args of [['--valider-pages', '--retirer-page', '/x'], ['--valider-pages', '--attendre'], ['--site', b.id]]) assert.equal(lancer(p, args).status, 2, args.join(' '));
 });
 
 test('EC5 la dette : les valeurs comptées, dites et dessinées ; les composants par type ; rien à décider', () => {
