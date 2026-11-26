@@ -22,10 +22,10 @@ import { remiseDe } from './remise.js';
 /** Le choix de la marque à l'écran, quand l'humain l'a changé (D80) : dans les sorties. */
 const MARQUE_CHOISIE = 'marque.json';
 
-/** La dette vue : écrit au clic sur « Passer à ta marque » (D78), dans les sorties. */
+/** La dette vue : écrit à « Passer à ta marque », dans le chat (D78, D92), dans les sorties. */
 export const DETTE_VUE = 'dette.json';
 
-/** Les fondations vues : écrit au clic sur « Comparer mon site » (D83), dans les sorties. */
+/** Les fondations vues : écrit à « Comparer mon site », dans le chat (D83, D92), dans les sorties. */
 export const FONDATIONS_VUES = 'fondations.json';
 
 /** Ce que la saisie écrit à côté des jetons de la marque, avant l'écran des fondations (D83). */
@@ -34,10 +34,10 @@ const ECRITS_DE_LA_MARQUE = ['roles.html', 'espacements.html', 'typo.html', 'jet
 /** Les pages validées, par site (D77) : écrit quand la mesure est lancée dans le chat (D89), dans les sorties. */
 export const PAGES_VALIDEES = 'pages.json';
 
-/** Le rendu validé (D86) : écrit au clic sur « Valider le rendu », avec la vérification regardée, dans les sorties. */
+/** Le rendu validé (D86) : écrit à « Valider le rendu », dans le chat (D92), avec la vérification regardée, dans les sorties. */
 export const RENDU_VALIDE = 'avant-apres.json';
 
-/** La revue rouverte (D86) : écrite au clic sur « Revenir sur une décision », avec l'empreinte des choix d'alors. */
+/** La revue rouverte (D86) : écrite à « Revenir sur une décision », dans le chat (D92), avec l'empreinte des choix d'alors. */
 export const REVUE_ROUVERTE = 'revue.json';
 
 /**
@@ -469,7 +469,7 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
     reportes: 0,
   };
 
-  // La dette (D78) : la mesure faite, l'écran attend le clic sur « Passer à ta marque » avant la marque.
+  // La dette (D78) : la mesure faite, l’écran attend « Passer à ta marque », dans le chat, avant la marque.
   const enDette = constat.faite && !etapeMarques.sortie && !existsSync(join(sorties, DETTE_VUE));
   if (enDette) Object.assign(etapeMarques, { main: 'designer', action: 'regarder la dette, puis passer à la marque', commande: null });
   /** La dette du premier site mesuré. @returns {Etat['dette']} */
@@ -510,7 +510,7 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
     if (marque) Object.assign(etapeMarques, { main: 'designer', action: 'choisir la marque à l’écran, puis la confirmer', commande: null });
   }
   // Les fondations (D83), sur le chemin des écrans (la dette vue) : la marque acceptée, ce qu'elle écrit à côté de ses
-  // jetons doit l'être aussi ; puis l'écran attend le clic sur « Comparer mon site » avant la réduction.
+  // jetons doit l'être aussi ; puis l’écran attend « Comparer mon site », dans le chat, avant la réduction.
   const parEcran = existsSync(join(sorties, DETTE_VUE));
   const dossierPremier = premier.dossierMarque;
   const ecrits = !!dossierPremier && ECRITS_DE_LA_MARQUE.every((f) => existsSync(join(dossierPremier, f)));

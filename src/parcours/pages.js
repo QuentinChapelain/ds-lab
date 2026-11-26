@@ -83,7 +83,7 @@ export async function ajouterPage(fichier, id, saisie, { chercher = fetch } = {}
 }
 
 /**
- * Valide les pages de chaque site : la mesure lancée dans le chat, par `parcours --valider-pages` (D77, D89).
+ * Valide les pages de chaque site : la mesure lancée dans le chat, par `parcours --passer pages` (D77, D89, D92).
  * @param {string} fichier
  */
 export function validerPages(fichier) {
@@ -94,7 +94,7 @@ export function validerPages(fichier) {
 }
 
 /**
- * La dette vue : le clic sur « Passer à ta marque » (D78). `parcours --attendre` voit l'action changer.
+ * La dette vue : « Passer à ta marque », dans le chat, par `parcours --passer dette` (D78, D92).
  * @param {string} fichier
  */
 export function detteVue(fichier) {
@@ -103,7 +103,7 @@ export function detteVue(fichier) {
   writeFileSync(join(p.sorties, DETTE_VUE), `${JSON.stringify({ vue: true }, null, 2)}\n`);
 }
 
-/** Les fondations regardées (D83) : le clic sur « Comparer mon site » rend la main à l'outil, qui lance la réduction. @param {string} fichier */
+/** Les fondations regardées (D83) : « Comparer mon site », dans le chat (`parcours --passer fondations`, D92), rend la main à l'outil, qui lance la réduction. @param {string} fichier */
 export function fondationsVues(fichier) {
   const p = lireProjet(fichier);
   mkdirSync(p.sorties, { recursive: true });
@@ -111,7 +111,7 @@ export function fondationsVues(fichier) {
 }
 
 /**
- * Le rendu validé : le clic sur « Valider le rendu » (D86), pour la vérification regardée. Une vérification plus
+ * Le rendu validé : « Valider le rendu », dans le chat (`parcours --passer rendu`, D86, D92), pour la vérification regardée. Une vérification plus
  * récente rouvre l'avant et après.
  * @param {string} fichier
  */
@@ -149,7 +149,7 @@ export function copierMessage(fichier, { copier = presse } = {}) {
 }
 
 /**
- * Revenir sur une décision (D86) : le rendu n'est plus validé, et la revue rouverte au designer jusqu'à un nouvel
+ * Revenir sur une décision (D86), dit dans le chat (`parcours --revenir`, D92) : le rendu n'est plus validé, et la revue rouverte au designer jusqu'à un nouvel
  * export des choix ; la réduction, les feuilles et la vérification se refont ensuite, et l'avant et après revient.
  * @param {string} fichier
  */
@@ -161,7 +161,7 @@ export function rouvrirRevue(fichier) {
 }
 
 /**
- * Confirme la marque montrée à l'écran (D80) : écrit son entrée, `marques/<id>/entree.json` à côté du projet, et la
+ * Confirme la marque montrée à l'écran (D80), dans le chat (`parcours --passer marque`, D92) : écrit son entrée, `marques/<id>/entree.json` à côté du projet, et la
  * nomme dans projet.json. Une marque refusée ne se confirme pas.
  * @param {string} fichier
  */

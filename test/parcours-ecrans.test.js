@@ -10,18 +10,20 @@
  *       sinon la raison en une phrase ; le reste du fichier intact ; la validation fait l'étape,
  *       et l'écran de la mesure en cours paraît (ce qui se passe, une barre de progression, rechargé seul) ;
  *   EC4 la commande : avant le projet, --servir sert le lancement ; les formulaires reviennent sur l'écran (303) ; le
- *       serveur n'a plus de mesure à recevoir ; --valider-pages lance la mesure sur la liste de l'écran à cet instant ;
+ *       serveur n'a plus de passage à recevoir ; --passer pages lance la mesure sur la liste de l'écran à cet instant ;
  *   EC5 la dette (D78) : les pages mesurées nommées, le grand chiffre, quatre cartes de valeurs avec leur compte, leurs
  *       phrases calculées et leurs dessins (SVG : la valeur mesurée est une donnée du dessin, jamais du style), les
  *       composants par type avec leurs captures, « À regarder aussi », les deux liens, « Passer à ta marque » ; sans
  *       audit, les composants seuls ; le mot « constat » ne se montre pas ;
- *   EC6 « Passer à ta marque » : la dette vue, l'action de la marque reprend, --attendre finit ;
+ *   EC6 « Passer à ta marque », dans le chat (--passer dette) : la dette vue, l'action de la marque reprend ; un
+ *       second passage est refusé ;
  *   EC7 la marque (D80), lue dans la mesure par la règle : la primaire colore le plus d'éléments cliquables, l'accent est
  *       la couleur la plus employée d'une autre teinte, la troisième va sur l'échelle de la palette qui a sa teinte ; chaque couleur dit son code, d'où
  *       elle vient (« lue sur n éléments »), ses douze pas, son bouton ou son aplat et le verdict ; la police des titres ;
  *       « Confirmer la marque » ;
- *   EC8 confirmer : l'entrée écrite et nommée dans le projet, la main à l'outil, --attendre finit ; une marque refusée
- *       se dit sous la couleur en cause, en mots simples, et ne se confirme pas ;
+ *   EC8 confirmer, dans le chat (--passer marque) : l'entrée écrite et nommée dans le projet, la main à l'outil ; une
+ *       marque refusée se dit sous la couleur en cause, en mots simples, et ne se confirme pas : --passer marque dit
+ *       laquelle changer ;
  *   EC9 modifier : une couleur relevée prise d'un clic, un code tapé (court ou sans #), un code refusé dit à côté du
  *       champ, la valeur de l'autre couleur échangée, l'accent échangé avec la troisième ; le bloc se recalcule ;
  *   EC10 après « Confirmer la marque » (D83) : l'écran d'attente, rechargé seul, tant que la saisie, les planches, la
@@ -29,14 +31,14 @@
  *       pas, ses valeurs, ses rôles, ses relations d'espace, ses paires dans les quatre contextes, les liens vers ses
  *       planches, six preuves et les limites, « Pas encore », « Comparer mon site » ; rien à décider ; pour le chat, une
  *       phrase sans chiffre ;
- *   EC11 « Comparer mon site » : les fondations vues, la main à l'outil qui lance la réduction, --attendre finit ; une
+ *   EC11 « Comparer mon site » (--passer fondations) : les fondations vues, la main à l'outil qui lance la réduction ; une
  *       preuve fausse pour la marque (sans feuille CSS) n'est pas rendue ;
  *   EC12 l'avant et après (D86), dès les feuilles vérifiées, avant la validation : un onglet par page nommée, la bascule
  *       Avant, Après sans script, la plus haute des deux images tient le cadre ; le compte des changements, ce qui n'est
  *       visible qu'au survol, quatre cartes et leur exemple (la couleur changée la plus employée, deux pastilles et leurs
  *       codes) ; « Valider le rendu », « Revenir sur une décision » ; une vérification d'avant ces feuilles, ou sans
  *       l'image d'avant, se refait ;
- *   EC13 « Valider le rendu » : le rendu validé, --attendre finit ; « Revenir sur une décision » : le rendu n'est plus
+ *   EC13 « Valider le rendu » (--passer rendu) : le rendu validé ; « Revenir sur une décision » (--revenir) : le rendu n'est plus
  *       validé, la revue rouverte au designer jusqu'à un nouvel export, puis la réduction, les feuilles et la
  *       vérification se refont, et l'avant et après revient ;
  *   EC14 la remise (D87), tirée des sorties sans nouvelle mesure : trois étapes et leurs comptes (feuilles, lignes à
@@ -56,6 +58,8 @@
  *   EC18 les pages par le chat (D89) : --ajouter-page et --retirer-page changent la liste comme l'écran, --site nomme le
  *       site parmi plusieurs ; une page refusée, une liste vide, un autre moment : la raison en une ligne, sortie 1 ;
  *       les options mêlées : sortie 2 ;
+ *   EC20 ni barre ni bouton de passage sur aucun écran (D92) : « Copier le message » sous le message, « ‹ La remise »
+ *       sous le titre d'« À installer », « Revenir où j'en suis » sous le titre d'un écran revu ;
  *   EC19 regarder le site sans le montrer (D91) : la page donnée et celles du même site vers lesquelles elle mène,
  *       rendues sans fenêtre, leur titre et leurs composants comptés, les plus riches d'abord ; un site qui ne répond
  *       pas, sa raison en une ligne et la sortie 1 ; --regarder avec un projet : sortie 2.
@@ -70,7 +74,7 @@ import { fileURLToPath } from 'node:url';
 import { lireProjet } from '../src/parcours/projet.js';
 import { calculerEtat } from '../src/parcours/etat.js';
 import { pageDuParcours } from '../src/parcours/page.js';
-import { ecranDeLancement, FIN_JETONS } from '../src/parcours/ecrans.js';
+import { ecranAInstaller, ecranDeLancement, FIN_JETONS } from '../src/parcours/ecrans.js';
 import { ajouterPage, choisirCouleur, confirmerMarque, detteVue, echangerAccent, fondationsVues, retirerPage, rouvrirRevue, validerPages, validerRendu } from '../src/parcours/pages.js';
 import { fondationsDe } from '../src/parcours/fondations.js';
 import { aInstaller, ecrireRemise, message, pageEnDirect } from '../src/parcours/remise.js';
@@ -118,7 +122,7 @@ const faux = (pages) => /** @type {typeof fetch} */ (async (/** @type {any} */ u
 test('EC1 le lancement : quatre temps, quatre étapes, trois portes, l’adresse dans le chat ; il se recharge seul', () => {
   const h = ecranDeLancement();
   const t = texte(h);
-  for (const s of ['Le parcours', 'Tu décides trois fois.', 'Porte 1 · la marque', 'Porte 2 · la revue', 'Porte 3 · avant, après', 'Elle se donne dans le chat, à gauche.', 'Donne l’adresse dans le chat.'])
+  for (const s of ['Le parcours', 'Tu décides trois fois.', 'Porte 1 · la marque', 'Porte 2 · la revue', 'Porte 3 · avant, après', 'Elle se donne dans le chat, à gauche.'])
     assert.ok(t.includes(s), s);
   assert.deepEqual(fil(h), ['1 Mesurer', '2 Décider', '3 Vérifier', '4 Remettre']);
   assert.equal(h.match(/<li><span class="pt">/g)?.length, 4, 'quatre temps pas encore');
@@ -223,7 +227,10 @@ function lancerParcours(args) {
   };
 }
 
-test('EC4 la commande : le lancement avant le projet, les formulaires, --valider-pages', async () => {
+/** La commande parcours, jusqu'à sa fin. @param {string[]} args */
+const parcours = (args) => spawnSync(process.execPath, [join(ROOT, 'src/cli/parcours.js'), ...args], { encoding: 'utf8' });
+
+test('EC4 la commande : le lancement avant le projet, les formulaires, --passer pages', async () => {
   const d = realpathSync(mkdtempSync(join(tmpdir(), 'ds-lab-ecrans-')));
   const f = join(d, 'projet.json');
   const s = lancerParcours([f, '--servir', '--port', '0']);
@@ -243,7 +250,7 @@ test('EC4 la commande : le lancement avant le projet, les formulaires, --valider
     // La mesure ne se lance plus depuis l'écran : l'ancien envoi ne valide rien.
     await poster('/pages/mesurer', {});
     assert.ok(!existsSync(join(d, 'sorties', 'pages.json')));
-    const v = spawnSync(process.execPath, [join(ROOT, 'src/cli/parcours.js'), f, '--valider-pages'], { encoding: 'utf8' });
+    const v = parcours([f, '--passer', 'pages']);
     assert.equal(v.status, 0, v.stderr);
     assert.match(v.stdout, /Écran : la mesure en cours/);
     assert.deepEqual(JSON.parse(readFileSync(join(d, 'sorties', 'pages.json'), 'utf8')), { orbe: ['/desordre/carte.html', '/desordre/compte.html'] });
@@ -270,7 +277,7 @@ test('EC18 les pages par le chat : ajouter, retirer, plusieurs sites ; les refus
   // Liste vide : la mesure est refusée.
   lancer(d, ['--retirer-page', '/desordre/carte.html']);
   lancer(d, ['--retirer-page', '/desordre/compte.html']);
-  const vide = lancer(d, ['--valider-pages']);
+  const vide = lancer(d, ['--passer', 'pages']);
   assert.deepEqual([vide.status, vide.stdout], [1, 'Il faut une page au moins.\n']);
   assert.ok(!existsSync(join(d, 'sorties', 'pages.json')));
   // Hors du moment des pages : rien ne change.
@@ -290,7 +297,8 @@ test('EC18 les pages par le chat : ajouter, retirer, plusieurs sites ; les refus
   assert.deepEqual(lireProjet(join(p, 'projet.json')).sites.find((x) => x.id === b.id)?.pages, b.pages.slice(1));
   assert.equal(lancer(p, ['--site', 'inconnu', '--retirer-page', '/x']).status, 1);
   // Les options mêlées sont une panne de la commande.
-  for (const args of [['--valider-pages', '--retirer-page', '/x'], ['--valider-pages', '--attendre'], ['--site', b.id]]) assert.equal(lancer(p, args).status, 2, args.join(' '));
+  for (const args of [['--passer', 'pages', '--retirer-page', '/x'], ['--passer', 'pages', '--revenir'], ['--passer', 'ailleurs'], ['--passer', 'pages', '--servir'], ['--attendre'], ['--site', b.id]])
+    assert.equal(lancer(p, args).status, 2, args.join(' '));
 });
 
 test('EC19 regarder le site sans le montrer : les pages du même site, leurs composants comptés, les plus riches d’abord', async () => {
@@ -349,7 +357,6 @@ test('EC5 la dette : les valeurs comptées, dites et dessinées ; les composants
     'À regarder aussi',
     '39 blocs répétés que l’outil ne sait pas nommer : à trier plus tard.',
     '5 éléments sur 30 ont une zone de clic de moins de 24 px.',
-    'Passer à ta marque ›',
   ])
     assert.ok(t.includes(x), x);
   assert.match(h, /<a href="\/sorties\/audit\/orbe\/127\.0\.0\.1_4173\/2026-11-24T1330\/rapport\.html">Voir toutes les valeurs<\/a>/);
@@ -357,7 +364,7 @@ test('EC5 la dette : les valeurs comptées, dites et dessinées ; les composants
   assert.equal(h.match(/<img class="papier" src="\/sorties\/composants\/orbe\/127\.0\.0\.1_4173\/2026-11-24T1330\/captures\/p\d-e\d+\.png"/g)?.length, 11);
   assert.match(h, /<rect x="0\.5" y="0\.5" width="23" height="23" rx="4" fill="#999999"\/>/);
   assert.match(h, /<li class="hors"><svg [^>]*><title>10\.5px, 1 fois<\/title><text x="0" y="10\.5" font-size="10\.5"/);
-  assert.match(h, /<form method="post" action="\/pages\/dette"><button type="submit" class="principal">Passer à ta marque ›<\/button><\/form>/);
+  assert.doesNotMatch(h, /<form|Passer à ta marque/);
   assert.doesNotMatch(t, /[Cc]onstat/);
   assert.doesNotMatch(h, /<script|\sstyle="|http-equiv="refresh"/);
   assert.deepEqual(enDur(h), []);
@@ -369,16 +376,19 @@ test('EC5 la dette : les valeurs comptées, dites et dessinées ; les composants
   assert.match(texte(sans), /Les composants/);
 });
 
-test('EC6 « Passer à ta marque » : la dette vue, la marque reprend son cours, --attendre finit', async () => {
+test('EC6 « Passer à ta marque », dans le chat : la dette vue, la marque reprend son cours ; un second passage est refusé', () => {
   const d = copie('constat');
   const f = join(d, 'projet.json');
-  const w = lancerParcours([f, '--attendre']);
-  await new Promise((ok) => setTimeout(ok, 1500));
-  assert.equal(w.p.exitCode, null, '--attendre attend encore');
-  detteVue(f);
-  assert.equal(await w.fin(), 0);
+  // Pas avant son moment : la dette ne se passe pas depuis un autre écran.
+  const tot = parcours([f, '--passer', 'marque']);
+  assert.deepEqual([tot.status, tot.stdout], [1, 'Ce n’est pas le moment : l’écran du moment est la dette.\n']);
+  const r = parcours([f, '--passer', 'dette']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(existsSync(join(d, 'sorties', 'dette.json')));
   const e = calculerEtat(lireProjet(f), { base: d });
   assert.deepEqual([e.moment, e.courante.action], ['jetons', 'saisir la marque']);
+  // Un second « ok » ne saute pas un écran.
+  assert.equal(parcours([f, '--passer', 'dette']).status, 1);
 });
 
 /** Une copie du projet mesuré, la dette vue, sans entrée de marque : le moment de la marque. */
@@ -410,24 +420,20 @@ test('EC7 la marque, lue dans la mesure : deux couleurs et la police, d’où el
     '#d0563f, lue sur 2 éléments. Une marque garde deux couleurs : celle-ci ira sur red, l’échelle de la palette qui a sa teinte.',
     'Police des titres Orbe Sans Lue sur 17 titres de tes pages.',
     'Marque acceptée',
-    'Confirmer la marque ›',
   ])
     assert.ok(t.includes(x), x);
   assert.equal(h.match(/<ul class="echelle" aria-label="Les douze pas">/g)?.length, 2);
   assert.match(h, /<li class="plein"><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="4" fill="#2b4c7e"\/>/);
-  assert.match(h, /<button type="submit" class="principal">Confirmer la marque ›<\/button>/);
+  assert.doesNotMatch(h, /Confirmer la marque|action="\/pages\/marque"/);
   assert.doesNotMatch(t, /[Cc]onstat|checkValise|entrée|\.json/);
   assert.doesNotMatch(h, /<script|\sstyle="|http-equiv="refresh"/);
   assert.deepEqual(enDur(h), []);
 });
 
-test('EC8 confirmer la marque : l’entrée écrite, la main à l’outil ; une marque refusée ne se confirme pas', async () => {
+test('EC8 confirmer la marque, dans le chat : l’entrée écrite, la main à l’outil ; une marque refusée ne se confirme pas', () => {
   const { d, f } = aLaMarque();
-  const w = lancerParcours([f, '--attendre']);
-  await new Promise((ok) => setTimeout(ok, 1500));
-  assert.equal(w.p.exitCode, null, '--attendre attend encore');
-  confirmerMarque(f);
-  assert.equal(await w.fin(), 0);
+  const ok = parcours([f, '--passer', 'marque']);
+  assert.equal(ok.status, 0, ok.stderr);
   assert.deepEqual(JSON.parse(readFileSync(join(d, 'marques', 'orbe', 'entree.json'), 'utf8')), {
     name: 'Annuaire des cafés',
     primary: '#2b4c7e',
@@ -443,8 +449,13 @@ test('EC8 confirmer la marque : l’entrée écrite, la main à l’outil ; une 
   const h = pageDuParcours(calculerEtat(lireProjet(r.f), { base: r.d }));
   assert.match(texte(h), /Couleur primaire #00ccff .* Cette couleur ne donne pas douze nuances distinctes : ses tons clairs se confondent avec elle\. Essaie une couleur plus foncée\./);
   assert.match(texte(h), /Marque refusée : change la couleur dite plus haut\./);
-  assert.match(h, /<button type="submit" class="principal" disabled>Confirmer la marque ›<\/button>/);
   assert.throws(() => confirmerMarque(r.f), /une marque refusée ne se confirme pas/);
+  // Dans le chat : pas de bouton ; la commande dit quelle couleur changer, les faits aussi.
+  const non = parcours([r.f, '--passer', 'marque']);
+  assert.deepEqual([non.status, non.stdout], [1, 'La marque est refusée : change la couleur primaire à l’écran, puis confirme.\n']);
+  assert.ok(!existsSync(join(r.d, 'marques', 'orbe', 'entree.json')));
+  const fa = faitsDuMoment(calculerEtat(lireProjet(r.f), { base: r.d }), { sorties: join(r.d, 'sorties') });
+  assert.ok(fa.some((l) => /^ {2}Ensuite : la marque est refusée : .*changer la couleur primaire à droite, sans bouton/.test(l)), fa.join('\n'));
 });
 
 test('EC9 modifier la marque : une couleur relevée, un code tapé, l’échange avec la troisième ; le bloc se recalcule', () => {
@@ -520,28 +531,24 @@ test('EC10 après « Confirmer la marque » : l’attente, puis les fondations c
     'Limites connues : pas encore de tokens d’ombre ni de superposition',
     'Pas encore · posées sur ton site au temps 3, Vérifier',
     'Pas encore · les composants remplacés dans ton code au temps 4, Remettre',
-    'Comparer mon site ›',
   ])
     assert.ok(t.includes(x), x);
   assert.match(h, /<a href="\/marques\/orbe\/roles\.html">La planche des rôles<\/a>/);
-  assert.match(h, /<form method="post" action="\/pages\/fondations"><button type="submit" class="principal">Comparer mon site ›<\/button><\/form>/);
+  assert.doesNotMatch(h, /<form|Comparer mon site/);
   assert.doesNotMatch(t, /[Cc]onstat|\.json|Voir les composants/);
-  // Le chat : une phrase, sans chiffre récité ; il attend le clic.
+  // Le chat : sans chiffre récité ; un seul bouton, Comparer mon site.
   const fa = faitsDuMoment(e, { sorties: join(d, 'sorties') });
   assert.ok(fa.includes('  Écran : les fondations'), fa.join('\n'));
-  assert.ok(fa.some((l) => /^ {2}Ensuite : une phrase : les fondations sont prêtes, à sa marque, et ne sont pas encore sur le site ; ni chiffre ni liste ; attendre le clic sur Comparer mon site/.test(l)));
+  assert.ok(fa.some((l) => /^ {2}Ensuite : l’écran devant et vérifié, puis la boîte de fin de tour : les fondations sont prêtes, à sa marque, pas encore sur le site ; ni chiffre ni liste ; un seul bouton, Comparer mon site ; .* parcours --passer fondations$/.test(l)));
   assert.ok(!fa.some((l) => l.startsWith('  Chiffre')));
   assert.doesNotMatch(h, /<script|\sstyle="|http-equiv="refresh"/);
   assert.deepEqual(enDur(h), []);
 });
 
-test('EC11 « Comparer mon site » : la main à l’outil, --attendre finit ; une preuve fausse pour la marque n’est pas rendue', async () => {
+test('EC11 « Comparer mon site », dans le chat : la main à l’outil ; une preuve fausse pour la marque n’est pas rendue', () => {
   const { d, f } = auxFondations();
-  const w = lancerParcours([f, '--attendre']);
-  await new Promise((ok) => setTimeout(ok, 1500));
-  assert.equal(w.p.exitCode, null, '--attendre attend encore');
-  fondationsVues(f);
-  assert.equal(await w.fin(), 0);
+  const r = parcours([f, '--passer', 'fondations']);
+  assert.equal(r.status, 0, r.stderr);
   const e = calculerEtat(lireProjet(f), { base: d });
   assert.deepEqual([e.moment, e.courante.main, e.courante.action, e.fondations], ['ecran', 'outil', 'lancer la réduction', null]);
   assert.match(/** @type {string} */ (e.courante.commande), /^npm run reduce -- .* --brand-colors/);
@@ -580,7 +587,6 @@ test('EC12 l’avant et après : un onglet par page, la bascule sans script, le 
     // L'exemple : la ligne qui touche le plus d'éléments (54 pour #999999 → #958f84).
     '#999999 → #958f84', 'dont texte « N° » et 53 autres (textes, blocs)',
     '15 px → 16 px',
-    'Valider le rendu ›', 'Revenir sur une décision',
   ])
     assert.ok(t.includes(x), x);
   // Les pages sans nom : leur chemin ; un onglet, une vue et une règle par page ; la première cochée.
@@ -592,14 +598,14 @@ test('EC12 l’avant et après : un onglet par page, la bascule sans script, le 
   assert.match(h, /<img class="avant fond" src="\/sorties\/verify\/127\.0\.0\.1_4173\/2026-11-24T1336\/carte\/avant\.png" alt="\/desordre\/carte\.html, avant"><img class="apres dessus" src="\/sorties\/verify\/127\.0\.0\.1_4173\/2026-11-24T1336\/carte\/actuel\.png"/);
   assert.match(h, /<img class="avant dessus" src="[^"]*gestion\/avant\.png"[^>]*><img class="apres fond"/);
   assert.match(h, /<rect x="0\.5" y="0\.5" width="23" height="23" rx="6" fill="#999999"/);
-  assert.match(h, /<form method="post" action="\/pages\/rendu"><button type="submit" class="principal">Valider le rendu ›<\/button><\/form>/);
-  assert.match(h, /<form method="post" action="\/pages\/revue"><button type="submit" class="discret">Revenir sur une décision<\/button><\/form>/);
+  assert.doesNotMatch(h, /<form|Valider le rendu|Revenir sur une décision/);
   assert.doesNotMatch(t, /[Ll]ignes?\b|seuils/);
   assert.doesNotMatch(h, /<script|\sstyle="|http-equiv="refresh"/);
   assert.deepEqual(enDur(h), []);
   // Pour le chat : une phrase, sans chiffre ni développeur.
   const l = faitsDuMoment(e, { sorties: join(d, 'sorties') });
   assert.ok(l.includes('  Écran : l’avant et après'));
+  assert.ok(l.some((x) => /un seul bouton, Valider le rendu ; .*parcours --passer rendu ; revenir sur une décision se dit dans le texte et se tape : parcours --revenir$/.test(x)), l.join('\n'));
   assert.ok(!l.some((x) => /^  (Chiffre|Au développeur|Pas arrivé) :/.test(x)), l.join('\n'));
   // Sans l'image d'avant, ou pour d'autres feuilles que celles de la réduction : la vérification se refait.
   const v = join(d, 'sorties/verify/127.0.0.1_4173/2026-11-24T1336');
@@ -613,13 +619,10 @@ test('EC12 l’avant et après : un onglet par page, la bascule sans script, le 
   assert.equal(g.courante.action, 'prouver la livraison sur les pages, avant et après');
 });
 
-test('EC13 « Valider le rendu » et « Revenir sur une décision »', async () => {
+test('EC13 « Valider le rendu » et « Revenir sur une décision », dans le chat', () => {
   const { d, f } = avantApres();
-  const w = lancerParcours([f, '--attendre']);
-  await new Promise((ok) => setTimeout(ok, 1500));
-  assert.equal(w.p.exitCode, null, '--attendre attend encore');
-  validerRendu(f);
-  assert.equal(await w.fin(), 0);
+  const v = parcours([f, '--passer', 'rendu']);
+  assert.equal(v.status, 0, v.stderr);
   assert.deepEqual(JSON.parse(readFileSync(join(d, 'sorties', 'avant-apres.json'), 'utf8')), { verification: '2026-11-24T1336' });
   let e = calculerEtat(lireProjet(f), { base: d });
   assert.deepEqual([e.moment, e.courante.cle], ['remise', 'suivi']);
@@ -627,7 +630,11 @@ test('EC13 « Valider le rendu » et « Revenir sur une décision »', async () 
   // La remise écrite à côté du projet (D87) : les feuilles, « À installer », le message.
   for (const x of ['remise/a-installer.md', 'remise/message.txt', 'remise/remise.json', 'remise/feuilles/desordre/styles/tokens.css', 'remise/feuilles/desordre/styles/recente.ajout.css'])
     assert.ok(existsSync(join(d, x)), x);
-  // Revenir : la revue rouverte au designer, le rendu plus validé.
+  // Revenir : seulement à l'avant et après ; la revue rouverte au designer, le rendu plus validé.
+  assert.equal(parcours([f, '--revenir']).status, 1, 'à la remise, rien à revenir');
+  const { d: d2, f: f2 } = avantApres();
+  assert.equal(parcours([f2, '--revenir']).status, 0);
+  assert.ok(existsSync(join(d2, 'sorties', 'revue.json')));
   rouvrirRevue(f);
   assert.ok(!existsSync(join(d, 'sorties', 'avant-apres.json')));
   e = calculerEtat(lireProjet(f), { base: d });
@@ -681,7 +688,8 @@ test('EC14 la remise : trois étapes et leurs comptes, « À installer », le me
   for (const x of ['La remise', 'Trois étapes', '1 · Installer le système', '3 lignes à coller, une par page', '4 feuilles ajoutées', '6 lignes à coller', `dans 4 fichiers`, 'Ouvrir « À installer »', 'Copier le message', '3 choix restent reportés'])
     assert.ok(t.includes(x), x);
   assert.match(h, /<textarea class="message" readonly rows="6" aria-labelledby="t-message">Voici la remise/);
-  assert.match(h, /<form method="post" action="\/pages\/copier"><button type="submit" class="principal">Copier le message<\/button><\/form>/);
+  // « Copier le message », sous le message, dans sa section.
+  assert.match(h, /<\/textarea>\n<div class="actions"><form method="post" action="\/pages\/copier"><button type="submit" class="principal">Copier le message<\/button><\/form><\/div><\/section>/);
   assert.doesNotMatch(h, /Copié\./);
   assert.match(pageDuParcours(e, { copie: 'ok' }), /<span class="accepte" role="status">Copié\.<\/span>/);
   assert.match(pageDuParcours(e, { copie: 'non' }), /Copie impossible ici : sélectionne le message\./);
@@ -768,7 +776,8 @@ test('EC17 revoir un écran fait : en lecture seule, sans formulaire ni recharge
     assert.ok(h.includes(`<h1>${titre}</h1>`), v);
     assert.ok(texte(h).includes(revois), v);
     assert.doesNotMatch(h, /<form|http-equiv="refresh"/, v);
-    assert.match(h, /<a class="retour" href="\/">Revenir où j’en suis ›<\/a>/, v);
+    assert.match(h, /<p class="revenir"><a class="retour" href="\/">Revenir où j’en suis<\/a>/, v);
+    assert.doesNotMatch(h, /class="barre"/, v);
     assert.deepEqual(enDur(h), [], v);
   }
   assert.match(voir('revue'), /<iframe class="revue" src="\/sorties\/reductions\/[^"]+\/revue\.html" title="La revue"><\/iframe>/);
@@ -805,4 +814,34 @@ test('EC17 revoir un écran fait : en lecture seule, sans formulaire ni recharge
   } finally {
     await s.fermer();
   }
+});
+
+test('EC20 ni barre ni bouton de passage sur aucun écran ; ce qui change l’écran reste, « ‹ La remise » sous le titre', () => {
+  const ecrans = {
+    lancement: ecranDeLancement(),
+    pages: pageDuParcours(etat('pages')),
+    mesure: pageDuParcours((() => {
+      const d = copie('pages');
+      validerPages(join(d, 'projet.json'));
+      return calculerEtat(lireProjet(join(d, 'projet.json')), { base: d });
+    })()),
+    dette: pageDuParcours(etat('constat')),
+    marque: pageDuParcours((({ d, f }) => calculerEtat(lireProjet(f), { base: d }))(aLaMarque())),
+    fondations: pageDuParcours((({ d, f }) => calculerEtat(lireProjet(f), { base: d }))(auxFondations())),
+    avantApres: pageDuParcours((({ d, f }) => calculerEtat(lireProjet(f), { base: d }))(avantApres())),
+    remise: pageDuParcours(etat('bilan')),
+  };
+  for (const [nom, h] of Object.entries(ecrans)) {
+    assert.doesNotMatch(h, /class="barre"|<footer|class="avance"|›<\/button>/, nom);
+    assert.doesNotMatch(h, /action="\/pages\/(?:mesurer|dette|marque"|fondations|rendu|revue)/, nom);
+  }
+  // Ce qui change l'écran reste : retirer, ajouter, changer une couleur, copier le message.
+  assert.match(ecrans.pages, /action="\/pages\/retirer"/);
+  assert.match(ecrans.marque, /action="\/pages\/marque\/couleur"/);
+  assert.match(ecrans.remise, /action="\/pages\/copier"/);
+  // « À installer » : le retour à la remise sous le titre.
+  const e = etat('bilan');
+  const h = ecranAInstaller(e, '# À installer\n\n## Étape 1\n\nUne ligne.');
+  assert.match(h, /<h1>À installer<\/h1><p>[^<]*<\/p><p><a class="retour" href="\/">‹ La remise<\/a><\/p><\/div>/);
+  assert.doesNotMatch(h, /class="barre"/);
 });

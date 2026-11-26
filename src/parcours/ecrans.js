@@ -2,12 +2,13 @@
 /**
  * Les écrans du parcours (D77) et leur gabarit, commun à tous les écrans (D88) : le fil en haut (« ds-lab », vers le
  * départ, puis les quatre temps, faits, ici ou pas encore), un titre et une phrase, le contenu borné à la largeur d'une
- * page, une barre en bas, fixée au bord de la fenêtre, avec une seule action forte. Sombre seul ; ce qui vient du site
+ * page ; ni barre ni bouton pour changer d'écran : le chat porte ce passage (D92). Sombre seul ; ce qui vient du site
  * (vignettes, captures, couleurs et exemples relevés) est sur papier, le mode clair des mêmes rôles. Les écrans : le
  * lancement (avant le projet, et le départ revu), les pages à mesurer (un groupe par site), la mesure en cours, la dette,
  * la marque, l'écriture des tokens, les fondations, la revue revue, l'avant et après, la remise et « À installer ».
  * Un temps fait se revoit (`/?voir=<écran>`) : l'écran en lecture seule, sans formulaire, avec « Revenir où j'en suis ».
- * Sans script : retirer, ajouter et mesurer sont des formulaires envoyés au serveur du parcours (serveur.js). Valeurs :
+ * Sans script : ce qui change l'écran (retirer, ajouter une page, changer une couleur, copier le message) est un
+ * formulaire envoyé au serveur du parcours (serveur.js). Valeurs :
  * les variables des jetons communs (jetons.js) ; le style écrit ici ne porte que des variables, des mots-clés, 0 et
  * 100 %, comme un module (D61). La page n'a pas de marque : l'anneau de focus prend le texte d'information, pas
  * border.focus, qui pointe sur la marque. Toute chaîne venue du projet ou de la saisie est échappée.
@@ -107,9 +108,7 @@ button:focus-visible, input:focus-visible { outline: var(--border-width-focus) s
 .ajout label { display: flex; flex: auto; flex-direction: column; gap: var(--gap-within-component); min-width: 0; ${style('label')} }
 .ajout input { width: 100%; min-height: var(--height-control-medium); padding: 0 var(--padding-tag); border: var(--border-width-default) solid var(--border-default); border-radius: var(--border-radius-control); background: var(--background-surface); color: var(--text-default); ${style('body-medium')} }
 .erreur { flex-basis: 100%; color: var(--text-error); ${style('label')} }
-.barre { position: sticky; bottom: 0; border-top: var(--border-width-default) solid var(--border-subtle); background: var(--background-surface); }
-.barre > div { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gap-between-blocks) var(--gap-between-components); max-width: var(--width-page); min-height: var(--height-control-medium); margin: 0 auto; padding: var(--gap-between-blocks) var(--padding-component); }
-.avance { display: flex; flex-direction: column; }
+.revenir { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gap-within-component) var(--gap-between-blocks); }
 progress { width: 100%; }
 .pastilles { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-blocks); }
 .pastilles li { padding: 0 var(--padding-tag); border: var(--border-width-default) solid var(--border-subtle); border-radius: var(--border-radius-full); background: var(--background-surface); ${style('body-small')} }
@@ -159,7 +158,6 @@ details summary { cursor: pointer; color: var(--text-info); ${style('label')} }
 .relations li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-within-component) var(--gap-between-blocks); }
 .planches a { color: var(--text-info); ${style('label')} }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-blocks); }
-button.discret { border-color: transparent; background: none; color: var(--text-info); }
 .comparer { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-blocks); }
 .comparer input { position: absolute; opacity: 0; pointer-events: none; }
 .comparer label { display: inline-flex; align-items: center; min-height: var(--height-control-medium); padding: 0 var(--padding-component); border: var(--border-width-default) solid var(--border-default); border-radius: var(--border-radius-control); background: var(--background-surface); cursor: pointer; ${style('label')} }
@@ -270,18 +268,17 @@ export function lectureDe(e, cle) {
 /**
  * Le gabarit d'un écran (D88) : le fil, un titre, une phrase ; en lecture seule, les écrans du temps revu, et
  * « Revenir où j'en suis » à la place de l'action.
- * @param {{ titre: string, onglet: string, phrase: string, sousTete?: string, fil: string, corps: string, avance?: [string, string],
- *   action?: string, rafraichir?: boolean, regles?: string, lecture?: Lecture | null }} o
- *   regles : des règles de style propres à l'écran, aux mêmes valeurs que le reste (variables, mots-clés) ; sans avance,
- *   pas de barre en bas, hors lecture seule (les pages, D89 : ce qui change d'écran passe par le chat)
+ * Ni barre ni bouton pour changer d'écran (D92) : l'écran porte ce qui change l'écran, le chat ce qui change d'écran.
+ * @param {{ titre: string, onglet: string, phrase: string, sousTete?: string, fil: string, corps: string,
+ *   rafraichir?: boolean, regles?: string, lecture?: Lecture | null }} o
+ *   regles : des règles de style propres à l'écran, aux mêmes valeurs que le reste (variables, mots-clés)
  */
 function gabarit(o) {
   const l = o.lecture;
   const revoir = l
     ? `<p class="revoir">${esc(`Tu revois ${l.temps}${l.ecrans.length > 1 ? ' :' : '.'}`)}${l.ecrans.length > 1 ? l.ecrans.map((x) => (x.href ? `<a href="${esc(x.href)}">${esc(x.nom)}</a>` : `<span aria-current="page">${esc(x.nom)}</span>`)).join('') : ''}</p>`
     : '';
-  const avance = l ? ['Tu revois', 'Rien ne change ici : ce qui est fait reste fait.'] : o.avance;
-  const action = l ? '<a class="retour" href="/">Revenir où j’en suis ›</a>' : o.action;
+  const retour = l ? '<p class="revenir"><a class="retour" href="/">Revenir où j’en suis</a><small>Rien ne change ici : ce qui est fait reste fait.</small></p>' : '';
   return `<!doctype html>
 <html lang="fr">
 <head>
@@ -294,10 +291,10 @@ ${blocJetons()}${CSS}${o.regles ?? ''}</style>
 <body>
 <main>
 ${o.fil}
-<div class="tete">${revoir}<h1>${esc(o.titre)}</h1><p>${esc(o.phrase)}</p>${o.sousTete ?? ''}</div>
+<div class="tete">${revoir}<h1>${esc(o.titre)}</h1><p>${esc(o.phrase)}</p>${retour}${o.sousTete ?? ''}</div>
 ${o.corps}
 </main>
-${avance ? `<footer class="barre"><div><div class="avance"><strong>${esc(avance[0])}</strong><small>${esc(avance[1])}</small></div>${action ?? ''}</div></footer>\n` : ''}</body>
+</body>
 </html>
 `;
 }
@@ -330,7 +327,6 @@ export function ecranDeLancement(e) {
     lecture: e ? { temps: 'le départ', ecrans: [] } : null,
     corps: `<ol class="etapes">\n${etapes}\n</ol>
 <div class="encart"><strong>Pour commencer</strong> · l’adresse d’un site, ou de plusieurs<small>Elle se donne dans le chat, à gauche.</small></div>`,
-    avance: ['Avant de commencer', 'Donne l’adresse dans le chat.'],
     rafraichir: true,
   });
 }
@@ -360,7 +356,6 @@ export function ecranDeMesure(e) {
     phrase: 'Ce que tes pages affichent vraiment : les couleurs, les tailles de texte, les espacements, les arrondis et les composants. C’est la dette de départ, ce qu’on va ranger ensemble.',
     fil: filDe(e),
     corps: '<progress aria-label="Mesure en cours"></progress>',
-    avance: ['Mesurer · en cours', 'L’écran passe seul à la suite.'],
     rafraichir: true,
   });
 }
@@ -511,8 +506,6 @@ ${c.aussi.length ? `<div class="carte"><h3>À regarder aussi</h3><ul class="auss
     fil: filDe(e),
     lecture,
     corps: `<div class="blocs">\n${valeurs}\n${composants}\n${autres}</div>`,
-    avance: ['Mesurer · fait', 'Regarde la dette, puis passe à ta marque.'],
-    action: '<form method="post" action="/pages/dette"><button type="submit" class="principal">Passer à ta marque ›</button></form>',
   });
 }
 
@@ -613,8 +606,6 @@ ${police}
 </div>
 ${generale.map((x) => `<p class="refus">${esc(x)}</p>`).join('')}
 <p class="${refusee ? 'refus' : 'accepte'}">${refusee ? 'Marque refusée : change la couleur dite plus haut.' : 'Marque acceptée : chaque texte tient son contraste sur son fond, en clair et en sombre.'}</p>`,
-    avance: ['Décider · porte 1 sur 3', refusee ? 'Change la couleur refusée, puis confirme.' : 'Confirme la marque, ou change-la.'],
-    action: `<form method="post" action="/pages/marque"><button type="submit" class="principal"${refusee ? ' disabled' : ''}>Confirmer la marque ›</button></form>`,
   });
 }
 
@@ -630,7 +621,6 @@ export function ecranDesJetons(e) {
     phrase: 'À partir de ta marque : les douze pas de tes couleurs, les rôles, les contrôles, la feuille de variables et le thème. Rien ne touche ton site.',
     fil: filDe(e),
     corps: '<progress aria-label="Écriture des tokens"></progress>',
-    avance: ['Décider · après la porte 1', 'L’écran passe seul aux fondations.'],
     rafraichir: true,
   });
 }
@@ -706,8 +696,6 @@ ${planches}</section>`;
     fil: filDe(e),
     lecture,
     corps: `<div class="blocs">\n${valeurs}\n${roles}\n${regles}\n${art}\n${lecture ? '' : pasEncore}\n</div>`,
-    avance: ['Décider · après la porte 1', 'Regarde tes fondations, puis compare ton site.'],
-    action: '<form method="post" action="/pages/fondations"><button type="submit" class="principal">Comparer mon site ›</button></form>',
   });
 }
 
@@ -775,8 +763,6 @@ ${manque}
 <div class="cartes">
 ${cartes}
 </div></section>`,
-    avance: ['Vérifier · porte 3 sur 3', 'Regarde chaque page, puis valide le rendu.'],
-    action: `<div class="actions"><form method="post" action="/pages/revue"><button type="submit" class="discret">Revenir sur une décision</button></form><form method="post" action="/pages/rendu"><button type="submit" class="principal">Valider le rendu ›</button></form></div>`,
     regles,
   });
 }
@@ -794,7 +780,6 @@ export function ecranDeLaRevue(e, href) {
     fil: filDe(e),
     lecture: lectureDe(e, 'revue'),
     corps: `<iframe class="revue" src="${esc(href)}" title="La revue"></iframe>`,
-    avance: ['', ''],
   });
 }
 
@@ -833,12 +818,11 @@ ${etapes}</section>
 <section class="bloc" aria-labelledby="t-dossier"><div class="titre-bloc"><h2 id="t-dossier">Le dossier</h2><a href="/a-installer">Ouvrir « À installer »</a></div>
 <p><code>${esc(r.dossier)}</code></p><small>Les feuilles, rangées comme sur le site, « À installer » et le message.</small></section>
 <section class="bloc" aria-labelledby="t-message"><h2 id="t-message">Le message</h2>
-<textarea class="message" readonly rows="6" aria-labelledby="t-message">${esc(texte)}</textarea></section>
+<textarea class="message" readonly rows="6" aria-labelledby="t-message">${esc(texte)}</textarea>
+<div class="actions"><form method="post" action="/pages/copier"><button type="submit" class="principal">Copier le message</button></form>${dit}</div></section>
 ${reste.length ? `<section class="bloc" aria-labelledby="t-reste"><h2 id="t-reste">À regarder par un humain</h2><ul class="manque">${reste.map((h) => `<li>${esc(h)}</li>`).join('')}</ul></section>` : ''}
 ${b ? `<p><small>${esc(b.dernier)}</small></p>` : ''}
 </div>`,
-    avance: ['Remettre · la remise', 'Copie le message, puis donne le dossier au développeur.'],
-    action: `<div class="actions">${dit}<form method="post" action="/pages/copier"><button type="submit" class="principal">Copier le message</button></form></div>`,
   });
 }
 
@@ -881,8 +865,7 @@ export function ecranAInstaller(e, md) {
     onglet: `À installer · ${e.produit}`,
     phrase: 'Les trois étapes de la remise, telles que le développeur les lit.',
     fil: filDe(e, 'À installer'),
+    sousTete: '<p><a class="retour" href="/">‹ La remise</a></p>',
     corps: `<div class="document">\n${h.join('\n')}\n</div>`,
-    avance: ['Remettre · la remise', 'Ce fichier est dans le dossier de la remise.'],
-    action: '<a class="retour" href="/">‹ La remise</a>',
   });
 }

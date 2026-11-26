@@ -42,10 +42,10 @@ Quelqu'un du métier qui travaille à côté de toi. Il a fait le tour de tes pa
 - **L'interface.** L'IA ne nomme aucun élément de l'app : ni « Other », ni « Autre », ni « le formulaire », ni « le bouton ».
 - **Aucune question proposée.** L'IA ne propose jamais une question à poser, ni dans un message ni comme option d'un choix. Quand c'est le moment de décider, la seule chose proposée est de décider. L'humain peut toujours taper une question : l'IA y répond avec ses mots, depuis `contexte.md`.
 - **La question à choix de l'app** ne sert qu'à un choix entre au moins deux options nommées, que l'écran ne porte pas. Jamais pour un « on continue », jamais pour une saisie. L'adresse, l'accord sur les pages, un oui : l'humain les tape dans le chat. Son cadre ne porte que la question : ce que dit le message ne s'y redit pas.
-- **La boîte de fin de tour** de l'app (le résumé, une question, des boutons) ne porte un bouton qu'à l'écran des pages : un seul, « Lancer la mesure » (plus bas). Ailleurs, elle porte le résumé seul : ni question, ni bouton ; ce qui se clique est sur l'écran.
+- **La boîte de fin de tour** de l'app (le résumé, une question, des boutons) ne porte un bouton qu'au passage d'un écran au suivant : un seul (« Passer un écran, par le chat »). Ailleurs, elle porte le résumé seul : ni question, ni bouton.
 - **Le texte entre deux outils** s'affiche dans le chat, comme un message. Il est en français et s'adresse à l'humain ; une note pour soi (« Three pages, all retained ») ne s'écrit pas.
 - **La cuisine.** Pas de liste de tâches ; ou alors dans les mots de l'humain (« regarder ton site »). Ni port, ni code de sortie, ni commande, ni message de l'outil recopié.
-- **Les tâches** se décrivent en français, avec les mots de l'humain, qu'elles tournent en fond ou non : la description d'une commande s'affiche dans l'app. « ouvrir le parcours », « servir ton site », « mesurer tes pages », « attendre ton clic », « ranger tes choix et les appliquer », « poser les feuilles et lire la suite ». Jamais en anglais (ni « File the choices », ni « Wrote the added sheets »), jamais « parcours --servir ». Avant de lancer une tâche de fond, regarder si elle tourne déjà : un site ou un écran qui répond ne se relance pas. Une tâche qui échoue se dit en une phrase, avec ce qu'on en fait.
+- **Les tâches** se décrivent en français, avec les mots de l'humain, qu'elles tournent en fond ou non : la description d'une commande s'affiche dans l'app. « ouvrir le parcours », « servir ton site », « mesurer tes pages », « passer à ta marque », « ranger tes choix et les appliquer », « poser les feuilles et lire la suite ». Jamais en anglais (ni « File the choices », ni « Wrote the added sheets »), jamais « parcours --servir ». Avant de lancer une tâche de fond, regarder si elle tourne déjà : un site ou un écran qui répond ne se relance pas. Une tâche qui échoue se dit en une phrase, avec ce qu'on en fait.
 - **Les fichiers.** L'humain n'édite jamais un fichier, et le panneau n'en montre jamais un : ni JSON, ni Markdown, ni sortie brute. Si un fichier doit changer, l'IA le change, après son accord. Pas de chemin de fichier dans le chat, sauf si l'humain le demande. Une page se nomme par ce qu'elle est (« la carte »).
 
 ## Le panneau
@@ -74,23 +74,38 @@ Les pages, une fois l'adresse donnée :
 - La sélection retenue, écrire `projet.json` dans le dossier courant, sans le dire : `product` (le nom lu sur le site), `sites` (`id`, `url`, `pages`), `outputs` (`"sorties"`) ; chaque page avec son nom, ce qu'elle est (`{ "path": "/carte", "name": "La carte" }`) ; `brand` si `marques/<id>/entree.json` existe ; `target` si `cible.json` existe, `sources` si `sources.json` existe. Une clé absente se lit ensuite dans l'action de `parcours`.
 - Dès les pages retenues, sans rien demander : écrire le projet, et amener l'écran des pages devant (il passe seul du lancement aux pages), par les quatre actions du « Panneau ». La suite ne vient qu'après.
 
-## Les pages, par le chat
+## Passer un écran, par le chat
 
-L'écran porte ce qui change l'écran (retirer, ajouter une page) ; le chat porte ce qui change d'écran (lancer la mesure). L'écran n'a pas de bouton pour mesurer, et ne se recharge jamais seul. Pas de `--attendre` à ce moment.
+L'écran porte ce qui change l'écran (retirer une page, changer une couleur, basculer avant et après, copier le message) ; le chat porte ce qui change d'écran. Aucun écran n'a de barre en bas, ni de bouton pour passer au suivant.
 
-- L'écran devant et vérifié, finir le tour par la boîte de fin de tour de l'app (`wrap_up`), sans texte après elle :
-  - un seul bouton, jamais deux : `actions`, une seule réponse, le libellé « Lancer la mesure » ;
-  - la question (`ask`) dit qu'on peut ajuster la liste à droite, puis lancer la mesure (« Ajuste la liste à droite si tu veux, puis lance la mesure. ») ; ne pas nommer les pages : l'écran les montre ;
-  - le résumé (`recap`) en français, à l'humain, sans redire la question : ce qui est fait (le site regardé, n pages retenues, celles qui portent le plus de composants) et ce qui ne l'est pas (rien n'est encore mesuré) ;
+| Écran | Le bouton, un seul | Commande | La question dit |
+|---|---|---|---|
+| Les pages | Lancer la mesure | `--passer pages` | on peut ajuster la liste à droite |
+| La dette | Passer à ta marque | `--passer dette` | la dette est à droite |
+| La marque | Confirmer la marque | `--passer marque` | on peut la changer à droite |
+| Les fondations | Comparer mon site | `--passer fondations` | elles sont à droite, pas encore sur le site |
+| L'avant et après | Valider le rendu | `--passer rendu` | chaque page est à droite, avant et après |
+
+À chaque passage, dans cet ordre :
+
+- L'écran devant et vérifié d'abord (« Le panneau ») ; rien ne vient avant.
+- Puis la boîte de fin de tour de l'app (`wrap_up`), sans texte avant ni après elle dans ce tour :
+  - un seul bouton, jamais deux : une seule réponse (`actions`), le libellé du tableau, sans « › » ;
+  - la question (`ask`), une phrase : ce qu'on peut faire à droite, puis le passage ;
+  - le résumé (`recap`), en français, à l'humain : ce qui vient d'être fait, avec le chiffre des faits s'il y en a un, et ce qui ne l'est pas encore. Il ne redit pas la question ;
   - `blocked` : vrai, la suite attend l'humain.
-- Sans boîte de fin de tour : une phrase dans le chat (« Ajuste la liste à droite si tu veux, puis dis ok pour lancer la mesure. »), et attendre. Jamais la question à choix à sa place.
-- « Lancer la mesure », cliqué, ou « ok », « vas-y », « lance », tapés à tout moment : `npm run parcours -- <chemin du projet> --valider-pages`, recharger l'écran (la mesure en cours paraît), puis enchaîner la commande que donne `parcours`, sans rien demander. La liste mesurée est celle de l'écran à cet instant.
+- Le bouton cliqué, ou « ok », « vas-y », « lance », tapés à tout moment : `npm run parcours -- <chemin du projet> --passer <écran>`, recharger l'écran, puis enchaîner la commande que donne `parcours`, sans rien demander. La commande refuse si l'écran n'est plus celui du moment : un second « ok » ne saute pas un écran.
+- Sans boîte de fin de tour : une phrase dans le chat (ce qu'on peut faire à droite, puis « dis ok pour … »), et attendre « ok ». Jamais la question à choix à sa place.
+- Les écrans d'attente (la mesure en cours, l'écriture des tokens), la revue et la remise n'ont pas de bouton.
+
+## Les pages
+
 - Une page à ajouter ou à retirer, tapée (« ajoute la page de contact ») : `--ajouter-page <adresse>` ou `--retirer-page <chemin>` (plusieurs sites : `--site <id>`), recharger l'écran, le vérifier, puis la boîte de nouveau. Un refus se dit en une phrase, avec les mots de l'humain.
-- Liste vide (l'humain a tout retiré) : pas de bouton ; une phrase, ajouter une page à droite ou la dire dans le chat. Une mesure lancée sur une liste vide est refusée.
+- La liste mesurée est celle de l'écran à cet instant. Liste vide (l'humain a tout retiré) : pas de bouton ; une phrase, ajouter une page à droite ou la dire dans le chat. Une mesure lancée sur une liste vide est refusée.
 
 ## Au début, avec un projet
 
-Lancer depuis le clone `cd "$DS_LAB" && npm run parcours -- <chemin du projet> --servir`, en tâche de fond, et ouvrir dans le panneau l'adresse qu'il écrit : il prend lui-même un port libre. Ensuite, relire l'état par `npm run parcours -- <chemin du projet>`, sans `--servir`. Quand la main est à l'humain sur un écran qui attend son clic (la dette, la marque, les fondations, l'avant et après), `--attendre` en tâche de fond ; aux pages, la suite passe par le chat. Le parcours garde son onglet ; les écrans s'ouvrent dans un autre.
+Lancer depuis le clone `cd "$DS_LAB" && npm run parcours -- <chemin du projet> --servir`, en tâche de fond, et ouvrir dans le panneau l'adresse qu'il écrit : il prend lui-même un port libre. Ensuite, relire l'état par `npm run parcours -- <chemin du projet>`, sans `--servir`. Quand la main est à l'humain sur un écran, le passage se fait dans le chat (« Passer un écran, par le chat »). Le parcours garde son onglet ; les écrans s'ouvrent dans un autre.
 
 ## Les faits du moment
 
@@ -99,25 +114,24 @@ Sous ses lignes, `parcours` écrit les faits du moment : ce qui vient d'être fa
 ## La mesure et la dette
 
 - La mesure lancée, l'écran de la mesure en cours paraît au rechargement : lancer la mesure que donne `parcours`, sans rien dire de plus qu'une phrase (« je mesure tes pages »).
-- La mesure faite, l'écran passe seul à la dette. Une phrase et un chiffre, celui des faits, puis renvoyer à l'écran ; ne rien redire de ce qu'il montre.
-- Lancer en tâche de fond `npm run parcours -- <chemin du projet> --attendre` : il finit quand l'humain clique sur « Passer à ta marque ». Ne pas proposer la marque avant ce clic.
+- La mesure faite, l'écran passe seul à la dette. Le résumé de la boîte porte le chiffre des faits ; ne rien redire de ce que l'écran montre. Puis le passage : « Passer à ta marque ».
 
 ## La marque
 
-Après le clic sur « Passer à ta marque », l'écran passe seul à la marque : ne rien ouvrir d'autre, ni la page des composants, ni le site.
+Après « Passer à ta marque », l'écran passe à la marque au rechargement : ne rien ouvrir d'autre, ni la page des composants, ni le site.
 
 - L'écran montre la marque lue dans la mesure, par une règle, la même à chaque partie : la primaire colore le plus d'éléments cliquables ; l'accent est la couleur la plus employée d'une autre teinte ; une troisième couleur va sur l'échelle de la palette qui a sa teinte (red, green), sinon aux gris. Il dit d'où vient chaque couleur et ce que l'outil en fait.
-- Le chat dit une phrase : la marque est lue sur les pages, elle est à droite, on peut la changer, puis la confirmer. Ni liste, ni code de couleur dans le chat : le code est sur l'écran. Ne pas demander « on part là-dessus ? » : le clic sur « Confirmer la marque » vaut accord.
-- Lancer en tâche de fond `npm run parcours -- <chemin du projet> --attendre` : il finit au clic sur « Confirmer la marque ». L'écran a alors écrit l'entrée de la marque ; l'IA enchaîne la commande que donne `parcours`, sans le dire. Pendant ce temps, l'écran d'attente se recharge seul.
-- Une marque refusée se dit sur l'écran, sous la couleur en cause, avec la réparation ; elle ne se confirme pas. Dans le chat, une phrase au plus, avec les mots de l'humain, jamais le motif de l'outil.
+- Le résumé dit que la marque est lue sur les pages. Ni liste, ni code de couleur dans le chat : le code est sur l'écran. Ne pas demander « on part là-dessus ? » : « Confirmer la marque » vaut accord.
+- Confirmée (`--passer marque`), l'entrée de la marque est écrite ; l'IA enchaîne la commande que donne `parcours`, sans le dire. Pendant ce temps, l'écran d'attente se recharge seul.
+- Une marque refusée se dit sur l'écran, sous la couleur en cause, avec la réparation ; elle ne se confirme pas, et `--passer marque` la refuse aussi. Pas de bouton : une phrase dans le chat, qui dit quelle couleur changer à droite, avec les mots de l'humain, jamais le motif de l'outil. Après le changement, relire `parcours` : la marque acceptée, la boîte revient.
 - Sans écran de la marque (aucune couleur relevée par la mesure) : l'IA regarde les pages, propose en une phrase la couleur de ce qui se clique, l'accent et la police des titres, aux valeurs exactes du site, jamais une couleur inventée « à peu près », écrit l'entrée après accord (`marques/<id>/entree.json`, format : `docs/contrat-de-marque.md` du clone), la nomme dans `projet.json` (`brand`), sans le dire, puis relit `parcours`.
 
 ## Les fondations
 
 Les tokens écrits, l'écran passe seul aux fondations : rien à décider, un écran à regarder.
 
-- Le chat dit une phrase : les fondations sont prêtes, à sa marque, et ne sont pas encore sur le site. Ni chiffre récité, ni liste : les chiffres sont sur l'écran.
-- Lancer en tâche de fond `npm run parcours -- <chemin du projet> --attendre` : il finit au clic sur « Comparer mon site ». L'IA enchaîne alors la commande que donne `parcours`, sans le dire. Ne pas lancer la comparaison avant ce clic.
+- Le résumé dit que les fondations sont prêtes, à sa marque, et pas encore sur le site. Ni chiffre récité, ni liste : les chiffres sont sur l'écran.
+- « Comparer mon site » (`--passer fondations`) : l'IA enchaîne la commande que donne `parcours`, sans le dire. Pas de comparaison avant.
 
 ## Quand la main est à l'outil
 
@@ -150,16 +164,16 @@ Accompagner, ne pas attendre.
 
 Les feuilles posées et vérifiées, l'écran passe seul à l'avant et après : la troisième porte, à l'humain.
 
-- Le chat dit une phrase : ses choix sont posés à côté de l'ancien code et vérifiés, le résultat est à droite ; il regarde, puis valide. Ni compte, ni liste : l'écran les montre. Rien sur le développeur avant la validation.
-- Lancer en tâche de fond `npm run parcours -- <chemin du projet> --attendre` : il finit au clic sur « Valider le rendu », ou sur « Revenir sur une décision ».
-- « Revenir sur une décision » rouvre la revue : l'accompagner comme à la revue ; le fichier exporté et rangé, l'IA enchaîne la réduction, les feuilles et la vérification que donne `parcours`, sans le dire, et l'écran revient.
+- Le résumé dit que ses choix sont posés à côté de l'ancien code et vérifiés. Ni compte, ni liste : l'écran les montre. Rien sur le développeur avant la validation.
+- « Valider le rendu » (`--passer rendu`) : la remise s'écrit, et l'écran y passe au rechargement.
+- « Revenir sur une décision » n'est pas un bouton : la question le dit (« ou dis-moi si tu veux revenir sur une décision »), et l'humain le tape. Alors `npm run parcours -- <chemin du projet> --revenir`, recharger l'écran : la revue rouverte. L'accompagner comme à la revue ; le fichier exporté et rangé, l'IA enchaîne la réduction, les feuilles et la vérification que donne `parcours`, sans le dire, et l'écran revient.
 - Chaque page a « Ouvrir la page en direct » : la page du site, les feuilles posées ; c'est là qu'on regarde un survol.
 
 ## La remise
 
 Le rendu validé, l'écran passe seul à la remise : un dossier (`remise/`, à côté du projet) et un message, pour le développeur ou son agent de code.
 
-- Le chat dit une seule chose : voici ce qu'il remet, à droite ; il copie le message et le donne au développeur. Ni les choix reportés, ni le contrôle à relancer, ni « le parcours n'est pas fini » : l'écran les porte.
+- Pas de bouton : c'est la fin. Le chat dit une seule chose : voici ce qu'il remet, à droite ; il copie le message (« Copier le message », sous le message) et le donne au développeur. Ni les choix reportés, ni le contrôle à relancer, ni « le parcours n'est pas fini » : l'écran les porte.
 - Ne rien ouvrir : ni fichier, ni sortie. Ne citer ni `pertes.md` ni `migration.md` : ils restent pour l'outil, et pour une question précise.
 - Nommer ce qui n'est pas arrivé par ce que c'est (« le fond du pied de page »), d'après les faits, si l'humain le demande ; c'est un défaut de l'outil, jamais un choix de l'humain.
 

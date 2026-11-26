@@ -532,7 +532,7 @@ test('PC17 les faits de chaque état : une ligne par fait, sans guillemets ni no
   assert.deepEqual(faits(join(FIX, 'pages')), [
     tete,
     '  Écran : les pages à mesurer',
-    '  Ensuite : l’écran devant et vérifié, la boîte de fin de tour : un seul bouton, Lancer la mesure ; sans boîte, attendre ok ; la mesure se lance par parcours --valider-pages',
+    '  Ensuite : l’écran devant et vérifié, puis la boîte de fin de tour : on peut ajuster la liste à droite ; un seul bouton, Lancer la mesure ; ok tapé vaut le clic ; sans boîte, une phrase, puis attendre ok ; Lancer la mesure : parcours --passer pages',
     '  Main : l’humain ; l’accompagner, il décide',
   ]);
   assert.deepEqual(faits(join(FIX, 'constat')), [
@@ -540,7 +540,7 @@ test('PC17 les faits de chaque état : une ligne par fait, sans guillemets ni no
     '  Fait : la mesure des pages',
     '  Chiffre : 70 valeurs différentes affichées',
     '  Écran : la dette',
-    '  Ensuite : une phrase et ce chiffre, renvoyer à l’écran, puis attendre le clic sur Passer à ta marque (parcours --attendre, en tâche de fond) ; ne pas proposer la marque avant',
+    '  Ensuite : l’écran devant et vérifié, puis la boîte de fin de tour : ce chiffre, la dette est à droite ; un seul bouton, Passer à ta marque ; ok tapé vaut le clic ; sans boîte, une phrase, puis attendre ok ; Passer à ta marque : parcours --passer dette',
     '  Main : l’humain ; l’accompagner, il décide',
     '  Reporté : 3 choix',
     '  Durée : 0 min depuis la première mesure, pauses comprises',

@@ -32,7 +32,7 @@ npm run contraste        paires de rôles de couleur ; sortie 1 si une paire éc
 npm run espacements      espacements par relation ; sortie 1 si une règle échoue
 npm run typo             styles de texte ; sortie 1 si une règle échoue
 npm run verifier         tokens, style et copie du skill d'un autre dépôt (--marques, --style, --skill) ; sortie 1 sur un échec
-npm run parcours -- <projet.json> [--servir] [--attendre]   état d'un projet, faits du moment pour le chat, page du parcours (le lancement avant le projet) ; --attendre finit quand la main quitte l'humain ; sortie 2 sur un projet illisible
+npm run parcours -- <projet.json> [--servir] [--passer <écran>] [--revenir]   état d'un projet, faits du moment pour le chat, page du parcours (le lancement avant le projet) ; --passer fait le passage d'un écran au suivant, dit dans le chat ; --regarder <adresse>, sans projet, regarde un site sans le montrer ; sortie 2 sur un projet illisible
 npm run jeu -- <dossier>   pose le dossier de jeu, branché sur ce clone, ou le remet à son départ ; le dossier de Quentin : ~/Developer/banc/parcours/jeu
 npm run skill            réécrit les textes de skill/ds-lab/ après un changement de docs/regles.md ou de docs/techniques/
 npm run types            types JSDoc de src/ (TypeScript, non strict, sans émission) ; sortie 1 s'il reste une erreur

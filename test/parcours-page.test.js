@@ -6,11 +6,11 @@
  *   PG2 quand le moment embarque un écran, le cadre prend la hauteur qui reste : plus de la moitié de la fenêtre
  *       (900 px de haut), sans nombre dans le style ;
  *   PG3 le lancement, l'écran des pages (D77), la dette (D79), la marque (D80) et les fondations (D83), servis par la commande, à 640 px, clair
- *       et sombre : aucun défilement horizontal, le fond sombre, la barre au bas de la fenêtre (aucune aux pages, D89), chaque vignette chargée (capture ou dessin) ; les
+ *       et sombre : aucun défilement horizontal, le fond sombre, aucune barre en bas (D92), chaque vignette chargée (capture ou dessin) ; les
  *       planches des fondations servies ;
  *   PG4 l'avant et après (D86) à 640 px, clair et sombre, sans script : Après montré d'abord ; un clic sur Avant le
  *       montre au même endroit, sans changer la hauteur du cadre ; un clic sur un onglet montre sa page et cache les
- *       autres ; la barre au bas de la fenêtre, aucun défilement horizontal, chaque image chargée ;
+ *       autres ; aucune barre en bas (D92), aucun défilement horizontal, chaque image chargée ;
  *   PG5 la page en direct (D87), servie par la commande : ses feuilles ajoutées posées, chaque image chargée, aucune
  *       requête en échec ; « Mon compte » y mène en direct.
  */
@@ -79,7 +79,7 @@ test('PG1 et PG2 chaque moment à 640 px, clair et sombre : aucun défilement, l
   }
 });
 
-test('PG3 le lancement, les pages, la dette, la marque et les fondations à 640 px, clair et sombre : la barre au bas de la fenêtre, sauf aux pages, les vignettes chargées', async () => {
+test('PG3 le lancement, les pages, la dette, la marque et les fondations à 640 px, clair et sombre : sans barre en bas, les vignettes chargées', async () => {
   const d = realpathSync(mkdtempSync(join(tmpdir(), 'ds-lab-ecrans-')));
   const p = spawn(process.execPath, [join(ROOT, 'src/cli/parcours.js'), join(d, 'projet.json'), '--servir', '--port', '0'], { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] });
   let sortie = '';
@@ -124,8 +124,8 @@ test('PG3 le lancement, les pages, la dette, la marque et les fondations à 640 
         assert.equal(r.titre, { lancement: 'Le parcours', pages: 'Les pages à mesurer', dette: 'La dette d’Annuaire des cafés', marque: 'La marque d’Annuaire des cafés', fondations: 'Les fondations d’Annuaire des cafés' }[ecran]);
         assert.ok(r.largeur <= 640, `${ecran} ${scheme} : ${r.largeur}`);
         assert.equal(r.fond, FOND.dark, `${ecran} ${scheme}`);
-        // Les pages n'ont pas de barre : la mesure se lance dans le chat (D89).
-        assert.equal(r.barre, ecran === 'pages' ? undefined : 900, `${ecran} ${scheme}`);
+        // Aucune barre : le passage d'un écran au suivant se fait dans le chat (D92).
+        assert.equal(r.barre, undefined, `${ecran} ${scheme}`);
         assert.deepEqual(r.vignettes, Array(/** @type {Record<string, number>} */ ({ lancement: 0, pages: 3, dette: 11, marque: 0, fondations: 0 })[ecran]).fill(true));
         assert.equal(r.planches.length, ecran === 'fondations' ? 3 : 0);
         for (const h of r.planches) assert.equal((await fetch(h)).status, 200, h);
@@ -163,7 +163,7 @@ test('PG4 l’avant et après à 640 px : la bascule et les onglets, sans script
         barre: document.querySelector('.barre')?.getBoundingClientRect().bottom,
         images: [...document.querySelectorAll('img')].map((i) => i.complete && i.naturalWidth > 0),
       }));
-      assert.deepEqual(r, { titre: 'Avant, après', largeur: 640, barre: 900, images: Array(6).fill(true) }, scheme);
+      assert.deepEqual(r, { titre: 'Avant, après', largeur: 640, barre: undefined, images: Array(6).fill(true) }, scheme);
       const a = await vu();
       assert.deepEqual([a.vue, a.visible], [0, ['apres']], scheme);
       await page.click('label[for="avant-0"]');

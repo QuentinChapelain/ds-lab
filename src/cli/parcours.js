@@ -1,18 +1,18 @@
 // @ts-check
 /**
- * npm run parcours -- <projet.json> [--servir] [--port <n>] [--attendre] [--valider-pages] [--ajouter-page <adresse>]
+ * npm run parcours -- <projet.json> [--servir] [--port <n>] [--passer <écran>] [--revenir] [--ajouter-page <adresse>]
  *   [--retirer-page <chemin>] [--site <id>] (D72) ; npm run parcours -- --regarder <adresse> (D91) : lit le projet, calcule l'état du parcours
  * depuis ses sorties, écrit parcours.html à côté de projet.json et, dans le terminal, où on en est, qui a la main, quoi
  * faire et la commande suivante ; dessous, les faits du moment, que l'IA dit avec ses mots (D74).
  * --servir sert la page et les écrans sur 127.0.0.1, au port 4311, ou à un port libre s'il est pris (D75), jusqu'à
  * Ctrl+C. Avant le projet, il sert le lancement, qui se recharge seul jusqu'à ce que projet.json existe (D77) ; l'écran
- * des pages retire et ajoute par des formulaires, et sert la vignette de chaque page ; « À installer » et chaque
- * page du site en direct, ses feuilles ajoutées posées (D87).
- * --attendre attend que la main quitte l'humain à l'étape en cours (le clic sur « Passer à ta marque », par exemple),
- * puis écrit l'état et sort en 0 : lancé en tâche de fond, sa fin prévient l'IA (D77).
- * Les pages passent par le chat (D89) : --valider-pages lance la mesure sur la liste de l'écran à cet instant ;
- * --ajouter-page et --retirer-page changent la liste, comme l'écran ; --site nomme le site quand le projet en a
- * plusieurs. Seulement tant que les pages attendent : une page refusée, une liste vide ou un autre moment sortent en 1.
+ * des pages retire et ajoute par des formulaires, et sert la vignette de chaque page ; la marque change ses couleurs ;
+ * la remise copie son message ; « À installer » et chaque page du site en direct, ses feuilles ajoutées posées (D87).
+ * Le passage d'un écran au suivant se fait dans le chat (D89, D92) : --passer <écran> (pages, dette, marque, fondations,
+ * rendu) fait ce que faisait le bouton de l'écran, seulement si cet écran est celui du moment : un second « ok » est
+ * refusé, il ne saute pas un écran. --revenir, à l'avant et après, rouvre la revue. --ajouter-page et --retirer-page
+ * changent la liste des pages, comme l'écran ; --site nomme le site quand le projet en a plusieurs. Un refus (un autre
+ * moment, une liste vide, une marque refusée, une page refusée) se dit en une ligne et sort en 1.
  * --regarder, sans projet, regarde le site sans le montrer : la page donnée et celles du même site vers lesquelles elle
  * mène, dans le Chromium du clone, sans fenêtre ; une ligne par page, son titre et ses composants comptés ; un site qui
  * ne répond pas sort en 1.
@@ -21,7 +21,6 @@
 import { existsSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { parseArgs } from 'node:util';
-import { setTimeout as attendre } from 'node:timers/promises';
 import { lancer } from './garde.js';
 import { lireProjet } from '../parcours/projet.js';
 import { calculerEtat, lignesTerminal } from '../parcours/etat.js';
@@ -34,7 +33,24 @@ import { ecranAInstaller } from '../parcours/ecrans.js';
 import { aInstaller, feuillesEnDirect, pageEnDirect } from '../parcours/remise.js';
 import { lignesDuRegard, regarderSite } from '../parcours/regarder.js';
 
-const USAGE = 'npm run parcours -- --regarder <adresse> | <projet.json> [--servir] [--port <n>] [--attendre] [--valider-pages] [--ajouter-page <adresse>] [--retirer-page <chemin>] [--site <id>]';
+const USAGE = 'npm run parcours -- --regarder <adresse> | <projet.json> [--servir] [--port <n>] [--passer <écran>] [--revenir] [--ajouter-page <adresse>] [--retirer-page <chemin>] [--site <id>]';
+
+/** Les écrans qu'on passe dans le chat, et le moment de chacun (D92). */
+const PASSAGES = /** @type {const} */ ({ pages: 'pages', dette: 'dette', marque: 'marque', fondations: 'fondations', rendu: 'avant-apres' });
+
+/** Le moment, nommé pour l'humain. */
+const NOMS = /** @type {Record<string, string>} */ ({
+  pages: 'les pages à mesurer',
+  mesure: 'la mesure en cours',
+  dette: 'la dette',
+  marque: 'la marque',
+  jetons: 'l’écriture des tokens',
+  fondations: 'les fondations',
+  'avant-apres': 'l’avant et après',
+  remise: 'la remise',
+  ecran: 'la revue',
+  'sans-ecran': 'une étape sans écran',
+});
 
 await lancer('parcours', async () => {
   const { values, positionals } = parseArgs({
@@ -42,8 +58,8 @@ await lancer('parcours', async () => {
     options: {
       servir: { type: 'boolean', default: false },
       port: { type: 'string' },
-      attendre: { type: 'boolean', default: false },
-      'valider-pages': { type: 'boolean', default: false },
+      passer: { type: 'string' },
+      revenir: { type: 'boolean', default: false },
       'ajouter-page': { type: 'string' },
       'retirer-page': { type: 'string' },
       site: { type: 'string' },
@@ -61,13 +77,14 @@ await lancer('parcours', async () => {
     for (const l of lignesDuRegard(r)) console.log(l);
     return 0;
   }
-  const geste = /** @type {const} */ (['valider-pages', 'ajouter-page', 'retirer-page']).filter((k) => values[k] !== undefined && values[k] !== false);
+  const geste = /** @type {const} */ (['passer', 'revenir', 'ajouter-page', 'retirer-page']).filter((k) => values[k] !== undefined && values[k] !== false);
   if (positionals.length !== 1) throw new Error(`un fichier de projet et un seul (usage : ${USAGE})`);
   if (values.port !== undefined && !/^\d+$/.test(values.port)) throw new Error(`--port : un nombre est attendu (usage : ${USAGE})`);
   if (values.port !== undefined && !values.servir) throw new Error(`--port ne s'emploie qu'avec --servir (usage : ${USAGE})`);
-  if (values.attendre && values.servir) throw new Error(`--attendre ne s'emploie pas avec --servir (usage : ${USAGE})`);
-  if (geste.length > 1 || (geste.length && (values.servir || values.attendre)))
-    throw new Error(`--valider-pages, --ajouter-page et --retirer-page s'emploient seuls, un à la fois (usage : ${USAGE})`);
+  if (geste.length > 1 || (geste.length && values.servir))
+    throw new Error(`--passer, --revenir, --ajouter-page et --retirer-page s'emploient seuls, un à la fois (usage : ${USAGE})`);
+  if (values.passer !== undefined && !Object.hasOwn(PASSAGES, values.passer))
+    throw new Error(`--passer : un de ${Object.keys(PASSAGES).join(', ')} (usage : ${USAGE})`);
   if (values.site !== undefined && !values['ajouter-page'] && !values['retirer-page']) throw new Error(`--site ne s'emploie qu'avec --ajouter-page ou --retirer-page (usage : ${USAGE})`);
   const fichier = positionals[0];
   /** Les faits du moment, précédés d'une ligne vide. @param {{ etat: import('../parcours/etat.js').Etat, projet: { sorties: string } }} r */
@@ -93,25 +110,12 @@ await lancer('parcours', async () => {
   };
 
   if (geste.length) {
-    const raison = await changerLesPages(fichier, values);
+    const raison = values.passer !== undefined || values.revenir ? passer(fichier, values) : await changerLesPages(fichier, values);
     if (raison) {
       console.log(raison);
       return 1;
     }
     const r = ecrire();
-    for (const l of [...lignesTerminal(r.etat, { page: r.page }), ...chat(r)]) console.log(l);
-    return 0;
-  }
-
-  if (values.attendre) {
-    // La main est à l'humain tant que l'étape, sa main et son action ne changent pas.
-    const signe = (/** @type {import('../parcours/etat.js').Etape} */ k) => `${k.cle}|${k.main}|${k.action}`;
-    const depart = signe(ecrire().etat.courante);
-    let r = ecrire();
-    while (signe(r.etat.courante) === depart && r.etat.courante.main === 'designer') {
-      await attendre(1000);
-      r = ecrire();
-    }
     for (const l of [...lignesTerminal(r.etat, { page: r.page }), ...chat(r)]) console.log(l);
     return 0;
   }
@@ -156,12 +160,7 @@ await lancer('parcours', async () => {
       },
       poster: async (chemin, c) => {
         if (chemin === '/pages/retirer') retirerPage(fichier, c.site ?? '', c.page ?? '');
-        else if (chemin === '/pages/dette') detteVue(fichier);
-        else if (chemin === '/pages/fondations') fondationsVues(fichier);
-        else if (chemin === '/pages/rendu') validerRendu(fichier);
-        else if (chemin === '/pages/revue') rouvrirRevue(fichier);
         else if (chemin === '/pages/copier') return new URLSearchParams({ copie: copierMessage(fichier) ? 'ok' : 'non' });
-        else if (chemin === '/pages/marque') confirmerMarque(fichier);
         else if (chemin === '/pages/marque/echanger') echangerAccent(fichier);
         else if (chemin === '/pages/marque/couleur') {
           const raison = choisirCouleur(fichier, /** @type {any} */ (c.role), c.hex ?? '');
@@ -185,20 +184,43 @@ await lancer('parcours', async () => {
 });
 
 /**
- * Les pages par le chat (D89) : valider la liste, en ajouter une, en retirer une. Rend la raison d'un refus en une
- * phrase, ou null.
+ * Passer un écran dans le chat (D92), ou revenir sur une décision à l'avant et après : ce que faisait le bouton de
+ * l'écran, seulement au moment de cet écran. Rend la raison d'un refus en une phrase, ou null.
+ * @param {string} fichier @param {{ passer?: string, revenir?: boolean }} v
+ * @returns {string | null}
+ */
+function passer(fichier, v) {
+  const projet = lireProjet(fichier);
+  const e = calculerEtat(projet, { base: projet.dossier });
+  const ecran = v.revenir ? 'rendu' : /** @type {keyof typeof PASSAGES} */ (v.passer);
+  if (e.moment !== PASSAGES[ecran]) return `Ce n’est pas le moment : l’écran du moment est ${NOMS[e.moment] ?? e.moment}.`;
+  if (v.revenir) return rouvrirRevue(fichier), null;
+  if (ecran === 'pages') {
+    if (projet.sites.some((s) => !s.pages.length)) return projet.sites.length > 1 ? 'Il faut une page au moins par site.' : 'Il faut une page au moins.';
+    validerPages(fichier);
+  } else if (ecran === 'dette') detteVue(fichier);
+  else if (ecran === 'marque') {
+    const motifs = e.marque?.apercu.motifs ?? [];
+    if (motifs.length) {
+      const blocs = [...new Set(motifs.map((m) => m.bloc))];
+      const nom = { primary: 'la couleur primaire', accent: 'l’accent', marque: 'la marque' };
+      return `La marque est refusée : change ${blocs.map((b) => nom[b]).join(' et ')} à l’écran, puis confirme.`;
+    }
+    confirmerMarque(fichier);
+  } else if (ecran === 'fondations') fondationsVues(fichier);
+  else validerRendu(fichier);
+  return null;
+}
+
+/**
+ * Les pages par le chat (D89) : en ajouter une, en retirer une. Rend la raison d'un refus en une phrase, ou null.
  * @param {string} fichier
- * @param {{ 'valider-pages'?: boolean, 'ajouter-page'?: string, 'retirer-page'?: string, site?: string }} v
+ * @param {{ 'ajouter-page'?: string, 'retirer-page'?: string, site?: string }} v
  * @returns {Promise<string | null>}
  */
 async function changerLesPages(fichier, v) {
   const projet = lireProjet(fichier);
   if (calculerEtat(projet).moment !== 'pages') return 'Les pages ne changent plus : la mesure est lancée ou faite.';
-  if (v['valider-pages']) {
-    if (projet.sites.some((s) => !s.pages.length)) return projet.sites.length > 1 ? 'Il faut une page au moins par site.' : 'Il faut une page au moins.';
-    validerPages(fichier);
-    return null;
-  }
   if (v.site === undefined && projet.sites.length > 1) return `Plusieurs sites : nomme le site par --site (${projet.sites.map((s) => s.id).join(', ')}).`;
   const id = v.site ?? projet.sites[0].id;
   const s = projet.sites.find((x) => x.id === id);

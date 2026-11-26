@@ -54,6 +54,14 @@ const sansGuillemets = (t) => t.replace(/«\s*/g, '').replace(/\s*»/g, '');
 const NOMMEES = 5;
 
 /**
+ * Le passage d'un écran dans le chat (D91, D92) : l'écran devant et vérifié, puis la boîte de fin de tour, un seul
+ * bouton ; « ok » tapé vaut le clic ; sans boîte, une phrase et l'attente de « ok ».
+ * @param {string} dire  ce que dit la question de la boîte @param {string} bouton @param {string} commande
+ */
+const boite = (dire, bouton, commande) =>
+  `l’écran devant et vérifié, puis la boîte de fin de tour : ${dire} ; un seul bouton, ${bouton} ; ok tapé vaut le clic ; sans boîte, une phrase, puis attendre ok ; ${bouton} : parcours ${commande}`;
+
+/**
  * Les faits du moment, une ligne par fait, sous un titre ; vide quand l'outil enchaîne une commande sans rien de neuf.
  * @param {Etat} e
  * @param {{ sorties: string }} o  la racine des sorties du projet
@@ -76,7 +84,7 @@ export function faitsDuMoment(e, { sorties }) {
       else
         f.push(
           ['Écran', 'les pages à mesurer'],
-          ['Ensuite', 'l’écran devant et vérifié, la boîte de fin de tour : un seul bouton, Lancer la mesure ; sans boîte, attendre ok ; la mesure se lance par parcours --valider-pages'],
+          ['Ensuite', boite('on peut ajuster la liste à droite', 'Lancer la mesure', '--passer pages')],
         );
       break;
     case 'constat':
@@ -88,15 +96,20 @@ export function faitsDuMoment(e, { sorties }) {
           ['Fait', 'la mesure des pages'],
           ['Chiffre', e.chiffres.valeurs !== null ? nombre(e.chiffres.valeurs, 'valeur différente affichée', 'valeurs différentes affichées') : e.chiffres.versions === null ? null : nombre(e.chiffres.versions, 'version de composant', 'versions de composants')],
           ['Écran', 'la dette'],
-          ['Ensuite', 'une phrase et ce chiffre, renvoyer à l’écran, puis attendre le clic sur Passer à ta marque (parcours --attendre, en tâche de fond) ; ne pas proposer la marque avant'],
+          ['Ensuite', boite('ce chiffre, la dette est à droite', 'Passer à ta marque', '--passer dette')],
         );
         break;
       }
       if (k.action?.startsWith('choisir la marque')) {
+        // Une couleur refusée : pas de bouton, le chat dit laquelle changer (D92).
+        const refusees = [...new Set((e.marque?.apercu.motifs ?? []).map((m) => m.bloc))];
+        const nom = { primary: 'la couleur primaire', accent: 'l’accent', marque: 'la marque entière' };
         f.push(
           ['Fait', 'la marque lue dans la mesure'],
           ['Écran', 'la marque'],
-          ['Ensuite', 'une phrase : lue sur les pages, à droite, on peut la changer puis la confirmer ; ni liste ni code ; attendre le clic sur Confirmer la marque (parcours --attendre, en tâche de fond)'],
+          refusees.length
+            ? ['Ensuite', `la marque est refusée : l’écran devant, dire en une phrase qu’il faut changer ${refusees.map((b) => nom[b]).join(' et ')} à droite, sans bouton ni code ; relire parcours après le changement`]
+            : ['Ensuite', boite('on peut la changer à droite ; ni liste ni code', 'Confirmer la marque', '--passer marque')],
         );
         break;
       }
@@ -119,7 +132,7 @@ export function faitsDuMoment(e, { sorties }) {
         f.push(
           ['Fait', 'la marque saisie, ses tokens et ses contrôles écrits'],
           ['Écran', 'les fondations'],
-          ['Ensuite', 'une phrase : les fondations sont prêtes, à sa marque, et ne sont pas encore sur le site ; ni chiffre ni liste ; attendre le clic sur Comparer mon site (parcours --attendre, en tâche de fond)'],
+          ['Ensuite', boite('les fondations sont prêtes, à sa marque, pas encore sur le site ; ni chiffre ni liste', 'Comparer mon site', '--passer fondations')],
         );
       } else if (!k.sortie) {
         f.push(['Fait', 'la marque, acceptée'], ['Écran', 'la planche de la marque'], ['Ensuite', 'comparer les pages aux fondations']);
@@ -151,7 +164,7 @@ export function faitsDuMoment(e, { sorties }) {
         f.push(
           ['Fait', 'les feuilles posées à côté de l’ancien code et vérifiées sur les pages'],
           ['Écran', 'l’avant et après'],
-          ['Ensuite', 'une phrase : ses choix sont posés à côté de l’ancien code et vérifiés, le résultat est à droite, il regarde, puis valide ; ni compte ni liste, rien sur le développeur ; attendre le clic sur Valider le rendu (parcours --attendre, en tâche de fond)'],
+          ['Ensuite', `${boite('ses choix sont posés à côté de l’ancien code et vérifiés, le résultat est à droite ; ni compte ni liste, rien sur le développeur', 'Valider le rendu', '--passer rendu')} ; revenir sur une décision se dit dans le texte et se tape : parcours --revenir`],
         );
         break;
       }
