@@ -2,7 +2,8 @@
 /**
  * Le crochet de la description (D87), sur deux listes écrites à la main :
  *   CR1 les 74 descriptions, toutes différentes, des 157 commandes de la partie du 25/11/2026 dans le dossier de jeu,
- *       en anglais, recopiées de sa transcription : le crochet les refuse toutes ;
+ *       en anglais, recopiées de sa transcription, les passages nommés comme aujourd'hui (« ok » sur Définir ma marque,
+ *       Confirmer ma marque, Comparer mon site, Valider mon rendu) : le crochet les refuse toutes ;
  *   CR2 les mêmes, dites en français avec les mots de l'humain, et les exemples de la conduite : aucun refus à tort.
  */
 import { test } from 'node:test';
@@ -28,10 +29,10 @@ const ANGLAIS = [
   'Stop the site and journey of this folder', 'Get the journey address and the wait option', 'Check the project still reads', 'Wait for the click on Mesurer',
   'Read the journey lines after the click', 'Measure the chosen pages and re-read state', 'Read the home page styles for brand colours',
   'Read the home theme in full', 'Serve the journey\'s opening screen', 'Get the journey address', 'Stop background tasks and reset the play folder',
-  'Check the site\'s pages respond', 'Wait for the click on Passer à ta marque', 'Capture the brand and re-read state', 'Apply choices, write sheets, verify on the pages',
-  'Wait for the click on Confirmer la marque', 'Capture the brand, compare pages, re-read state', 'Check the site and its pages respond',
-  'Wait for the click on Comparer mon site', 'File the choices and apply them', 'Find the open decision in the review', 'Write the added sheets and read the next step',
-  'Wait for the click on Valider le rendu', 'List the deliverable files for the developer', 'Find where the before/after screen is served',
+  'Check the site\'s pages respond', 'Wait for ok on Définir ma marque', 'Capture the brand and re-read state', 'Apply choices, write sheets, verify on the pages',
+  'Wait for ok on Confirmer ma marque', 'Capture the brand, compare pages, re-read state', 'Check the site and its pages respond',
+  'Wait for ok on Comparer mon site', 'File the choices and apply them', 'Find the open decision in the review', 'Write the added sheets and read the next step',
+  'Wait for ok on Valider mon rendu', 'List the deliverable files for the developer', 'Find where the before/after screen is served',
   'Look for a standalone before/after page', 'Set aside the validation so the before/after screen returns',
 ];
 
@@ -47,9 +48,9 @@ const FRANCAIS = [
   'lire la suite', 'mesurer tes pages', 'saisir ta marque et lire la suite', 'trouver la dernière revue', 'ranger tes choix et lire la suite', 'appliquer tes choix et écrire les feuilles',
   'trouver ce qui n’a pas pu se vérifier', 'arrêter le site et le parcours', 'trouver l’adresse du parcours', 'vérifier que le projet se lit', 'attendre ton clic sur Mesurer',
   'lire le parcours après ton clic', 'mesurer les pages choisies', 'lire les couleurs de la page d’accueil', 'lire le thème', 'ouvrir l’écran de départ', 'trouver l’adresse du parcours',
-  'arrêter et repartir de zéro', 'vérifier que tes pages répondent', 'attendre ton clic sur Passer à ta marque', 'saisir ta marque', 'appliquer, écrire, vérifier',
-  'attendre ton clic sur Confirmer la marque', 'saisir ta marque et comparer tes pages', 'vérifier que ton site répond', 'attendre ton clic sur Comparer mon site',
-  'ranger tes choix et les appliquer', 'trouver la décision ouverte', 'poser les feuilles et lire la suite', 'attendre ton clic sur Valider le rendu',
+  'arrêter et repartir de zéro', 'vérifier que tes pages répondent', 'attendre ton ok sur Définir ma marque', 'saisir ta marque', 'appliquer, écrire, vérifier',
+  'attendre ton ok sur Confirmer ma marque', 'saisir ta marque et comparer tes pages', 'vérifier que ton site répond', 'attendre ton ok sur Comparer mon site',
+  'ranger tes choix et les appliquer', 'trouver la décision ouverte', 'poser les feuilles et lire la suite', 'attendre ton ok sur Valider mon rendu',
   'lister ce qu’on remet au développeur', 'trouver l’écran d’avant et après', 'chercher la page d’avant et après', 'rouvrir l’avant et après',
   // Les formes que la conduite cite, et des débuts de phrase qui croisent un verbe anglais.
   'mesurer tes pages', 'attendre ton clic', 'Compare les pages aux fondations', 'Capture la marque', 'File vers la revue', 'Stop au site, puis repartir',
