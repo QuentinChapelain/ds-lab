@@ -1,4 +1,5 @@
 // @ts-check
+
 /**
  * Fichiers de référence d'une page, partagés par reduce --references et verify.
  *   <page>.reference.png       capture pleine page (reduce : après simulation complète)
@@ -9,6 +10,9 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { capturePage } from './capture.js';
 import { compareImages, compareAria } from './compare.js';
+
+/** Les valeurs des pages avec les feuilles, relevées comme l'audit les relève, à la racine d'une vérification (D99). */
+export const VALEURS_APRES = 'valeurs-apres.json';
 
 /** @param {string} url */
 export function pageName(url) {

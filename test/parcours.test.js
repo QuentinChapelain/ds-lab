@@ -209,11 +209,17 @@ test('PC2 l’état des huit projets, depuis leurs sorties', () => {
   assert.deepEqual(resume('bilan'), { temps: ['faite', 'faite', 'faite', 'en cours'], courante: 'Remettre · Remise', main: 'outil', action: 'relancer le contrôle', moment: 'remise', ecran: null, phrase: null });
   assert.deepEqual(b.bilan, {
     // Avant : le compte de la dette (D86), lu dans l'audit ; après : celui de la table.
-    chiffres: ['33 → 17 couleurs', '16 → 7 espacements', '13 → 8 tailles de texte', '8 → 5 arrondis'],
+    couleurs: { avant: 33, apres: 17, mesure: false },
+    pages: 3,
+    decisions: 15,
+    changements: 55,
+    arrivees: 54,
+    enEtat: ['Fond · bouton « Commander à emporter » (au survol)'],
+    composants: [],
     dernier: 'Dernier contrôle : 24/11/2026 à 13 h 36, 54 changements arrivés sur 55.',
     complet: true,
     manque: [],
-    humain: ['les pages hors de l’échantillon', '1 changement visible seulement au survol, au focus ou à l’appui'],
+    humain: ['les pages hors de l’échantillon'],
   });
   assert.equal(b.etapes[4].fait, '54 changements arrivés sur 55, 3 pages');
   const p = etat('plusieurs');
@@ -332,14 +338,16 @@ test('PC5 la page : quatre temps, un moment de 60 mots au plus hors du cadre, un
   assert.match(c, /<h1>Je prépare tes fondations<\/h1>/);
   // Le rendu validé : la remise (D87), ce qui reste à regarder ; aucun mot de l'outil.
   const bi = pageDuParcours(etat('bilan'));
-  assert.match(bi, /<h1>La remise<\/h1>/);
-  assert.ok(bi.includes('<li>1 changement visible seulement au survol, au focus ou à l’appui</li>'));
+  assert.match(bi, /<title>La remise · /);
+  assert.ok(bi.includes('<li>Fond · bouton « Commander à emporter » (au survol)</li>'));
   assert.doesNotMatch(texteVisible(bi.replace(/<style>.*?<\/style>/s, '')), /seuils|couche visuelle|lignes? arrivée|rattachement|\bpertes?\b|\bgarde\b|coul-\d/);
   // Sans verdict en 0, la remise dit ce qui manque.
   const e = etat('bilan');
   if (e.bilan) e.bilan.complet = false;
   if (e.bilan) e.bilan.manque = ['un dernier contrôle sans ligne manquante'];
-  assert.ok(pageDuParcours(e).includes('<li>Il manque : un dernier contrôle sans ligne manquante.</li>'));
+  const manque = pageDuParcours(e);
+  assert.ok(manque.includes('<h3>Il manque</h3>') && manque.includes('<li>Un dernier contrôle sans ligne manquante</li>'), manque);
+  assert.match(manque, /<h1>Le design system d’Annuaire des cafés est presque prêt\.<\/h1>/);
 });
 
 /** Déclarations hors des jetons générés : [propriété, valeur]. @param {string} html */

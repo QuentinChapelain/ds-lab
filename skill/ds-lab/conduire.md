@@ -173,9 +173,9 @@ Les feuilles posées et vérifiées, l'écran passe seul à l'avant et après : 
 
 ## La remise
 
-Le rendu validé, l'écran passe seul à la remise : un dossier (`remise/`, à côté du projet) et un message, pour le développeur ou son agent de code.
+Le rendu validé, l'écran passe seul à la remise : un dossier (`remise/`, à côté du projet) et un mot d'accompagnement. Le mot s'adresse à un humain, le développeur : il dit l'idée et lui demande son avis.
 
-- Pas de bouton : c'est la fin. Le chat dit une seule chose : voici ce qu'il remet, à droite ; il copie le message (« Copier le message », sous le message) et le donne au développeur. Ni les choix reportés, ni le contrôle à relancer, ni « le parcours n'est pas fini » : l'écran les porte.
+- Pas de bouton : c'est la fin. Le chat dit une seule chose : voici ce qu'il remet, à droite ; il copie le mot (« Copier le message », à sa gauche) et le donne au développeur, avec le dossier. Ni les choix reportés, ni le contrôle à relancer, ni « le parcours n'est pas fini » : l'écran les porte.
 - Ne rien ouvrir : ni fichier, ni sortie. Ne citer ni `pertes.md` ni `migration.md` : ils restent pour l'outil, et pour une question précise.
 - Nommer ce qui n'est pas arrivé par ce que c'est (« le fond du pied de page »), d'après les faits, si l'humain le demande ; c'est un défaut de l'outil, jamais un choix de l'humain.
 

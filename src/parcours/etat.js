@@ -14,7 +14,7 @@ import { lireJson } from '../lib/fichiers.js';
 import { deNom, liste } from '../lib/format.js';
 import { compterDecisions } from '../reduce/propose.js';
 import { RESOLVER } from '../tokens/resolver.js';
-import { pageName } from '../verify/reference.js';
+import { pageName, VALEURS_APRES } from '../verify/reference.js';
 import { detteDe, valeurs as valeursDe } from './dette.js';
 import { fondationsDe } from './fondations.js';
 import { apercu, lireMarque } from './marque.js';
@@ -85,7 +85,10 @@ function pagesValidees(sorties) {
  * @typedef {{ cle: CleEtape, nom: string, temps: string, acteurs: string, faite: boolean, etat: EtatEtape, sortie: boolean,
  *   main: Main | null, action: string | null, commande: string | null, fait: string | null, lignes: string[],
  *   ecran: Ecran | null, sansEcran: string | null, ouvre: string, refus?: boolean, reportes: number }} Etape
- * @typedef {{ chiffres: string[], dernier: string, complet: boolean, manque: string[], humain: string[] }} Bilan
+ * @typedef {{ couleurs: { avant: number, apres: number, mesure: boolean } | null, pages: number, decisions: number, changements: number, arrivees: number,
+ *   enEtat: string[], composants: { nom: string, versions: number, fois: number }[], dernier: string, complet: boolean, manque: string[], humain: string[] }} Bilan
+ *   à la remise : les couleurs des pages avant, et après (mesurées sur les pages avec les feuilles, sinon le compte de la
+ *   réduction) ; les changements du dernier contrôle ; les types de composants relevés, ceux qui ont des versions
  * @typedef {{ versions: number | null, valeurs: number | null, decisions: number | null, enAttente: number | null, reportes: number }} Chiffres  ce que citent les faits du moment
  * @typedef {import('./dette.js').Dette & { site: Site, pages: string[], valeursHref: string | null, composantsHref: string, captures: string,
  *   autres: { id: string, nom: string, href: string }[] }} Dette  la dette du premier site mesuré, au moment de la dette
@@ -579,20 +582,27 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
   /** @type {Bilan | null} */
   let bilan = null;
   if (moment === 'remise') {
-    const f = table?.table?.families ?? {};
-    // Avant : le compte de la dette, le même calcul (D86) ; après : celui de la réduction.
+    // Avant : le compte de la dette, le même calcul (D86) ; après : le même calcul sur les pages avec les feuilles,
+    // relevées par le contrôle (D99), sinon le compte de la réduction.
     const a = plusRecent(join(sorties, 'audit', premier.id, premier.hote));
     const fa = a && join(a.chemin, 'audit.json');
-    const comptes = fa && existsSync(fa) ? valeursDe(lireJson(fa)).familles : [];
-    /** @param {string} k @param {string} un @param {string} plusieurs */
-    const deVersA = (k, un, plusieurs) => {
-      const avant = comptes.find((x) => x.cle === k)?.compte;
-      return avant !== undefined && f[k]?.summary ? `${avant} → ${nombre(f[k].summary.after, un, plusieurs)}` : null;
-    };
-    const enEtat = lignesVerdict.filter((l) => l.etat === 'non vérifiable (état)').length;
+    const couleursDe = (/** @type {string} */ fichier) => valeursDe(lireJson(fichier)).familles.find((x) => x.cle === 'colors')?.compte;
+    const avant = fa && existsSync(fa) ? couleursDe(fa) : undefined;
+    const fApres = ver && join(ver.chemin, VALEURS_APRES);
+    const mesuree = fApres && existsSync(fApres) ? couleursDe(fApres) : undefined;
+    const calculee = table?.table?.families?.colors?.summary?.after;
+    const apres = mesuree ?? calculee;
+    const enEtat = lignesVerdict.filter((l) => l.etat === 'non vérifiable (état)').map((l) => String(l.titre ?? l.id));
     const complet = marques.every((m) => m.statut === 'acceptée') && verdict?.sortie === 0;
+    const constatDuSite = aConstat.find((x) => x.site === premier)?.constat;
     bilan = {
-      chiffres: /** @type {string[]} */ ([deVersA('colors', 'couleur', 'couleurs'), deVersA('spacing', 'espacement', 'espacements'), deVersA('fontSizes', 'taille de texte', 'tailles de texte'), deVersA('radii', 'arrondi', 'arrondis')].filter(Boolean)),
+      couleurs: avant !== undefined && typeof apres === 'number' ? { avant, apres, mesure: mesuree !== undefined } : null,
+      pages: premier.pages.length,
+      decisions: total - enAttente,
+      changements: lignesVerdict.filter((l) => l.etat !== 'hors des pages vérifiées').length,
+      arrivees,
+      enEtat,
+      composants: constatDuSite ? detteDe({ constat: constatDuSite, audit: null }).composants.types.map((t) => ({ nom: t.nom, versions: t.versions.length, fois: t.fois })) : [],
       dernier: `Dernier contrôle : ${ver ? dateDe(ver.nom) : 'aucun'}, ${arriveesSur}.`,
       complet,
       manque: [
@@ -602,7 +612,6 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
       humain: [
         unSite ? 'les pages hors de l’échantillon' : 'les pages hors des échantillons',
         ...(unSite ? [] : [`${lesSites(sites.slice(1)).replace(/^dans /, '')}, sans preuve`]),
-        ...(enEtat ? [nombre(enEtat, 'changement visible seulement au survol, au focus ou à l’appui', 'changements visibles seulement au survol, au focus ou à l’appui')] : []),
       ],
     };
   }

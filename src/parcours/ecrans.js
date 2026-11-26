@@ -13,11 +13,11 @@
  * 100 %, comme un module (D61). La page n'a pas de marque : l'anneau de focus prend le texte d'information, pas
  * border.focus, qui pointe sur la marque. Toute chaîne venue du projet ou de la saisie est échappée.
  */
-import { deNom, esc, fr, liste as listeFr } from '../lib/format.js';
+import { deNom, enLettres, esc, fr, liste as listeFr } from '../lib/format.js';
 import { variablesDeLaPage } from './jetons.js';
 import { echelleDeLaTroisieme } from './marque.js';
 import { nomAffiche } from '../lib/echelles.js';
-import { message } from './remise.js';
+import { entrees, message } from './remise.js';
 
 /** @typedef {import('./etat.js').Etat} Etat */
 /** @typedef {{ site: string, message: string, saisie: string }} ErreurAjout  le refus d'une page ajoutée */
@@ -121,10 +121,6 @@ button:focus-visible, input:focus-visible { outline: var(--border-width-focus) s
 .titre-bloc { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--gap-between-blocks) var(--gap-between-components); }
 .titre-bloc a, .autres a { color: var(--text-info); ${style('label')} }
 .fort { display: block; ${style('display-medium')} }
-.cartes { display: flex; flex-wrap: wrap; gap: var(--gap-between-components); }
-.carte { display: flex; flex: auto; flex-basis: var(--width-column); flex-direction: column; gap: var(--gap-between-blocks); min-width: 0; padding: var(--padding-component); border: var(--border-width-default) solid var(--border-subtle); border-radius: var(--border-radius-surface); background: var(--background-surface); }
-.carte h3 { display: flex; align-items: baseline; justify-content: space-between; gap: var(--gap-between-blocks); margin: 0; ${style('label')} }
-.carte h3 span { ${style('heading-3')} }
 .total { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--gap-between-components) var(--gap-between-groups); }
 .total .cote { display: flex; flex-direction: column; color: var(--text-secondary); ${style('label')} }
 .grand { color: var(--text-default); ${style('display-medium')} }
@@ -219,9 +215,16 @@ details summary { cursor: pointer; color: var(--text-info); ${style('label')} }
 .document pre { margin: 0; padding: var(--gap-between-blocks) var(--padding-tag); overflow-x: auto; border-radius: var(--border-radius-control); background: var(--background-subtle); }
 .retour { color: var(--text-info); ${style('label')} }
 .direct { margin-left: auto; color: var(--text-info); ${style('label')} }
-.message { width: 100%; padding: var(--gap-between-blocks) var(--padding-tag); border: var(--border-width-default) solid var(--border-default); border-radius: var(--border-radius-control); background: var(--background-surface); color: var(--text-default); resize: vertical; ${style('body-medium')} }
-.message:focus-visible { outline: var(--border-width-focus) solid var(--text-info); outline-offset: var(--offset-focus); }
-.manque { display: flex; flex-direction: column; gap: var(--gap-within-component); padding-left: var(--gap-between-groups); list-style: disc; }
+.mot { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--gap-between-components) var(--gap-between-groups); }
+.copier { display: flex; flex-direction: column; gap: var(--gap-between-blocks); }
+.mot .message { flex: auto; flex-basis: var(--width-column); }
+.message { display: flex; flex-direction: column; gap: var(--gap-between-blocks); padding: var(--gap-between-blocks) var(--padding-tag); border: var(--border-width-default) solid var(--border-subtle); border-radius: var(--border-radius-control); background: var(--background-surface); }
+.apport { display: flex; flex-wrap: wrap; gap: var(--gap-between-components) var(--gap-between-groups); }
+.apport li { display: flex; flex: auto; flex-basis: 0; flex-direction: column; color: var(--text-secondary); ${style('label')} }
+/* Le chiffre ne se coupe pas : un chiffre qui ne tient plus passe à la ligne avec sa phrase. */
+.apport .grand { white-space: nowrap; }
+.arbre { display: grid; grid-template-columns: max-content auto; gap: var(--gap-within-component) var(--gap-between-components); margin: 0; }
+.arbre dd { margin: 0; overflow-wrap: anywhere; color: var(--text-secondary); }
 .papier-bloc { padding: var(--gap-between-blocks) var(--padding-tag); border-radius: var(--border-radius-control); }
 iframe.revue { flex: auto; width: 100%; border: 0; border-radius: var(--border-radius-surface); background: var(--background-surface); }
 ${FIL_CSS}`;
@@ -906,44 +909,71 @@ export function ecranDeLaRevue(e, href) {
 }
 
 /**
- * La remise (D87) : ce que le designer donne au développeur, en trois étapes numérotées avec leurs comptes, le
- * dossier et « À installer », le message à copier ; ce qui reste à regarder. « Copier le message » est un formulaire :
- * le serveur copie le message dans le presse-papiers du Mac, et l'écran dit « Copié. ».
+ * La remise (D87, D99), sur la planche « 9 · La remise » : la réussite et l'apport mesuré, puis ce que fait le
+ * développeur, dans l'ordre ; le dossier à remettre ; le mot d'accompagnement ; ce qui reste. Aucune durée. « Copier le
+ * message » est un formulaire : le serveur copie le message dans le presse-papiers du Mac, et l'écran dit « Copié. ».
  * @param {Etat} e
  * @param {{ copie?: 'ok' | 'non' | null }} [o]  le retour de « Copier le message »
  */
 export function ecranDeLaRemise(e, { copie = null } = {}) {
   const r = /** @type {NonNullable<Etat['remise']>} */ (e.remise);
-  const b = e.bilan;
-  const etape = (/** @type {number} */ n, /** @type {string} */ titre, /** @type {string} */ fait, /** @type {string} */ ecran, /** @type {string} */ annuler) =>
-    `<div class="carte"><h3>${n} · ${esc(titre)}</h3><p>${esc(fait)}</p><small>${esc(`À l’écran : ${ecran}. Pour annuler : ${annuler}.`)}</small></div>`;
-  const etapes = `<div class="cartes">
-${etape(1, 'Installer le système', `Charger tokens.css avant les autres feuilles : ${nombre(r.pages.length, 'ligne', 'lignes')} à coller, une par page.`, 'rien ne change', 'retirer la ligne')}
-${etape(2, 'Poser les décisions', `Charger ${nombre(r.ajouts.length, 'feuille ajoutée', 'feuilles ajoutées')}, chacune juste après sa feuille d’origine : ${nombre(r.lignes - r.pages.length, 'ligne', 'lignes')} à coller.`, 'le site devient l’« Après » validé', 'retirer les lignes')}
-${etape(3, 'Reprendre l’ancien code', `Remplacer ${nombre(r.valeurs, 'valeur écrite en dur', 'valeurs écrites en dur')} par leur variable, dans ${nombre(r.fichiers.length, 'fichier', 'fichiers')}, fichier par fichier.`, 'rien ne change', 'un commit par fichier')}
-</div>`;
-  const reste = [
-    ...(r.nonEcrites.length ? [`${nombre(r.nonEcrites.length, 'valeur n’a', 'valeurs n’ont')} pas pu s’écrire dans les feuilles ajoutées : elles se changent dans le code, en reprenant l’ancien code.`] : []),
-    ...(b ? (b.complet ? b.humain : b.manque.map((x) => `Il manque : ${x}.`)) : []),
-    ...(e.chiffres.reportes ? [`${nombre(e.chiffres.reportes, 'choix reste reporté', 'choix restent reportés')} : les versions de composants à garder, pour plus tard.`] : []),
+  const b = /** @type {NonNullable<Etat['bilan']>} */ (e.bilan);
+  // Un groupe, sa grille : le titre et son lien passent à la ligne quand la largeur manque.
+  /** @param {string} id @param {string} titre @param {string} corps @param {string} [lien] */
+  const groupe = (id, titre, corps, lien = '') =>
+    `<section class="groupe" aria-labelledby="t-${id}"><div class="titre-bloc"><h2 id="t-${id}">${esc(titre)}</h2>${lien}</div>\n${corps}</section>`;
+  const rangs = (/** @type {string[]} */ l) => `<div class="rangs">\n${l.join('\n')}\n</div>`;
+  const guide = '<a class="voir" href="/a-installer">Lire le guide de migration</a>';
+  // L'apport : des chiffres lus dans les sorties, jamais repris de la planche ; un chiffre absent ne s'écrit pas.
+  const surPages = b.pages > 1 ? `sur tes ${enLettres(b.pages).toLowerCase()} pages` : 'sur ta page';
+  const c = b.couleurs;
+  const apport = [
+    ...(c ? [[`${c.avant} → ${c.apres}`, c.mesure ? `couleurs ${surPages}` : `couleurs ${surPages}, d’après le calcul : le prochain contrôle les comptera`]] : []),
+    [String(b.changements), `${b.changements > 1 ? 'changements posés' : 'changement posé'}, sans toucher à l’ancien code`],
+    ['4', 'étapes pour ton développeur, chacune livrable seule'],
   ];
-  const texte = message(r);
+  const bouton = b.composants.find((t) => t.nom === 'Bouton') ?? b.composants[0];
+  const dabord = bouton ? ` ${bouton.nom === 'Bouton' ? 'Le bouton' : bouton.nom} d’abord : ${nombre(bouton.versions, 'version', 'versions')} pour ${nombre(bouton.fois, 'emploi', 'emplois')}.` : '';
+  const etape = (/** @type {number} */ n, /** @type {string} */ titre, /** @type {string} */ fait, /** @type {string} */ ecran) => rang(n, titre, null, `<p>${fait}</p><p class="discret">${esc(ecran)}</p>`);
+  const etapes = groupe('etapes', 'Ce que fait ton développeur, dans l’ordre', rangs([
+    etape(1, 'Installer le système', 'Il charge <strong>tokens.css</strong> avant les autres feuilles.', 'Rien ne change à l’écran.'),
+    etape(2, 'Poser tes décisions', esc(`Il charge ${r.ajouts.length > 1 ? `${r.ajouts.length} feuilles ajoutées, chacune juste après sa feuille d’origine` : 'une feuille ajoutée, juste après sa feuille d’origine'}.`), 'Le site devient l’« Après » que tu viens de valider. L’ancien code n’est pas touché.'),
+    etape(3, 'Reprendre l’ancien code', esc(`Il remplace ${nombre(r.valeurs, 'valeur écrite', 'valeurs écrites')} en dur par les variables, fichier par fichier.`), 'Rien ne change à l’écran. Cette étape peut s’étaler, un fichier à la fois.'),
+    etape(4, 'Remplacer les composants', esc(`Il refait chaque composant une fois, d’après sa fiche, puis remplace les versions en double.${dabord}`), 'Au rythme de l’équipe, un composant à la fois.'),
+  ]), guide);
+  const arbre = `<dl class="arbre">${entrees(r).map(([nom, quoi]) => `<dt><code>${esc(nom)}</code></dt><dd>${esc(quoi)}</dd>`).join('')}</dl><p>${guide}</p>`;
+  const dossier = groupe('dossier', 'Le dossier à remettre', rangs([`<section class="rang"><div class="cote"><h3><code>remise/</code></h3></div><div class="preuve">${arbre}</div></section>`]));
   const dit = copie === 'ok' ? '<span class="accepte" role="status">Copié.</span>' : copie === 'non' ? '<span class="refus" role="status">Copie impossible ici : sélectionne le message.</span>' : '';
+  // Le bouton à gauche du mot ; quand la largeur manque, le mot passe dessous.
+  const mot = groupe(
+    'message',
+    'Le mot d’accompagnement',
+    `<div class="mot"><div class="copier"><form method="post" action="/pages/copier"><button type="submit" class="principal">Copier le message</button></form>${dit}</div><div class="message" aria-labelledby="t-message">${message(r)
+      .split('\n\n')
+      .map((p) => `<p>${esc(p)}</p>`)
+      .join('')}</div></div>`,
+  );
+  const endroits = (/** @type {string[]} */ l) => `<ul class="endroits">${l.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`;
+  const reste = [
+    ...(b.complet ? [] : [rang(null, 'Il manque', null, endroits(b.manque.map((x) => x.charAt(0).toUpperCase() + x.slice(1))))]),
+    ...(b.enEtat.length ? [rang(b.enEtat.length, 'À regarder à la main', 'visible seulement dans un état', endroits(b.enEtat))] : []),
+    ...(r.nonEcrites.length ? [rang(r.nonEcrites.length, 'Hors des feuilles ajoutées', null, `<p>${esc(`${r.nonEcrites.length > 1 ? 'Ces valeurs se changent' : 'Cette valeur se change'} dans le code, en reprenant l’ancien code.`)}</p>`)] : []),
+    ...(e.chiffres.reportes ? [rang(e.chiffres.reportes, 'Choix reportés', null, '<p class="discret">Les versions de composants à garder, pour plus tard.</p>')] : []),
+    rang(null, 'Hors du contrôle', null, endroits(b.humain.map((x) => x.charAt(0).toUpperCase() + x.slice(1)))),
+  ];
+  const decisions = b.decisions ? `Tu as pris ${nombre(b.decisions, 'décision', 'décisions')}. L’outil a fait le reste` : 'L’outil a tout fait';
   return gabarit({
-    titre: 'La remise',
+    titre: `Le design system ${deNom(e.produit)} est ${b.complet ? 'prêt' : 'presque prêt'}.`,
     onglet: `La remise · ${e.produit}`,
-    phrase: 'Ce que tu donnes au développeur : un dossier et un message. Il s’en sert dans l’ordre des trois étapes.',
+    phrase: `${decisions}, et tu as vérifié le résultat sur tes pages. ${b.complet ? 'Il ne reste qu’à le remettre.' : 'Avant de le remettre, regarde ce qui manque, en bas.'}`,
     fil: filDe(e),
     corps: `<div class="blocs">
-<section class="bloc" aria-labelledby="t-etapes"><h2 id="t-etapes">Trois étapes</h2>
-${etapes}</section>
-<section class="bloc" aria-labelledby="t-dossier"><div class="titre-bloc"><h2 id="t-dossier">Le dossier</h2><a href="/a-installer">Ouvrir « À installer »</a></div>
-<p><code>${esc(r.dossier)}</code></p><small>Les feuilles, rangées comme sur le site, « À installer » et le message.</small></section>
-<section class="bloc" aria-labelledby="t-message"><h2 id="t-message">Le message</h2>
-<textarea class="message" readonly rows="6" aria-labelledby="t-message">${esc(texte)}</textarea>
-<div class="actions"><form method="post" action="/pages/copier"><button type="submit" class="principal">Copier le message</button></form>${dit}</div></section>
-${reste.length ? `<section class="bloc" aria-labelledby="t-reste"><h2 id="t-reste">À regarder par un humain</h2><ul class="manque">${reste.map((h) => `<li>${esc(h)}</li>`).join('')}</ul></section>` : ''}
-${b ? `<p><small>${esc(b.dernier)}</small></p>` : ''}
+<ul class="apport">${apport.map(([n, quoi]) => `<li><span class="grand">${esc(n)}</span>${esc(quoi)}</li>`).join('')}</ul>
+${etapes}
+${dossier}
+${mot}
+${groupe('reste', 'Ce qui reste', rangs(reste))}
+<p class="pied">${esc(b.dernier)}</p>
 </div>`,
   });
 }

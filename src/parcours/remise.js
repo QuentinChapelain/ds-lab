@@ -3,13 +3,14 @@
  * La remise (D87) : ce que le designer donne au développeur, tiré des sorties de la réduction et des feuilles
  * ajoutées, sans nouvelle mesure. Un dossier, `remise/` à côté du projet, réécrit à chaque validation du rendu :
  * `feuilles/` (tokens.css et les feuilles ajoutées, rangées par leur chemin sur le site), `a-installer.md` (trois
- * étapes : installer le système, poser les décisions, reprendre l'ancien code) et `message.txt` (à copier pour le
- * développeur ou son agent de code). Les mots sont ceux du développeur : aucun mot de l'outil, aucun identifiant de
- * ligne. La page en direct : une page du site, servie avec tokens.css et ses feuilles ajoutées posées, comme verify.
+ * étapes : installer le système, poser les décisions, reprendre l'ancien code) et `message.txt` (le mot
+ * d'accompagnement, pour un humain, D99). Les mots sont ceux du développeur : aucun mot de l'outil, aucun identifiant
+ * de ligne. La page en direct : une page du site, servie avec tokens.css et ses feuilles ajoutées posées, comme verify.
  */
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { lireJson } from '../lib/fichiers.js';
+import { deNom } from '../lib/format.js';
 
 /** Le dossier de la remise, à côté du projet. */
 const REMISE = 'remise';
@@ -190,12 +191,30 @@ export function aInstaller(r) {
 }
 
 /**
- * Le message à copier, pour le développeur ou son agent de code.
+ * Le mot d'accompagnement (D99) : pour un humain, il dit l'idée et demande un avis. Il ne promet que ce que le dossier
+ * porte ; aucune durée.
  * @param {Remise} r
  */
 export function message(r) {
-  return `Voici la remise de ds-lab pour ${r.produit}, dans le dossier ${r.dossier}. Ouvre a-installer.md : trois étapes, à faire dans l’ordre. Commence par la 1, installer le système, puis la 2, poser les décisions. Préviens-moi quand elles sont installées : je vérifierai les pages. La 3, reprendre l’ancien code fichier par fichier, vient ensuite, un commit par fichier.`;
+  return [
+    'Bonjour,',
+    `On a préparé le design system ${deNom(r.produit)} à partir de nos pages actuelles. Je te transmets un dossier, « remise », avec un guide de migration.`,
+    'L’idée : poser le nouveau à côté de l’ancien, sans rien casser, et avancer par étapes que tu peux livrer une à une. Le guide explique pourquoi on procède ainsi et comment faire, avec les lignes exactes à ajouter.',
+    'Les deux premières étapes tiennent en quelques lignes et suffisent pour que le site prenne le nouveau rendu. Les deux suivantes nettoient l’ancien code et peuvent s’étaler.',
+    'Dis-moi ce que tu en penses après lecture, et si l’ordre te convient. On regarde ensemble le résultat après chaque étape.',
+  ].join('\n\n');
 }
+
+/**
+ * Le dossier à remettre (D99), une ligne par entrée : son nom et ce qu'elle contient.
+ * @param {Remise} r
+ * @returns {[string, string][]}
+ */
+export const entrees = (r) => [
+  ['feuilles/', `tokens.css et ${r.ajouts.length > 1 ? `les ${r.ajouts.length} feuilles ajoutées` : 'la feuille ajoutée'}`],
+  ['a-installer.md', 'les étapes, avec les lignes exactes à ajouter'],
+  ['message.txt', 'le mot d’accompagnement ci-dessous'],
+];
 
 /**
  * Écrit le dossier de la remise, à côté du projet, pour une vérification validée. Un dossier `remise/` qui n'a pas

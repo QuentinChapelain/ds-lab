@@ -6,7 +6,7 @@
  * l'outil ne sait pas calculer ne s'écrit pas, le compte et le dessin suffisent. Rien n'est saisi : mêmes sorties,
  * même dette.
  */
-import { fr, liste } from '../lib/format.js';
+import { enLettres, fr, liste } from '../lib/format.js';
 import { isGrey } from '../brand/brand.js';
 import { THRESHOLDS } from '../reduce/propose.js';
 import { couleursProches } from '../report/html.js';
@@ -17,9 +17,6 @@ import { couleursProches } from '../report/html.js';
  * @typedef {{ nom: string, versions: { nom: string, fois: number, capture: string | null, sansStyle: boolean }[], fois: number, note: string }} Type
  * @typedef {{ valeurs: { total: number, familles: Famille[] } | null, composants: { types: Type[], aussi: string[] } }} Dette
  */
-
-/** « 3 » en lettres jusqu'à dix, au début d'une phrase. @param {number} n */
-const enLettres = (n) => ['Aucune', 'Une', 'Deux', 'Trois', 'Quatre', 'Cinq', 'Six', 'Sept', 'Huit', 'Neuf', 'Dix'][n] ?? String(n);
 
 /** Accord en nombre. @param {number} n @param {string} un @param {string} plusieurs */
 const nombre = (n, un, plusieurs) => `${n} ${n > 1 ? plusieurs : un}`;

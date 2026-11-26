@@ -14,7 +14,9 @@
  * puis le verdict par ligne décidée, sur les pages vérifiées : arrivée, en partie, non arrivée (chaque déclaration, ce
  * qui tient la valeur, ce qu'il faut faire), déjà en place, non vue, hors des pages vérifiées, non vérifiable (état),
  * et une phrase qui compte chaque état. Le compte de pixels reste donné, il ne décide pas. La page intacte est capturée
- * dans le même chargement, avant la pose (avant.png, à côté de actuel.png : l'avant et après du parcours, D86).
+ * dans le même chargement, avant la pose (avant.png, à côté de actuel.png : l'avant et après du parcours, D86). Les
+ * pages avec les feuilles sont relevées comme l'audit les relève, et réunies dans valeurs-apres.json, à la racine : ce
+ * que la remise compte après (D99).
  * D18 : sans --ajout, sort en 0, même quand des pixels diffèrent (la commande compare, elle ne juge pas) ; avec
  * --ajout, en 0 si aucune ligne décidée n'est en partie, non arrivée, déjà en place ou non vue, en 1 sinon
  * (src/verify/arrivee.js, juger) ; en 2 sur une panne (option inconnue, référence absente, manifeste sans
@@ -28,8 +30,9 @@ import { resolveAddresses } from '../lib/addresses.js';
 import { loadSources } from '../lib/sources.js';
 import { stampOf, freeOutputDir } from '../report/json.js';
 import { capturePage, lireAjouts } from '../verify/capture.js';
-import { referenceFiles, writeReference, verifyPage, pageName } from '../verify/reference.js';
+import { referenceFiles, writeReference, verifyPage, pageName, VALEURS_APRES } from '../verify/reference.js';
 import { juger } from '../verify/arrivee.js';
+import { createRenderedAggregator } from '../rendered/aggregate.js';
 import { lancer } from './garde.js';
 
 const USAGE = `Usage : npm run verify -- <adresse> --reference <dossier> [--save] [options]
@@ -101,6 +104,9 @@ async function main() {
   const racine = await freeOutputDir(String(values.out), new URL(urls[0]).host, stampOf(new Date()));
   /** @type {import('../verify/arrivee.js').Releve[]} */
   const releves = [];
+  // Les pages avec les feuilles, relevées comme l'audit les relève (D99).
+  const apres = createRenderedAggregator();
+  let relevees = 0;
   for (const url of urls) {
     let r;
     try {
@@ -137,12 +143,21 @@ async function main() {
     if (r.hauteurs) console.log(`Hauteur : page intacte ${r.hauteurs.intacte} px, avec les feuilles ${r.hauteurs.avecFeuilles} px, référence ${r.hauteurs.reference} px`);
     console.log(`Arbre d'accessibilité : ${aria.identical ? 'identique' : 'différent (aria.diff)'}`);
     if (r.releve) releves.push(r.releve);
+    if (shot.rendu) {
+      apres.addPage(shot.rendu.pc);
+      if (shot.rendu.sc) apres.addStates(shot.rendu.sc);
+      relevees++;
+    }
     console.log(`Sorties : ${dir}`);
   }
   if (!values.ajout) return;
   const { manifeste } = await lireAjouts(String(values.ajout));
   const j = juger(manifeste, releves);
   await writeFile(join(racine, 'verdict.json'), JSON.stringify({ pages: releves.map((x) => x.page), ...j }, null, 2) + '\n');
+  if (relevees === urls.length) {
+    const rendu = apres.result();
+    await writeFile(join(racine, VALEURS_APRES), JSON.stringify({ pages: relevees, rendered: { families: rendu.families, usages: { colors: /** @type {any} */ (rendu.usages).colors } } }) + '\n');
+  }
   console.log(`Verdict par ligne décidée (pages vérifiées : ${releves.map((x) => x.page).join(', ')}) :`);
   for (const l of j.lignes) {
     console.log(`  ${l.texte}`);

@@ -63,3 +63,6 @@ export const famille = (v) => (Array.isArray(v) ? v : [v]).map((f) => (/[\s"]/.t
 
 /** Liste en français : « a, b et c ». @param {string[]} l */
 export const liste = (l) => (l.length < 2 ? l.join('') : `${l.slice(0, -1).join(', ')} et ${l.at(-1)}`);
+
+/** « 3 » en lettres jusqu'à dix, au début d'une phrase, au féminin. @param {number} n */
+export const enLettres = (n) => ['Aucune', 'Une', 'Deux', 'Trois', 'Quatre', 'Cinq', 'Six', 'Sept', 'Huit', 'Neuf', 'Dix'][n] ?? String(n);

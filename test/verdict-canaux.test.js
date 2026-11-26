@@ -22,7 +22,8 @@
  *   K4 canal en clair et ce qu'il faut faire : attribut style ; bloc de style injecté par un script ; raccourci et
  *      variable (posée par l'attribut style de l'élément, ou nulle part : valeur de repli) ;
  *   K5 hauteurs de la page intacte (lue avant la pose, dans le même chargement) et avec les feuilles ;
- *   K6 commande verify --ajout : chaque ligne, la phrase finale qui compte chaque état, les hauteurs ; sortie 1 ;
+ *   K6 commande verify --ajout : chaque ligne, la phrase finale qui compte chaque état, les hauteurs ; sortie 1 ; la
+ *      page avec les feuilles relevée comme l'audit la relève (valeurs-apres.json, D99) ;
  *      jamais « chaque ligne écrite est arrivée » ; l'image de la page intacte (avant.png), de la largeur de l'après,
  *      à côté de actuel.png (D86).
  * Revus pour docs/attendus/verify-se-reconnait.md (décisions de Quentin du 17/11/2026), avant le code :
@@ -45,7 +46,8 @@ import { startFixtureServers, FIXTURE_DIR } from './helpers/serveur.js';
 import { TOKENS, desaccords } from './helpers/ajout.js';
 import { runReduce } from '../src/reduce/run.js';
 import { feuillesAjoutees, ecrireAjouts, MANIFESTE } from '../src/apply/ajout.js';
-import { verifyPage } from '../src/verify/reference.js';
+import { verifyPage, VALEURS_APRES } from '../src/verify/reference.js';
+import { valeurs } from '../src/parcours/dette.js';
 import { juger } from '../src/verify/arrivee.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -181,7 +183,7 @@ test('K5 hauteurs : page intacte, avec les feuilles, référence', () => {
   assert.equal(h.avecFeuilles, h.intacte);
 });
 
-test('K6 commande verify --ajout : chaque ligne, phrase finale, hauteurs ; sortie 1', async () => {
+test('K6 commande verify --ajout : chaque ligne, phrase finale, hauteurs, valeurs d’après ; sortie 1', async () => {
   const out = await mkdtemp(join(tmpdir(), 'ds-lab-canaux-verify-'));
   const r = await new Promise((ok) => {
     const c = spawn(process.execPath, ['src/cli/verify.js', servers.origin + PAGE, '--reference', refs, '--ajout', sortie, '--out', out], { cwd: ROOT });
@@ -202,6 +204,12 @@ test('K6 commande verify --ajout : chaque ligne, phrase finale, hauteurs ; sorti
   const [avant, apres] = await Promise.all(['avant.png', 'actuel.png'].map((n) => readFile(join(dossier, n))));
   assert.equal(avant.readUInt32BE(16), apres.readUInt32BE(16));
   assert.ok(avant.readUInt32BE(20) > 0);
+  // La page avec les feuilles, relevée comme l'audit la relève (D99) : la remise y compte les couleurs d'après.
+  const releve = JSON.parse(await readFile(join(dossier, VALEURS_APRES), 'utf8'));
+  assert.equal(releve.pages, 1);
+  const couleurs = valeurs(releve).familles.find((f) => f.cle === 'colors');
+  assert.ok(couleurs && couleurs.compte > 0, JSON.stringify(couleurs));
+  assert.ok(Object.keys(releve.rendered.usages.colors).length >= couleurs.compte);
 });
 
 test('K7 transitions coupées le temps du relevé : coul-01 et .bouton-feuille arrivent', () => {

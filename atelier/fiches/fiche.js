@@ -831,7 +831,7 @@ export function ecartsEcrits(texte, chemin, e, ctx) {
   if (communes.length === options.length && communes.some((o, j) => o !== options[j])) ecarts.push('lignes de prop hors de l\'ordre des props');
 
   // Décisions et dette citées.
-  for (const n of new Set([...texte.matchAll(/\bD(\d{2})\b/g)].map((m) => m[1]))) if (!new RegExp(`^### D${n}$`, 'm').test(ctx.decisions)) ecarts.push(`décision inconnue : D${n}`);
+  for (const n of new Set([...texte.matchAll(/\bD(\d{2,})\b/g)].map((m) => m[1]))) if (!new RegExp(`^### D${n}$`, 'm').test(ctx.decisions)) ecarts.push(`décision inconnue : D${n}`);
   for (const n of new Set([...texte.matchAll(/\bB(\d+)\b/g)].map((m) => m[1]))) if (!new RegExp(`^\\| B${n} \\|`, 'm').test(ctx.dette)) ecarts.push(`dette inconnue : B${n}`);
 
   // Tokens posés par le parent, et variables ds- écrites, hors du bloc.
