@@ -27,8 +27,8 @@ ds-lab fait ce chantier avec toi. Il mesure ce que tes pages affichent vraiment,
 |---|---|
 | **Designer** | Tu décides sur image, en situation, pas dans un tableur. Les règles font le tri ; tu gardes les choix qui demandent un œil |
 | **PM** | La dette en chiffres avant de t'engager, un périmètre connu, une migration qui avance par étapes livrables seules, sans gel du produit |
-| **Développeur** | Des feuilles posées à côté de ton code, sans spécificité ajoutée. Un guide où chaque étape dit ce que tu fais, pourquoi, comment tu vérifies et, pour les trois premières, comment tu annules. Des commandes qui sortent en 0, 1 ou 2 |
-| **Une IA qui code** | Un skill, des règles écrites et un contrôle qui la bloque quand elle sort du système |
+| **Développeur** | Des feuilles posées à côté de ton code, sans spécificité ajoutée. Un guide où chaque étape dit ce que tu fais, pourquoi, comment tu vérifies et, pour les trois premières, comment tu annules. Un contrôle qui dit clairement s'il passe, s'il échoue, ou s'il n'a pas pu regarder. Jamais de vert par défaut.|
+| **Une IA qui code** | Un skill, des règles écrites et un contrôle qui la bloque quand elle sort du système. Des commandes qui sortent en 0, 1 ou 2 |
 
 ## Essayer sur ton produit
 
