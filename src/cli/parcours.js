@@ -7,9 +7,10 @@
  * --servir sert la page et les écrans sur 127.0.0.1, au port 4311, ou à un port libre s'il est pris (D75), jusqu'à
  * Ctrl+C. Avant le projet, il sert le lancement, qui se recharge seul jusqu'à ce que projet.json existe (D77) ; l'écran
  * des pages retire et ajoute par des formulaires, et sert la vignette de chaque page ; la marque change ses couleurs ;
- * la remise copie son message ; le guide de migration (D100) et chaque page du site en direct, ses feuilles ajoutées posées (D87).
+ * la remise copie son message ; le guide de migration (D100), les fiches des composants (D101) et chaque page du site
+ * en direct, ses feuilles ajoutées posées (D87).
  * Le passage d'un écran au suivant se fait dans le chat (D89, D92) : --passer <écran> (pages, dette, marque, fondations,
- * rendu) fait ce que faisait le bouton de l'écran, seulement si cet écran est celui du moment : un second « ok » est
+ * composants, rendu) fait ce que faisait le bouton de l'écran, seulement si cet écran est celui du moment : un second « ok » est
  * refusé, il ne saute pas un écran. --revenir, à l'avant et après, rouvre la revue. --ajouter-page et --retirer-page
  * changent la liste des pages, comme l'écran ; --site nomme le site quand le projet en a plusieurs. Un refus (un autre
  * moment, une liste vide, une marque refusée, une page refusée) se dit en une ligne et sort en 1.
@@ -28,15 +29,16 @@ import { pageDuParcours } from '../parcours/page.js';
 import { ecranDeLancement, dessinDeVignette } from '../parcours/ecrans.js';
 import { faitsDuMoment } from '../parcours/faits.js';
 import { servir } from '../parcours/serveur.js';
-import { ajouterPage, choisirCouleur, confirmerMarque, copierMessage, detteVue, echangerAccent, fondationsVues, retirerPage, rouvrirRevue, validerPages, validerRendu, vignettes } from '../parcours/pages.js';
-import { ecranDuGuide } from '../parcours/ecrans.js';
-import { feuillesEnDirect, guide, pageEnDirect } from '../parcours/remise.js';
+import { ajouterPage, choisirCouleur, composantsVus, confirmerMarque, copierMessage, detteVue, echangerAccent, fondationsVues, retirerPage, rouvrirRevue, validerPages, validerRendu, vignettes } from '../parcours/pages.js';
+import { ecranDesFiches, ecranDuGuide } from '../parcours/ecrans.js';
+import { feuillesEnDirect, ficheDe, guide, pageEnDirect } from '../parcours/remise.js';
+import { COMPOSANTS } from '../parcours/diapason.js';
 import { lignesDuRegard, regarderSite } from '../parcours/regarder.js';
 
 const USAGE = 'npm run parcours -- --regarder <adresse> | <projet.json> [--servir] [--port <n>] [--passer <écran>] [--revenir] [--ajouter-page <adresse>] [--retirer-page <chemin>] [--site <id>]';
 
 /** Les écrans qu'on passe dans le chat, et le moment de chacun (D92). */
-const PASSAGES = /** @type {const} */ ({ pages: 'pages', dette: 'dette', marque: 'marque', fondations: 'fondations', rendu: 'avant-apres' });
+const PASSAGES = /** @type {const} */ ({ pages: 'pages', dette: 'dette', marque: 'marque', fondations: 'fondations', composants: 'composants', rendu: 'avant-apres' });
 
 /** Le moment, nommé pour l'humain. */
 const NOMS = /** @type {Record<string, string>} */ ({
@@ -46,6 +48,7 @@ const NOMS = /** @type {Record<string, string>} */ ({
   marque: 'la marque',
   jetons: 'l’écriture des tokens',
   fondations: 'les fondations',
+  composants: 'les composants à ta marque',
   'avant-apres': 'l’avant et après',
   remise: 'la remise',
   ecran: 'la revue',
@@ -138,9 +141,15 @@ await lancer('parcours', async () => {
           (png) => ({ type: 'image/png', corps: png }),
           () => ({ type: 'image/svg+xml', corps: dessinDeVignette() }),
         ),
-      // Le guide de migration (D100) et la page en direct (D87) : rendus à la demande, depuis les sorties.
+      // Le guide de migration (D100), les fiches des composants (D101) et la page en direct (D87) : rendus à la demande.
       autre: async (chemin, q, ici) => {
         if (!existsSync(fichier)) return null;
+        const fiche = /^\/fiches(?:\/([a-z-]+))?$/.exec(chemin);
+        if (fiche) {
+          const cle = fiche[1] ?? COMPOSANTS[0].cle;
+          if (!COMPOSANTS.some((c) => c.cle === cle)) return null;
+          return { type: 'text/html; charset=utf-8', corps: ecranDesFiches(ecrire().etat, cle, ficheDe(cle)) };
+        }
         if (chemin === '/guide') {
           const { etat } = ecrire();
           return etat.remise && etat.bilan ? { type: 'text/html; charset=utf-8', corps: ecranDuGuide(etat, guide(etat.remise, etat.bilan)) } : null;
@@ -208,6 +217,7 @@ function passer(fichier, v) {
     }
     confirmerMarque(fichier);
   } else if (ecran === 'fondations') fondationsVues(fichier);
+  else if (ecran === 'composants') composantsVus(fichier);
   else validerRendu(fichier);
   return null;
 }

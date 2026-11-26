@@ -8,7 +8,7 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { lireProjet, ecrirePages, ecrireMarque } from './projet.js';
-import { calculerEtat, empreinteDesChoix, AVANCEMENT, DETTE_VUE, FONDATIONS_VUES, PAGES_VALIDEES, RENDU_VALIDE, REVUE_ROUVERTE } from './etat.js';
+import { calculerEtat, empreinteDesChoix, AVANCEMENT, COMPOSANTS_VUS, DETTE_VUE, FONDATIONS_VUES, PAGES_VALIDEES, RENDU_VALIDE, REVUE_ROUVERTE } from './etat.js';
 import { entreeDe } from './marque.js';
 import { lancerChromium } from '../browser/lancement.js';
 import { ecrireRemise, message } from './remise.js';
@@ -105,11 +105,18 @@ export function detteVue(fichier) {
   writeFileSync(join(p.sorties, DETTE_VUE), `${JSON.stringify({ vue: true }, null, 2)}\n`);
 }
 
-/** Les fondations regardées (D83) : « Comparer mon site », dans le chat (`parcours --passer fondations`, D92), rend la main à l'outil, qui lance la réduction. @param {string} fichier */
+/** Les fondations regardées (D83) : « Voir mes composants », dans le chat (`parcours --passer fondations`, D92, D101), ouvre l'écran des composants. @param {string} fichier */
 export function fondationsVues(fichier) {
   const p = lireProjet(fichier);
   mkdirSync(p.sorties, { recursive: true });
   writeFileSync(join(p.sorties, FONDATIONS_VUES), `${JSON.stringify({ vues: true }, null, 2)}\n`);
+}
+
+/** Les composants à la marque regardés (D101) : « Comparer mon site », dans le chat (`parcours --passer composants`), rend la main à l'outil, qui lance la réduction. @param {string} fichier */
+export function composantsVus(fichier) {
+  const p = lireProjet(fichier);
+  mkdirSync(p.sorties, { recursive: true });
+  writeFileSync(join(p.sorties, COMPOSANTS_VUS), `${JSON.stringify({ vus: true }, null, 2)}\n`);
 }
 
 /**

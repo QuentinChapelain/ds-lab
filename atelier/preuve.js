@@ -2,7 +2,8 @@
 // les dimensions et les polices des jetons, le même rendu en développement et en version construite, et, sur le premier
 // thème, le clavier, l'arbre d'accessibilité et les refus que son attendu décrit. Une preuve par composant, rangée dans
 // preuve/ (button.js, D43 ; text-input.js, D49 ; card.js, D50 ; icon-button.js, D52 ; avatar.js, D54 ; tag.js,
-// D55), puis une par module (member-card.js, member-list.js), sur les outils communs de preuve/commun.js ; ce fichier les enchaîne.
+// D55), puis une par module (member-card.js, member-list.js), puis les composants à la marque d'un projet
+// (a-ta-marque.js, D101), sur les outils communs de preuve/commun.js ; ce fichier les enchaîne.
 // Sortie 0 si tout passe, 1 si une vérification échoue, 2 sur une panne (D18).
 // Sans argument, tous les composants, dans l'ordre du tableau COMPOSANTS ; avec des noms (node preuve.js text-input card),
 // ceux-là seuls, chacun avec les mêmes vérifications : la CI lance un composant par job. Un nom inconnu est une panne.
@@ -22,6 +23,7 @@ import { preuveAvatar } from './preuve/avatar.js';
 import { preuveEtiquette } from './preuve/tag.js';
 import { preuveMemberCard } from './preuve/member-card.js';
 import { preuveMemberList } from './preuve/member-list.js';
+import { preuveATaMarque } from './preuve/a-ta-marque.js';
 
 /** Les preuves, dans l'ordre où elles passent sans argument. */
 const COMPOSANTS = /** @type {const} */ ([
@@ -33,6 +35,7 @@ const COMPOSANTS = /** @type {const} */ ([
   ['tag', preuveEtiquette],
   ['member-card', preuveMemberCard],
   ['member-list', preuveMemberList],
+  ['a-ta-marque', preuveATaMarque],
 ]);
 
 await lancer('preuve', async () => {
@@ -50,7 +53,7 @@ await lancer('preuve', async () => {
   const construite = await servirConstruite();
   const developpement = await servirDeveloppement();
   const navigateur = await lancerChromium();
-  /** @type {string[]} */
+  /** @type {(string | null)[]} */
   const captures = [];
   try {
     const contexte = await navigateur.newContext({ viewport: CADRE, deviceScaleFactor: 1, reducedMotion: 'reduce', colorScheme: 'light' });
@@ -61,7 +64,7 @@ await lancer('preuve', async () => {
     developpement.arreter();
     await construite.arreter();
   }
-  for (const c of new Set(captures)) console.log(`Planches enregistrées dans ${c}.`);
+  for (const c of new Set(captures.filter(Boolean))) console.log(`Planches enregistrées dans ${c}.`);
   console.log(`Composants : ${choisis.map(([c]) => c).join(', ')}.`);
   console.log(echecs.length ? `${echecs.length} vérification(s) en échec.` : `Toutes les vérifications passent : ${themes.length} thèmes.`);
   return echecs.length ? 1 : 0;

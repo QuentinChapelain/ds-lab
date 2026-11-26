@@ -168,7 +168,7 @@ test('PC2 l’état des huit projets, depuis leurs sorties', () => {
   const v = etatDe(vue('constat'));
   // La dette vue, la marque déjà écrite : la saisie, sous l'écran d'attente des fondations (D83).
   assert.deepEqual([v.courante.main, v.courante.action, v.moment, v.phrase], ['outil', 'saisir la marque', 'jetons', null]);
-  assert.match(String(v.courante.commande), /^npm run saisie -- marques\/orbe\/entree\.json --verdict sorties\/saisies\/orbe\.json && node src\/cli\/planche\.js --marque marques\/orbe && npm run css -- --marque marques\/orbe && npm run vuetify -- --marque marques\/orbe$/);
+  assert.match(String(v.courante.commande), /^npm run saisie -- marques\/orbe\/entree\.json --verdict sorties\/saisies\/orbe\.json && node src\/cli\/planche\.js --marque marques\/orbe && npm run css -- --marque marques\/orbe && npm run vuetify -- --marque marques\/orbe && npm run captures -- --marque marques\/orbe$/);
   assert.deepEqual(etat('constat').etapes[1].lignes, ['30 éléments, 3 types, 11 versions ; versions choisies : 0 sur 3']);
   assert.deepEqual(resume('marque'), {
     temps: ['faite', 'en cours', 'à venir', 'à venir'],

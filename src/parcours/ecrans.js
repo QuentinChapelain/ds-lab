@@ -5,7 +5,8 @@
  * page ; ni barre ni bouton pour changer d'écran : le chat porte ce passage (D92). Sombre seul ; ce qui vient du site
  * (vignettes, captures, couleurs et exemples relevés) est sur papier, le mode clair des mêmes rôles. Les écrans : le
  * lancement (avant le projet, et le départ revu), les pages à mesurer (un groupe par site), la mesure en cours, la dette,
- * la marque, l'écriture des tokens, les fondations, la revue revue, l'avant et après, la remise et le guide de migration.
+ * la marque, l'écriture des tokens, les fondations, les composants à ta marque et leurs fiches, la revue revue, l'avant
+ * et après, la remise et le guide de migration.
  * Un temps fait se revoit (`/?voir=<écran>`) : l'écran en lecture seule, sans formulaire, avec « Revenir où j'en suis ».
  * Sans script : ce qui change l'écran (retirer, ajouter une page, changer une couleur, copier le message) est un
  * formulaire envoyé au serveur du parcours (serveur.js). Valeurs :
@@ -18,6 +19,7 @@ import { variablesDeLaPage } from './jetons.js';
 import { echelleDeLaTroisieme } from './marque.js';
 import { nomAffiche } from '../lib/echelles.js';
 import { entrees, message } from './remise.js';
+import { COMPOSANTS, INTENTIONS, composantDuType } from './diapason.js';
 
 /** @typedef {import('./etat.js').Etat} Etat */
 /** @typedef {{ site: string, message: string, saisie: string }} ErreurAjout  le refus d'une page ajoutée */
@@ -143,6 +145,22 @@ button:focus-visible, input:focus-visible { outline: var(--border-width-focus) s
 .ruban svg { display: block; width: 100%; height: var(--height-control-medium); }
 .captures { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-components); }
 .captures img { max-width: 100%; max-height: var(--avatar-size-large); width: auto; }
+.deux { display: flex; flex-wrap: wrap; gap: var(--gap-between-components); }
+.deux > div { display: flex; flex: auto; flex-direction: column; gap: var(--gap-within-component); min-width: 0; }
+/* Le composant garde sa taille : quand la largeur manque, il défile dans son papier, la page ne défile pas. */
+.vitrine { overflow-x: auto; border-radius: var(--border-radius-control); }
+.vitrine img { display: block; max-width: none; }
+.versions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-components); }
+.versions img { max-width: 100%; height: auto; }
+.pas-encore { display: flex; width: 0; min-width: 100%; align-items: center; gap: var(--gap-within-component); color: var(--text-warning); ${style('label')} }
+.pas-encore i { width: var(--gap-between-blocks); height: var(--gap-between-blocks); border-radius: var(--border-radius-full); background: currentcolor; }
+.fiches { display: flex; flex-wrap: wrap; gap: var(--gap-within-component) var(--gap-between-components); ${style('label')} }
+.fiches a { color: var(--text-info); }
+.fiches [aria-current] { color: var(--text-default); }
+.document .tableau { overflow-x: auto; }
+.document table { border-collapse: collapse; ${style('body-small')} }
+.document th, .document td { padding: var(--gap-within-component) var(--gap-between-blocks); border-bottom: var(--border-width-default) solid var(--border-subtle); text-align: left; vertical-align: top; }
+.document th { color: var(--text-secondary); }
 .pied { color: var(--text-secondary); ${style('body-small')} }
 .dessins { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--gap-between-blocks) var(--padding-tag); }
 .dessins li { display: flex; flex-direction: column; align-items: center; gap: var(--gap-within-component); }
@@ -239,6 +257,7 @@ const REVUS = /** @type {const} */ ({
   dette: [1, 'La dette'],
   marque: [1, 'La marque'],
   fondations: [1, 'Les fondations'],
+  composants: [1, 'Les composants'],
   revue: [1, 'La revue'],
   'avant-apres': [2, 'Avant, après'],
 });
@@ -251,6 +270,7 @@ const ICI = /** @type {Record<string, [number, string]>} */ ({
   marque: [1, 'La marque'],
   jetons: [1, 'Les fondations'],
   fondations: [1, 'Les fondations'],
+  composants: [1, 'Les composants'],
   'avant-apres': [2, 'Avant, après'],
   remise: [3, 'La remise'],
 });
@@ -537,10 +557,11 @@ const dansLaPhrase = (n) => (/^\p{Lu}\p{Ll}/u.test(n) ? n.charAt(0).toLowerCase(
 /**
  * Une ligne de la dette (D94), et des fondations : à gauche, le chiffre en grand s'il y en a un, le nom et une seule
  * note discrète ; à droite, la preuve.
- * @param {number | null} n @param {string} nom @param {string | null} note @param {string} preuve
+ * @param {number | string | null} n @param {string} nom @param {string | null} note @param {string} preuve
+ * @param {string} [mention]  sous la note, déjà échappée
  */
-const rang = (n, nom, note, preuve) =>
-  `<section class="rang"><div class="cote">${n === null ? '' : `<span class="n">${n}</span>`}<h3>${esc(nom)}</h3>${note ? `<small>${esc(note)}</small>` : ''}</div><div class="preuve">${preuve}</div></section>`;
+const rang = (n, nom, note, preuve, mention = '') =>
+  `<section class="rang"><div class="cote">${n === null ? '' : `<span class="n">${esc(String(n))}</span>`}<h3>${esc(nom)}</h3>${note ? `<small>${esc(note)}</small>` : ''}${mention}</div><div class="preuve">${preuve}</div></section>`;
 
 /**
  * Le total partagé en parts, à la mesure de chaque famille : un tableau d'autant de colonnes égales que de valeurs,
@@ -817,6 +838,81 @@ export function ecranDesFondations(e, { lecture = null } = {}) {
   });
 }
 
+/** Le pluriel des types relevés que Diapason n'a pas encore, pour leur phrase. */
+const PLURIELS = /** @type {Record<string, string>} */ ({
+  lien: 'liens',
+  'case à cocher': 'cases à cocher',
+  'liste déroulante': 'listes déroulantes',
+  radio: 'boutons radio',
+  interrupteur: 'interrupteurs',
+  onglet: 'onglets',
+  menu: 'menus',
+  fenêtre: 'fenêtres',
+});
+
+/** Une capture à la marque, sur papier, à sa taille ; rien si elle manque. @param {import('./etat.js').Image | null} i @param {string} alt */
+const vitrine = (i, alt) => (i ? `<div class="papier vitrine"><img src="${esc(i.src)}" width="${i.largeur}" height="${i.hauteur}" alt="${esc(alt)}"></div>` : '');
+
+/**
+ * Les composants à ta marque (D101) : à regarder, rien à décider. Ceux de Diapason que tes pages emploient, une ligne
+ * chacun : les versions d'aujourd'hui (les captures de la dette, sur papier) et le vrai composant, capturé dans
+ * l'atelier avec le thème de la marque ; les types relevés que Diapason n'a pas encore ; puis les autres composants.
+ * « 5 → 1 » est la cible : la phrase dit ce que fera le développeur, le pied que rien n'est remplacé à cette étape.
+ * « Comparer mon site » se dit dans le chat (D92).
+ * @param {Etat} e @param {{ lecture?: Lecture | null }} [o]
+ */
+export function ecranDesComposants(e, { lecture = null } = {}) {
+  const c = /** @type {NonNullable<Etat['composants']>} */ (e.composants);
+  /** @param {import('./etat.js').Versions} versions @param {string} nom */
+  const site = (versions, nom) => {
+    const l = versions.filter((x) => x.capture);
+    return l.length
+      ? `<div class="papier papier-bloc versions">${l
+          .map((x) => {
+            const t = c.tailles[/** @type {string} */ (x.capture)];
+            return `<img src="${esc(`${c.captures}/${x.capture}`)}"${t ? ` width="${t[0]}" height="${t[1]}"` : ''} alt="${esc(`${nom}, ${x.nom}`)}" title="${esc(`${x.nom}, ${fois(x.fois)}${x.sansStyle ? ', sans style' : ''}`)}">`;
+          })
+          .join('')}</div>`
+      : '';
+  };
+  /** @param {import('./etat.js').Versions} versions */
+  const sansStyle = (versions) => versions.filter((x) => x.sansStyle).reduce((n, x) => n + x.fois, 0);
+  const remplace = c.remplace.map((x) => {
+    const phrase =
+      x.cle === 'button'
+        ? `Un seul bouton, ${enLettres(INTENTIONS.length).toLowerCase()} intentions (${INTENTIONS.map(([, mot]) => mot).join(', ')}) et deux tailles.${x.hauteurs.length > 2 ? ` Une fois écrit par ton développeur, tes ${enLettres(x.hauteurs.length).toLowerCase()} hauteurs d’aujourd’hui n’en font plus que deux.` : ''}`
+        : x.phrase;
+    const preuve = `<div class="deux"><div><small>Sur ton site aujourd’hui</small>${site(x.versions, x.nom)}</div><div><small>Avec Diapason, à ta marque</small>${vitrine(x.image, `${x.nom}, à ta marque`)}</div></div>${phrase ? `<p class="discret">${esc(phrase)}</p>` : ''}`;
+    return rang(`${x.versions.length} → 1`, x.nom, `${nombre(x.fois, 'emploi', 'emplois')} sur tes pages`, preuve);
+  });
+  const pasEncore = c.pasEncore.map((t) => {
+    const nus = sansStyle(t.versions);
+    const type = t.nom.charAt(0).toLowerCase() + t.nom.slice(1);
+    const pluriel = PLURIELS[type];
+    const n = t.versions.length;
+    const formes = !pluriel ? `Ses ${nombre(n, 'forme', 'formes')} restent` : n > 1 ? `Tes ${pluriel} gardent leurs ${enLettres(n).toLowerCase()} formes` : `Tes ${pluriel} gardent leur forme`;
+    const phrase = `Diapason n’a pas encore de composant ${deNom(type)}. ${formes}, avec les couleurs de ta marque.`;
+    return rang(n, t.nom, `${nombre(t.fois, 'emploi', 'emplois')}${nus ? `, dont ${nus} sans style` : ''}`, `${site(t.versions, t.nom)}<p class="discret">${esc(phrase)}</p>`, '<span class="pas-encore"><i></i>Pas encore dans Diapason</span>');
+  });
+  /** @param {string} id @param {string} titre @param {string[]} lignes @param {string} [lien] */
+  const groupe = (id, titre, lignes, lien = '') =>
+    lignes.length ? `<section class="groupe" aria-labelledby="t-${id}"><div class="titre-bloc"><h2 id="t-${id}">${esc(titre)}</h2>${lien}</div>\n<div class="rangs">\n${lignes.join('\n')}\n</div></section>` : '';
+  const fiches = '<a href="/fiches">Voir les fiches</a>';
+  const autres = c.autres.map((x) => rang(null, x.nom, null, vitrine(x.image, `${x.nom}, à ta marque`)));
+  return gabarit({
+    titre: 'Tes composants, à ta marque',
+    onglet: `Les composants · ${e.produit}`,
+    phrase: `Les ${enLettres(COMPOSANTS.length).toLowerCase()} composants de Diapason, aux couleurs ${deNom(e.produit)}. Pour ceux que tes pages utilisent déjà, tu vois ce qu’ils remplacent.`,
+    fil: filDe(e, 'Les composants'),
+    lecture,
+    corps: `<div class="blocs">
+${groupe('remplacent', 'Ce qu’ils remplacent', [...remplace, ...pasEncore], fiches)}
+${groupe('autres', 'Les autres composants de Diapason', autres, c.remplace.length || c.pasEncore.length ? '' : fiches)}
+<p class="pied">Rien n’est remplacé sur ton site à cette étape. À la remise, ton développeur reçoit la fiche de chaque composant que tes pages emploient, pour le refaire chez lui.</p>
+</div>`,
+  });
+}
+
 /** Une valeur dite : « 3 px », « 50 % », une couleur telle quelle. @param {string} v */
 const valeurDite = (v) => (px(v) !== null ? `${fr(/** @type {number} */ (px(v)), { decimales: 2 })} px` : v.replace('%', ' %'));
 
@@ -933,8 +1029,9 @@ export function ecranDeLaRemise(e, { copie = null } = {}) {
     [String(b.changements), `${b.changements > 1 ? 'changements posés' : 'changement posé'}, sans toucher à l’ancien code`],
     ['4', 'étapes pour ton développeur, chacune livrable seule'],
   ];
-  const bouton = b.composants.find((t) => t.nom === 'Bouton') ?? b.composants[0];
-  const dabord = bouton ? ` ${bouton.nom === 'Bouton' ? 'Le bouton' : bouton.nom} d’abord : ${nombre(bouton.versions, 'version', 'versions')} pour ${nombre(bouton.fois, 'emploi', 'emplois')}.` : '';
+  const estBouton = (/** @type {{ nom: string }} */ t) => composantDuType(t.nom)?.cle === 'button';
+  const bouton = b.composants.find(estBouton) ?? b.composants[0];
+  const dabord = bouton ? ` ${estBouton(bouton) ? 'Le bouton' : bouton.nom} d’abord : ${nombre(bouton.versions, 'version', 'versions')} pour ${nombre(bouton.fois, 'emploi', 'emplois')}.` : '';
   const etape = (/** @type {number} */ n, /** @type {string} */ titre, /** @type {string} */ fait, /** @type {string} */ ecran) => rang(n, titre, null, `<p>${fait}</p><p class="discret">${esc(ecran)}</p>`);
   const etapes = groupe('etapes', 'Ce que fait ton développeur, dans l’ordre', rangs([
     etape(1, 'Installer le système', 'Il charge <strong>tokens.css</strong> avant les autres feuilles.', 'Rien ne change à l’écran.'),
@@ -979,24 +1076,34 @@ ${groupe('reste', 'Ce qui reste', rangs(reste))}
   });
 }
 
-/** Le code d'une ligne du guide, entre accents graves ; une rubrique, entre astérisques doubles. @param {string} t */
+/** Le code d'une ligne du guide, entre accents graves ; une rubrique, entre astérisques doubles ; un lien, son texte seul. @param {string} t */
 const enLigne = (t) =>
   esc(t)
     .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');
 
 /**
- * Le guide de migration (D87, D100), lisible à l'écran : le Markdown de la remise, rendu par l'outil, qui sait ce
- * qu'il écrit (titres, paragraphes, rubriques, blocs de code, listes à deux niveaux, code en ligne).
- * @param {Etat} e @param {string} md
+ * Un document Markdown que l'outil écrit ou fournit (le guide, D100 ; une fiche, D101), rendu par l'outil, qui sait ce
+ * qu'il contient : titres, paragraphes, rubriques, blocs de code, listes à deux niveaux, tableaux, code en ligne ; le
+ * titre de premier niveau est celui de l'écran.
+ * @param {string} md
  */
-export function ecranDuGuide(e, md) {
+function documentHtml(md) {
   /** @type {string[]} */
   const h = [];
   let code = /** @type {string[] | null} */ (null);
+  let tableau = /** @type {string[][] | null} */ (null);
   let liste = 0;
   const fermer = (/** @type {number} */ n) => {
     while (liste > n) (h.push('</ul>'), liste--);
+  };
+  const cellules = (/** @type {string} */ l) => l.replace(/^\|/, '').replace(/\|$/, '').split('|').map((x) => x.trim());
+  const finTableau = () => {
+    if (!tableau) return;
+    const [tete, ...corps] = tableau;
+    h.push(`<div class="tableau"><table><thead><tr>${tete.map((x) => `<th>${enLigne(x)}</th>`).join('')}</tr></thead><tbody>${corps.map((r) => `<tr>${r.map((x) => `<td>${enLigne(x)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`);
+    tableau = null;
   };
   for (const l of md.split('\n')) {
     if (code) {
@@ -1004,6 +1111,12 @@ export function ecranDuGuide(e, md) {
       else code.push(l);
       continue;
     }
+    if (l.startsWith('|')) {
+      fermer(0);
+      if (!/^\|[\s|:-]+\|$/.test(l)) (tableau ??= []).push(cellules(l));
+      continue;
+    }
+    finTableau();
     if (l.startsWith('```')) (fermer(0), (code = []));
     else if (l.startsWith('# ') || !l.trim()) fermer(0);
     else if (l.startsWith('#### ')) (fermer(0), h.push(`<h4>${enLigne(l.slice(5))}</h4>`));
@@ -1016,13 +1129,42 @@ export function ecranDuGuide(e, md) {
       h.push(`<li>${enLigne(l.replace(/^ *- (\[ \] )?/, ''))}</li>`);
     } else (fermer(0), h.push(`<p>${enLigne(l)}</p>`));
   }
+  finTableau();
   fermer(0);
+  return `<div class="document">\n${h.join('\n')}\n</div>`;
+}
+
+/**
+ * Le guide de migration (D87, D100), lisible à l'écran, tel que le développeur le lira.
+ * @param {Etat} e @param {string} md
+ */
+export function ecranDuGuide(e, md) {
   return gabarit({
     titre: 'Le guide de migration',
     onglet: `Le guide de migration · ${e.produit}`,
     phrase: 'Tel que le développeur le lira dans le dossier de la remise, sous le nom guide.md.',
     fil: filDe(e, 'Le guide de migration'),
     sousTete: '<p><a class="retour" href="/">‹ La remise</a></p>',
-    corps: `<div class="document">\n${h.join('\n')}\n</div>`,
+    corps: documentHtml(md),
+  });
+}
+
+/**
+ * Les fiches des composants de Diapason (D101), lues dans le clone et rendues comme le guide : la fiche demandée, les
+ * autres en liens, et « ‹ Les composants », vers l'écran du moment ou l'écran revu.
+ * @param {Etat} e @param {string} cle @param {string} md  la fiche, sans son en-tête
+ */
+export function ecranDesFiches(e, cle, md) {
+  const c = /** @type {import('./diapason.js').Composant} */ (COMPOSANTS.find((x) => x.cle === cle));
+  const retour = e.moment !== 'composants' && e.revoir.includes('composants') ? '/?voir=composants' : '/';
+  const titre = /^# (.+)$/m.exec(md)?.[1] ?? c.nom;
+  const liens = `<p class="fiches">${COMPOSANTS.map((x) => (x.cle === cle ? `<span aria-current="page">${esc(x.nom)}</span>` : `<a href="/fiches/${esc(x.cle)}">${esc(x.nom)}</a>`)).join('')}</p>`;
+  return gabarit({
+    titre,
+    onglet: `${titre} · ${e.produit}`,
+    phrase: `La fiche du composant « ${c.nom.toLowerCase()} », telle que ds-lab l’écrit : quand l’utiliser, ses props, ses tokens, son accessibilité.`,
+    fil: filDe(e, 'Les composants'),
+    sousTete: `<p><a class="retour" href="${retour}">‹ Les composants</a></p>${liens}`,
+    corps: documentHtml(md),
   });
 }

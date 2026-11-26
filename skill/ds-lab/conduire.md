@@ -18,7 +18,7 @@ Quelqu'un du métier qui travaille à côté de toi. Il a fait le tour de tes pa
 | Un défaut de l'outil est le sien | Ce qui manque vient de l'outil, jamais d'un choix de l'humain : « je n'ai pas su poser ce gris », pas « des couleurs que tu as choisies » |
 | Il ne propose que ce qui peut aboutir | Refaire des choix qui ne changeraient rien ne se propose pas ; il dit ce qu'on en fait |
 
-**La voix des boutons.** Le clic sur un bouton du chat s'affiche comme un message de l'humain : le bouton parle à sa place. Il dit exactement ce que le clic déclenche, avec un verbe précis, jamais « Passer », et à la première personne : mon, ma, mes (« Mesurer mes pages », « Définir ma marque », « Confirmer ma marque », « Comparer mon site », « Valider mon rendu »). Le chat et l'écran, eux, tutoient : ton, ta, tes (« Je mesure tes 3 pages »).
+**La voix des boutons.** Le clic sur un bouton du chat s'affiche comme un message de l'humain : le bouton parle à sa place. Il dit exactement ce que le clic déclenche, avec un verbe précis, jamais « Passer », et à la première personne : mon, ma, mes (« Mesurer mes pages », « Définir ma marque », « Confirmer ma marque », « Voir mes composants », « Comparer mon site », « Valider mon rendu »). Le chat et l'écran, eux, tutoient : ton, ta, tes (« Je mesure tes 3 pages »).
 
 | À éviter | Pourquoi |
 |---|---|
@@ -54,7 +54,7 @@ Quelqu'un du métier qui travaille à côté de toi. Il a fait le tour de tes pa
 
 - Il s'ouvre seul, toujours : l'humain n'a rien à ouvrir.
 - Le site ne s'y ouvre jamais pour le regarder : l'IA le regarde sans le montrer (« Avant le projet »).
-- Il ne montre que des pages : le parcours, les écrans (la dette, la marque, les fondations, la revue, l'avant et après, la remise). Jamais un fichier.
+- Il ne montre que des pages : le parcours, les écrans (la dette, la marque, les fondations, les composants, la revue, l'avant et après, la remise). Jamais un fichier.
 - Ne jamais fermer tous ses onglets : un onglet au moins reste ouvert, et c'est lui qui charge l'écran suivant.
 - Montrer une page, c'est quatre actions, dans cet ordre, dès le premier message et sans attendre qu'on le demande ; rien d'autre (une phrase qui y renvoie, un bouton, une question) ne vient avant la quatrième :
   1. l'ouvrir dans l'onglet du panneau ;
@@ -85,7 +85,8 @@ L'écran porte ce qui change l'écran (retirer une page, changer une couleur, ba
 | Les pages | Mesurer mes pages | `--passer pages` | on peut ajuster la liste à droite |
 | La dette | Définir ma marque | `--passer dette` | la dette est à droite |
 | La marque | Confirmer ma marque | `--passer marque` | on peut la changer à droite |
-| Les fondations | Comparer mon site | `--passer fondations` | elles sont à droite, pas encore sur le site |
+| Les fondations | Voir mes composants | `--passer fondations` | elles sont à droite, pas encore sur le site |
+| Les composants | Comparer mon site | `--passer composants` | ils sont à droite, à sa marque, à côté de ce qu'ils remplacent |
 | L'avant et après | Valider mon rendu | `--passer rendu` | chaque page est à droite, avant et après |
 
 À chaque passage, dans cet ordre :
@@ -133,7 +134,14 @@ Après « Définir ma marque », l'écran passe à la marque au rechargement : n
 Les tokens écrits, l'écran passe seul aux fondations : rien à décider, un écran à regarder.
 
 - Le résumé dit que les fondations sont prêtes, à sa marque, et pas encore sur le site. Ni chiffre récité, ni liste : les chiffres sont sur l'écran.
-- « Comparer mon site » (`--passer fondations`) : l'IA enchaîne la commande que donne `parcours`, sans le dire. Pas de comparaison avant.
+- « Voir mes composants » (`--passer fondations`) : l'écran des composants paraît au rechargement.
+
+## Les composants
+
+Les fondations vues, l'écran montre les composants de Diapason à sa marque : rien à décider, un écran à regarder.
+
+- Le résumé dit que ses composants sont à sa marque, à côté de ce qu'ils remplacent, et que rien n'est remplacé sur le site. Ni chiffre récité, ni liste.
+- « Comparer mon site » (`--passer composants`) : l'IA enchaîne la commande que donne `parcours`, sans le dire. Pas de comparaison avant.
 
 ## Quand la main est à l'outil
 

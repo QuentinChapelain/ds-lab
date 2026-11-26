@@ -25,6 +25,7 @@ const COULEURS = [
   'text.info',
   'text.on-inverse',
   'text.error',
+  'text.warning',
   'border.subtle',
   'border.default',
   'border.info',

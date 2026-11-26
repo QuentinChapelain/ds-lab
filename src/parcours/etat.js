@@ -19,6 +19,7 @@ import { detteDe, valeurs as valeursDe } from './dette.js';
 import { fondationsDe } from './fondations.js';
 import { apercu, lireMarque } from './marque.js';
 import { remiseDe } from './remise.js';
+import { COMPOSANTS, captureDe, composantDuType } from './diapason.js';
 
 /** Le choix de la marque à l'écran, quand l'humain l'a changé (D80) : dans les sorties. */
 const MARQUE_CHOISIE = 'marque.json';
@@ -26,11 +27,14 @@ const MARQUE_CHOISIE = 'marque.json';
 /** La dette vue : écrit à « Définir ma marque », dans le chat (D78, D92), dans les sorties. */
 export const DETTE_VUE = 'dette.json';
 
-/** Les fondations vues : écrit à « Comparer mon site », dans le chat (D83, D92), dans les sorties. */
+/** Les fondations vues : écrit à « Voir mes composants », dans le chat (D83, D92, D101), dans les sorties. */
 export const FONDATIONS_VUES = 'fondations.json';
 
-/** Ce que la saisie écrit à côté des jetons de la marque, avant l'écran des fondations (D83). */
-const ECRITS_DE_LA_MARQUE = ['roles.html', 'espacements.html', 'typo.html', 'jetons.css', 'vuetify.json'];
+/** Les composants à la marque vus : écrit à « Comparer mon site », dans le chat (D101), dans les sorties. */
+export const COMPOSANTS_VUS = 'composants-vus.json';
+
+/** Ce que la saisie écrit à côté des jetons de la marque, avant l'écran des fondations (D83) ; les captures des composants à la marque (D101). */
+const ECRITS_DE_LA_MARQUE = ['roles.html', 'espacements.html', 'typo.html', 'jetons.css', 'vuetify.json', ...COMPOSANTS.map((c) => captureDe(c.cle))];
 
 /** Les pages validées, par site (D77) : écrit quand la mesure est lancée dans le chat (D89), dans les sorties. */
 export const PAGES_VALIDEES = 'pages.json';
@@ -53,8 +57,8 @@ export function empreinteDesChoix(sorties) {
   return existsSync(f) ? createHash('sha256').update(readFileSync(f)).digest('hex') : null;
 }
 
-/** La hauteur d'une image PNG, lue dans son en-tête (IHDR, octets 20 à 23). @param {string} f */
-function hauteurPng(f) {
+/** La largeur et la hauteur d'une image PNG, lues dans son en-tête (IHDR, octets 16 à 23). @param {string} f */
+function taillePng(f) {
   const b = Buffer.alloc(24);
   const d = openSync(f, 'r');
   try {
@@ -62,7 +66,7 @@ function hauteurPng(f) {
   } finally {
     closeSync(d);
   }
-  return b.readUInt32BE(20);
+  return [b.readUInt32BE(16), b.readUInt32BE(20)];
 }
 
 /**
@@ -93,15 +97,21 @@ function pagesValidees(sorties) {
  * @typedef {import('./dette.js').Dette & { site: Site, pages: string[], valeursHref: string | null, composantsHref: string, captures: string,
  *   autres: { id: string, nom: string, href: string }[] }} Dette  la dette du premier site mesuré, au moment de la dette
  * @typedef {{ produit: string, sites: Site[], sousTitre: string | null, unSite: boolean, etapes: Etape[], temps: { nom: string, etat: EtatEtape, etapes: CleEtape[] }[],
- *   courante: Etape, moment: 'pages' | 'mesure' | 'dette' | 'marque' | 'jetons' | 'fondations' | 'avant-apres' | 'ecran' | 'sans-ecran' | 'remise', dette: Dette | null,
+ *   courante: Etape, moment: 'pages' | 'mesure' | 'dette' | 'marque' | 'jetons' | 'fondations' | 'composants' | 'avant-apres' | 'ecran' | 'sans-ecran' | 'remise', dette: Dette | null,
  *   marque: { site: Site, lecture: import('./marque.js').Lecture, choix: import('./marque.js').Choix, apercu: import('./marque.js').Apercu, planche: string | null } | null, ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
- *   fondations: Fondations | null, avantApres: AvantApres | null, remise: import('./remise.js').Remise | null, phrase: string | null, bilan: Bilan | null, chiffres: Chiffres, voisin: string | null, livraison: Livraison | null,
+ *   fondations: Fondations | null, composants: Composants | null, avantApres: AvantApres | null, remise: import('./remise.js').Remise | null, phrase: string | null, bilan: Bilan | null, chiffres: Chiffres, voisin: string | null, livraison: Livraison | null,
  *   revoir: Revu[], revue: string | null, mesure: Mesure | null, preparation: Ligne[] | null }} Etat  revoir : les écrans faits qui se revoient ; revue : l'adresse de la revue ;
  *   mesure : où en est la mesure, au moment de la mesure ; preparation : où en est l'écriture des tokens, au moment des jetons (D93)
  * @typedef {{ nom: string, detail: string, etat: string }} Ligne  une ligne de « Où j'en suis » : Mesurée, En cours, À faire, Pas mesurée ; Fait, Pas fait
  * @typedef {{ sites: { id: string, nom: string, pages: Ligne[], composants: Ligne }[] }} Mesure
  * @typedef {import('./fondations.js').Fondations & { site: Site, avant: number | null, planche: string }} Fondations  au moment des fondations : la marque du
  *   premier site, les valeurs de ses pages (avant) et l'adresse servie de ses planches
+ * @typedef {{ src: string, largeur: number, hauteur: number }} Image  une capture servie, et sa taille affichée
+ * @typedef {import('./dette.js').Type['versions']} Versions
+ * @typedef {{ captures: string, tailles: Record<string, [number, number]>, remplace: { cle: string, nom: string, phrase: string | null, versions: Versions, fois: number, hauteurs: number[], image: Image | null }[],
+ *   pasEncore: { nom: string, versions: Versions, fois: number }[], autres: { cle: string, nom: string, image: Image | null }[] }} Composants  au moment des
+ *   composants (D101) : ceux de Diapason que les pages emploient, avec les versions qu'ils remplacent et leur capture à la marque ; les types
+ *   relevés sans composant ; les autres composants
  * @typedef {{ pages: number, arrivees: number, total: number, manquantes: { titre: string, elements: number, cause: string | null }[] }} Livraison  la dernière vérification
  * @typedef {{ verification: string, dossierAjout: string, vues: { nom: string, avant: string, apres: string, plusHaute: 'avant' | 'apres', direct: string }[], pages: number, decisions: number,
  *   changements: number, arrivees: number, manquantes: string[], enEtat: string[],
@@ -119,7 +129,7 @@ const TEMPS = /** @type {const} */ ([
 
 /**
  * Les écrans qui se revoient (D88), dans l'ordre du parcours.
- * @typedef {'pages' | 'dette' | 'marque' | 'fondations' | 'revue' | 'avant-apres'} Revu
+ * @typedef {'pages' | 'dette' | 'marque' | 'fondations' | 'composants' | 'revue' | 'avant-apres'} Revu
  */
 
 /** Une phrase par moment, ce qu'il faut en comprendre (D72). */
@@ -308,7 +318,7 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
     : 'pas de marque : écrire brand dans projet.json';
   const aFaire = marques.find((m) => m.statut !== 'acceptée');
   // Après la saisie, les planches, la feuille CSS et le thème de la marque (D83).
-  const ecrireDeLaMarque = (/** @type {string} */ d) => `node src/cli/planche.js --marque ${c(d)} && npm run css -- --marque ${c(d)} && npm run vuetify -- --marque ${c(d)}`;
+  const ecrireDeLaMarque = (/** @type {string} */ d) => `node src/cli/planche.js --marque ${c(d)} && npm run css -- --marque ${c(d)} && npm run vuetify -- --marque ${c(d)} && npm run captures -- --marque ${c(d)}`;
   const statuts = ['acceptée', 'refusée', 'à saisir', 'entrée changée', 'entrée absente', 'sans entrée'];
   const pluriels = { acceptée: 'acceptées', refusée: 'refusées', 'à saisir': 'à saisir', 'entrée changée': 'entrées changées', 'entrée absente': 'entrées absentes', 'sans entrée': 'sans entrée' };
   const planche = marques.find((m) => m.planche);
@@ -418,7 +428,7 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
         const ajout = existsSync(fv) ? lireJson(fv).ajout : null;
         const [avant, apres] = [join(d, 'avant.png'), join(d, 'actuel.png')];
         return existsSync(avant) && existsSync(apres) && typeof ajout === 'string' && basename(ajout) === red?.nom
-          ? { nom: premier.noms[p] ?? p, avant: href(avant), apres: href(apres), direct: `/direct/${encodeURIComponent(premier.id)}?page=${encodeURIComponent(p)}`, plusHaute: /** @type {'avant' | 'apres'} */ (hauteurPng(avant) >= hauteurPng(apres) ? 'avant' : 'apres') }
+          ? { nom: premier.noms[p] ?? p, avant: href(avant), apres: href(apres), direct: `/direct/${encodeURIComponent(premier.id)}?page=${encodeURIComponent(p)}`, plusHaute: /** @type {'avant' | 'apres'} */ (taillePng(avant)[1] >= taillePng(apres)[1] ? 'avant' : 'apres') }
           : null;
       })
     : [];
@@ -524,7 +534,7 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
   const dossierPremier = premier.dossierMarque;
   const ecrits = !!dossierPremier && ECRITS_DE_LA_MARQUE.every((f) => existsSync(join(dossierPremier, f)));
   if (parEcran && etapeMarques.faite && !ecrits && dossierPremier)
-    Object.assign(etapeMarques, { faite: false, main: 'outil', action: 'écrire les planches, la feuille CSS et le thème de la marque', commande: ecrireDeLaMarque(dossierPremier) });
+    Object.assign(etapeMarques, { faite: false, main: 'outil', action: 'écrire les planches, la feuille CSS, le thème et les composants de la marque', commande: ecrireDeLaMarque(dossierPremier) });
   /** Les fondations de la marque du premier site. @returns {Etat['fondations']} */
   const fondationsDuSite = () => {
     const a = plusRecent(join(sorties, 'audit', premier.id, premier.hote));
@@ -540,7 +550,51 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
   let fondations = null;
   if (parEcran && etapeMarques.faite && ecrits && !table && !existsSync(join(sorties, FONDATIONS_VUES))) {
     fondations = fondationsDuSite();
-    Object.assign(etapeDecisions, { main: 'designer', action: 'regarder les fondations, puis comparer ton site', commande: null });
+    Object.assign(etapeDecisions, { main: 'designer', action: 'regarder les fondations, puis voir tes composants', commande: null });
+  }
+  // Les composants à la marque (D101) : les fondations vues, l'écran attend « Comparer mon site », dans le chat, avant la réduction.
+  /** Les composants de Diapason à la marque du premier site, et ce qu'ils remplacent sur ses pages. @returns {Etat['composants']} */
+  const composantsDuSite = () => {
+    const d = detteDuSite();
+    if (!d || !dossierPremier) return null;
+    const dossier = dossierPremier;
+    /** @param {string} cle */
+    const image = (cle) => {
+      const f = join(dossier, captureDe(cle));
+      if (!existsSync(f)) return null;
+      // Capturée au double des pixels : affichée à sa taille.
+      const [l, h] = taillePng(f);
+      return { src: `/marques/${encodeURIComponent(premier.id)}/${captureDe(cle)}`, largeur: Math.round(l / 2), hauteur: Math.round(h / 2) };
+    };
+    /** @type {NonNullable<Etat['composants']>['remplace']} */
+    const remplace = [];
+    for (const t of d.composants.types) {
+      const c = composantDuType(t.nom);
+      if (!c) continue;
+      const deja = remplace.find((x) => x.cle === c.cle);
+      if (deja) Object.assign(deja, { versions: [...deja.versions, ...t.versions], fois: deja.fois + t.fois, hauteurs: [...new Set([...deja.hauteurs, ...t.hauteurs])].sort((a, b) => a - b) });
+      else remplace.push({ cle: c.cle, nom: c.nom, phrase: c.phrase, versions: t.versions, fois: t.fois, hauteurs: t.hauteurs, image: image(c.cle) });
+    }
+    remplace.sort((a, b) => COMPOSANTS.findIndex((c) => c.cle === a.cle) - COMPOSANTS.findIndex((c) => c.cle === b.cle));
+    // Les captures du site, prises au double des pixels par le relevé : affichées à leur taille, comme le composant.
+    const releve = /** @type {string} */ (premierEcran?.html).replace(/[\\/][^\\/]+$/, '');
+    /** @type {Record<string, [number, number]>} */
+    const tailles = {};
+    for (const v of d.composants.types.flatMap((t) => t.versions))
+      if (v.capture && existsSync(join(releve, v.capture))) tailles[v.capture] = /** @type {[number, number]} */ (taillePng(join(releve, v.capture)).map((x) => Math.round(x / 2)));
+    return {
+      captures: d.captures,
+      tailles,
+      remplace,
+      pasEncore: d.composants.types.filter((t) => !composantDuType(t.nom)).map((t) => ({ nom: t.nom, versions: t.versions, fois: t.fois })),
+      autres: COMPOSANTS.filter((c) => !remplace.some((x) => x.cle === c.cle)).map((c) => ({ cle: c.cle, nom: c.nom, image: image(c.cle) })),
+    };
+  };
+  /** @type {Etat['composants']} */
+  let composants = null;
+  if (parEcran && etapeMarques.faite && ecrits && !table && existsSync(join(sorties, FONDATIONS_VUES)) && !existsSync(join(sorties, COMPOSANTS_VUS))) {
+    composants = composantsDuSite();
+    if (composants) Object.assign(etapeDecisions, { main: 'designer', action: 'regarder tes composants à ta marque, puis comparer ton site', commande: null });
   }
   const etapes = [site, constat, etapeMarques, etapeDecisions, livraison, suivi];
   const reportes = etapes.reduce((n, e) => n + e.reportes, 0);
@@ -566,13 +620,14 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
     : courante.cle === 'marques' && marque ? 'marque'
     : courante.cle === 'marques' && parEcran && courante.main === 'outil' ? 'jetons'
     : courante.cle === 'decisions' && fondations ? 'fondations'
+    : courante.cle === 'decisions' && composants ? 'composants'
     : courante.cle === 'livraison' && verdict && !valide ? 'avant-apres'
     : (courante.cle === 'livraison' || courante.cle === 'suivi') && valide ? 'remise'
     : ecran ? 'ecran'
     : 'sans-ecran';
   const refus = etapeMarques.refus && (ecran?.etape === 'marques' || (!ecran && courante.cle === 'marques'));
   const phrase =
-    moment === 'pages' || moment === 'mesure' || moment === 'dette' || moment === 'marque' || moment === 'jetons' || moment === 'fondations' || moment === 'avant-apres' || moment === 'remise' ? null
+    moment === 'pages' || moment === 'mesure' || moment === 'dette' || moment === 'marque' || moment === 'jetons' || moment === 'fondations' || moment === 'composants' || moment === 'avant-apres' || moment === 'remise' ? null
     : refus ? PHRASES.refus
     : ecran?.etape === 'constat' ? PHRASES.constat
     : ecran?.etape === 'marques' ? PHRASES.marque
@@ -658,6 +713,8 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
       ['dette', parEcran && !!premierEcran?.constat],
       ['marque', !!vueMarque],
       ['fondations', parEcran && ecrits && existsSync(join(sorties, FONDATIONS_VUES))],
+      // Un projet passé à la réduction avant cet écran (D101) le revoit aussi.
+      ['composants', parEcran && ecrits && existsSync(join(sorties, FONDATIONS_VUES)) && (existsSync(join(sorties, COMPOSANTS_VUS)) || !!table)],
       ['revue', !!revue && !!table],
       ['avant-apres', valide],
     ])
@@ -667,6 +724,7 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
   if (voir === 'dette' && !dette && revoir.includes('dette')) dette = detteDuSite();
   if (voir === 'marque' && !marque && vueMarque) marque = vueMarque;
   if (voir === 'fondations' && !fondations && revoir.includes('fondations')) fondations = fondationsDuSite();
+  if (voir === 'composants' && !composants && revoir.includes('composants')) composants = composantsDuSite();
 
   // Où j'en suis (D93) : la mesure, page par page, puis le relevé des composants ; l'écriture des tokens, étape par
   // étape, chaque fichier fait s'il est plus récent que l'entrée de la marque.
@@ -696,6 +754,7 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
       ['Les planches', 'Les rôles, les espacements et les textes, à regarder.', ['roles.html', 'espacements.html', 'typo.html'].map((f) => join(d, f))],
       ['La feuille de variables', 'Les tokens, en variables CSS.', [join(d, 'jetons.css')]],
       ['Le thème', 'Le thème Vuetify de ta marque.', [join(d, 'vuetify.json')]],
+      ['Tes composants', 'Les composants de Diapason, capturés aux couleurs de ta marque.', COMPOSANTS.map((x) => join(d, captureDe(x.cle)))],
     ];
     const faits = etapesTokens.map(([, , f]) => fait(/** @type {string[]} */ (f)));
     const premiere = faits.indexOf(false);
@@ -729,6 +788,7 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
     dette,
     marque,
     fondations,
+    composants,
     avantApres,
     remise:
       moment === 'remise' && red

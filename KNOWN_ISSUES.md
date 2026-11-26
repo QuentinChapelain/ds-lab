@@ -35,6 +35,7 @@
 - « Voir tous les composants », sur l'écran de la dette, ouvre la page de la mesure des composants : une vue d'ensemble (« un graphique, une vue macro plus qu'un détail », Quentin, 25/11/2026), qui dit encore « constat ». À payer : ce lien mène au détail des versions, type par type. Écran des composants, ou avant (environ 2 h [H]).
 - La police des titres se lit sur les pages et s'affiche à l'écran de la marque, sans se changer (D80). À payer avec « Modifier », ou à l'écran des fondations : un champ, ou les familles relevées sur les pages.
 - Les textes existants disent encore « client » là où le parcours dit produit, site, marque : `docs/regles.md` (DS17, DF4 : « la police du client »), le README (« une marque par client », « Ce qu'un client peut changer »). À reprendre avec l'alignement des écrans.
+- Les fiches copiées dans le dossier « composants » de la remise (D100) sont écrites pour ds-lab, pas pour l'équipe du site : renvois internes (CP8, B9, D52), colonne « Nom repris de » avec les noms de Vuetify, intentions en anglais. À payer : une version de la fiche pour l'équipe du site, sans renvoi interne ni nom de Vuetify, ses intentions dites aussi en français.
 - Le README fait 15 400 mots [F, compté le 26/11/2026] : à couper en une page d'accueil courte et des fichiers dans `docs/`, après les écrans du parcours ; la capture de sa tête vient alors aussi (D95).
 
 ## À payer après l'étape 11

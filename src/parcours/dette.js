@@ -14,7 +14,7 @@ import { couleursProches } from '../report/html.js';
 /**
  * @typedef {{ valeur: string, fois: number }} Valeur
  * @typedef {{ cle: 'colors' | 'fontSizes' | 'spacing' | 'radii', titre: string, compte: number, note: string | null, valeurs: (Valeur & { hors?: boolean, gris?: boolean })[] }} Famille
- * @typedef {{ nom: string, versions: { nom: string, fois: number, capture: string | null, sansStyle: boolean }[], fois: number, note: string }} Type
+ * @typedef {{ nom: string, versions: { nom: string, fois: number, capture: string | null, sansStyle: boolean }[], fois: number, hauteurs: number[], note: string }} Type
  * @typedef {{ valeurs: { total: number, familles: Famille[] } | null, composants: { types: Type[], aussi: string[] } }} Dette
  */
 
@@ -164,7 +164,7 @@ function composants(constat) {
         : hauteurs.length > 1
           ? ` ; ${enLettres(hauteurs.length).toLowerCase()} hauteurs : ${liste(hauteurs.map(String))} px`
           : '';
-      return { nom: majuscule(String(t.nom)), versions, fois: t.fois, note: `${nombre(versions.length, 'version', 'versions')} pour ${nombre(t.fois, 'emploi', 'emplois')}${suite}` };
+      return { nom: majuscule(String(t.nom)), versions, fois: t.fois, hauteurs, note: `${nombre(versions.length, 'version', 'versions')} pour ${nombre(t.fois, 'emploi', 'emplois')}${suite}` };
     });
   const zone = constat.scores?.accessibilite?.echecs?.zone ?? 0;
   return {

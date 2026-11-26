@@ -21,6 +21,7 @@
     "verifier": "node src/cli/verifier.js",
     "banc": "node src/cli/banc.js",
     "vuetify": "node src/cli/vuetify.js",
+    "captures": "node atelier/captures.js",
     "login": "node src/cli/login.js",
     "marque": "node src/cli/marque.js",
     "jeu": "node src/cli/jeu.js",

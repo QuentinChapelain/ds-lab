@@ -33,8 +33,9 @@
  *       pas, ses valeurs, ses rôles, ses relations d'espace, ses paires dans les quatre contextes, les liens vers ses
  *       planches, six preuves et les limites, « Pas encore », « Comparer mon site » ; rien à décider ; pour le chat, une
  *       phrase sans chiffre ;
- *   EC11 « Comparer mon site » (--passer fondations) : les fondations vues, la main à l'outil qui lance la réduction ; une
- *       preuve fausse pour la marque (sans feuille CSS) n'est pas rendue ;
+ *   EC11 « Voir mes composants » (--passer fondations) : les fondations vues, l'écran des composants ; un second passage
+ *       est refusé ; « Comparer mon site » (--passer composants) : la main à l'outil qui lance la réduction ; une preuve
+ *       fausse pour la marque (sans feuille CSS) n'est pas rendue ;
  *   EC12 l'avant et après (D86), dès les feuilles vérifiées, avant la validation : un onglet par page nommée, la bascule
  *       Avant, Après sans script, la plus haute des deux images tient le cadre, la légende sous l'image suit la bascule ;
  *       le total des changements et ses comptes, puis « Ce qui change » en lignes : une par famille et son exemple (le
@@ -69,6 +70,11 @@
  *       relevé des composants en dernier), l'audit d'abord puis le relevé, chacun avec --avancement ; une mesure neuve
  *       repart d'un avancement vide ; l'audit note chaque page ; l'écriture des tokens dit ses quatre étapes, faites
  *       quand leur fichier est plus récent que l'entrée de la marque ;
+ *   EC22 les composants à ta marque (D101), après « Voir mes composants » : une ligne par composant de Diapason que les
+ *       pages emploient (« 5 → 1 », ses emplois, les versions du site et le composant capturé à la marque, chacun à sa
+ *       taille, la phrase de ce qu'il change), une par type que Diapason n'a pas encore, les autres composants, le pied ;
+ *       « Voir les fiches » : chaque fiche rendue comme le guide, les autres en liens, « ‹ Les composants » ; rien à
+ *       décider, « Comparer mon site » dans le chat ; l'écran se revoit ;
  *   EC19 regarder le site sans le montrer (D91) : la page donnée et celles du même site vers lesquelles elle mène,
  *       rendues sans fenêtre, leur titre et leurs composants comptés, les plus riches d'abord ; un site qui ne répond
  *       pas, sa raison en une ligne et la sortie 1 ; --regarder avec un projet : sortie 2.
@@ -83,8 +89,8 @@ import { fileURLToPath } from 'node:url';
 import { lireProjet } from '../src/parcours/projet.js';
 import { calculerEtat } from '../src/parcours/etat.js';
 import { pageDuParcours } from '../src/parcours/page.js';
-import { ecranDuGuide, ecranDeLancement, FIN_JETONS } from '../src/parcours/ecrans.js';
-import { ajouterPage, choisirCouleur, confirmerMarque, detteVue, echangerAccent, fondationsVues, retirerPage, rouvrirRevue, validerPages, validerRendu } from '../src/parcours/pages.js';
+import { ecranDesFiches, ecranDuGuide, ecranDeLancement, FIN_JETONS } from '../src/parcours/ecrans.js';
+import { ajouterPage, choisirCouleur, composantsVus, confirmerMarque, detteVue, echangerAccent, fondationsVues, retirerPage, rouvrirRevue, validerPages, validerRendu } from '../src/parcours/pages.js';
 import { fondationsDe } from '../src/parcours/fondations.js';
 import { ecrireRemise, guide, INTENTIONS, message, pageEnDirect } from '../src/parcours/remise.js';
 import { copierMessage } from '../src/parcours/pages.js';
@@ -98,6 +104,9 @@ import { runAudit } from '../src/audit/run.js';
 import { request } from 'node:http';
 import { createHash } from 'node:crypto';
 import { readdirSync } from 'node:fs';
+import { COMPOSANTS } from '../src/parcours/diapason.js';
+import { ecrireSansCaptures } from './helpers/captures.js';
+import { ficheDe } from '../src/parcours/remise.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const FIX = join(ROOT, 'fixtures', 'parcours');
@@ -515,25 +524,28 @@ test('EC9 modifier la marque : une couleur relevée, un code tapé, l’échange
 });
 
 /** La marque confirmée, puis la commande que donne le parcours, lancée depuis la racine : le moment des fondations. */
+/**
+ * La marque confirmée, puis écrite par la commande du parcours ; les captures de l'atelier, qui demandent sa version
+ * construite et sont prouvées par sa preuve (a-ta-marque), sont remplacées par des images d'essai.
+ */
 const auxFondations = () => {
   const { d, f } = aLaMarque();
   confirmerMarque(f);
   const avant = calculerEtat(lireProjet(f), { base: ROOT });
-  const r = spawnSync('sh', ['-c', /** @type {string} */ (avant.courante.commande)], { cwd: ROOT, encoding: 'utf8' });
-  assert.equal(r.status, 0, r.stdout + r.stderr);
+  ecrireSansCaptures(/** @type {string} */ (avant.courante.commande), join(d, 'marques', 'orbe'), ROOT);
   return { d, f, avant };
 };
 
 test('EC10 après « Confirmer ma marque » : l’attente, puis les fondations calculées pour la marque du projet', () => {
   const { d, f, avant } = auxFondations();
   assert.equal(avant.moment, 'jetons');
-  assert.match(/** @type {string} */ (avant.courante.commande), /npm run saisie -- .* && node src\/cli\/planche\.js --marque .* && npm run css -- --marque .* && npm run vuetify -- --marque /);
+  assert.match(/** @type {string} */ (avant.courante.commande), /npm run saisie -- .* && node src\/cli\/planche\.js --marque .* && npm run css -- --marque .* && npm run vuetify -- --marque .* && npm run captures -- --marque /);
   const attente = pageDuParcours(avant);
   assert.ok(texte(attente).includes('Je prépare tes fondations'));
   assert.match(attente, /<meta http-equiv="refresh" content="2">/);
   assert.deepEqual(enDur(attente), []);
   const e = calculerEtat(lireProjet(f), { base: d });
-  assert.deepEqual([e.moment, e.courante.cle, e.courante.main, e.courante.action, e.courante.commande], ['fondations', 'decisions', 'designer', 'regarder les fondations, puis comparer ton site', null]);
+  assert.deepEqual([e.moment, e.courante.cle, e.courante.main, e.courante.action, e.courante.commande], ['fondations', 'decisions', 'designer', 'regarder les fondations, puis voir tes composants', null]);
   const fo = /** @type {NonNullable<typeof e.fondations>} */ (e.fondations);
   assert.equal(fo.primaire[8], '#2b4c7e');
   assert.equal(fo.accent?.length, 12);
@@ -573,19 +585,24 @@ test('EC10 après « Confirmer ma marque » : l’attente, puis les fondations c
   assert.match(h, /<a class="voir" href="\/marques\/orbe\/roles\.html">La planche des rôles<\/a>/);
   assert.doesNotMatch(h, /<form|Comparer mon site/);
   assert.doesNotMatch(t, /[Cc]onstat|\.json|Voir les composants/);
-  // Le chat : sans chiffre récité ; un seul bouton, Comparer mon site.
+  // Le chat : sans chiffre récité ; un seul bouton, Voir mes composants.
   const fa = faitsDuMoment(e, { sorties: join(d, 'sorties') });
   assert.ok(fa.includes('  Écran : les fondations'), fa.join('\n'));
-  assert.ok(fa.some((l) => /^ {2}Ensuite : l’écran devant et vérifié, puis la boîte de fin de tour : les fondations sont prêtes, à sa marque, pas encore sur le site ; ni chiffre ni liste ; un seul bouton, Comparer mon site ; .* parcours --passer fondations$/.test(l)));
+  assert.ok(fa.some((l) => /^ {2}Ensuite : l’écran devant et vérifié, puis la boîte de fin de tour : les fondations sont prêtes, à sa marque, pas encore sur le site ; ni chiffre ni liste ; un seul bouton, Voir mes composants ; .* parcours --passer fondations$/.test(l)));
   assert.ok(!fa.some((l) => l.startsWith('  Chiffre')));
   assert.doesNotMatch(h, /<script|\sstyle="|http-equiv="refresh"/);
   assert.deepEqual(enDur(h), []);
 });
 
-test('EC11 « Comparer mon site », dans le chat : la main à l’outil ; une preuve fausse pour la marque n’est pas rendue', () => {
+test('EC11 « Voir mes composants », puis « Comparer mon site », dans le chat : la main à l’outil ; une preuve fausse pour la marque n’est pas rendue', () => {
   const { d, f } = auxFondations();
   const r = parcours([f, '--passer', 'fondations']);
   assert.equal(r.status, 0, r.stderr);
+  const c = calculerEtat(lireProjet(f), { base: d });
+  assert.deepEqual([c.moment, c.courante.main, c.courante.action, c.courante.commande, c.fondations], ['composants', 'designer', 'regarder tes composants à ta marque, puis comparer ton site', null, null]);
+  const deux = parcours([f, '--passer', 'fondations']);
+  assert.deepEqual([deux.status, deux.stdout.trim()], [1, 'Ce n’est pas le moment : l’écran du moment est les composants à ta marque.']);
+  assert.equal(parcours([f, '--passer', 'composants']).status, 0);
   const e = calculerEtat(lireProjet(f), { base: d });
   assert.deepEqual([e.moment, e.courante.main, e.courante.action, e.fondations], ['ecran', 'outil', 'lancer la réduction', null]);
   assert.match(/** @type {string} */ (e.courante.commande), /^npm run reduce -- .* --brand-colors/);
@@ -598,6 +615,61 @@ test('EC11 « Comparer mon site », dans le chat : la main à l’outil ; une pr
   assert.deepEqual([g.moment, g.courante.cle, g.courante.main], ['jetons', 'marques', 'outil']);
   assert.match(/** @type {string} */ (g.courante.commande), /npm run css -- --marque/);
   assert.ok(existsSync(join(dossier, 'vuetify.json')));
+});
+
+test('EC22 les composants à ta marque : ce qu’ils remplacent, ce que Diapason n’a pas encore, les autres ; les fiches ; rien à décider', () => {
+  const { d, f } = auxFondations();
+  fondationsVues(f);
+  const e = calculerEtat(lireProjet(f), { base: d });
+  assert.deepEqual([e.moment, e.courante.cle, e.courante.main], ['composants', 'decisions', 'designer']);
+  const h = pageDuParcours(e);
+  const t = texte(h);
+  for (const x of [
+    'Tes composants, à ta marque',
+    'Les six composants de Diapason, aux couleurs d’Annuaire des cafés. Pour ceux que tes pages utilisent déjà, tu vois ce qu’ils remplacent.',
+    'Ce qu’ils remplacent Voir les fiches',
+    '5 → 1 Bouton 8 emplois sur tes pages Sur ton site aujourd’hui',
+    'Avec Diapason, à ta marque',
+    'Un seul bouton, quatre intentions (principal, secondaire, discret, danger) et deux tailles. Une fois écrit par ton développeur, tes quatre hauteurs d’aujourd’hui n’en font plus que deux.',
+    '2 → 1 Champ de texte 4 emplois sur tes pages',
+    'Un seul champ, toujours avec son nom au-dessus, une aide et un message d’erreur prévus.',
+    'Pas encore dans Diapason',
+    'Diapason n’a pas encore de composant de lien. Tes liens gardent leurs quatre formes, avec les couleurs de ta marque.',
+    'Les autres composants de Diapason Bouton à icône Étiquette Avatar Carte',
+    'Rien n’est remplacé sur ton site à cette étape. À la remise, ton développeur reçoit la fiche de chaque composant que tes pages emploient, pour le refaire chez lui.',
+  ])
+    assert.ok(t.includes(x), x);
+  assert.match(t, /4 Lien 18 emplois(, dont \d+ sans style)? Pas encore dans Diapason/);
+  // Le vrai composant, capturé à la marque, affiché à sa taille ; les versions du site, sur papier, à la leur.
+  assert.match(h, /<div class="papier vitrine"><img src="\/marques\/orbe\/composants\/button\.png" width="100" height="40" alt="Bouton, à ta marque"><\/div>/);
+  for (const c of COMPOSANTS) assert.ok(h.includes(`/marques/orbe/composants/${c.cle}.png`), c.cle);
+  assert.equal((h.match(/<img src="\/sorties\/composants\/[^"]+\/captures\/[^"]+\.png" width="\d+" height="\d+"/g) ?? []).length, 5 + 2 + 4);
+  assert.match(h, /<a href="\/fiches">Voir les fiches<\/a>/);
+  assert.deepEqual(fil(h), ['Mesurer', '2 Décider', '3 Vérifier', '4 Remettre']);
+  assert.match(h, /<small>Les composants<\/small>/);
+  assert.doesNotMatch(h, /<form|<script|\sstyle="|http-equiv="refresh"|Comparer mon site|[Cc]onstat/);
+  assert.deepEqual(enDur(h), []);
+  // Le chat : un seul bouton, Comparer mon site.
+  const fa = faitsDuMoment(e, { sorties: join(d, 'sorties') });
+  assert.ok(fa.includes('  Écran : les composants à sa marque'), fa.join('\n'));
+  assert.ok(fa.some((l) => /un seul bouton, Comparer mon site ; .* parcours --passer composants$/.test(l)), fa.join('\n'));
+  // Les fiches, servies depuis le clone : rendues comme le guide, les autres en liens, le retour à l'écran du moment.
+  const fi = ecranDesFiches(e, 'button', ficheDe('button'));
+  assert.match(fi, /<h1>DsButton<\/h1>/);
+  assert.match(fi, /<p><a class="retour" href="\/">‹ Les composants<\/a><\/p><p class="fiches"><span aria-current="page">Bouton<\/span><a href="\/fiches\/text-input">Champ de texte<\/a>/);
+  assert.match(fi, /<table><thead><tr><th>Prop<\/th>/);
+  assert.match(fi, /<td><code>variant<\/code><\/td>/);
+  assert.doesNotMatch(fi, /<!--|^---$|\]\(/m);
+  assert.deepEqual(enDur(fi), []);
+  // Comparé, l'écran se revoit, et ses fiches y ramènent.
+  composantsVus(f);
+  const g = calculerEtat(lireProjet(f), { base: d });
+  assert.ok(g.revoir.includes('composants'));
+  assert.notEqual(g.moment, 'composants');
+  const vu = pageDuParcours(calculerEtat(lireProjet(f), { base: d, voir: 'composants' }), { voir: 'composants' });
+  assert.ok(texte(vu).includes('Tu revois Décider'));
+  assert.match(vu, /<span aria-current="page">Les composants<\/span>/);
+  assert.match(ecranDesFiches(g, 'tag', ficheDe('tag')), /<a class="retour" href="\/\?voir=composants">‹ Les composants<\/a>/);
 });
 
 /** Une copie du bilan dont le rendu n'est pas encore validé : l'avant et après. */
@@ -727,7 +799,7 @@ test('EC14 la remise : les étapes et leurs comptes, le guide de migration ; l�
     '**Comment** Un fichier, un commit.',
     '```css\nbody { background-color: #ffffff; color: #333333; }\nbody { background-color: var(--color-white, #ffffff); color: var(--color-neutral-12, #333333); }\n```',
     '### 4. Remplacer les composants',
-    '**La règle** Un composant expose une intention, jamais une couleur : pour le bouton, `primary`, `secondary`, `ghost` et `danger`.',
+    '**La règle** Un composant expose une intention, jamais une couleur : pour le bouton, `primary` (principal), `secondary` (secondaire), `ghost` (discret) et `danger` (danger).',
     '## En cas de doute',
     'dis-le au designer : il peut y revenir, et les feuilles se régénèrent.',
     '## La liste, fichier par fichier',
@@ -944,6 +1016,7 @@ test('EC20 ni barre ni bouton de passage sur aucun écran ; ce qui change l’é
     dette: pageDuParcours(etat('constat')),
     marque: pageDuParcours((({ d, f }) => calculerEtat(lireProjet(f), { base: d }))(aLaMarque())),
     fondations: pageDuParcours((({ d, f }) => calculerEtat(lireProjet(f), { base: d }))(auxFondations())),
+    composants: pageDuParcours((({ d, f }) => (fondationsVues(f), calculerEtat(lireProjet(f), { base: d })))(auxFondations())),
     avantApres: pageDuParcours((({ d, f }) => calculerEtat(lireProjet(f), { base: d }))(avantApres())),
     remise: pageDuParcours(etat('bilan')),
   };
@@ -1011,11 +1084,11 @@ test('EC21 « Où j’en suis » : la mesure page par page, puis le relevé ; l�
   confirmerMarque(g);
   let j = calculerEtat(lireProjet(g), { base: ROOT });
   assert.equal(j.moment, 'jetons');
-  assert.deepEqual(j.preparation?.map((l) => [l.nom, l.etat]), [['Les tokens de ta marque', 'En cours'], ['Les planches', 'À faire'], ['La feuille de variables', 'À faire'], ['Le thème', 'À faire']]);
+  assert.deepEqual(j.preparation?.map((l) => [l.nom, l.etat]), [['Les tokens de ta marque', 'En cours'], ['Les planches', 'À faire'], ['La feuille de variables', 'À faire'], ['Le thème', 'À faire'], ['Tes composants', 'À faire']]);
   const r = spawnSync('sh', ['-c', /** @type {string} */ (j.courante.commande).split(' && node src/cli/planche.js')[0]], { cwd: ROOT, encoding: 'utf8' });
   assert.equal(r.status, 0, r.stdout + r.stderr);
   j = calculerEtat(lireProjet(g), { base: ROOT });
-  assert.deepEqual(j.preparation?.map((l) => l.etat), ['Fait', 'En cours', 'À faire', 'À faire']);
+  assert.deepEqual(j.preparation?.map((l) => l.etat), ['Fait', 'En cours', 'À faire', 'À faire', 'À faire']);
   const hj = pageDuParcours(j);
   assert.match(hj, /<h2 id="t-ou">Où j’en suis<\/h2>/);
   assert.match(hj, /<strong>Les tokens de ta marque<\/strong>.*<span class="etat fait">Fait<\/span>/);

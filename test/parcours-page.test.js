@@ -24,7 +24,8 @@ import { pageDuParcours } from '../src/parcours/page.js';
 import { servir } from '../src/parcours/serveur.js';
 import { lancerChromium } from '../src/browser/lancement.js';
 import { startFixtureServers } from './helpers/serveur.js';
-import { spawn, spawnSync } from 'node:child_process';
+import { ecrireSansCaptures } from './helpers/captures.js';
+import { spawn } from 'node:child_process';
 import { confirmerMarque } from '../src/parcours/pages.js';
 import { cpSync, mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -106,8 +107,7 @@ test('PG3 le lancement, les pages, la dette, la marque et les fondations à 640 
         // La marque confirmée, puis la saisie que donne le parcours : l'écran des fondations.
         confirmerMarque(join(d, 'projet.json'));
         const e = calculerEtat(lireProjet(join(d, 'projet.json')), { base: ROOT });
-        const r = spawnSync('sh', ['-c', /** @type {string} */ (e.courante.commande)], { cwd: ROOT, encoding: 'utf8' });
-        assert.equal(r.status, 0, r.stdout + r.stderr);
+        ecrireSansCaptures(/** @type {string} */ (e.courante.commande), join(d, 'marques', 'orbe'), ROOT);
       }
       for (const scheme of /** @type {const} */ (['light', 'dark'])) {
         const page = await browser.newPage({ viewport: { width: 640, height: 900 }, colorScheme: scheme });

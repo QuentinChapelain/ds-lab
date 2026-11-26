@@ -132,7 +132,14 @@ export function faitsDuMoment(e, { sorties }) {
         f.push(
           ['Fait', 'la marque saisie, ses tokens et ses contrôles écrits'],
           ['Écran', 'les fondations'],
-          ['Ensuite', boite('les fondations sont prêtes, à sa marque, pas encore sur le site ; ni chiffre ni liste', 'Comparer mon site', '--passer fondations')],
+          ['Ensuite', boite('les fondations sont prêtes, à sa marque, pas encore sur le site ; ni chiffre ni liste', 'Voir mes composants', '--passer fondations')],
+        );
+      } else if (e.moment === 'composants') {
+        // Les composants à la marque (D101) : à regarder, rien à décider.
+        f.push(
+          ['Fait', 'les composants de Diapason capturés à sa marque'],
+          ['Écran', 'les composants à sa marque'],
+          ['Ensuite', boite('ses composants sont à sa marque, à côté de ce qu’ils remplacent ; rien n’est remplacé sur le site ; ni chiffre ni liste', 'Comparer mon site', '--passer composants')],
         );
       } else if (!k.sortie) {
         f.push(['Fait', 'la marque, acceptée'], ['Écran', 'la planche de la marque'], ['Ensuite', 'comparer les pages aux fondations']);

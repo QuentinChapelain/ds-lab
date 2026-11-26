@@ -14,6 +14,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { lireJson } from '../lib/fichiers.js';
 import { deNom, liste } from '../lib/format.js';
+import { COMPOSANTS, INTENTIONS as INTENTIONS_DITES, composantDuType } from './diapason.js';
 
 /** Le dossier de la remise, à côté du projet. */
 const REMISE = 'remise';
@@ -27,14 +28,14 @@ const GUIDE = 'guide.md';
 /** Les fiches des composants de ds-lab, d'où la remise copie celles des types relevés sur le site. */
 const FICHES = fileURLToPath(new URL('../../docs/composants/', import.meta.url));
 
-/** La fiche de chaque type de composant que relève le site, quand ds-lab en a une (D100). */
-const FICHE_DU_TYPE = /** @type {Record<string, string>} */ ({ Bouton: 'button.md', 'Champ de texte': 'text-input.md' });
+/** La fiche du type relevé, quand Diapason a son composant (D100, D101) : une seule table, celle de l'écran des composants. @param {string} type */
+const ficheDuType = (type) => ((c) => (c ? `${c.cle}.md` : null))(composantDuType(type));
 
 /** Les types relevés au féminin, pour leur article. */
 const FEMININS = new Set(['case à cocher', 'liste déroulante', 'fenêtre']);
 
 /** Les intentions du bouton, celles de sa fiche (`variant`) : un composant expose une intention, jamais une couleur. */
-export const INTENTIONS = ['primary', 'secondary', 'ghost', 'danger'];
+export const INTENTIONS = INTENTIONS_DITES.map(([v]) => v);
 
 /**
  * @typedef {{ selecteur: string, ligne: number, valeurs: { propriete: string, avant: string, apres: string }[] }} Regle
@@ -142,8 +143,11 @@ const lien = (chemin) => `<link rel="stylesheet" href="${chemin}">`;
 /** Accord en nombre : 0 et 1 au singulier. @param {number} n @param {string} un @param {string} plusieurs */
 const nombre = (n, un, plusieurs) => `${n} ${n > 1 ? plusieurs : un}`;
 
-/** Les types relevés qui ont une fiche, le bouton d'abord. @param {Controle} c */
-const avecFiche = (c) => c.composants.filter((t) => FICHE_DU_TYPE[t.nom]).sort((a, b) => (a.nom === 'Bouton' ? -1 : b.nom === 'Bouton' ? 1 : 0));
+/** Les types relevés qui ont une fiche, dans l'ordre des composants de Diapason : le bouton d'abord. @param {Controle} c */
+const avecFiche = (c) => {
+  const rang = (/** @type {{ nom: string }} */ t) => COMPOSANTS.findIndex((x) => x === composantDuType(t.nom));
+  return c.composants.filter((t) => ficheDuType(t.nom)).sort((a, b) => rang(a) - rang(b));
+};
 
 /**
  * Le guide de migration (D100), sur la planche « 9 bis » : la stratégie d'abord, puis chaque étape avec les mêmes
@@ -179,7 +183,7 @@ export function guide(r, c) {
   const controle = c.changements ? ` ${surPages}, au contrôle du designer, ${vus} ${vus > 1 ? 'changements' : 'changement'} sur ${c.changements} se ${vus > 1 ? 'voient' : 'voit'} sur l’image${aLaMain}.` : '';
   const types = avecFiche(c);
   const premier = types[0];
-  const sansFiche = c.composants.filter((t) => !FICHE_DU_TYPE[t.nom]);
+  const sansFiche = c.composants.filter((t) => !ficheDuType(t.nom));
   const nomDit = (/** @type {string} */ n) => {
     const m = n.charAt(0).toLowerCase() + n.slice(1);
     return /^[aeiouyé]/.test(m) ? `l’${m}` : FEMININS.has(m) ? `la ${m}` : `le ${m}`;
@@ -241,13 +245,13 @@ export function guide(r, c) {
     '',
     ...rubrique('Ce que tu fais', `Tu écris chaque composant une seule fois, d’après sa fiche, puis tu remplaces ses versions en double.${premier ? ` Commence par ${nomDit(premier.nom)} : ${nombre(premier.versions, 'version', 'versions')} pour ${nombre(premier.fois, 'emploi', 'emplois')}.` : ''}`),
     ...rubrique('Pourquoi', `Les trois premières étapes alignent les valeurs. ${premier && premier.versions > 1 ? `Il reste ${premier.versions} façons d’écrire ${nomDit(premier.nom)} : c’est là que le désordre revient.` : 'Les composants écrits plusieurs fois sont l’endroit où le désordre revient.'}`),
-    ...rubrique('La règle', `Un composant expose une intention, jamais une couleur : pour le bouton, ${liste(INTENTIONS.map((x) => `\`${x}\``))}. Il lit les variables du système, et rien d’autre.`),
+    ...rubrique('La règle', `Un composant expose une intention, jamais une couleur : pour le bouton, ${liste(INTENTIONS_DITES.map(([v, mot]) => `\`${v}\` (${mot})`))}. Il lit les variables du système, et rien d’autre.`),
     ...rubrique('La structure', `Un dossier par composant, avec sa fiche et son code dans ta technologie. Les fiches sont dans \`composants/\`, avec un exemple de structure.`),
     ...rubrique('Tu vérifies', premier ? `${premier.fois > 1 ? `Les ${premier.fois} emplois` : 'L’emploi'} de ${nomDit(premier.nom)} ${premier.fois > 1 ? 'passent' : 'passe'} par le même composant.`.replace(/de le /, 'du ') : 'Chaque emploi passe par son composant.'),
     ...(sansFiche.length
       ? rubrique('Pas encore', `${majuscule(liste(sansFiche.map((t) => nomDit(t.nom))))} ${sansFiche.length > 1 ? 'n’ont pas de fiche : leurs versions restent' : 'n’a pas de fiche : ses versions restent'}, avec les bonnes valeurs.`)
       : []),
-    ...bloc('text', structure(types.map((t) => FICHE_DU_TYPE[t.nom]))),
+    ...bloc('text', structure(types.map((t) => /** @type {string} */ (ficheDuType(t.nom))))),
     '',
     '## En cas de doute',
     '',
@@ -279,6 +283,9 @@ function structure(fiches) {
 
 /** Une fiche de ds-lab telle que le développeur la lit : sans son en-tête ni les marques de ce que l'outil génère. @param {string} texte */
 const ficheLue = (texte) => texte.replace(/^---\n[\s\S]*?\n---\n+/, '').replace(/^<!-- .*? -->\n/gm, '');
+
+/** La fiche d'un composant de Diapason, telle que le développeur la lit (D101). @param {string} cle */
+export const ficheDe = (cle) => ficheLue(readFileSync(join(FICHES, `${cle}.md`), 'utf8'));
 
 /**
  * Le mot d'accompagnement (D99) : pour un humain, il dit l'idée et demande un avis. Il ne promet que ce que le dossier
@@ -321,7 +328,7 @@ export function ecrireRemise(r, { dossierAjout, verification, controle }) {
     cpSync(join(dossierAjout, f), cible);
   }
   // Les fiches des types relevés, et l'exemple de structure (D100).
-  const fiches = avecFiche(controle).map((t) => FICHE_DU_TYPE[t.nom]);
+  const fiches = avecFiche(controle).map((t) => /** @type {string} */ (ficheDuType(t.nom)));
   mkdirSync(join(r.dossier, 'composants'), { recursive: true });
   for (const f of fiches) writeFileSync(join(r.dossier, 'composants', f), ficheLue(readFileSync(join(FICHES, f), 'utf8')));
   writeFileSync(join(r.dossier, 'composants', 'structure.md'), `# Un dossier par composant\n\n\`\`\`text\n${structure(fiches)}\n\`\`\`\n`);

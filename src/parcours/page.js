@@ -17,6 +17,7 @@ import {
   ecranDeLaMarque,
   ecranDesJetons,
   ecranDesFondations,
+  ecranDesComposants,
   ecranDeLaRevue,
   ecranAvantApres,
   ecranDeLaRemise,
@@ -122,6 +123,7 @@ function revu(e, voir) {
   if (k === 'dette' && e.dette) return ecranDeLaDette(e, { lecture: lectureDe(e, k) });
   if (k === 'marque' && e.marque) return ecranDeLaMarque(e, { lecture: lectureDe(e, k) });
   if (k === 'fondations' && e.fondations) return ecranDesFondations(e, { lecture: lectureDe(e, k) });
+  if (k === 'composants' && e.composants) return ecranDesComposants(e, { lecture: lectureDe(e, k) });
   if (k === 'revue' && e.revue) return ecranDeLaRevue(e, e.revue);
   if (k === 'avant-apres' && e.avantApres) return ecranAvantApres(e, { lecture: lectureDe(e, k) });
   return null;
@@ -143,6 +145,7 @@ export function pageDuParcours(e, { erreur = null, copie = null, voir = null } =
   if (e.moment === 'marque' && e.marque) return ecranDeLaMarque(e, { erreur });
   if (e.moment === 'jetons') return ecranDesJetons(e);
   if (e.moment === 'fondations' && e.fondations) return ecranDesFondations(e);
+  if (e.moment === 'composants' && e.composants) return ecranDesComposants(e);
   if (e.moment === 'avant-apres' && e.avantApres) return ecranAvantApres(e);
   if (e.moment === 'remise' && e.remise) return ecranDeLaRemise(e, { copie });
   return `<!doctype html>
