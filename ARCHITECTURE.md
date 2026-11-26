@@ -5,7 +5,7 @@ La carte du dépôt, limitée à ce qui change rarement. Les valeurs se lisent d
 ## Schéma d'ensemble
 
 ```
-Migration d'un site existant (phases 2 et 3 du README)
+Migration d'un site existant (phases 2 et 3 de `docs/parcours.md`)
 
   page servie ──► audit ───────────► reduce ──────────────────► apply ───────► verify
                   déclaré et rendu    table ancien → nouveau     copie du site   pixels et arbre
@@ -61,6 +61,29 @@ Jetons d'une marque (phase 1)
 ```
 
 Chaque commande npm a son point d'entrée dans `src/cli/`, sauf `npm run demo` (`test/helpers/demo.js`), `npm run types` (`tsc`), `npm run knip` (`knip`), `npm run dependances` (`depcruise`), `npm run style` (`stylelint`) et `npm test` (`node --test`). L'orchestration de l'audit et de la réduction vit dans leur couche, `src/audit/run.js` et `src/reduce/run.js` (D30) ; aucun module de `src/` hors de `src/cli/` n'importe de `src/cli/`. Toute commande a trois issues (D18) : 0 tout passe, 1 l'entrée a été lue et jugée (règle en échec, marque refusée avec son motif), 2 l'entrée n'a pas pu être jugée (fichier absent ou illisible, option inconnue, panne), message d'une ligne préfixé par le nom de la commande ; la garde commune est `src/cli/garde.js`. Exception : `src/cli/login.js` exporte `saveState` et `readState`, lus par `test/login.test.js`, logique restée dans un point d'entrée ; `test/couches.test.js` ne garde que `src/cli/reduce.js`. Les sorties d'audit et de réduction sur un vrai site vont dans `local/`, jamais versionné.
+
+## Dépôt
+
+| Dossier | Contenu |
+|---|---|
+| `src/` | Audit, réduction, simulation, rapports, constat des composants |
+| `tokens/commun/` | Couches communes à toutes les marques : primitives, statuts, mode sombre commun, police du produit, aplat plein, rôles, paires, contexte étroit ; table des thèmes Vuetify |
+| `tokens/orbe-cafe/` | Jetons DTCG de la marque fictive (entrée, échelles, marque, resolver), les trois planches, la feuille CSS `jetons.css` et les thèmes Vuetify `vuetify.json` |
+| `tokens/atelier-lavandine/`, `tokens/ecume-et-sel/`, `tokens/grenat-papeterie/`, `tokens/maison-alberto/` | Quatre marques fictives saisies par fichier, leurs trois planches, leur feuille CSS et leurs thèmes Vuetify |
+| `docs/` | Règles du design system, décisions, contrat de marque, identifiants de règles (`docs/identifiants.md`) ; dans `docs/attendus/`, l'attendu de chaque lot, écrit avant le code et gardé à sa date |
+| `fixtures/marque-demo/` | Pages fictives, pièges, cibles, attendus |
+| `fixtures/polices/` | Quatre polices d'essai sous licence libre, chacune avec sa licence |
+| `config/` | Exemple de fichier de sources, à copier dans `local/` ; tables de signatures de framework (`config/signatures/vuetify.json`) |
+| `.github/workflows/` | La CI, `.github/workflows/ci.yml` |
+| `test/` | Tests, dont `noms-interdits` qui refuse tout nom réel dans un fichier ou un message de commit |
+| `skill/ds-lab/` | Le skill pour une autre équipe : `SKILL.md`, et les règles, les consignes et les techniques générées par `npm run skill` (D66) |
+| `atelier/` | Atelier des composants : Storybook 10, Vue 3 et Vuetify 4, son `package.json` et son verrou (D42) ; les composants dans `atelier/composants/`, le bouton d'abord (D43) |
+
+Dépendances : `playwright-core` (navigateur), `postcss` et `@projectwallace/css-analyzer` (lecture du CSS), `culori` (conversions de couleurs et ΔE ; oracle des contrastes dans les tests), `pixelmatch` et `pngjs` (comparaison de captures), `@terrazzo/parser` et `@terrazzo/plugin-css` 2.10.0 (feuille CSS des jetons ; npm installe aussi `@terrazzo/cli`, qu'elles demandent sans qu'aucune commande le charge). Dépendances de développement, en version exacte : `typescript` 7.0.2 et `@types/node` 24.19.2 pour `npm run types`, `knip` 6.45.1 pour `npm run knip` (configuration `knip.json`), `dependency-cruiser` 18.7.2 pour `npm run dependances` (configuration `.dependency-cruiser.json`). L'atelier a les siennes, dans `atelier/package.json`, en version exacte : `storybook` et `@storybook/vue3-vite` 10.6.7, `vue` 3.5.45, `vuetify` 4.3.4, `vite` 8.3.8, `@vitejs/plugin-vue` 6.0.10 (composants `.vue`, D43).
+
+Node : `.node-version` est la seule source de la version (24.22.3, Node 24 LTS, D40). Le poste de travail la lit par un gestionnaire de versions comme fnm, en entrant dans le dossier ; la CI la lit aussi ; `engines` demande `^24`. Chaque commande de l'outil compare la version majeure qui tourne à celle de `.node-version` : sous une autre, elle sort en 2 avant de lire son entrée, avec une ligne comme `contraste : Node 25.6.1, ds-lab demande Node 24 (.node-version : 24.22.3)`. Changer de Node, c'est changer `.node-version` (et `engines`, `@types/node`) dans un lot qui le dit.
+
+Règles : marques fictives uniquement ; rien de `local/` ni de `.auth/` dans un fichier versionné ; attendu avant le code. Carte du code : [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## src/, un dossier par ligne
 

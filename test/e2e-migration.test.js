@@ -220,11 +220,11 @@ test('I7 : synthèse, la ligne Inchangé dit combien rattachées et combien sans
   assert.ok(sansJetons.md.includes(`| Inchangé : 0 rattachée, ${m} sans jeton | ${m} |`), 'sans jetons');
 });
 
-test('I8 : README, glossaire « Rattacher » et « Repli », limites à jour', async () => {
-  const readme = await readFile(new URL('../README.md', import.meta.url), 'utf8');
-  assert.match(readme, /^\| Rattacher \| .+ \|$/m);
-  assert.match(readme, /^\| Repli \| .+ \|$/m);
-  const limits = readme.slice(readme.indexOf('## Limites'));
+test('I8 : glossaire « Rattacher » et « Repli », limites à jour', async () => {
+  const glossaire = await readFile(new URL('../docs/glossaire.md', import.meta.url), 'utf8');
+  assert.match(glossaire, /^\| Rattacher \| .+ \|$/m);
+  assert.match(glossaire, /^\| Repli \| .+ \|$/m);
+  const limits = await readFile(new URL('../docs/limites.md', import.meta.url), 'utf8');
   assert.ok(!limits.includes('R10, en cours'), 'R10 en cours retiré');
   assert.ok(limits.includes('repli à retirer en fin de migration'));
 });

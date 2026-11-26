@@ -1,0 +1,31 @@
+# Limites
+
+- Validé sur des pages fictives et sur un vrai site en lecture seule, pas encore avec une équipe.
+- Le CSS migré garde un repli à retirer en fin de migration : `var(--jeton, ancienne valeur)` reste tant que toutes les pages ne sont pas passées aux jetons.
+- Les pseudo-éléments (icônes) ne sont pas simulés ; le contraste du texte sur image est mesuré mais marqué à vérifier, car le fond réel est incertain.
+- `npm run apply` vaut là où la feuille servie est le fichier source : une feuille compilée, minifiée ou assemblée par un outil de build n'a pas les lignes du fichier qu'on modifie.
+- `verify --ajout` ne rejoue pas les états (survol, focus) : une ligne vue seulement à un état est « non vérifiable (état) ». Il nomme le canal d'après ce que Chromium dit de la règle qui gagne : un attribut style posé par un script ne se distingue pas d'un attribut du HTML. Il juge la cascade, transitions et animations coupées : une valeur qu'une animation tient à l'écran n'est pas jugée.
+- `npm run ajout` ne juge l'ordre de la cascade que sur les pages de la réduction, à sa fenêtre ; une feuille ajoutée doit suivre sa feuille partout où celle-ci se charge, morceau chargé à la demande compris : une feuille injectée par un script est reconnue sur ces pages, et `verify --ajout` la pose après coup, comme le script devra le faire.
+- Limites détaillées de `npm run ajout` et de `verify --ajout` (D37 à D40) :
+  - Sur les fixtures, 17 lignes ne sont appliquées ni par apply ni par les feuilles ajoutées, faute d'entrée dans `modifications.json` : jeton absent de la marque pour la nouvelle valeur (9), valeur écrite en `var()` ou `inherit` (6), aucune déclaration tracée (2) ; elles sont dans le reste de la consigne et dans `pertes.md`, et `verify --ajout` juge « non arrivées » celles qui sont décidées [F].
+  - Une valeur posée par un attribut `style` n'est jamais dans `modifications.json` : une ligne tenue seulement par des attributs `style` va dans le reste de la consigne et dans `pertes.md` ; une ligne tenue en partie par eux n'est dite que par `verify --ajout`, qui lui donne la cause « attribut style ».
+  - Une feuille importée par `@import` n'a pas de lien : `verify --ajout` ne pose pas sa feuille ajoutée, et la condition ou la couche d'un import n'est pas redite dans la feuille ajoutée.
+  - Un bloc `<style>` injecté par un script n'est pas reconnu par la réduction : ses déclarations restent hors de `modifications.json`, et seul `verify --ajout` le nomme, comme canal [F].
+  - Un raccourci dont la valeur contient un `var()` (`border: 1px solid var(--trait)`) n'est pas écrit, cause « raccourci » ; son repli dans `modifications.json` est faux (`currentcolor` lu pour `border-top-color`), et `pertes.md` prend le repli de la ligne [F]. `reste.md` garde « unité inconnue » pour une valeur en `var()`.
+  - apply relancé sur une copie compressée déjà migrée revient au repérage par ligne et sélecteur, ambigu sur une ligne qui porte plusieurs règles du même sélecteur ; deux déclarations de même feuille, ligne, sélecteur et propriété, à deux colonnes, sont confondues par la réduction [H, lu dans le code].
+  - La valeur visée d'une ligne décidée est lue sur une sonde ajoutée au `body` : une valeur en unité relative pourrait différer de celle de l'élément [H].
+  - Canal incertain : un `<style>` inséré par un script n'est reconnu qu'à son absence du HTML brut, et un attribut style posé par un script ne se distingue pas d'un attribut du HTML ; une valeur héritée est nommée par la règle du parent le plus proche ; non mesurés : animations, ordre des `@layer` dans la réponse de Chromium, shadow DOM et `::part`, `@property`, replis en chaîne, pseudo-éléments [V].
+  - Ce que verify pose est reconnu à son texte : un bloc de la page au texte exact de `tokens.css` ou d'une feuille ajoutée serait pris pour lui [H].
+  - Un attribut style qui ne tient qu'une partie d'une ligne n'est pas dans `pertes.md` ; seul `verify --ajout` lui donne sa cause.
+  - Un « à faire » en plusieurs gestes séparés par « ; » se lit comme cumulé quand ce sont des choix ; « poser --variable là où elle est posée » change aussi les autres usages de la variable [H]. L'« à faire » d'une ligne tirée du manifeste reste générique (« Cherche toutes les déclarations… ») et conditionnel (« si la valeur calculée est bien… »), alors que verify a localisé l'attribut et mesuré la valeur [F].
+  - Un élément non arrivé n'a ni position ni visibilité dans le verdict : le confronter aux pixels demande de refaire le chemin à la main.
+  - Une clé de simulation sans ligne décidée est relevée sans être jugée ; aucun cas sur les fixtures [F].
+  - `verify` n'a pas d'option pour le système en sombre ; `reduce`, `ajout` et `verify --ajout` n'ont pas de pause entre deux pages.
+  - Les lignes hors de `modifications.json` sans déclaration tracée n'ont pas de page dans `pertes.md`, qui ne recopie pas leur champ `lignes`.
+  - Une icône dont la couleur diffère entre la simulation et les feuilles ajoutées, sans ligne qui la vise, n'est rattachée à aucune décision [V].
+  - Une réduction relancée peut proposer d'autres lignes en attente que la réduction validée, sans que rien ne le signale.
+- Les contrastes ne sont pas mesurés sur les pages témoins : seules les pages de la table entrent dans les paires texte sur fond et dans la liste des paires sous le seuil.
+- Le constat des composants regarde des pages au repos, à une seule largeur, et ne compte que les types vus ; il ne presse pas les flèches dans un groupe d'onglets ou de radios ; il donne la page affichée, pas le fichier du projet. Ses limites sont écrites dans chaque constat.
+- La dette à payer, avec son moment, est dans [KNOWN_ISSUES.md](../KNOWN_ISSUES.md) ; ce qui manque au design system, dans [docs/feuille-de-route.md](feuille-de-route.md) ; les limites acceptées sont écrites à leur place, sous leur décision, dans les fiches ou ici (D64).
+
+Licence MIT.

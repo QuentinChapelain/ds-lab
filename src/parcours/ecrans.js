@@ -380,7 +380,7 @@ const QUATRE = [
   ['Mesurer', 'Ce que tes pages affichent vraiment : les couleurs, les espacements, les tailles, les composants.', 'Tu choisis les pages.'],
   ['Décider', 'Ta marque, puis les cas qu’aucune règle ne sait trancher.', 'Tu confirmes ta marque, puis tu tranches ces cas un par un.'],
   ['Vérifier', 'Le résultat arrive à côté de l’ancien code, page par page, avant et après. Rien n’est écrasé.', 'Tu valides le rendu.'],
-  ['Remettre', 'Un dossier et un message pour le développeur : trois étapes, chacune vérifiable et annulable.', 'Tu donnes le dossier au développeur.'],
+  ['Remettre', 'Un dossier et un message pour le développeur : quatre étapes, chacune vérifiable.', 'Tu donnes le dossier au développeur.'],
 ];
 
 /**

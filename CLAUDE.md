@@ -68,10 +68,13 @@ Node : la version de `.node-version` (Node 24 LTS), seule source pour le poste, 
 - `docs/anciens-noms.json` : pour lire un nom de token cité par une décision ou un attendu d'avant le 21/11/2026 (D62).
 - `docs/identifiants.md` : avant de citer ou de créer un identifiant de règle.
 - `docs/contrat-de-marque.md` : avant de toucher à la saisie ou à un motif de refus.
-- `KNOWN_ISSUES.md` : la dette à payer, avec son moment ; avant de proposer un pas, et pour y ajouter toute dette laissée en sortant. Une limite acceptée s'écrit à sa place (puce « Limite » de sa décision, fiche, README, ARCHITECTURE), pas dans ce fichier (D64).
+- `KNOWN_ISSUES.md` : la dette à payer, avec son moment ; avant de proposer un pas, et pour y ajouter toute dette laissée en sortant. Une limite acceptée s'écrit à sa place (puce « Limite » de sa décision, fiche, `docs/limites.md`, ARCHITECTURE), pas dans ce fichier (D64).
 - `docs/feuille-de-route.md` : ce qui manque au design system ; avant de proposer un composant ou un token.
 - `docs/attendus/` : les attendus d'avant le 25/11/2026, en archive ; on n'en écrit plus (D75).
-- `README.md` : avant de changer ce que l'outil fait ou ses commandes.
+- `README.md` : la page de qui arrive (D103) ; avant de changer ce que l'outil promet, à qui, ou comment on l'essaie.
+- `docs/commandes.md` : chaque commande et ses options ; avant de changer ce que l'outil fait ou ses commandes.
+- `docs/parcours.md`, `docs/tokens-et-marques.md`, `docs/constat-des-composants.md`, `docs/autre-depot.md`, `docs/atelier.md`, `docs/banc.md`, `docs/ci.md` : la référence, rangée par sujet ; avant de changer ce qu'elle décrit.
+- `docs/glossaire.md` et `docs/limites.md` : avant d'employer un mot propre à ds-lab, et pour y écrire une limite acceptée de l'outil.
 - `docs/regles.md` : avant de nommer un composant, une prop ou un token, d'écrire une fiche (NM, CP, DOC), ou d'écrire ou de changer une règle (ses huit règles d'écriture, D65).
 - `docs/techniques/` : le comment d'une règle dans un framework, une ligne par règle ; avant de toucher à une enveloppe ou d'ajouter un framework.
 - `skill/ds-lab/` : ce que reçoit une autre équipe (D66) ; après un changement de `docs/regles.md` ou de `docs/techniques/`, `npm run skill`.
