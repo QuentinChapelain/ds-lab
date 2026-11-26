@@ -72,7 +72,7 @@ const CSS = `
 html { height: 100%; }
 body { display: flex; flex-direction: column; min-height: 100%; margin: 0; background: var(--background-app); color: var(--text-default); ${style('body-medium')} }
 main { display: flex; flex-direction: column; gap: var(--gap-between-groups); flex: auto; width: 100%; max-width: var(--width-page); margin: 0 auto; padding: var(--gap-between-groups) var(--padding-component); }
-h1, h2, p, ul, ol { margin: 0; }
+h1, h2, h3, p, ul, ol { margin: 0; }
 ul, ol { list-style: none; padding: 0; }
 h1 { ${style('heading-1')} }
 h2 { ${style('heading-3')} }
@@ -83,11 +83,18 @@ small { display: block; color: var(--text-secondary); ${style('body-small')} }
 .revoir a { color: var(--text-info); }
 .revoir [aria-current] { color: var(--text-default); }
 .etapes, .groupes { display: flex; flex-direction: column; gap: var(--gap-between-components); }
-.etape { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--gap-between-components); padding: var(--padding-component); border: var(--border-width-default) solid var(--border-subtle); border-radius: var(--border-radius-surface); background: var(--background-surface); }
+.etape { display: flex; align-items: flex-start; gap: var(--gap-between-components); padding: var(--padding-component); border: var(--border-width-default) solid var(--border-subtle); border-radius: var(--border-radius-surface); background: var(--background-surface); }
 .num { display: flex; flex: none; align-items: center; justify-content: center; width: var(--height-control-small); height: var(--height-control-small); border-radius: var(--border-radius-full); background: var(--background-inverse); color: var(--text-on-inverse); ${style('label')} }
 .corps { display: flex; flex: auto; flex-direction: column; gap: var(--gap-within-component); }
-.portes { display: flex; flex-wrap: wrap; gap: var(--gap-within-component); }
-.porte { padding: 0 var(--padding-tag); border-radius: var(--border-radius-full); background: var(--background-info-subtle); color: var(--text-info); white-space: nowrap; ${style('label')} }
+.etape h3 { ${style('label')} }
+.toi { color: var(--text-secondary); }
+.picto { flex: none; color: var(--text-secondary); }
+.ou { display: flex; flex-direction: column; gap: var(--gap-between-blocks); }
+.ligne { display: flex; align-items: center; gap: var(--gap-between-components); padding: var(--gap-between-blocks) var(--padding-tag); border: var(--border-width-default) solid var(--border-subtle); border-radius: var(--border-radius-control); background: var(--background-surface); }
+.etat { flex: none; color: var(--text-secondary); ${style('label')} }
+.etat.en-cours { color: var(--text-info); }
+.etat.fait { color: var(--text-default); }
+.etat.refus { color: var(--text-error); }
 .encart { padding: var(--gap-between-blocks) var(--padding-component); border-radius: var(--border-radius-surface); background: var(--background-subtle); }
 .site { display: flex; flex-direction: column; gap: var(--gap-between-blocks); }
 .site header { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gap-within-component) var(--gap-between-blocks); }
@@ -109,7 +116,6 @@ button:focus-visible, input:focus-visible { outline: var(--border-width-focus) s
 .ajout input { width: 100%; min-height: var(--height-control-medium); padding: 0 var(--padding-tag); border: var(--border-width-default) solid var(--border-default); border-radius: var(--border-radius-control); background: var(--background-surface); color: var(--text-default); ${style('body-medium')} }
 .erreur { flex-basis: 100%; color: var(--text-error); ${style('label')} }
 .revenir { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gap-within-component) var(--gap-between-blocks); }
-progress { width: 100%; }
 .pastilles { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-blocks); }
 .pastilles li { padding: 0 var(--padding-tag); border: var(--border-width-default) solid var(--border-subtle); border-radius: var(--border-radius-full); background: var(--background-surface); ${style('body-small')} }
 .blocs { display: flex; flex-direction: column; gap: var(--gap-section); }
@@ -299,37 +305,60 @@ ${o.corps}
 `;
 }
 
-/** Ce que fait chaque temps, et ses portes : là où l'humain décide. */
+/**
+ * Les pictogrammes du départ (D93), dessinés pour ds-lab, au trait, en currentColor : une règle (mesurer), un
+ * embranchement (décider), un œil (vérifier), un dossier (remettre).
+ */
+const PICTOS = [
+  '<path d="M3 8h18v8H3z"/><path d="M7 8v3M11 8v4M15 8v3M19 8v4"/>',
+  '<path d="M12 21v-7"/><path d="M12 14 6 8M12 14l6-6"/><path d="M6 8V4M18 8V4"/>',
+  '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  '<path d="M3 6h7l2 2h9v11H3z"/><path d="M12 11v5M9.5 13.5 12 16l2.5-2.5"/>',
+].map((d) => `<svg class="picto" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`);
+
+/** Ce que fait chaque temps, et ce que tu y fais : là où l'humain décide (D93). */
 const QUATRE = [
-  ['Mesurer', 'Ce que tes pages affichent vraiment : les couleurs, les espacements, les tailles, les composants.', []],
-  ['Décider', 'Ta marque, puis les cas qu’aucune règle ne sait trancher.', ['Porte 1 · la marque', 'Porte 2 · la revue']],
-  ['Vérifier', 'Le résultat arrive à côté de l’ancien code, page par page, avant et après. Rien n’est écrasé.', ['Porte 3 · avant, après']],
-  ['Remettre', 'Un dossier et un message pour le développeur : trois étapes, chacune vérifiable et annulable.', []],
+  ['Mesurer', 'Ce que tes pages affichent vraiment : les couleurs, les espacements, les tailles, les composants.', 'Tu choisis les pages.'],
+  ['Décider', 'Ta marque, puis les cas qu’aucune règle ne sait trancher.', 'Tu confirmes ta marque, puis tu tranches ces cas un par un.'],
+  ['Vérifier', 'Le résultat arrive à côté de l’ancien code, page par page, avant et après. Rien n’est écrasé.', 'Tu valides le rendu.'],
+  ['Remettre', 'Un dossier et un message pour le développeur : trois étapes, chacune vérifiable et annulable.', 'Tu donnes le dossier au développeur.'],
 ];
 
 /**
- * Le lancement : avant toute adresse, et donc avant le projet. Il se recharge seul jusqu'à ce que le projet existe.
- * Avec l'état d'un projet, c'est le départ revu (« ds-lab » dans le fil) : en lecture seule.
+ * Le départ (D93) : avant toute adresse, et donc avant le projet. La promesse en titre, quatre temps, ce que fait
+ * l'outil et ce que tu fais ; l'adresse se demande dans le chat, l'écran ne la redit pas. Il se recharge seul jusqu'à ce
+ * que le projet existe. Avec l'état d'un projet, c'est le départ revu (« ds-lab » dans le fil) : en lecture seule.
  * @param {Etat} [e]
  */
 export function ecranDeLancement(e) {
   const etapes = QUATRE.map(
-    ([nom, texte, portes], i) =>
-      `<li class="etape"><span class="num" aria-hidden="true">${i + 1}</span><div class="corps"><h2>${esc(String(nom))}</h2><small>${esc(String(texte))}</small></div>${
-        portes.length ? `<div class="portes">${/** @type {string[]} */ (portes).map((p) => `<span class="porte">${esc(p)}</span>`).join('')}</div>` : ''
-      }</li>`,
+    ([nom, texte, toi], i) =>
+      `<li class="etape"><span class="num" aria-hidden="true">${i + 1}</span><div class="corps"><h3>${esc(nom)}</h3><p>${esc(texte)}</p><small class="toi">${esc(toi)}</small></div>${PICTOS[i]}</li>`,
   ).join('\n');
   return gabarit({
-    titre: 'Le parcours',
+    titre: 'D’un site existant à un design system, sans chantier interminable.',
     onglet: 'Le parcours',
-    phrase: 'D’un site existant à un design system, sans chantier interminable. Quatre temps. Tu décides trois fois.',
+    phrase: 'Quatre temps. Tu décides trois fois ; l’outil fait le reste et te montre ce qu’il a fait.',
     fil: e ? filDe(e) : filHtml({ ici: -1, ecran: '', revoir: [], depart: '/' }),
     lecture: e ? { temps: 'le départ', ecrans: [] } : null,
-    corps: `<ol class="etapes">\n${etapes}\n</ol>
-<div class="encart"><strong>Pour commencer</strong> · l’adresse d’un site, ou de plusieurs<small>Elle se donne dans le chat, à gauche.</small></div>`,
+    corps: `<section class="bloc" aria-labelledby="t-parcours"><h2 id="t-parcours">Le parcours</h2>
+<ol class="etapes">\n${etapes}\n</ol></section>
+<p><small>Plus tard, une commande à part remesurera ton site, pour suivre la migration.</small></p>`,
     rafraichir: true,
   });
 }
+
+/**
+ * « Où j'en suis » (D93) : une ligne par chose en cours de préparation, son nom, ce qu'elle est, son état.
+ * @param {import('./etat.js').Ligne[]} lignes @param {string} [titre]  le nom d'un site, quand il y en a plusieurs
+ */
+const ouJenSuis = (lignes, titre) =>
+  `${titre ? `<h3>${esc(titre)}</h3>` : ''}<ul class="ou">${lignes
+    .map(
+      (l) =>
+        `<li class="ligne"><span class="nom"><strong>${esc(l.nom)}</strong><small>${esc(l.detail)}</small></span><span class="etat${l.etat === 'En cours' ? ' en-cours' : l.etat === 'Mesurée' || l.etat === 'Fait' ? ' fait' : /^Pas /.test(l.etat) ? ' refus' : ''}">${esc(l.etat)}</span></li>`,
+    )
+    .join('')}</ul>`;
 
 /**
  * Le dessin d'une page, quand sa capture échoue : un titre, une ligne, trois blocs, aux couleurs des jetons communs.
@@ -342,9 +371,9 @@ export function dessinDeVignette() {
 }
 
 /**
- * La mesure en cours (D77) : ce qui se passe, à quoi ça sert, et un signe que ça tourne. Il se recharge seul, et passe
- * seul à l'écran suivant quand la mesure est faite. La barre de progression est celle du navigateur : aucun jeton de
- * mouvement n'existe encore (B2).
+ * La mesure en cours (D77, D93) : « Où j'en suis », une ligne par page (Mesurée, En cours, À faire, ou Pas mesurée),
+ * puis le relevé des composants, lus dans le fichier d'avancement. Il se recharge seul, et passe seul à l'écran
+ * suivant quand la mesure est faite.
  * @param {Etat} e
  */
 export function ecranDeMesure(e) {
@@ -353,9 +382,10 @@ export function ecranDeMesure(e) {
   return gabarit({
     titre: `Je mesure ${pages}`,
     onglet: `La mesure · ${e.produit}`,
-    phrase: 'Ce que tes pages affichent vraiment : les couleurs, les tailles de texte, les espacements, les arrondis et les composants. C’est la dette de départ, ce qu’on va ranger ensemble.',
+    phrase: 'Les couleurs, les tailles de texte, les espacements, les arrondis et les composants. L’écran passe seul à la suite quand tout est mesuré.',
     fil: filDe(e),
-    corps: '<progress aria-label="Mesure en cours"></progress>',
+    corps: `<section class="bloc" aria-labelledby="t-ou"><h2 id="t-ou">Où j’en suis</h2>
+${(e.mesure?.sites ?? []).map((x) => ouJenSuis([...x.pages, x.composants], e.unSite ? undefined : x.nom)).join('\n')}</section>`,
     rafraichir: true,
   });
 }
@@ -466,7 +496,7 @@ function dessin(f) {
 }
 
 /**
- * La dette (D78) : à regarder, rien à décider. Les valeurs, puis les composants ; en bas, « Passer à ta marque ». Ce qui
+ * La dette (D78) : à regarder, rien à décider. Les valeurs, puis les composants ; « Définir ma marque » se dit dans le chat (D92). Ce qui
  * vient du site, les valeurs dessinées et les captures, est sur papier.
  * @param {Etat} e @param {{ lecture?: Lecture | null }} [o]
  */
@@ -570,7 +600,7 @@ ${o.motifs.map((m) => `<p class="refus">${esc(m)}</p>`).join('')}${o.modifier}${
 
 /**
  * La marque (D80) : la première des trois portes. Deux couleurs et la police des titres, lues sur les pages, avec ce
- * que l'outil en fait ; en bas, « Confirmer la marque », impossible si la marque est refusée.
+ * que l'outil en fait ; « Confirmer ma marque » se dit dans le chat, impossible si la marque est refusée (D92).
  * @param {Etat} e
  * @param {{ erreur?: ErreurAjout | null, lecture?: Lecture | null }} [o]  le code tapé refusé : la couleur (site), la raison,
  *   la saisie ; revue, la marque confirmée, sans rien à modifier
@@ -610,8 +640,9 @@ ${generale.map((x) => `<p class="refus">${esc(x)}</p>`).join('')}
 }
 
 /**
- * L'écriture des jetons, après « Confirmer la marque » (D83) : l'écran d'attente du gabarit. Il se recharge seul, et
- * passe seul aux fondations quand les jetons, les planches, la feuille CSS et le thème sont écrits.
+ * L'écriture des jetons, après « Confirmer ma marque » (D83) : l'écran d'attente du gabarit, et « Où j'en suis », une
+ * ligne par étape (les tokens, les planches, la feuille de variables, le thème), faite quand son fichier est plus
+ * récent que l'entrée de la marque (D93). Il se recharge seul, et passe seul aux fondations quand tout est écrit.
  * @param {Etat} e
  */
 export function ecranDesJetons(e) {
@@ -620,7 +651,8 @@ export function ecranDesJetons(e) {
     onglet: `Les fondations · ${e.produit}`,
     phrase: 'À partir de ta marque : les douze pas de tes couleurs, les rôles, les contrôles, la feuille de variables et le thème. Rien ne touche ton site.',
     fil: filDe(e),
-    corps: '<progress aria-label="Écriture des tokens"></progress>',
+    corps: `<section class="bloc" aria-labelledby="t-ou"><h2 id="t-ou">Où j’en suis</h2>
+${ouJenSuis(e.preparation ?? [{ nom: 'Tes fondations', detail: 'Les tokens, les planches, la feuille de variables et le thème.', etat: 'En cours' }])}</section>`,
     rafraichir: true,
   });
 }
@@ -639,7 +671,7 @@ const barreEcart = (l) => `<svg width="${Math.max(l, 1)}" height="24" viewBox="0
 
 /**
  * Les fondations (D83) : à regarder, rien à décider. Ce qui vient d'être préparé à partir de la marque, les rôles, les
- * règles, ce que le développeur peut vérifier, et ce qui n'est pas encore fait. En bas, « Comparer mon site ».
+ * règles, ce que le développeur peut vérifier, et ce qui n'est pas encore fait. « Comparer mon site » se dit dans le chat (D92).
  * @param {Etat} e @param {{ lecture?: Lecture | null }} [o]
  */
 export function ecranDesFondations(e, { lecture = null } = {}) {
@@ -706,7 +738,7 @@ const valeurDite = (v) => (px(v) !== null ? `${fr(/** @type {number} */ (px(v)),
  * L'avant et après (D86), la troisième porte : chaque page mesurée, telle qu'elle était et telle que les feuilles
  * ajoutées la rendent, au même endroit ; ce qui a changé, compté par famille, avec un exemple. Sans script : un onglet
  * par page et la bascule sont des boutons radio, l'image cachée garde sa place. La plus haute des deux images tient le
- * cadre, l'autre se pose dessus : rien ne saute. En bas, « Valider le rendu » ; à côté, « Revenir sur une décision ».
+ * cadre, l'autre se pose dessus : rien ne saute. « Valider mon rendu » et « Revenir sur une décision » se disent dans le chat (D92).
  * Les images et les exemples viennent du site : sur papier.
  * @param {Etat} e @param {{ lecture?: Lecture | null }} [o]
  */

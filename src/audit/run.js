@@ -31,6 +31,7 @@ const PKG = JSON.parse(await readFile(new URL('../../package.json', import.meta.
  * @property {string} [outRoot]        défaut : local/audits
  * @property {Date} [now]
  * @property {(msg: string) => void} [log]
+ * @property {(url: string, etat: import('../lib/avancement.js').EtatPage) => void} [onPage]  l'état de chaque page, au fil de l'audit (D93)
  */
 
 /**
@@ -82,6 +83,7 @@ export async function runAudit(opts) {
     outRoot = 'local/audits',
     now = new Date(),
     log = () => {},
+    onPage = () => {},
   } = opts;
   const urls = resolveAddresses(opts.addresses);
   const { sources, path: sourcesFile, warning: sourcesWarning } = await loadSources({ path: sourcesPath });
@@ -113,6 +115,7 @@ export async function runAudit(opts) {
 
       for (const url of hostUrls) {
         log(`→ ${url}`);
+        onPage(url, 'en cours');
         const page = await context.newPage();
         /** @type {any} */
         const meta = { url };
@@ -158,6 +161,7 @@ export async function runAudit(opts) {
         } finally {
           await page.close().catch(() => {});
         }
+        onPage(url, meta.error ? 'pas mesurée' : 'mesurée');
         pages.push(meta);
       }
       await context.close();

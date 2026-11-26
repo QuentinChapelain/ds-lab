@@ -8,7 +8,7 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { lireProjet, ecrirePages, ecrireMarque } from './projet.js';
-import { calculerEtat, empreinteDesChoix, DETTE_VUE, FONDATIONS_VUES, PAGES_VALIDEES, RENDU_VALIDE, REVUE_ROUVERTE } from './etat.js';
+import { calculerEtat, empreinteDesChoix, AVANCEMENT, DETTE_VUE, FONDATIONS_VUES, PAGES_VALIDEES, RENDU_VALIDE, REVUE_ROUVERTE } from './etat.js';
 import { entreeDe } from './marque.js';
 import { lancerChromium } from '../browser/lancement.js';
 import { ecrireRemise, message } from './remise.js';
@@ -91,10 +91,12 @@ export function validerPages(fichier) {
   if (p.sites.some((s) => !s.pages.length)) throw new Error('un site sans page ne se mesure pas');
   mkdirSync(p.sorties, { recursive: true });
   writeFileSync(join(p.sorties, PAGES_VALIDEES), `${JSON.stringify(Object.fromEntries(p.sites.map((s) => [s.id, s.pages])), null, 2)}\n`);
+  // Une mesure neuve repart d'un avancement vide (D93).
+  rmSync(join(p.sorties, AVANCEMENT), { force: true });
 }
 
 /**
- * La dette vue : « Passer à ta marque », dans le chat, par `parcours --passer dette` (D78, D92).
+ * La dette vue : « Définir ma marque », dans le chat, par `parcours --passer dette` (D78, D92).
  * @param {string} fichier
  */
 export function detteVue(fichier) {
@@ -111,7 +113,7 @@ export function fondationsVues(fichier) {
 }
 
 /**
- * Le rendu validé : « Valider le rendu », dans le chat (`parcours --passer rendu`, D86, D92), pour la vérification regardée. Une vérification plus
+ * Le rendu validé : « Valider mon rendu », dans le chat (`parcours --passer rendu`, D86, D92), pour la vérification regardée. Une vérification plus
  * récente rouvre l'avant et après.
  * @param {string} fichier
  */

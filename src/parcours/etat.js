@@ -7,8 +7,9 @@
  * l'outil réduit une origine à la fois.
  */
 import { createHash } from 'node:crypto';
-import { closeSync, existsSync, openSync, readFileSync, readSync, readdirSync } from 'node:fs';
-import { basename, join, relative } from 'node:path';
+import { closeSync, existsSync, openSync, readFileSync, readSync, readdirSync, statSync } from 'node:fs';
+import { basename, join, relative, resolve } from 'node:path';
+import { lireAvancement } from '../lib/avancement.js';
 import { lireJson } from '../lib/fichiers.js';
 import { deNom } from '../lib/format.js';
 import { compterDecisions } from '../reduce/propose.js';
@@ -22,7 +23,7 @@ import { remiseDe } from './remise.js';
 /** Le choix de la marque à l'écran, quand l'humain l'a changé (D80) : dans les sorties. */
 const MARQUE_CHOISIE = 'marque.json';
 
-/** La dette vue : écrit à « Passer à ta marque », dans le chat (D78, D92), dans les sorties. */
+/** La dette vue : écrit à « Définir ma marque », dans le chat (D78, D92), dans les sorties. */
 export const DETTE_VUE = 'dette.json';
 
 /** Les fondations vues : écrit à « Comparer mon site », dans le chat (D83, D92), dans les sorties. */
@@ -33,8 +34,10 @@ const ECRITS_DE_LA_MARQUE = ['roles.html', 'espacements.html', 'typo.html', 'jet
 
 /** Les pages validées, par site (D77) : écrit quand la mesure est lancée dans le chat (D89), dans les sorties. */
 export const PAGES_VALIDEES = 'pages.json';
+/** L'avancement de la mesure (D93) : écrit par l'audit et le relevé des composants, page par page, dans les sorties. */
+export const AVANCEMENT = 'avancement.json';
 
-/** Le rendu validé (D86) : écrit à « Valider le rendu », dans le chat (D92), avec la vérification regardée, dans les sorties. */
+/** Le rendu validé (D86) : écrit à « Valider mon rendu », dans le chat (D92), avec la vérification regardée, dans les sorties. */
 export const RENDU_VALIDE = 'avant-apres.json';
 
 /** La revue rouverte (D86) : écrite à « Revenir sur une décision », dans le chat (D92), avec l'empreinte des choix d'alors. */
@@ -90,7 +93,10 @@ function pagesValidees(sorties) {
  *   courante: Etape, moment: 'pages' | 'mesure' | 'dette' | 'marque' | 'jetons' | 'fondations' | 'avant-apres' | 'ecran' | 'sans-ecran' | 'remise', dette: Dette | null,
  *   marque: { site: Site, lecture: import('./marque.js').Lecture, choix: import('./marque.js').Choix, apercu: import('./marque.js').Apercu } | null, ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
  *   fondations: Fondations | null, avantApres: AvantApres | null, remise: import('./remise.js').Remise | null, phrase: string | null, bilan: Bilan | null, chiffres: Chiffres, voisin: string | null, livraison: Livraison | null,
- *   revoir: Revu[], revue: string | null }} Etat  revoir : les écrans faits qui se revoient ; revue : l'adresse de la revue
+ *   revoir: Revu[], revue: string | null, mesure: Mesure | null, preparation: Ligne[] | null }} Etat  revoir : les écrans faits qui se revoient ; revue : l'adresse de la revue ;
+ *   mesure : où en est la mesure, au moment de la mesure ; preparation : où en est l'écriture des tokens, au moment des jetons (D93)
+ * @typedef {{ nom: string, detail: string, etat: string }} Ligne  une ligne de « Où j'en suis » : Mesurée, En cours, À faire, Pas mesurée ; Fait, Pas fait
+ * @typedef {{ sites: { id: string, nom: string, pages: Ligne[], composants: Ligne }[] }} Mesure
  * @typedef {import('./fondations.js').Fondations & { site: Site, avant: number | null, planche: string }} Fondations  au moment des fondations : la marque du
  *   premier site, les valeurs de ses pages (avant) et l'adresse servie de ses planches
  * @typedef {{ pages: number, arrivees: number, total: number, manquantes: { titre: string, elements: number, cause: string | null }[] }} Livraison  la dernière vérification
@@ -264,8 +270,9 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
     sortie: aConstat.length > 0,
     main: 'outil',
     action: aMesurer ? (unSite ? 'lancer la mesure' : `lancer la mesure du site ${aMesurer.id}`) : null,
+    // L'audit d'abord, page par page, puis le relevé des composants : l'ordre des lignes de « Où j'en suis » (D93).
     commande: aMesurer
-      ? `npm run composants -- ${adresses(aMesurer)} --out ${c(join(sorties, 'composants', aMesurer.id))} --nom ${q(projet.produit)}${projet.signatures ? ` --signatures ${c(projet.signatures)}` : ''}${existsSync(decisionsComposants) ? ` --decisions ${c(decisionsComposants)}` : ''} && npm run audit -- ${adresses(aMesurer)}${projet.sources ? ` --sources ${c(projet.sources)}` : ''} --out ${c(join(sorties, 'audit', aMesurer.id))}`
+      ? `npm run audit -- ${adresses(aMesurer)}${projet.sources ? ` --sources ${c(projet.sources)}` : ''} --out ${c(join(sorties, 'audit', aMesurer.id))} --avancement ${c(join(sorties, AVANCEMENT))} && npm run composants -- ${adresses(aMesurer)} --out ${c(join(sorties, 'composants', aMesurer.id))} --nom ${q(projet.produit)}${projet.signatures ? ` --signatures ${c(projet.signatures)}` : ''}${existsSync(decisionsComposants) ? ` --decisions ${c(decisionsComposants)}` : ''} --avancement ${c(join(sorties, AVANCEMENT))}`
       : null,
     fait: unSite ? (constats[0].constat ? chiffres(constats[0].constat) : null) : `${nombre(aConstat.length, 'site mesuré', 'sites mesurés')} sur ${sites.length}`,
     lignes: constats.map((x) =>
@@ -469,7 +476,7 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
     reportes: 0,
   };
 
-  // La dette (D78) : la mesure faite, l’écran attend « Passer à ta marque », dans le chat, avant la marque.
+  // La dette (D78) : la mesure faite, l’écran attend « Définir ma marque », dans le chat, avant la marque.
   const enDette = constat.faite && !etapeMarques.sortie && !existsSync(join(sorties, DETTE_VUE));
   if (enDette) Object.assign(etapeMarques, { main: 'designer', action: 'regarder la dette, puis passer à la marque', commande: null });
   /** La dette du premier site mesuré. @returns {Etat['dette']} */
@@ -549,7 +556,7 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
   if (courante.ecran && courante.sortie) ecran = { ...courante.ecran, etape: courante.cle, precedente: false };
   else if (!courante.sortie && i > 0 && etapes[i - 1].ecran) ecran = { .../** @type {Ecran} */ (etapes[i - 1].ecran), etape: etapes[i - 1].cle, precedente: true };
   // Pendant la mesure, un écran d'attente (D77) : les pages sont validées, aucune n'est encore mesurée.
-  // La saisie en cours après « Confirmer la marque » : l'écran d'attente, jusqu'aux fondations (D83).
+  // La saisie en cours après « Confirmer ma marque » : l'écran d'attente, jusqu'aux fondations (D83).
   const moment =
     courante.cle === 'site' ? 'pages'
     : courante.cle === 'constat' && !constat.sortie ? 'mesure'
@@ -653,9 +660,45 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
   if (voir === 'marque' && !marque && vueMarque) marque = vueMarque;
   if (voir === 'fondations' && !fondations && revoir.includes('fondations')) fondations = fondationsDuSite();
 
+  // Où j'en suis (D93) : la mesure, page par page, puis le relevé des composants ; l'écriture des tokens, étape par
+  // étape, chaque fichier fait s'il est plus récent que l'entrée de la marque.
+  /** @type {Etat['mesure']} */
+  let mesure = null;
+  if (moment === 'mesure') {
+    const a = lireAvancement(join(sorties, AVANCEMENT));
+    const PAGE = { mesurée: 'Mesurée', 'en cours': 'En cours', 'pas mesurée': 'Pas mesurée' };
+    const RELEVE = { fait: 'Fait', 'en cours': 'En cours', 'pas fait': 'Pas fait' };
+    mesure = {
+      sites: constats.map(({ site: s, constat: fait }) => ({
+        id: s.id,
+        nom: s.nom ?? s.id,
+        pages: s.pages.map((p) => ({ nom: s.noms[p] ?? p, detail: new URL(p, s.origine).host + p, etat: fait ? 'Mesurée' : PAGE[a.pages[new URL(p, s.origine).href]] ?? 'À faire' })),
+        composants: { nom: 'Le relevé des composants', detail: 'Les boutons, les champs, les liens et leurs versions.', etat: fait ? 'Fait' : RELEVE[a.releves[resolve(join(sorties, 'composants', s.id))]] ?? 'À faire' },
+      })),
+    };
+  }
+  /** @type {Etat['preparation']} */
+  let preparation = null;
+  if (moment === 'jetons' && premier.entree && existsSync(premier.entree)) {
+    const depuis = statSync(premier.entree).mtimeMs;
+    const fait = (/** @type {string[]} */ fichiers) => fichiers.every((f) => existsSync(f) && statSync(f).mtimeMs >= depuis);
+    const d = /** @type {string} */ (premier.dossierMarque);
+    const etapesTokens = [
+      ['Les tokens de ta marque', 'Les douze pas de tes couleurs, les rôles et leurs contrôles.', [join(sorties, 'saisies', `${premier.id}.json`)]],
+      ['Les planches', 'Les rôles, les espacements et les textes, à regarder.', ['roles.html', 'espacements.html', 'typo.html'].map((f) => join(d, f))],
+      ['La feuille de variables', 'Les tokens, en variables CSS.', [join(d, 'jetons.css')]],
+      ['Le thème', 'Le thème Vuetify de ta marque.', [join(d, 'vuetify.json')]],
+    ];
+    const faits = etapesTokens.map(([, , f]) => fait(/** @type {string[]} */ (f)));
+    const premiere = faits.indexOf(false);
+    preparation = etapesTokens.map(([nom, detail], i) => ({ nom: String(nom), detail: String(detail), etat: faits[i] ? 'Fait' : i === premiere ? 'En cours' : 'À faire' }));
+  }
+
   return {
     produit: projet.produit,
     sites,
+    mesure,
+    preparation,
     revoir,
     revue: revue ? href(revue) : null,
     sousTitre: unSite ? null : `${sites.length} sites, ${nombre(sites.length, 'marque', 'marques')}`,

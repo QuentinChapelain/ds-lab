@@ -1,32 +1,33 @@
 // @ts-check
 /**
  * Les écrans du parcours (D77), sans navigateur :
- *   EC1 le lancement : les quatre temps pas encore, quatre étapes, trois portes, l'adresse dans le chat, aucun bouton ; il
- *       se recharge seul ; aucune valeur visuelle en dur, aucun script ;
+ *   EC1 le départ (D93) : la promesse en titre, les quatre temps pas encore, quatre lignes (ce que fait l'outil, ce que
+ *       tu fais, un pictogramme), ni puce de porte ni encart de l'adresse, la remesure en pied, aucun bouton ; il se
+ *       recharge seul ; aucune valeur visuelle en dur, aucun script ;
  *   EC2 les pages, un site : le nom de chaque page (ou son chemin), sa vignette, « Retirer », « Ajouter une page » en
  *       dernière ligne ; ni barre ni bouton de mesure (D89) ; jamais de rechargement seul ; le refus d'une page ajoutée,
  *       à côté du champ, avec la saisie gardée ; plusieurs sites : un groupe par site ;
  *   EC3 projet.json : une page avec son nom, retirer, ajouter après vérification (même site, elle répond, pas déjà là),
  *       sinon la raison en une phrase ; le reste du fichier intact ; la validation fait l'étape,
- *       et l'écran de la mesure en cours paraît (ce qui se passe, une barre de progression, rechargé seul) ;
+ *       et l'écran de la mesure en cours paraît (« Où j'en suis », une ligne par page, rechargé seul) ;
  *   EC4 la commande : avant le projet, --servir sert le lancement ; les formulaires reviennent sur l'écran (303) ; le
  *       serveur n'a plus de passage à recevoir ; --passer pages lance la mesure sur la liste de l'écran à cet instant ;
  *   EC5 la dette (D78) : les pages mesurées nommées, le grand chiffre, quatre cartes de valeurs avec leur compte, leurs
  *       phrases calculées et leurs dessins (SVG : la valeur mesurée est une donnée du dessin, jamais du style), les
- *       composants par type avec leurs captures, « À regarder aussi », les deux liens, « Passer à ta marque » ; sans
+ *       composants par type avec leurs captures, « À regarder aussi », les deux liens, « Définir ma marque » ; sans
  *       audit, les composants seuls ; le mot « constat » ne se montre pas ;
- *   EC6 « Passer à ta marque », dans le chat (--passer dette) : la dette vue, l'action de la marque reprend ; un
+ *   EC6 « Définir ma marque », dans le chat (--passer dette) : la dette vue, l'action de la marque reprend ; un
  *       second passage est refusé ;
  *   EC7 la marque (D80), lue dans la mesure par la règle : la primaire colore le plus d'éléments cliquables, l'accent est
  *       la couleur la plus employée d'une autre teinte, la troisième va sur l'échelle de la palette qui a sa teinte ; chaque couleur dit son code, d'où
  *       elle vient (« lue sur n éléments »), ses douze pas, son bouton ou son aplat et le verdict ; la police des titres ;
- *       « Confirmer la marque » ;
+ *       « Confirmer ma marque » ;
  *   EC8 confirmer, dans le chat (--passer marque) : l'entrée écrite et nommée dans le projet, la main à l'outil ; une
  *       marque refusée se dit sous la couleur en cause, en mots simples, et ne se confirme pas : --passer marque dit
  *       laquelle changer ;
  *   EC9 modifier : une couleur relevée prise d'un clic, un code tapé (court ou sans #), un code refusé dit à côté du
  *       champ, la valeur de l'autre couleur échangée, l'accent échangé avec la troisième ; le bloc se recalcule ;
- *   EC10 après « Confirmer la marque » (D83) : l'écran d'attente, rechargé seul, tant que la saisie, les planches, la
+ *   EC10 après « Confirmer ma marque » (D83) : l'écran d'attente, rechargé seul, tant que la saisie, les planches, la
  *       feuille CSS et le thème ne sont pas écrits ; puis les fondations, calculées pour la marque du projet : ses douze
  *       pas, ses valeurs, ses rôles, ses relations d'espace, ses paires dans les quatre contextes, les liens vers ses
  *       planches, six preuves et les limites, « Pas encore », « Comparer mon site » ; rien à décider ; pour le chat, une
@@ -36,9 +37,9 @@
  *   EC12 l'avant et après (D86), dès les feuilles vérifiées, avant la validation : un onglet par page nommée, la bascule
  *       Avant, Après sans script, la plus haute des deux images tient le cadre ; le compte des changements, ce qui n'est
  *       visible qu'au survol, quatre cartes et leur exemple (la couleur changée la plus employée, deux pastilles et leurs
- *       codes) ; « Valider le rendu », « Revenir sur une décision » ; une vérification d'avant ces feuilles, ou sans
+ *       codes) ; « Valider mon rendu », « Revenir sur une décision » ; une vérification d'avant ces feuilles, ou sans
  *       l'image d'avant, se refait ;
- *   EC13 « Valider le rendu » (--passer rendu) : le rendu validé ; « Revenir sur une décision » (--revenir) : le rendu n'est plus
+ *   EC13 « Valider mon rendu » (--passer rendu) : le rendu validé ; « Revenir sur une décision » (--revenir) : le rendu n'est plus
  *       validé, la revue rouverte au designer jusqu'à un nouvel export, puis la réduction, les feuilles et la
  *       vérification se refont, et l'avant et après revient ;
  *   EC14 la remise (D87), tirée des sorties sans nouvelle mesure : trois étapes et leurs comptes (feuilles, lignes à
@@ -60,6 +61,10 @@
  *       les options mêlées : sortie 2 ;
  *   EC20 ni barre ni bouton de passage sur aucun écran (D92) : « Copier le message » sous le message, « ‹ La remise »
  *       sous le titre d'« À installer », « Revenir où j'en suis » sous le titre d'un écran revu ;
+ *   EC21 « Où j'en suis » (D93) : la mesure lit le fichier d'avancement (Mesurée, En cours, À faire, Pas mesurée ; le
+ *       relevé des composants en dernier), l'audit d'abord puis le relevé, chacun avec --avancement ; une mesure neuve
+ *       repart d'un avancement vide ; l'audit note chaque page ; l'écriture des tokens dit ses quatre étapes, faites
+ *       quand leur fichier est plus récent que l'entrée de la marque ;
  *   EC19 regarder le site sans le montrer (D91) : la page donnée et celles du même site vers lesquelles elle mène,
  *       rendues sans fenêtre, leur titre et leurs composants comptés, les plus riches d'abord ; un site qui ne répond
  *       pas, sa raison en une ligne et la sortie 1 ; --regarder avec un projet : sortie 2.
@@ -84,6 +89,8 @@ import { servir } from '../src/parcours/serveur.js';
 import { deNom } from '../src/lib/format.js';
 import { lignesDuRegard, regarderSite } from '../src/parcours/regarder.js';
 import { startFixtureServers } from './helpers/serveur.js';
+import { lireAvancement, noterPage, noterReleve } from '../src/lib/avancement.js';
+import { runAudit } from '../src/audit/run.js';
 import { request } from 'node:http';
 import { createHash } from 'node:crypto';
 import { readdirSync } from 'node:fs';
@@ -119,11 +126,16 @@ const faux = (pages) => /** @type {typeof fetch} */ (async (/** @type {any} */ u
   return new Response(p[2], { status: p[0], headers: { 'content-type': p[1] } });
 });
 
-test('EC1 le lancement : quatre temps, quatre étapes, trois portes, l’adresse dans le chat ; il se recharge seul', () => {
+test('EC1 le départ : la promesse, quatre temps, ce que tu fais, un pictogramme ; il se recharge seul', () => {
   const h = ecranDeLancement();
   const t = texte(h);
-  for (const s of ['Le parcours', 'Tu décides trois fois.', 'Porte 1 · la marque', 'Porte 2 · la revue', 'Porte 3 · avant, après', 'Elle se donne dans le chat, à gauche.'])
+  assert.match(h, /<h1>D’un site existant à un design system, sans chantier interminable\.<\/h1><p>Quatre temps\. Tu décides trois fois ; l’outil fait le reste et te montre ce qu’il a fait\.<\/p>/);
+  assert.match(h, /<title>Le parcours<\/title>/);
+  for (const s of ['Le parcours', 'Tu choisis les pages.', 'Tu confirmes ta marque, puis tu tranches ces cas un par un.', 'Tu valides le rendu.', 'Plus tard, une commande à part remesurera ton site, pour suivre la migration.'])
     assert.ok(t.includes(s), s);
+  assert.doesNotMatch(t, /Porte \d|Pour commencer|Elle se donne dans le chat/);
+  assert.equal(h.match(/<svg class="picto" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"[^>]*aria-hidden="true">/g)?.length, 4);
+  assert.equal(h.match(/<small class="toi">/g)?.length, 4);
   assert.deepEqual(fil(h), ['1 Mesurer', '2 Décider', '3 Vérifier', '4 Remettre']);
   assert.equal(h.match(/<li><span class="pt">/g)?.length, 4, 'quatre temps pas encore');
   assert.match(h, /<a class="accueil" href="\/" aria-label="ds-lab, retour au départ">/);
@@ -192,10 +204,12 @@ test('EC3 projet.json : retirer, ajouter après vérification, valider ; le rest
   validerPages(f);
   const e = calculerEtat(lireProjet(f), { base: d });
   assert.deepEqual([e.etapes[0].etat, e.courante.cle, e.courante.main, e.moment], ['faite', 'constat', 'outil', 'mesure']);
-  // Pendant la mesure : ce qui se passe, à quoi ça sert, un signe que ça tourne ; il se recharge seul.
+  // Pendant la mesure : « Où j'en suis », une ligne par page, puis le relevé des composants ; il se recharge seul.
   const m = pageDuParcours(e);
   assert.match(m, /<h1>Je mesure tes 3 pages<\/h1>/);
-  assert.match(m, /<progress aria-label="Mesure en cours"><\/progress>/);
+  assert.match(m, /<h2 id="t-ou">Où j’en suis<\/h2>/);
+  assert.equal(m.match(/<span class="etat">À faire<\/span>/g)?.length, 4);
+  assert.doesNotMatch(m, /<progress/);
   assert.match(m, /<meta http-equiv="refresh" content="2">/);
   assert.doesNotMatch(texte(m), /[Cc]onstat/);
   assert.deepEqual(enDur(m), []);
@@ -236,7 +250,7 @@ test('EC4 la commande : le lancement avant le projet, les formulaires, --passer 
   const s = lancerParcours([f, '--servir', '--port', '0']);
   try {
     const [, adresse] = /** @type {RegExpExecArray} */ (await s.attendre(/Lancement servi sur (http:\/\/127\.0\.0\.1:\d+\/)/));
-    assert.match(await (await fetch(adresse)).text(), /<h1>Le parcours<\/h1>/);
+    assert.match(await (await fetch(adresse)).text(), /<title>Le parcours<\/title>/);
     cpSync(join(FIX, 'pages'), d, { recursive: true });
     assert.match(await (await fetch(adresse)).text(), /<h1>Les pages à mesurer<\/h1>/);
     /** @param {string} chemin @param {Record<string, string>} c */
@@ -364,7 +378,7 @@ test('EC5 la dette : les valeurs comptées, dites et dessinées ; les composants
   assert.equal(h.match(/<img class="papier" src="\/sorties\/composants\/orbe\/127\.0\.0\.1_4173\/2026-11-24T1330\/captures\/p\d-e\d+\.png"/g)?.length, 11);
   assert.match(h, /<rect x="0\.5" y="0\.5" width="23" height="23" rx="4" fill="#999999"\/>/);
   assert.match(h, /<li class="hors"><svg [^>]*><title>10\.5px, 1 fois<\/title><text x="0" y="10\.5" font-size="10\.5"/);
-  assert.doesNotMatch(h, /<form|Passer à ta marque/);
+  assert.doesNotMatch(h, /<form|Définir ma marque/);
   assert.doesNotMatch(t, /[Cc]onstat/);
   assert.doesNotMatch(h, /<script|\sstyle="|http-equiv="refresh"/);
   assert.deepEqual(enDur(h), []);
@@ -376,7 +390,7 @@ test('EC5 la dette : les valeurs comptées, dites et dessinées ; les composants
   assert.match(texte(sans), /Les composants/);
 });
 
-test('EC6 « Passer à ta marque », dans le chat : la dette vue, la marque reprend son cours ; un second passage est refusé', () => {
+test('EC6 « Définir ma marque », dans le chat : la dette vue, la marque reprend son cours ; un second passage est refusé', () => {
   const d = copie('constat');
   const f = join(d, 'projet.json');
   // Pas avant son moment : la dette ne se passe pas depuis un autre écran.
@@ -424,7 +438,7 @@ test('EC7 la marque, lue dans la mesure : deux couleurs et la police, d’où el
     assert.ok(t.includes(x), x);
   assert.equal(h.match(/<ul class="echelle" aria-label="Les douze pas">/g)?.length, 2);
   assert.match(h, /<li class="plein"><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="4" fill="#2b4c7e"\/>/);
-  assert.doesNotMatch(h, /Confirmer la marque|action="\/pages\/marque"/);
+  assert.doesNotMatch(h, /Confirmer ma marque|action="\/pages\/marque"/);
   assert.doesNotMatch(t, /[Cc]onstat|checkValise|entrée|\.json/);
   assert.doesNotMatch(h, /<script|\sstyle="|http-equiv="refresh"/);
   assert.deepEqual(enDur(h), []);
@@ -492,7 +506,7 @@ const auxFondations = () => {
   return { d, f, avant };
 };
 
-test('EC10 après « Confirmer la marque » : l’attente, puis les fondations calculées pour la marque du projet', () => {
+test('EC10 après « Confirmer ma marque » : l’attente, puis les fondations calculées pour la marque du projet', () => {
   const { d, f, avant } = auxFondations();
   assert.equal(avant.moment, 'jetons');
   assert.match(/** @type {string} */ (avant.courante.commande), /npm run saisie -- .* && node src\/cli\/planche\.js --marque .* && npm run css -- --marque .* && npm run vuetify -- --marque /);
@@ -598,14 +612,14 @@ test('EC12 l’avant et après : un onglet par page, la bascule sans script, le 
   assert.match(h, /<img class="avant fond" src="\/sorties\/verify\/127\.0\.0\.1_4173\/2026-11-24T1336\/carte\/avant\.png" alt="\/desordre\/carte\.html, avant"><img class="apres dessus" src="\/sorties\/verify\/127\.0\.0\.1_4173\/2026-11-24T1336\/carte\/actuel\.png"/);
   assert.match(h, /<img class="avant dessus" src="[^"]*gestion\/avant\.png"[^>]*><img class="apres fond"/);
   assert.match(h, /<rect x="0\.5" y="0\.5" width="23" height="23" rx="6" fill="#999999"/);
-  assert.doesNotMatch(h, /<form|Valider le rendu|Revenir sur une décision/);
+  assert.doesNotMatch(h, /<form|Valider mon rendu|Revenir sur une décision/);
   assert.doesNotMatch(t, /[Ll]ignes?\b|seuils/);
   assert.doesNotMatch(h, /<script|\sstyle="|http-equiv="refresh"/);
   assert.deepEqual(enDur(h), []);
   // Pour le chat : une phrase, sans chiffre ni développeur.
   const l = faitsDuMoment(e, { sorties: join(d, 'sorties') });
   assert.ok(l.includes('  Écran : l’avant et après'));
-  assert.ok(l.some((x) => /un seul bouton, Valider le rendu ; .*parcours --passer rendu ; revenir sur une décision se dit dans le texte et se tape : parcours --revenir$/.test(x)), l.join('\n'));
+  assert.ok(l.some((x) => /un seul bouton, Valider mon rendu ; .*parcours --passer rendu ; revenir sur une décision se dit dans le texte et se tape : parcours --revenir$/.test(x)), l.join('\n'));
   assert.ok(!l.some((x) => /^  (Chiffre|Au développeur|Pas arrivé) :/.test(x)), l.join('\n'));
   // Sans l'image d'avant, ou pour d'autres feuilles que celles de la réduction : la vérification se refait.
   const v = join(d, 'sorties/verify/127.0.0.1_4173/2026-11-24T1336');
@@ -619,7 +633,7 @@ test('EC12 l’avant et après : un onglet par page, la bascule sans script, le 
   assert.equal(g.courante.action, 'prouver la livraison sur les pages, avant et après');
 });
 
-test('EC13 « Valider le rendu » et « Revenir sur une décision », dans le chat', () => {
+test('EC13 « Valider mon rendu » et « Revenir sur une décision », dans le chat', () => {
   const { d, f } = avantApres();
   const v = parcours([f, '--passer', 'rendu']);
   assert.equal(v.status, 0, v.stderr);
@@ -770,7 +784,7 @@ test('EC17 revoir un écran fait : en lecture seule, sans formulaire ni recharge
     ['pages', 'Les pages mesurées', 'Tu revois Mesurer.'],
     ['revue', 'La revue', 'Tu revois Décider.'],
     ['avant-apres', 'Avant, après', 'Tu revois Vérifier.'],
-    ['depart', 'Le parcours', 'Tu revois le départ.'],
+    ['depart', 'D’un site existant à un design system, sans chantier interminable.', 'Tu revois le départ.'],
   ]) {
     const h = voir(v);
     assert.ok(h.includes(`<h1>${titre}</h1>`), v);
@@ -844,4 +858,63 @@ test('EC20 ni barre ni bouton de passage sur aucun écran ; ce qui change l’é
   const h = ecranAInstaller(e, '# À installer\n\n## Étape 1\n\nUne ligne.');
   assert.match(h, /<h1>À installer<\/h1><p>[^<]*<\/p><p><a class="retour" href="\/">‹ La remise<\/a><\/p><\/div>/);
   assert.doesNotMatch(h, /class="barre"/);
+});
+
+test('EC21 « Où j’en suis » : la mesure page par page, puis le relevé ; l’écriture des tokens étape par étape', async () => {
+  const d = copie('pages');
+  const f = join(d, 'projet.json');
+  const av = join(d, 'sorties', 'avancement.json');
+  noterPage(av, 'http://127.0.0.1:4173/desordre/vieille.html', 'mesurée');
+  validerPages(f);
+  assert.ok(!existsSync(av), 'une mesure neuve repart d’un avancement vide');
+  let e = calculerEtat(lireProjet(f), { base: ROOT });
+  // L'audit d'abord, puis le relevé des composants, chacun note son avancement.
+  const cmd = /** @type {string} */ (e.courante.commande);
+  assert.match(cmd, /^npm run audit -- .* --avancement \S*avancement\.json && npm run composants -- .* --avancement \S*avancement\.json$/);
+  noterPage(av, 'http://127.0.0.1:4173/desordre/carte.html', 'mesurée');
+  noterPage(av, 'http://127.0.0.1:4173/desordre/compte.html', 'en cours');
+  e = calculerEtat(lireProjet(f), { base: ROOT });
+  assert.deepEqual(e.mesure?.sites[0].pages.map((l) => [l.nom, l.etat]), [['La carte', 'Mesurée'], ['Mon compte', 'En cours'], ['/desordre/gestion.html', 'À faire']]);
+  assert.deepEqual(e.mesure?.sites[0].composants.etat, 'À faire');
+  noterPage(av, 'http://127.0.0.1:4173/desordre/compte.html', 'pas mesurée');
+  noterReleve(av, join(d, 'sorties', 'composants', 'orbe'), 'en cours');
+  e = calculerEtat(lireProjet(f), { base: ROOT });
+  assert.deepEqual([e.mesure?.sites[0].pages[1].etat, e.mesure?.sites[0].composants.etat], ['Pas mesurée', 'En cours']);
+  const h = pageDuParcours(e);
+  assert.match(h, /<li class="ligne"><span class="nom"><strong>La carte<\/strong><small>127\.0\.0\.1:4173\/desordre\/carte\.html<\/small><\/span><span class="etat fait">Mesurée<\/span><\/li>/);
+  assert.match(h, /<span class="etat refus">Pas mesurée<\/span>/);
+  assert.match(h, /<strong>Le relevé des composants<\/strong>.*<span class="etat en-cours">En cours<\/span><\/li><\/ul>/);
+  assert.match(texte(h), /Les couleurs, les tailles de texte, les espacements, les arrondis et les composants\. L’écran passe seul à la suite quand tout est mesuré\./);
+  assert.deepEqual(enDur(h), []);
+  // Un fichier illisible vaut un avancement vide.
+  writeFileSync(av, '{');
+  assert.deepEqual(lireAvancement(av), { pages: {}, releves: {} });
+
+  // L'audit note chaque page : en cours, puis mesurée.
+  const srv = await startFixtureServers();
+  try {
+    /** @type {[string, string][]} */
+    const notes = [];
+    const sortie = mkdtempSync(join(tmpdir(), 'ds-lab-avancement-'));
+    await runAudit({ addresses: [`${srv.origin}/desordre/carte.html`], outRoot: sortie, states: false, waitMs: 0, onPage: (u, x) => void notes.push([u, x]) });
+    assert.deepEqual(notes, [[`${srv.origin}/desordre/carte.html`, 'en cours'], [`${srv.origin}/desordre/carte.html`, 'mesurée']]);
+    rmSync(sortie, { recursive: true });
+  } finally {
+    await srv.close();
+  }
+
+  // L'écriture des tokens : quatre étapes, faites quand leur fichier est plus récent que l'entrée.
+  const { f: g } = aLaMarque();
+  confirmerMarque(g);
+  let j = calculerEtat(lireProjet(g), { base: ROOT });
+  assert.equal(j.moment, 'jetons');
+  assert.deepEqual(j.preparation?.map((l) => [l.nom, l.etat]), [['Les tokens de ta marque', 'En cours'], ['Les planches', 'À faire'], ['La feuille de variables', 'À faire'], ['Le thème', 'À faire']]);
+  const r = spawnSync('sh', ['-c', /** @type {string} */ (j.courante.commande).split(' && node src/cli/planche.js')[0]], { cwd: ROOT, encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  j = calculerEtat(lireProjet(g), { base: ROOT });
+  assert.deepEqual(j.preparation?.map((l) => l.etat), ['Fait', 'En cours', 'À faire', 'À faire']);
+  const hj = pageDuParcours(j);
+  assert.match(hj, /<h2 id="t-ou">Où j’en suis<\/h2>/);
+  assert.match(hj, /<strong>Les tokens de ta marque<\/strong>.*<span class="etat fait">Fait<\/span>/);
+  assert.doesNotMatch(hj, /<progress/);
 });

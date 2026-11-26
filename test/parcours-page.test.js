@@ -121,7 +121,7 @@ test('PG3 le lancement, les pages, la dette, la marque et les fondations à 640 
           vignettes: [...document.querySelectorAll('img')].map((i) => i.complete && i.naturalWidth > 0),
           planches: [...document.querySelectorAll('.planches a')].map((a) => /** @type {HTMLAnchorElement} */ (a).href),
         }));
-        assert.equal(r.titre, { lancement: 'Le parcours', pages: 'Les pages à mesurer', dette: 'La dette d’Annuaire des cafés', marque: 'La marque d’Annuaire des cafés', fondations: 'Les fondations d’Annuaire des cafés' }[ecran]);
+        assert.equal(r.titre, { lancement: 'D’un site existant à un design system, sans chantier interminable.', pages: 'Les pages à mesurer', dette: 'La dette d’Annuaire des cafés', marque: 'La marque d’Annuaire des cafés', fondations: 'Les fondations d’Annuaire des cafés' }[ecran]);
         assert.ok(r.largeur <= 640, `${ecran} ${scheme} : ${r.largeur}`);
         assert.equal(r.fond, FOND.dark, `${ecran} ${scheme}`);
         // Aucune barre : le passage d'un écran au suivant se fait dans le chat (D92).

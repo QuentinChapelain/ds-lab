@@ -84,7 +84,7 @@ export function faitsDuMoment(e, { sorties }) {
       else
         f.push(
           ['Écran', 'les pages à mesurer'],
-          ['Ensuite', boite('on peut ajuster la liste à droite', 'Lancer la mesure', '--passer pages')],
+          ['Ensuite', boite('on peut ajuster la liste à droite', 'Mesurer mes pages', '--passer pages')],
         );
       break;
     case 'constat':
@@ -96,7 +96,7 @@ export function faitsDuMoment(e, { sorties }) {
           ['Fait', 'la mesure des pages'],
           ['Chiffre', e.chiffres.valeurs !== null ? nombre(e.chiffres.valeurs, 'valeur différente affichée', 'valeurs différentes affichées') : e.chiffres.versions === null ? null : nombre(e.chiffres.versions, 'version de composant', 'versions de composants')],
           ['Écran', 'la dette'],
-          ['Ensuite', boite('ce chiffre, la dette est à droite', 'Passer à ta marque', '--passer dette')],
+          ['Ensuite', boite('ce chiffre, la dette est à droite', 'Définir ma marque', '--passer dette')],
         );
         break;
       }
@@ -109,11 +109,11 @@ export function faitsDuMoment(e, { sorties }) {
           ['Écran', 'la marque'],
           refusees.length
             ? ['Ensuite', `la marque est refusée : l’écran devant, dire en une phrase qu’il faut changer ${refusees.map((b) => nom[b]).join(' et ')} à droite, sans bouton ni code ; relire parcours après le changement`]
-            : ['Ensuite', boite('on peut la changer à droite ; ni liste ni code', 'Confirmer la marque', '--passer marque')],
+            : ['Ensuite', boite('on peut la changer à droite ; ni liste ni code', 'Confirmer ma marque', '--passer marque')],
         );
         break;
       }
-      // Après « Confirmer la marque » (D83) : l'écran d'attente, qui passe seul aux fondations.
+      // Après « Confirmer ma marque » (D83) : l'écran d'attente, qui passe seul aux fondations.
       if (e.moment === 'jetons' && !k.refus) {
         f.push(['Fait', 'la marque confirmée'], ['Écran', 'l’écriture des tokens, qui passe seule aux fondations'], ['Ensuite', `${k.action}, sans le dire, puis relire parcours`]);
         break;
@@ -164,7 +164,7 @@ export function faitsDuMoment(e, { sorties }) {
         f.push(
           ['Fait', 'les feuilles posées à côté de l’ancien code et vérifiées sur les pages'],
           ['Écran', 'l’avant et après'],
-          ['Ensuite', `${boite('ses choix sont posés à côté de l’ancien code et vérifiés, le résultat est à droite ; ni compte ni liste, rien sur le développeur', 'Valider le rendu', '--passer rendu')} ; revenir sur une décision se dit dans le texte et se tape : parcours --revenir`],
+          ['Ensuite', `${boite('ses choix sont posés à côté de l’ancien code et vérifiés, le résultat est à droite ; ni compte ni liste, rien sur le développeur', 'Valider mon rendu', '--passer rendu')} ; revenir sur une décision se dit dans le texte et se tape : parcours --revenir`],
         );
         break;
       }

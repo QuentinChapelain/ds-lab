@@ -11,6 +11,7 @@ import { pathToFileURL } from 'node:url';
 import { runAudit } from '../audit/run.js';
 import { DEFAULT_WAIT_MS } from '../browser/navigate.js';
 import { lancer } from './garde.js';
+import { noterPage } from '../lib/avancement.js';
 
 const USAGE = `Usage : npm run audit -- <adresse> [<adresse ou chemin relatif>…] [options]
 
@@ -28,6 +29,8 @@ Options :
                              (par défaut : un élément par rôle et sélecteur, 60 au plus par page)
   --v1-script <fichier.md>   exécute le script v1 (bloc js) sur chaque page et compare
   --out <dossier>            racine des sorties (défaut : local/audits)
+  --avancement <fichier>     note l'état de chaque page au fil de l'audit (en cours, mesurée, pas mesurée), pour
+                             l'écran de la mesure du parcours
   -h, --help                 cette aide`;
 
 /**
@@ -46,6 +49,7 @@ export function parseAuditArgs(argv) {
       'no-states': { type: 'boolean', default: false },
       'v1-script': { type: 'string' },
       out: { type: 'string', default: 'local/audits' },
+      avancement: { type: 'string' },
       help: { type: 'boolean', short: 'h', default: false },
     },
   });
@@ -68,6 +72,7 @@ export function parseAuditArgs(argv) {
       v1ScriptPath: values['v1-script'],
       outRoot: String(values.out),
     },
+    avancement: values.avancement,
   };
 }
 
@@ -105,7 +110,8 @@ async function main() {
     console.log(USAGE);
     return 0;
   }
-  const results = await runAudit({ ...parsed.options, log: (m) => console.log(m) });
+  const av = parsed.avancement;
+  const results = await runAudit({ ...parsed.options, log: (m) => console.log(m), ...(av ? { onPage: (u, e) => noterPage(av, u, e) } : {}) });
   for (const r of results) {
     console.log(`\n${r.host} : ${r.files.join(', ') || 'rien d\'écrit'}`);
     for (const w of r.warnings) console.log(`  ! ${w.text} ${w.tag}`);

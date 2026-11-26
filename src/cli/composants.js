@@ -12,6 +12,7 @@ import { pathToFileURL } from 'node:url';
 import { runComposants, recalculer } from '../composants/run.js';
 import { DEFAULT_WAIT_MS } from '../browser/navigate.js';
 import { lancer } from './garde.js';
+import { noterReleve } from '../lib/avancement.js';
 
 const USAGE = `Usage : npm run composants -- <adresse> [<adresse ou chemin relatif>…] [options]
         npm run composants -- --releve <dossier> [--decisions <fichier>] [--nom <texte>] [--out <dossier>]
@@ -29,6 +30,7 @@ Options :
   --wait-ms <ms>             délai après load et networkidle (défaut : ${DEFAULT_WAIT_MS})
   --storage-state <fichier>  session enregistrée par npm run login (.auth/<nom>.json)
   --out <dossier>            racine des sorties (défaut : local/composants)
+  --avancement <fichier>     note l'état du relevé (en cours, fait, pas fait), pour l'écran de la mesure du parcours
   -h, --help                 cette aide`;
 
 /** @param {string[]} argv */
@@ -45,6 +47,7 @@ export function parseComposantsArgs(argv) {
       'wait-ms': { type: 'string', default: String(DEFAULT_WAIT_MS) },
       'storage-state': { type: 'string' },
       out: { type: 'string', default: 'local/composants' },
+      avancement: { type: 'string' },
       help: { type: 'boolean', short: 'h', default: false },
     },
   });
@@ -59,6 +62,7 @@ export function parseComposantsArgs(argv) {
   return {
     help: false,
     releve: values.releve,
+    avancement: values.avancement,
     options: {
       addresses: positionals,
       signatures: values.signatures ?? [],
@@ -79,9 +83,19 @@ async function main() {
     return 0;
   }
   const { options } = parsed;
-  const r = parsed.releve
-    ? await recalculer({ releve: parsed.releve, decisions: options.decisions, nom: options.nom, outRoot: options.outRoot })
-    : await runComposants({ ...options, log: (m) => console.log(m) });
+  const av = parsed.avancement;
+  if (av) noterReleve(av, options.outRoot, 'en cours');
+  /** @type {Awaited<ReturnType<typeof runComposants>>} */
+  let r;
+  try {
+    r = parsed.releve
+      ? await recalculer({ releve: parsed.releve, decisions: options.decisions, nom: options.nom, outRoot: options.outRoot })
+      : await runComposants({ ...options, log: (m) => console.log(m) });
+  } catch (e) {
+    if (av) noterReleve(av, options.outRoot, 'pas fait');
+    throw e;
+  }
+  if (av) noterReleve(av, options.outRoot, r.tombees.length ? 'pas fait' : 'fait');
   console.log(`\n${r.constat.phrase}`);
   for (const d of r.constat.decisionsSansCible) console.log(`  ! décision sans cible : ${d.texte}`);
   console.log(`\n${r.fichiers.join('\n')}`);
