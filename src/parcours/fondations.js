@@ -97,10 +97,10 @@ export function fondationsDe(dossier) {
     { titre: 'Format standard', texte: 'Jetons au format DTCG 2025.10, lisibles par les outils du marché.' },
     { titre: 'Trois couches', texte: 'Valeurs, marque, rôles. Changer de marque ne touche qu’une couche.' },
     ...(echec === 0
-      ? [{ titre: 'Accessibilité', texte: `${paires.controlees} paires contrôlées aux seuils WCAG 2.1 AA : 4,5 pour un texte, 3 pour une bordure ou un focus.` }]
+      ? [{ titre: 'Accessibilité', texte: `${paires.controlees} paires contrôlées aux seuils WCAG 2.1 AA.` }]
       : []),
     ...(quatre && echec === 0 ? [{ titre: 'Quatre contextes', texte: 'Clair et sombre, large et étroit : mêmes rôles, mêmes contrôles.' }] : []),
-    ...(code ? [{ titre: 'Prêt pour le code', texte: 'Une feuille de variables CSS et un thème Vuetify, écrits depuis tes tokens.' }] : []),
+    ...(code ? [{ titre: 'Prêt pour le code', texte: 'Une feuille de variables CSS et un thème Vuetify par marque.' }] : []),
     { titre: 'Règles sourcées', texte: 'Chaque règle dit sa raison, la source de son seuil et son contrôle.' },
   ];
   return {

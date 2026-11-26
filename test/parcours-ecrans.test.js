@@ -543,26 +543,31 @@ test('EC10 après « Confirmer ma marque » : l’attente, puis les fondations c
   const t = texte(h);
   for (const x of [
     'Les fondations d’Annuaire des cafés',
-    'Ce qui vient d’être préparé à partir de ta marque. Rien n’est encore posé sur ton site.',
-    '1 · Les valeurs',
-    'Tes pages affichaient 70 valeurs différentes.',
-    'Primaire, 12 pas',
-    'Accent, 12 pas',
-    '2 · Les rôles',
-    `${fo.roles.fonds} fonds`,
-    'Cinq relations d’espace',
+    'Tes pages affichaient 70 valeurs. Voici ce qui les remplace, préparé à partir de ta marque. Rien n’est encore posé sur ton site.',
+    'Les valeurs',
+    '12 Primaire douze pas, du plus clair au plus foncé',
+    '12 Accent douze pas, du plus clair au plus foncé',
+    '9 Espacements de 0 à 64 px',
+    '10 Tailles de texte de 12 à 60 px',
+    '6 Arrondis',
+    'Les rôles',
+    `Par famille un composant ne connaît que le rôle, jamais la couleur ${fo.roles.fonds} fonds`,
+    '5 Relations d’espace on choisit un lien, pas un nombre',
     'Entre deux sections 48 px',
-    '3 · Les règles',
-    `${fo.paires.controlees} paires texte et fond contrôlées`,
-    '0 en échec',
-    'La planche des rôles · des espacements · des textes',
-    '✓ · Dans les règles de l’art',
+    'Les règles',
+    `${fo.paires.controlees} Paires contrôlées texte et fond 0 en échec ${fo.paires.interdites} paires interdites`,
+    `${fo.regles} Règles et valeurs par défaut les mêmes pour chaque marque La planche des rôles des espacements des textes`,
+    'Ce qu’un développeur peut vérifier',
+    `Accessibilité ${fo.paires.controlees} paires contrôlées aux seuils WCAG 2.1 AA.`,
+    'Prêt pour le code Une feuille de variables CSS et un thème Vuetify par marque.',
     'Limites connues : pas encore de tokens d’ombre ni de superposition',
-    'Pas encore · posées sur ton site au temps 3, Vérifier',
-    'Pas encore · les composants remplacés dans ton code au temps 4, Remettre',
   ])
     assert.ok(t.includes(x), x);
-  assert.match(h, /<a href="\/marques\/orbe\/roles\.html">La planche des rôles<\/a>/);
+  // Les mêmes lignes que la dette, sans numéro de titre, sans cartes, sans encarts, sans papier.
+  assert.equal((h.match(/<section class="rang">/g) ?? []).length, 5 + 2 + 2 + fo.preuves.length);
+  assert.doesNotMatch(h, /class="(?:carte|cartes|encart|papier)|Pas encore|[0-9✓] · Les|Dans les règles de l’art/);
+  assert.equal((h.match(/<svg viewBox="0 0 12 1" preserveAspectRatio="none"/g) ?? []).length, 2);
+  assert.match(h, /<a class="voir" href="\/marques\/orbe\/roles\.html">La planche des rôles<\/a>/);
   assert.doesNotMatch(h, /<form|Comparer mon site/);
   assert.doesNotMatch(t, /[Cc]onstat|\.json|Voir les composants/);
   // Le chat : sans chiffre récité ; un seul bouton, Comparer mon site.

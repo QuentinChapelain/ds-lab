@@ -52,7 +52,7 @@ export const FIL_CSS = `
 .signe rect { fill: var(--text-secondary); }
 .signe .un { fill: var(--text-info); }
 .signe .quatre { fill: var(--text-default); }
-.fil ol { display: flex; flex: auto; align-items: center; min-width: 0; margin: 0; padding: 0; list-style: none; }
+.fil ol { display: flex; flex: auto; flex-wrap: wrap; align-items: center; row-gap: var(--gap-between-blocks); min-width: 0; margin: 0; padding: 0; list-style: none; }
 .fil li { display: flex; flex: auto; align-items: center; gap: var(--gap-between-blocks); color: var(--text-secondary); white-space: nowrap; ${style('label')} }
 .fil li:last-child { flex: none; }
 .fil .trait { flex: auto; min-width: var(--gap-between-blocks); height: var(--border-width-default); margin: 0 var(--gap-between-blocks); background: var(--border-default); }
@@ -162,6 +162,10 @@ button:focus-visible, input:focus-visible { outline: var(--border-width-focus) s
 .marque .preuve { gap: var(--gap-between-blocks); }
 .marque .diapason > * { padding-top: 0; border-top: 0; }
 .marque .titre-rangs > * { padding: var(--gap-between-groups) 0 var(--gap-between-components); border-top: 0; }
+.fondations .titre-rangs > * { padding: var(--gap-section) 0 var(--gap-between-components); border-top: 0; }
+.fondations .titre-rangs:first-child > * { padding-top: 0; }
+/* Le titre d'un groupe ne règle pas la largeur de la colonne : il déborde sur la cellule vide de sa ligne. */
+.fondations .titre-rangs h2 { width: 0; min-width: 100%; white-space: nowrap; }
 .specimen { display: block; }
 .echantillons { max-width: 100%; }
 .echantillons svg { max-width: 100%; height: auto; }
@@ -175,9 +179,6 @@ button:focus-visible, input:focus-visible { outline: var(--border-width-focus) s
 .verdict { display: inline-flex; align-items: center; gap: var(--gap-between-blocks); }
 .verdict i { width: var(--gap-between-blocks); height: var(--gap-between-blocks); border-radius: var(--border-radius-full); background: currentcolor; }
 .voir { color: var(--text-info); ${style('label')} }
-.echelle { display: flex; flex-wrap: wrap; gap: var(--gap-within-component); }
-.echelle li { display: flex; flex-direction: column; align-items: center; gap: var(--gap-within-component); }
-.echelle rect { stroke: var(--border-subtle); }
 .echantillons { display: flex; flex-wrap: wrap; gap: var(--gap-between-components); }
 .refus { color: var(--text-error); ${style('label')} }
 .accepte { color: var(--text-info); ${style('label')} }
@@ -188,11 +189,11 @@ details summary { cursor: pointer; color: var(--text-info); ${style('label')} }
 .choix button { min-height: 0; padding: 0; border: 0; background: none; line-height: 0; }
 .choix button[aria-pressed="true"] rect { stroke: var(--text-default); stroke-width: var(--border-width-focus); }
 .chiffres { display: flex; flex-wrap: wrap; gap: var(--gap-between-blocks) var(--gap-between-groups); }
-.chiffres li { display: flex; flex-direction: column; color: var(--text-secondary); ${style('label')} }
-.chiffres .fort { color: var(--text-default); }
+.chiffres li { display: flex; align-items: baseline; gap: var(--gap-within-component); color: var(--text-secondary); ${style('label')} }
+.chiffres .fort { color: var(--text-default); ${style('heading-3')} }
 .relations { display: flex; flex-direction: column; gap: var(--gap-between-blocks); }
 .relations li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-within-component) var(--gap-between-blocks); }
-.planches a { color: var(--text-info); ${style('label')} }
+.planches { display: flex; flex-wrap: wrap; gap: var(--gap-between-blocks) var(--gap-between-components); }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-blocks); }
 .comparer { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-blocks); }
 .comparer input { position: absolute; opacity: 0; pointer-events: none; }
@@ -526,11 +527,12 @@ function dessin(f) {
 const dansLaPhrase = (n) => (/^\p{Lu}\p{Ll}/u.test(n) ? n.charAt(0).toLowerCase() + n.slice(1) : n);
 
 /**
- * Une ligne de la dette (D94) : à gauche, le chiffre en grand, le nom et une seule note discrète ; à droite, la preuve.
- * @param {number} n @param {string} nom @param {string | null} note @param {string} preuve
+ * Une ligne de la dette (D94), et des fondations : à gauche, le chiffre en grand s'il y en a un, le nom et une seule
+ * note discrète ; à droite, la preuve.
+ * @param {number | null} n @param {string} nom @param {string | null} note @param {string} preuve
  */
 const rang = (n, nom, note, preuve) =>
-  `<section class="rang"><div class="cote"><span class="n">${n}</span><h3>${esc(nom)}</h3>${note ? `<small>${esc(note)}</small>` : ''}</div><div class="preuve">${preuve}</div></section>`;
+  `<section class="rang"><div class="cote">${n === null ? '' : `<span class="n">${n}</span>`}<h3>${esc(nom)}</h3>${note ? `<small>${esc(note)}</small>` : ''}</div><div class="preuve">${preuve}</div></section>`;
 
 /**
  * Le total partagé en parts, à la mesure de chaque famille : un tableau d'autant de colonnes égales que de valeurs,
@@ -737,77 +739,73 @@ ${ouJenSuis(e.preparation ?? [{ nom: 'Tes fondations', detail: 'Les tokens, les 
   });
 }
 
-/** Un nombre et ce qu'il compte, en grand. @param {number} n @param {string} quoi */
+/** Un nombre et ce qu'il compte. @param {number} n @param {string} quoi */
 const chiffre = (n, quoi) => `<li><span class="fort">${n}</span>${esc(quoi)}</li>`;
 
-/** Une échelle de douze pas, dessinée. @param {string} nom @param {string[]} pas */
-const douzePas = (nom, pas) =>
-  `<div class="carte"><h3>${esc(nom)}</h3><ul class="echelle" aria-label="${esc(`${nom}, les douze pas`)}">${pas
-    .map((h, i) => `<li><svg width="32" height="32" viewBox="0 0 32 32" role="img" aria-label="${esc(`Pas ${i + 1}, ${h}`)}"><rect x="1" y="1" width="30" height="30" rx="4" fill="${esc(h)}"/></svg><small>${i + 1}</small></li>`)
-    .join('')}</ul></div>`;
+/** Les douze pas d'une échelle en ruban continu, du plus clair au plus foncé. @param {string} nom @param {string[]} pas */
+const ruban = (nom, pas) =>
+  `<div class="ruban"><svg viewBox="0 0 12 1" preserveAspectRatio="none" shape-rendering="crispEdges" role="img" aria-label="${esc(`${nom}, les douze pas, du plus clair au plus foncé`)}">${pas
+    .map((h, i) => `<rect x="${i}" y="0" width="1" height="1" fill="${esc(h)}"><title>${esc(`Pas ${i + 1}, ${h}`)}</title></rect>`)
+    .join('')}</svg></div>`;
 
 /** Un écart dessiné, sa longueur en px. @param {number} l */
 const barreEcart = (l) => `<svg width="${Math.max(l, 1)}" height="24" viewBox="0 0 ${Math.max(l, 1)} 24" aria-hidden="true"><rect width="${l}" height="24" rx="2"/></svg>`;
 
+/** « de 0 à 64 px ». @param {number[]} l */
+const etendue = (l) => (l.length ? `de ${Math.min(...l)} à ${Math.max(...l)} px` : null);
+
 /**
- * Les fondations (D83) : à regarder, rien à décider. Ce qui vient d'être préparé à partir de la marque, les rôles, les
- * règles, ce que le développeur peut vérifier, et ce qui n'est pas encore fait. « Comparer mon site » se dit dans le chat (D92).
+ * Les fondations (D83, D97) : à regarder, rien à décider. Les mêmes lignes que la dette, pour que l'œil compare : les
+ * valeurs, les rôles, les règles, ce qu'un développeur peut vérifier. Ce sont des valeurs du système, pas du site : pas
+ * de papier. « Comparer mon site » se dit dans le chat (D92).
  * @param {Etat} e @param {{ lecture?: Lecture | null }} [o]
  */
 export function ecranDesFondations(e, { lecture = null } = {}) {
   const f = /** @type {NonNullable<Etat['fondations']>} */ (e.fondations);
-  const n = f.espacements.length;
-  const remplace = f.avant
-    ? `<p>${esc(`Tes pages affichaient ${f.avant} valeurs différentes. Les voici remplacées par deux couleurs de douze pas, ${n} espacements, ${f.tailles.length} tailles de texte et ${f.rayons.length} arrondis.`)}</p>`
-    : '';
-  const valeurs = `<section class="bloc" aria-labelledby="t-valeurs"><h2 id="t-valeurs">1 · Les valeurs</h2>
-<p>Tout ce qui existe. Rien d’autre ne peut être utilisé.</p>${remplace}
-<div class="cartes">
-${douzePas('Primaire, 12 pas', f.primaire)}
-${f.accent ? douzePas('Accent, 12 pas', f.accent) : ''}
-</div>
-<div class="cartes">
-<div class="carte"><h3>Espacements <span>${n}</span></h3><ul class="dessins ecarts">${f.espacements.map((l) => `<li>${barreEcart(l)}<small>${l}</small></li>`).join('')}</ul></div>
-<div class="carte"><h3>Tailles de texte <span>${f.tailles.length}</span></h3><ul class="dessins tailles">${f.tailles
-    .map((t) => `<li><svg width="${Math.ceil(t * 1.4)}" height="${Math.ceil(t * 1.2)}" viewBox="0 0 ${Math.ceil(t * 1.4)} ${Math.ceil(t * 1.2)}" aria-hidden="true"><text x="0" y="${t}" font-size="${t}" font-weight="600">Aa</text></svg><small>${t}</small></li>`)
-    .join('')}</ul></div>
-<div class="carte"><h3>Arrondis <span>${f.rayons.length}</span></h3><ul class="dessins rayons">${f.rayons
+  // Une seule grille pour les quatre groupes : la colonne de gauche a la même largeur de haut en bas.
+  /** @param {string} id @param {string} titre @param {string[]} lignes */
+  const groupe = (id, titre, lignes) => `<div class="rang titre-rangs"><h2 id="t-${id}">${esc(titre)}</h2><span></span></div>\n${lignes.join('\n')}`;
+  const tailles = `<ul class="dessins tailles">${f.tailles
+    .map((t) => {
+      // Le même jour sous la ligne de base pour chaque taille : les « Aa » posés sur une même ligne.
+      const [l, h] = [Math.ceil(t * 1.4), Math.ceil(t) + 3];
+      return `<li><svg width="${l}" height="${h}" viewBox="0 0 ${l} ${h}" aria-hidden="true"><text x="0" y="${t}" font-size="${t}" font-weight="600">Aa</text></svg><small>${t}</small></li>`;
+    })
+    .join('')}</ul>`;
+  const coins = `<ul class="dessins rayons">${f.rayons
     .map((r) => {
       const v = Math.min(20, r.px);
       return `<li><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><path d="M1 39 V${1 + v} A${v} ${v} 0 0 1 ${1 + v} 1 H39" stroke-width="2"/></svg><small>${esc(r.nom === 'full' ? 'rond' : String(r.px))}</small></li>`;
     })
-    .join('')}</ul></div>
-</div></section>`;
+    .join('')}</ul>`;
+  const douze = 'douze pas, du plus clair au plus foncé';
+  const valeurs = groupe('valeurs', 'Les valeurs', [
+    rang(12, 'Primaire', douze, ruban('Primaire', f.primaire)),
+    ...(f.accent ? [rang(12, 'Accent', douze, ruban('Accent', f.accent))] : []),
+    rang(f.espacements.length, 'Espacements', etendue(f.espacements), `<ul class="dessins ecarts">${f.espacements.map((l) => `<li>${barreEcart(l)}<small>${l}</small></li>`).join('')}</ul>`),
+    rang(f.tailles.length, 'Tailles de texte', etendue(f.tailles), tailles),
+    rang(f.rayons.length, 'Arrondis', null, coins),
+  ]);
   const r = f.roles;
-  const roles = `<section class="bloc" aria-labelledby="t-roles"><h2 id="t-roles">2 · Les rôles</h2>
-<p>À quoi sert chaque valeur. Un composant ne connaît que le rôle, jamais la couleur.</p>
-<ul class="chiffres">${chiffre(r.fonds, 'fonds')}${chiffre(r.textes, 'textes')}${chiffre(r.bordures, 'bordures')}${chiffre(r.styles, 'styles de texte')}${chiffre(r.ecarts, 'écarts')}</ul>
-<div class="cartes"><div class="carte"><h3>Cinq relations d’espace</h3><p>On choisit un lien, pas un nombre.</p><ul class="relations ecarts">${f.relations
-    .map((x) => `<li>${barreEcart(x.px)}<span>${esc(x.nom)}</span><small>${x.px} px</small></li>`)
-    .join('')}</ul></div></div></section>`;
+  const roles = groupe('roles', 'Les rôles', [
+    rang(null, 'Par famille', 'un composant ne connaît que le rôle, jamais la couleur', `<ul class="chiffres">${chiffre(r.fonds, 'fonds')}${chiffre(r.textes, 'textes')}${chiffre(r.bordures, 'bordures')}${chiffre(r.styles, 'styles de texte')}${chiffre(r.ecarts, 'écarts')}</ul>`),
+    rang(f.relations.length, 'Relations d’espace', 'on choisit un lien, pas un nombre', `<ul class="relations ecarts">${f.relations.map((x) => `<li>${barreEcart(x.px)}<span>${esc(x.nom)}</span><small>${x.px} px</small></li>`).join('')}</ul>`),
+  ]);
   const p = f.paires;
-  const planches = f.planches.length
-    ? `<p class="planches">${f.planches.map((x) => `<a href="${esc(f.planche + x.fichier)}">${esc(x.nom)}</a>`).join(' · ')}</p>`
-    : '';
-  const regles = `<section class="bloc" aria-labelledby="t-regles"><h2 id="t-regles">3 · Les règles</h2>
-<p>Ce qui tient le tout, contrôlé par la machine.</p>
-<ul class="chiffres">${chiffre(p.controlees, 'paires texte et fond contrôlées')}${chiffre(p.echec, 'en échec')}${chiffre(p.interdites, 'paires interdites')}${chiffre(f.regles, 'règles et valeurs par défaut, les mêmes pour chaque marque')}</ul>
-${planches}</section>`;
-  const art = `<section class="bloc" aria-labelledby="t-art"><h2 id="t-art">✓ · Dans les règles de l’art</h2>
-<p>Ce que le développeur et un auditeur peuvent vérifier.</p>
-<div class="cartes">${f.preuves.map((x) => `<div class="carte"><h3>${esc(x.titre)}</h3><p>${esc(x.texte)}</p></div>`).join('\n')}</div>
-<p><small>${esc(`Limites connues : ${f.limites.join(' ; ')}.`)}</small></p></section>`;
-  const pasEncore = `<div class="cartes">
-<div class="encart"><strong>Pas encore</strong> · posées sur ton site<small>au temps 3, Vérifier</small></div>
-<div class="encart"><strong>Pas encore</strong> · les composants remplacés dans ton code<small>au temps 4, Remettre</small></div>
-</div>`;
+  const planches = f.planches.length ? `<p class="planches">${f.planches.map((x) => `<a class="voir" href="${esc(f.planche + x.fichier)}">${esc(x.nom)}</a>`).join(' ')}</p>` : '';
+  const regles = groupe('regles', 'Les règles', [
+    rang(p.controlees, 'Paires contrôlées', 'texte et fond', `<ul class="chiffres">${chiffre(p.echec, 'en échec')}${chiffre(p.interdites, 'paires interdites')}</ul>`),
+    rang(f.regles, 'Règles et valeurs par défaut', 'les mêmes pour chaque marque', planches),
+  ]);
+  const verifier = groupe('verifier', 'Ce qu’un développeur peut vérifier', f.preuves.map((x) => rang(null, x.titre, null, `<p>${esc(x.texte)}</p>`)));
+  const remplace = f.avant ? `Tes pages affichaient ${f.avant} valeurs. Voici ce qui les remplace, préparé à partir de ta marque.` : 'Voici ce qui remplacera les valeurs de tes pages, préparé à partir de ta marque.';
   return gabarit({
     titre: `Les fondations ${deNom(e.produit)}`,
     onglet: `Les fondations · ${e.produit}`,
-    phrase: lecture ? 'Ce qui a été préparé à partir de ta marque.' : 'Ce qui vient d’être préparé à partir de ta marque. Rien n’est encore posé sur ton site.',
+    phrase: lecture ? remplace : `${remplace} Rien n’est encore posé sur ton site.`,
     fil: filDe(e),
     lecture,
-    corps: `<div class="blocs">\n${valeurs}\n${roles}\n${regles}\n${art}\n${lecture ? '' : pasEncore}\n</div>`,
+    corps: `<div class="blocs">\n<div class="rangs fondations">\n${valeurs}\n${roles}\n${regles}\n${verifier}\n</div>\n<p class="pied">${esc(`Limites connues : ${f.limites.join(' ; ')}.`)}</p>\n</div>`,
   });
 }
 
