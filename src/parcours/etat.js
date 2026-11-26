@@ -91,7 +91,7 @@ function pagesValidees(sorties) {
  *   autres: { id: string, nom: string, href: string }[] }} Dette  la dette du premier site mesuré, au moment de la dette
  * @typedef {{ produit: string, sites: Site[], sousTitre: string | null, unSite: boolean, etapes: Etape[], temps: { nom: string, etat: EtatEtape, etapes: CleEtape[] }[],
  *   courante: Etape, moment: 'pages' | 'mesure' | 'dette' | 'marque' | 'jetons' | 'fondations' | 'avant-apres' | 'ecran' | 'sans-ecran' | 'remise', dette: Dette | null,
- *   marque: { site: Site, lecture: import('./marque.js').Lecture, choix: import('./marque.js').Choix, apercu: import('./marque.js').Apercu } | null, ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
+ *   marque: { site: Site, lecture: import('./marque.js').Lecture, choix: import('./marque.js').Choix, apercu: import('./marque.js').Apercu, planche: string | null } | null, ecran: (Ecran & { etape: CleEtape, precedente: boolean }) | null,
  *   fondations: Fondations | null, avantApres: AvantApres | null, remise: import('./remise.js').Remise | null, phrase: string | null, bilan: Bilan | null, chiffres: Chiffres, voisin: string | null, livraison: Livraison | null,
  *   revoir: Revu[], revue: string | null, mesure: Mesure | null, preparation: Ligne[] | null }} Etat  revoir : les écrans faits qui se revoient ; revue : l'adresse de la revue ;
  *   mesure : où en est la mesure, au moment de la mesure ; preparation : où en est l'écriture des tokens, au moment des jetons (D93)
@@ -505,7 +505,8 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
     if (!lecture) return null;
     const fc = join(sorties, MARQUE_CHOISIE);
     const choix = existsSync(fc) ? { ...lecture.choix, ...(lireJson(fc)[s.id] ?? {}) } : lecture.choix;
-    return { site: s, lecture, choix, apercu: apercu(projet.produit, choix) };
+    // La planche des rôles n'existe qu'une fois les fondations écrites (D96).
+    return { site: s, lecture, choix, apercu: apercu(projet.produit, choix), planche: marques.find((m) => m.site === s)?.planche ?? null };
   };
   /** @type {Etat['marque']} */
   let marque = null;

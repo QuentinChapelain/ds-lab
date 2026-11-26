@@ -157,12 +157,27 @@ button:focus-visible, input:focus-visible { outline: var(--border-width-focus) s
 .ecarts rect { fill: var(--background-inverse); }
 .ecarts .hors rect { fill: var(--text-info); }
 .rayons path { fill: var(--background-subtle); stroke: var(--text-default); }
-.couleur { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-blocks) var(--gap-between-components); }
-.couleur code { ${style('heading-3')} }
+.marque .cote code { ${style('heading-3')} }
+.marque .cote h2 { ${style('body-medium')} font-weight: bold; }
+.marque .preuve { gap: var(--gap-between-blocks); }
+.marque .diapason > * { padding-top: 0; border-top: 0; }
+.marque .titre-rangs > * { padding: var(--gap-between-groups) 0 var(--gap-between-components); border-top: 0; }
+.specimen { display: block; }
+.echantillons { max-width: 100%; }
+.echantillons svg { max-width: 100%; height: auto; }
+.pas { display: flex; flex-direction: column; gap: var(--gap-within-component); }
+.repere { display: block; width: 100%; height: var(--gap-within-component); }
+.repere rect { fill: var(--text-default); }
+.ligne-modifier { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--gap-between-blocks) var(--gap-between-components); }
+.ligne-modifier .modifier[open] { flex-basis: 100%; }
+.discret { color: var(--text-secondary); }
+.troisieme { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-blocks) var(--gap-between-components); }
+.verdict { display: inline-flex; align-items: center; gap: var(--gap-between-blocks); }
+.verdict i { width: var(--gap-between-blocks); height: var(--gap-between-blocks); border-radius: var(--border-radius-full); background: currentcolor; }
+.voir { color: var(--text-info); ${style('label')} }
 .echelle { display: flex; flex-wrap: wrap; gap: var(--gap-within-component); }
 .echelle li { display: flex; flex-direction: column; align-items: center; gap: var(--gap-within-component); }
 .echelle rect { stroke: var(--border-subtle); }
-.echelle .plein rect { stroke: var(--text-default); stroke-width: var(--border-width-focus); }
 .echantillons { display: flex; flex-wrap: wrap; gap: var(--gap-between-components); }
 .refus { color: var(--text-error); ${style('label')} }
 .accepte { color: var(--text-info); ${style('label')} }
@@ -601,40 +616,56 @@ function modifier(role, hex, relevees, erreur) {
 }
 
 /**
- * Le bloc d'une couleur de la marque : sa pastille, son code, d'où elle vient, ce que l'outil en fait.
+ * Les douze pas en ruban continu, du plus clair au plus foncé, et le pas plein marqué d'un trait sous sa tranche. Les
+ * couleurs et la place du trait sont des données du dessin ; la couleur du trait vient des jetons, par la classe.
+ * @param {import('./marque.js').Echelle} e
+ */
+const rubanDesPas = (e) =>
+  `<div class="pas"><div class="ruban"><svg viewBox="0 0 12 1" preserveAspectRatio="none" shape-rendering="crispEdges" role="img" aria-label="${esc(`Les douze pas, du plus clair au plus foncé ; le pas ${e.plein.pas} est le plein`)}">${e.pas
+    .map((h, i) => `<rect x="${i}" y="0" width="1" height="1" fill="${esc(h)}"><title>${esc(`Pas ${i + 1}, ${h}`)}</title></rect>`)
+    .join('')}</svg></div><svg class="repere" viewBox="0 0 12 1" preserveAspectRatio="none" shape-rendering="crispEdges" aria-hidden="true"><rect x="${e.plein.pas - 1}" y="0" width="1" height="1"/></svg></div>`;
+
+/**
+ * Une ligne de la marque (D96) : à gauche, ce qu'on regarde ; à droite, ce que l'outil en fait.
+ * @param {string} cote @param {string} preuve @param {string} [classe]
+ */
+const ligneDeMarque = (cote, preuve, classe = 'rang') => `<section class="${classe}"><div class="cote">${cote}</div><div class="preuve">${preuve}</div></section>`;
+
+/**
+ * La ligne d'une couleur de la marque (D96) : à gauche, la pastille, le code, le nom ; à droite, une seule note, le
+ * ruban des douze pas, l'échantillon sur papier et « Modifier », puis le verdict en une phrase. Adaptée, le papier
+ * montre ta couleur à côté du bouton, et le trait du ruban dit le pas qu'il prend.
  * @param {{ titre: string, hex: string, relevee: import('./marque.js').Relevee | undefined, aide: string, echelle: import('./marque.js').Echelle | null,
  *   role: 'primary' | 'accent', motifs: string[], suite?: string, modifier: string }} o
  */
-function blocCouleur(o) {
+function ligneCouleur(o) {
   const d = o.relevee;
   const lue = d
     ? `Lue sur ${d.elements > 1 ? `${d.elements} éléments` : '1 élément'} de tes pages${o.role === 'primary' && d.cliquables ? `, dont ${d.cliquables} qui se cliquent` : ''}.`
     : 'Pas lue sur tes pages.';
   const e = o.echelle;
-  const pas = e
-    ? `<ul class="echelle" aria-label="Les douze pas">${e.pas
-        .map((h, i) => `<li${i + 1 === e.plein.pas ? ' class="plein"' : ''}><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="4" fill="${esc(h)}"/></svg><small>${i + 1}</small></li>`)
-        .join('')}</ul>`
-    : '';
   const exacte = e && e.plein.fond === o.hex;
+  const nom = o.role === 'primary' ? 'Bouton' : 'Aplat';
   const verdict = !e
     ? ''
-    : o.role === 'primary'
-      ? exacte
-        ? `Ta couleur exacte est sur le bouton, avec un texte ${e.plein.blanc ? 'blanc' : 'foncé'}. C’est le pas 9, encadré.`
-        : `Adaptée pour le bouton : avec un texte lisible, ta couleur exacte ne passerait pas. Le bouton prend le pas ${e.plein.pas}, encadré. Ta couleur exacte reste sur les aplats.`
-      : exacte
-        ? `Ta couleur exacte est sur les aplats, avec un texte ${e.plein.blanc ? 'blanc' : 'foncé'}.`
-        : `Adaptée pour les aplats : ils prennent le pas ${e.plein.pas}, encadré.`;
-  return `<div class="carte"><h3>${esc(o.titre)}</h3>
-<div class="couleur"><span class="papier papier-bloc">${pastille(o.hex)}</span><code>${esc(o.hex)}</code><small>${esc(lue)} ${esc(o.aide)}</small></div>
-${pas}${e ? `<div class="echantillons">${echantillon(e.plein.fond, e.plein.texte, o.role === 'primary' ? 'Bouton' : 'Aplat')}</div><p>${esc(verdict)}</p>` : ''}
-${o.motifs.map((m) => `<p class="refus">${esc(m)}</p>`).join('')}${o.modifier}${o.suite ?? ''}</div>`;
+    : exacte
+      ? `Ta couleur exacte est sur ${o.role === 'primary' ? 'le bouton' : 'les aplats'}, avec un texte ${e.plein.blanc ? 'blanc' : 'foncé'}.`
+      : `Adaptée : avec un texte lisible, ta couleur ne passerait pas ; ${o.role === 'primary' ? 'le bouton prend' : 'les aplats prennent'} le pas ${e.plein.pas}, marqué.`;
+  const papier = e
+    ? `<span class="papier papier-bloc echantillons">${exacte ? '' : `<svg width="44" height="44" viewBox="0 0 44 44" role="img" aria-label="${esc(`Ta couleur, ${o.hex}`)}"><rect width="44" height="44" rx="8" fill="${esc(o.hex)}"/></svg>`}${echantillon(e.plein.fond, e.plein.texte, nom)}</span>`
+    : '';
+  const cote = `${pastille(o.hex)}<code>${esc(o.hex)}</code><h3>${esc(o.titre)}</h3>`;
+  const preuve = `<p>${esc(`${lue} ${o.aide}`)}</p>
+${e ? rubanDesPas(e) : ''}
+<div class="ligne-modifier">${papier}${o.modifier}</div>
+${verdict ? `<p class="discret">${esc(verdict)}</p>` : ''}${o.motifs.map((m) => `<p class="refus">${esc(m)}</p>`).join('')}${o.suite ?? ''}`;
+  return ligneDeMarque(cote, preuve);
 }
 
 /**
- * La marque (D80) : la première des trois portes. Deux couleurs et la police des titres, lues sur les pages, avec ce
- * que l'outil en fait ; « Confirmer ma marque » se dit dans le chat, impossible si la marque est refusée (D92).
+ * La marque (D80, D96) : la première des trois portes, sur le dessin des lignes de la dette. Diapason en tête, puis
+ * « Ta marque » : une ligne par chose à confirmer (deux couleurs, la police des titres), et le verdict. « Confirmer ma
+ * marque » se dit dans le chat, impossible si la marque est refusée (D92).
  * @param {Etat} e
  * @param {{ erreur?: ErreurAjout | null, lecture?: Lecture | null }} [o]  le code tapé refusé : la couleur (site), la raison,
  *   la saisie ; revue, la marque confirmée, sans rien à modifier
@@ -646,30 +677,45 @@ export function ecranDeLaMarque(e, { erreur = null, lecture = null } = {}) {
   const motifs = (/** @type {string} */ b) => apercu.motifs.filter((x) => x.bloc === b).map((x) => x.texte);
   const ira = choix.troisieme ? echelleDeLaTroisieme(choix.troisieme) : null;
   const troisieme = choix.troisieme && !lecture
-    ? `<div class="couleur">${pastille(choix.troisieme, 24)}<small>${esc(`${choix.troisieme}, lue sur ${relevee(choix.troisieme)?.elements ?? 0} éléments. Une marque garde deux couleurs : ${ira ? `celle-ci ira sur ${nomAffiche(ira)}, l’échelle de la palette qui a sa teinte.` : 'celle-ci passera aux gris.'}`)}</small><form method="post" action="/pages/marque/echanger"><button type="submit" class="retirer">Échanger avec l’accent</button></form></div>`
+    ? `<div class="troisieme"><p class="discret">${esc(`Une troisième couleur, ${choix.troisieme}, ${ira ? `ira sur ${nomAffiche(ira)}, l’échelle de la palette qui a sa teinte` : 'passera aux gris'} : une marque garde deux couleurs.`)}</p><form method="post" action="/pages/marque/echanger"><button type="submit" class="retirer">Échanger avec l’accent</button></form></div>`
     : '';
+  // La planche de la marque n'existe qu'une fois les fondations écrites : avant, la ligne de Diapason n'a pas de lien.
+  const planche = m.planche ? `<a class="voir" href="${esc(m.planche)}">Voir la planche de Diapason</a>` : '';
+  const diapason = ligneDeMarque(
+    '<h2>Diapason</h2>',
+    `<p>C’est le design system que ds-lab t’apporte. Tu donnes ta couleur, ton accent et ta police de titres. Il fournit les espacements, les tailles de texte, les rôles de chaque couleur et les règles de contraste, les mêmes pour chaque marque.</p>${planche}`,
+    'rang diapason',
+  );
   const police = choix.police
-    ? `<div class="carte"><h3>Police des titres</h3><div class="couleur"><code>${esc(choix.police[0])}</code><small>${esc(`Lue sur ${lue.titres} titres de tes pages.`)}</small></div>
-<svg class="police papier papier-bloc" width="100%" height="48" role="img" aria-label="${esc(e.produit)}"><text x="0" y="36" font-size="32" font-weight="700" font-family="${esc(choix.police.join(', '))}">${esc(e.produit)}</text></svg>
-<p>Le texte courant et les boutons gardent la police du produit. Non contrôlée : sans le fichier de la police, l’outil ne peut pas vérifier ses graisses ni ses accents.</p></div>`
+    ? ligneDeMarque(
+        `<code>${esc(choix.police[0])}</code><h3>Police des titres</h3>`,
+        `<span class="papier papier-bloc specimen"><svg class="police" width="100%" height="48" role="img" aria-label="${esc(e.produit)}"><text x="0" y="36" font-size="32" font-weight="700" font-family="${esc(choix.police.join(', '))}">${esc(e.produit)}</text></svg></span>
+<p class="discret">${esc(`Lue sur ${lue.titres} titres. Le texte courant et les boutons gardent la police du produit. Non contrôlée : sans le fichier de la police, l’outil ne peut pas vérifier ses graisses ni ses accents.`)}</p>`,
+      )
     : '';
   const refusee = apercu.motifs.length > 0;
   const generale = motifs('marque');
+  const verdict = ligneDeMarque(
+    `<span class="etat verdict ${refusee ? 'refus' : 'fait'}"><i></i>${refusee ? 'Marque refusée' : 'Marque acceptée'}</span>`,
+    refusee
+      ? `${generale.map((x) => `<p class="refus">${esc(x)}</p>`).join('')}${apercu.motifs.length > generale.length ? '<p>Change la couleur dite plus haut.</p>' : ''}`
+      : '<p>Chaque texte tient son contraste sur son fond, en clair et en sombre.</p>',
+  );
   return gabarit({
     titre: `La marque ${deNom(e.produit)}`,
     onglet: `La marque · ${e.produit}`,
     phrase: lecture ? 'Ta marque, telle que tu l’as confirmée. Diapason apporte le reste.' : 'Trois choses à confirmer, lues sur ton site. Diapason apporte le reste.',
-    sousTete:
-      '<details><summary>C’est quoi Diapason ?</summary><p>Diapason est le design system que ds-lab t’apporte. Tu donnes ta couleur, ton accent et ta police de titres. Il fournit les espacements, les tailles de texte, les rôles et les règles, les mêmes pour chaque marque.</p></details>',
     fil: filDe(e),
     lecture,
-    corps: `<div class="cartes">
-${blocCouleur({ titre: 'Couleur primaire', hex: choix.primary, relevee: relevee(choix.primary), aide: 'C’est ce qui se clique.', echelle: apercu.primary, role: 'primary', motifs: motifs('primary'), modifier: lecture ? '' : modifier('primary', choix.primary, lue.relevees, erreur) })}
-${choix.accent ? blocCouleur({ titre: 'Accent', hex: choix.accent, relevee: relevee(choix.accent), aide: 'Facultatif. Sans accent, le système prend un neutre.', echelle: apercu.accent, role: 'accent', motifs: motifs('accent'), suite: troisieme, modifier: lecture ? '' : modifier('accent', choix.accent, lue.relevees, erreur) }) : ''}
+    // Une seule grille, pour que la ligne de Diapason et celles de la marque partagent leur colonne de gauche.
+    corps: `<div class="rangs marque">
+${diapason}
+<div class="rang titre-rangs"><h2>Ta marque</h2><span></span></div>
+${ligneCouleur({ titre: 'Couleur primaire', hex: choix.primary, relevee: relevee(choix.primary), aide: 'C’est ce qui se clique.', echelle: apercu.primary, role: 'primary', motifs: motifs('primary'), modifier: lecture ? '' : modifier('primary', choix.primary, lue.relevees, erreur) })}
+${choix.accent ? ligneCouleur({ titre: 'Accent', hex: choix.accent, relevee: relevee(choix.accent), aide: 'Facultatif : sans accent, le système prend un neutre.', echelle: apercu.accent, role: 'accent', motifs: motifs('accent'), suite: troisieme, modifier: lecture ? '' : modifier('accent', choix.accent, lue.relevees, erreur) }) : ''}
 ${police}
-</div>
-${generale.map((x) => `<p class="refus">${esc(x)}</p>`).join('')}
-<p class="${refusee ? 'refus' : 'accepte'}">${refusee ? 'Marque refusée : change la couleur dite plus haut.' : 'Marque acceptée : chaque texte tient son contraste sur son fond, en clair et en sombre.'}</p>`,
+${verdict}
+</div>`,
   });
 }
 

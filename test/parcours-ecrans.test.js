@@ -429,18 +429,27 @@ test('EC7 la marque, lue dans la mesure : deux couleurs et la police, d’où el
   const t = texte(h);
   for (const x of [
     'La marque d’Annuaire des cafés',
-    'C’est quoi Diapason ?',
-    'Couleur primaire #2b4c7e Lue sur 19 éléments de tes pages, dont 15 qui se cliquent. C’est ce qui se clique.',
-    'Ta couleur exacte est sur le bouton, avec un texte blanc. C’est le pas 9, encadré.',
-    'Accent #f0c987 Lue sur 6 éléments de tes pages. Facultatif.',
+    'Diapason C’est le design system que ds-lab t’apporte.',
+    'Ta marque #2b4c7e Couleur primaire Lue sur 19 éléments de tes pages, dont 15 qui se cliquent. C’est ce qui se clique.',
+    'Bouton Modifier',
+    'Ta couleur exacte est sur le bouton, avec un texte blanc. #f0c987 Accent',
+    'Accent Lue sur 6 éléments de tes pages. Facultatif : sans accent, le système prend un neutre.',
     'Ta couleur exacte est sur les aplats, avec un texte foncé.',
-    '#d0563f, lue sur 2 éléments. Une marque garde deux couleurs : celle-ci ira sur red, l’échelle de la palette qui a sa teinte.',
-    'Police des titres Orbe Sans Lue sur 17 titres de tes pages.',
-    'Marque acceptée',
+    'Une troisième couleur, #d0563f, ira sur red, l’échelle de la palette qui a sa teinte : une marque garde deux couleurs. Échanger avec l’accent',
+    'Orbe Sans Police des titres Annuaire des cafés Lue sur 17 titres.',
+    'Marque acceptée Chaque texte tient son contraste sur son fond, en clair et en sombre.',
   ])
     assert.ok(t.includes(x), x);
-  assert.equal(h.match(/<ul class="echelle" aria-label="Les douze pas">/g)?.length, 2);
-  assert.match(h, /<li class="plein"><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="4" fill="#2b4c7e"\/>/);
+  // Une ligne par chose à confirmer, dans la même grille que Diapason ; plus de cartes ni de dépliant.
+  assert.equal(h.match(/<section class="rang">/g)?.length, 4);
+  assert.doesNotMatch(h, /class="carte"|C’est quoi Diapason|encadré/);
+  // Le ruban continu des douze pas, le pas plein marqué d'un trait sous sa tranche : le pas 9 des deux couleurs.
+  assert.equal(h.match(/aria-label="Les douze pas, du plus clair au plus foncé ; le pas 9 est le plein"/g)?.length, 2);
+  assert.match(h, /<rect x="8" y="0" width="1" height="1" fill="#2b4c7e"><title>Pas 9, #2b4c7e<\/title><\/rect>/);
+  assert.equal(h.match(/<svg class="repere" [^>]*><rect x="8" y="0" width="1" height="1"\/><\/svg>/g)?.length, 2);
+  // Exacte : le papier ne porte que l'échantillon. Sans fondations écrites, Diapason n'a pas de lien.
+  assert.doesNotMatch(h, /aria-label="Ta couleur, /);
+  assert.doesNotMatch(t, /Voir la planche de Diapason/);
   assert.doesNotMatch(h, /Confirmer ma marque|action="\/pages\/marque"/);
   assert.doesNotMatch(t, /[Cc]onstat|checkValise|entrée|\.json/);
   assert.doesNotMatch(h, /<script|\sstyle="|http-equiv="refresh"/);
@@ -464,8 +473,8 @@ test('EC8 confirmer la marque, dans le chat : l’entrée écrite, la main à l�
   const r = aLaMarque();
   writeFileSync(join(r.d, 'sorties', 'marque.json'), JSON.stringify({ orbe: { primary: '#00ccff' } }));
   const h = pageDuParcours(calculerEtat(lireProjet(r.f), { base: r.d }));
-  assert.match(texte(h), /Couleur primaire #00ccff .* Cette couleur ne donne pas douze nuances distinctes : ses tons clairs se confondent avec elle\. Essaie une couleur plus foncée\./);
-  assert.match(texte(h), /Marque refusée : change la couleur dite plus haut\./);
+  assert.match(texte(h), /#00ccff Couleur primaire .* Cette couleur ne donne pas douze nuances distinctes : ses tons clairs se confondent avec elle\. Essaie une couleur plus foncée\./);
+  assert.match(texte(h), /Marque refusée Change la couleur dite plus haut\./);
   assert.throws(() => confirmerMarque(r.f), /une marque refusée ne se confirme pas/);
   // Dans le chat : pas de bouton ; la commande dit quelle couleur changer, les faits aussi.
   const non = parcours([r.f, '--passer', 'marque']);
@@ -483,8 +492,11 @@ test('EC9 modifier la marque : une couleur relevée, un code tapé, l’échange
   assert.match(h0, /<form method="post" action="\/pages\/marque\/echanger"><button type="submit" class="retirer">Échanger avec l’accent<\/button><\/form>/);
   echangerAccent(f);
   assert.deepEqual([choix()?.accent, choix()?.troisieme], ['#d0563f', '#f0c987']);
-  // Le terracotta en accent : l'aplat prend un pas plus foncé, dit sous le bloc.
-  assert.match(texte(pageDuParcours(calculerEtat(lireProjet(f), { base: d }))), /Accent #d0563f Lue sur 2 éléments de tes pages\..* Adaptée pour les aplats : ils prennent le pas 11, encadré\./);
+  // Le terracotta en accent : l'aplat prend un pas plus foncé, marqué sur le ruban ; ta couleur à côté de l'aplat.
+  const ha = pageDuParcours(calculerEtat(lireProjet(f), { base: d }));
+  assert.match(texte(ha), /#d0563f Accent Lue sur 2 éléments de tes pages\..* Aplat Modifier .* Adaptée : avec un texte lisible, ta couleur ne passerait pas ; les aplats prennent le pas 11, marqué\./);
+  assert.match(ha, /<svg class="repere" [^>]*><rect x="10" y="0" width="1" height="1"\/><\/svg>/);
+  assert.match(ha, /<svg width="44" height="44" viewBox="0 0 44 44" role="img" aria-label="Ta couleur, #d0563f"><rect width="44" height="44" rx="8" fill="#d0563f"\/><\/svg>/);
   assert.equal(choisirCouleur(f, 'primary', 'F0C987'), null);
   assert.deepEqual(choix(), { primary: '#f0c987', accent: '#d0563f', troisieme: '#2b4c7e', police: ['Orbe Sans', 'Arial', 'sans-serif'] });
   // La valeur que porte déjà l'autre couleur s'échange avec elle.
@@ -814,6 +826,8 @@ test('EC17 revoir un écran fait : en lecture seule, sans formulaire ni recharge
     const h = voir(v, d, g);
     assert.ok(h.includes(`<h1>${titre}</h1>`), v);
     assert.doesNotMatch(h, /<form|<details class="modifier"|Pas encore/, v);
+    // La marque revue, les fondations écrites : Diapason mène à la planche de la marque.
+    if (v === 'marque') assert.match(h, /<a class="voir" href="\/marques\/orbe\/roles\.html">Voir la planche de Diapason<\/a>/);
     const autres = ['dette', 'marque', 'fondations'].filter((x) => x !== v);
     for (const x of autres) assert.ok(h.includes(`<a href="/?voir=${x}">`), `${v} → ${x}`);
     assert.match(h, /<span aria-current="page">/, v);
