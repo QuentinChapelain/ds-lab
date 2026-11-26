@@ -11,7 +11,7 @@ import { closeSync, existsSync, openSync, readFileSync, readSync, readdirSync, s
 import { basename, join, relative, resolve } from 'node:path';
 import { lireAvancement } from '../lib/avancement.js';
 import { lireJson } from '../lib/fichiers.js';
-import { deNom } from '../lib/format.js';
+import { deNom, liste } from '../lib/format.js';
 import { compterDecisions } from '../reduce/propose.js';
 import { RESOLVER } from '../tokens/resolver.js';
 import { pageName } from '../verify/reference.js';
@@ -130,8 +130,6 @@ const PHRASES = {
 /** Accord en nombre : 0 et 1 au singulier. @param {number} n @param {string} un @param {string} plusieurs */
 const nombre = (n, un, plusieurs) => `${n} ${n > 1 ? plusieurs : un}`;
 
-/** Liste en français : « a, b et c ». @param {string[]} l */
-const liste = (l) => (l.length < 2 ? l.join('') : `${l.slice(0, -1).join(', ')} et ${l.at(-1)}`);
 
 /** « dans le site a », « dans les sites a et b ». @param {{ id: string }[]} l */
 const lesSites = (l) => (l.length > 1 ? `dans les sites ${liste(l.map((s) => s.id))}` : `dans le site ${l[0]?.id}`);
@@ -490,7 +488,7 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
     return {
       site: s,
       pages: s.pages.map((p) => s.noms[p] ?? p),
-      ...detteDe({ constat: premierEcran.constat, audit: fa && existsSync(fa) ? lireJson(fa) : null, pages: s.pages.length }),
+      ...detteDe({ constat: premierEcran.constat, audit: fa && existsSync(fa) ? lireJson(fa) : null }),
       valeursHref: rapport && existsSync(rapport) ? href(rapport) : null,
       composantsHref: href(/** @type {string} */ (premierEcran.html)),
       captures: href(dossier),

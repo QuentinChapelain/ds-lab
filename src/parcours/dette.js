@@ -1,19 +1,21 @@
 // @ts-check
 /**
- * La dette d'un site (D78), calculée depuis ses sorties : les valeurs affichées (audit.json, rendu) et les composants
- * (constat.json). Chaque phrase est calculée ; une phrase que l'outil ne sait pas calculer ne s'écrit pas, le compte et
- * le dessin suffisent. Rien n'est saisi : mêmes sorties, même dette.
+ * La dette d'un site (D78, D94), calculée depuis ses sorties : les valeurs affichées (audit.json, rendu) et les
+ * composants (constat.json). Une note par famille et par type, par une règle fixe, la même à chaque partie : l'écart
+ * qui dit le mieux la dette, sinon l'étendue ; le reste se lit derrière « Voir toutes les valeurs ». Une note que
+ * l'outil ne sait pas calculer ne s'écrit pas, le compte et le dessin suffisent. Rien n'est saisi : mêmes sorties,
+ * même dette.
  */
-import { toLab, deltaE } from '../lib/color.js';
-import { fr } from '../lib/format.js';
+import { fr, liste } from '../lib/format.js';
 import { isGrey } from '../brand/brand.js';
 import { THRESHOLDS } from '../reduce/propose.js';
+import { couleursProches } from '../report/html.js';
 
 /**
  * @typedef {{ valeur: string, fois: number }} Valeur
- * @typedef {{ cle: 'colors' | 'fontSizes' | 'spacing' | 'radii', titre: string, compte: number, phrases: string[], valeurs: (Valeur & { hors?: boolean, gris?: boolean })[] }} Famille
- * @typedef {{ nom: string, versions: { nom: string, fois: number, capture: string | null, sansStyle: boolean }[], fois: number, phrases: string[] }} Type
- * @typedef {{ valeurs: { total: number, familles: Famille[] } | null, composants: { phrase: string, types: Type[], aussi: string[] } }} Dette
+ * @typedef {{ cle: 'colors' | 'fontSizes' | 'spacing' | 'radii', titre: string, compte: number, note: string | null, valeurs: (Valeur & { hors?: boolean, gris?: boolean })[] }} Famille
+ * @typedef {{ nom: string, versions: { nom: string, fois: number, capture: string | null, sansStyle: boolean }[], fois: number, note: string }} Type
+ * @typedef {{ valeurs: { total: number, familles: Famille[] } | null, composants: { types: Type[], aussi: string[] } }} Dette
  */
 
 /** « 3 » en lettres jusqu'à dix, au début d'une phrase. @param {number} n */
@@ -21,9 +23,6 @@ const enLettres = (n) => ['Aucune', 'Une', 'Deux', 'Trois', 'Quatre', 'Cinq', 'S
 
 /** Accord en nombre. @param {number} n @param {string} un @param {string} plusieurs */
 const nombre = (n, un, plusieurs) => `${n} ${n > 1 ? plusieurs : un}`;
-
-/** « a, b et c ». @param {string[]} l */
-const liste = (l) => (l.length < 2 ? l.join('') : `${l.slice(0, -1).join(', ')} et ${l.at(-1)}`);
 
 
 /**
@@ -71,31 +70,29 @@ function couleursDe(audit) {
 /** La valeur en px d'une longueur, ou null. @param {string} v */
 const px = (v) => (/^-?[\d.]+px$/.test(v) ? Number.parseFloat(v) : null);
 
-/** « Le code en écrit n. » quand le déclaré le dit. @param {any} declare @param {string} f */
-const ecrit = (declare, f) => (typeof declare?.[f]?.distinct === 'number' ? [`Le code en écrit ${declare[f].distinct}.`] : []);
+/** « de 11 à 32 px » : l'étendue des valeurs en px, ou null. @param {Valeur[]} l */
+function etendue(l) {
+  const n = l.map((x) => px(x.valeur)).filter((x) => x !== null);
+  if (n.length < 2) return null;
+  const f = (/** @type {number} */ x) => fr(x, { decimales: 2 });
+  return `de ${f(Math.min(...n))} à ${f(Math.max(...n))} px`;
+}
 
 /**
- * Les quatre familles de valeurs.
+ * Les quatre familles de valeurs, chacune avec sa note : pour les couleurs, les presque identiques comptées comme le
+ * rapport (`couleursProches`), sinon les gris ; pour les tailles, les valeurs à virgule ; pour les espacements, celles
+ * hors d'une grille de 4 px ; pour les arrondis, les façons d'écrire un rond ; sinon l'étendue.
  * @param {any} audit  audit.json
  * @returns {{ total: number, familles: Famille[] }}
  */
 export function valeurs(audit) {
   const rendu = audit.rendered?.families ?? {};
-  const declare = audit.declared?.families ?? {};
 
   const c = couleursDe(audit);
   const couleurs = c.interface.filter((x) => /^#[0-9a-f]{6}$/.test(x.valeur));
-  const etats = couleurs.filter((x) => (audit.rendered?.states?.onlyInStates ?? []).includes(x.valeur));
   const gris = couleurs.filter((x) => isGrey(x.valeur));
-  const labs = couleurs.map((x) => toLab(x.valeur));
-  // Presque identiques : une autre couleur du site à un écart invisible à l'œil (le seuil d'office de la réduction).
-  const proches = couleurs.filter((_, i) => labs.some((l, j) => j !== i && deltaE(labs[i], l) <= THRESHOLDS.autoDeltaE)).length;
-  const phrasesCouleurs = [
-    `Dont ${nombre(gris.length, 'gris', 'gris')}${proches ? `, et ${proches} presque identiques à une autre` : ''}.`,
-    ...(etats.length ? [`${etats.length > 1 ? `${enLettres(etats.length)} ne se voient` : 'L’une ne se voit'} qu’au survol, au focus ou à l’appui.`] : []),
-    ...ecrit(declare, 'colors'),
-    ...(c.contenu ? [`${enLettres(c.contenu)} autre${c.contenu > 1 ? 's' : ''} ${c.contenu > 1 ? 'viennent' : 'vient'} du contenu (images, pictogrammes) : mise${c.contenu > 1 ? 's' : ''} de côté.`] : []),
-  ];
+  const proches = couleursProches(rendu.colors ?? {}).length;
+  const noteCouleurs = proches ? `dont ${proches} presque identiques à une autre` : gris.length ? `dont ${nombre(gris.length, 'gris', 'gris')}` : null;
 
   const t = valeursDe(rendu, ['fontSizes']);
   const tailles = t.interface.filter((x) => px(x.valeur) !== null).sort((a, b) => /** @type {number} */ (px(a.valeur)) - /** @type {number} */ (px(b.valeur)));
@@ -117,46 +114,46 @@ export function valeurs(audit) {
       cle: 'colors',
       titre: 'Couleurs',
       compte: couleurs.length,
-      phrases: phrasesCouleurs,
+      note: noteCouleurs,
       valeurs: [...gris.map((x) => ({ ...x, gris: true })), ...couleurs.filter((x) => !isGrey(x.valeur))],
     },
     {
       cle: 'fontSizes',
       titre: 'Tailles de texte',
       compte: tailles.length,
-      phrases: [...(virgules.length ? [`${enLettres(virgules.length)} ${virgules.length > 1 ? 'sont des valeurs' : 'est une valeur'} à virgule, en bleu.`] : []), ...ecrit(declare, 'fontSizes')],
+      note: virgules.length ? `dont ${virgules.length} à virgule, en bleu` : etendue(tailles),
       valeurs: tailles.map((x) => ({ ...x, hors: !Number.isInteger(px(x.valeur)) })),
     },
     {
       cle: 'spacing',
       titre: 'Espacements',
       compte: ecarts.length,
-      phrases: [...(horsGrille.length ? [`${enLettres(horsGrille.length)} ${horsGrille.length > 1 ? 'sont' : 'est'} hors d’une grille de 4 px, en bleu.`] : []), 'Valeurs en pixels.'],
+      note: horsGrille.length ? `dont ${horsGrille.length} hors d’une grille de 4 px, en bleu` : etendue(ecarts),
       valeurs: ecarts.map((x) => ({ ...x, hors: /** @type {number} */ (px(x.valeur)) % 4 !== 0 })),
     },
     {
       cle: 'radii',
       titre: 'Arrondis',
       compte: rayons.length,
-      phrases: [
-        ...(ronds.length > 1 ? [`${enLettres(ronds.length)} façons d’écrire un rond : ${liste(ronds.map((x) => (px(x.valeur) !== null ? fr(/** @type {number} */ (px(x.valeur)), { decimales: 2 }) : x.valeur.replace('%', ' %'))))}.`] : []),
-        ...ecrit(declare, 'radii'),
-      ],
+      note:
+        ronds.length > 1
+          ? `${enLettres(ronds.length).toLowerCase()} façons d’écrire un rond : ${liste(ronds.map((x) => (px(x.valeur) !== null ? fr(/** @type {number} */ (px(x.valeur)), { decimales: 2 }) : x.valeur.replace('%', ' %'))))}`
+          : etendue(rayons),
       valeurs: rayons,
     },
   ];
   return { total: familles.reduce((n, f) => n + f.compte, 0), familles };
 }
 
-/** Le nom d'un type au début d'une carte. @param {string} n */
+/** Le nom d'un type au début d'une ligne. @param {string} n */
 const majuscule = (n) => n.charAt(0).toUpperCase() + n.slice(1);
 
 /**
- * Les composants : une carte par type qui a des versions, et ce qui reste à regarder.
+ * Les composants : une ligne par type qui a des versions, sa note (versions pour emplois, puis ceux sans aucun style,
+ * sinon ses hauteurs), et ce qui reste à regarder.
  * @param {any} constat  constat.json
- * @param {number} pages
  */
-function composants(constat, pages) {
+function composants(constat) {
   const ch = constat.chiffres ?? {};
   /** @type {Type[]} */
   const types = (constat.types ?? [])
@@ -165,20 +162,18 @@ function composants(constat, pages) {
       const versions = t.versions.map((/** @type {any} */ v) => ({ nom: String(v.nomCode ?? v.nom), fois: v.fois, capture: v.capture ?? null, sansStyle: v.origineCle === 'nu' }));
       const hauteurs = [...new Set(t.versions.flatMap((/** @type {any} */ v) => (v.apparences ?? []).map((/** @type {any} */ a) => Math.round(a.mesures?.hauteur ?? 0))).filter(Boolean))].sort((a, b) => a - b);
       const nus = versions.filter((/** @type {{ sansStyle: boolean }} */ v) => v.sansStyle).reduce((n, /** @type {{ fois: number }} */ v) => n + v.fois, 0);
-      const phrases = [
-        `${nombre(t.fois, 'emploi', 'emplois')} sur ${nombre(pages, 'page', 'pages')}.`,
-        ...(hauteurs.length > 1 ? [`${enLettres(hauteurs.length)} hauteurs : ${liste(hauteurs.map(String))} px.`] : []),
-        ...(nus ? [`${nus} ${nus > 1 ? 'n’ont' : 'n’a'} aucun style.`] : []),
-      ];
-      return { nom: majuscule(String(t.nom)), versions, fois: t.fois, phrases };
+      const suite = nus
+        ? `, dont ${nus} sans aucun style`
+        : hauteurs.length > 1
+          ? ` ; ${enLettres(hauteurs.length).toLowerCase()} hauteurs : ${liste(hauteurs.map(String))} px`
+          : '';
+      return { nom: majuscule(String(t.nom)), versions, fois: t.fois, note: `${nombre(versions.length, 'version', 'versions')} pour ${nombre(t.fois, 'emploi', 'emplois')}${suite}` };
     });
-  const frameworks = Object.keys(ch.frameworks ?? {}).length;
   const zone = constat.scores?.accessibilite?.echecs?.zone ?? 0;
   return {
-    phrase: `${nombre(ch.versions ?? 0, 'version', 'versions')} pour ${nombre(ch.types ?? 0, 'type', 'types')} de composants, sur ${nombre(ch.elements ?? 0, 'élément relevé', 'éléments relevés')}.${frameworks ? '' : ' Aucun ne vient d’un framework.'}`,
     types,
     aussi: [
-      ...(ch.nonIdentifies ? [`${nombre(ch.nonIdentifies, 'bloc répété', 'blocs répétés')} que l’outil ne sait pas nommer : à trier plus tard.`] : []),
+      ...(ch.nonIdentifies ? [`${nombre(ch.nonIdentifies, 'bloc répété', 'blocs répétés')} que l’outil ne sait pas nommer, à trier plus tard.`] : []),
       ...(zone ? [`${zone} ${zone > 1 ? 'éléments' : 'élément'} sur ${ch.elements ?? 0} ${zone > 1 ? 'ont' : 'a'} une zone de clic de moins de 24 px.`] : []),
     ],
   };
@@ -186,9 +181,9 @@ function composants(constat, pages) {
 
 /**
  * La dette d'un site.
- * @param {{ constat: any, audit: any | null, pages: number }} o
+ * @param {{ constat: any, audit: any | null }} o
  * @returns {Dette}
  */
-export function detteDe({ constat, audit, pages }) {
-  return { valeurs: audit ? valeurs(audit) : null, composants: composants(constat, pages) };
+export function detteDe({ constat, audit }) {
+  return { valeurs: audit ? valeurs(audit) : null, composants: composants(constat) };
 }

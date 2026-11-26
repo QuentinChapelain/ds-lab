@@ -12,10 +12,11 @@
  *       et l'écran de la mesure en cours paraît (« Où j'en suis », une ligne par page, rechargé seul) ;
  *   EC4 la commande : avant le projet, --servir sert le lancement ; les formulaires reviennent sur l'écran (303) ; le
  *       serveur n'a plus de passage à recevoir ; --passer pages lance la mesure sur la liste de l'écran à cet instant ;
- *   EC5 la dette (D78) : les pages mesurées nommées, le grand chiffre, quatre cartes de valeurs avec leur compte, leurs
- *       phrases calculées et leurs dessins (SVG : la valeur mesurée est une donnée du dessin, jamais du style), les
- *       composants par type avec leurs captures, « À regarder aussi », les deux liens, « Définir ma marque » ; sans
- *       audit, les composants seuls ; le mot « constat » ne se montre pas ;
+ *   EC5 la dette (D78, D94) : les pages mesurées dans une phrase, le total partagé en parts à la mesure de chaque
+ *       famille (des colonnes, jamais du style), une ligne par famille et par type, chacune avec son chiffre, son nom,
+ *       une seule note et sa preuve (le ruban des couleurs, les dessins, les captures ; la valeur mesurée est une
+ *       donnée du dessin, jamais du style), « À regarder aussi » en pied, les deux liens ; sans audit, les composants
+ *       seuls ; le mot « constat » ne se montre pas ;
  *   EC6 « Définir ma marque », dans le chat (--passer dette) : la dette vue, l'action de la marque reprend ; un
  *       second passage est refusé ;
  *   EC7 la marque (D80), lue dans la mesure par la règle : la primaire colore le plus d'éléments cliquables, l'accent est
@@ -345,39 +346,41 @@ test('EC19 regarder le site sans le montrer : les pages du même site, leurs com
   assert.equal(mele.status, 2);
 });
 
-test('EC5 la dette : les valeurs comptées, dites et dessinées ; les composants par type ; rien à décider', () => {
+test('EC5 la dette : une phrase, le total en parts, une ligne par famille et par type, une note chacune ; rien à décider', () => {
   const e = etat('constat');
   assert.equal(e.moment, 'dette');
   const h = pageDuParcours(e);
   const t = texte(h);
   for (const x of [
     'La dette d’Annuaire des cafés',
-    '3 pages mesurées :',
+    'Mesurée sur 3 pages : /desordre/carte.html, /desordre/compte.html et /desordre/gestion.html.',
+    '70 valeurs différentes',
     'Les valeurs',
-    '70 valeurs différentes affichées sur ces pages',
     // 33, comme la réduction (D86) : les 31 du relevé, le fond de la page (#faf6ef, body) et #24426f, vu seulement au survol.
-    'Couleurs 33',
-    'Dont 21 gris, et 17 presque identiques à une autre. L’une ne se voit qu’au survol, au focus ou à l’appui. Le code en écrit 42. Six autres viennent du contenu (images, pictogrammes) : mises de côté.',
-    'Tailles de texte 13',
-    'Cinq sont des valeurs à virgule, en bleu. Le code en écrit 14.',
-    'Espacements 16',
-    'Huit sont hors d’une grille de 4 px, en bleu. Valeurs en pixels.',
-    'Arrondis 8',
-    'Trois façons d’écrire un rond : 50 %, 999 et 9999. Le code en écrit 9.',
-    '11 versions pour 3 types de composants, sur 30 éléments relevés. Aucun ne vient d’un framework.',
-    'Lien 4 versions',
-    '18 emplois sur 3 pages. Quatre hauteurs : 16, 21, 24 et 31 px. 12 n’ont aucun style.',
-    'Bouton avec texte 5 versions',
-    'À regarder aussi',
-    '39 blocs répétés que l’outil ne sait pas nommer : à trier plus tard.',
-    '5 éléments sur 30 ont une zone de clic de moins de 24 px.',
+    // L'extrait d'audit n'a pas de groupes de couleurs : aucune presque identique, la note dit les gris.
+    '33 Couleurs dont 21 gris',
+    '13 Tailles de texte dont 5 à virgule, en bleu',
+    '16 Espacements dont 8 hors d’une grille de 4 px, en bleu',
+    '8 Arrondis trois façons d’écrire un rond : 50 %, 999 et 9999',
+    'Les composants',
+    '4 Lien 4 versions pour 18 emplois, dont 12 sans aucun style',
+    '5 Bouton avec texte 5 versions pour 8 emplois ; quatre hauteurs : 33, 37, 39 et 48 px',
+    'À regarder aussi : 39 blocs répétés que l’outil ne sait pas nommer, à trier plus tard. 5 éléments sur 30 ont une zone de clic de moins de 24 px.',
   ])
     assert.ok(t.includes(x), x);
+  // Le total : un tableau d'autant de colonnes que de valeurs, chaque part sur les colonnes de sa famille.
+  assert.match(h, /<colgroup><col span="70"><\/colgroup><tr class="longueurs"><td colspan="33"><\/td><td colspan="13"><\/td><td colspan="16"><\/td><td colspan="8"><\/td><\/tr>/);
+  assert.match(h, /<td colspan="33"><b>33<\/b> couleurs<\/td>/);
+  // Le ruban : une tranche par couleur, dans l'ordre des gris puis des autres.
+  assert.equal(h.match(/<rect x="\d+" y="0" width="1" height="1" fill="#[0-9a-f]{6}">/g)?.length, 33);
+  assert.match(h, /<rect x="0" y="0" width="1" height="1" fill="#[0-9a-f]{6}"><title>[^<]+<\/title><\/rect>/);
+  // Un « Aa » par taille, posé sur la même ligne : le même jour sous la ligne de base.
+  assert.match(h, /<li class="hors"><svg width="15" height="14" viewBox="0 0 15 14" aria-hidden="true"><title>10\.5px, 1 fois<\/title><text x="0" y="10\.5" font-size="10\.5"/);
   assert.match(h, /<a href="\/sorties\/audit\/orbe\/127\.0\.0\.1_4173\/2026-11-24T1330\/rapport\.html">Voir toutes les valeurs<\/a>/);
   assert.match(h, /<a href="\/sorties\/composants\/orbe\/127\.0\.0\.1_4173\/2026-11-24T1330\/constat\.html">Voir tous les composants<\/a>/);
-  assert.equal(h.match(/<img class="papier" src="\/sorties\/composants\/orbe\/127\.0\.0\.1_4173\/2026-11-24T1330\/captures\/p\d-e\d+\.png"/g)?.length, 11);
-  assert.match(h, /<rect x="0\.5" y="0\.5" width="23" height="23" rx="4" fill="#999999"\/>/);
-  assert.match(h, /<li class="hors"><svg [^>]*><title>10\.5px, 1 fois<\/title><text x="0" y="10\.5" font-size="10\.5"/);
+  assert.equal(h.match(/<img src="\/sorties\/composants\/orbe\/127\.0\.0\.1_4173\/2026-11-24T1330\/captures\/p\d-e\d+\.png" alt="[^"]+" title="[^"]+ fois[^"]*">/g)?.length, 11);
+  assert.equal(h.match(/<section class="rang">/g)?.length, 7, 'quatre familles et trois types');
+  assert.doesNotMatch(h, /class="carte"|class="pastilles"|Le code en écrit|Valeurs en pixels/);
   assert.doesNotMatch(h, /<form|Définir ma marque/);
   assert.doesNotMatch(t, /[Cc]onstat/);
   assert.doesNotMatch(h, /<script|\sstyle="|http-equiv="refresh"/);

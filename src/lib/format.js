@@ -60,3 +60,6 @@ export const deNom = (nom) => (/^[aeiouyàâäéèêëîïôöùûüœæ]/i.test
  * @param {string | string[]} v
  */
 export const famille = (v) => (Array.isArray(v) ? v : [v]).map((f) => (/[\s"]/.test(f) ? `"${f.replace(/"/g, '\\"')}"` : f)).join(', ');
+
+/** Liste en français : « a, b et c ». @param {string[]} l */
+export const liste = (l) => (l.length < 2 ? l.join('') : `${l.slice(0, -1).join(', ')} et ${l.at(-1)}`);

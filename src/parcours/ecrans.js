@@ -13,7 +13,7 @@
  * 100 %, comme un module (D61). La page n'a pas de marque : l'anneau de focus prend le texte d'information, pas
  * border.focus, qui pointe sur la marque. Toute chaîne venue du projet ou de la saisie est échappée.
  */
-import { deNom, esc, fr } from '../lib/format.js';
+import { deNom, esc, fr, liste as listeFr } from '../lib/format.js';
 import { variablesDeLaPage } from './jetons.js';
 import { echelleDeLaTroisieme } from './marque.js';
 import { nomAffiche } from '../lib/echelles.js';
@@ -116,8 +116,6 @@ button:focus-visible, input:focus-visible { outline: var(--border-width-focus) s
 .ajout input { width: 100%; min-height: var(--height-control-medium); padding: 0 var(--padding-tag); border: var(--border-width-default) solid var(--border-default); border-radius: var(--border-radius-control); background: var(--background-surface); color: var(--text-default); ${style('body-medium')} }
 .erreur { flex-basis: 100%; color: var(--text-error); ${style('label')} }
 .revenir { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gap-within-component) var(--gap-between-blocks); }
-.pastilles { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-blocks); }
-.pastilles li { padding: 0 var(--padding-tag); border: var(--border-width-default) solid var(--border-subtle); border-radius: var(--border-radius-full); background: var(--background-surface); ${style('body-small')} }
 .blocs { display: flex; flex-direction: column; gap: var(--gap-section); }
 .bloc { display: flex; flex-direction: column; gap: var(--gap-between-components); }
 .titre-bloc { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--gap-between-blocks) var(--gap-between-components); }
@@ -127,21 +125,38 @@ button:focus-visible, input:focus-visible { outline: var(--border-width-focus) s
 .carte { display: flex; flex: auto; flex-basis: var(--width-column); flex-direction: column; gap: var(--gap-between-blocks); min-width: 0; padding: var(--padding-component); border: var(--border-width-default) solid var(--border-subtle); border-radius: var(--border-radius-surface); background: var(--background-surface); }
 .carte h3 { display: flex; align-items: baseline; justify-content: space-between; gap: var(--gap-between-blocks); margin: 0; ${style('label')} }
 .carte h3 span { ${style('heading-3')} }
+.total { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--gap-between-components) var(--gap-between-groups); }
+.total .cote { display: flex; flex-direction: column; color: var(--text-secondary); ${style('label')} }
+.grand { color: var(--text-default); ${style('display-medium')} }
+.parts { flex: auto; width: var(--width-column); max-width: 100%; border-collapse: collapse; table-layout: fixed; }
+.parts td { padding: 0; vertical-align: top; }
+.parts .longueurs td { height: var(--gap-between-blocks); border-left: var(--border-width-focus) solid var(--background-app); background: var(--text-default); }
+.parts .longueurs td:first-child { border-left: 0; }
+.parts tr + tr td { padding: var(--gap-between-blocks) var(--gap-within-component) 0 0; hyphens: auto; overflow-wrap: anywhere; color: var(--text-secondary); ${style('body-small')} }
+.parts b { color: var(--text-default); }
+.groupe { display: flex; flex-direction: column; gap: var(--gap-between-components); }
+.rangs { display: grid; grid-template-columns: max-content auto; }
+.rang { display: contents; }
+.rang > * { padding: var(--gap-between-components) 0; border-top: var(--border-width-default) solid var(--border-subtle); }
+.rang .cote { display: flex; flex-direction: column; gap: var(--gap-within-component); }
+.rang .n { ${style('heading-1')} }
+.rang h3 { ${style('body-medium')} font-weight: bold; }
+.rang .cote small { width: 0; min-width: 100%; }
+.rang .preuve { display: flex; flex-direction: column; justify-content: center; min-width: 0; padding-left: var(--gap-between-groups); }
+.ruban { overflow: hidden; border-radius: var(--border-radius-control); }
+.ruban svg { display: block; width: 100%; height: var(--height-control-medium); }
+.captures { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-components); }
+.captures img { max-width: 100%; max-height: var(--avatar-size-large); width: auto; }
+.pied { color: var(--text-secondary); ${style('body-small')} }
 .dessins { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--gap-between-blocks) var(--padding-tag); }
 .dessins li { display: flex; flex-direction: column; align-items: center; gap: var(--gap-within-component); }
 .dessins small { color: var(--text-secondary); }
 .dessins .hors small { color: var(--text-info); ${style('label')} }
-.nuancier { display: flex; flex-wrap: wrap; gap: var(--gap-within-component); }
-.nuancier rect { stroke: var(--border-subtle); }
 .tailles text { fill: var(--text-default); }
 .tailles .hors text { fill: var(--text-info); }
 .ecarts rect { fill: var(--background-inverse); }
 .ecarts .hors rect { fill: var(--text-info); }
 .rayons path { fill: var(--background-subtle); stroke: var(--text-default); }
-.versions { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--gap-between-components); }
-.versions li { display: flex; flex-direction: column; align-items: flex-start; gap: var(--gap-within-component); max-width: 100%; }
-.versions img { max-width: 100%; max-height: var(--avatar-size-large); width: auto; border: var(--border-width-default) solid var(--border-subtle); border-radius: var(--border-radius-control); background: var(--background-subtle); }
-.aussi { display: flex; flex-direction: column; gap: var(--gap-within-component); padding-left: var(--gap-between-groups); list-style: disc; }
 .couleur { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-blocks) var(--gap-between-components); }
 .couleur code { ${style('heading-3')} }
 .echelle { display: flex; flex-wrap: wrap; gap: var(--gap-within-component); }
@@ -452,16 +467,11 @@ const fois = (n) => `${n} fois`;
  */
 function dessin(f) {
   const titre = (/** @type {import('./dette.js').Valeur} */ v) => `<title>${esc(`${v.valeur}, ${fois(v.fois)}`)}</title>`;
-  if (f.cle === 'colors') {
-    /** @param {typeof f.valeurs} l @param {string} nom */
-    const rang = (l, nom) =>
-      l.length
-        ? `<ul class="nuancier" aria-label="${esc(nom)}">${l.map((v) => `<li><svg width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="${esc(`${v.valeur}, ${fois(v.fois)}`)}">${titre(v)}<rect x="0.5" y="0.5" width="23" height="23" rx="4" fill="${esc(v.valeur)}"/></svg></li>`).join('')}</ul>`
-        : '';
-    const gris = f.valeurs.filter((v) => v.gris);
-    const autres = f.valeurs.filter((v) => !v.gris);
-    return rang(gris, `Les ${gris.length} gris`) + rang(autres, `Les ${autres.length} autres couleurs`);
-  }
+  if (f.cle === 'colors')
+    // Le ruban : une tranche par couleur, la largeur de la tranche dans le repère du dessin, étiré à la largeur de la ligne.
+    return `<div class="ruban"><svg viewBox="0 0 ${f.valeurs.length} 1" preserveAspectRatio="none" shape-rendering="crispEdges" role="img" aria-label="${esc(`Les ${f.valeurs.length} couleurs relevées`)}">${f.valeurs
+      .map((v, i) => `<rect x="${i}" y="0" width="1" height="1" fill="${esc(v.valeur)}">${titre(v)}</rect>`)
+      .join('')}</svg></div>`;
   /** @param {string} classe @param {(v: typeof f.valeurs[number]) => string} figure @param {(v: typeof f.valeurs[number]) => string} legende */
   const liste = (classe, figure, legende) =>
     `<ul class="dessins ${classe}">${f.valeurs.map((v) => `<li${v.hors ? ' class="hors"' : ''}>${figure(v)}<small>${esc(legende(v))}</small></li>`).join('')}</ul>`;
@@ -470,7 +480,9 @@ function dessin(f) {
       'tailles',
       (v) => {
         const t = /** @type {number} */ (px(v.valeur));
-        return `<svg width="${Math.ceil(t * 1.4)}" height="${Math.ceil(t * 1.2)}" viewBox="0 0 ${Math.ceil(t * 1.4)} ${Math.ceil(t * 1.2)}" aria-hidden="true">${titre(v)}<text x="0" y="${t}" font-size="${t}" font-weight="600">Aa</text></svg>`;
+        // Le même jour sous la ligne de base pour chaque taille : les « Aa » posés sur une même ligne.
+        const [l, h] = [Math.ceil(t * 1.4), Math.ceil(t) + 3];
+        return `<svg width="${l}" height="${h}" viewBox="0 0 ${l} ${h}" aria-hidden="true">${titre(v)}<text x="0" y="${t}" font-size="${t}" font-weight="600">Aa</text></svg>`;
       },
       (v) => fr(/** @type {number} */ (px(v.valeur)), { decimales: 2 }),
     );
@@ -495,35 +507,58 @@ function dessin(f) {
   );
 }
 
+/** Un nom de page dans une phrase : « La carte » devient « la carte », « API » reste. @param {string} n */
+const dansLaPhrase = (n) => (/^\p{Lu}\p{Ll}/u.test(n) ? n.charAt(0).toLowerCase() + n.slice(1) : n);
+
 /**
- * La dette (D78) : à regarder, rien à décider. Les valeurs, puis les composants ; « Définir ma marque » se dit dans le chat (D92). Ce qui
- * vient du site, les valeurs dessinées et les captures, est sur papier.
+ * Une ligne de la dette (D94) : à gauche, le chiffre en grand, le nom et une seule note discrète ; à droite, la preuve.
+ * @param {number} n @param {string} nom @param {string | null} note @param {string} preuve
+ */
+const rang = (n, nom, note, preuve) =>
+  `<section class="rang"><div class="cote"><span class="n">${n}</span><h3>${esc(nom)}</h3>${note ? `<small>${esc(note)}</small>` : ''}</div><div class="preuve">${preuve}</div></section>`;
+
+/**
+ * Le total partagé en parts, à la mesure de chaque famille : un tableau d'autant de colonnes égales que de valeurs,
+ * chaque part couvre les colonnes de sa famille. La mesure est une donnée (colspan), jamais une valeur de style.
+ * @param {import('./dette.js').Famille[]} familles @param {number} total
+ */
+function parts(familles, total) {
+  const l = familles.filter((f) => f.compte > 0);
+  return `<table class="parts" role="presentation"><colgroup><col span="${total}"></colgroup><tr class="longueurs">${l.map((f) => `<td colspan="${f.compte}"></td>`).join('')}</tr><tr>${l
+    .map((f) => `<td colspan="${f.compte}"><b>${f.compte}</b> ${esc(f.titre.toLowerCase())}</td>`)
+    .join('')}</tr></table>`;
+}
+
+/**
+ * La dette (D78, D94) : à regarder, rien à décider. Le total, puis deux groupes de lignes, les valeurs et les
+ * composants : le nom et son chiffre à gauche, la preuve à droite ; ce qui vient du site, les valeurs dessinées et les
+ * captures, est sur papier. « Définir ma marque » se dit dans le chat (D92).
  * @param {Etat} e @param {{ lecture?: Lecture | null }} [o]
  */
 export function ecranDeLaDette(e, { lecture = null } = {}) {
   const d = /** @type {NonNullable<Etat['dette']>} */ (e.dette);
   const v = d.valeurs;
+  const total = v
+    ? `<div class="total"><p class="cote"><span class="grand">${v.total}</span>valeurs différentes</p>${v.total ? parts(v.familles, v.total) : ''}</div>`
+    : '';
   const valeurs = v
-    ? `<section class="bloc" aria-labelledby="t-valeurs"><div class="titre-bloc"><h2 id="t-valeurs">Les valeurs</h2>${d.valeursHref ? `<a href="${esc(d.valeursHref)}">Voir toutes les valeurs</a>` : ''}</div>
-<p><span class="fort">${v.total}</span>valeurs différentes affichées sur ces pages : couleurs, tailles de texte, espacements, arrondis.</p>
-<div class="cartes">
-${v.familles.map((f) => `<div class="carte"><h3>${esc(f.titre)} <span>${f.compte}</span></h3>${f.phrases.length ? `<p>${esc(f.phrases.join(' '))}</p>` : ''}<div class="papier papier-bloc">${dessin(f)}</div></div>`).join('\n')}
+    ? `<section class="groupe" aria-labelledby="t-valeurs"><div class="titre-bloc"><h2 id="t-valeurs">Les valeurs</h2>${d.valeursHref ? `<a href="${esc(d.valeursHref)}">Voir toutes les valeurs</a>` : ''}</div>
+<div class="rangs">
+${v.familles.map((f) => rang(f.compte, f.titre, f.note, f.valeurs.length ? (f.cle === 'colors' ? dessin(f) : `<div class="papier papier-bloc">${dessin(f)}</div>`) : '')).join('\n')}
 </div></section>`
     : '';
   const c = d.composants;
-  const composants = `<section class="bloc" aria-labelledby="t-composants"><div class="titre-bloc"><h2 id="t-composants">Les composants</h2><a href="${esc(d.composantsHref)}">Voir tous les composants</a></div>
-<p>${esc(c.phrase)}</p>
-<div class="cartes">
-${c.types
-  .map(
-    (t) =>
-      `<div class="carte"><h3>${esc(t.nom)} <span>${t.versions.length > 1 ? `${t.versions.length} versions` : '1 version'}</span></h3><p>${esc(t.phrases.join(' '))}</p><ul class="versions">${t.versions
-        .map((x) => `<li>${x.capture ? `<img class="papier" src="${esc(`${d.captures}/${x.capture}`)}" alt="${esc(`${t.nom}, ${x.nom}`)}">` : ''}<small>${esc(`${x.nom}, ${fois(x.fois)}${x.sansStyle ? ', sans style' : ''}`)}</small></li>`)
-        .join('')}</ul></div>`,
-  )
-  .join('\n')}
-${c.aussi.length ? `<div class="carte"><h3>À regarder aussi</h3><ul class="aussi">${c.aussi.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
-</div></section>`;
+  const captures = (/** @type {import('./dette.js').Type} */ t) => {
+    const l = t.versions.filter((x) => x.capture);
+    return l.length
+      ? `<div class="papier papier-bloc captures">${l.map((x) => `<img src="${esc(`${d.captures}/${x.capture}`)}" alt="${esc(`${t.nom}, ${x.nom}`)}" title="${esc(`${x.nom}, ${fois(x.fois)}${x.sansStyle ? ', sans style' : ''}`)}">`).join('')}</div>`
+      : '';
+  };
+  const composants = `<section class="groupe" aria-labelledby="t-composants"><div class="titre-bloc"><h2 id="t-composants">Les composants</h2><a href="${esc(d.composantsHref)}">Voir tous les composants</a></div>
+<div class="rangs">
+${c.types.map((t) => rang(t.versions.length, t.nom, t.note, captures(t))).join('\n')}
+</div>
+${c.aussi.length ? `<p class="pied">À regarder aussi : ${esc(c.aussi.join(' '))}</p>` : ''}</section>`;
   const autres = d.autres.length
     ? `<p class="autres">Les autres sites, à part pour l’instant : ${d.autres.map((x) => `<a href="${esc(x.href)}">${esc(x.nom)}</a>`).join(', ')}.</p>`
     : '';
@@ -531,11 +566,10 @@ ${c.aussi.length ? `<div class="carte"><h3>À regarder aussi</h3><ul class="auss
   return gabarit({
     titre: `La dette ${deNom(e.produit)}`,
     onglet: `La dette · ${e.produit}`,
-    phrase: `${n > 1 ? `${n} pages mesurées` : '1 page mesurée'}${e.unSite ? '' : `, sur ${d.site.nom ?? d.site.id}`} :`,
-    sousTete: `<ul class="pastilles">${d.pages.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>`,
+    phrase: `Mesurée sur ${n > 1 ? `${n} pages` : '1 page'}${e.unSite ? '' : ` ${deNom(d.site.nom ?? d.site.id)}`} : ${listeFr(d.pages.map(dansLaPhrase))}.`,
     fil: filDe(e),
     lecture,
-    corps: `<div class="blocs">\n${valeurs}\n${composants}\n${autres}</div>`,
+    corps: `<div class="blocs">\n${total}\n${valeurs}\n${composants}\n${autres}</div>`,
   });
 }
 

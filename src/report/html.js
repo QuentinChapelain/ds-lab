@@ -35,6 +35,21 @@ const PROPERTY_LABELS = /** @type {[RegExp, string][]} */ ([
 /** @param {string} property */
 const propertyLabel = (property) => PROPERTY_LABELS.find(([re]) => re.test(property))?.[1] ?? property;
 
+/** Une couleur employée au plus ce nombre de fois est rare : à part, jamais encadrée avec d'autres. */
+const RARE = 2;
+
+/**
+ * Les couleurs presque identiques (R18) : celles d'un groupe de plusieurs couleurs, toutes à moins de ΔE 5 les unes
+ * des autres, parmi les groupes employés plus de deux fois, celles que le rapport encadre ensemble. Une seule
+ * définition : la dette du parcours compte avec elle.
+ * @param {any} colors  rendered.families.colors de audit.json
+ * @returns {string[]}
+ */
+export function couleursProches(colors) {
+  const groups = colors.groupsInterfaceDE5 ?? colors.groupsCompleteDE5 ?? [];
+  return groups.filter((/** @type {any} */ g) => g.n > RARE && g.members.length > 1).flatMap((/** @type {any} */ g) => g.members);
+}
+
 const STATE_LABELS = /** @type {Record<string, string>} */ ({ hover: 'survol', focus: 'focus', active: 'appui' });
 
 /** Texte lisible (noir ou blanc) sur une couleur opaque. @param {string} hex */
@@ -103,7 +118,6 @@ export function renderHtml(audit) {
   const push = (/** @type {string} */ s) => out.push(s);
 
   // --- Couleurs d'interface, par groupe (liaison complète, ΔE < 5), puis rares, puis contenu (R18).
-  const RARE = 2;
   const uses = (/** @type {string} */ h) => colors.values[h].count - (colors.values[h].content ?? 0);
   const groups = colors.groupsInterfaceDE5 ?? colors.groupsCompleteDE5 ?? [];
   const isRare = (/** @type {any} */ g) => g.n <= RARE;
@@ -318,6 +332,7 @@ export function renderHtml(audit) {
 ${stat(rendered.elements, 'éléments affichés')}
 ${stat(interfaceCount, 'couleurs d’interface')}
 ${stat(interfaceCount - rare.length, `dont utilisées plus de ${RARE} fois`)}
+${stat(couleursProches(colors).length, 'presque identiques à une autre, encadrées ensemble')}
 ${stat(groups.filter((/** @type {any} */ g) => !isRare(g)).length + translucent.length, 'groupes, une fois les proches réunies')}
 ${stat(S.onlyInStates.length, 'de plus, au survol, au focus ou à l’appui')}
 ${stat(contentColors.length, 'couleurs vues dans du contenu, à part')}

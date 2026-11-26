@@ -125,3 +125,26 @@ test('rapport.html : une chaîne venue de la page est échappée, une valeur dou
   assert.ok(!html.includes('style="box-shadow:0 0 0 red;background:url(x)"'));
   assert.match(html, /#222222/);
 });
+
+test('presque identiques : la note de la dette et rapport.html comptent par la même règle', async () => {
+  const { renderHtml, couleursProches } = await import('../src/report/html.js');
+  const { valeurs } = await import('../src/parcours/dette.js');
+  const { createRenderedAggregator } = await import('../src/rendered/aggregate.js');
+  const agg = createRenderedAggregator();
+  const base = { parent: -1, retained: false, bg: 'rgb(255, 255, 255)', bgImage: false, opacity: '1' };
+  const props = { color: 'rgb(34, 34, 34)', 'font-family': 'Arial', 'font-size': '16px', 'font-weight': '400', 'line-height': 'normal', 'letter-spacing': 'normal', 'background-color': 'rgba(0, 0, 0, 0)', 'box-shadow': 'none', opacity: '1', display: 'block' };
+  agg.addPage({ url: 'http://x/', iframes: 0, excluded: 0, records: [base, { ...base, parent: 0, retained: true, bg: 'rgba(0, 0, 0, 0)', tag: 'p', selector: 'p', role: 'texte', text: true, props }] });
+  const rendered = agg.result();
+  const c = /** @type {any} */ (rendered.families.colors);
+  for (const [h, n] of /** @type {[string, number][]} */ ([['#232323', 4], ['#242424', 4], ['#ff0000', 1], ['#fe0101', 1], ['#0000ff', 5]])) c.values[h] = { count: n, content: 0, contexts: [] };
+  // Un groupe de trois, employé plus de deux fois ; un groupe rare, à part ; une couleur seule.
+  c.groupsInterfaceDE5 = [
+    { members: ['#222222', '#232323', '#242424'], n: 9, diameter: 1.2 },
+    { members: ['#ff0000', '#fe0101'], n: 2, diameter: 0.8 },
+    { members: ['#0000ff'], n: 5, diameter: 0 },
+  ];
+  const audit = { meta: { host: 'x', stamp: 's', viewport: { width: 1, height: 1 }, storageState: null, states: true }, pages: [{}], rendered, declared: { families: { colors: { distinct: 1 } } } };
+  assert.deepEqual(couleursProches(c), ['#222222', '#232323', '#242424']);
+  assert.match(renderHtml(audit), /<div class="stat"><b>3<\/b><span>presque identiques à une autre, encadrées ensemble<\/span><\/div>/);
+  assert.equal(valeurs(audit).familles[0].note, 'dont 3 presque identiques à une autre');
+});
