@@ -25,6 +25,7 @@
     "login": "node src/cli/login.js",
     "marque": "node src/cli/marque.js",
     "jeu": "node src/cli/jeu.js",
+    "projet": "node src/cli/projet.js",
     "parcours": "node src/cli/parcours.js",
     "reduce": "node src/cli/reduce.js",
     "saisie": "node src/cli/saisie.js",

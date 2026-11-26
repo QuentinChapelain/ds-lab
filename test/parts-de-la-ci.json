@@ -139,6 +139,7 @@
       "test/marque-en-dur.test.js",
       "test/parcours.test.js",
       "test/planches-marques.test.js",
+      "test/projet.test.js",
       "test/reduce-jetons.test.js",
       "test/simulation-couplages.test.js",
       "test/tiers-masques.test.js",
