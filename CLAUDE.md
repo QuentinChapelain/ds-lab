@@ -50,6 +50,8 @@ Avant chaque commit qui touche `atelier/`, la table `tokens/commun/vuetify.json`
 
 On travaille sur `main`. main n'accepte qu'un push en avance rapide d'un commit dont le check `controles` est vert (ruleset « main protégée », D35) : pousser le commit sur une branche jetable, attendre sa CI, pousser le même commit sur main, supprimer la branche, sans arrêt ni annonce : c'est la cuisine de Claude. Quentin joue dès que c'est codé, sans attendre la CI. La CI de main, rejouée sur ce même commit, n'est pas attendue pour clore le pas : elle reste une trace, et un rouge y est lu au départ du pas suivant (D53).
 
+Message de commit (D95) : un titre de 72 caractères au plus, qui dit le quoi et le numéro de décision (« La dette en lignes (D94) ») ; une ligne vide ; le détail dans le corps, une puce par changement. Il finit par `Co-Authored-By`, sans lien de session. Les commits sont signés de l'adresse noreply de GitHub (`git config --local user.email`). L'histoire d'avant D95 n'est pas réécrite.
+
 `npm audit` à la racine et dans l'atelier à chaque pas ; un avis ouvert entre dans `KNOWN_ISSUES.md`.
 
 Node : la version de `.node-version` (Node 24 LTS), seule source pour le poste, la CI et la garde des commandes (D40). Une commande de l'outil lancée sous une autre version majeure sort en 2 avant de lire son entrée : vérifier `node -v` avant les commandes.

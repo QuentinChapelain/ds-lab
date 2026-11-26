@@ -36,6 +36,8 @@
 - La police des titres se lit sur les pages et s'affiche à l'écran de la marque, sans se changer (D80). À payer avec « Modifier », ou à l'écran des fondations : un champ, ou les familles relevées sur les pages.
 - Les textes existants disent encore « client » là où le parcours dit produit, site, marque : `docs/regles.md` (DS17, DF4 : « la police du client »), le README (« une marque par client », « Ce qu'un client peut changer »). À reprendre avec l'alignement des écrans (boîte, fichier 88).
 - Le fil des écrans du parcours déborde de la page en étroit : à 390 px, « Remettre » sort de 103 px, sur chaque écran [F, mesuré le 26/11/2026 dans le Chromium du clone]. À payer au pas des fondations, ou avant si Quentin joue sur un téléphone.
+- Le README fait 15 400 mots [F, compté le 26/11/2026] : à couper en une page d'accueil courte et des fichiers dans `docs/`, après les écrans du parcours ; la capture de sa tête vient alors aussi (D95).
+- Les fichiers versionnés renvoient à la boîte (« boîte, fichier 94 ») : un lecteur externe n'y a pas accès. Remplacer chaque renvoi par ce qu'il dit, avec le prochain pas d'écran (D95).
 
 ## À payer après l'étape 11
 

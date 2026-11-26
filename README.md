@@ -1,6 +1,35 @@
 # ds-lab
 
+[![CI](https://github.com/QuentinChapelain/ds-lab/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/QuentinChapelain/ds-lab/actions/workflows/ci.yml)
+
+*A multi-brand design-system lab: it measures an existing site, sets a token target (DTCG), migrates the CSS and proves the result before and after. Fictional brands only. Documentation in French.*
+
 Laboratoire de design system multi-marque, de l'audit à la génération par IA. Marques fictives uniquement (la marque d'entraînement s'appelle Orbe Café).
+
+## Essayer en deux minutes
+
+Avec Node 24 (`.node-version`) :
+
+```
+npm ci
+npx playwright-core install chromium         # le navigateur de l'outil, s'il manque
+npm run demo                                 # sert le site fictif d'Orbe Café et affiche son adresse
+npm run audit -- <adresse> --out sorties     # dans un second terminal : mesure la page
+```
+
+`sorties/<hôte>/<horodatage>/rapport.html` montre les valeurs que la page emploie, famille par famille. Les planches d'une marque fictive s'ouvrent dans un navigateur : `tokens/orbe-cafe/roles.html`, `espacements.html`, `typo.html`. Le parcours entier, de la mesure à la remise au développeur, se joue avec Claude Code dans un dossier de jeu (`npm run jeu -- <dossier>`, voir « Le parcours »).
+
+## Où regarder
+
+| Pour voir | Ouvrir |
+|---|---|
+| Le problème et la méthode | « Le besoin », ci-dessous |
+| Les règles du design system | [docs/regles.md](docs/regles.md) |
+| Les décisions, avec leurs raisons | [docs/decisions.md](docs/decisions.md) |
+| Les composants (Vue 3, Vuetify 4) et leurs fiches | [atelier/](atelier/), [docs/composants/](docs/composants/) |
+| La carte du code | [ARCHITECTURE.md](ARCHITECTURE.md) |
+| Ce qui reste à faire | [KNOWN_ISSUES.md](KNOWN_ISSUES.md), [docs/feuille-de-route.md](docs/feuille-de-route.md) |
+| Comment on travaille avec un agent | [CLAUDE.md](CLAUDE.md) |
 
 ## Le besoin
 
