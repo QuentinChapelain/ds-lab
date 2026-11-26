@@ -1,16 +1,19 @@
 // @ts-check
 /**
- * La remise (D87) : ce que le designer donne au développeur, tiré des sorties de la réduction et des feuilles
- * ajoutées, sans nouvelle mesure. Un dossier, `remise/` à côté du projet, réécrit à chaque validation du rendu :
- * `feuilles/` (tokens.css et les feuilles ajoutées, rangées par leur chemin sur le site), `a-installer.md` (trois
- * étapes : installer le système, poser les décisions, reprendre l'ancien code) et `message.txt` (le mot
- * d'accompagnement, pour un humain, D99). Les mots sont ceux du développeur : aucun mot de l'outil, aucun identifiant
- * de ligne. La page en direct : une page du site, servie avec tokens.css et ses feuilles ajoutées posées, comme verify.
+ * La remise (D87, D99, D100) : ce que le designer donne au développeur, tiré des sorties de la réduction, des feuilles
+ * ajoutées et du dernier contrôle. Un dossier, `remise/` à côté du projet, réécrit à chaque validation du rendu :
+ * `feuilles/` (tokens.css et les feuilles ajoutées, rangées par leur chemin sur le site), `guide.md` (le guide de
+ * migration : la stratégie, puis quatre étapes, chacune avec ce que tu fais, pourquoi, ce que tu vérifies, comment
+ * l'annuler et les lignes exactes), `composants/` (les fiches des composants relevés sur le site, et un exemple de
+ * structure) et `message.txt` (le mot d'accompagnement, pour un humain). Les mots sont ceux du développeur : aucun mot
+ * de l'outil, aucun identifiant de ligne, aucune durée. La page en direct : une page du site, servie avec tokens.css et
+ * ses feuilles ajoutées posées, comme verify.
  */
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { lireJson } from '../lib/fichiers.js';
-import { deNom } from '../lib/format.js';
+import { deNom, liste } from '../lib/format.js';
 
 /** Le dossier de la remise, à côté du projet. */
 const REMISE = 'remise';
@@ -18,12 +21,29 @@ const REMISE = 'remise';
 /** La marque d'un dossier de remise écrit par l'outil : sans elle, `remise/` n'est jamais effacé. */
 const MARQUE = 'remise.json';
 
+/** Le guide de migration, dans le dossier de la remise. */
+const GUIDE = 'guide.md';
+
+/** Les fiches des composants de ds-lab, d'où la remise copie celles des types relevés sur le site. */
+const FICHES = fileURLToPath(new URL('../../docs/composants/', import.meta.url));
+
+/** La fiche de chaque type de composant que relève le site, quand ds-lab en a une (D100). */
+const FICHE_DU_TYPE = /** @type {Record<string, string>} */ ({ Bouton: 'button.md', 'Champ de texte': 'text-input.md' });
+
+/** Les types relevés au féminin, pour leur article. */
+const FEMININS = new Set(['case à cocher', 'liste déroulante', 'fenêtre']);
+
+/** Les intentions du bouton, celles de sa fiche (`variant`) : un composant expose une intention, jamais une couleur. */
+export const INTENTIONS = ['primary', 'secondary', 'ghost', 'danger'];
+
 /**
  * @typedef {{ selecteur: string, ligne: number, valeurs: { propriete: string, avant: string, apres: string }[] }} Regle
  * @typedef {{ feuille: string, ajout: string, injectee: boolean }} Ajout
  * @typedef {{ produit: string, dossier: string, tokens: string, ajouts: Ajout[],
  *   pages: { nom: string, chemin: string, apres: Ajout[] }[], fichiers: { feuille: string, regles: Regle[], valeurs: number }[],
  *   valeurs: number, lignes: number, nonEcrites: { selecteur: string, feuille: string, ligne: number, propriete: string }[] }} Remise
+ * @typedef {{ pages: number, changements: number, arrivees: number, enEtat: string[], composants: { nom: string, versions: number, fois: number }[] }} Controle
+ *   ce que le guide lit du dernier contrôle et du relevé des composants (le bilan de la remise)
  */
 
 /**
@@ -122,20 +142,26 @@ const lien = (chemin) => `<link rel="stylesheet" href="${chemin}">`;
 /** Accord en nombre : 0 et 1 au singulier. @param {number} n @param {string} un @param {string} plusieurs */
 const nombre = (n, un, plusieurs) => `${n} ${n > 1 ? plusieurs : un}`;
 
+/** Les types relevés qui ont une fiche, le bouton d'abord. @param {Controle} c */
+const avecFiche = (c) => c.composants.filter((t) => FICHE_DU_TYPE[t.nom]).sort((a, b) => (a.nom === 'Bouton' ? -1 : b.nom === 'Bouton' ? 1 : 0));
+
 /**
- * « À installer » : trois étapes, dans l'ordre, pour le développeur ou son agent de code.
- * @param {Remise} r
+ * Le guide de migration (D100), sur la planche « 9 bis » : la stratégie d'abord, puis chaque étape avec les mêmes
+ * rubriques (ce que tu fais, pourquoi, tu vérifies, pour annuler) et ses lignes exactes ; en fin, la liste des valeurs
+ * à reprendre, fichier par fichier. Chaque chiffre vient des sorties ; aucune durée.
+ * @param {Remise} r @param {Controle} c
  */
-export function aInstaller(r) {
-  const bloc = (/** @type {string} */ s) => ['```html', s, '```'];
+export function guide(r, c) {
+  const bloc = (/** @type {string} */ langue, /** @type {string} */ s) => ['```' + langue, s, '```'];
+  const rubrique = (/** @type {string} */ nom, /** @type {string} */ texte) => [`**${nom}** ${texte}`, ''];
   const page = (/** @type {Remise['pages'][number]} */ p) => [
-    p.nom === p.chemin ? `### \`${p.chemin}\`` : `### ${p.nom} (\`${p.chemin}\`)`,
+    p.nom === p.chemin ? `#### \`${p.chemin}\`` : `#### ${p.nom} (\`${p.chemin}\`)`,
     '',
     ...(p.apres.length
       ? p.apres.flatMap((a) =>
           a.injectee
             ? [`La feuille \`${a.feuille}\` est chargée par un script : charge \`${a.ajout}\` depuis ce script, juste après elle.`, '']
-            : [`Juste après \`${lien(a.feuille)}\` :`, '', ...bloc(lien(a.ajout)), ''],
+            : [`Juste après \`${lien(a.feuille)}\` :`, '', ...bloc('html', lien(a.ajout)), ''],
         )
       : ['Rien à ajouter sur cette page.', '']),
   ];
@@ -143,32 +169,57 @@ export function aInstaller(r) {
     `- [ ] \`${f.feuille}\` (${nombre(f.valeurs, 'valeur', 'valeurs')})`,
     ...f.regles.map((g) => `  - \`${g.selecteur}\`, ligne ${g.ligne} : ${g.valeurs.map((v) => `\`${v.propriete}: ${v.avant}\` → \`${v.apres}\``).join(' ; ')}`),
   ];
+  // L'exemple de la reprise de l'ancien code : la première règle de la liste, avant et après.
+  const g = r.fichiers[0]?.regles[0];
+  const exemple = g ? bloc('css', [`${g.selecteur} { ${g.valeurs.map((v) => `${v.propriete}: ${v.avant};`).join(' ')} }`, `${g.selecteur} { ${g.valeurs.map((v) => `${v.propriete}: ${v.apres};`).join(' ')} }`].join('\n')) : [];
+  // Ce que le contrôle a vu : les changements sur l'image, et ceux qui se regardent à la main.
+  const vus = c.changements - c.enEtat.length;
+  const surPages = c.pages > 1 ? `Sur les ${c.pages} pages vérifiées` : 'Sur la page vérifiée';
+  const aLaMain = c.enEtat.length ? ` ; ${c.enEtat.length > 1 ? `les ${c.enEtat.length} autres se regardent à la main, dans leur état` : 'le dernier se regarde à la main, dans son état'} : ${liste(c.enEtat)}` : '';
+  const controle = c.changements ? ` ${surPages}, au contrôle du designer, ${vus} ${vus > 1 ? 'changements' : 'changement'} sur ${c.changements} se ${vus > 1 ? 'voient' : 'voit'} sur l’image${aLaMain}.` : '';
+  const types = avecFiche(c);
+  const premier = types[0];
+  const sansFiche = c.composants.filter((t) => !FICHE_DU_TYPE[t.nom]);
+  const nomDit = (/** @type {string} */ n) => {
+    const m = n.charAt(0).toLowerCase() + n.slice(1);
+    return /^[aeiouyé]/.test(m) ? `l’${m}` : FEMININS.has(m) ? `la ${m}` : `le ${m}`;
+  };
+  const majuscule = (/** @type {string} */ t) => t.charAt(0).toUpperCase() + t.slice(1);
   return [
-    `# À installer : ${r.produit}`,
+    `# Guide de migration vers le design system ${deNom(r.produit)}`,
     '',
-    'Le rendu validé à l’écran « Avant, après », en trois étapes. Fais-les dans l’ordre. Chacune se livre seule, se vérifie et s’annule.',
+    'Pour le développeur. Il dit d’abord pourquoi on procède ainsi, puis ce que tu fais à chaque étape, comment tu le vérifies et comment tu l’annules.',
+    '',
+    '## La stratégie',
+    '',
+    'On ne réécrit pas le site. On pose le nouveau à côté de l’ancien, on vérifie, puis on retire l’ancien morceau par morceau. Le site reste en ligne et juste à chaque étape, et chacune se livre seule.',
+    '',
+    '1. Installer les variables du système. À l’écran : rien.',
+    '2. Poser les décisions, par-dessus l’ancien code. À l’écran : le nouveau rendu.',
+    '3. Reprendre l’ancien code, fichier par fichier. À l’écran : rien.',
+    '4. Remplacer les composants en double. À l’écran : rien.',
+    '',
+    'Une fois les décisions posées, le site a son nouveau rendu : c’est ce que le designer a validé sur image. Les deux dernières étapes remboursent la dette de code. Elles peuvent s’étaler sans bloquer personne.',
     '',
     `Les fichiers sont dans \`feuilles/\`, rangés comme sur le site : \`feuilles${r.tokens}\` va à \`${r.tokens}\`.`,
     '',
-    '## 1. Installer le système',
+    '## Les étapes',
     '',
-    `Dépose \`${r.tokens}\` sur le site, puis ajoute cette ligne avant toutes les autres feuilles de style, dans chaque page :`,
+    '### 1. Installer le système',
     '',
-    ...bloc(lien(r.tokens)),
+    ...rubrique('Ce que tu fais', `Tu déposes \`${r.tokens}\` sur le site, et tu le charges avant toutes les autres feuilles, sur chaque page.`),
+    ...rubrique('Pourquoi', 'Cette feuille ne contient que des variables : les couleurs, les tailles, les espacements du système. Tant que rien ne les appelle, rien ne bouge.'),
+    ...rubrique('Tu vérifies', 'Les pages sont identiques à avant. Dans l’inspecteur, les variables apparaissent sur la racine.'),
+    ...rubrique('Pour annuler', 'Tu retires la ligne.'),
+    ...bloc('html', lien(r.tokens)),
     '',
-    'À regarder ensuite : rien ne change à l’écran.',
+    '### 2. Poser les décisions',
     '',
-    'Pour annuler : retire la ligne.',
-    '',
-    '## 2. Poser les décisions',
-    '',
-    `Dépose les ${nombre(r.ajouts.length, 'feuille ajoutée', 'feuilles ajoutées')}. Chacune se charge juste après sa feuille d’origine, dans toute page qui charge celle-ci. Sur les pages vérifiées :`,
-    '',
+    ...rubrique('Ce que tu fais', `Tu déposes ${r.ajouts.length > 1 ? `les ${r.ajouts.length} feuilles ajoutées` : 'la feuille ajoutée'}, et tu charges chacune juste après sa feuille d’origine, dans toute page qui charge celle-ci. Les lignes exactes, page par page, sont ci-dessous.`),
+    ...rubrique('Pourquoi', 'Chaque feuille ajoutée reprend les mêmes sélecteurs que l’ancienne et y remet la bonne valeur, par une variable. Chargée après, elle gagne. L’ancien code n’est pas touché, donc rien ne peut casser ailleurs.'),
+    ...rubrique('Tu vérifies', `Les pages ressemblent à l’« Après » validé.${controle}`),
+    ...rubrique('Pour annuler', 'Tu retires les lignes, une feuille à la fois si besoin.'),
     ...r.pages.flatMap(page),
-    'À regarder ensuite : chaque page ressemble à l’« Après » validé.',
-    '',
-    'Pour annuler : retire ces lignes.',
-    '',
     ...(r.nonEcrites.length
       ? [
           `Pas dans les feuilles ajoutées, ${nombre(r.nonEcrites.length, 'valeur à changer', 'valeurs à changer')} directement dans le code, en reprenant l’ancien code :`,
@@ -177,18 +228,57 @@ export function aInstaller(r) {
           '',
         ]
       : []),
-    '## 3. Reprendre l’ancien code',
+    '### 3. Reprendre l’ancien code',
     '',
-    'Fichier par fichier, remplace chaque valeur écrite en dur par sa variable. Quand tout un fichier est repris, sa feuille ajoutée ne sert plus : retire-la, avec la ligne qui la charge. Un commit par fichier.',
+    ...rubrique('Ce que tu fais', `Dans chaque ancienne feuille, tu remplaces la valeur écrite en dur par la variable. La liste est à la fin de ce guide : ${nombre(r.valeurs, 'valeur', 'valeurs')}, ${nombre(r.fichiers.length, 'fichier', 'fichiers')}, avec la ligne, la valeur et la variable.`),
+    ...rubrique('Pourquoi', 'Tant que l’ancienne valeur reste dans le code, quelqu’un peut la recopier. Une fois remplacée, la feuille ajoutée ne sert plus pour ces lignes.'),
+    ...rubrique('Comment', 'Un fichier, un commit. Quand un fichier est fini, tu supprimes sa feuille ajoutée, avec la ligne qui la charge. Un agent de code peut dérouler la liste : elle est faite pour.'),
+    ...rubrique('Tu vérifies', 'Rien ne change à l’écran.'),
+    ...rubrique('Pour annuler', 'Tu reviens sur le commit du fichier.'),
+    ...exemple,
     '',
-    'À regarder ensuite : rien ne change à l’écran.',
+    '### 4. Remplacer les composants',
     '',
-    'Pour annuler : défais le commit du fichier.',
+    ...rubrique('Ce que tu fais', `Tu écris chaque composant une seule fois, d’après sa fiche, puis tu remplaces ses versions en double.${premier ? ` Commence par ${nomDit(premier.nom)} : ${nombre(premier.versions, 'version', 'versions')} pour ${nombre(premier.fois, 'emploi', 'emplois')}.` : ''}`),
+    ...rubrique('Pourquoi', `Les trois premières étapes alignent les valeurs. ${premier && premier.versions > 1 ? `Il reste ${premier.versions} façons d’écrire ${nomDit(premier.nom)} : c’est là que le désordre revient.` : 'Les composants écrits plusieurs fois sont l’endroit où le désordre revient.'}`),
+    ...rubrique('La règle', `Un composant expose une intention, jamais une couleur : pour le bouton, ${liste(INTENTIONS.map((x) => `\`${x}\``))}. Il lit les variables du système, et rien d’autre.`),
+    ...rubrique('La structure', `Un dossier par composant, avec sa fiche et son code dans ta technologie. Les fiches sont dans \`composants/\`, avec un exemple de structure.`),
+    ...rubrique('Tu vérifies', premier ? `${premier.fois > 1 ? `Les ${premier.fois} emplois` : 'L’emploi'} de ${nomDit(premier.nom)} ${premier.fois > 1 ? 'passent' : 'passe'} par le même composant.`.replace(/de le /, 'du ') : 'Chaque emploi passe par son composant.'),
+    ...(sansFiche.length
+      ? rubrique('Pas encore', `${majuscule(liste(sansFiche.map((t) => nomDit(t.nom))))} ${sansFiche.length > 1 ? 'n’ont pas de fiche : leurs versions restent' : 'n’a pas de fiche : ses versions restent'}, avec les bonnes valeurs.`)
+      : []),
+    ...bloc('text', structure(types.map((t) => FICHE_DU_TYPE[t.nom]))),
+    '',
+    '## En cas de doute',
+    '',
+    ...rubrique('Une valeur t’étonne', 'La liste ci-dessous donne, pour chaque valeur, l’ancienne et la variable qui la remplace. Si une décision te paraît fausse, dis-le au designer : il peut y revenir, et les feuilles se régénèrent.'),
+    '## La liste, fichier par fichier',
     '',
     ...r.fichiers.flatMap(fichier),
     '',
   ].join('\n');
 }
+
+/**
+ * L'exemple de structure : un dossier par composant, sa fiche et son code ; le premier dit ce qu'il porte.
+ * @param {string[]} fiches  les fiches copiées, `button.md` d'abord
+ */
+function structure(fiches) {
+  const noms = (fiches.length ? fiches : ['button.md']).map((f) => f.replace(/\.md$/, ''));
+  const vue = (/** @type {string} */ n) => `${n.split('-').map((x) => x.charAt(0).toUpperCase() + x.slice(1)).join('')}.vue`;
+  return [
+    'ds/',
+    '  tokens.css',
+    '  composants/',
+    `    ${noms[0]}/`,
+    '      fiche.md      les intentions, les tailles, les états',
+    `      ${noms[0]}.css    ou ${vue(noms[0])}, selon ta technologie`,
+    ...noms.slice(1).flatMap((n) => [`    ${n}/`, '      fiche.md']),
+  ].join('\n');
+}
+
+/** Une fiche de ds-lab telle que le développeur la lit : sans son en-tête ni les marques de ce que l'outil génère. @param {string} texte */
+const ficheLue = (texte) => texte.replace(/^---\n[\s\S]*?\n---\n+/, '').replace(/^<!-- .*? -->\n/gm, '');
 
 /**
  * Le mot d'accompagnement (D99) : pour un humain, il dit l'idée et demande un avis. Il ne promet que ce que le dossier
@@ -212,24 +302,30 @@ export function message(r) {
  */
 export const entrees = (r) => [
   ['feuilles/', `tokens.css et ${r.ajouts.length > 1 ? `les ${r.ajouts.length} feuilles ajoutées` : 'la feuille ajoutée'}`],
-  ['a-installer.md', 'les étapes, avec les lignes exactes à ajouter'],
+  [GUIDE, 'le guide de migration : la stratégie, puis chaque étape expliquée'],
+  ['composants/', 'une fiche par composant, et un exemple de structure'],
   ['message.txt', 'le mot d’accompagnement ci-dessous'],
 ];
 
 /**
  * Écrit le dossier de la remise, à côté du projet, pour une vérification validée. Un dossier `remise/` qui n'a pas
  * été écrit par l'outil n'est jamais touché.
- * @param {Remise} r @param {{ dossierAjout: string, verification: string }} o
+ * @param {Remise} r @param {{ dossierAjout: string, verification: string, controle: Controle }} o
  */
-export function ecrireRemise(r, { dossierAjout, verification }) {
+export function ecrireRemise(r, { dossierAjout, verification, controle }) {
   if (existsSync(r.dossier) && !existsSync(join(r.dossier, MARQUE))) throw new Error(`${r.dossier} existe et n’a pas été écrit par l’outil : rien n’est écrit ; le renommer`);
-  rmSync(join(r.dossier, 'feuilles'), { recursive: true, force: true });
+  for (const d of ['feuilles', 'composants', 'a-installer.md']) rmSync(join(r.dossier, d), { recursive: true, force: true });
   for (const f of [r.tokens, ...r.ajouts.map((a) => a.ajout)]) {
     const cible = join(r.dossier, 'feuilles', f);
     mkdirSync(join(cible, '..'), { recursive: true });
     cpSync(join(dossierAjout, f), cible);
   }
-  writeFileSync(join(r.dossier, 'a-installer.md'), aInstaller(r));
+  // Les fiches des types relevés, et l'exemple de structure (D100).
+  const fiches = avecFiche(controle).map((t) => FICHE_DU_TYPE[t.nom]);
+  mkdirSync(join(r.dossier, 'composants'), { recursive: true });
+  for (const f of fiches) writeFileSync(join(r.dossier, 'composants', f), ficheLue(readFileSync(join(FICHES, f), 'utf8')));
+  writeFileSync(join(r.dossier, 'composants', 'structure.md'), `# Un dossier par composant\n\n\`\`\`text\n${structure(fiches)}\n\`\`\`\n`);
+  writeFileSync(join(r.dossier, GUIDE), guide(r, controle));
   writeFileSync(join(r.dossier, 'message.txt'), `${message(r)}\n`);
   writeFileSync(join(r.dossier, MARQUE), `${JSON.stringify({ verification }, null, 2)}\n`);
 }

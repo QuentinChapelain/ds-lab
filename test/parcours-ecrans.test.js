@@ -44,8 +44,9 @@
  *       validé, la revue rouverte au designer jusqu'à un nouvel export, puis la réduction, les feuilles et la
  *       vérification se refont, et l'avant et après revient ;
  *   EC14 la remise (D87, D99), tirée des sorties : les étapes et leurs comptes (feuilles, lignes à coller par page,
- *       valeurs à reprendre par fichier, regroupées par sélecteur, les côtés réunis en raccourci), « À installer » sans
- *       mot de l'outil ni identifiant de ligne ; un dossier `remise/` étranger n'est pas touché ; l'écran, sur la
+ *       valeurs à reprendre par fichier, regroupées par sélecteur, les côtés réunis en raccourci) ; le guide de migration
+ *       (D100) : la stratégie, puis quatre étapes aux mêmes rubriques, sans mot de l'outil, ni identifiant de ligne, ni
+ *       durée ; le dossier : le guide, les fiches des types relevés sans leur en-tête, l'exemple de structure ; un dossier `remise/` étranger n'est pas touché ; l'écran, sur la
  *       planche : la réussite, l'apport (les couleurs avant et après, mesurées sur les pages avec les feuilles, sinon
  *       le calcul de la réduction, dit comme tel ; les changements posés), les quatre étapes du développeur, le dossier,
  *       le mot d'accompagnement pour un humain, « Copier le message » à sa gauche, puis « Copié. », ce qui reste ;
@@ -63,7 +64,7 @@
  *       site parmi plusieurs ; une page refusée, une liste vide, un autre moment : la raison en une ligne, sortie 1 ;
  *       les options mêlées : sortie 2 ;
  *   EC20 ni barre ni bouton de passage sur aucun écran (D92) : « Copier le message » à côté du message, « ‹ La remise »
- *       sous le titre d'« À installer », « Revenir où j'en suis » sous le titre d'un écran revu ;
+ *       sous le titre du guide de migration, « Revenir où j'en suis » sous le titre d'un écran revu ;
  *   EC21 « Où j'en suis » (D93) : la mesure lit le fichier d'avancement (Mesurée, En cours, À faire, Pas mesurée ; le
  *       relevé des composants en dernier), l'audit d'abord puis le relevé, chacun avec --avancement ; une mesure neuve
  *       repart d'un avancement vide ; l'audit note chaque page ; l'écriture des tokens dit ses quatre étapes, faites
@@ -82,10 +83,10 @@ import { fileURLToPath } from 'node:url';
 import { lireProjet } from '../src/parcours/projet.js';
 import { calculerEtat } from '../src/parcours/etat.js';
 import { pageDuParcours } from '../src/parcours/page.js';
-import { ecranAInstaller, ecranDeLancement, FIN_JETONS } from '../src/parcours/ecrans.js';
+import { ecranDuGuide, ecranDeLancement, FIN_JETONS } from '../src/parcours/ecrans.js';
 import { ajouterPage, choisirCouleur, confirmerMarque, detteVue, echangerAccent, fondationsVues, retirerPage, rouvrirRevue, validerPages, validerRendu } from '../src/parcours/pages.js';
 import { fondationsDe } from '../src/parcours/fondations.js';
-import { aInstaller, ecrireRemise, message, pageEnDirect } from '../src/parcours/remise.js';
+import { ecrireRemise, guide, INTENTIONS, message, pageEnDirect } from '../src/parcours/remise.js';
 import { copierMessage } from '../src/parcours/pages.js';
 import { faitsDuMoment } from '../src/parcours/faits.js';
 import { servir } from '../src/parcours/serveur.js';
@@ -670,8 +671,8 @@ test('EC13 « Valider mon rendu » et « Revenir sur une décision », dans le c
   let e = calculerEtat(lireProjet(f), { base: d });
   assert.deepEqual([e.moment, e.courante.cle], ['remise', 'suivi']);
   assert.match(pageDuParcours(e), /<title>La remise · Annuaire des cafés<\/title>/);
-  // La remise écrite à côté du projet (D87) : les feuilles, « À installer », le message.
-  for (const x of ['remise/a-installer.md', 'remise/message.txt', 'remise/remise.json', 'remise/feuilles/desordre/styles/tokens.css', 'remise/feuilles/desordre/styles/recente.ajout.css'])
+  // La remise écrite à côté du projet (D87, D100) : les feuilles, le guide, les composants, le message.
+  for (const x of ['remise/guide.md', 'remise/composants/structure.md', 'remise/message.txt', 'remise/remise.json', 'remise/feuilles/desordre/styles/tokens.css', 'remise/feuilles/desordre/styles/recente.ajout.css'])
     assert.ok(existsSync(join(d, x)), x);
   // Revenir : seulement à l'avant et après ; la revue rouverte au designer, le rendu plus validé.
   assert.equal(parcours([f, '--revenir']).status, 1, 'à la remise, rien à revenir');
@@ -700,7 +701,7 @@ test('EC13 « Valider mon rendu » et « Revenir sur une décision », dans le c
   assert.match(/** @type {string} */ (e.courante.commande), / --sortie sorties\/ajout\/2026-11-24T1340$/);
 });
 
-test('EC14 la remise : les étapes et leurs comptes, « À installer » ; l’écran sur sa planche et « Copier le message »', () => {
+test('EC14 la remise : les étapes et leurs comptes, le guide de migration ; l’écran sur sa planche et « Copier le message »', () => {
   const d = copie('bilan');
   const f = join(d, 'projet.json');
   const e = calculerEtat(lireProjet(f), { base: d });
@@ -708,9 +709,35 @@ test('EC14 la remise : les étapes et leurs comptes, « À installer » ; l’é
   // Le manifeste de la partie du 25/11 : 4 feuilles ajoutées ; la carte en charge 2, le compte 2, la gestion 2.
   assert.deepEqual([r.ajouts.length, r.pages.map((p) => p.apres.length), r.lignes, r.fichiers.length], [4, [2, 2, 2], 9, 4]);
   assert.equal(r.dossier, join(d, 'remise'));
-  const md = aInstaller(r);
-  for (const x of ['# À installer : Annuaire des cafés', '## 1. Installer le système', '## 2. Poser les décisions', '## 3. Reprendre l’ancien code', '<link rel="stylesheet" href="/desordre/styles/tokens.css">', '### `/desordre/carte.html`', 'Juste après `<link rel="stylesheet" href="/desordre/styles/recente.css">` :', '<link rel="stylesheet" href="/desordre/styles/recente.ajout.css">'])
-    assert.ok(md.includes(x), x);
+  const b = /** @type {NonNullable<typeof e.bilan>} */ (e.bilan);
+  const md = guide(r, b);
+  for (const x of [
+    '# Guide de migration vers le design system d’Annuaire des cafés',
+    '## La stratégie\n\nOn ne réécrit pas le site.',
+    '\n2. Poser les décisions, par-dessus l’ancien code. À l’écran : le nouveau rendu.\n',
+    '### 1. Installer le système\n\n**Ce que tu fais** Tu déposes `/desordre/styles/tokens.css` sur le site',
+    '**Pour annuler** Tu retires la ligne.\n\n```html\n<link rel="stylesheet" href="/desordre/styles/tokens.css">\n```',
+    '### 2. Poser les décisions',
+    'Sur les 3 pages vérifiées, au contrôle du designer, 54 changements sur 55 se voient sur l’image ; le dernier se regarde à la main, dans son état : Fond · bouton « Commander à emporter » (au survol).',
+    '#### `/desordre/carte.html`',
+    'Juste après `<link rel="stylesheet" href="/desordre/styles/recente.css">` :',
+    '<link rel="stylesheet" href="/desordre/styles/recente.ajout.css">',
+    '### 3. Reprendre l’ancien code',
+    'La liste est à la fin de ce guide : 190 valeurs, 4 fichiers',
+    '**Comment** Un fichier, un commit.',
+    '```css\nbody { background-color: #ffffff; color: #333333; }\nbody { background-color: var(--color-white, #ffffff); color: var(--color-neutral-12, #333333); }\n```',
+    '### 4. Remplacer les composants',
+    '**La règle** Un composant expose une intention, jamais une couleur : pour le bouton, `primary`, `secondary`, `ghost` et `danger`.',
+    '## En cas de doute',
+    'dis-le au designer : il peut y revenir, et les feuilles se régénèrent.',
+    '## La liste, fichier par fichier',
+  ])
+    assert.ok(md.includes(x), `${x}\n---\n${md}`);
+  // Les intentions dites par le guide sont celles de la fiche du bouton.
+  const fiche = readFileSync(join(ROOT, 'docs/composants/button.md'), 'utf8');
+  for (const x of INTENTIONS) assert.match(fiche, new RegExp(`^\\| \`variant\` \\|.*\`'${x}'\``, 'm'), x);
+  // Ce que l'outil ne fait pas n'est pas promis ; aucune durée.
+  assert.doesNotMatch(md, /Vuetify|tels quels|contrôle peut|remesur|\b(jours?|semaines?|mois|heures?)\b/);
   // Une case par fichier, les valeurs regroupées par sélecteur ; les quatre côtés réunis en raccourci.
   assert.equal(md.match(/^- \[ \] `\/desordre\/styles\/[a-z]+\.css` \(\d+ valeurs\)$/gm)?.length, 4);
   assert.match(md, /^ {2}- `\.bouton-principal, \.bouton-secondaire`, ligne 104 : .*`padding: 8px 16px` → `var\(--space-8, 8px\) var\(--space-16, 16px\)`/m);
@@ -722,7 +749,7 @@ test('EC14 la remise : les étapes et leurs comptes, « À installer » ; l’é
   writeFileSync(join(d, 'remise'), '');
   rmSync(join(d, 'remise'));
   cpSync(join(FIX, 'pages'), join(d, 'remise'), { recursive: true });
-  assert.throws(() => ecrireRemise(r, { dossierAjout: join(d, 'sorties/ajout/2026-11-24T1335'), verification: 'x' }), /n’a pas été écrit par l’outil/);
+  assert.throws(() => ecrireRemise(r, { dossierAjout: join(d, 'sorties/ajout/2026-11-24T1335'), verification: 'x', controle: b }), /n’a pas été écrit par l’outil/);
   rmSync(join(d, 'remise'), { recursive: true });
   // L'écran, sur la planche (D99) : la réussite, l'apport, les quatre étapes, le dossier, le mot, ce qui reste.
   const h = pageDuParcours(e);
@@ -747,7 +774,7 @@ test('EC14 la remise : les étapes et leurs comptes, « À installer » ; l’é
     'Dernier contrôle : 24/11/2026 à 13 h 36, 54 changements arrivés sur 55.',
   ])
     assert.ok(t.includes(x), `${x}\n---\n${t}`);
-  assert.equal(h.match(/href="\/a-installer">Lire le guide de migration<\/a>/g)?.length, 2);
+  assert.equal(h.match(/href="\/guide">Lire le guide de migration<\/a>/g)?.length, 2);
   // Ni durée, ni agent de code : le mot s'adresse à un humain.
   assert.doesNotMatch(t, /\b(jours?|semaines?|mois|heures?)\b|agent/);
   assert.match(message(r), /^Bonjour,\n\nOn a préparé le design system d’Annuaire des cafés à partir de nos pages actuelles\./);
@@ -770,6 +797,17 @@ test('EC14 la remise : les étapes et leurs comptes, « À installer » ; l’é
   const tm = texte(pageDuParcours(m));
   assert.ok(tm.includes('33 → 33 couleurs sur tes trois pages 55 changements'), tm);
   assert.ok(tm.includes('puis remplace les versions en double. Le bouton d’abord : 5 versions pour 8 emplois.'), tm);
+  // Le guide, avec les types relevés : le bouton d'abord ; le lien, sans fiche, reste.
+  const mg = guide(/** @type {NonNullable<typeof m.remise>} */ (m.remise), /** @type {NonNullable<typeof m.bilan>} */ (m.bilan));
+  for (const x of ['Commence par le bouton : 5 versions pour 8 emplois.', 'Il reste 5 façons d’écrire le bouton', '**Tu vérifies** Les 8 emplois du bouton passent par le même composant.', '**Pas encore** Le lien n’a pas de fiche : ses versions restent, avec les bonnes valeurs.', '    button/\n      fiche.md'])
+    assert.ok(mg.includes(x), `${x}\n---\n${mg}`);
+  // Le dossier : la fiche du bouton, sans son en-tête ni les marques de génération ; pas celle du lien.
+  ecrireRemise(/** @type {NonNullable<typeof m.remise>} */ (m.remise), { dossierAjout: join(d, 'sorties/ajout/2026-11-24T1335'), verification: 'x', controle: /** @type {NonNullable<typeof m.bilan>} */ (m.bilan) });
+  assert.deepEqual(readdirSync(join(d, 'remise', 'composants')).sort(), ['button.md', 'structure.md']);
+  const copiee = readFileSync(join(d, 'remise', 'composants', 'button.md'), 'utf8');
+  assert.ok(copiee.startsWith('# DsButton\n'), copiee.slice(0, 80));
+  assert.doesNotMatch(copiee, /<!--|^---$/m);
+  assert.deepEqual(readdirSync(join(d, 'remise')).sort(), ['composants', 'feuilles', 'guide.md', 'message.txt', 'remise.json']);
   /** @type {string[]} */
   const copies = [];
   assert.equal(copierMessage(f, { copier: (x) => void copies.push(x) }), true);
@@ -917,10 +955,11 @@ test('EC20 ni barre ni bouton de passage sur aucun écran ; ce qui change l’é
   assert.match(ecrans.pages, /action="\/pages\/retirer"/);
   assert.match(ecrans.marque, /action="\/pages\/marque\/couleur"/);
   assert.match(ecrans.remise, /action="\/pages\/copier"/);
-  // « À installer » : le retour à la remise sous le titre.
+  // Le guide de migration : le retour à la remise sous le titre.
   const e = etat('bilan');
-  const h = ecranAInstaller(e, '# À installer\n\n## Étape 1\n\nUne ligne.');
-  assert.match(h, /<h1>À installer<\/h1><p>[^<]*<\/p><p><a class="retour" href="\/">‹ La remise<\/a><\/p><\/div>/);
+  const h = ecranDuGuide(e, '# Guide\n\n## Étape\n\n**Pourquoi** Une ligne.');
+  assert.match(h, /<h1>Le guide de migration<\/h1><p>[^<]*<\/p><p><a class="retour" href="\/">‹ La remise<\/a><\/p><\/div>/);
+  assert.match(h, /<p><strong>Pourquoi<\/strong> Une ligne\.<\/p>/);
   assert.doesNotMatch(h, /class="barre"/);
 });
 

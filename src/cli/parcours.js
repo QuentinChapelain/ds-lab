@@ -7,7 +7,7 @@
  * --servir sert la page et les écrans sur 127.0.0.1, au port 4311, ou à un port libre s'il est pris (D75), jusqu'à
  * Ctrl+C. Avant le projet, il sert le lancement, qui se recharge seul jusqu'à ce que projet.json existe (D77) ; l'écran
  * des pages retire et ajoute par des formulaires, et sert la vignette de chaque page ; la marque change ses couleurs ;
- * la remise copie son message ; « À installer » et chaque page du site en direct, ses feuilles ajoutées posées (D87).
+ * la remise copie son message ; le guide de migration (D100) et chaque page du site en direct, ses feuilles ajoutées posées (D87).
  * Le passage d'un écran au suivant se fait dans le chat (D89, D92) : --passer <écran> (pages, dette, marque, fondations,
  * rendu) fait ce que faisait le bouton de l'écran, seulement si cet écran est celui du moment : un second « ok » est
  * refusé, il ne saute pas un écran. --revenir, à l'avant et après, rouvre la revue. --ajouter-page et --retirer-page
@@ -29,8 +29,8 @@ import { ecranDeLancement, dessinDeVignette } from '../parcours/ecrans.js';
 import { faitsDuMoment } from '../parcours/faits.js';
 import { servir } from '../parcours/serveur.js';
 import { ajouterPage, choisirCouleur, confirmerMarque, copierMessage, detteVue, echangerAccent, fondationsVues, retirerPage, rouvrirRevue, validerPages, validerRendu, vignettes } from '../parcours/pages.js';
-import { ecranAInstaller } from '../parcours/ecrans.js';
-import { aInstaller, feuillesEnDirect, pageEnDirect } from '../parcours/remise.js';
+import { ecranDuGuide } from '../parcours/ecrans.js';
+import { feuillesEnDirect, guide, pageEnDirect } from '../parcours/remise.js';
 import { lignesDuRegard, regarderSite } from '../parcours/regarder.js';
 
 const USAGE = 'npm run parcours -- --regarder <adresse> | <projet.json> [--servir] [--port <n>] [--passer <écran>] [--revenir] [--ajouter-page <adresse>] [--retirer-page <chemin>] [--site <id>]';
@@ -138,12 +138,12 @@ await lancer('parcours', async () => {
           (png) => ({ type: 'image/png', corps: png }),
           () => ({ type: 'image/svg+xml', corps: dessinDeVignette() }),
         ),
-      // « À installer » et la page en direct (D87) : rendus à la demande, depuis les sorties.
+      // Le guide de migration (D100) et la page en direct (D87) : rendus à la demande, depuis les sorties.
       autre: async (chemin, q, ici) => {
         if (!existsSync(fichier)) return null;
-        if (chemin === '/a-installer') {
+        if (chemin === '/guide') {
           const { etat } = ecrire();
-          return etat.remise ? { type: 'text/html; charset=utf-8', corps: ecranAInstaller(etat, aInstaller(etat.remise)) } : null;
+          return etat.remise && etat.bilan ? { type: 'text/html; charset=utf-8', corps: ecranDuGuide(etat, guide(etat.remise, etat.bilan)) } : null;
         }
         const m = /^\/direct\/([a-z0-9-]+)$/.exec(chemin);
         if (!m) return null;

@@ -123,8 +123,8 @@ export function validerRendu(fichier) {
   if (!a) throw new Error('aucun rendu à valider');
   writeFileSync(join(p.sorties, RENDU_VALIDE), `${JSON.stringify({ verification: a.verification }, null, 2)}\n`);
   // La remise (D87) : le dossier à donner au développeur, écrit pour le rendu validé.
-  const r = calculerEtat(p, { base: p.dossier }).remise;
-  if (r) ecrireRemise(r, { dossierAjout: a.dossierAjout, verification: a.verification });
+  const e = calculerEtat(p, { base: p.dossier });
+  if (e.remise && e.bilan) ecrireRemise(e.remise, { dossierAjout: a.dossierAjout, verification: a.verification, controle: e.bilan });
 }
 
 /** Le presse-papiers du Mac ; ailleurs, une panne. @param {string} texte */

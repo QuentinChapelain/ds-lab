@@ -5,7 +5,7 @@
  * page ; ni barre ni bouton pour changer d'écran : le chat porte ce passage (D92). Sombre seul ; ce qui vient du site
  * (vignettes, captures, couleurs et exemples relevés) est sur papier, le mode clair des mêmes rôles. Les écrans : le
  * lancement (avant le projet, et le départ revu), les pages à mesurer (un groupe par site), la mesure en cours, la dette,
- * la marque, l'écriture des tokens, les fondations, la revue revue, l'avant et après, la remise et « À installer ».
+ * la marque, l'écriture des tokens, les fondations, la revue revue, l'avant et après, la remise et le guide de migration.
  * Un temps fait se revoit (`/?voir=<écran>`) : l'écran en lecture seule, sans formulaire, avec « Revenir où j'en suis ».
  * Sans script : ce qui change l'écran (retirer, ajouter une page, changer une couleur, copier le message) est un
  * formulaire envoyé au serveur du parcours (serveur.js). Valeurs :
@@ -209,7 +209,8 @@ details summary { cursor: pointer; color: var(--text-info); ${style('label')} }
 .endroits { display: flex; flex-direction: column; gap: var(--gap-within-component); }
 .document { display: flex; flex-direction: column; gap: var(--gap-between-blocks); }
 .document h2 { margin-top: var(--gap-between-components); }
-.document h3 { margin: 0; ${style('label')} }
+.document h3 { margin-top: var(--gap-between-blocks); ${style('body-medium')} font-weight: bold; }
+.document h4 { margin: 0; ${style('label')} }
 .document ul { display: flex; flex-direction: column; gap: var(--gap-within-component); padding-left: var(--gap-between-groups); list-style: disc; }
 .document li, .document p { overflow-wrap: anywhere; }
 .document pre { margin: 0; padding: var(--gap-between-blocks) var(--padding-tag); overflow-x: auto; border-radius: var(--border-radius-control); background: var(--background-subtle); }
@@ -923,7 +924,7 @@ export function ecranDeLaRemise(e, { copie = null } = {}) {
   const groupe = (id, titre, corps, lien = '') =>
     `<section class="groupe" aria-labelledby="t-${id}"><div class="titre-bloc"><h2 id="t-${id}">${esc(titre)}</h2>${lien}</div>\n${corps}</section>`;
   const rangs = (/** @type {string[]} */ l) => `<div class="rangs">\n${l.join('\n')}\n</div>`;
-  const guide = '<a class="voir" href="/a-installer">Lire le guide de migration</a>';
+  const guide = '<a class="voir" href="/guide">Lire le guide de migration</a>';
   // L'apport : des chiffres lus dans les sorties, jamais repris de la planche ; un chiffre absent ne s'écrit pas.
   const surPages = b.pages > 1 ? `sur tes ${enLettres(b.pages).toLowerCase()} pages` : 'sur ta page';
   const c = b.couleurs;
@@ -978,15 +979,18 @@ ${groupe('reste', 'Ce qui reste', rangs(reste))}
   });
 }
 
-/** Le code d'une ligne de « À installer », entre accents graves. @param {string} t */
-const enLigne = (t) => esc(t).replace(/`([^`]+)`/g, '<code>$1</code>');
+/** Le code d'une ligne du guide, entre accents graves ; une rubrique, entre astérisques doubles. @param {string} t */
+const enLigne = (t) =>
+  esc(t)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 
 /**
- * « À installer » (D87), lisible à l'écran : le Markdown de la remise, rendu par l'outil, qui sait ce qu'il écrit
- * (titres, paragraphes, blocs de code, listes à deux niveaux, code en ligne).
+ * Le guide de migration (D87, D100), lisible à l'écran : le Markdown de la remise, rendu par l'outil, qui sait ce
+ * qu'il écrit (titres, paragraphes, rubriques, blocs de code, listes à deux niveaux, code en ligne).
  * @param {Etat} e @param {string} md
  */
-export function ecranAInstaller(e, md) {
+export function ecranDuGuide(e, md) {
   /** @type {string[]} */
   const h = [];
   let code = /** @type {string[] | null} */ (null);
@@ -1002,6 +1006,7 @@ export function ecranAInstaller(e, md) {
     }
     if (l.startsWith('```')) (fermer(0), (code = []));
     else if (l.startsWith('# ') || !l.trim()) fermer(0);
+    else if (l.startsWith('#### ')) (fermer(0), h.push(`<h4>${enLigne(l.slice(5))}</h4>`));
     else if (l.startsWith('### ')) (fermer(0), h.push(`<h3>${enLigne(l.slice(4))}</h3>`));
     else if (l.startsWith('## ')) (fermer(0), h.push(`<h2>${enLigne(l.slice(3))}</h2>`));
     else if (/^ {0,2}- /.test(l)) {
@@ -1013,10 +1018,10 @@ export function ecranAInstaller(e, md) {
   }
   fermer(0);
   return gabarit({
-    titre: 'À installer',
-    onglet: `À installer · ${e.produit}`,
-    phrase: 'Les trois étapes de la remise, telles que le développeur les lit.',
-    fil: filDe(e, 'À installer'),
+    titre: 'Le guide de migration',
+    onglet: `Le guide de migration · ${e.produit}`,
+    phrase: 'Tel que le développeur le lira dans le dossier de la remise, sous le nom guide.md.',
+    fil: filDe(e, 'Le guide de migration'),
     sousTete: '<p><a class="retour" href="/">‹ La remise</a></p>',
     corps: `<div class="document">\n${h.join('\n')}\n</div>`,
   });

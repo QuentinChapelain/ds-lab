@@ -51,7 +51,7 @@ async function champs(req) {
  *   autre?: (chemin: string, q: URLSearchParams, ici: string) => Promise<{ type: string, corps: Buffer | string } | null>,
  *   poster?: (chemin: string, champs: Record<string, string>) => Promise<URLSearchParams | null> }} sources
  *   page : écrit et rend la page à jour, avec les paramètres de l'adresse ; sorties : la racine des sorties ; marques :
- *   dossier de la marque de chaque site ; vignette : la capture d'une page ; autre : une page de plus (« À installer », une
+ *   dossier de la marque de chaque site ; vignette : la capture d'une page ; autre : une page de plus (le guide de migration, une
  *   page du site en direct, D87), ou null ; poster : un formulaire de l'écran, qui rend
  *   les paramètres de l'adresse du retour
  * @param {{ port?: number, libre?: boolean }} [opts]  port 0 : un port libre ; libre : si le port est pris, un port libre (D75)
