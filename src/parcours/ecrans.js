@@ -142,7 +142,7 @@ button:focus-visible, input:focus-visible { outline: var(--border-width-focus) s
 .rang .n { ${style('heading-1')} }
 .rang h3 { ${style('body-medium')} font-weight: bold; }
 .rang .cote small { width: 0; min-width: 100%; }
-.rang .preuve { display: flex; flex-direction: column; justify-content: center; min-width: 0; padding-left: var(--gap-between-groups); }
+.rang .preuve { display: flex; flex-direction: column; justify-content: center; gap: var(--gap-within-component); min-width: 0; padding-left: var(--gap-between-groups); }
 .ruban { overflow: hidden; border-radius: var(--border-radius-control); }
 .ruban svg { display: block; width: 100%; height: var(--height-control-medium); }
 .captures { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-components); }
@@ -206,7 +206,11 @@ details summary { cursor: pointer; color: var(--text-info); ${style('label')} }
 .cadre img { display: block; width: 100%; height: auto; }
 .cadre .dessus { position: absolute; top: 0; left: 0; }
 .voir-avant:checked ~ .cadre .apres, .voir-apres:checked ~ .cadre .avant { visibility: hidden; }
-.exemple { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-within-component) var(--gap-between-blocks); }
+.sous-image { display: flex; flex-basis: 100%; flex-wrap: wrap; align-items: baseline; gap: var(--gap-within-component) var(--gap-between-components); }
+.legende { color: var(--text-secondary); }
+.voir-avant:checked ~ .sous-image .legende.apres, .voir-apres:checked ~ .sous-image .legende.avant { display: none; }
+.devient { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-within-component) var(--gap-between-blocks); }
+.endroits { display: flex; flex-direction: column; gap: var(--gap-within-component); }
 .document { display: flex; flex-direction: column; gap: var(--gap-between-blocks); }
 .document h2 { margin-top: var(--gap-between-components); }
 .document h3 { margin: 0; ${style('label')} }
@@ -813,11 +817,13 @@ export function ecranDesFondations(e, { lecture = null } = {}) {
 const valeurDite = (v) => (px(v) !== null ? `${fr(/** @type {number} */ (px(v)), { decimales: 2 })} px` : v.replace('%', ' %'));
 
 /**
- * L'avant et après (D86), la troisième porte : chaque page mesurée, telle qu'elle était et telle que les feuilles
- * ajoutées la rendent, au même endroit ; ce qui a changé, compté par famille, avec un exemple. Sans script : un onglet
- * par page et la bascule sont des boutons radio, l'image cachée garde sa place. La plus haute des deux images tient le
- * cadre, l'autre se pose dessus : rien ne saute. « Valider mon rendu » et « Revenir sur une décision » se disent dans le chat (D92).
- * Les images et les exemples viennent du site : sur papier.
+ * L'avant et après (D86, D98), la troisième porte : chaque page mesurée, telle qu'elle était et telle que les feuilles
+ * ajoutées la rendent, au même endroit, et sous l'image sa légende et la page en direct ; puis le total et un groupe de
+ * lignes, « Ce qui change », comme la dette : ce qui n'est pas arrivé en tête, une ligne par famille et son exemple (le
+ * changement qui touche le plus d'éléments), ce qui se regarde à la main en pied. Sans script : un onglet par page et
+ * la bascule sont des boutons radio, l'image cachée garde sa place, et la légende suit la bascule. La plus haute des
+ * deux images tient le cadre, l'autre se pose dessus : rien ne saute. « Valider mon rendu » et « Revenir sur une
+ * décision » se disent dans le chat (D92). Les images viennent du site : sur papier.
  * @param {Etat} e @param {{ lecture?: Lecture | null }} [o]
  */
 export function ecranAvantApres(e, { lecture = null } = {}) {
@@ -830,31 +836,35 @@ export function ecranAvantApres(e, { lecture = null } = {}) {
       return `<div class="vue vue-${i}" role="group" aria-label="${esc(v.nom)}">
 <input type="radio" name="bascule-${i}" id="avant-${i}" class="voir-avant"><label for="avant-${i}">Avant</label>
 <input type="radio" name="bascule-${i}" id="apres-${i}" class="voir-apres" checked><label for="apres-${i}">Après</label>
-<a class="direct" href="${esc(v.direct)}">Ouvrir la page en direct</a>
 <div class="cadre papier">${image('avant', v.avant, 'avant')}${image('apres', v.apres, 'après')}</div>
+<p class="sous-image"><small class="legende avant">Image prise sur ta page, sans les nouvelles feuilles.</small><small class="legende apres">Image prise sur ta page, avec les nouvelles feuilles.</small><a class="direct" href="${esc(v.direct)}">Ouvrir la page en direct</a></p>
 </div>`;
     })
     .join('\n');
   // Une règle par page : son onglet coché montre sa vue.
   const regles = a.vues.map((_, i) => `#page-${i}:checked ~ .vues > .vue-${i} { display: flex; }`).join('\n');
-  const tous = a.arrivees === a.changements;
-  const titre = `${nombre(a.changements, 'changement', 'changements')}, ${tous ? (a.changements > 1 ? 'tous arrivés' : 'arrivé') : `${a.arrivees} ${a.arrivees > 1 ? 'arrivés' : 'arrivé'}`}`;
-  const manque = [
-    ...(a.manquantes.length ? [`<p>Pas arrivé :</p><ul class="manque">${a.manquantes.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`] : []),
-    ...(a.enEtat.length ? [`<p>Visible seulement au survol, au focus ou à l’appui, à regarder à la main :</p><ul class="manque">${a.enEtat.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`] : []),
-  ].join('\n');
-  const cartes = a.familles
+  const total = `<div class="total"><p class="cote"><span class="grand">${a.changements}</span>${a.changements > 1 ? 'changements' : 'changement'}</p><ul class="chiffres">${chiffre(a.arrivees, `${a.arrivees > 1 ? 'arrivés' : 'arrivé'}, vérifiés sur l’image`)}${a.manquantes.length ? chiffre(a.manquantes.length, a.manquantes.length > 1 ? 'pas arrivés' : 'pas arrivé') : ''}${a.enEtat.length ? chiffre(a.enEtat.length, 'à regarder à la main') : ''}</ul></div>`;
+  const endroits = (/** @type {string[]} */ l) => `<ul class="endroits">${l.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`;
+  const manque = a.manquantes.length ? [rang(a.manquantes.length, a.manquantes.length > 1 ? 'Pas arrivés' : 'Pas arrivé', 'à regarder sur l’image', endroits(a.manquantes))] : [];
+  // L'exemple de chaque famille, dit une fois sous le premier.
+  let dit = false;
+  const familles = a.familles
     .filter((f) => f.compte)
     .map((f) => {
       const x = f.exemple;
-      const exemple = !x
-        ? ''
-        : f.cle === 'colors'
-          ? `<p class="exemple"><span class="papier papier-bloc">${pastille(x.ancienne, 24)}</span><code>${esc(x.ancienne)}</code><span aria-hidden="true">→</span><span class="papier papier-bloc">${pastille(x.nouvelle, 24)}</span><code>${esc(x.nouvelle)}</code></p>`
-          : `<p class="exemple"><code>${esc(valeurDite(x.ancienne))}</code><span aria-hidden="true">→</span><code>${esc(valeurDite(x.nouvelle))}</code></p>`;
-      return `<div class="carte"><h3>${esc(f.titre.charAt(0).toUpperCase() + f.titre.slice(1))} <span>${f.compte}</span></h3>${exemple}${x ? `<small>${esc(`dont ${x.ou}`)}</small>` : ''}</div>`;
-    })
-    .join('\n');
+      const valeur = (/** @type {string} */ v) => (f.cle === 'colors' ? `${pastille(v, 24)}<code>${esc(v)}</code>` : `<span>${esc(valeurDite(v))}</span>`);
+      const regle = x && !dit ? '<small class="discret">Le changement qui touche le plus d’éléments.</small>' : '';
+      if (x) dit = true;
+      return rang(f.compte, f.titre.charAt(0).toUpperCase() + f.titre.slice(1), null, x ? `<p class="devient">${valeur(x.ancienne)}<span class="discret">devient</span>${valeur(x.nouvelle)}</p>${regle}` : '');
+    });
+  // À regarder à la main : les états où le changement se voit, lus dans le titre de chaque ligne.
+  const etats = ['au survol', 'au focus', 'à l’appui'].filter((s) => a.enEtat.some((x) => x.includes(`(${s})`)));
+  const lesEtats = etats.length ? etats : ['au survol', 'au focus', 'à l’appui'];
+  const ouEtats = lesEtats.length > 1 ? `${lesEtats.slice(0, -1).join(', ')} ou ${lesEtats.at(-1)}` : lesEtats[0];
+  const pronom = a.enEtat.length > 1 ? 'les' : 'le';
+  const main = a.enEtat.length
+    ? [rang(a.enEtat.length, 'À regarder à la main', `visible seulement ${ouEtats}`, `${endroits(a.enEtat)}<p>Ouvre la page en direct, sous l’image, pour ${pronom} ${etats.length === 1 && etats[0] === 'au survol' ? 'survoler' : 'voir dans cet état'}.</p>`)]
+    : [];
   const decisions = a.decisions ? `Tes ${nombre(a.decisions, 'décision', 'décisions')} et les réglages de l’outil, ensemble,` : 'Les réglages de l’outil,';
   return gabarit({
     titre: 'Avant, après',
@@ -862,17 +872,19 @@ export function ecranAvantApres(e, { lecture = null } = {}) {
     phrase: `${decisions} sur ${a.pages > 1 ? `les ${a.pages} pages mesurées` : 'la page mesurée'}. ${lecture ? 'Le rendu que tu as validé.' : 'C’est un aperçu : rien n’est encore installé sur ton site.'}`,
     fil: filDe(e),
     lecture,
-    corps: `<section class="comparer" aria-label="Comparer">
+    corps: `<div class="blocs">
+<section class="comparer" aria-label="Comparer">
 ${onglets}
 <div class="vues">
 ${vues}
 </div>
 </section>
-<section class="bloc" aria-labelledby="t-changements"><h2 id="t-changements">${esc(titre)}</h2>
-${manque}
-<div class="cartes">
-${cartes}
-</div></section>`,
+${total}
+<section class="groupe" aria-labelledby="t-change"><div class="titre-bloc"><h2 id="t-change">Ce qui change</h2></div>
+<div class="rangs">
+${[...manque, ...familles, ...main].join('\n')}
+</div></section>
+</div>`,
     regles,
   });
 }

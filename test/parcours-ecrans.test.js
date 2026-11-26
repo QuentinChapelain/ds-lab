@@ -36,9 +36,9 @@
  *   EC11 « Comparer mon site » (--passer fondations) : les fondations vues, la main à l'outil qui lance la réduction ; une
  *       preuve fausse pour la marque (sans feuille CSS) n'est pas rendue ;
  *   EC12 l'avant et après (D86), dès les feuilles vérifiées, avant la validation : un onglet par page nommée, la bascule
- *       Avant, Après sans script, la plus haute des deux images tient le cadre ; le compte des changements, ce qui n'est
- *       visible qu'au survol, quatre cartes et leur exemple (la couleur changée la plus employée, deux pastilles et leurs
- *       codes) ; « Valider mon rendu », « Revenir sur une décision » ; une vérification d'avant ces feuilles, ou sans
+ *       Avant, Après sans script, la plus haute des deux images tient le cadre, la légende sous l'image suit la bascule ;
+ *       le total des changements et ses comptes, puis « Ce qui change » en lignes : une par famille et son exemple (le
+ *       changement qui touche le plus d'éléments, deux pastilles et leurs codes), ce qui n'est visible qu'au survol en pied ; « Valider mon rendu », « Revenir sur une décision » ; une vérification d'avant ces feuilles, ou sans
  *       l'image d'avant, se refait ;
  *   EC13 « Valider mon rendu » (--passer rendu) : le rendu validé ; « Revenir sur une décision » (--revenir) : le rendu n'est plus
  *       validé, la revue rouverte au designer jusqu'à un nouvel export, puis la réduction, les feuilles et la
@@ -604,7 +604,7 @@ const avantApres = () => {
   return { d, f: join(d, 'projet.json') };
 };
 
-test('EC12 l’avant et après : un onglet par page, la bascule sans script, le compte et quatre cartes', () => {
+test('EC12 l’avant et après : un onglet par page, la bascule sans script, le total et une ligne par famille', () => {
   const { d, f } = avantApres();
   const e = calculerEtat(lireProjet(f), { base: d });
   assert.deepEqual([e.moment, e.courante.cle, e.courante.main, e.courante.action, e.courante.commande], ['avant-apres', 'livraison', 'designer', 'regarder l’avant et après, puis valider le rendu', null]);
@@ -613,14 +613,17 @@ test('EC12 l’avant et après : un onglet par page, la bascule sans script, le 
   for (const x of [
     'Avant, après',
     'Tes 15 décisions et les réglages de l’outil, ensemble, sur les 3 pages mesurées. C’est un aperçu : rien n’est encore installé sur ton site.',
-    // Le verdict : 55 lignes, 54 arrivées, une seulement au survol.
-    '55 changements, 54 arrivés',
-    'Visible seulement au survol, au focus ou à l’appui, à regarder à la main : Fond · bouton « Commander à emporter » (au survol)',
+    // Sous l'image, la légende de chaque côté de la bascule, puis la page en direct.
+    'Image prise sur ta page, sans les nouvelles feuilles. Image prise sur ta page, avec les nouvelles feuilles. Ouvrir la page en direct',
+    // Le total : 55 lignes, 54 arrivées, une seulement au survol.
+    '55 changements 54 arrivés, vérifiés sur l’image 1 à regarder à la main',
     // Par famille, les lignes du manifeste : 33 couleurs, 11 espacements, 7 tailles, 4 arrondis.
-    'Couleurs 33', 'Espacements 11', 'Tailles de texte 7', 'Arrondis 4',
-    // L'exemple : la ligne qui touche le plus d'éléments (54 pour #999999 → #958f84).
-    '#999999 → #958f84', 'dont texte « N° » et 53 autres (textes, blocs)',
-    '15 px → 16 px',
+    'Ce qui change 33 Couleurs', '11 Espacements', '7 Tailles de texte', '4 Arrondis',
+    // L'exemple : la ligne qui touche le plus d'éléments (54 pour #999999 devient #958f84), la règle dite une fois.
+    '#999999 devient #958f84 Le changement qui touche le plus d’éléments.',
+    '15 px devient 16 px',
+    // En pied du groupe : l'endroit, et ce qu'il faut faire.
+    '1 À regarder à la main visible seulement au survol Fond · bouton « Commander à emporter » (au survol) Ouvre la page en direct, sous l’image, pour le survoler.',
   ])
     assert.ok(t.includes(x), x);
   // Les pages sans nom : leur chemin ; un onglet, une vue et une règle par page ; la première cochée.
@@ -632,6 +635,10 @@ test('EC12 l’avant et après : un onglet par page, la bascule sans script, le 
   assert.match(h, /<img class="avant fond" src="\/sorties\/verify\/127\.0\.0\.1_4173\/2026-11-24T1336\/carte\/avant\.png" alt="\/desordre\/carte\.html, avant"><img class="apres dessus" src="\/sorties\/verify\/127\.0\.0\.1_4173\/2026-11-24T1336\/carte\/actuel\.png"/);
   assert.match(h, /<img class="avant dessus" src="[^"]*gestion\/avant\.png"[^>]*><img class="apres fond"/);
   assert.match(h, /<rect x="0\.5" y="0\.5" width="23" height="23" rx="6" fill="#999999"/);
+  assert.equal(t.match(/Le changement qui touche le plus d’éléments/g)?.length, 1);
+  assert.doesNotMatch(t, /Pas arrivé/);
+  // La légende suit la bascule : une règle cache celle de l'image cachée.
+  assert.match(h, /\.voir-avant:checked ~ \.sous-image \.legende\.apres, \.voir-apres:checked ~ \.sous-image \.legende\.avant \{ display: none; \}/);
   assert.doesNotMatch(h, /<form|Valider mon rendu|Revenir sur une décision/);
   assert.doesNotMatch(t, /[Ll]ignes?\b|seuils/);
   assert.doesNotMatch(h, /<script|\sstyle="|http-equiv="refresh"/);
