@@ -88,7 +88,10 @@ export function faitsDuMoment(e, { sorties }) {
         );
       break;
     case 'constat':
-      f.push(['Écran', 'la mesure en cours, qui passe seule à la suite'], ['Ensuite', 'mesurer les pages']);
+      // Une mesure arrêtée ne laisse pas le parcours en silence (D104).
+      if (e.mesure?.arret)
+        f.push(['Arrêt', e.mesure.arret], ['Écran', 'la mesure arrêtée, qui le dit'], ['Ensuite', 'le dire en une phrase, avec ce qu’on en fait : relancer la mesure, ou retirer la page en cause']);
+      else f.push(['Écran', 'la mesure en cours, qui passe seule à la suite'], ['Ensuite', 'mesurer les pages']);
       break;
     case 'marques': {
       if (k.action?.startsWith('regarder la dette')) {

@@ -92,12 +92,13 @@ async function main() {
       ? await recalculer({ releve: parsed.releve, decisions: options.decisions, nom: options.nom, outRoot: options.outRoot })
       : await runComposants({ ...options, log: (m) => console.log(m) });
   } catch (e) {
-    if (av) noterReleve(av, options.outRoot, 'pas fait');
+    if (av) noterReleve(av, options.outRoot, 'pas fait', String(/** @type {any} */ (e)?.message ?? e).split('\n')[0]);
     throw e;
   }
   if (av) noterReleve(av, options.outRoot, r.tombees.length ? 'pas fait' : 'fait');
   console.log(`\n${r.constat.phrase}`);
   for (const d of r.constat.decisionsSansCible) console.log(`  ! décision sans cible : ${d.texte}`);
+  if (r.imagesTombees) console.log(`  ! ${r.imagesTombees} image(s) non prise(s) : un dessin les remplace, la raison est dans releve.json`);
   console.log(`\n${r.fichiers.join('\n')}`);
   if (r.tombees.length) throw new Error(`${r.tombees.length} page(s) non relevée(s) : ${r.tombees.join(', ')} ; constat écrit, incomplet`);
   return 0;

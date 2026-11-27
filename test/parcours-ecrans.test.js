@@ -75,6 +75,10 @@
  *       taille, la phrase de ce qu'il change), une par type que Diapason n'a pas encore, les autres composants, le pied ;
  *       « Voir les fiches » : chaque fiche rendue comme le guide, les autres en liens, « ‹ Les composants » ; rien à
  *       décider, « Comparer mon site » dans le chat ; l'écran se revoit ;
+ *   EC23 la mesure arrêtée (D104) : un relevé pas fait, sans constat, avec sa raison dans l'avancement ; l'écran de la
+ *       mesure le dit dans son titre et sa phrase, avec quoi faire, et se recharge toujours ; les faits du chat disent
+ *       l'arrêt ; un relevé relancé efface la raison ; une version dont l'image n'a pas été prise a son dessin, sur la
+ *       dette et sur l'écran des composants, et son titre dit pourquoi ;
  *   EC19 regarder le site sans le montrer (D91) : la page donnée et celles du même site vers lesquelles elle mène,
  *       rendues sans fenêtre, leur titre et leurs composants comptés, les plus riches d'abord ; un site qui ne répond
  *       pas, sa raison en une ligne et la sortie 1 ; --regarder avec un projet : sortie 2.
@@ -89,7 +93,7 @@ import { fileURLToPath } from 'node:url';
 import { lireProjet } from '../src/parcours/projet.js';
 import { calculerEtat } from '../src/parcours/etat.js';
 import { pageDuParcours } from '../src/parcours/page.js';
-import { ecranDesFiches, ecranDuGuide, ecranDeLancement, FIN_JETONS } from '../src/parcours/ecrans.js';
+import { ecranDesFiches, ecranDuGuide, ecranDeLancement, ecranDeLaDette, FIN_JETONS } from '../src/parcours/ecrans.js';
 import { ajouterPage, choisirCouleur, composantsVus, confirmerMarque, detteVue, echangerAccent, fondationsVues, retirerPage, rouvrirRevue, validerPages, validerRendu } from '../src/parcours/pages.js';
 import { fondationsDe } from '../src/parcours/fondations.js';
 import { ecrireRemise, guide, INTENTIONS, message, pageEnDirect } from '../src/parcours/remise.js';
@@ -1064,7 +1068,7 @@ test('EC21 « Où j’en suis » : la mesure page par page, puis le relevé ; l�
   assert.deepEqual(enDur(h), []);
   // Un fichier illisible vaut un avancement vide.
   writeFileSync(av, '{');
-  assert.deepEqual(lireAvancement(av), { pages: {}, releves: {} });
+  assert.deepEqual(lireAvancement(av), { pages: {}, releves: {}, raisons: {} });
 
   // L'audit note chaque page : en cours, puis mesurée.
   const srv = await startFixtureServers();
@@ -1093,4 +1097,37 @@ test('EC21 « Où j’en suis » : la mesure page par page, puis le relevé ; l�
   assert.match(hj, /<h2 id="t-ou">Où j’en suis<\/h2>/);
   assert.match(hj, /<strong>Les tokens de ta marque<\/strong>.*<span class="etat fait">Fait<\/span>/);
   assert.doesNotMatch(hj, /<progress/);
+});
+
+test('EC23 la mesure arrêtée, dite à l’écran et dans le chat ; une image non prise, dessinée', () => {
+  const d = copie('pages');
+  const f = join(d, 'projet.json');
+  validerPages(f);
+  const av = join(d, 'sorties', 'avancement.json');
+  const releve = join(d, 'sorties', 'composants', 'orbe');
+  noterReleve(av, releve, 'pas fait', 'elementHandle.screenshot: Element is not attached to the DOM');
+  const e = calculerEtat(lireProjet(f), { base: ROOT });
+  assert.equal(e.mesure?.sites[0].composants.etat, 'Pas fait');
+  assert.equal(e.mesure?.arret, 'Le relevé des composants s’est arrêté : elementHandle.screenshot: Element is not attached to the DOM.');
+  const h = pageDuParcours(e);
+  assert.match(h, /<h1>La mesure de tes 3 pages s’est arrêtée<\/h1>/);
+  assert.match(texte(h), /s’est arrêté : elementHandle\.screenshot: Element is not attached to the DOM\. Dis-le dans le chat : on relance la mesure, ou on retire la page en cause\./);
+  assert.doesNotMatch(texte(h), /passe seul à la suite/);
+  assert.match(h, /http-equiv="refresh"|location\.reload/, 'l’écran se recharge toujours, pour la mesure relancée');
+  const faits = faitsDuMoment(e, { sorties: join(d, 'sorties') }).join('\n');
+  assert.match(faits, /Arrêt.*s’est arrêté : elementHandle/);
+  assert.match(faits, /relancer la mesure, ou retirer la page en cause/);
+  assert.doesNotMatch(faits, /la mesure en cours/);
+  // Relancé, le relevé efface sa raison : la mesure n'est plus arrêtée.
+  noterReleve(av, releve, 'en cours');
+  assert.deepEqual(lireAvancement(av).raisons, {});
+  assert.equal(calculerEtat(lireProjet(f), { base: ROOT }).mesure?.arret, null);
+
+  // Une version dont l'image n'a pas été prise : un dessin à sa place, qui dit pourquoi.
+  const c = etat('constat');
+  const t = /** @type {NonNullable<typeof c.dette>} */ (c.dette).composants.types[0];
+  t.versions[0] = { ...t.versions[0], capture: null, imageTombee: 'l’élément a quitté la page après le relevé' };
+  const hd = ecranDeLaDette(c);
+  assert.match(hd, /<svg class="sans-image" viewBox="0 0 72 32" role="img" aria-label="[^"]*image non prise"><title>[^<]*image non prise : l’élément a quitté la page après le relevé<\/title>/);
+  assert.deepEqual(enDur(hd), []);
 });

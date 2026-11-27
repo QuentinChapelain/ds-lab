@@ -64,7 +64,7 @@ const dateDe = (d) => stampOf(d).replace(/T(\d\d)(\d\d)$/, ' $1:$2');
 
 /**
  * @param {OptionsComposants} opts
- * @returns {Promise<{ dir: string, fichiers: string[], constat: ReturnType<typeof construireConstat>, tombees: string[] }>}
+ * @returns {Promise<{ dir: string, fichiers: string[], constat: ReturnType<typeof construireConstat>, tombees: string[], imagesTombees: number }>}
  */
 export async function runComposants(opts) {
   const { signatures = [], viewport = { width: 1366, height: 900 }, waitMs = DEFAULT_WAIT_MS, storageState, outRoot = 'local/composants', now = new Date(), log = () => {} } = opts;
@@ -116,16 +116,28 @@ export async function runComposants(opts) {
       pages,
       lignes,
       captures: [],
+      capturesRetrouvees: [],
+      capturesTombees: [],
     };
-    brut.captures = aCapturer(brut);
-    for (const id of brut.captures) {
+    const [prises, retrouvees, tombees] = [brut.captures, /** @type {string[]} */ (brut.capturesRetrouvees), /** @type {{ id: string, raison: string }[]} */ (brut.capturesTombees)];
+    // Une image qui échoue est notée, jamais une raison de tomber : le constat s'écrit sans elle (D104).
+    for (const id of aCapturer(brut)) {
       const l = /** @type {import('./pieces.js').Ligne} */ (lignes.find((x) => x.id === id));
-      images.set(`captures/${id}.png`, await capturer(/** @type {import('playwright-core').Page} */ (onglets.get(l.page)), l.index));
+      try {
+        const { image, retrouvee } = await capturer(/** @type {import('playwright-core').Page} */ (onglets.get(l.page)), l);
+        images.set(`captures/${id}.png`, image);
+        prises.push(id);
+        if (retrouvee) retrouvees.push(id);
+      } catch (e) {
+        const raison = String(/** @type {any} */ (e)?.message ?? e).split('\n')[0];
+        tombees.push({ id, raison });
+        log(`${pages[l.page].adresse} : image de « ${l.nom || l.selecteur} » non prise (${raison})`);
+      }
     }
     const constat = construireConstat(brut, decisions, { nom: opts.nom });
     const dir = await freeOutputDir(outRoot, hotes[0], stampOf(now));
     const fichiers = await ecrireConstat(dir, brut, constat, images);
-    return { dir, fichiers, constat, tombees: pages.filter((p) => p.erreur).map((p) => `${p.adresse} (${p.erreur})`) };
+    return { dir, fichiers, constat, tombees: pages.filter((p) => p.erreur).map((p) => `${p.adresse} (${p.erreur})`), imagesTombees: tombees.length };
   } finally {
     await browser.close();
   }
@@ -153,5 +165,5 @@ export async function recalculer({ releve, decisions, nom, outRoot = 'local/comp
   const constat = construireConstat(brut, d, { nom });
   const dir = await freeOutputDir(outRoot, new URL(brut.site).host, stampOf(now));
   const fichiers = await ecrireConstat(dir, brut, constat, images);
-  return { dir, fichiers, constat, tombees: brut.pages.filter((p) => p.erreur).map((p) => `${p.adresse} (${p.erreur})`) };
+  return { dir, fichiers, constat, tombees: brut.pages.filter((p) => p.erreur).map((p) => `${p.adresse} (${p.erreur})`), imagesTombees: brut.capturesTombees?.length ?? 0 };
 }

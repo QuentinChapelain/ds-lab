@@ -27,6 +27,9 @@ import { defauts, differences, mention, aFaireDuType, guidageGlobal, graphiques 
  * @property {{ adresse: string, nom: string, statut: number | null, erreur?: string }[]} pages  pages demandées
  * @property {import('./pieces.js').Ligne[]} lignes  dans l'ordre des pages, puis du relevé
  * @property {string[]} captures  identifiants des lignes capturées (captures/<id>.png)
+ * @property {string[]} [capturesRetrouvees]  lignes capturées sur un élément que la page avait remplacé, retrouvé par son
+ *   chemin et son empreinte (D104)
+ * @property {{ id: string, raison: string }[]} [capturesTombees]  lignes à capturer dont l'image n'a pas pu être prise (D104)
  * @property {number} [densite]  densité des captures (pixels de l'image par px CSS) ; absente : 1
  *
  * @typedef {{ fois: number, mesures: import('../browser/composants.js').Mesures, capture: string | null }} VueApparence
@@ -39,6 +42,7 @@ import { defauts, differences, mention, aFaireDuType, guidageGlobal, graphiques 
  * @property {string[]} pages
  * @property {boolean} rattache
  * @property {string | null} capture
+ * @property {string} [imageTombee]  pourquoi l'image de la première occurrence n'a pas pu être prise (D104)
  * @property {VueApparence[]} apparences
  * @property {{ classes: string[], endroit: string, selecteur: string, extrait: string }} code  première occurrence
  * @property {string[]} defauts   défauts d'accessibilité de base, en mots simples (D47)
@@ -48,6 +52,12 @@ import { defauts, differences, mention, aFaireDuType, guidageGlobal, graphiques 
 
 /** Chemin de la capture d'une ligne, si elle a été prise. @param {string} id @param {Set<string>} captures */
 const chemin = (id, captures) => (captures.has(id) ? `captures/${id}.png` : null);
+
+/** La raison d'une image non prise, s'il y en a une (D104). @param {string} id @param {ReleveFichier} releve */
+const imageTombee = (id, releve) => {
+  const t = releve.capturesTombees?.find((x) => x.id === id);
+  return t ? { imageTombee: t.raison } : {};
+};
 
 /** @param {number} n @param {string} un @param {string} plusieurs */
 const accord = (n, un, plusieurs) => `${n} ${n < 2 ? un : plusieurs}`;
@@ -70,6 +80,7 @@ function vue(occ, releve, captures) {
     fois: occ.length,
     pages: [...new Set(occ.map((o) => o.page))].sort((a, b) => a - b).map((p) => releve.pages[p].nom),
     capture: chemin(premiere.id, captures),
+    ...imageTombee(premiere.id, releve),
     apparences: [...apparences.values()],
     code: { classes: premiere.ligne.classes, endroit: premiere.ligne.endroit, selecteur: premiere.ligne.selecteur, extrait: premiere.ligne.extrait },
   };

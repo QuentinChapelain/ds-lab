@@ -8,7 +8,8 @@
  *   3. le relevé, exécuté dans la page (`releverDansLaPage`, sérialisée : elle ne dépend de rien d'extérieur) : les
  *      éléments d'un rôle relevé, les pièces sans rôle d'une signature qui donne un type, et les blocs (une classe et
  *      une surface visible) hors de toute pièce.
- * Les éléments à capturer restent dans la page (`window.__dsCibles`) : `capturer` les photographie à la demande.
+ * Les éléments à capturer restent dans la page (`window.__dsCibles`), avec leur empreinte (`window.__dsEmpreintes`) :
+ * `capturer` les photographie à la demande, et retrouve par son chemin un élément que la page a remplacé (D104).
  * Rien n'est écrit dans le site : les marques posées le sont dans le navigateur de l'outil.
  */
 
@@ -268,6 +269,13 @@ function releverDansLaPage({ pieces, roles }) {
     cibles.push(el);
   }
   w.__dsCibles = cibles;
+  // L'empreinte d'un élément : sa balise ouvrante, tout son texte, sa taille ; un élément retrouvé par son chemin n'est
+  // photographié que s'il a la même (D104).
+  w.__dsEmpreinte = (/** @type {Element} */ el) => {
+    const b = el.getBoundingClientRect();
+    return JSON.stringify([(/** @type {Element} */ (el.cloneNode(false))).outerHTML, String(/** @type {any} */ (el).innerText ?? '').replace(/\s+/g, ' ').trim(), Math.round(b.width), Math.round(b.height)]);
+  };
+  w.__dsEmpreintes = cibles.map((el) => w.__dsEmpreinte(el));
   return out;
 }
 
@@ -354,12 +362,39 @@ export async function releverPieces(page, { pieces = [] } = {}) {
 
 /**
  * Capture de l'élément d'un relevé, par son rang : la pièce, ou le label qui contient l'élément s'il est sa zone de clic.
- * @param {import('playwright-core').Page} page @param {number} index
- * @returns {Promise<Buffer>}
+ * Un élément que la page a remplacé depuis le relevé est retrouvé par son chemin, s'il a la même empreinte (D104) ;
+ * sinon, l'erreur dit pourquoi, en mots simples.
+ * @param {import('playwright-core').Page} page @param {{ index: number, chemin: string }} ligne
+ * @returns {Promise<{ image: Buffer, retrouvee: boolean }>}
  */
-export async function capturer(page, index) {
-  const h = await page.evaluateHandle((i) => /** @type {any} */ (window).__dsCibles[i], index);
-  const el = h.asElement();
+export async function capturer(page, { index, chemin }) {
+  const etat = await page.evaluate(
+    ({ i, chemin }) => {
+      const w = /** @type {any} */ (window);
+      const el = w.__dsCibles?.[i];
+      if (!el) return 'introuvable';
+      if (el.isConnected) return (w.__dsCapture = el), 'relevé';
+      // Le chemin : « balise.classe:rang » depuis le body ; la classe peut porter « : » ou « . » (rang après le dernier « : »).
+      /** @type {Element | undefined} */
+      let x = document.body;
+      for (const part of chemin.split('>')) {
+        const rang = Number(part.slice(part.lastIndexOf(':') + 1));
+        const tc = part.slice(0, part.lastIndexOf(':'));
+        const point = tc.indexOf('.');
+        const [balise, classe] = point < 0 ? [tc, ''] : [tc.slice(0, point), tc.slice(point + 1)];
+        x = /** @type {Element[]} */ ([...(x?.children ?? [])]).filter((c) => c.tagName.toLowerCase() === balise)[rang - 1];
+        if (!x || (classe && x.classList[0] !== classe)) return 'parti';
+      }
+      if (w.__dsEmpreinte(x) !== w.__dsEmpreintes[i]) return 'autre';
+      w.__dsCapture = x;
+      return 'retrouvé';
+    },
+    { i: index, chemin }
+  );
+  if (etat === 'introuvable') throw new Error(`élément ${index} du relevé introuvable dans la page`);
+  if (etat === 'parti') throw new Error('l’élément a quitté la page après le relevé');
+  if (etat === 'autre') throw new Error('à la place de l’élément, un autre élément, depuis le relevé');
+  const el = (await page.evaluateHandle(() => /** @type {any} */ (window).__dsCapture)).asElement();
   if (!el) throw new Error(`élément ${index} du relevé introuvable dans la page`);
-  return el.screenshot({ animations: 'disabled' });
+  return { image: await el.screenshot({ animations: 'disabled' }), retrouvee: etat === 'retrouvé' };
 }

@@ -14,7 +14,7 @@ import { couleursProches } from '../report/html.js';
 /**
  * @typedef {{ valeur: string, fois: number }} Valeur
  * @typedef {{ cle: 'colors' | 'fontSizes' | 'spacing' | 'radii', titre: string, compte: number, note: string | null, valeurs: (Valeur & { hors?: boolean, gris?: boolean })[] }} Famille
- * @typedef {{ nom: string, versions: { nom: string, fois: number, capture: string | null, sansStyle: boolean }[], fois: number, hauteurs: number[], note: string }} Type
+ * @typedef {{ nom: string, versions: { nom: string, fois: number, capture: string | null, imageTombee?: string, sansStyle: boolean }[], fois: number, hauteurs: number[], note: string }} Type
  * @typedef {{ valeurs: { total: number, familles: Famille[] } | null, composants: { types: Type[], aussi: string[] } }} Dette
  */
 
@@ -156,7 +156,7 @@ function composants(constat) {
   const types = (constat.types ?? [])
     .filter((/** @type {any} */ t) => (t.versions ?? []).length)
     .map((/** @type {any} */ t) => {
-      const versions = t.versions.map((/** @type {any} */ v) => ({ nom: String(v.nomCode ?? v.nom), fois: v.fois, capture: v.capture ?? null, sansStyle: v.origineCle === 'nu' }));
+      const versions = t.versions.map((/** @type {any} */ v) => ({ nom: String(v.nomCode ?? v.nom), fois: v.fois, capture: v.capture ?? null, ...(v.imageTombee ? { imageTombee: String(v.imageTombee) } : {}), sansStyle: v.origineCle === 'nu' }));
       const hauteurs = [...new Set(t.versions.flatMap((/** @type {any} */ v) => (v.apparences ?? []).map((/** @type {any} */ a) => Math.round(a.mesures?.hauteur ?? 0))).filter(Boolean))].sort((a, b) => a - b);
       const nus = versions.filter((/** @type {{ sansStyle: boolean }} */ v) => v.sansStyle).reduce((n, /** @type {{ fois: number }} */ v) => n + v.fois, 0);
       const suite = nus

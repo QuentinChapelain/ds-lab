@@ -70,6 +70,7 @@
       "test/e2e-ajout-passage.test.js",
       "test/e2e-ajout-valise.test.js",
       "test/e2e-audit.test.js",
+      "test/e2e-composants-captures.test.js",
       "test/e2e-migration.test.js",
       "test/e2e-proximite-revue.test.js",
       "test/e2e-rendered.test.js",

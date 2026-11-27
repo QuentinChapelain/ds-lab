@@ -25,7 +25,7 @@
   - Une icône dont la couleur diffère entre la simulation et les feuilles ajoutées, sans ligne qui la vise, n'est rattachée à aucune décision [V].
   - Une réduction relancée peut proposer d'autres lignes en attente que la réduction validée, sans que rien ne le signale.
 - Les contrastes ne sont pas mesurés sur les pages témoins : seules les pages de la table entrent dans les paires texte sur fond et dans la liste des paires sous le seuil.
-- Le constat des composants regarde des pages au repos, à une seule largeur, et ne compte que les types vus ; il ne presse pas les flèches dans un groupe d'onglets ou de radios ; il donne la page affichée, pas le fichier du projet. Ses limites sont écrites dans chaque constat.
+- Le constat des composants regarde des pages au repos, à une seule largeur, et ne compte que les types vus ; il ne presse pas les flèches dans un groupe d'onglets ou de radios ; il donne la page affichée, pas le fichier du projet. Ses limites sont écrites dans chaque constat. Ses images sont prises après le relevé de toutes les pages. Un élément que la page retire entre-temps (une notification qui s'en va) n'a pas d'image : un dessin la remplace (D104). Un élément remplacé par son double est retrouvé par son chemin et son empreinte, qui ne lit pas les enfants de l'élément : dans un carrousel, un voisin identique pourrait être photographié.
 - La dette à payer, avec son moment, est dans [KNOWN_ISSUES.md](../KNOWN_ISSUES.md) ; ce qui manque au design system, dans [docs/feuille-de-route.md](feuille-de-route.md) ; les limites acceptées sont écrites à leur place, sous leur décision, dans les fiches ou ici (D64).
 
 Licence MIT.

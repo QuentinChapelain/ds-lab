@@ -145,6 +145,10 @@ button:focus-visible, input:focus-visible { outline: var(--border-width-focus) s
 .ruban svg { display: block; width: 100%; height: var(--height-control-medium); }
 .captures { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-between-components); }
 .captures img { max-width: 100%; max-height: var(--avatar-size-large); width: auto; }
+/* Le dessin d'une version dont l'image n'a pas pu être prise (D104) : un cadre et une ligne, aux couleurs des jetons. */
+.sans-image { flex: none; width: var(--avatar-size-large); height: var(--height-control-medium); }
+.sans-image .cadre { fill: var(--background-subtle); stroke: var(--border-subtle); }
+.sans-image .ligne { fill: var(--text-secondary); }
 .deux { display: flex; flex-wrap: wrap; gap: var(--gap-between-components); }
 .deux > div { display: flex; flex: auto; flex-direction: column; gap: var(--gap-within-component); min-width: 0; }
 /* Le composant garde sa taille : quand la largeur manque, il défile dans son papier, la page ne défile pas. */
@@ -430,18 +434,29 @@ export function dessinDeVignette() {
 }
 
 /**
+ * Le dessin d'une version dont l'image n'a pas pu être prise, à la place de l'image (D104) ; le titre dit pourquoi.
+ * @param {string} nom @param {{ nom: string, fois: number, imageTombee?: string }} x
+ */
+const sansImage = (nom, x) =>
+  `<svg class="sans-image" viewBox="0 0 72 32" role="img" aria-label="${esc(`${nom}, ${x.nom} : image non prise`)}"><title>${esc(`${x.nom}, ${fois(x.fois)} ; image non prise : ${x.imageTombee}`)}</title><rect class="cadre" x="1" y="1" width="70" height="30" rx="6"/><rect class="ligne" x="16" y="13" width="40" height="6" rx="3"/></svg>`;
+
+/**
  * La mesure en cours (D77, D93) : « Où j'en suis », une ligne par page (Mesurée, En cours, À faire, ou Pas mesurée),
  * puis le relevé des composants, lus dans le fichier d'avancement. Il se recharge seul, et passe seul à l'écran
- * suivant quand la mesure est faite.
+ * suivant quand la mesure est faite ; arrêtée, il dit pourquoi et quoi faire (D104).
  * @param {Etat} e
  */
 export function ecranDeMesure(e) {
   const n = e.sites.reduce((t, s) => t + s.pages.length, 0);
   const pages = n > 1 ? `tes ${n} pages` : 'ta page';
+  // Une mesure arrêtée le dit, et dit quoi faire ; l'écran se recharge toujours, pour la mesure relancée (D104).
+  const arret = e.mesure?.arret ?? null;
   return gabarit({
-    titre: `Je mesure ${pages}`,
+    titre: arret ? `La mesure de ${pages} s’est arrêtée` : `Je mesure ${pages}`,
     onglet: `La mesure · ${e.produit}`,
-    phrase: 'Les couleurs, les tailles de texte, les espacements, les arrondis et les composants. L’écran passe seul à la suite quand tout est mesuré.',
+    phrase: arret
+      ? `${arret} Dis-le dans le chat : on relance la mesure, ou on retire la page en cause.`
+      : 'Les couleurs, les tailles de texte, les espacements, les arrondis et les composants. L’écran passe seul à la suite quand tout est mesuré.',
     fil: filDe(e),
     corps: `<section class="bloc" aria-labelledby="t-ou"><h2 id="t-ou">Où j’en suis</h2>
 ${(e.mesure?.sites ?? []).map((x) => ouJenSuis([...x.pages, x.composants], e.unSite ? undefined : x.nom)).join('\n')}</section>`,
@@ -595,9 +610,9 @@ ${v.familles.map((f) => rang(f.compte, f.titre, f.note, f.valeurs.length ? (f.cl
     : '';
   const c = d.composants;
   const captures = (/** @type {import('./dette.js').Type} */ t) => {
-    const l = t.versions.filter((x) => x.capture);
+    const l = t.versions.filter((x) => x.capture || x.imageTombee);
     return l.length
-      ? `<div class="papier papier-bloc captures">${l.map((x) => `<img src="${esc(`${d.captures}/${x.capture}`)}" alt="${esc(`${t.nom}, ${x.nom}`)}" title="${esc(`${x.nom}, ${fois(x.fois)}${x.sansStyle ? ', sans style' : ''}`)}">`).join('')}</div>`
+      ? `<div class="papier papier-bloc captures">${l.map((x) => (x.capture ? `<img src="${esc(`${d.captures}/${x.capture}`)}" alt="${esc(`${t.nom}, ${x.nom}`)}" title="${esc(`${x.nom}, ${fois(x.fois)}${x.sansStyle ? ', sans style' : ''}`)}">` : sansImage(t.nom, x))).join('')}</div>`
       : '';
   };
   const composants = `<section class="groupe" aria-labelledby="t-composants"><div class="titre-bloc"><h2 id="t-composants">Les composants</h2><a href="${esc(d.composantsHref)}">Voir tous les composants</a></div>
@@ -865,10 +880,11 @@ export function ecranDesComposants(e, { lecture = null } = {}) {
   const c = /** @type {NonNullable<Etat['composants']>} */ (e.composants);
   /** @param {import('./etat.js').Versions} versions @param {string} nom */
   const site = (versions, nom) => {
-    const l = versions.filter((x) => x.capture);
+    const l = versions.filter((x) => x.capture || x.imageTombee);
     return l.length
       ? `<div class="papier papier-bloc versions">${l
           .map((x) => {
+            if (!x.capture) return sansImage(nom, x);
             const t = c.tailles[/** @type {string} */ (x.capture)];
             return `<img src="${esc(`${c.captures}/${x.capture}`)}"${t ? ` width="${t[0]}" height="${t[1]}"` : ''} alt="${esc(`${nom}, ${x.nom}`)}" title="${esc(`${x.nom}, ${fois(x.fois)}${x.sansStyle ? ', sans style' : ''}`)}">`;
           })

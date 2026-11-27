@@ -103,7 +103,8 @@ function pagesValidees(sorties) {
  *   revoir: Revu[], revue: string | null, mesure: Mesure | null, preparation: Ligne[] | null }} Etat  revoir : les écrans faits qui se revoient ; revue : l'adresse de la revue ;
  *   mesure : où en est la mesure, au moment de la mesure ; preparation : où en est l'écriture des tokens, au moment des jetons (D93)
  * @typedef {{ nom: string, detail: string, etat: string }} Ligne  une ligne de « Où j'en suis » : Mesurée, En cours, À faire, Pas mesurée ; Fait, Pas fait
- * @typedef {{ sites: { id: string, nom: string, pages: Ligne[], composants: Ligne }[] }} Mesure
+ * @typedef {{ sites: { id: string, nom: string, pages: Ligne[], composants: Ligne }[], arret: string | null }} Mesure  arret : la mesure
+ *   arrêtée, dite en une phrase : un relevé pas fait, sans constat (D104)
  * @typedef {import('./fondations.js').Fondations & { site: Site, avant: number | null, planche: string }} Fondations  au moment des fondations : la marque du
  *   premier site, les valeurs de ses pages (avant) et l'adresse servie de ses planches
  * @typedef {{ src: string, largeur: number, hauteur: number }} Image  une capture servie, et sa taille affichée
@@ -741,7 +742,14 @@ export function calculerEtat(projet, { base = process.cwd(), voir = null } = {})
         pages: s.pages.map((p) => ({ nom: s.noms[p] ?? p, detail: new URL(p, s.origine).host + p, etat: fait ? 'Mesurée' : PAGE[a.pages[new URL(p, s.origine).href]] ?? 'À faire' })),
         composants: { nom: 'Le relevé des composants', detail: 'Les boutons, les champs, les liens et leurs versions.', etat: fait ? 'Fait' : RELEVE[a.releves[resolve(join(sorties, 'composants', s.id))]] ?? 'À faire' },
       })),
+      arret: null,
     };
+    // Un relevé pas fait, sans constat : la mesure s'est arrêtée, l'écran et le chat le disent (D104).
+    const arrete = constats.find(({ site: s, constat: fait }) => !fait && a.releves[resolve(join(sorties, 'composants', s.id))] === 'pas fait');
+    if (arrete) {
+      const raison = a.raisons[resolve(join(sorties, 'composants', arrete.site.id))];
+      mesure.arret = `Le relevé des composants${unSite ? '' : ` du site ${arrete.site.nom ?? arrete.site.id}`} s’est arrêté${raison ? ` : ${raison}` : ''}.`;
+    }
   }
   /** @type {Etat['preparation']} */
   let preparation = null;

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Orbe Café — une notification qui s'en va</title>
+  <style>
+    body { font: 16px/1.5 system-ui; margin: 24px; }
+    .envoyer { height: 40px; padding: 0 16px; border-radius: 8px; }
+    .ajouter { height: 48px; padding: 0 24px; border-radius: 4px; }
+    .alerte { position: fixed; bottom: 16px; right: 16px; padding: 16px 40px 16px 16px; background: #eee; }
+    .fermer { position: absolute; top: 4px; right: 4px; height: 28px; border: 0; background: transparent; }
+  </style>
+</head>
+<body>
+  <h1>Notre carte</h1>
+  <main>
+    <button type="button" class="envoyer">Envoyer</button>
+    <button type="button" class="ajouter">Ajouter</button>
+  </main>
+  <div class="alerte"><p>Bienvenue chez Orbe Café.</p><button type="button" class="fermer" aria-label="Fermer">×</button></div>
+  <script>
+    // Peu après le relevé (window.__dsCibles posé), la page change trois éléments relevés, comme un site réel :
+    // la notification s'en va, « Envoyer » est remplacé par son double, « Ajouter » par un autre bouton à la même place.
+    const attendre = setInterval(() => {
+      if (!window.__dsCibles) return;
+      clearInterval(attendre);
+      setTimeout(() => {
+        document.querySelector('.alerte').remove();
+        const envoyer = document.querySelector('.envoyer');
+        envoyer.outerHTML = envoyer.outerHTML;
+        document.querySelector('.ajouter').outerHTML = '<button type="button" class="ajouter">Retirer</button>';
+      }, 300);
+    }, 20);
+  </script>
+</body>
+</html>
